@@ -5,7 +5,7 @@ import Service from "ember-runtime/system/service";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
 import Object from "ember-runtime/system/object";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import inject from "ember-runtime/inject";
 import { get } from "ember-metal/property_get";
 
@@ -187,7 +187,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     test("defining a controller on a non-controller should fail assertion", function(){
       expectAssertion(function() {
         var registry = new Registry();
-        var container = new Container(registry);
+        var container = registry.container();
 
         var AnObject = Object.extend({
           container: container,
@@ -204,7 +204,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("controllers can be injected into controllers", function() {
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
 
     registry.register('controller:post', Controller.extend({
       postsController: inject.controller('posts')
@@ -220,7 +220,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("services can be injected into controllers", function() {
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
 
     registry.register('controller:application', Controller.extend({
       authService: inject.service('auth')

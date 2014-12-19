@@ -1,6 +1,5 @@
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
-import Container from "container/container";
 import EmberView from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -19,7 +18,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     QUnit.module("ember-htmlbars: component hook", {
       setup: function() {
         registry = new Registry();
-        container = new Container(registry);
+        container = registry.container();
 
         registry.optionsForType('template', { instantiate: false });
         registry.register('component-lookup:main', ComponentLookup);

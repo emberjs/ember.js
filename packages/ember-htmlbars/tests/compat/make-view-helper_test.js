@@ -1,6 +1,5 @@
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
-import Container from "container/container";
 import compile from "ember-htmlbars/system/compile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import Component from "ember-views/views/component";
@@ -11,7 +10,7 @@ var registry, container, view;
 QUnit.module('ember-htmlbars: makeViewHelper compat', {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('helper', { instantiate: false });
   },
 

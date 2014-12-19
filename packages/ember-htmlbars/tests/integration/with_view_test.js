@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from 'ember-htmlbars/system/compile';
@@ -15,7 +15,7 @@ var trim = jQuery.trim;
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());

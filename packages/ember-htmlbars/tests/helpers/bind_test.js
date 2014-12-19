@@ -3,7 +3,7 @@ import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from "ember-htmlbars/system/compile";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import ObjectController from "ember-runtime/controllers/object_controller";
 
 import { get } from "ember-metal/property_get";
@@ -15,7 +15,7 @@ var view, registry, container;
 QUnit.module("ember-htmlbars: {{bind}} helper", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -85,7 +85,7 @@ test("it should render the current value of a string path on the context", funct
 QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

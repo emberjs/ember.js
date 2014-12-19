@@ -1,7 +1,6 @@
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
-import Container from "container/container";
 import Component from "ember-views/views/component";
 
 function generateEnv(helpers) {
@@ -12,7 +11,7 @@ function generateEnv(helpers) {
 
 function generateContainer() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   registry.optionsForType('helper', { instantiate: false });
   registry.register('component-lookup:main', ComponentLookup);

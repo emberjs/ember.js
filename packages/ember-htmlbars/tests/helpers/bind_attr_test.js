@@ -8,7 +8,7 @@ import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
 import { observersFor } from "ember-metal/observer";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { equalInnerHTML } from "htmlbars-test-helpers";
@@ -33,7 +33,7 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());

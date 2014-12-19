@@ -1,5 +1,4 @@
 import Registry from "container/registry";
-import Container from "container/container";
 import run from "ember-metal/run_loop";
 
 import EmberView from "ember-views/views/view";
@@ -10,7 +9,7 @@ var registry, container, view;
 QUnit.module("EmberView - Nested View Ordering", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
   },
   teardown: function() {
     run(function() {

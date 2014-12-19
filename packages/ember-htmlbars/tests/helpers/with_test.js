@@ -6,7 +6,7 @@ import { computed } from "ember-metal/computed";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
@@ -220,7 +220,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var parentController = EmberObject.create({
     container: container,
@@ -277,7 +277,7 @@ test("it should still have access to original parentController within an {{#each
 
   var people = A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var parentController = EmberObject.create({
     container: container,
@@ -310,7 +310,7 @@ test("it should wrap keyword with object controller", function() {
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var parentController = EmberObject.create({
     container: container,
@@ -364,7 +364,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var parentController = EmberObject.create({
     container: container,
@@ -400,7 +400,7 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var parentController = EmberObject.create({
     container: container,

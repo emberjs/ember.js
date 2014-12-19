@@ -1,7 +1,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import Registry from "container/registry";
-import Container from "container/container";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -25,7 +24,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('helper', { instantiate: false });
   },
 

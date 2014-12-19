@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // Ember.lookup
 import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import EmberHandlebars from "ember-htmlbars/compat";
@@ -16,7 +16,7 @@ QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
   setup: function() {
     Ember.lookup = lookup = {};
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.optionsForType('helper', { instantiate: false });
     registry.register('view:default', _MetamorphView);

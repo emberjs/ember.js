@@ -2,7 +2,7 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { computed } from "ember-metal/computed";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
@@ -21,7 +21,7 @@ var view, registry, container;
 QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

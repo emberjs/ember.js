@@ -9,7 +9,6 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import {sort} from "ember-runtime/computed/reduce_computed_macros";
 import Registry from "container/registry";
-import Container from "container/container";
 
 var lannisters, arrayController, controllerClass, otherControllerClass, registry, container, itemControllerCount,
     tywin, jaime, cersei, tyrion;
@@ -17,7 +16,7 @@ var lannisters, arrayController, controllerClass, otherControllerClass, registry
 QUnit.module("Ember.ArrayController - itemController", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     tywin = EmberObject.create({ name: 'Tywin' });
     jaime = EmberObject.create({ name: 'Jaime' });
@@ -337,7 +336,7 @@ test("`itemController`'s life cycle should be entangled with its parent controll
 QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     cersei = EmberObject.create({ name: 'Cersei' });
     jaime = EmberObject.create({ name: 'Jaime' });

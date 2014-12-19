@@ -65,7 +65,7 @@ Container.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    registry.register('api:twitter', Twitter);
 
@@ -84,7 +84,7 @@ Container.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    registry.register('api:twitter', Twitter);
 

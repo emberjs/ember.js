@@ -1,5 +1,4 @@
 import Registry from "container/registry";
-import Container from "container/container";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
@@ -10,7 +9,7 @@ var registry, container, view;
 QUnit.module("EmberView - Template Functionality", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

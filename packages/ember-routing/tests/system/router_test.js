@@ -3,7 +3,6 @@ import copy from "ember-runtime/copy";
 import merge from "ember-metal/merge";
 import { map } from "ember-metal/enumerable_utils";
 import Registry from "container/registry";
-import Container from "container/container";
 import HashLocation from "ember-routing/location/hash_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import EmberRouter from "ember-routing/system/router";
@@ -19,7 +18,7 @@ function createRouter(overrides) {
 QUnit.module("Ember Router", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     //register the HashLocation (the default)
     registry.register('location:hash', HashLocation);

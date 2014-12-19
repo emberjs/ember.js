@@ -1,6 +1,6 @@
 import run from "ember-metal/run_loop";
 import Namespace from 'ember-runtime/system/namespace';
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
@@ -22,7 +22,7 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());

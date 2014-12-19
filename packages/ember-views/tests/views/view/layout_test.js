@@ -1,5 +1,4 @@
 import Registry from "container/registry";
-import Container from "container/container";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
@@ -9,7 +8,7 @@ var registry, container, view;
 QUnit.module("EmberView - Layout Functionality", {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
 

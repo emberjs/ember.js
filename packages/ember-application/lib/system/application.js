@@ -4,7 +4,6 @@
 */
 import DAG from 'dag-map';
 import Registry from 'container/registry';
-import Container from 'container/container';
 
 import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { get } from "ember-metal/property_get";
@@ -320,7 +319,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Container} the configured container
   */
   buildContainer: function() {
-    var container = this.__container__ = new Container(this.__registry__);
+    var container = this.__container__ = this.__registry__.container();
 
     return container;
   },

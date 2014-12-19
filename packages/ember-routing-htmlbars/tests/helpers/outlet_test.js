@@ -4,7 +4,6 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import Registry from "container/registry";
-import Container from "container/container";
 import Namespace from "ember-runtime/system/namespace";
 import {
   decamelize,
@@ -51,7 +50,7 @@ var buildRegistry = function(namespace) {
 };
 
 var buildContainer = function(registry) {
-  return new Container(registry);
+  return registry.container();
 };
 
 function resolverFor(namespace) {

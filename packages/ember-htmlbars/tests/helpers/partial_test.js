@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
@@ -15,7 +15,7 @@ QUnit.module("Support for {{partial}} helper", {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

@@ -2,7 +2,6 @@ import {
   factory
 } from 'container/tests/container_helper';
 
-import Container from 'container/container';
 import Registry from 'container/registry';
 
 var originalModelInjections;
@@ -18,7 +17,7 @@ QUnit.module("Container", {
 
 test("A registered factory returns the same instance each time", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -32,7 +31,7 @@ test("A registered factory returns the same instance each time", function() {
 
 test("A registered factory is returned from lookupFactory", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -45,7 +44,7 @@ test("A registered factory is returned from lookupFactory", function() {
 
 test("A registered factory is returned from lookupFactory is the same factory each time", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -55,7 +54,7 @@ test("A registered factory is returned from lookupFactory is the same factory ea
 
 test("A factory returned from lookupFactory has a debugkey", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -67,7 +66,7 @@ test("A factory returned from lookupFactory has a debugkey", function() {
 
 test("fallback for to create time injections if factory has no extend", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var AppleController = factory();
   var PostController = factory();
 
@@ -87,7 +86,7 @@ test("fallback for to create time injections if factory has no extend", function
 
 test("The descendants of a factory returned from lookupFactory have a container and debugkey", function(){
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var instance;
 
@@ -102,7 +101,7 @@ test("The descendants of a factory returned from lookupFactory have a container 
 
 test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -125,7 +124,7 @@ test("A registered factory returns a fresh instance if singleton: false is passe
 
 test("A container lookup has access to the container", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
@@ -137,7 +136,7 @@ test("A container lookup has access to the container", function() {
 
 test("A factory type with a registered injection's instances receive that injection", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var Store = factory();
 
@@ -154,7 +153,7 @@ test("A factory type with a registered injection's instances receive that inject
 
 test("An individual factory with a registered injection receives the injection", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var Store = factory();
 
@@ -176,7 +175,7 @@ test("An individual factory with a registered injection receives the injection",
 
 test("A factory with both type and individual injections", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var Store = factory();
   var Router = factory();
@@ -198,7 +197,7 @@ test("A factory with both type and individual injections", function() {
 
 test("A factory with both type and individual factoryInjections", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var Store = factory();
   var Router = factory();
@@ -220,7 +219,7 @@ test("A factory with both type and individual factoryInjections", function() {
 
 test("A non-singleton instance is never cached", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostView = factory();
 
   registry.register('view:post', PostView, { singleton: false });
@@ -233,7 +232,7 @@ test("A non-singleton instance is never cached", function() {
 
 test("A non-instantiated property is not instantiated", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var template = function() {};
   registry.register('template:foo', template, { instantiate: false });
@@ -242,14 +241,14 @@ test("A non-instantiated property is not instantiated", function() {
 
 test("A failed lookup returns undefined", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   equal(container.lookup('doesnot:exist'), undefined);
 });
 
 test("An invalid factory throws an error", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   registry.register('controller:foo', {});
 
@@ -262,7 +261,7 @@ test("Injecting a failed lookup raises an error", function() {
   Ember.MODEL_FACTORY_INJECTIONS = true;
 
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   var fooInstance = {};
   var fooFactory  = {};
@@ -282,7 +281,7 @@ test("Injecting a failed lookup raises an error", function() {
 
 test("Injecting a falsy value does not raise an error", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var ApplicationController = factory();
 
   registry.register('controller:application', ApplicationController);
@@ -294,7 +293,7 @@ test("Injecting a falsy value does not raise an error", function() {
 
 test("Destroying the container destroys any cached singletons", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var PostView = factory();
   var template = function() {};
@@ -318,7 +317,7 @@ test("Destroying the container destroys any cached singletons", function() {
 
 test("The container can use a registry hook to resolve factories lazily", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.resolver = function(fullName) {
@@ -334,7 +333,7 @@ test("The container can use a registry hook to resolve factories lazily", functi
 
 test("The container normalizes names before resolving", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.normalizeFullName = function(fullName) {
@@ -349,7 +348,7 @@ test("The container normalizes names before resolving", function() {
 
 test("The container normalizes names when looking factory up", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
 
   registry.normalizeFullName = function(fullName) {
@@ -364,7 +363,7 @@ test("The container normalizes names when looking factory up", function() {
 
 test("The container can get options that should be applied to a given factory", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostView = factory();
 
   registry.resolver = function(fullName) {
@@ -386,7 +385,7 @@ test("The container can get options that should be applied to a given factory", 
 
 test("The container can get options that should be applied to all factories for a given type", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostView = factory();
 
   registry.resolver = function(fullName) {
@@ -408,7 +407,7 @@ test("The container can get options that should be applied to all factories for 
 
 test("factory resolves are cached", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var resolveWasCalled = [];
   registry.resolve = function(fullName) {
@@ -426,7 +425,7 @@ test("factory resolves are cached", function() {
 
 test("factory for non extendables (MODEL) resolves are cached", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = factory();
   var resolveWasCalled = [];
   registry.resolve = function(fullName) {
@@ -444,7 +443,7 @@ test("factory for non extendables (MODEL) resolves are cached", function() {
 
 test("factory for non extendables resolves are cached", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var PostController = {};
   var resolveWasCalled = [];
 
@@ -466,7 +465,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     expect(2);
 
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
     var Apple = factory();
 
     Apple.reopenClass({
@@ -484,7 +483,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("A factory's lazy injections are validated when first instantiated", function() {
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
     var Apple = factory();
     var Orange = factory();
 
@@ -506,7 +505,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     expect(1);
 
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
     var Apple = factory();
     var Orange = factory();
 

@@ -1,6 +1,5 @@
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
-import Container from "container/container";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-htmlbars/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
@@ -11,7 +10,7 @@ var registry, container, view;
 QUnit.module('component - invocation', {
   setup: function() {
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });

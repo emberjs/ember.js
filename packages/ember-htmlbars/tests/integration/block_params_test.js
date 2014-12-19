@@ -1,5 +1,4 @@
 import Registry from "container/registry";
-import Container from "container/container";
 import run from "ember-metal/run_loop";
 import ComponentLookup from 'ember-views/component_lookup';
 import View from "ember-views/views/view";
@@ -26,7 +25,7 @@ QUnit.module("ember-htmlbars: block params", {
     registerHelper('alias', aliasHelper);
 
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });

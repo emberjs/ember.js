@@ -6,7 +6,6 @@ import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { observer } from 'ember-metal/mixin';
 
 import Registry from 'container/registry';
-import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
 import {
   classify,
@@ -43,7 +42,7 @@ function set(object, key, value) {
 
 function buildContainer(namespace) {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   registry.set = emberSet;
   registry.resolver = resolverFor(namespace);

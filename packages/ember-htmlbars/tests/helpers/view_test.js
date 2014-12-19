@@ -2,7 +2,6 @@
 import { set } from "ember-metal/property_set";
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
-import Container from "container/container";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import TextField from 'ember-views/views/text_field';
@@ -47,7 +46,7 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     Ember.lookup = lookup = {};
 
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -363,7 +362,7 @@ test("allows you to pass attributes that will be assigned to the class instance,
   expect(4);
 
   registry = new Registry();
-  container = new Container(registry);
+  container = registry.container();
   registry.register('view:toplevel', EmberView.extend());
 
   view = EmberView.extend({

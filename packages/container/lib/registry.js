@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import dictionary from 'ember-metal/dictionary';
+import Container from 'container/container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 
@@ -102,6 +103,16 @@ Registry.prototype = {
    @type InheritingDict
    */
   _typeOptions: null,
+
+  /**
+   Creates a container based on this registry.
+
+   @method container
+   @param {Object} options
+   */
+  container: function(options) {
+    return new Container(this, options);
+  },
 
   /**
    Registers a factory for later injection.
@@ -270,7 +281,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    // if all of type `connection` must not be singletons
    registry.optionsForType('connection', { singleton: false });
@@ -349,7 +360,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    registry.register('router:main', Router);
    registry.register('controller:user', UserController);
@@ -402,7 +413,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    registry.register('source:main', Source);
    registry.register('model:user', User);
@@ -498,7 +509,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container(registry);
+   var container = registry.container();
 
    registry.register('store:main', Store);
    registry.register('store:secondary', OtherStore);

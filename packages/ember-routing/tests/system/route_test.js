@@ -1,6 +1,5 @@
 import run from "ember-metal/run_loop";
 import Registry from "container/registry";
-import Container from "container/container";
 import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
@@ -59,7 +58,7 @@ test("'store' can be injected by data persistence frameworks", function() {
   run(route, 'destroy');
 
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var post = {
     id: 1
   };
@@ -89,7 +88,7 @@ test("assert if 'store.find' method is not found", function() {
   run(route, 'destroy');
 
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   var Post = EmberObject.extend();
 
   registry.register('route:index', EmberRoute);
@@ -107,7 +106,7 @@ test("asserts if model class is not found", function() {
   run(route, 'destroy');
 
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   registry.register('route:index', EmberRoute);
 
   route = container.lookup('route:index');
@@ -123,7 +122,7 @@ test("'store' does not need to be injected", function() {
   run(route, 'destroy');
 
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   registry.register('route:index',  EmberRoute);
 
@@ -138,7 +137,7 @@ test("'store' does not need to be injected", function() {
 
 test("modelFor doesn't require the router", function() {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
   route.container = container;
 
   var foo = { name: 'foo' };
@@ -238,7 +237,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("services can be injected into routes", function() {
     var registry = new Registry();
-    var container = new Container(registry);
+    var container = registry.container();
 
     registry.register('route:application', EmberRoute.extend({
       authService: inject.service('auth')

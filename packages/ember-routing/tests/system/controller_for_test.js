@@ -4,7 +4,6 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import Registry from 'container/registry';
-import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
@@ -18,7 +17,7 @@ import {
 
 var buildContainer = function(namespace) {
   var registry = new Registry();
-  var container = new Container(registry);
+  var container = registry.container();
 
   registry.set = set;
   registry.resolver = resolverFor(namespace);

@@ -9,7 +9,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -83,7 +83,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -697,7 +697,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
     setup: function() {
       registry = new Registry();
-      container = new Container(registry);
+      container = registry.container();
 
       registry.register('view:default', _MetamorphView);
       registry.register('view:toplevel', EmberView.extend());
@@ -819,7 +819,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
 
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
@@ -873,7 +873,7 @@ function testEachWithItem(moduleName, useBlockParams) {
           controllerName: 'controller:people'
         });
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
 
     registry.register('controller:people', PeopleController);
     registry.register('controller:person', PersonController);

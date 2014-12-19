@@ -13,7 +13,7 @@ import helpers from "ember-htmlbars/helpers";
 import registerBoundHelper from "ember-htmlbars/compat/register-bound-helper";
 import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
-import { Registry, Container } from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 function expectDeprecationInHTMLBars() {
@@ -286,7 +286,7 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     registry = new Registry();
-    container = new Container(registry);
+    container = registry.container();
     registry.optionsForType('helper', { instantiate: false });
   },
 
