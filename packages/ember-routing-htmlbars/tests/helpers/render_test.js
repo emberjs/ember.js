@@ -43,7 +43,7 @@ function set(object, key, value) {
 
 function buildContainer(namespace) {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.set = emberSet;
   registry.resolver = resolverFor(namespace);
@@ -99,8 +99,8 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
 
     var namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.registry.register('view:default', _MetamorphView);
-    container.registry.register('router:main', EmberRouter.extend());
+    container._registry.register('view:default', _MetamorphView);
+    container._registry.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
     delete helpers['render'];
@@ -158,7 +158,7 @@ test("{{render}} helper should have assertion if neither template nor view exist
 test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
   var template = "<h1>HI</h1>{{#render 'good'}} {{name}}{{/render}}";
   var controller = EmberController.extend({container: container});
-  container.registry.register('controller:good', EmberController.extend({ name: 'Rob'}));
+  container._registry.register('controller:good', EmberController.extend({ name: 'Rob'}));
   view = EmberView.create({
     controller: controller.create(),
     template: compile(template)
@@ -177,7 +177,7 @@ test("{{render}} helper should not have assertion if view exists without a templ
     template: compile(template)
   });
 
-  container.registry.register('view:oops', EmberView.extend());
+  container._registry.register('view:oops', EmberView.extend());
 
   appendView(view);
 
@@ -204,7 +204,7 @@ test("{{render}} helper should render given template with a supplied model", fun
   });
 
   var PostController = EmberObjectController.extend();
-  container.registry.register('controller:post', PostController);
+  container._registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -245,7 +245,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
     })
   });
 
-  container.registry.register('controller:post', PostController);
+  container._registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -258,7 +258,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
 test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
   var template = '<h1>HI</h1>{{render "home" controller="postss"}}';
   var controller = EmberController.extend({container: container});
-  container.registry.register('controller:posts', EmberArrayController.extend());
+  container._registry.register('controller:posts', EmberArrayController.extend());
   view = EmberView.create({
     controller: controller.create(),
     template: compile(template)
@@ -274,7 +274,7 @@ test("{{render}} helper should raise an error when a given controller name does 
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render "home" controller="posts"}}';
   var controller = EmberController.extend({container: container});
-  container.registry.register('controller:posts', EmberArrayController.extend());
+  container._registry.register('controller:posts', EmberArrayController.extend());
   view = EmberView.create({
     controller: controller.create(),
     template: compile(template)
@@ -326,7 +326,7 @@ test("{{render}} helper should render templates with models multiple times", fun
   });
 
   var PostController = EmberObjectController.extend();
-  container.registry.register('controller:post', PostController, {singleton: false});
+  container._registry.register('controller:post', PostController, {singleton: false});
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -368,7 +368,7 @@ test("{{render}} helper should not leak controllers", function() {
   });
 
   var PostController = EmberObjectController.extend();
-  container.registry.register('controller:post', PostController);
+  container._registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -393,7 +393,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
   });
 
   var PostController = EmberObjectController.extend();
-  container.registry.register('controller:post', PostController, {singleton: false});
+  container._registry.register('controller:post', PostController, {singleton: false});
 
   Ember.TEMPLATES['post'] = compile("<p>{{#unless model}}NOTHING{{/unless}}</p>");
 
@@ -426,7 +426,7 @@ test("{{render}} helper should render templates both with and without models", f
   });
 
   var PostController = EmberObjectController.extend();
-  container.registry.register('controller:post', PostController, {singleton: false});
+  container._registry.register('controller:post', PostController, {singleton: false});
 
   Ember.TEMPLATES['post'] = compile("<p>Title:{{title}}</p>");
 
@@ -463,7 +463,7 @@ test("{{render}} helper should link child controllers to the parent controller",
     role: "Mom"
   });
 
-  container.registry.register('controller:posts', EmberArrayController.extend());
+  container._registry.register('controller:posts', EmberArrayController.extend());
 
   view = EmberView.create({
     controller: controller.create(),
@@ -520,7 +520,7 @@ test("{{render}} works with dot notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog.post"}}';
 
   var controller = EmberController.extend({container: container});
-  container.registry.register('controller:blog.post', EmberObjectController.extend());
+  container._registry.register('controller:blog.post', EmberObjectController.extend());
 
   view = EmberView.create({
     controller: controller.create(),
@@ -540,7 +540,7 @@ test("{{render}} works with slash notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog/post"}}';
 
   var controller = EmberController.extend({container: container});
-  container.registry.register('controller:blog.post', EmberObjectController.extend());
+  container._registry.register('controller:blog.post', EmberObjectController.extend());
 
   view = EmberView.create({
     controller: controller.create(),

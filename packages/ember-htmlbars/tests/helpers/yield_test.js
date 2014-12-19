@@ -21,7 +21,7 @@ var view, registry, container;
 QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

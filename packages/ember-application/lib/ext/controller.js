@@ -27,7 +27,7 @@ function verifyNeedsDependencies(controller, container, needs) {
     }
 
     // Structure assert to still do verification but not string concat in production
-    if (!container.registry.has(dependency)) {
+    if (!container._registry.has(dependency)) {
       missing.push(dependency);
     }
   }

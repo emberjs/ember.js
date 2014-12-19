@@ -16,7 +16,7 @@ QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
   setup: function() {
     Ember.lookup = lookup = {};
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
     registry.optionsForType('helper', { instantiate: false });
     registry.register('view:default', _MetamorphView);

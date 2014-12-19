@@ -22,7 +22,7 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());

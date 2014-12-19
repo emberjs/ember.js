@@ -51,7 +51,7 @@ var buildRegistry = function(namespace) {
 };
 
 var buildContainer = function(registry) {
-  return new Container({registry: registry});
+  return new Container(registry);
 };
 
 function resolverFor(namespace) {

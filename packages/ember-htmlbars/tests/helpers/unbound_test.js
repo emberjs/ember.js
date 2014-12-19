@@ -286,7 +286,7 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('helper', { instantiate: false });
   },
 

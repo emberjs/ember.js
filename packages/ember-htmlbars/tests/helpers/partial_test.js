@@ -15,7 +15,7 @@ QUnit.module("Support for {{partial}} helper", {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

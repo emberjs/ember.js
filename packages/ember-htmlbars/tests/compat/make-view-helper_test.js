@@ -11,7 +11,7 @@ var registry, container, view;
 QUnit.module('ember-htmlbars: makeViewHelper compat', {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('helper', { instantiate: false });
   },
 

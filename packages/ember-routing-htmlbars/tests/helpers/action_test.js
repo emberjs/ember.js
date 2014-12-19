@@ -187,7 +187,7 @@ test("should target the with-controller inside an {{#with controller='person'}} 
 
   var PersonController = EmberObjectController.extend();
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
   var parentController = EmberObject.create({
     container: container
   });
@@ -222,7 +222,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
   });
 
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
   var parentController = EmberObject.create({
     container: container,
     people: Ember.A([

@@ -17,7 +17,7 @@ var lannisters, arrayController, controllerClass, otherControllerClass, registry
 QUnit.module("Ember.ArrayController - itemController", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     tywin = EmberObject.create({ name: 'Tywin' });
     jaime = EmberObject.create({ name: 'Jaime' });
@@ -337,7 +337,7 @@ test("`itemController`'s life cycle should be entangled with its parent controll
 QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     cersei = EmberObject.create({ name: 'Cersei' });
     jaime = EmberObject.create({ name: 'Jaime' });

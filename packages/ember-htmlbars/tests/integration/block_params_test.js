@@ -26,7 +26,7 @@ QUnit.module("ember-htmlbars: block params", {
     registerHelper('alias', aliasHelper);
 
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });

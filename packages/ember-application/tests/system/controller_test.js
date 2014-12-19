@@ -22,7 +22,7 @@ test("If a controller specifies a dependency, but does not have a container it s
 
 test("If a controller specifies a dependency, it is accessible", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:post', Controller.extend({
     needs: 'posts'
@@ -38,7 +38,7 @@ test("If a controller specifies a dependency, it is accessible", function() {
 
 test("If a controller specifies an unavailable dependency, it raises", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:post', Controller.extend({
     needs: ['comments']
@@ -59,7 +59,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
 
 test("Mixin sets up controllers if there is needs before calling super", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:other', ArrayController.extend({
     needs: 'posts',
@@ -81,7 +81,7 @@ test("Mixin sets up controllers if there is needs before calling super", functio
 
 test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:foo', Controller.extend());
   registry.register('controller:bar', Controller.extend({
@@ -106,7 +106,7 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
 
 test ("setting the value of a controller dependency should not be possible", function(){
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:post', Controller.extend({
     needs: 'posts'
@@ -129,7 +129,7 @@ test ("setting the value of a controller dependency should not be possible", fun
 
 test("raises if a dependency with a period is requested", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.register('controller:big.bird', Controller.extend());
   registry.register('controller:foo', Controller.extend({

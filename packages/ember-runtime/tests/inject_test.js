@@ -28,7 +28,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       });
 
       var registry = new Registry();
-      var container = new Container({registry: registry});
+      var container = new Container(registry);
 
       var AnObject = Object.extend({
         container: container,
@@ -43,7 +43,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("attempting to inject a nonexistent container key should error", function() {
     var registry = new Registry();
-    var container = new Container({registry: registry});
+    var container = new Container(registry);
     var AnObject = Object.extend({
       container: container,
       foo: new InjectedProperty('bar', 'baz')

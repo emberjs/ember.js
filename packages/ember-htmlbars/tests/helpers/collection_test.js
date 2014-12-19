@@ -38,7 +38,7 @@ QUnit.module("collection helper", {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     registry.optionsForType('template', { instantiate: false });
     // registry.register('view:default', _MetamorphView);
@@ -156,7 +156,7 @@ test("passing a block to the collection helper sets it as the template for examp
 
 test("collection helper should try to use container to resolve view", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var ACollectionView = CollectionView.extend({
         tagName: 'ul',
@@ -542,7 +542,7 @@ test("tagName works in the #collection helper", function() {
 
 test("should render nested collections", function() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
   registry.register('view:inner-list', CollectionView.extend({
     tagName: 'ul',
     content: A(['one','two','three'])
@@ -660,7 +660,7 @@ test("context should be content", function() {
   var view;
 
   registry = new Registry();
-  container = new Container({registry: registry});
+  container = new Container(registry);
 
   var items = A([
     EmberObject.create({name: 'Dave'}),

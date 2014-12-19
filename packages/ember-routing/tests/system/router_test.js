@@ -19,7 +19,7 @@ function createRouter(overrides) {
 QUnit.module("Ember Router", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     //register the HashLocation (the default)
     registry.register('location:hash', HashLocation);
@@ -84,7 +84,7 @@ test("Ember.AutoLocation._replacePath should be called with the right path", fun
   };
   AutoTestLocation._getSupportsHistory = function() { return false; };
 
-  container.registry.register('location:auto', AutoTestLocation);
+  container._registry.register('location:auto', AutoTestLocation);
 
   createRouter({
     location: 'auto',
@@ -127,7 +127,7 @@ test("Router should cancel routing setup when the Location class says so via can
     create: function () { return this; }
   };
 
-  container.registry.register('location:fake', FakeLocation);
+  container._registry.register('location:fake', FakeLocation);
 
   router = Router.create({
     container: container,
@@ -159,7 +159,7 @@ test("AutoLocation should replace the url when it's not in the preferred format"
 
   AutoTestLocation._getSupportsHistory = function() { return false; };
 
-  container.registry.register('location:auto', AutoTestLocation);
+  container._registry.register('location:auto', AutoTestLocation);
 
   createRouter({
     location: 'auto',

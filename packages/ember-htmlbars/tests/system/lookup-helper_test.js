@@ -12,7 +12,7 @@ function generateEnv(helpers) {
 
 function generateContainer() {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.optionsForType('helper', { instantiate: false });
   registry.register('component-lookup:main', ComponentLookup);
@@ -64,7 +64,7 @@ test('does a lookup in the container if the name contains a dash (and helper is 
 
   function someName() {}
   someName.isHTMLBars = true;
-  view.container.registry.register('helper:some-name', someName);
+  view.container._registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -82,7 +82,7 @@ test('wraps helper from container in a Handlebars compat helper', function() {
   function someName() {
     called = true;
   }
-  view.container.registry.register('helper:some-name', someName);
+  view.container._registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -105,7 +105,7 @@ test('asserts if component-lookup:main cannot be found', function() {
     container: generateContainer()
   };
 
-  view.container.registry.unregister('component-lookup:main');
+  view.container._registry.unregister('component-lookup:main');
 
   expectAssertion(function() {
     lookupHelper('some-name', view, env);
@@ -118,7 +118,7 @@ test('registers a helper in the container if component is found', function() {
     container: generateContainer()
   };
 
-  view.container.registry.register('component:some-name', Component);
+  view.container._registry.register('component:some-name', Component);
 
   lookupHelper('some-name', view, env);
 

@@ -9,7 +9,7 @@ var registry, container, view;
 QUnit.module("EmberView - Layout Functionality", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
   },
 

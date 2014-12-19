@@ -18,7 +18,7 @@ import {
 
 var buildContainer = function(namespace) {
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   registry.set = set;
   registry.resolver = resolverFor(namespace);
@@ -55,7 +55,7 @@ QUnit.module("Ember.controllerFor", {
   setup: function() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.registry.register('controller:app', Controller.extend());
+    container._registry.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
   teardown: function() {

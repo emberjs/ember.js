@@ -220,7 +220,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var parentController = EmberObject.create({
     container: container,
@@ -277,7 +277,7 @@ test("it should still have access to original parentController within an {{#each
 
   var people = A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var parentController = EmberObject.create({
     container: container,
@@ -310,7 +310,7 @@ test("it should wrap keyword with object controller", function() {
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var parentController = EmberObject.create({
     container: container,
@@ -364,7 +364,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var parentController = EmberObject.create({
     container: container,
@@ -400,7 +400,7 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var registry = new Registry();
-  var container = new Container({registry: registry});
+  var container = new Container(registry);
 
   var parentController = EmberObject.create({
     container: container,

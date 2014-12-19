@@ -10,7 +10,7 @@ var registry, container, view;
 QUnit.module("EmberView - Template Functionality", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {

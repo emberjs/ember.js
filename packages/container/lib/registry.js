@@ -270,7 +270,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    // if all of type `connection` must not be singletons
    registry.optionsForType('connection', { singleton: false });
@@ -349,7 +349,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    registry.register('router:main', Router);
    registry.register('controller:user', UserController);
@@ -402,7 +402,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    registry.register('source:main', Source);
    registry.register('model:user', User);
@@ -498,7 +498,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    registry.register('store:main', Store);
    registry.register('store:secondary', OtherStore);

@@ -25,7 +25,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('helper', { instantiate: false });
   },
 

@@ -5,7 +5,7 @@ import Application from "ember-application/system/application";
 var EmberApplication = Application;
 
 var originalLookup = Ember.lookup;
-var locator, lookup, application, originalModelInjections;
+var registry, locator, lookup, application, originalModelInjections;
 
 QUnit.module("Ember.Application Dependency Injection", {
   setup: function() {
@@ -26,6 +26,7 @@ QUnit.module("Ember.Application Dependency Injection", {
     application.register('communication:main', application.Email, {singleton: false});
     application.register('controller:postIndex', application.PostIndexController, {singleton: true});
 
+    registry = application.__registry__;
     locator = application.__container__;
 
     lookup = Ember.lookup = {};
@@ -49,11 +50,11 @@ test('container lookup is normalized', function() {
 });
 
 test('registered entities can be looked up later', function() {
-  equal(locator.registry.resolve('model:person'), application.Person);
-  equal(locator.registry.resolve('model:user'), application.User);
-  equal(locator.registry.resolve('fruit:favorite'), application.Orange);
-  equal(locator.registry.resolve('communication:main'), application.Email);
-  equal(locator.registry.resolve('controller:postIndex'), application.PostIndexController);
+  equal(registry.resolve('model:person'), application.Person);
+  equal(registry.resolve('model:user'), application.User);
+  equal(registry.resolve('fruit:favorite'), application.Orange);
+  equal(registry.resolve('communication:main'), application.Email);
+  equal(registry.resolve('controller:postIndex'), application.PostIndexController);
 
   equal(locator.lookup('fruit:favorite'), locator.lookup('fruit:favorite'), 'singleton lookup worked');
   ok(locator.lookup('model:user') !== locator.lookup('model:user'), 'non-singleton lookup worked');

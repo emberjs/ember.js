@@ -320,7 +320,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Container} the configured container
   */
   buildContainer: function() {
-    var container = this.__container__ = new Container({registry: this.__registry__});
+    var container = this.__container__ = new Container(this.__registry__);
 
     return container;
   },

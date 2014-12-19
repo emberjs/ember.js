@@ -19,7 +19,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     QUnit.module("ember-htmlbars: component hook", {
       setup: function() {
         registry = new Registry();
-        container = new Container({registry: registry});
+        container = new Container(registry);
 
         registry.optionsForType('template', { instantiate: false });
         registry.register('component-lookup:main', ComponentLookup);

@@ -109,7 +109,7 @@ export function outletHelper(property, options) {
     );
     Ember.assert(
       "The view name you supplied '" + viewName + "' did not resolve to a view.",
-      container.registry.has(viewFullName)
+      container._registry.has(viewFullName)
     );
   }
 

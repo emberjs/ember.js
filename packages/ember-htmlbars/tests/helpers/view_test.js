@@ -47,7 +47,7 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     Ember.lookup = lookup = {};
 
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -363,7 +363,7 @@ test("allows you to pass attributes that will be assigned to the class instance,
   expect(4);
 
   registry = new Registry();
-  container = new Container({registry: registry});
+  container = new Container(registry);
   registry.register('view:toplevel', EmberView.extend());
 
   view = EmberView.extend({

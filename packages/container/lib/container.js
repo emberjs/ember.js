@@ -15,12 +15,14 @@ import dictionary from 'ember-metal/dictionary';
  @private
  @class Container
  */
-function Container(options) {
-  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", options && options.registry);
+function Container(registry, options) {
+  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", registry);
 
-  this.registry       = options.registry;
-  this.cache          = dictionary(options.cache || null);
-  this.factoryCache   = dictionary(options.factoryCache || null);
+  options = options || {};
+
+  this._registry    = registry;
+  this.cache        = dictionary(options.cache || null);
+  this.factoryCache = dictionary(options.factoryCache || null);
 
   if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     this.validationCache = dictionary(options.validationCache || null);
@@ -29,10 +31,12 @@ function Container(options) {
 
 Container.prototype = {
   /**
-   @property registry
+   @private
+
+   @property _registry
    @type Registry
    */
-  registry: null,
+  _registry: null,
 
   /**
    @property cache
@@ -61,7 +65,7 @@ Container.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    registry.register('api:twitter', Twitter);
 
@@ -80,7 +84,7 @@ Container.prototype = {
 
    ```javascript
    var registry = new Registry();
-   var container = new Container({registry: registry});
+   var container = new Container(registry);
 
    registry.register('api:twitter', Twitter);
 
@@ -96,8 +100,8 @@ Container.prototype = {
    @return {any}
    */
   lookup: function(fullName, options) {
-    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return lookup(this, this.registry.normalize(fullName), options);
+    Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
+    return lookup(this, this._registry.normalize(fullName), options);
   },
 
   /**
@@ -108,8 +112,8 @@ Container.prototype = {
    @return {any}
    */
   lookupFactory: function(fullName) {
-    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return factoryFor(this, this.registry.normalize(fullName));
+    Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
+    return factoryFor(this, this._registry.normalize(fullName));
   },
 
   /**
@@ -133,7 +137,7 @@ Container.prototype = {
    */
   reset: function(fullName) {
     if (fullName) {
-      resetMember(this, this.registry.normalize(fullName));
+      resetMember(this, this._registry.normalize(fullName));
     } else {
       resetCache(this);
     }
@@ -158,7 +162,7 @@ Container.prototype = {
   function exposeRegistryMethod(method) {
     Container.prototype[method] = function() {
       Ember.deprecate(method + ' should be called on the registry instead of the container');
-      return this.registry[method].apply(this.registry, arguments);
+      return this._registry[method].apply(this._registry, arguments);
     };
   }
 
@@ -178,7 +182,7 @@ function lookup(container, fullName, options) {
 
   if (value === undefined) { return; }
 
-  if (container.registry.getOption(fullName, 'singleton') !== false && options.singleton !== false) {
+  if (container._registry.getOption(fullName, 'singleton') !== false && options.singleton !== false) {
     container.cache[fullName] = value;
   }
 
@@ -190,7 +194,7 @@ function buildInjections(container, injections) {
 
   if (!injections) { return hash; }
 
-  container.registry.validateInjections(injections);
+  container._registry.validateInjections(injections);
 
   var injection;
 
@@ -207,7 +211,7 @@ function factoryFor(container, fullName) {
   if (cache[fullName]) {
     return cache[fullName];
   }
-  var registry = container.registry;
+  var registry = container._registry;
   var factory = registry.resolve(fullName);
   if (factory === undefined) { return; }
 
@@ -242,7 +246,7 @@ function factoryFor(container, fullName) {
 }
 
 function injectionsFor(container, fullName) {
-  var registry = container.registry;
+  var registry = container._registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
   var injections = [];
@@ -258,7 +262,7 @@ function injectionsFor(container, fullName) {
 }
 
 function factoryInjectionsFor(container, fullName) {
-  var registry = container.registry;
+  var registry = container._registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
   var factoryInjections = [];
@@ -276,7 +280,7 @@ function instantiate(container, fullName) {
   var factory = factoryFor(container, fullName);
   var lazyInjections, validationCache;
 
-  if (container.registry.getOption(fullName, 'instantiate') === false) {
+  if (container._registry.getOption(fullName, 'instantiate') === false) {
     return factory;
   }
 
@@ -292,9 +296,9 @@ function instantiate(container, fullName) {
       // Ensure that all lazy injections are valid at instantiation time
       if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
         lazyInjections = factory._lazyInjections();
-        lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
+        lazyInjections = container._registry.normalizeInjectionsHash(lazyInjections);
 
-        container.registry.validateInjections(lazyInjections);
+        container._registry.validateInjections(lazyInjections);
       }
 
       validationCache[fullName] = true;
@@ -321,7 +325,7 @@ function eachDestroyable(container, callback) {
     key = keys[i];
     value = cache[key];
 
-    if (container.registry.getOption(key, 'instantiate') !== false) {
+    if (container._registry.getOption(key, 'instantiate') !== false) {
       callback(value);
     }
   }

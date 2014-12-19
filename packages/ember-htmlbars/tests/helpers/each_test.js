@@ -83,7 +83,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -697,7 +697,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
     setup: function() {
       registry = new Registry();
-      container = new Container({registry: registry});
+      container = new Container(registry);
 
       registry.register('view:default', _MetamorphView);
       registry.register('view:toplevel', EmberView.extend());
@@ -819,7 +819,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
 
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
@@ -873,7 +873,7 @@ function testEachWithItem(moduleName, useBlockParams) {
           controllerName: 'controller:people'
         });
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
 
     registry.register('controller:people', PeopleController);
     registry.register('controller:person', PersonController);

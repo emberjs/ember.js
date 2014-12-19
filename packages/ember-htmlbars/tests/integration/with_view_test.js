@@ -15,7 +15,7 @@ var trim = jQuery.trim;
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());

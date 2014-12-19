@@ -10,7 +10,7 @@ var registry, container, view;
 QUnit.module("EmberView - Nested View Ordering", {
   setup: function() {
     registry = new Registry();
-    container = new Container({registry: registry});
+    container = new Container(registry);
   },
   teardown: function() {
     run(function() {

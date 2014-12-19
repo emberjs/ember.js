@@ -195,7 +195,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
   test("services can be injected into components", function() {
     var registry = new Registry();
-    var container = new Container({registry: registry});
+    var container = new Container(registry);
 
     registry.register('component:application', Component.extend({
       profilerService: inject.service('profiler')
