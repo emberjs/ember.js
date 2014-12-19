@@ -5,21 +5,17 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import { bind } from "ember-htmlbars/helpers/binding";
+import conditional from "ember-metal/streams/conditional";
+import shouldDisplay from "ember-views/streams/should_display";
+import { read } from "ember-metal/streams/utils";
 
-import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
-import ConditionalStream from "ember-views/streams/conditional_stream";
-import { isStream } from "ember-metal/streams/utils";
-
+// This is essentially a compatibility shim until we can refactor
+// `BoundView` to natively do stream-based shouldDisplay testing. Note
+// that this doesn't incur any actual stream creation when the input
+// isn't a stream, because `shouldDisplay` is optimized to do
+// the right thing.
 function shouldDisplayIfHelperContent(result) {
-  var truthy = result && get(result, 'isTruthy');
-  if (typeof truthy === 'boolean') { return truthy; }
-
-  if (isArray(result)) {
-    return get(result, 'length') !== 0;
-  } else {
-    return !!result;
-  }
+  return read(shouldDisplay(result));
 }
 
 var EMPTY_TEMPLATE = {
@@ -75,11 +71,7 @@ function unboundIfHelper(params, hash, options, env) {
   var template = options.template;
   var value = params[0];
 
-  if (isStream(params[0])) {
-    value = params[0].value();
-  }
-
-  if (!shouldDisplayIfHelperContent(value)) {
+  if (!read(shouldDisplay(value))) {
     template = options.inverse;
   }
 
@@ -108,7 +100,7 @@ function ifHelper(params, hash, options, env) {
       var condition = params[0];
       var truthy = params[1];
       var falsy = params[2];
-      return new ConditionalStream(condition, truthy, falsy);
+      return conditional(shouldDisplay(condition), truthy, falsy);
     }
   }
 

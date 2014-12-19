@@ -2,9 +2,22 @@ import Stream from "ember-metal/streams/stream";
 import {
   read,
   subscribe,
-  unsubscribe
+  unsubscribe,
+  isStream
 } from "ember-metal/streams/utils";
 import { create } from "ember-metal/platform";
+
+export default function conditional(test, consequent, alternate) {
+  if (isStream(test)) {
+    return new ConditionalStream(test, consequent, alternate);
+  } else {
+    if (test) {
+      return consequent;
+    } else {
+      return alternate;
+    }
+  }
+}
 
 function ConditionalStream(test, consequent, alternate) {
   this.init();
@@ -38,5 +51,3 @@ ConditionalStream.prototype.valueFn = function() {
 
   return newTestResult ? read(this.consequent) : read(this.alternate);
 };
-
-export default ConditionalStream;
