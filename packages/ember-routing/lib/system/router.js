@@ -70,7 +70,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
-  _initRouterJs: function() {
+  _initRouterJs: function(moduleBasedResolver) {
     var router = this.router = new Router();
     router.triggerEvent = triggerEvent;
 
@@ -78,13 +78,19 @@ var EmberRouter = EmberObject.extend(Evented, {
     router._triggerWillLeave = K;
 
     var dslCallbacks = this.constructor.dslCallbacks || [K];
-    var dsl = EmberRouterDSL.map(function() {
+    var dsl = new EmberRouterDSL(null, {
+      enableLoadingSubtates: !!moduleBasedResolver
+    });
+
+    function generateDSL() {
       this.resource('application', { path: "/" }, function() {
         for (var i=0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
       });
-    });
+    }
+
+    generateDSL.call(dsl);
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
       router.log = Ember.Logger.debug;
@@ -120,9 +126,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting: function() {
+  startRouting: function(moduleBasedResolver) {
 
-    this._initRouterJs();
+    this._initRouterJs(moduleBasedResolver);
 
     var router = this.router;
     var location = get(this, 'location');
@@ -836,9 +842,7 @@ EmberRouter.reopenClass({
 
     this.dslCallbacks.push(callback);
 
-    return this.extend({
-      _isRouterMapResult: true
-    });
+    return this;
   },
 
   _routePath: function(handlerInfos) {

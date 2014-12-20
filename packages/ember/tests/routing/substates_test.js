@@ -422,6 +422,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(2);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     var appDeferred = Ember.RSVP.defer();
 
     App.ApplicationRoute = Ember.Route.extend({
@@ -449,10 +452,12 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(3);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     templates['application_loading'] = 'TOPLEVEL LOADING';
 
     var appDeferred = Ember.RSVP.defer();
-
     App.ApplicationRoute = Ember.Route.extend({
       model: function() {
         return appDeferred.promise;
@@ -483,6 +488,10 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
   test("Default error event moves into nested route, prioritizing more specifically named error route", function() {
 
     expect(5);
+
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
 
     templates['grandma'] = "GRANDMA {{outlet}}";
     templates['grandma/error'] = "ERROR: {{msg}}";
@@ -528,6 +537,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(2);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     templates['foo/bar_loading'] = "FOOBAR LOADING";
     templates['foo/bar/index'] = "YAY";
 
@@ -560,6 +572,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(2);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     templates['foo/bar_loading'] = "FOOBAR LOADING";
     templates['foo/bar'] = "YAY";
 
@@ -591,6 +606,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(1);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     templates['foo/bar_error'] = "FOOBAR ERROR: {{msg}}";
     templates['foo/bar'] = "YAY";
 
@@ -618,6 +636,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
   test("Prioritized loading substate entry works with auto-generated index routes", function() {
 
     expect(2);
+
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
 
     templates['foo/index_loading'] = "FOO LOADING";
     templates['foo/index'] = "YAY";
@@ -656,6 +677,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     expect(1);
 
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
+
     templates['foo/index_error'] = "FOO ERROR: {{msg}}";
     templates['foo/index'] = "YAY";
     templates['foo'] = "{{outlet}}";
@@ -689,6 +713,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
   test("Rejected promises returned from ApplicationRoute transition into top-level application_error", function() {
 
     expect(2);
+
+    // fake a modules resolver
+    App.Resolver = { moduleBasedResolver: true };
 
     templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{msg}}</p>';
 

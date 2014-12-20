@@ -1,6 +1,24 @@
 import "ember";
+import compile from "ember-template-compiler/system/compile";
 
-var Router, App, container;
+var Router, router, App, container;
+
+function bootApplication() {
+  router = container.lookup('router:main');
+  Ember.run(App, 'advanceReadiness');
+}
+
+function handleURL(path) {
+  return Ember.run(function() {
+    return router.handleURL(path).then(function(value) {
+      ok(true, 'url: `' + path + '` was handled');
+      return value;
+    }, function(reason) {
+      ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
+      throw reason;
+    });
+  });
+}
 
 QUnit.module("Router.map", {
   setup: function() {
@@ -19,13 +37,6 @@ QUnit.module("Router.map", {
       Router = App.Router;
 
       container = App.__container__;
-
-      //Ember.TEMPLATES.application = compile("{{outlet}}");
-      //Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
-      //Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
-      //Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
-
-      //originalLoggerError = Ember.Logger.error;
     });
   },
 
@@ -41,9 +52,36 @@ QUnit.module("Router.map", {
 });
 
 test("Router.map returns an Ember Router class", function () {
+  expect(1);
+
   var ret = App.Router.map(function() {
     this.route('hello');
   });
 
   ok(Ember.Router.detect(ret));
+});
+
+test("Router.map can be called multiple times", function () {
+  expect(4);
+
+  Ember.TEMPLATES.hello = compile("Hello!");
+  Ember.TEMPLATES.goodbye = compile("Goodbye!");
+
+  App.Router.map(function() {
+    this.route('hello');
+  });
+
+  App.Router.map(function() {
+    this.route('goodbye');
+  });
+
+  bootApplication();
+
+  handleURL('/hello');
+
+  equal(Ember.$('#qunit-fixture').text(), "Hello!", "The hello template was rendered");
+
+  handleURL('/goodbye');
+
+  equal(Ember.$('#qunit-fixture').text(), "Goodbye!", "The goodbye template was rendered");
 });

@@ -77,3 +77,35 @@ test("should retain resource namespace if nested with routes", function(){
   ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
   ok(router.router.recognizer.names['bleep.bloop.blork'], 'parent name was used as base of nested routes');
 });
+
+if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+// jscs:disable validateIndentation
+
+test("should add loading and error routes if _isRouterMapResult is true", function(){
+  Router.map(function(){
+    this.route('blork');
+  });
+
+  var router = Router.create();
+  router._initRouterJs(true);
+
+  ok(router.router.recognizer.names['blork'], 'main route was created');
+  ok(router.router.recognizer.names['blork_loading'], 'loading route was added');
+  ok(router.router.recognizer.names['blork_error'], 'error route was added');
+});
+
+test("should not add loading and error routes if _isRouterMapResult is false", function(){
+  Router.map(function(){
+    this.route('blork');
+  });
+
+  var router = Router.create();
+  router._initRouterJs(false);
+
+  ok(router.router.recognizer.names['blork'], 'main route was created');
+  ok(!router.router.recognizer.names['blork_loading'], 'loading route was not added');
+  ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
+});
+
+// jscs:enable validateIndentation
+}
