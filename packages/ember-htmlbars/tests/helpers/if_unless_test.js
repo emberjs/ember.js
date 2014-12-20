@@ -840,4 +840,105 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
     equal(view.$().text(), 'innerOk');
   });
+
+  test("`if` helper with inline form: respects isTruthy when object changes", function() {
+    view = EmberView.create({
+      conditional: Ember.Object.create({isTruthy: false}),
+      template: compile('{{if view.conditional "truthy" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', Ember.Object.create({isTruthy: true}));
+    });
+
+    equal(view.$().text(), 'truthy');
+
+    run(function() {
+      view.set('conditional', Ember.Object.create({isTruthy: false}));
+    });
+
+    equal(view.$().text(), 'falsy');
+
+  });
+
+  test("`if` helper with inline form: respects isTruthy when property changes", function() {
+    var candidate = Ember.Object.create({isTruthy: false});
+
+    view = EmberView.create({
+      conditional: candidate,
+      template: compile('{{if view.conditional "truthy" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      candidate.set('isTruthy', true);
+    });
+
+    equal(view.$().text(), 'truthy');
+
+    run(function() {
+      candidate.set('isTruthy', false);
+    });
+
+    equal(view.$().text(), 'falsy');
+
+  });
+
+  test("`if` helper with inline form: respects length test when list content changes", function() {
+    var list = Ember.A();
+
+    view = EmberView.create({
+      conditional: list,
+      template: compile('{{if view.conditional "truthy" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      list.pushObject(1);
+    });
+
+    equal(view.$().text(), 'truthy');
+
+    run(function() {
+      list.replace(0, 1);
+    });
+
+    equal(view.$().text(), 'falsy');
+
+  });
+
+  test("`if` helper with inline form: respects length test when list itself", function() {
+    view = EmberView.create({
+      conditional: [],
+      template: compile('{{if view.conditional "truthy" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', [1]);
+    });
+
+    equal(view.$().text(), 'truthy');
+
+    run(function() {
+      view.set('conditional', []);
+    });
+
+    equal(view.$().text(), 'falsy');
+
+  });
+
 }
