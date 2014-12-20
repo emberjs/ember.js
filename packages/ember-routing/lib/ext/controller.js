@@ -202,13 +202,28 @@ ControllerMixin.reopen({
     ```javascript
     aController.transitionToRoute('/');
     aController.transitionToRoute('/blog/post/1/comment/13');
+    aController.transitionToRoute('/blog/posts?sort=title');
+    ```
+
+    An options hash with a `queryParams` property may be provided as
+    the final argument to add query parameters to the destination URL.
+
+    ```javascript
+    aController.transitionToRoute('blogPost', 1, {
+      queryParams: {showComments: 'true'}
+    });
+
+    // if you just want to transition the query parameters without changing the route
+    aController.transitionToRoute({queryParams: {sort: 'date'}});
     ```
 
     See also [replaceRoute](/api/classes/Ember.ControllerMixin.html#method_replaceRoute).
 
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
-    while transitioning to the route.
+      while transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
     @for Ember.ControllerMixin
     @method transitionToRoute
   */
