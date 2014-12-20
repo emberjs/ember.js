@@ -797,6 +797,19 @@ var Route = EmberObject.extend(ActionHandler, {
     ```javascript
     this.transitionTo('/');
     this.transitionTo('/blog/post/1/comment/13');
+    this.transitionTo('/blog/posts?sort=title');
+    ```
+
+    An options hash with a `queryParams` property may be provided as
+    the final argument to add query parameters to the destination URL.
+
+    ```javascript
+    this.transitionTo('blogPost', 1, {
+      queryParams: {showComments: 'true'}
+    });
+
+    // if you just want to transition the query parameters without changing the route
+    this.transitionTo({queryParams: {sort: 'date'}});
     ```
 
     See also 'replaceWith'.
@@ -864,10 +877,30 @@ var Route = EmberObject.extend(ActionHandler, {
     });
     ```
 
+    Nested Route with Query String Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.resource('fruits', function() {
+        this.route('apples');
+      });
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        transitionToApples: function() {
+          this.transitionTo('fruits.apples', {queryParams: {color: 'red'}});
+        }
+      }
+    });
+    ```
+
     @method transitionTo
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
   */
