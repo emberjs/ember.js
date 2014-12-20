@@ -11,6 +11,11 @@ var moduleOpts = {
           baz: { biff: 'BIFF' }
         }
       },
+      foothis: {
+        bar: {
+          baz: { biff: 'BIFF' }
+        }
+      },
       falseValue: false
     };
 
@@ -49,6 +54,10 @@ test('[obj, foo] -> obj.foo', function() {
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
   deepEqual(get(obj, 'foo.bar'), obj.foo.bar);
+});
+
+test('[obj, foothis.bar] -> obj.foothis.bar', function() {
+  deepEqual(get(obj, 'foothis.bar'), obj.foothis.bar);
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
