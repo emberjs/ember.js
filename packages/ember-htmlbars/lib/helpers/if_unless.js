@@ -10,6 +10,7 @@ import { read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
 import { BoundIfView } from "ember-views/views/bound_view";
+import emptyTemplate from "ember-htmlbars/templates/empty";
 
 
 // This is essentially a compatibility shim until we can refactor
@@ -21,12 +22,6 @@ function shouldDisplayIfHelperContent(result) {
   return read(shouldDisplay(result));
 }
 
-var EMPTY_TEMPLATE = {
-  isHTMLBars: true,
-  render: function() {
-    return '';
-  }
-};
 /**
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the truthiness of the bound value changes.
@@ -123,7 +118,7 @@ function ifHelper(params, hash, options, env) {
     }
   }
 
-  options.inverse = options.inverse || EMPTY_TEMPLATE;
+  options.inverse = options.inverse || emptyTemplate;
 
   options.helperName = options.helperName || ('if ');
 
@@ -147,7 +142,7 @@ function unlessHelper(params, hash, options, env) {
   Ember.assert("You must pass a block to the unless helper", !!options.template);
 
   var template = options.template;
-  var inverse = options.inverse || EMPTY_TEMPLATE;
+  var inverse = options.inverse || emptyTemplate;
   var helperName = 'unless';
 
   options.template = inverse;
