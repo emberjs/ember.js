@@ -5,45 +5,8 @@
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import merge from "ember-metal/merge";
-import {
-  cloneStates,
-  states as viewStates
-} from "ember-views/views/states";
 import _MetamorphView from "ember-views/views/metamorph_view";
-import lookupPartial from "ember-views/system/lookup_partial";
-import { Mixin } from 'ember-metal/mixin';
-import run from 'ember-metal/run_loop';
-
-function K() { return this; }
-
-var states = cloneStates(viewStates);
-
-merge(states._default, {
-  rerenderIfNeeded: K
-});
-
-merge(states.inDOM, {
-  rerenderIfNeeded: function(view) {
-    if (view.normalizedValue() !== view._lastNormalizedValue) {
-      view.rerender();
-    }
-  }
-});
-
-var NormalizedRerenderIfNeededSupport = Mixin.create({
-  _states: states,
-
-  normalizedValue: function() {
-    var value = this.lazyValue.value();
-    var valueNormalizer = get(this, 'valueNormalizerFunc');
-    return valueNormalizer ? valueNormalizer(value) : value;
-  },
-
-  rerenderIfNeeded: function() {
-    this.currentState.rerenderIfNeeded(this);
-  },
-});
+import NormalizedRerenderIfNeededSupport from "ember-views/mixins/normalized_rerender_if_needed";
 
 /**
   `Ember._BoundView` is a private view created by the Handlebars
@@ -59,7 +22,7 @@ var NormalizedRerenderIfNeededSupport = Mixin.create({
   @extends Ember._MetamorphView
   @private
 */
-var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
+export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   instrumentName: 'bound',
 
   /**
@@ -188,67 +151,3 @@ var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     return this._super(buffer);
   }
 });
-
-var BoundIfView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
-  init: function() {
-    this._super();
-
-    var self = this;
-
-    this.conditionStream.subscribe(this._wrapAsScheduled(function() {
-      run.scheduleOnce('render', self, 'rerenderIfNeeded');
-    }));
-  },
-
-  normalizedValue: function() {
-    return this.conditionStream.value();
-  },
-
-  render: function(buffer) {
-    var result = this.conditionStream.value();
-    this._lastNormalizedValue = result;
-
-    if (result) {
-      set(this, 'template', this.truthyTemplate);
-    } else {
-      set(this, 'template', this.falsyTemplate);
-    }
-
-    return this._super(buffer);
-  }
-});
-
-var BoundPartialView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
-  init: function() {
-    this._super();
-
-    var self = this;
-
-    this.templateNameStream.subscribe(this._wrapAsScheduled(function() {
-      run.scheduleOnce('render', self, 'rerenderIfNeeded');
-    }));
-  },
-
-  normalizedValue: function() {
-    return this.templateNameStream.value();
-  },
-
-  render: function(buffer) {
-    var templateName = this.normalizedValue();
-    this._lastNormalizedValue = templateName;
-
-    if (templateName) {
-      set(this, 'template', lookupPartial(this, templateName));
-    } else {
-      set(this, 'template', this.emptyTemplate);
-    }
-
-    return this._super(buffer);
-  }
-});
-
-export default BoundView;
-export {
-  BoundIfView,
-  BoundPartialView
-};

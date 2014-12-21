@@ -1,6 +1,6 @@
 import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
-import { BoundPartialView } from "ember-views/views/bound_view";
+import BoundPartialView from "ember-views/views/bound_partial_view";
 import lookupPartial from "ember-views/system/lookup_partial";
 import emptyTemplate from "ember-htmlbars/templates/empty";
 
