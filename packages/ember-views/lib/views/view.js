@@ -432,6 +432,28 @@ var ViewStateSupport = Mixin.create({
   }
 });
 
+var TemplateRenderingSupport = Mixin.create({
+  /**
+    Called on your view when it should push strings of HTML into a
+    `Ember.RenderBuffer`. Most users will want to override the `template`
+    or `templateName` properties instead of this method.
+
+    By default, `Ember.View` will look for a function in the `template`
+    property and invoke it with the value of `context`. The value of
+    `context` will be the view's controller unless you override it.
+
+    @method render
+    @param {Ember.RenderBuffer} buffer The render buffer
+  */
+  render: function(buffer) {
+    // If this view has a layout, it is the responsibility of the
+    // the layout to render the view's template. Otherwise, render the template
+    // directly.
+    var template = get(this, 'layout') || get(this, 'template');
+    renderView(this, buffer, template);
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -1019,7 +1041,7 @@ var ViewStateSupport = Mixin.create({
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, {
+var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -1289,26 +1311,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
       view.propertyDidChange('controller');
     });
   }),
-
-  /**
-    Called on your view when it should push strings of HTML into a
-    `Ember.RenderBuffer`. Most users will want to override the `template`
-    or `templateName` properties instead of this method.
-
-    By default, `Ember.View` will look for a function in the `template`
-    property and invoke it with the value of `context`. The value of
-    `context` will be the view's controller unless you override it.
-
-    @method render
-    @param {Ember.RenderBuffer} buffer The render buffer
-  */
-  render: function(buffer) {
-    // If this view has a layout, it is the responsibility of the
-    // the layout to render the view's template. Otherwise, render the template
-    // directly.
-    var template = get(this, 'layout') || get(this, 'template');
-    renderView(this, buffer, template);
-  },
 
   /**
     Renders the view again. This will work regardless of whether the
@@ -2231,4 +2233,4 @@ View.applyAttributeBindings = function(dom, elem, name, initialValue) {
 
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport };
+export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport };
