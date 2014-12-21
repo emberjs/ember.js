@@ -198,3 +198,90 @@ test("select element should correctly initialize and update selectedIndex and bo
     '    value=view.val}}'
   );
 });
+
+function testSelectionBinding(templateString) {
+  view = EmberView.create({
+    collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
+    selection: {name: 'Gordon', value: 'g'},
+    selectView: SelectView,
+    template: compile(templateString)
+  });
+
+  runAppend(view);
+
+  var select = view.get('select');
+  var selectEl = select.$()[0];
+
+  equal(view.get('selection.value'), 'g', "Precond: Initial bound property is correct");
+  equal(select.get('selection.value'), 'g', "Precond: Initial selection is correct");
+  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
+  equal(select.$('option:eq(2)').prop('selected'), true, "Precond: selected proprty is set to proper option");
+
+  select.$('option:eq(2)').removeAttr('selected');
+  select.$('option:eq(1)').prop('selected', true);
+  select.$().trigger('change');
+
+  equal(view.get('selection.value'), 'w', "Updated bound property is correct");
+  equal(select.get('selection.value'), 'w', "Updated selection is correct");
+  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
+  equal(select.$('option:eq(1)').prop('selected'), true, "Selected proprty is set to proper option");
+}
+
+test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding (old xBinding='' syntax)", function() {
+  testSelectionBinding(
+    '{{view view.selectView viewName="select"' +
+    '    contentBinding="view.collection"' +
+    '    optionLabelPath="content.name"' +
+    '    optionValuePath="content.value"' +
+    '    prompt="Please wait..."' +
+    '    selectionBinding="view.selection"}}'
+  );
+});
+
+test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding (new quoteless binding shorthand)", function() {
+  testSelectionBinding(
+    '{{view view.selectView viewName="select"' +
+    '    content=view.collection' +
+    '    optionLabelPath="content.name"' +
+    '    optionValuePath="content.value"' +
+    '    prompt="Please wait..."' +
+    '    selection=view.selection}}'
+  );
+});
+
+test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
+  var templateString = '{{view view.selectView viewName="select"' +
+    '    content=view.collection' +
+    '    optionLabelPath="content.name"' +
+    '    optionValuePath="content.val"' +
+    '    prompt="Please wait..."' +
+    '    selection=view.selection}}';
+
+  view = EmberView.create({
+    collection: Ember.A([{name: 'Wes', val: 'w'}, {name: 'Gordon', val: 'g'}]),
+    selection: {name: 'Gordon', val: 'g'},
+    selectView: SelectView,
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var select = view.get('select');
+  var selectEl = select.$()[0];
+
+  equal(view.get('selection.val'), 'g', "Precond: Initial bound property is correct");
+  equal(select.get('selection.val'), 'g', "Precond: Initial selection is correct");
+  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
+  equal(select.$('option:eq(1)').prop('selected'), false, "Precond: selected proprty is set to proper option");
+
+  select.$('option:eq(2)').removeAttr('selected');
+  select.$('option:eq(1)').prop('selected', true);
+  select.$().trigger('change');
+
+  equal(view.get('selection.val'), 'w', "Updated bound property is correct");
+  equal(select.get('selection.val'), 'w', "Updated selection is correct");
+  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
+  equal(select.$('option:eq(1)').prop('selected'), true, "selected proprty is set to proper option");
+});
