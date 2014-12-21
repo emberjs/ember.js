@@ -7,10 +7,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import {
-  escapeExpression,
-  SafeString
-} from "ember-htmlbars/utils/string";
-import {
   cloneStates,
   states as viewStates
 } from "ember-views/views/states";
@@ -140,10 +136,6 @@ var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     @param {Ember.RenderBuffer} buffer
   */
   render: function(buffer) {
-    // If not invoked via a triple-mustache ({{{foo}}}), escape
-    // the content of the template.
-    var escape = get(this, 'isEscaped');
-
     var shouldDisplay = get(this, 'shouldDisplayFunc');
     var preserveContext = get(this, 'preserveContext');
     var context = get(this, 'previousContext');
@@ -174,11 +166,8 @@ var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else if (!(result instanceof SafeString)) {
-            result = String(result);
           }
 
-          if (escape) { result = escapeExpression(result); }
           buffer.push(result);
           return;
         }
