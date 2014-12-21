@@ -5,22 +5,13 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import conditional from "ember-metal/streams/conditional";
-import { default as shouldDisplay, ShouldDisplayStream } from "ember-views/streams/should_display";
+import shouldDisplay from "ember-views/streams/should_display";
 import { read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
 import { BoundIfView } from "ember-views/views/bound_view";
 import emptyTemplate from "ember-htmlbars/templates/empty";
 
-
-// This is essentially a compatibility shim until we can refactor
-// `BoundView` to natively do stream-based shouldDisplay testing. Note
-// that this doesn't incur any actual stream creation when the input
-// isn't a stream, because `shouldDisplay` is optimized to do
-// the right thing.
-function shouldDisplayIfHelperContent(result) {
-  return read(shouldDisplay(result));
-}
 
 /**
   Use the `boundIf` helper to create a conditional that re-evaluates
@@ -46,19 +37,12 @@ function boundIfHelper(params, hash, options, env) {
 
   var viewOptions = {
     _morph: options.morph,
-    shouldDisplayFunc: shouldDisplayIfHelperContent,
-    valueNormalizerFunc: shouldDisplayIfHelperContent,
-    displayTemplate: options.template,
-    inverseTemplate: options.inverse,
-    lazyValue: new ShouldDisplayStream(stream),
-    previousContext: get(this, 'context'),
-    templateHash: hash,
+    _context: get(this, 'context'),
+    conditionStream: shouldDisplay(stream),
+    truthyTemplate: options.template,
+    falsyTemplate: options.inverse,
     helperName: options.helperName
   };
-
-  if (options.keywords) {
-    viewOptions._keywords = options.keywords;
-  }
 
   this.appendChild(BoundIfView, viewOptions);
 }

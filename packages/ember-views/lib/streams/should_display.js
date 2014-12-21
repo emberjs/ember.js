@@ -67,5 +67,3 @@ ShouldDisplayStream.prototype.valueFn = function() {
 
   return !!newPredicate;
 };
-
-export { ShouldDisplayStream };
