@@ -11,6 +11,7 @@ import {
   states as viewStates
 } from "ember-views/views/states";
 import _MetamorphView from "ember-views/views/metamorph_view";
+import lookupPartial from "ember-views/system/lookup_partial";
 import { Mixin } from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
 
@@ -188,7 +189,6 @@ var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   }
 });
 
-
 var BoundIfView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
     this._super();
@@ -218,5 +218,37 @@ var BoundIfView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   }
 });
 
+var BoundPartialView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
+  init: function() {
+    this._super();
+
+    var self = this;
+
+    this.templateNameStream.subscribe(this._wrapAsScheduled(function() {
+      run.scheduleOnce('render', self, 'rerenderIfNeeded');
+    }));
+  },
+
+  normalizedValue: function() {
+    return this.templateNameStream.value();
+  },
+
+  render: function(buffer) {
+    var templateName = this.normalizedValue();
+    this._lastNormalizedValue = templateName;
+
+    if (templateName) {
+      set(this, 'template', lookupPartial(this, templateName));
+    } else {
+      set(this, 'template', this.emptyTemplate);
+    }
+
+    return this._super(buffer);
+  }
+});
+
 export default BoundView;
-export { BoundIfView };
+export {
+  BoundIfView,
+  BoundPartialView
+};
