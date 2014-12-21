@@ -9,8 +9,7 @@ test('does not render if update is triggured by normalizedValue is the same as t
   var lazyValue = new Stream(function() {
     return obj.foo;
   });
-  var isEscaped = true;
-  var view = new SimpleBoundView(lazyValue, isEscaped);
+  var view = new SimpleBoundView(lazyValue);
   view._morph = {
     update: function(newValue) {
       value = newValue;
