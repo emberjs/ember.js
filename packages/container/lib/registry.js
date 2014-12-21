@@ -429,7 +429,13 @@ Registry.prototype = {
       '` as a different type and perform the typeInjection.');
     }
 
-    addTypeInjection(this.typeInjections, type, property, fullName);
+    var injections = this.typeInjections[type] ||
+                     (this.typeInjections[type] = []);
+
+    injections.push({
+      property: property,
+      fullName: fullName
+    });
   },
 
   /**
@@ -488,7 +494,13 @@ Registry.prototype = {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
     var normalizedName = this.normalize(fullName);
 
-    addInjection(initRules(this.injections, normalizedName), property, normalizedInjectionName);
+    var injections = this.injections[normalizedName] ||
+                     (this.injections[normalizedName] = []);
+
+    injections.push({
+      property: property,
+      fullName: normalizedInjectionName
+    });
   },
 
 
@@ -522,7 +534,13 @@ Registry.prototype = {
    @param {String} fullName
    */
   factoryTypeInjection: function(type, property, fullName) {
-    addTypeInjection(this.factoryTypeInjections, type, property, this.normalize(fullName));
+    var injections = this.factoryTypeInjections[type] ||
+                     (this.factoryTypeInjections[type] = []);
+
+    injections.push({
+      property: property,
+      fullName: this.normalize(fullName)
+    });
   },
 
   /**
@@ -585,7 +603,12 @@ Registry.prototype = {
       return this.factoryTypeInjection(normalizedName, property, normalizedInjectionName);
     }
 
-    addInjection(initRules(this.factoryInjections, normalizedName), property, normalizedInjectionName);
+    var injections = this.factoryInjections[normalizedName] || (this.factoryInjections[normalizedName] = []);
+
+    injections.push({
+      property: property,
+      fullName: normalizedInjectionName
+    });
   },
 
   validateFullName: function(fullName) {
@@ -616,7 +639,10 @@ Registry.prototype = {
       if (hash.hasOwnProperty(key)) {
         Ember.assert("Expected a proper full name, given '" + hash[key] + "'", this.validateFullName(hash[key]));
 
-        addInjection(injections, key, hash[key]);
+        injections.push({
+          property: key,
+          fullName: hash[key]
+        });
       }
     }
 
@@ -636,31 +662,6 @@ function resolve(registry, normalizedName) {
 
 function has(registry, fullName){
   return registry.resolve(fullName) !== undefined;
-}
-
-function addInjection(injections, property, injectionName) {
-  injections.push({
-    property: property,
-    fullName: injectionName
-  });
-}
-
-function addTypeInjection(rules, type, property, fullName) {
-  var injections = rules[type];
-
-  if (!injections) {
-    injections = [];
-    rules[type] = injections;
-  }
-
-  injections.push({
-    property: property,
-    fullName: fullName
-  });
-}
-
-function initRules(rules, factoryName) {
-  return rules[factoryName] || (rules[factoryName] = []);
 }
 
 export default Registry;
