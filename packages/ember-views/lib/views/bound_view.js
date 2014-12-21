@@ -195,30 +195,23 @@ var BoundIfView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
 
     var self = this;
 
-    this.lazyValue.subscribe(this._wrapAsScheduled(function() {
+    this.conditionStream.subscribe(this._wrapAsScheduled(function() {
       run.scheduleOnce('render', self, 'rerenderIfNeeded');
     }));
   },
 
+  normalizedValue: function() {
+    return this.conditionStream.value();
+  },
+
   render: function(buffer) {
-    var context = get(this, 'previousContext');
-
-    var inverseTemplate = get(this, 'inverseTemplate');
-    var displayTemplate = get(this, 'displayTemplate');
-    var shouldDisplay   = get(this, 'shouldDisplayFunc');
-
-    var result = this.normalizedValue();
-
+    var result = this.conditionStream.value();
     this._lastNormalizedValue = result;
 
-    if (shouldDisplay(result)) {
-      set(this, 'template', displayTemplate);
-      set(this, '_context', context);
-    } else if (inverseTemplate) {
-      set(this, 'template', inverseTemplate);
-      set(this, '_context', context);
+    if (result) {
+      set(this, 'template', this.truthyTemplate);
     } else {
-      set(this, 'template', function() { return ''; });
+      set(this, 'template', this.falsyTemplate);
     }
 
     return this._super(buffer);
