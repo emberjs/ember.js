@@ -15,8 +15,6 @@ import { equalInnerHTML } from "htmlbars-test-helpers";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
-import { SafeString } from "ember-htmlbars/utils/string";
-
 var view;
 
 var originalLookup = Ember.lookup;
@@ -529,53 +527,4 @@ test("property before didInsertElement", function() {
   });
   runAppend(view);
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
-});
-
-test("XSS - should not bind unsafe href values", function() {
-  /* jshint scripturl:true */
-
-  view = EmberView.create({
-    template: compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
-    badValue: "javascript:(function() { window.bar = 'NOOOOOOOOO!!!!!!!';})();"
-  });
-
-  runAppend(view);
-
-  var element = view.$('a')[0];
-
-  notEqual(element.protocol, 'javascript:');
-});
-
-test("XSS - should not bind unsafe href values on rerender", function() {
-  /* jshint scripturl:true */
-
-  view = EmberView.create({
-    template: compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
-    badValue: "/sunshine/and/rainbows"
-  });
-
-  runAppend(view);
-
-  var element = view.$('a')[0];
-
-  notEqual(element.protocol, 'javascript:', 'precond - badValue is normal');
-
-  run(view, 'set', 'badValue', 'javascript:alert("XSS")');
-
-  notEqual(element.protocol, 'javascript:');
-});
-
-test("should bind unsafe href values if they are SafeString", function() {
-  /* jshint scripturl:true */
-
-  view = EmberView.create({
-    template: compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
-    badValue: new SafeString("javascript:(function() { window.bar = 'NOOOOOOOOO!!!!!!!';})();")
-  });
-
-  runAppend(view);
-
-  var element = view.$('a')[0];
-
-  equal(element.protocol, 'javascript:');
 });
