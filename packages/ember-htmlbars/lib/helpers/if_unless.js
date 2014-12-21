@@ -9,7 +9,7 @@ import shouldDisplay from "ember-views/streams/should_display";
 import { read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
-import { BoundIfView } from "ember-views/views/bound_view";
+import BoundIfView from "ember-views/views/bound_if_view";
 import emptyTemplate from "ember-htmlbars/templates/empty";
 
 
