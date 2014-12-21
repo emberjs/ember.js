@@ -27,6 +27,7 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
+  this.attrMorphNum = 0;
   this.element = null;
   this.elementNum = -1;
 }
@@ -58,6 +59,7 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
+  this.attrMorphNum = 0;
 
   var blockParams = program.blockParams || [];
 
@@ -170,16 +172,15 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   var value = attr.value;
-  var quoted;
-  
+  var escaped = true;
+
   // TODO: Introduce context specific AST nodes to avoid switching here.
   if (value.type === 'TextNode') {
     return;
   } else if (value.type === 'MustacheStatement') {
-    quoted = false;
+    escaped = value.escaped;
     this.accept(unwrapMustache(value));
   } else if (value.type === 'ConcatStatement') {
-    quoted = true;
     prepareParams(this, value.parts);
     this.opcode('pushConcatHook');
   }
@@ -191,7 +192,9 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.element = null;
   }
 
-  this.opcode('printAttributeHook', this.elementNum);
+  var attrMorphNum = this.attrMorphNum++;
+  this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped);
+  this.opcode('printAttributeHook', attrMorphNum, this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {

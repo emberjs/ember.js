@@ -105,7 +105,7 @@ test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
   var fragment = template.render({isDisabled: null}, env);
 
-  equalTokens(fragment, '<input disabled="null">');
+  ok(fragment.disabled, 'string of "null" set as property is true');
 });
 
 test("Null unquoted attribute value removes that attribute", function() {
@@ -129,7 +129,7 @@ test("unquoted attribute expression is string", function() {
   var template = compile('<input value={{funstuff}}>');
   var fragment = template.render({funstuff: "oh my"}, env);
 
-  equalTokens(fragment, '<input value="oh my">');
+  equal(fragment.value, 'oh my', 'string is set to property');
 });
 
 test("unquoted attribute expression works when followed by another attribute", function() {
@@ -137,7 +137,8 @@ test("unquoted attribute expression works when followed by another attribute", f
   var template = compile('<input value={{funstuff}} name="Alice">');
   var fragment = template.render({funstuff: "oh my"}, env);
 
-  equalTokens(fragment, '<input value="oh my" name="Alice">');
+  equal(fragment.value, 'oh my', 'string is set to property');
+  equalTokens(fragment, '<input name="Alice">');
 });
 
 test("Unquoted attribute value with multiple nodes throws an exception", function () {
