@@ -16,7 +16,7 @@ import dictionary from 'ember-metal/dictionary';
  @class Container
  */
 function Container(registry, options) {
-  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", registry);
+  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", typeof registry === 'object');
 
   options = options || {};
 
