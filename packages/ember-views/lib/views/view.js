@@ -192,6 +192,41 @@ var ViewStreamSupport = Mixin.create({
   }
 });
 
+var ViewKeywordSupport = Mixin.create({
+  init: function() {
+    this._super.apply(this, arguments);
+
+    if (!this._keywords) {
+      this._keywords = create(null);
+    }
+    this._keywords._view = this;
+    this._keywords.view = undefined;
+    this._keywords.controller = new KeyStream(this, 'controller');
+    this._setupKeywords();
+  },
+
+  _setupKeywords: function() {
+    var keywords = this._keywords;
+    var contextView = this._contextView || this._parentView;
+
+    if (contextView) {
+      var parentKeywords = contextView._keywords;
+
+      keywords.view = this.isVirtual ? parentKeywords.view : this;
+
+      for (var name in parentKeywords) {
+        if (keywords[name]) {
+          continue;
+        }
+
+        keywords[name] = parentKeywords[name];
+      }
+    } else {
+      keywords.view = this.isVirtual ? null : this;
+    }
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -779,7 +814,7 @@ var ViewStreamSupport = Mixin.create({
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend(ViewStreamSupport, {
+var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -1142,27 +1177,6 @@ var View = CoreView.extend(ViewStreamSupport, {
       view.propertyDidChange('controller');
     });
   }),
-
-  _setupKeywords: function() {
-    var keywords = this._keywords;
-    var contextView = this._contextView || this._parentView;
-
-    if (contextView) {
-      var parentKeywords = contextView._keywords;
-
-      keywords.view = this.isVirtual ? parentKeywords.view : this;
-
-      for (var name in parentKeywords) {
-        if (keywords[name]) {
-          continue;
-        }
-
-        keywords[name] = parentKeywords[name];
-      }
-    } else {
-      keywords.view = this.isVirtual ? null : this;
-    }
-  },
 
   /**
     Called on your view when it should push strings of HTML into a
@@ -1827,15 +1841,6 @@ var View = CoreView.extend(ViewStreamSupport, {
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
-
-
-    if (!this._keywords) {
-      this._keywords = create(null);
-    }
-    this._keywords._view = this;
-    this._keywords.view = undefined;
-    this._keywords.controller = new KeyStream(this, 'controller');
-    this._setupKeywords();
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
