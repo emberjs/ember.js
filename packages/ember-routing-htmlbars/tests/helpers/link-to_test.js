@@ -8,7 +8,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-QUnit.module("Handlebars {{link-to}} helper", {
+QUnit.module("ember-routing-htmlbars: link-to helper", {
   teardown: function() {
     runDestroy(view);
   }
@@ -62,10 +62,9 @@ test("can read bound title", function() {
   equal(view.$().text(), 'foo');
 });
 
-test("escapes title in non-block form", function() {
+test("escaped inline form (double curlies) escapes link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
-
     template: compile("{{link-to view.title}}")
   });
 
@@ -74,11 +73,10 @@ test("escapes title in non-block form", function() {
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-test("does not escape title in non-block form when `unescaped` is true", function() {
+test("unescaped inline form (triple curlies) does not escape link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
-
-    template: compile("{{link-to view.title unescaped=true}}")
+    template: compile("{{{link-to view.title}}}")
   });
 
   runAppend(view);

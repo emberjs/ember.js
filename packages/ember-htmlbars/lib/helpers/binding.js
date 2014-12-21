@@ -48,7 +48,6 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
     inverseTemplate: options.inverse,
     lazyValue: lazyValue,
     previousContext: get(this, 'context'),
-    isEscaped: !hash.unescaped,
     templateHash: hash,
     helperName: options.helperName
   };
