@@ -119,12 +119,49 @@ function intern(str) {
 */
 var GUID_KEY = intern('__ember' + (+ new Date()));
 
-var GUID_DESC = {
-  writable:    false,
-  configurable: false,
-  enumerable:  false,
+export var GUID_DESC = {
+  writable:     true,
+  configurable: true,
+  enumerable:   false,
   value: null
 };
+
+var undefinedDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: undefined
+};
+
+var nullDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: null
+};
+
+var META_DESC = {
+  writable: true,
+  configurable: true,
+  enumerable: false,
+  value: null
+};
+
+export var EMBER_META_PROPERTY = {
+  name: '__ember_meta__',
+  descriptor: META_DESC
+};
+
+export var GUID_KEY_PROPERTY = {
+  name: GUID_KEY,
+  descriptor: nullDescriptor
+};
+
+export var NEXT_SUPER_PROPERTY = {
+  name: '__nextSuper',
+  descriptor: undefinedDescriptor
+};
+
 
 /**
   Generates a new guid, optionally saving the guid to the object that you
@@ -151,7 +188,11 @@ export function generateGuid(obj, prefix) {
       obj[GUID_KEY] = ret;
     } else {
       GUID_DESC.value = ret;
-      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+      } else {
+        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      }
     }
   }
   return ret;
@@ -205,7 +246,12 @@ export function guidFor(obj) {
         obj[GUID_KEY] = ret;
       } else {
         GUID_DESC.value = ret;
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+
+        if (obj.__defineNonEnumerable) {
+          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+        } else {
+          o_defineProperty(obj, GUID_KEY, GUID_DESC);
+        }
       }
       return ret;
   }
@@ -214,14 +260,6 @@ export function guidFor(obj) {
 // ..........................................................
 // META
 //
-
-var META_DESC = {
-  writable: true,
-  configurable: false,
-  enumerable: false,
-  value: null
-};
-
 function Meta(obj) {
   this.descs = {};
   this.watching = {};
@@ -285,7 +323,13 @@ function meta(obj, writable) {
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (canDefineNonEnumerableProperties) {
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+      } else {
+        o_defineProperty(obj, '__ember_meta__', META_DESC);
+      }
+    }
 
     ret = new Meta(obj);
 
@@ -301,7 +345,11 @@ function meta(obj, writable) {
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      o_defineProperty(obj, '__ember_meta__', META_DESC);
+    }
 
     ret = o_create(ret);
     ret.descs     = o_create(ret.descs);

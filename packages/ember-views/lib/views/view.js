@@ -1776,6 +1776,10 @@ var View = CoreView.extend({
     this.classNames = emberA(this.classNames.slice());
   },
 
+  __defineNonEnumerable: function(property) {
+    this[property.name] = property.descriptor.value;
+  },
+
   appendChild: function(view, options) {
     return this.currentState.appendChild(this, view, options);
   },
@@ -1988,10 +1992,12 @@ var View = CoreView.extend({
 
     return false;
   },
+
   transitionTo: function(state, children) {
     Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
     this._transitionTo(state, children);
   },
+
   _transitionTo: function(state, children) {
     var priorState = this.currentState;
     var currentState = this.currentState = this._states[state];
