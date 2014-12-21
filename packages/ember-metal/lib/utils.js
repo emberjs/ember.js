@@ -205,7 +205,10 @@ export function guidFor(obj) {
         obj[GUID_KEY] = ret;
       } else {
         GUID_DESC.value = ret;
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+        
+		if(!obj.hasOwnProperty(GUID_KEY)) {
+			o_defineProperty(obj, GUID_KEY, GUID_DESC);
+		}
       }
       return ret;
   }
