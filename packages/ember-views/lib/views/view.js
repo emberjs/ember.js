@@ -112,6 +112,86 @@ Ember.TEMPLATES = {};
 
 var EMPTY_ARRAY = [];
 
+var ViewStreamSupport = Mixin.create({
+  init: function() {
+    this._baseContext = undefined;
+    this._contextStream = undefined;
+    this._streamBindings = undefined;
+    this._super.apply(this, arguments);
+  },
+
+  getStream: function(path) {
+    var stream = this._getContextStream().get(path);
+
+    stream._label = path;
+
+    return stream;
+  },
+
+  _getBindingForStream: function(pathOrStream) {
+    if (this._streamBindings === undefined) {
+      this._streamBindings = create(null);
+      this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    var path = pathOrStream;
+    if (isStream(pathOrStream)) {
+      path = pathOrStream._label;
+
+      if (!path) {
+        // if no _label is present on the provided stream
+        // it is likely a subexpr and cannot be set (so it
+        // does not need a StreamBinding)
+        return pathOrStream;
+      }
+    }
+
+    if (this._streamBindings[path] !== undefined) {
+      return this._streamBindings[path];
+    } else {
+      var stream = this._getContextStream().get(path);
+      var streamBinding = new StreamBinding(stream);
+
+      streamBinding._label = path;
+
+      return this._streamBindings[path] = streamBinding;
+    }
+  },
+
+  _destroyStreamBindings: function() {
+    var streamBindings = this._streamBindings;
+    for (var path in streamBindings) {
+      streamBindings[path].destroy();
+    }
+    this._streamBindings = undefined;
+  },
+
+  _getContextStream: function() {
+    if (this._contextStream === undefined) {
+      this._baseContext = new KeyStream(this, 'context');
+      this._contextStream = new ContextStream(this);
+      this.one('willDestroyElement', this, this._destroyContextStream);
+    }
+
+    return this._contextStream;
+  },
+
+  _destroyContextStream: function() {
+    this._baseContext.destroy();
+    this._baseContext = undefined;
+    this._contextStream.destroy();
+    this._contextStream = undefined;
+  },
+
+  _unsubscribeFromStreamBindings: function() {
+    for (var key in this._streamBindingSubscriptions) {
+      var streamBinding = this[key + 'Binding'];
+      var callback = this._streamBindingSubscriptions[key];
+      streamBinding.unsubscribe(callback);
+    }
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -699,7 +779,7 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend({
+var View = CoreView.extend(ViewStreamSupport, {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -1747,9 +1827,7 @@ var View = CoreView.extend({
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
-    this._baseContext = undefined;
-    this._contextStream = undefined;
-    this._streamBindings = undefined;
+
 
     if (!this._keywords) {
       this._keywords = create(null);
@@ -2043,77 +2121,6 @@ var View = CoreView.extend({
       run.scheduleOnce('render', this, stateCheckedFn);
     };
     return scheduledFn;
-  },
-
-  getStream: function(path) {
-    var stream = this._getContextStream().get(path);
-
-    stream._label = path;
-
-    return stream;
-  },
-
-  _getBindingForStream: function(pathOrStream) {
-    if (this._streamBindings === undefined) {
-      this._streamBindings = create(null);
-      this.one('willDestroyElement', this, this._destroyStreamBindings);
-    }
-
-    var path = pathOrStream;
-    if (isStream(pathOrStream)) {
-      path = pathOrStream._label;
-
-      if (!path) {
-        // if no _label is present on the provided stream
-        // it is likely a subexpr and cannot be set (so it
-        // does not need a StreamBinding)
-        return pathOrStream;
-      }
-    }
-
-    if (this._streamBindings[path] !== undefined) {
-      return this._streamBindings[path];
-    } else {
-      var stream = this._getContextStream().get(path);
-      var streamBinding = new StreamBinding(stream);
-
-      streamBinding._label = path;
-
-      return this._streamBindings[path] = streamBinding;
-    }
-  },
-
-  _destroyStreamBindings: function() {
-    var streamBindings = this._streamBindings;
-    for (var path in streamBindings) {
-      streamBindings[path].destroy();
-    }
-    this._streamBindings = undefined;
-  },
-
-  _getContextStream: function() {
-    if (this._contextStream === undefined) {
-      this._baseContext = new KeyStream(this, 'context');
-      this._contextStream = new ContextStream(this);
-      this.one('willDestroyElement', this, this._destroyContextStream);
-    }
-
-    return this._contextStream;
-  },
-
-  _destroyContextStream: function() {
-    this._baseContext.destroy();
-    this._baseContext = undefined;
-    this._contextStream.destroy();
-    this._contextStream = undefined;
-  },
-
-  _unsubscribeFromStreamBindings: function() {
-    for (var key in this._streamBindingSubscriptions) {
-      var streamBinding = this[key + 'Binding'];
-      var callback = this._streamBindingSubscriptions[key];
-      streamBinding.unsubscribe(callback);
-    }
   }
 });
 
