@@ -1,7 +1,6 @@
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.deprecate
 
-import CoreView from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import { Mixin } from "ember-metal/mixin";
 
@@ -39,12 +38,3 @@ export var _Metamorph = Mixin.create({
   @private
 */
 export default View.extend(_Metamorph);
-
-/**
-  @class _SimpleMetamorphView
-  @namespace Ember
-  @extends Ember.CoreView
-  @uses Ember._Metamorph
-  @private
-*/
-export var _SimpleMetamorphView = CoreView.extend(_Metamorph);
