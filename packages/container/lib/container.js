@@ -350,13 +350,16 @@ function resetCache(container) {
 
 function resetMember(container, fullName) {
   var member = container.cache[fullName];
+
+  delete container.factoryCache[fullName];
+
   if (member) {
+    delete container.cache[fullName];
+
     if (member.destroy) {
       member.destroy();
     }
-    delete container.cache[fullName];
   }
-  delete container.factoryCache[fullName];
 }
 
 export default Container;
