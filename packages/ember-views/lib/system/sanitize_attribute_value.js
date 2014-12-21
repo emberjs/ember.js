@@ -6,6 +6,19 @@ var badProtocols = {
   'vbscript:': true
 };
 
+var badTags = {
+  'A': true,
+  'BODY': true,
+  'LINK': true,
+  'IMG': true
+};
+
+export var badAttributes = {
+  'href': true,
+  'src': true,
+  'background': true
+};
+
 export default function sanitizeAttributeValue(element, attribute, value) {
   var tagName;
 
@@ -23,7 +36,7 @@ export default function sanitizeAttributeValue(element, attribute, value) {
     return value.toHTML();
   }
 
-  if ((tagName === null || tagName === 'A') && attribute === 'href') {
+  if ((tagName === null || badTags[tagName]) && badAttributes[attribute]) {
     parsingNode.href = value;
 
     if (badProtocols[parsingNode.protocol] === true) {

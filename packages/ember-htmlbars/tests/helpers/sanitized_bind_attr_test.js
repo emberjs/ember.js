@@ -1,0 +1,84 @@
+/* jshint scripturl:true */
+
+import EmberView from "ember-views/views/view";
+import compile from "ember-htmlbars/system/compile";
+import run from "ember-metal/run_loop";
+import { SafeString } from "ember-htmlbars/utils/string";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+
+var view;
+
+QUnit.module("ember-htmlbars: sanitized attribute", {
+  teardown: function(){
+    runDestroy(view);
+  }
+});
+
+var badTags = [
+  { tag: 'a', attr: 'href',
+    template: compile('<a {{bind-attr href=view.badValue}}></a>') },
+  { tag: 'body', attr: 'background',
+    template: compile('<body {{bind-attr background=view.badValue}}></body>') },
+  { tag: 'link', attr: 'href',
+    template: compile('<link {{bind-attr href=view.badValue}}>') },
+  { tag: 'img', attr: 'src',
+    template: compile('<img {{bind-attr src=view.badValue}}>') }
+];
+
+for (var i=0, l=badTags.length; i<l; i++) {
+  (function(){
+    var tagName = badTags[i].tag;
+    var attr = badTags[i].attr;
+    var template = badTags[i].template;
+
+    test("XSS - should not bind unsafe "+tagName+" "+attr+" values", function() {
+      view = EmberView.create({
+        template: template,
+        badValue: "javascript:alert('XSS')"
+      });
+
+      runAppend(view);
+
+      equal( view.element.firstChild.getAttribute(attr),
+             "unsafe:javascript:alert('XSS')",
+             "attribute is output" );
+    });
+
+    test("XSS - should not bind unsafe "+tagName+" "+attr+" values on rerender", function() {
+      view = EmberView.create({
+        template: template,
+        badValue: "/sunshine/and/rainbows"
+      });
+
+      runAppend(view);
+
+      equal( view.element.firstChild.getAttribute(attr),
+             "/sunshine/and/rainbows",
+             "attribute is output" );
+
+      run(view, 'set', 'badValue', "javascript:alert('XSS')");
+
+      equal( view.element.firstChild.getAttribute(attr),
+             "unsafe:javascript:alert('XSS')",
+             "attribute is output" );
+    });
+
+    test("should bind unsafe "+tagName+" "+attr+" values if they are SafeString", function() {
+      view = EmberView.create({
+        template: template,
+        badValue: new SafeString("javascript:alert('XSS')")
+      });
+
+      try {
+        runAppend(view);
+
+        equal( view.element.firstChild.getAttribute(attr),
+               "javascript:alert('XSS')",
+               "attribute is output" );
+      } catch(e) {
+        // IE does not allow javascript: to be set on img src
+        ok(true, 'caught exception '+e);
+      }
+    });
+  })(); //jshint ignore:line
+}
