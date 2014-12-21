@@ -81,5 +81,5 @@ the `website` and `data` repos in addition to this repo.
 
 * From the website repo, run `bundle exec rake build`
 
-* The website, along with documentation will be built into the `build`
+* The website, along with documentation, will be built into the `build`
   directory
