@@ -4,10 +4,13 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import { bind } from "ember-htmlbars/helpers/binding";
 import conditional from "ember-metal/streams/conditional";
-import shouldDisplay from "ember-views/streams/should_display";
+import { default as shouldDisplay, ShouldDisplayStream } from "ember-views/streams/should_display";
 import { read } from "ember-metal/streams/utils";
+import { get } from "ember-metal/property_get";
+import { isStream } from "ember-metal/streams/utils";
+import { BoundIfView } from "ember-views/views/bound_view";
+
 
 // This is essentially a compatibility shim until we can refactor
 // `BoundView` to natively do stream-based shouldDisplay testing. Note
@@ -43,10 +46,26 @@ var EMPTY_TEMPLATE = {
 */
 function boundIfHelper(params, hash, options, env) {
   options.helperName = options.helperName || 'boundIf';
-  return bind.call(this, params[0], hash, options, env, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, [
-   'isTruthy',
-   'length'
- ]);
+  var property = params[0];
+  var stream = isStream(property) ? property : this.getStream(property);
+
+  var viewOptions = {
+    _morph: options.morph,
+    shouldDisplayFunc: shouldDisplayIfHelperContent,
+    valueNormalizerFunc: shouldDisplayIfHelperContent,
+    displayTemplate: options.template,
+    inverseTemplate: options.inverse,
+    lazyValue: new ShouldDisplayStream(stream),
+    previousContext: get(this, 'context'),
+    templateHash: hash,
+    helperName: options.helperName
+  };
+
+  if (options.keywords) {
+    viewOptions._keywords = options.keywords;
+  }
+
+  this.appendChild(BoundIfView, viewOptions);
 }
 
 /**

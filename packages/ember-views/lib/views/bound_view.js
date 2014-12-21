@@ -15,6 +15,8 @@ import {
   states as viewStates
 } from "ember-views/views/states";
 import _MetamorphView from "ember-views/views/metamorph_view";
+import { Mixin } from 'ember-metal/mixin';
+import run from 'ember-metal/run_loop';
 
 function K() { return this; }
 
@@ -32,6 +34,20 @@ merge(states.inDOM, {
   }
 });
 
+var NormalizedRerenderIfNeededSupport = Mixin.create({
+  _states: states,
+
+  normalizedValue: function() {
+    var value = this.lazyValue.value();
+    var valueNormalizer = get(this, 'valueNormalizerFunc');
+    return valueNormalizer ? valueNormalizer(value) : value;
+  },
+
+  rerenderIfNeeded: function() {
+    this.currentState.rerenderIfNeeded(this);
+  },
+});
+
 /**
   `Ember._BoundView` is a private view created by the Handlebars
   `{{bind}}` helpers that is used to keep track of bound properties.
@@ -46,10 +62,8 @@ merge(states.inDOM, {
   @extends Ember._MetamorphView
   @private
 */
-var BoundView = _MetamorphView.extend({
+var BoundView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   instrumentName: 'bound',
-
-  _states: states,
 
   /**
     The function used to determine if the `displayTemplate` or
@@ -107,16 +121,6 @@ var BoundView = _MetamorphView.extend({
   inverseTemplate: null,
 
   lazyValue: null,
-
-  normalizedValue: function() {
-    var value = this.lazyValue.value();
-    var valueNormalizer = get(this, 'valueNormalizerFunc');
-    return valueNormalizer ? valueNormalizer(value) : value;
-  },
-
-  rerenderIfNeeded: function() {
-    this.currentState.rerenderIfNeeded(this);
-  },
 
   /**
     Determines which template to invoke, sets up the correct state based on
@@ -195,4 +199,42 @@ var BoundView = _MetamorphView.extend({
   }
 });
 
+
+var BoundIfView = _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
+  init: function() {
+    this._super();
+
+    var self = this;
+
+    this.lazyValue.subscribe(this._wrapAsScheduled(function() {
+      run.scheduleOnce('render', self, 'rerenderIfNeeded');
+    }));
+  },
+
+  render: function(buffer) {
+    var context = get(this, 'previousContext');
+
+    var inverseTemplate = get(this, 'inverseTemplate');
+    var displayTemplate = get(this, 'displayTemplate');
+    var shouldDisplay   = get(this, 'shouldDisplayFunc');
+
+    var result = this.normalizedValue();
+
+    this._lastNormalizedValue = result;
+
+    if (shouldDisplay(result)) {
+      set(this, 'template', displayTemplate);
+      set(this, '_context', context);
+    } else if (inverseTemplate) {
+      set(this, 'template', inverseTemplate);
+      set(this, '_context', context);
+    } else {
+      set(this, 'template', function() { return ''; });
+    }
+
+    return this._super(buffer);
+  }
+});
+
 export default BoundView;
+export { BoundIfView };
