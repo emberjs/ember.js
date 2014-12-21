@@ -192,18 +192,26 @@ function lookup(container, fullName, options) {
   return value;
 }
 
-function buildInjections(container, injections) {
+function buildInjections(container) {
   var hash = {};
 
-  if (!injections) { return hash; }
+  if (arguments.length > 1) {
+    var injectionArgs = Array.prototype.slice.call(arguments, 1);
+    var injections = [];
+    var injection;
 
-  container._registry.validateInjections(injections);
+    for (var i = 0, l = injectionArgs.length; i < l; i++) {
+      if (injectionArgs[i]) {
+        injections = injections.concat(injectionArgs[i]);
+      }
+    }
 
-  var injection;
+    container._registry.validateInjections(injections);
 
-  for (var i = 0, length = injections.length; i < length; i++) {
-    injection = injections[i];
-    hash[injection.property] = lookup(container, injection.fullName);
+    for (i = 0, l = injections.length; i < l; i++) {
+      injection = injections[i];
+      hash[injection.property] = lookup(container, injection.fullName);
+    }
   }
 
   return hash;
@@ -252,12 +260,10 @@ function injectionsFor(container, fullName) {
   var registry = container._registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
-  var injections = [];
 
-  injections = injections.concat(registry.typeInjections[type] || []);
-  injections = injections.concat(registry.injections[fullName] || []);
-
-  injections = buildInjections(container, injections);
+  var injections = buildInjections(container,
+                                   registry.typeInjections[type],
+                                   registry.injections[fullName]);
   injections._debugContainerKey = fullName;
   injections.container = container;
 
@@ -268,12 +274,10 @@ function factoryInjectionsFor(container, fullName) {
   var registry = container._registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
-  var factoryInjections = [];
 
-  factoryInjections = factoryInjections.concat(registry.factoryTypeInjections[type] || []);
-  factoryInjections = factoryInjections.concat(registry.factoryInjections[fullName] || []);
-
-  factoryInjections = buildInjections(container, factoryInjections);
+  var factoryInjections = buildInjections(container,
+                                          registry.factoryTypeInjections[type],
+                                          registry.factoryInjections[fullName]);
   factoryInjections._debugContainerKey = fullName;
 
   return factoryInjections;
