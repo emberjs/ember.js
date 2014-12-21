@@ -350,6 +350,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var registry = this.__registry__;
 
     if (this.Router) {
+      registry.unregister('router:main');
       registry.register('router:main', this.Router);
     }
 
@@ -576,7 +577,9 @@ var Application = Namespace.extend(DeferredMixin, {
       var registry = this.__registry__;
       var container = this.__container__;
 
+      registry.unregister('router:main');
       registry.register('router:main', this.Router);
+
       container.reset('router:main');
     }
 

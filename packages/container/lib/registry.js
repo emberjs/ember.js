@@ -175,12 +175,12 @@ Registry.prototype = {
 
     var normalizedName = this.normalize(fullName);
 
+    if (this._resolveCache[normalizedName]) {
+      throw new Error('Cannot re-register: `' + fullName +'`, as it has already been resolved.');
+    }
+
     this.registrations[normalizedName] = factory;
     this._options[normalizedName] = (options || {});
-
-    if (this._resolveCache[normalizedName]) {
-      delete this._resolveCache[normalizedName];
-    }
   },
 
   /**

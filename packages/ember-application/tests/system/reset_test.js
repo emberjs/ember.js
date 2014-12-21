@@ -245,6 +245,7 @@ test("With ember-data like initializer and constant", function() {
   Application.initializer({
     name: "store",
     initialize: function(registry, application) {
+      registry.unregister('store:main');
       registry.register('store:main', application.Store);
 
       application.__container__.lookup('store:main');

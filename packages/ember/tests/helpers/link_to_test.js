@@ -81,6 +81,8 @@ QUnit.module("The {{link-to}} helper", {
       });
 
       registry.register('view:app', AppView);
+
+      registry.unregister('router:main');
       registry.register('router:main', Router);
     });
   },
@@ -1301,6 +1303,7 @@ QUnit.module("The {{link-to}} helper: invoking with query params", {
         bat: 'borf'
       });
 
+      registry.unregister('router:main');
       registry.register('router:main', Router);
     });
   },
@@ -1650,6 +1653,7 @@ QUnit.module("The {{link-to}} helper: eager URL updating", {
     Ember.run(function() {
       sharedSetup();
 
+      registry.unregister('router:main');
       registry.register('router:main', Router);
 
       Router.map(function() {

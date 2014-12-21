@@ -162,6 +162,21 @@ test("can re-register a factory", function(){
   ok(registry.resolve('controller:apple').create() instanceof SecondApple);
 });
 
+test("cannot re-register a factory if it has been resolved", function(){
+  var registry = new Registry();
+  var FirstApple = factory('first');
+  var SecondApple = factory('second');
+
+  registry.register('controller:apple', FirstApple);
+  strictEqual(registry.resolve('controller:apple'), FirstApple);
+
+  throws(function(){
+    registry.register('controller:apple', SecondApple);
+  }, 'Cannot re-register: `controller:apple`, as it has already been resolved.');
+
+  strictEqual(registry.resolve('controller:apple'), FirstApple);
+});
+
 test('registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function(){
   expect(1);
 
