@@ -169,10 +169,45 @@ test("attribute mustache", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0 ] ]
+    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
 
+test("quoted attribute mustache", function() {
+  var opcodes = opcodesFor("<div class='{{foo}}'></div>");
+  deepEqual(opcodes, [
+    [ "pushGetHook", [ "foo" ] ],
+    [ "prepareArray", [ 1 ] ],
+    [ "pushConcatHook", [ ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "printAttributeHook", [ 0, 0 ] ]
+  ]);
+});
+
+test("safe bare attribute mustache", function() {
+  var opcodes = opcodesFor("<div class={{foo}}></div>");
+  deepEqual(opcodes, [
+    [ "pushGetHook", [ "foo" ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "printAttributeHook", [ 0, 0 ] ]
+  ]);
+});
+
+test("unsafe bare attribute mustache", function() {
+  var opcodes = opcodesFor("<div class={{{foo}}}></div>");
+  deepEqual(opcodes, [
+    [ "pushGetHook", [ "foo" ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", false ] ],
+    [ "printAttributeHook", [ 0, 0 ] ]
+  ]);
+});
 
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
@@ -188,6 +223,44 @@ test("attribute helper", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0 ] ]
+    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "printAttributeHook", [ 0, 0 ] ]
+  ]);
+});
+
+test("attribute helpers", function() {
+  var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after' id={{bare}}></div>{{morphThing}}<span class='{{ohMy}}'></span>");
+  deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "pushLiteral", [ " after" ] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "prepareArray", [ 1 ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushSexprHook", [ ] ],
+    [ "pushLiteral", [ "before " ] ],
+    [ "prepareArray", [ 3 ] ],
+    [ "pushConcatHook", [ ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "pushGetHook", [ 'bare' ] ],
+    [ "pushLiteral", [ 'id' ] ],
+    [ "createAttrMorph", [ 1, 0, 'id', true ] ],
+    [ "printAttributeHook", [ 1, 0 ] ],
+    [ "popParent", [] ],
+    [ "createMorph", [ 0, [], 0, 1, true ] ],
+    [ "pushLiteral", [ 'morphThing' ] ],
+    [ "printContentHook", [ 0 ] ],
+    [ "consumeParent", [ 1 ] ],
+    [ "pushGetHook", [ 'ohMy' ] ],
+    [ "prepareArray", [ 1 ] ],
+    [ "pushConcatHook", [] ],
+    [ "pushLiteral", [ 'class' ] ],
+    [ "shareElement", [ 1 ] ],
+    [ "createAttrMorph", [ 2, 1, 'class', true ] ],
+    [ "printAttributeHook", [ 2, 1 ] ],
+    [ "popParent", [] ]
   ]);
 });

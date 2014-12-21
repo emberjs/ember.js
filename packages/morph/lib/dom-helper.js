@@ -1,4 +1,5 @@
 import Morph from "../morph/morph";
+import AttrMorph from "../morph/attr-morph";
 import {
   buildHTMLDOM,
   svgNamespace,
@@ -224,6 +225,16 @@ prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
 prototype.cloneNode = function(element, deep){
   var clone = element.cloneNode(!!deep);
   return clone;
+};
+
+prototype.createAttrMorph = function(element, attrName){
+  return new AttrMorph(element, attrName, this);
+};
+
+prototype.createUnsafeAttrMorph = function(element, attrName){
+  var morph = this.createAttrMorph(element, attrName);
+  morph.escaped = false;
+  return morph;
 };
 
 prototype.createMorph = function(parent, start, end, contextualElement){
