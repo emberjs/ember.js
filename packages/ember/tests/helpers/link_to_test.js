@@ -1512,17 +1512,17 @@ test("The {{link-to}} applies active class when query-param is number", function
   Ember.TEMPLATES.index = compile(
     "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
 
-    App.IndexController = Ember.Controller.extend({
-      queryParams: ['page'],
-      page: 1,
-      pageNumber: 5
-    });
+  App.IndexController = Ember.Controller.extend({
+    queryParams: ['page'],
+    page: 1,
+    pageNumber: 5
+  });
 
-    bootApplication();
+  bootApplication();
 
-    shouldNotBeActive('#page-link');
-    Ember.run(router, 'handleURL', '/?page=5');
-    shouldBeActive('#page-link');
+  shouldNotBeActive('#page-link');
+  Ember.run(router, 'handleURL', '/?page=5');
+  shouldBeActive('#page-link');
 });
 
 test("The {{link-to}} applies active class when query-param is array", function() {
@@ -1592,33 +1592,33 @@ test("The {{link-to}} helper disregards query-params in activeness computation w
 
   Ember.TEMPLATES.application = compile(
     "{{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}");
-    Ember.TEMPLATES.parent = compile(
-      "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
+  Ember.TEMPLATES.parent = compile(
+    "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
 
-      App.ParentController = Ember.ObjectController.extend({
-        queryParams: ['page'],
-        page: 1
-      });
+  App.ParentController = Ember.ObjectController.extend({
+    queryParams: ['page'],
+    page: 1
+  });
 
-      bootApplication();
-      equal(Ember.$('#app-link').attr('href'), '/parent');
-      shouldNotBeActive('#app-link');
+  bootApplication();
+  equal(Ember.$('#app-link').attr('href'), '/parent');
+  shouldNotBeActive('#app-link');
 
-      Ember.run(router, 'handleURL', '/parent?page=2');
-      equal(Ember.$('#app-link').attr('href'), '/parent');
-      shouldBeActive('#app-link');
-      equal(Ember.$('#parent-link').attr('href'), '/parent');
-      shouldBeActive('#parent-link');
+  Ember.run(router, 'handleURL', '/parent?page=2');
+  equal(Ember.$('#app-link').attr('href'), '/parent');
+  shouldBeActive('#app-link');
+  equal(Ember.$('#parent-link').attr('href'), '/parent');
+  shouldBeActive('#parent-link');
 
-      var parentController = container.lookup('controller:parent');
-      equal(parentController.get('page'), 2);
-      Ember.run(parentController, 'set', 'page', 3);
-      equal(router.get('location.path'), '/parent?page=3');
-      shouldBeActive('#app-link');
-      shouldBeActive('#parent-link');
+  var parentController = container.lookup('controller:parent');
+  equal(parentController.get('page'), 2);
+  Ember.run(parentController, 'set', 'page', 3);
+  equal(router.get('location.path'), '/parent?page=3');
+  shouldBeActive('#app-link');
+  shouldBeActive('#parent-link');
 
-      Ember.$('#app-link').click();
-      equal(router.get('location.path'), '/parent');
+  Ember.$('#app-link').click();
+  equal(router.get('location.path'), '/parent');
 });
 
 function basicEagerURLUpdateTest(setTagName) {
@@ -1648,122 +1648,122 @@ function basicEagerURLUpdateTest(setTagName) {
 var aboutDefer;
 
 if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
-QUnit.module("The {{link-to}} helper: eager URL updating", {
-  setup: function() {
-    Ember.run(function() {
-      sharedSetup();
+  QUnit.module("The {{link-to}} helper: eager URL updating", {
+    setup: function() {
+      Ember.run(function() {
+        sharedSetup();
 
-      registry.unregister('router:main');
-      registry.register('router:main', Router);
+        registry.unregister('router:main');
+        registry.register('router:main', Router);
 
-      Router.map(function() {
-        this.route('about');
+        Router.map(function() {
+          this.route('about');
+        });
+
+        App.AboutRoute = Ember.Route.extend({
+          model: function() {
+            aboutDefer = Ember.RSVP.defer();
+            return aboutDefer.promise;
+          }
+        });
+
+        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
       });
-
-      App.AboutRoute = Ember.Route.extend({
-        model: function() {
-          aboutDefer = Ember.RSVP.defer();
-          return aboutDefer.promise;
-        }
-      });
-
-      Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
-    });
-  },
-
-  teardown: function() {
-    sharedTeardown();
-    aboutDefer = null;
-  }
-});
-
-test("invoking a link-to with a slow promise eager updates url", function() {
-  basicEagerURLUpdateTest(false);
-});
-
-test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
-  expect(2);
-
-  // HistoryLocation is the only Location class that will cause rootURL to be
-  // prepended to link-to href's right now
-  var HistoryTestLocation = Ember.HistoryLocation.extend({
-    location: {
-      hash: '',
-      hostname: 'emberjs.com',
-      href: 'http://emberjs.com/app/',
-      pathname: '/app/',
-      protocol: 'http:',
-      port: '',
-      search: ''
     },
 
-    // Don't actually touch the URL
-    replaceState: function(path) {},
-    pushState: function(path) {},
-
-    setURL: function(path) {
-      set(this, 'path', path);
-    },
-
-    replaceURL: function(path) {
-      set(this, 'path', path);
+    teardown: function() {
+      sharedTeardown();
+      aboutDefer = null;
     }
   });
 
-  registry.register('location:historyTest', HistoryTestLocation);
-
-  Router.reopen({
-    location: 'historyTest',
-    rootURL: '/app/'
+  test("invoking a link-to with a slow promise eager updates url", function() {
+    basicEagerURLUpdateTest(false);
   });
 
-  bootApplication();
+  test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
+    expect(2);
 
-  // href should have rootURL prepended
-  equal(Ember.$('#about-link').attr('href'), '/app/about');
+    // HistoryLocation is the only Location class that will cause rootURL to be
+    // prepended to link-to href's right now
+    var HistoryTestLocation = Ember.HistoryLocation.extend({
+      location: {
+        hash: '',
+        hostname: 'emberjs.com',
+        href: 'http://emberjs.com/app/',
+        pathname: '/app/',
+        protocol: 'http:',
+        port: '',
+        search: ''
+      },
 
-  Ember.run(Ember.$('#about-link'), 'click');
+      // Don't actually touch the URL
+      replaceState: function(path) {},
+      pushState: function(path) {},
 
-  // Actual path provided to Location class should NOT have rootURL
-  equal(router.get('location.path'), '/about');
-});
+      setURL: function(path) {
+        set(this, 'path', path);
+      },
 
-test("non `a` tags also eagerly update URL", function() {
-  basicEagerURLUpdateTest(true);
-});
-
-test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
-  App.AboutRoute = Ember.Route.extend({
-    model: function() {
-      return Ember.RSVP.reject();
-    }
-  });
-
-  bootApplication();
-  Ember.run(Ember.$('#about-link'), 'click');
-
-  // Shouldn't have called update url.
-  equal(updateCount, 0);
-  equal(router.get('location.path'), '', 'url was not updated');
-});
-
-test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
-  App.IndexRoute = Ember.Route.extend({
-    actions: {
-      willTransition: function(transition) {
-        ok(true, "aborting transition");
-        transition.abort();
+      replaceURL: function(path) {
+        set(this, 'path', path);
       }
-    }
+    });
+
+    registry.register('location:historyTest', HistoryTestLocation);
+
+    Router.reopen({
+      location: 'historyTest',
+      rootURL: '/app/'
+    });
+
+    bootApplication();
+
+    // href should have rootURL prepended
+    equal(Ember.$('#about-link').attr('href'), '/app/about');
+
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Actual path provided to Location class should NOT have rootURL
+    equal(router.get('location.path'), '/about');
   });
 
-  bootApplication();
-  Ember.run(Ember.$('#about-link'), 'click');
+  test("non `a` tags also eagerly update URL", function() {
+    basicEagerURLUpdateTest(true);
+  });
 
-  // Shouldn't have called update url.
-  equal(updateCount, 0);
-  equal(router.get('location.path'), '', 'url was not updated');
-});
+  test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
+    App.AboutRoute = Ember.Route.extend({
+      model: function() {
+        return Ember.RSVP.reject();
+      }
+    });
+
+    bootApplication();
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Shouldn't have called update url.
+    equal(updateCount, 0);
+    equal(router.get('location.path'), '', 'url was not updated');
+  });
+
+  test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          ok(true, "aborting transition");
+          transition.abort();
+        }
+      }
+    });
+
+    bootApplication();
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Shouldn't have called update url.
+    equal(updateCount, 0);
+    equal(router.get('location.path'), '', 'url was not updated');
+  });
 
 }
 
@@ -1774,7 +1774,8 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       Ember.run(function() {
         sharedSetup();
 
-        container.register('router:main', Router);
+        registry.unregister('router:main');
+        registry.register('router:main', Router);
 
         Router.map(function() {
           this.route('about');
@@ -1827,4 +1828,3 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 }
-
