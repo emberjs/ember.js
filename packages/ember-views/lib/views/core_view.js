@@ -17,9 +17,8 @@ function K() { return this; }
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
-  to both Ember's main view class `Ember.View` and other classes like
-  `Ember._SimpleMetamorphView` that don't need the fully functionaltiy of
-  `Ember.View`.
+  to both Ember's main view class `Ember.View` and other classes that don't need
+  the fully functionaltiy of `Ember.View`.
 
   Unless you have specific needs for `CoreView`, you will use `Ember.View`
   in your applications.
