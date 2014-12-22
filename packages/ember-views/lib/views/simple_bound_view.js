@@ -34,6 +34,7 @@ function SimpleBoundView(lazyValue, isEscaped) {
 SimpleBoundView.prototype = {
   isVirtual: true,
   isView: true,
+  tagName: '',
 
   destroy: function () {
     if (this.updateId) {
