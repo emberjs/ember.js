@@ -26,6 +26,7 @@ function SimpleBoundView(stream) {
 SimpleBoundView.prototype = {
   isVirtual: true,
   isView: true,
+  tagName: '',
 
   destroy: function () {
     if (this.updateId) {

@@ -14,6 +14,7 @@ import { map } from 'ember-metal/enumerable_utils';
 import {
   streamifyClassNameBinding
 } from "ember-views/streams/class_name_binding";
+import { Binding } from 'ember-metal/binding';
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -155,7 +156,8 @@ export function collectionHelper(params, hash, options, env) {
       view      = data.view,
       // This should be deterministic, and should probably come from a
       // parent view and not the controller.
-      container = (view.controller && view.controller.container ? view.controller.container : view.container);
+      controller = get(view, 'controller'),
+      container = (controller && controller.container ? controller.container : view.container);
 
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
@@ -231,9 +233,9 @@ export function collectionHelper(params, hash, options, env) {
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
   if (hash.keyword) {
-    itemHash._contextBinding = '_parentView.context';
+    itemHash._contextBinding = Binding.oneWay('_parentView.context');
   } else {
-    itemHash._contextBinding = 'content';
+    itemHash._contextBinding = Binding.oneWay('content');
   }
 
   var viewOptions = ViewHelper.propertiesFromHTMLOptions(itemHash, {}, { data: data });

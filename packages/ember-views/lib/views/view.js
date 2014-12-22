@@ -769,6 +769,8 @@ var View = CoreView.extend({
     return template || get(this, 'defaultTemplate');
   }),
 
+  _controller: null,
+
   /**
     The controller managing this view. If this property is set, it will be
     made available for use by the template.
@@ -776,7 +778,16 @@ var View = CoreView.extend({
     @property controller
     @type Object
   */
-  controller: computed('_parentView', function(key) {
+  controller: computed(function(key, value) {
+    if (arguments.length === 2) {
+      this._controller = value;
+      return value;
+    }
+
+    if (this._controller) {
+      return this._controller;
+    }
+
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
   }),
@@ -875,7 +886,11 @@ var View = CoreView.extend({
     @property _context
     @private
   */
-  _context: computed(function(key) {
+  _context: computed(function(key, value) {
+    if (arguments.length === 2) {
+      return value;
+    }
+
     var parentView, controller;
 
     if (controller = get(this, 'controller')) {
@@ -1591,7 +1606,7 @@ var View = CoreView.extend({
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
-    var classNameBindings = get(this, 'classNameBindings');
+    var classNameBindings = this.classNameBindings;
     if (classNameBindings.length) {
       this._applyClassNameBindings(classNameBindings);
     }
@@ -1599,7 +1614,7 @@ var View = CoreView.extend({
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
     // existing classNames infrastructure.
-    var attributeBindings = get(this, 'attributeBindings');
+    var attributeBindings = this.attributeBindings;
     if (attributeBindings.length) {
       this._applyAttributeBindings(buffer, attributeBindings);
     }

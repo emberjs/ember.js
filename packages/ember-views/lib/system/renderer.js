@@ -36,12 +36,12 @@ EmberRenderer.prototype.createElement =
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     var tagName = view.tagName;
-    if (!tagName) {
+    if (tagName === undefined) {
       tagName = get(view, 'tagName');
       Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
     }
     var classNameBindings = view.classNameBindings;
-    var taglessViewWithClassBindings = tagName === '' && classNameBindings.length > 0;
+    var taglessViewWithClassBindings = tagName === '' && (classNameBindings && classNameBindings.length > 0);
 
     if (tagName === null || tagName === undefined) {
       tagName = 'div';
@@ -75,9 +75,7 @@ EmberRenderer.prototype.createElement =
 
     view.buffer = null;
     if (element && element.nodeType === 1) {
-      // We have hooks, we shouldn't make element observable
-      // consider just doing view.element = element
-      set(view, 'element', element);
+      view.element = element;
     }
     return element;
   };
