@@ -3,7 +3,6 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { observer } from "ember-metal/mixin";
 import compile from "ember-htmlbars/system/compile";
 import _MetamorphView from "ember-views/views/metamorph_view";
 
@@ -162,7 +161,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
 });
 
 test("replacing a Metamorph should invalidate childView elements", function() {
-  var elementOnDidChange, elementOnDidInsert;
+  var elementOnDidInsert;
 
   view = EmberView.create({
     show: false,
@@ -176,10 +175,6 @@ test("replacing a Metamorph should invalidate childView elements", function() {
         this.get('element');
       },
 
-      elementDidChange: observer('element', function() {
-        elementOnDidChange = this.get('element');
-      }),
-
       didInsertElement: function() {
         elementOnDidInsert = this.get('element');
       }
@@ -192,7 +187,6 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 
   run(function() { view.set('show', true); });
 
-  ok(elementOnDidChange, "should have an element on change");
   ok(elementOnDidInsert, "should have an element on insert");
 
   run(function() { view.destroy(); });
