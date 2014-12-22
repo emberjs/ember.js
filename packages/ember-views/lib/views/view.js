@@ -769,6 +769,8 @@ var View = CoreView.extend({
     return template || get(this, 'defaultTemplate');
   }),
 
+  _controller: null,
+
   /**
     The controller managing this view. If this property is set, it will be
     made available for use by the template.
@@ -776,7 +778,16 @@ var View = CoreView.extend({
     @property controller
     @type Object
   */
-  controller: computed('_parentView', function(key) {
+  controller: computed(function(key, value) {
+    if (arguments.length === 2) {
+      this._controller = value;
+      return value;
+    }
+
+    if (this._controller) {
+      return this._controller;
+    }
+
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
   }),
@@ -875,7 +886,11 @@ var View = CoreView.extend({
     @property _context
     @private
   */
-  _context: computed(function(key) {
+  _context: computed(function(key, value) {
+    if (arguments.length === 2) {
+      return value;
+    }
+
     var parentView, controller;
 
     if (controller = get(this, 'controller')) {

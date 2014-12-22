@@ -84,7 +84,7 @@ test("should update bound helpers when properties change", function() {
   equal(view.$().text(), 'BROGRAMMER', "helper output is correct");
 
   run(function() {
-    set(view.controller, 'name', 'wes');
+    set(view, 'controller.name', 'wes');
   });
 
   equal(view.$().text(), 'WES', "helper output updated");
@@ -132,7 +132,7 @@ test("should allow for computed properties with dependencies", function() {
   equal(view.$().text(), 'BROGRAMMER', "helper output is correct");
 
   run(function() {
-    set(view.controller.person, 'name', 'wes');
+    set(view, 'controller.person.name', 'wes');
   });
 
   equal(view.$().text(), 'WES', "helper output updated");
@@ -281,7 +281,7 @@ test("bound helpers should support multiple bound properties", function() {
   equal(view.$().text(), 'ZOIDNERD', "helper correctly re-rendered after second bound helper property changed");
 
   run(function() {
-    view.controller.setProperties({
+    view.get('controller').setProperties({
       thing1: "WOOT",
       thing2: "YEAH"
     });
@@ -405,7 +405,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
 
   equal(view.$().text(), '2 1 11', "helper output is correct");
 
-  run(view.controller, 'set', 'aNumber', 5);
+  run(view, 'set', 'controller.aNumber', 5);
 
   equal(view.$().text(), '6 5 11', "helper still updates as expected");
 });
@@ -428,10 +428,10 @@ test("shouldn't treat quoted strings as bound paths", function() {
 
   equal(view.$().text(), 'jerkwaterloo jerkwater willdidi', "helper output is correct");
 
-  run(view.controller, 'set', 'word', 'bird');
+  run(view, 'set', 'controller.word', 'bird');
   equal(view.$().text(), 'birdloo bird willdidi', "helper still updates as expected");
 
-  run(view.controller, 'set', 'loo', 'soup-de-doo');
+  run(view, 'set', 'controller.loo', 'soup-de-doo');
   equal(view.$().text(), 'birdloo bird willdidi', "helper still updates as expected");
   equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
 });
@@ -457,8 +457,8 @@ test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", f
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
   run(function() {
-    view.controller.things.pushObject('blorg');
-    view.controller.things.shiftObject();
+    view.get('controller.things').pushObject('blorg');
+    view.get('controller.things').shiftObject();
   });
 
   equal(view.$().text(), '0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb 0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb ', "helper output is still correct");
@@ -484,7 +484,7 @@ test("bound helpers can handle nulls in array (with objects)", function() {
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 
-  run(view.controller.things, 'pushObject', { foo: 6 });
+  run(view.get('controller.things'), 'pushObject', { foo: 6 });
 
   equal(view.$().text(), '|NOPE 5|5 6|6 |NOPE 5|5 6|6 ', "helper output is correct");
 });
