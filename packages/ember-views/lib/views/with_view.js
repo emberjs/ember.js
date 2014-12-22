@@ -1,47 +1,70 @@
-
 /**
 @module ember
 @submodule ember-views
 */
 
 import { set } from "ember-metal/property_set";
-import { apply } from "ember-metal/utils";
-import BoundView from "ember-views/views/bound_view";
+import run from 'ember-metal/run_loop';
+import _MetamorphView from "ember-views/views/metamorph_view";
+import NormalizedRerenderIfNeededSupport from "ember-views/mixins/normalized_rerender_if_needed";
+import run from 'ember-metal/run_loop';
 
-export default BoundView.extend({
+export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
-    apply(this, this._super, arguments);
+    this._super();
 
-    var controllerName  = this.templateHash.controller;
+    var self = this;
 
+    this.withValue.subscribe(this._wrapAsScheduled(function() {
+      run.scheduleOnce('render', self, 'rerenderIfNeeded');
+    }));
+
+    var controllerName = this.controllerName;
     if (controllerName) {
-      var previousContext = this.previousContext;
-      var controller = this.container.lookupFactory('controller:'+controllerName).create({
-        parentController: previousContext,
-        target: previousContext
+      var controllerFactory = this.container.lookupFactory('controller:'+controllerName);
+      var controller = controllerFactory.create({
+        parentController: this.previousContext,
+        target: this.previousContext
       });
 
       this._generatedController = controller;
 
       if (this.preserveContext) {
         this._blockArguments = [ controller ];
-        this.lazyValue.subscribe(function(modelStream) {
+        this.withValue.subscribe(function(modelStream) {
           set(controller, 'model', modelStream.value());
         });
       } else {
         set(this, 'controller', controller);
-        this.valueNormalizerFunc = function(result) {
-          controller.set('model', result);
-          return controller;
-        };
       }
 
-      set(controller, 'model', this.lazyValue.value());
+      set(controller, 'model', this.withValue.value());
     } else {
       if (this.preserveContext) {
-        this._blockArguments = [ this.lazyValue ];
+        this._blockArguments = [ this.withValue ];
       }
     }
+  },
+
+  normalizedValue: function() {
+    return this.withValue.value();
+  },
+
+  render: function(buffer) {
+    var withValue = this.normalizedValue();
+    this._lastNormalizedValue = withValue;
+
+    if (!this.preserveContext && !this.controllerName) {
+      set(this, '_context', withValue);
+    }
+
+    if (withValue) {
+      set(this, 'template', this.mainTemplate);
+    } else {
+      set(this, 'template', this.inverseTemplate);
+    }
+
+    return this._super(buffer);
   },
 
   willDestroy: function() {
