@@ -37,7 +37,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   init: function() {
     this._super();
-    this._transitionTo('preRender');
+    this._state = 'preRender';
+    this.currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
   },
 
