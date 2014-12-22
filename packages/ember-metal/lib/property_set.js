@@ -67,14 +67,16 @@ var set = function set(obj, keyName, value, tolerant) {
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
-      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-        if (hasPropertyAccessors) {
-          currentValue = meta.values[keyName];
+      if (meta.proto !== obj) {
+        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+          if (hasPropertyAccessors) {
+            currentValue = meta.values[keyName];
+          } else {
+            currentValue = obj[keyName];
+          }
         } else {
           currentValue = obj[keyName];
         }
-      } else {
-        currentValue = obj[keyName];
       }
       // only trigger a change if the value has changed
       if (value !== currentValue) {
