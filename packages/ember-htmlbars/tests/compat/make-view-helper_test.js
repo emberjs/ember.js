@@ -1,21 +1,23 @@
 import EmberView from "ember-views/views/view";
-import Container from 'container/container';
+import Registry from "container/registry";
 import compile from "ember-htmlbars/system/compile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var container, view;
+var registry, container, view;
 
 QUnit.module('ember-htmlbars: makeViewHelper compat', {
   setup: function() {
-    container = new Container();
-    container.optionsForType('helper', { instantiate: false });
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('helper', { instantiate: false });
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
+    registry = container = view = null;
   }
 });
 
@@ -26,7 +28,7 @@ test('makeViewHelper', function() {
     layout: compile('woot!')
   });
   var helper = makeViewHelper(ViewHelperComponent);
-  container.register('helper:view-helper', helper);
+  registry.register('helper:view-helper', helper);
 
   view = EmberView.extend({
     template: compile('{{view-helper}}'),

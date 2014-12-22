@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import Container from 'ember-runtime/system/container';
+import { Registry } from "ember-runtime/system/container";
 import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from 'ember-htmlbars/system/compile';
@@ -9,26 +9,27 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import { set } from 'ember-metal/property_set';
 
-var view, container;
+var view, registry, container;
 var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
   }
 });
 
 test('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
-  container.register('template:foo', compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
+  registry.register('template:foo', compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -102,9 +103,9 @@ test('bindings can be `this`, in which case they *are* the current context [DEPR
 });
 
 test('child views can be inserted inside a bind block', function() {
-  container.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
-  container.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
-  container.register('template:other',  compile('cruel'));
+  registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
+  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
+  registry.register('template:other',  compile('cruel'));
 
   var context = {
     world: 'world!'
@@ -142,7 +143,7 @@ test('child views can be inserted inside a bind block', function() {
 });
 
 test('views render their template in the context of the parent view\'s context', function() {
-  container.register('template:parent', compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -162,7 +163,7 @@ test('views render their template in the context of the parent view\'s context',
 });
 
 test('views make a view keyword available that allows template to reference view context', function() {
-  container.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,

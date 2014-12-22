@@ -30,7 +30,7 @@ QUnit.module('AutoLocation', {
         location: 'none',
         rootURL: '/rootdir/'
       });
-      App.__container__.register('location:auto', AutoTestLocation );
+      App.__registry__.register('location:auto', AutoTestLocation );
       App.deferReadiness();
     });
   },

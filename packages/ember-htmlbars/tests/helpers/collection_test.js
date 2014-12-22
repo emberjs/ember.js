@@ -4,7 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import Namespace from "ember-runtime/system/namespace";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { A } from "ember-runtime/system/native_array";
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
@@ -20,7 +20,7 @@ var trim = jQuery.trim;
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, container, lookup;
+var TemplateTests, registry, container, lookup;
 
 
 function nthChild(view, nth) {
@@ -37,16 +37,18 @@ QUnit.module("collection helper", {
   setup: function() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    // container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+
+    registry.optionsForType('template', { instantiate: false });
+    // registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
@@ -117,7 +119,7 @@ test("itemViewClass works in the #collection helper with a property", function()
 });
 
 test("itemViewClass works in the #collection via container", function() {
-  container.register('view:example-item', EmberView.extend({
+  registry.register('view:example-item', EmberView.extend({
     isAlsoCustom: true
   }));
 
@@ -153,14 +155,15 @@ test("passing a block to the collection helper sets it as the template for examp
 });
 
 test("collection helper should try to use container to resolve view", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
   var ACollectionView = CollectionView.extend({
         tagName: 'ul',
         content: A(['foo', 'bar', 'baz'])
   });
 
-  container.register('view:collectionTest', ACollectionView);
+  registry.register('view:collectionTest', ACollectionView);
 
   var controller = {container: container};
   view = EmberView.create({
@@ -538,14 +541,14 @@ test("tagName works in the #collection helper", function() {
 });
 
 test("should render nested collections", function() {
-
-  var container = new Container();
-  container.register('view:inner-list', CollectionView.extend({
+  var registry = new Registry();
+  var container = registry.container();
+  registry.register('view:inner-list', CollectionView.extend({
     tagName: 'ul',
     content: A(['one','two','three'])
   }));
 
-  container.register('view:outer-list', CollectionView.extend({
+  registry.register('view:outer-list', CollectionView.extend({
     tagName: 'ul',
     content: A(['foo'])
   }));
@@ -656,7 +659,8 @@ test("should allow view objects to be swapped out without throwing an error (#78
 test("context should be content", function() {
   var view;
 
-  var container = new Container();
+  registry = new Registry();
+  container = registry.container();
 
   var items = A([
     EmberObject.create({name: 'Dave'}),
@@ -664,7 +668,7 @@ test("context should be content", function() {
     EmberObject.create({name: 'Sara'})
   ]);
 
-  container.register('view:an-item', EmberView.extend({
+  registry.register('view:an-item', EmberView.extend({
     template: compile("Greetings {{name}}")
   }));
 

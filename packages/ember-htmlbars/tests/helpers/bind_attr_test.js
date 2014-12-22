@@ -8,7 +8,7 @@ import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
 import { observersFor } from "ember-metal/observer";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { equalInnerHTML } from "htmlbars-test-helpers";
@@ -19,7 +19,7 @@ import compile from "ember-htmlbars/system/compile";
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, container, lookup;
+var TemplateTests, registry, container, lookup;
 
 /**
   This module specifically tests integration with Handlebars and Ember-specific
@@ -32,16 +32,17 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
   setup: function() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;

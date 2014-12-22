@@ -2,12 +2,13 @@ import run from "ember-metal/run_loop";
 import copy from "ember-runtime/copy";
 import merge from "ember-metal/merge";
 import { map } from "ember-metal/enumerable_utils";
-import Container from 'container/container';
+import Registry from "container/registry";
 import HashLocation from "ember-routing/location/hash_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import EmberRouter from "ember-routing/system/router";
+import { runDestroy } from "ember-runtime/tests/utils";
 
-var container, Router, router;
+var registry, container, Router, router;
 
 function createRouter(overrides) {
   var opts = merge({ container: container }, overrides);
@@ -16,18 +17,20 @@ function createRouter(overrides) {
 
 QUnit.module("Ember Router", {
   setup: function() {
-    container = new Container();
+    registry = new Registry();
+    container = registry.container();
 
     //register the HashLocation (the default)
-    container.register('location:hash', HashLocation);
+    registry.register('location:hash', HashLocation);
 
     // ensure rootURL is injected into any locations
-    container.injection('location', 'rootURL', '-location-setting:root-url');
+    registry.injection('location', 'rootURL', '-location-setting:root-url');
 
     Router = EmberRouter.extend();
   },
   teardown: function() {
-    container = Router = router = null;
+    runDestroy(container);
+    registry = container = Router = router = null;
   }
 });
 
@@ -80,7 +83,7 @@ test("Ember.AutoLocation._replacePath should be called with the right path", fun
   };
   AutoTestLocation._getSupportsHistory = function() { return false; };
 
-  container.register('location:auto', AutoTestLocation);
+  container._registry.register('location:auto', AutoTestLocation);
 
   createRouter({
     location: 'auto',
@@ -123,7 +126,7 @@ test("Router should cancel routing setup when the Location class says so via can
     create: function () { return this; }
   };
 
-  container.register('location:fake', FakeLocation);
+  container._registry.register('location:fake', FakeLocation);
 
   router = Router.create({
     container: container,
@@ -155,7 +158,7 @@ test("AutoLocation should replace the url when it's not in the preferred format"
 
   AutoTestLocation._getSupportsHistory = function() { return false; };
 
-  container.register('location:auto', AutoTestLocation);
+  container._registry.register('location:auto', AutoTestLocation);
 
   createRouter({
     location: 'auto',

@@ -1,7 +1,7 @@
 /*globals EmberDev */
 import { set } from "ember-metal/property_set";
 import EmberView from "ember-views/views/view";
-import Container from 'container/container';
+import Registry from "container/registry";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import TextField from 'ember-views/views/text_field';
@@ -21,7 +21,7 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 
-var view, originalLookup, container, lookup;
+var view, originalLookup, registry, container, lookup;
 
 var trim = jQuery.trim;
 
@@ -45,16 +45,17 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
   }
@@ -360,8 +361,9 @@ test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
 test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
   expect(4);
 
-  var container = new Container();
-  container.register('view:toplevel', EmberView.extend());
+  registry = new Registry();
+  container = registry.container();
+  registry.register('view:toplevel', EmberView.extend());
 
   view = EmberView.extend({
     template: compile('{{view id="foo" tagName="h1" class="foo"}}{{#view id="bar" class="bar"}}Bar{{/view}}'),
@@ -602,7 +604,7 @@ test('should update bound values after the view is removed and then re-appended'
 });
 
 test('views set the template of their children to a passed block', function() {
-  container.register('template:parent', compile('<h1>{{#view}}<span>It worked!</span>{{/view}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#view}}<span>It worked!</span>{{/view}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -621,10 +623,10 @@ test('{{view}} should not override class bindings defined on a child view', func
     something:         'visible'
   });
 
-  container.register('controller:label', ObjectController, { instantiate: true });
-  container.register('view:label',       LabelView);
-  container.register('template:label',   compile('<div id="child-view"></div>'));
-  container.register('template:nester',  compile('{{render "label"}}'));
+  registry.register('controller:label', ObjectController, { instantiate: true });
+  registry.register('view:label',       LabelView);
+  registry.register('template:label',   compile('<div id="child-view"></div>'));
+  registry.register('template:nester',  compile('{{render "label"}}'));
 
   view = EmberView.create({
     container:    container,
@@ -640,8 +642,8 @@ test('{{view}} should not override class bindings defined on a child view', func
 });
 
 test('child views can be inserted using the {{view}} helper', function() {
-  container.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.labelView}}'));
-  container.register('template:nested', compile('<div id="child-view">Goodbye {{cruel}} {{world}}</div>'));
+  registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.labelView}}'));
+  registry.register('template:nested', compile('<div id="child-view">Goodbye {{cruel}} {{world}}</div>'));
 
   var context = {
     world: 'world!'
@@ -690,8 +692,8 @@ test('should be able to explicitly set a view\'s context', function() {
 });
 
 test('Template views add an elementId to child views created using the view helper', function() {
-  container.register('template:parent', compile('<div>{{view view.childView}}</div>'));
-  container.register('template:child',  compile('I can\'t believe it\'s not butter.'));
+  registry.register('template:parent', compile('<div>{{view view.childView}}</div>'));
+  registry.register('template:child',  compile('I can\'t believe it\'s not butter.'));
 
   var ChildView = EmberView.extend({
     container: container,
@@ -758,7 +760,7 @@ test('Child views created using the view helper and that have a viewName should 
 });
 
 test('{{view}} id attribute should set id on layer', function() {
-  container.register('template:foo', compile('{{#view view.idView id="bar"}}baz{{/view}}'));
+  registry.register('template:foo', compile('{{#view view.idView id="bar"}}baz{{/view}}'));
 
   var IdView = EmberView;
 
@@ -775,7 +777,7 @@ test('{{view}} id attribute should set id on layer', function() {
 });
 
 test('{{view}} tag attribute should set tagName of the view', function() {
-  container.register('template:foo', compile('{{#view view.tagView tag="span"}}baz{{/view}}'));
+  registry.register('template:foo', compile('{{#view view.tagView tag="span"}}baz{{/view}}'));
 
   var TagView = EmberView;
 
@@ -792,7 +794,7 @@ test('{{view}} tag attribute should set tagName of the view', function() {
 });
 
 test('{{view}} class attribute should set class on layer', function() {
-  container.register('template:foo', compile('{{#view view.idView class="bar"}}baz{{/view}}'));
+  registry.register('template:foo', compile('{{#view view.idView class="bar"}}baz{{/view}}'));
 
   var IdView = EmberView;
 
@@ -973,7 +975,7 @@ test('{{view}} should evaluate other attributes bindings set in the current cont
 });
 
 test('{{view}} should be able to bind class names to truthy properties', function() {
-  container.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
+  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 
@@ -996,7 +998,7 @@ test('{{view}} should be able to bind class names to truthy properties', functio
 });
 
 test('{{view}} should be able to bind class names to truthy or falsy properties', function() {
-  container.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
+  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 

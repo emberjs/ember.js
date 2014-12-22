@@ -8,14 +8,15 @@ import EmberObject from "ember-runtime/system/object";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import {sort} from "ember-runtime/computed/reduce_computed_macros";
-import Container from "container";
+import Registry from "container/registry";
 
-var lannisters, arrayController, controllerClass, otherControllerClass, container, itemControllerCount,
+var lannisters, arrayController, controllerClass, otherControllerClass, registry, container, itemControllerCount,
     tywin, jaime, cersei, tyrion;
 
 QUnit.module("Ember.ArrayController - itemController", {
   setup: function() {
-    container = new Container();
+    registry = new Registry();
+    container = registry.container();
 
     tywin = EmberObject.create({ name: 'Tywin' });
     jaime = EmberObject.create({ name: 'Jaime' });
@@ -41,13 +42,14 @@ QUnit.module("Ember.ArrayController - itemController", {
       }
     });
 
-    container.register("controller:Item", controllerClass);
-    container.register("controller:OtherItem", otherControllerClass);
+    registry.register("controller:Item", controllerClass);
+    registry.register("controller:OtherItem", otherControllerClass);
   },
   teardown: function() {
     run(function() {
       container.destroy();
     });
+    registry = container = null;
   }
 });
 
@@ -333,7 +335,8 @@ test("`itemController`'s life cycle should be entangled with its parent controll
 
 QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
-    container = new Container();
+    registry = new Registry();
+    container = registry.container();
 
     cersei = EmberObject.create({ name: 'Cersei' });
     jaime = EmberObject.create({ name: 'Jaime' });
@@ -352,7 +355,7 @@ QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
       }
     });
 
-    container.register("controller:Item", controllerClass);
+    registry.register("controller:Item", controllerClass);
   },
   teardown: function() {
     run(function() {

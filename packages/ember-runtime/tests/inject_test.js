@@ -5,7 +5,7 @@ import {
   createInjectionHelper,
   default as inject
 } from "ember-runtime/inject";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import Object from "ember-runtime/system/object";
 
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
@@ -27,27 +27,29 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
         ok(true, 'should call validation method');
       });
 
-      var container = new Container();
+      var registry = new Registry();
+      var container = registry.container();
+
       var AnObject = Object.extend({
         container: container,
         bar: inject.foo(),
         baz: inject.foo()
       });
 
-      container.register('foo:main', AnObject);
-
+      registry.register('foo:main', AnObject);
       container.lookupFactory('foo:main');
     });
   }
 
   test("attempting to inject a nonexistent container key should error", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = registry.container();
     var AnObject = Object.extend({
       container: container,
       foo: new InjectedProperty('bar', 'baz')
     });
 
-    container.register('foo:main', AnObject);
+    registry.register('foo:main', AnObject);
 
     throws(function() {
       container.lookup('foo:main');

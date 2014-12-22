@@ -49,14 +49,14 @@ export default function lookupHelper(name, view, env) {
     var Component = componentLookup.lookupFactory(name, container);
     if (Component) {
       helper = makeViewHelper(Component);
-      container.register(helperName, helper);
+      container._registry.register(helperName, helper);
     }
   }
 
   if (helper && !helper.isHTMLBars) {
     helper = new HandlebarsCompatibleHelper(helper);
-    container.unregister(helperName);
-    container.register(helperName, helper);
+    container._registry.unregister(helperName);
+    container._registry.register(helperName, helper);
   }
 
   return helper;

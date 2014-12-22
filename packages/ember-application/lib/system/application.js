@@ -3,8 +3,7 @@
 @submodule ember-application
 */
 import DAG from 'dag-map';
-import Container from 'container/container';
-
+import Registry from 'container/registry';
 
 import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { get } from "ember-metal/property_get";
@@ -260,7 +259,9 @@ var Application = Namespace.extend(DeferredMixin, {
     if (!this.$) {
       this.$ = jQuery;
     }
-    this.__container__ = this.buildContainer();
+
+    this.buildRegistry();
+    this.buildContainer();
 
     this.Router = this.defaultRouter();
 
@@ -298,17 +299,27 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Build the container for the current application.
+    Build and configure the registry for the current application.
 
-    Also register a default application view in case the application
-    itself does not.
+    @private
+    @method buildRegistry
+    @return {Ember.Registry} the configured registry
+  */
+  buildRegistry: function() {
+    var registry = this.__registry__ = Application.buildRegistry(this);
+
+    return registry;
+  },
+
+  /**
+    Create a container for the current application's registry.
 
     @private
     @method buildContainer
     @return {Ember.Container} the configured container
   */
   buildContainer: function() {
-    var container = this.__container__ = Application.buildContainer(this);
+    var container = this.__container__ = this.__registry__.container();
 
     return container;
   },
@@ -336,10 +347,11 @@ var Application = Namespace.extend(DeferredMixin, {
   defaultRouter: function() {
     if (this.Router === false) { return; }
     var container = this.__container__;
+    var registry = this.__registry__;
 
     if (this.Router) {
-      container.unregister('router:main');
-      container.register('router:main', this.Router);
+      registry.unregister('router:main');
+      registry.register('router:main', this.Router);
     }
 
     return container.lookupFactory('router:main');
@@ -376,7 +388,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     ```javascript
     var App = Ember.Application.create();
-    
+
     App.deferReadiness();
     // Ember.$ is a reference to the jQuery object/function
     Ember.$.getJSON('/auth-token', function(token) {
@@ -425,7 +437,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     ```javascript
     var App = Ember.Application.create();
-    
+
     App.Orange = Ember.Object.extend();
     App.register('fruit:favorite', App.Orange);
     ```
@@ -475,8 +487,8 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  options {Object} (optional) disable instantiation or singleton usage
   **/
   register: function() {
-    var container = this.__container__;
-    container.register.apply(container, arguments);
+    var registry = this.__registry__;
+    registry.register.apply(registry, arguments);
   },
 
   /**
@@ -529,8 +541,8 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  injectionName {String}
   **/
   inject: function() {
-    var container = this.__container__;
-    container.injection.apply(container, arguments);
+    var registry = this.__registry__;
+    registry.injection.apply(registry, arguments);
   },
 
   /**
@@ -562,9 +574,13 @@ var Application = Namespace.extend(DeferredMixin, {
 
     // At this point, the App.Router must already be assigned
     if (this.Router) {
+      var registry = this.__registry__;
       var container = this.__container__;
-      container.unregister('router:main');
-      container.register('router:main', this.Router);
+
+      registry.unregister('router:main');
+      registry.register('router:main', this.Router);
+
+      container.reset('router:main');
     }
 
     this.runInitializers();
@@ -639,7 +655,7 @@ var Application = Namespace.extend(DeferredMixin, {
       run(function() {
         App.advanceReadiness();
       });
-      
+
       ok(true, 'something after app is initialized');
     });
     ```
@@ -670,7 +686,7 @@ var Application = Namespace.extend(DeferredMixin, {
   runInitializers: function() {
     var initializersByName = get(this.constructor, 'initializers');
     var initializers = props(initializersByName);
-    var container = this.__container__;
+    var registry = this.__registry__;
     var graph = new DAG();
     var namespace = this;
     var initializer;
@@ -683,7 +699,7 @@ var Application = Namespace.extend(DeferredMixin, {
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
       Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
-      initializer(container, namespace);
+      initializer(registry, namespace);
     });
   },
 
@@ -809,7 +825,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'namedInitializer',
-      
+
       initialize: function(container, application) {
         Ember.debug('Running namedInitializer!');
       }
@@ -825,7 +841,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'first',
-      
+
       initialize: function(container, application) {
         Ember.debug('First initializer!');
       }
@@ -899,7 +915,7 @@ Application.reopenClass({
 
       initialize: function(container, application) {
         var store = container.lookup('store:main');
-        
+
         store.pushPayload(preloadedData);
       }
     });
@@ -939,9 +955,9 @@ Application.reopenClass({
   },
 
   /**
-    This creates a container with the default Ember naming conventions.
+    This creates a registry with the default Ember naming conventions.
 
-    It also configures the container:
+    It also configures the registry:
 
     * registered views are created every time they are looked up (they are
       not singletons)
@@ -957,65 +973,65 @@ Application.reopenClass({
       `defaultTemplate` property
 
     @private
-    @method buildContainer
+    @method buildRegistry
     @static
-    @param {Ember.Application} namespace the application to build the
-      container for.
-    @return {Ember.Container} the built container
+    @param {Ember.Application} namespace the application for which to
+      build the registry
+    @return {Ember.Registry} the built registry
   */
-  buildContainer: function(namespace) {
-    var container = new Container();
+  buildRegistry: function(namespace) {
+    var registry = new Registry();
 
-    container.set = set;
-    container.resolver = resolverFor(namespace);
-    container.normalizeFullName = container.resolver.normalize;
-    container.describe = container.resolver.describe;
-    container.makeToString = container.resolver.makeToString;
+    registry.set = set;
+    registry.resolver = resolverFor(namespace);
+    registry.normalizeFullName = registry.resolver.normalize;
+    registry.describe = registry.resolver.describe;
+    registry.makeToString = registry.resolver.makeToString;
 
-    container.optionsForType('component', { singleton: false });
-    container.optionsForType('view', { singleton: false });
-    container.optionsForType('template', { instantiate: false });
-    container.optionsForType('helper', { instantiate: false });
+    registry.optionsForType('component', { singleton: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('helper', { instantiate: false });
 
-    container.register('application:main', namespace, { instantiate: false });
+    registry.register('application:main', namespace, { instantiate: false });
 
-    container.register('controller:basic', Controller, { instantiate: false });
-    container.register('controller:object', ObjectController, { instantiate: false });
-    container.register('controller:array', ArrayController, { instantiate: false });
+    registry.register('controller:basic', Controller, { instantiate: false });
+    registry.register('controller:object', ObjectController, { instantiate: false });
+    registry.register('controller:array', ArrayController, { instantiate: false });
 
-    container.register('view:select', SelectView);
+    registry.register('view:select', SelectView);
 
-    container.register('route:basic', Route, { instantiate: false });
-    container.register('event_dispatcher:main', EventDispatcher);
+    registry.register('route:basic', Route, { instantiate: false });
+    registry.register('event_dispatcher:main', EventDispatcher);
 
-    container.register('router:main',  Router);
-    container.injection('router:main', 'namespace', 'application:main');
+    registry.register('router:main',  Router);
+    registry.injection('router:main', 'namespace', 'application:main');
 
-    container.register('location:auto', AutoLocation);
-    container.register('location:hash', HashLocation);
-    container.register('location:history', HistoryLocation);
-    container.register('location:none', NoneLocation);
+    registry.register('location:auto', AutoLocation);
+    registry.register('location:hash', HashLocation);
+    registry.register('location:history', HistoryLocation);
+    registry.register('location:none', NoneLocation);
 
-    container.injection('controller', 'target', 'router:main');
-    container.injection('controller', 'namespace', 'application:main');
+    registry.injection('controller', 'target', 'router:main');
+    registry.injection('controller', 'namespace', 'application:main');
 
-    container.register('-bucket-cache:main', BucketCache);
-    container.injection('router', '_bucketCache', '-bucket-cache:main');
-    container.injection('route',  '_bucketCache', '-bucket-cache:main');
-    container.injection('controller',  '_bucketCache', '-bucket-cache:main');
+    registry.register('-bucket-cache:main', BucketCache);
+    registry.injection('router', '_bucketCache', '-bucket-cache:main');
+    registry.injection('route',  '_bucketCache', '-bucket-cache:main');
+    registry.injection('controller',  '_bucketCache', '-bucket-cache:main');
 
-    container.injection('route', 'router', 'router:main');
-    container.injection('location', 'rootURL', '-location-setting:root-url');
+    registry.injection('route', 'router', 'router:main');
+    registry.injection('location', 'rootURL', '-location-setting:root-url');
 
     // DEBUGGING
-    container.register('resolver-for-debugging:main', container.resolver.__resolver__, { instantiate: false });
-    container.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-    container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    registry.register('resolver-for-debugging:main', registry.resolver.__resolver__, { instantiate: false });
+    registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    container.register('container-debug-adapter:main', ContainerDebugAdapter);
+    registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 
-    return container;
+    return registry;
   }
 });
 

@@ -3,7 +3,7 @@ import "ember";
 import compile from "ember-htmlbars/system/compile";
 import helpers from "ember-htmlbars/helpers";
 
-var App, container;
+var App, registry, container;
 var originalHelpers;
 
 function prepare(){
@@ -51,6 +51,7 @@ function boot(callback) {
       location: 'none'
     });
 
+    registry = App.__registry__;
     container = App.__container__;
 
     if (callback) { callback(); }
@@ -71,7 +72,7 @@ test("The helper becomes the body of the component", function() {
 
 test("If a component is registered, it is used", function() {
   boot(function() {
-    container.register('component:expand-it', Ember.Component.extend({
+    registry.register('component:expand-it', Ember.Component.extend({
       classNames: 'testing123'
     }));
   });
@@ -87,7 +88,7 @@ test("Late-registered components can be rendered with custom `template` property
   expectDeprecation(/Do not specify template on a Component/);
 
   boot(function() {
-    container.register('component:my-hero', Ember.Component.extend({
+    registry.register('component:my-hero', Ember.Component.extend({
       classNames: 'testing123',
       template: function() { return "watch him as he GOES"; }
     }));
@@ -102,8 +103,8 @@ test("Late-registered components can be rendered with template registered on the
   Ember.TEMPLATES.application = compile("<div id='wrapper'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>");
 
   boot(function() {
-    container.register('template:components/sally-rutherford', compile("funkytowny{{yield}}"));
-    container.register('component:sally-rutherford', Ember.Component);
+    registry.register('template:components/sally-rutherford', compile("funkytowny{{yield}}"));
+    registry.register('component:sally-rutherford', Ember.Component);
   });
 
   equal(Ember.$('#wrapper').text(), "hello world funkytowny-funkytowny!!!", "The component is composed correctly");
@@ -115,7 +116,7 @@ test("Late-registered components can be rendered with ONLY the template register
   Ember.TEMPLATES.application = compile("<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>");
 
   boot(function() {
-    container.register('template:components/borf-snorlax', compile("goodfreakingTIMES{{yield}}"));
+    registry.register('template:components/borf-snorlax', compile("goodfreakingTIMES{{yield}}"));
   });
 
   equal(Ember.$('#wrapper').text(), "hello world goodfreakingTIMES-goodfreakingTIMES!!!", "The component is composed correctly");
@@ -127,32 +128,12 @@ test("Component-like invocations are treated as bound paths if neither template 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{user-name}} hello {{api-key}} world</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'user-name': 'machty'
     }));
   });
 
   equal(Ember.$('#wrapper').text(), "machty hello  world", "The component is composed correctly");
-});
-
-test("Component lookups should take place on components' subcontainers", function() {
-  expect(1);
-
-  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#sally-rutherford}}{{mach-ty}}{{/sally-rutherford}}</div>");
-
-  boot(function() {
-    container.register('component:sally-rutherford', Ember.Component.extend({
-      init: function() {
-        this._super();
-        this.container = new Ember.Container(this.container);
-        this.container.register('component:mach-ty', Ember.Component.extend({
-          didInsertElement: function() {
-            ok(true, "mach-ty was rendered");
-          }
-        }));
-      }
-    }));
-  });
 });
 
 test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function(){
@@ -164,11 +145,11 @@ test("Assigning templateName to a component should setup the template as a layou
   expectDeprecation(/Do not specify templateName on a Component/);
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       text: 'inner',
       templateName: 'foo-bar-baz'
     }));
@@ -185,11 +166,11 @@ test("Assigning templateName and layoutName should use the templates specified",
   Ember.TEMPLATES['bar'] = compile("{{text}}-{{yield}}");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       text: 'inner',
       layoutName: 'bar',
       templateName: 'foo'
@@ -222,11 +203,11 @@ test("Components with a block should have the proper content when a template is 
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}-{{yield}}");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       text: 'inner'
     }));
   });
@@ -238,11 +219,11 @@ test("Components with a block should yield the proper content without a template
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       text: 'inner'
     }));
   });
@@ -255,11 +236,11 @@ test("Components without a block should have the proper content when a template 
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       text: 'inner'
     }));
   });
@@ -271,11 +252,11 @@ test("Components without a block should have the proper content", function(){
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       didInsertElement: function() {
         this.$().html('Some text inserted by jQuery');
       }
@@ -289,12 +270,12 @@ test("properties of a component  without a template should not collide with inte
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       didInsertElement: function() {
         this.$().html(this.get('data'));
       }
@@ -309,7 +290,7 @@ test("Components trigger actions in the parents context when called from within 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       actions: {
         fizzbuzz: function(){
           ok(true, 'action triggered on parent');
@@ -317,7 +298,7 @@ test("Components trigger actions in the parents context when called from within 
       }
     }));
 
-    container.register('component:my-component', Ember.Component.extend());
+    registry.register('component:my-component', Ember.Component.extend());
   });
 
   Ember.run(function(){
@@ -330,7 +311,7 @@ test("Components trigger actions in the components context when called from with
   Ember.TEMPLATES['components/my-component'] = compile("<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       actions: {
         fizzbuzz: function(){
           ok(false, 'action triggered on the wrong context');
@@ -338,7 +319,7 @@ test("Components trigger actions in the components context when called from with
       }
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Ember.Component.extend({
       actions: {
         fizzbuzz: function(){
           ok(true, 'action triggered on component');

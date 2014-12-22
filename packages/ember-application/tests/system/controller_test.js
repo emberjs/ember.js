@@ -3,7 +3,7 @@
 import Controller from "ember-runtime/controllers/controller";
 import "ember-application/ext/controller";
 
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { A } from "ember-runtime/system/native_array";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { computed } from "ember-metal/computed";
@@ -21,13 +21,14 @@ test("If a controller specifies a dependency, but does not have a container it s
 });
 
 test("If a controller specifies a dependency, it is accessible", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:post', Controller.extend({
+  registry.register('controller:post', Controller.extend({
     needs: 'posts'
   }));
 
-  container.register('controller:posts', Controller.extend());
+  registry.register('controller:posts', Controller.extend());
 
   var postController = container.lookup('controller:post');
   var postsController = container.lookup('controller:posts');
@@ -36,9 +37,10 @@ test("If a controller specifies a dependency, it is accessible", function() {
 });
 
 test("If a controller specifies an unavailable dependency, it raises", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:post', Controller.extend({
+  registry.register('controller:post', Controller.extend({
     needs: ['comments']
   }));
 
@@ -46,7 +48,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     container.lookup('controller:post');
   }, /controller:comments/);
 
-  container.register('controller:blog', Controller.extend({
+  registry.register('controller:blog', Controller.extend({
     needs: ['posts', 'comments']
   }));
 
@@ -56,19 +58,20 @@ test("If a controller specifies an unavailable dependency, it raises", function(
 });
 
 test("Mixin sets up controllers if there is needs before calling super", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:other', ArrayController.extend({
+  registry.register('controller:other', ArrayController.extend({
     needs: 'posts',
     model: computed.alias('controllers.posts')
   }));
 
-  container.register('controller:another', ArrayController.extend({
+  registry.register('controller:another', ArrayController.extend({
     needs: 'posts',
     modelBinding: 'controllers.posts'
   }));
 
-  container.register('controller:posts', ArrayController.extend());
+  registry.register('controller:posts', ArrayController.extend());
 
   container.lookup('controller:posts').set('model', A(['a','b','c']));
 
@@ -77,10 +80,11 @@ test("Mixin sets up controllers if there is needs before calling super", functio
 });
 
 test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:foo', Controller.extend());
-  container.register('controller:bar', Controller.extend({
+  registry.register('controller:foo', Controller.extend());
+  registry.register('controller:bar', Controller.extend({
     needs: 'foo'
   }));
 
@@ -101,13 +105,14 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
 });
 
 test ("setting the value of a controller dependency should not be possible", function(){
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:post', Controller.extend({
+  registry.register('controller:post', Controller.extend({
     needs: 'posts'
   }));
 
-  container.register('controller:posts', Controller.extend());
+  registry.register('controller:posts', Controller.extend());
 
   var postController = container.lookup('controller:post');
   container.lookup('controller:posts');
@@ -123,10 +128,11 @@ test ("setting the value of a controller dependency should not be possible", fun
 });
 
 test("raises if a dependency with a period is requested", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.register('controller:big.bird', Controller.extend());
-  container.register('controller:foo', Controller.extend({
+  registry.register('controller:big.bird', Controller.extend());
+  registry.register('controller:foo', Controller.extend({
     needs: 'big.bird'
   }));
 

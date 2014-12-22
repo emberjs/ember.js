@@ -1,19 +1,22 @@
-import Container from "container";
+import Registry from "container/registry";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 
-var container, view;
+var registry, container, view;
 
 QUnit.module("EmberView - Template Functionality", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
     run(function() {
       if (view) { view.destroy(); }
+      container.destroy();
+      registry = container = view = null;
     });
   }
 });
@@ -45,7 +48,7 @@ if (typeof Handlebars === "object") {
 }
 
 test("should call the function of the associated template", function() {
-  container.register('template:testTemplate', function() {
+  registry.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
   });
 
@@ -62,7 +65,7 @@ test("should call the function of the associated template", function() {
 });
 
 test("should call the function of the associated template with itself as the context", function() {
-  container.register('template:testTemplate', function(dataSource) {
+  registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
 
@@ -121,7 +124,7 @@ test("should not use defaultTemplate if template is provided", function() {
 test("should not use defaultTemplate if template is provided", function() {
   var View;
 
-  container.register('template:foobar', function() { return 'foo'; });
+  registry.register('template:foobar', function() { return 'foo'; });
 
   View = EmberView.extend({
     container: container,

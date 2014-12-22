@@ -1,6 +1,6 @@
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
-import Container from "container";
+import Registry from "container/registry";
 import Component from "ember-views/views/component";
 
 function generateEnv(helpers) {
@@ -10,10 +10,11 @@ function generateEnv(helpers) {
 }
 
 function generateContainer() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.optionsForType('helper', { instantiate: false });
-  container.register('component-lookup:main', ComponentLookup);
+  registry.optionsForType('helper', { instantiate: false });
+  registry.register('component-lookup:main', ComponentLookup);
 
   return container;
 }
@@ -62,7 +63,7 @@ test('does a lookup in the container if the name contains a dash (and helper is 
 
   function someName() {}
   someName.isHTMLBars = true;
-  view.container.register('helper:some-name', someName);
+  view.container._registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -80,7 +81,7 @@ test('wraps helper from container in a Handlebars compat helper', function() {
   function someName() {
     called = true;
   }
-  view.container.register('helper:some-name', someName);
+  view.container._registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -103,7 +104,7 @@ test('asserts if component-lookup:main cannot be found', function() {
     container: generateContainer()
   };
 
-  view.container.unregister('component-lookup:main');
+  view.container._registry.unregister('component-lookup:main');
 
   expectAssertion(function() {
     lookupHelper('some-name', view, env);
@@ -116,7 +117,7 @@ test('registers a helper in the container if component is found', function() {
     container: generateContainer()
   };
 
-  view.container.register('component:some-name', Component);
+  view.container._registry.register('component:some-name', Component);
 
   lookupHelper('some-name', view, env);
 

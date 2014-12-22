@@ -5,7 +5,7 @@ import Service from "ember-runtime/system/service";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
 import Object from "ember-runtime/system/object";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import inject from "ember-runtime/inject";
 import { get } from "ember-metal/property_get";
 
@@ -186,27 +186,31 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   if (!EmberDev.runningProdBuild) {
     test("defining a controller on a non-controller should fail assertion", function(){
       expectAssertion(function() {
-        var container = new Container();
+        var registry = new Registry();
+        var container = registry.container();
+
         var AnObject = Object.extend({
           container: container,
           foo: inject.controller('bar')
         });
 
-        container.register('foo:main', AnObject);
+        registry.register('foo:main', AnObject);
 
         container.lookupFactory('foo:main');
+
       }, /Defining an injected controller property on a non-controller is not allowed./);
     });
   }
 
   test("controllers can be injected into controllers", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = registry.container();
 
-    container.register('controller:post', Controller.extend({
+    registry.register('controller:post', Controller.extend({
       postsController: inject.controller('posts')
     }));
 
-    container.register('controller:posts', Controller.extend());
+    registry.register('controller:posts', Controller.extend());
 
     var postController = container.lookup('controller:post'),
       postsController = container.lookup('controller:posts');
@@ -215,13 +219,14 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   });
 
   test("services can be injected into controllers", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = registry.container();
 
-    container.register('controller:application', Controller.extend({
+    registry.register('controller:application', Controller.extend({
       authService: inject.service('auth')
     }));
 
-    container.register('service:auth', Service.extend());
+    registry.register('service:auth', Service.extend());
 
     var appController = container.lookup('controller:application'),
       authService = container.lookup('service:auth');

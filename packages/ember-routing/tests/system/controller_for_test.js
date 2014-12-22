@@ -3,7 +3,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
-import Container from 'container/container';
+import Registry from 'container/registry';
 import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
@@ -16,17 +16,18 @@ import {
 } from "ember-routing/system/generate_controller";
 
 var buildContainer = function(namespace) {
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
 
-  container.set = set;
-  container.resolver = resolverFor(namespace);
-  container.optionsForType('view', { singleton: false });
+  registry.set = set;
+  registry.resolver = resolverFor(namespace);
+  registry.optionsForType('view', { singleton: false });
 
-  container.register('application:main', namespace, { instantiate: false });
+  registry.register('application:main', namespace, { instantiate: false });
 
-  container.register('controller:basic', Controller, { instantiate: false });
-  container.register('controller:object', ObjectController, { instantiate: false });
-  container.register('controller:array', ArrayController, { instantiate: false });
+  registry.register('controller:basic', Controller, { instantiate: false });
+  registry.register('controller:object', ObjectController, { instantiate: false });
+  registry.register('controller:array', ArrayController, { instantiate: false });
 
   return container;
 };
@@ -43,8 +44,6 @@ function resolverFor(namespace) {
     var className = classify(name) + classify(type);
     var factory = get(namespace, className);
 
-
-
     if (factory) { return factory; }
   };
 }
@@ -55,7 +54,7 @@ QUnit.module("Ember.controllerFor", {
   setup: function() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.register('controller:app', Controller.extend());
+    container._registry.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
   teardown: function() {

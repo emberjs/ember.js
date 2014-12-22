@@ -1,6 +1,6 @@
 import run from "ember-metal/run_loop";
 import Namespace from 'ember-runtime/system/namespace';
-import Container from 'ember-runtime/system/container';
+import { Registry } from "ember-runtime/system/container";
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
@@ -15,22 +15,23 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var originalLookup = Ember.lookup;
 
-var view, lookup, container, TemplateTests;
+var view, lookup, registry, container, TemplateTests;
 
 QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
   setup: function() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
@@ -250,7 +251,7 @@ test('should not update boundIf if truthiness does not change', function() {
 });
 
 test('should update the block when object passed to #unless helper changes', function() {
-  container.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+  registry.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -328,7 +329,7 @@ test('views within an if statement should be sane on re-render', function() {
 });
 
 test('should update the block when object passed to #if helper changes', function() {
-  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -360,7 +361,7 @@ test('should update the block when object passed to #if helper changes', functio
 });
 
 test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
-  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -436,7 +437,7 @@ test('the {{this}} helper should not fail on removal', function() {
 });
 
 test('should update the block when object passed to #unless helper changes', function() {
-  container.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+  registry.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -514,7 +515,7 @@ test('views within an if statement should be sane on re-render', function() {
 });
 
 test('should update the block when object passed to #if helper changes', function() {
-  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -546,7 +547,7 @@ test('should update the block when object passed to #if helper changes', functio
 });
 
 test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
-  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
 
   view = EmberView.create({
     container: container,

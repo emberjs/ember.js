@@ -13,7 +13,7 @@ import helpers from "ember-htmlbars/helpers";
 import registerBoundHelper from "ember-htmlbars/compat/register-bound-helper";
 import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
-import Container from 'ember-runtime/system/container';
+import { Registry } from "ember-runtime/system/container";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 function expectDeprecationInHTMLBars() {
@@ -22,7 +22,7 @@ function expectDeprecationInHTMLBars() {
 }
 
 
-var view, lookup, container;
+var view, lookup, registry, container;
 var originalLookup = Ember.lookup;
 
 QUnit.module('ember-htmlbars: {{#unbound}} helper', {
@@ -285,20 +285,23 @@ test("should be able to render bound form of a helper inside unbound form of sam
 QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
-    container = new Container();
-    container.optionsForType('helper', { instantiate: false });
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('helper', { instantiate: false });
   },
 
   teardown: function() {
     runDestroy(view);
+    runDestroy(container);
     Ember.lookup = originalLookup;
+    registry = container = view = null;
   }
 });
 
 test("should lookup helpers in the container", function() {
   expectDeprecationInHTMLBars();
 
-  container.register('helper:up-case', makeBoundHelper(function(value) {
+  registry.register('helper:up-case', makeBoundHelper(function(value) {
     return value.toUpperCase();
   }));
 

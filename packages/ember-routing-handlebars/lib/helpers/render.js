@@ -117,7 +117,7 @@ export function renderHelper(name, contextString, options) {
   var controllerFullName = 'controller:' + controllerName;
 
   Ember.assert("The controller name you supplied '" + controllerName +
-               "' did not resolve to a controller.", !options.hash.controller || container.has(controllerFullName));
+               "' did not resolve to a controller.", !options.hash.controller || container._registry.has(controllerFullName));
 
   var parentController = options.data.view._keywords.controller.value();
 
@@ -149,7 +149,7 @@ export function renderHelper(name, contextString, options) {
 
   var templateName = 'template:' + name;
   Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
-               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.fn);
+               " a template or a view.", container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.fn);
   options.hash.template = container.lookup(templateName);
 
   options.hash.controller = controller;

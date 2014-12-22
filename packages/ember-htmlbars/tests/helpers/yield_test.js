@@ -2,7 +2,7 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { computed } from "ember-metal/computed";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
@@ -16,18 +16,21 @@ import {
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var view, container;
+var view, registry, container;
 
 QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
     run(function() {
       Ember.TEMPLATES = {};
     });
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
   }
 });
 
@@ -47,10 +50,10 @@ test("a view with a layout set renders its template where the {{yield}} helper a
 });
 
 test("block should work properly even when templates are not hard-coded", function() {
-  container.register('template:nester', compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
-  container.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
+  registry.register('template:nester', compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
+  registry.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
-  container.register('view:with-layout', EmberView.extend({
+  registry.register('view:with-layout', EmberView.extend({
     container: container,
     layoutName: 'nester'
   }));
