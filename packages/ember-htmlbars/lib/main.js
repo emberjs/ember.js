@@ -18,7 +18,6 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
-import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
 import { withHelper } from "ember-htmlbars/helpers/with";
@@ -57,8 +56,6 @@ import "ember-htmlbars/system/bootstrap";
 // Ember.Handlebars global if htmlbars is enabled
 import "ember-htmlbars/compat";
 
-registerHelper('bindHelper', bindHelper);
-registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
 registerHelper('yield', yieldHelper);
 registerHelper('with', withHelper);
