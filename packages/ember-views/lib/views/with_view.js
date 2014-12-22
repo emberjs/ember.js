@@ -12,10 +12,7 @@ export default BoundView.extend({
   init: function() {
     apply(this, this._super, arguments);
 
-    var keywordName     = this.templateHash.keywordName;
     var controllerName  = this.templateHash.controller;
-
-    this._blockArguments = [this.lazyValue];
 
     if (controllerName) {
       var previousContext = this.previousContext;
@@ -27,7 +24,7 @@ export default BoundView.extend({
       this._generatedController = controller;
 
       if (this.preserveContext) {
-        this._keywords[keywordName] = controller;
+        this._blockArguments = [ controller ];
         this.lazyValue.subscribe(function(modelStream) {
           set(controller, 'model', modelStream.value());
         });
@@ -42,7 +39,7 @@ export default BoundView.extend({
       set(controller, 'model', this.lazyValue.value());
     } else {
       if (this.preserveContext) {
-        this._keywords[keywordName] = this.lazyValue;
+        this._blockArguments = [ this.lazyValue ];
       }
     }
   },
