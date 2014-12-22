@@ -9,7 +9,6 @@ cache:
 
 install:
   - "npm install"
-  - "npm run docs"
 
 after_success:
   - "./bin/publish_builds"
