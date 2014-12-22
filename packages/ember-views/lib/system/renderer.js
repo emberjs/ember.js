@@ -75,9 +75,7 @@ EmberRenderer.prototype.createElement =
 
     view.buffer = null;
     if (element && element.nodeType === 1) {
-      // We have hooks, we shouldn't make element observable
-      // consider just doing view.element = element
-      set(view, 'element', element);
+      view.element = element;
     }
     return element;
   };
