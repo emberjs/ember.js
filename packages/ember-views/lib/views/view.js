@@ -1606,7 +1606,7 @@ var View = CoreView.extend({
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
-    var classNameBindings = get(this, 'classNameBindings');
+    var classNameBindings = this.classNameBindings;
     if (classNameBindings.length) {
       this._applyClassNameBindings(classNameBindings);
     }
@@ -1614,7 +1614,7 @@ var View = CoreView.extend({
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
     // existing classNames infrastructure.
-    var attributeBindings = get(this, 'attributeBindings');
+    var attributeBindings = this.attributeBindings;
     if (attributeBindings.length) {
       this._applyAttributeBindings(buffer, attributeBindings);
     }
