@@ -41,7 +41,7 @@ EmberRenderer.prototype.createElement =
       Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
     }
     var classNameBindings = view.classNameBindings;
-    var taglessViewWithClassBindings = tagName === '' && classNameBindings.length > 0;
+    var taglessViewWithClassBindings = tagName === '' && (classNameBindings && classNameBindings.length > 0);
 
     if (tagName === null || tagName === undefined) {
       tagName = 'div';
