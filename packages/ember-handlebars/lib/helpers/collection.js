@@ -160,7 +160,8 @@ function collectionHelper(path, options) {
       view      = options.data.view,
       // This should be deterministic, and should probably come from a
       // parent view and not the controller.
-      container = (view.controller && view.controller.container ? view.controller.container : view.container);
+      controller = get(view, 'controller'),
+      container = (controller && controller.container ? controller.container : view.container);
 
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
