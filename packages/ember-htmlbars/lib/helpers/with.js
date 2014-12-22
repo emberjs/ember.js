@@ -69,7 +69,7 @@ export function withHelper(params, hash, options, env) {
 
   var preserveContext;
 
-  if (hash.keywordName || options.blockParams) {
+  if (options.blockParams) {
     preserveContext = true;
   } else {
     Ember.deprecate(
