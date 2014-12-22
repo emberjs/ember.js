@@ -32,6 +32,10 @@ var badTags = [
     unquotedTemplate: compile("<img src={{url}}>"),
     quotedTemplate: compile("<img src='{{url}}'>"),
     multipartTemplate: compile("<img src='{{protocol}}{{path}}'>") },
+  { tag: 'iframe', attr: 'src',
+    unquotedTemplate: compile("<iframe src={{url}}></iframe>"),
+    quotedTemplate: compile("<iframe src='{{url}}'></iframe>"),
+    multipartTemplate: compile("<iframe src='{{protocol}}{{path}}'></iframe>") }
 ];
 
 for (var i=0, l=badTags.length; i<l; i++) {

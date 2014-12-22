@@ -10,7 +10,8 @@ var badTags = {
   'A': true,
   'BODY': true,
   'LINK': true,
-  'IMG': true
+  'IMG': true,
+  'IFRAME': true
 };
 
 export var badAttributes = {
