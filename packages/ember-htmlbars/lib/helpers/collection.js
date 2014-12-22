@@ -14,6 +14,7 @@ import { map } from 'ember-metal/enumerable_utils';
 import {
   streamifyClassNameBinding
 } from "ember-views/streams/class_name_binding";
+import { Binding } from 'ember-metal/binding';
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -231,9 +232,9 @@ export function collectionHelper(params, hash, options, env) {
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
   if (hash.keyword) {
-    itemHash._contextBinding = '_parentView.context';
+    itemHash._contextBinding = Binding.oneWay('_parentView.context');
   } else {
-    itemHash._contextBinding = 'content';
+    itemHash._contextBinding = Binding.oneWay('content');
   }
 
   var viewOptions = ViewHelper.propertiesFromHTMLOptions(itemHash, {}, { data: data });
