@@ -3,21 +3,19 @@
 @submodule ember-template-compiler
 */
 
-import { compile } from "htmlbars-compiler/compiler";
+import { compileSpec } from "htmlbars-compiler/compiler";
 import compileOptions from "ember-template-compiler/system/compile_options";
-import template from "ember-template-compiler/system/template";
 
 /**
-  Uses HTMLBars `compile` function to process a string into a compiled template.
+  Uses HTMLBars `compile` function to process a string into a compiled template string.
+  The returned string must be passed through `Ember.HTMLBars.template`.
 
   This is not present in production builds.
 
   @private
-  @method compile
+  @method precompile
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function(templateString) {
-  var templateSpec = compile(templateString, compileOptions);
-
-  return template(templateSpec);
+  return compileSpec(templateString, compileOptions);
 }
