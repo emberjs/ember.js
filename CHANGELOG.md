@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 1.9.1 (December 23, 2014)
+
+* Allow `{{view}}` helper to proper handle view instances.
+* Escape `href`, `src`, and `background` attributes for `a`, `link`, `img`, and `iframe` elements.
+
 ### 1.9.0 (December 8, 2014)
 
 * Add deprecation for quoteless outlet names (`{{outlet main}}` should be `{{outlet 'main'}}`).
