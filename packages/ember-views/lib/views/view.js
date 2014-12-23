@@ -55,6 +55,7 @@ import {
   read,
   isStream
 } from "ember-metal/streams/utils";
+import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
 
 function K() { return this; }
 
@@ -2201,7 +2202,8 @@ View.views = {};
 View.childViewsProperty = childViewsProperty;
 
 // Used by Handlebars helpers, view element attributes
-View.applyAttributeBindings = function(elem, name, value) {
+View.applyAttributeBindings = function(elem, name, initialValue) {
+  var value = sanitizeAttributeValue(elem[0], name, initialValue);
   var type = typeOf(value);
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
