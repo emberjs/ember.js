@@ -28,3 +28,13 @@ test('uses plugins with precompile', function() {
   templateOutput = templateCompiler.precompile('{{#with foo as bar}}{{/with}}');
   ok(templateOutput.match(/set\(context, "bar", blockArguments\[0\]\);/), 'transform with as to block params');
 });
+
+test('allows enabling of features', function() {
+  var templateOutput;
+  var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
+
+  templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
+
+  templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
+  ok(templateOutput.match(/component\(morph0, "some-thing"/), 'component generation can be enabled');
+});
