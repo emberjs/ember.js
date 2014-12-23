@@ -7,7 +7,7 @@ import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import { Registry } from "ember-runtime/system/container";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, lookup;

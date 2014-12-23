@@ -5,7 +5,7 @@ import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import { computed } from "ember-metal/computed";
 
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 

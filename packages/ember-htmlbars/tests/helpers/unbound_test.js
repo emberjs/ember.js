@@ -7,7 +7,7 @@ import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import EmberError from 'ember-metal/error';
 import helpers from "ember-htmlbars/helpers";
 import registerBoundHelper from "ember-htmlbars/compat/register-bound-helper";

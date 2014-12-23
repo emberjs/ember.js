@@ -23,7 +23,7 @@ import jQuery from "ember-views/system/jquery";
 
 import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { registerHelper } from "ember-htmlbars/helpers";
 import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";

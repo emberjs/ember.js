@@ -5,9 +5,9 @@
 
 import Ember from "ember-metal/core";
 import { compile } from "htmlbars-compiler/compiler";
-import template from "ember-htmlbars/system/template";
+import template from "ember-template-compiler/system/template";
 
-import plugins from "ember-htmlbars/plugins";
+import plugins from "ember-template-compiler/plugins";
 
 var disableComponentGeneration = true;
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {

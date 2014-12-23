@@ -2,7 +2,7 @@ import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import Registry from "container/registry";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import {
   dasherize

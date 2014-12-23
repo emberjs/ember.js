@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import compile from 'ember-htmlbars/system/compile';
+import compile from 'ember-template-compiler/system/compile';
 
 import { set } from 'ember-metal/property_set';
 import { create as o_create } from 'ember-metal/platform';

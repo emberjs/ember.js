@@ -10,7 +10,7 @@ import Controller from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 var trim = jQuery.trim;
 
