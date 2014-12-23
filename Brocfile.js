@@ -578,7 +578,7 @@ for (var packageName in packages) {
 }
 
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
-vendorTrees = mergeTrees(vendorTrees);
+vendorTrees = mergeTrees(vendorTrees, { overwrite: true });
 devSourceTrees = mergeTrees(devSourceTrees);
 
 testTrees   = mergeTrees(testTrees);
@@ -699,6 +699,38 @@ function buildRuntimeTree() {
   });
 }
 
+function buildTemplateCompilerTree() {
+  es6Package('ember-metal');
+  es6Package('ember-template-compiler');
+
+  var trees = [packages['ember-template-compiler'].trees.lib];
+  var vendorTrees = packages['ember-template-compiler'].vendorRequirements.map(function(req){ return vendoredPackages[req];});
+
+  var metalSubset = pickFiles(packages['ember-metal'].trees.lib, {
+    files: ['ember-metal/core.js'],
+    destDir: '/',
+    srcDir: '/'
+  });
+
+  trees.push(metalSubset);
+
+  var compiled = concatES6(trees, {
+    includeLoader: true,
+    bootstrapModule: 'ember-template-compiler',
+    vendorTrees: mergeTrees(vendorTrees),
+    inputFiles: ['**/*.js'],
+    destFile: '/ember-template-compiler.js'
+  });
+
+  var exportsTree = writeFile('export-ember', ';\nif (typeof exports === "object") {\n  module.exports = Ember.__loader.require("ember-template-compiler");\n }');
+
+  return concat(mergeTrees([compiled, exportsTree]), {
+    wrapInEval: false,
+    inputFiles: ['ember-template-compiler.js', 'export-ember'],
+    outputFile: '/ember-template-compiler.js'
+  });
+};
+
 // Generates prod build.  defeatureify increases the overall runtime speed of ember.js by
 // ~10%.  See defeatureify.
 var prodCompiledSource = concatES6(prodSourceTrees, {
@@ -771,7 +803,9 @@ if (env !== 'development') {
   if (!disableMin) {
     distTrees.push(minCompiledSource);
   }
+
   distTrees.push(buildRuntimeTree());
+  distTrees.push(buildTemplateCompilerTree());
 }
 
 // merge distTrees and sub out version placeholders for distribution
