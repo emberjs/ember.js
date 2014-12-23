@@ -1,3 +1,4 @@
+import precompile from "ember-template-compiler/system/precompile";
 import compile from "ember-template-compiler/system/compile";
 import template from "ember-template-compiler/system/template";
 import { registerPlugin } from "ember-template-compiler/plugins";
@@ -9,6 +10,7 @@ registerPlugin('ast', TransformWithAsToHash);
 registerPlugin('ast', TransformEachInToHash);
 
 export {
+  precompile,
   compile,
   template,
   registerPlugin

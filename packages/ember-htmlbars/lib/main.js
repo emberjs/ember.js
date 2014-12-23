@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 
 import {
+  precompile,
   compile,
   template,
   registerPlugin
@@ -85,6 +86,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     _registerHelper: registerHelper,
     template: template,
     compile: compile,
+    precompile: precompile,
     makeViewHelper: makeViewHelper,
     makeBoundHelper: makeBoundHelper,
     registerPlugin: registerPlugin
