@@ -15,6 +15,7 @@
 * Add ember-template-compiler package.
 * Rename `Ember.HTMLBars.registerASTPlugin` to `Ember.HTMLBars.registerPlugin`.
 * Export `ember-template-compiler.js`.
+* Escape `href`, `src`, and `background` attributes for `a`, `link`, `img`, and `iframe` elements.
 
 ### 1.10.0-beta.1 (December 10, 2014)
 
