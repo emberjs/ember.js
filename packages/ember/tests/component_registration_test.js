@@ -1,6 +1,6 @@
 import "ember";
 
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import helpers from "ember-htmlbars/helpers";
 
 var App, registry, container;

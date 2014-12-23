@@ -1,8 +1,8 @@
 import {
   default as plugins,
   registerASTPlugin
-} from "ember-htmlbars/plugins";
-import compile from "ember-htmlbars/system/compile";
+} from "ember-template-compiler/plugins";
+import compile from "ember-template-compiler/system/compile";
 
 var originalASTPlugins;
 

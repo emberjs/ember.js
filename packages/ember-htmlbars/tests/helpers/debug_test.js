@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import EmberLogger from "ember-metal/logger";
 import EmberView from "ember-views/views/view";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 

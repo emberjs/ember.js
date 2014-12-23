@@ -1,7 +1,7 @@
 import "ember-routing-htmlbars";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { set } from "ember-metal/property_set";
 import Controller from "ember-runtime/controllers/controller";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";

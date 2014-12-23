@@ -11,8 +11,8 @@ import ContainerView from 'ember-views/views/container_view';
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import SafeString from 'htmlbars-util/safe-string';
 import precompile from 'ember-htmlbars/compat/precompile';
-import compile from "ember-htmlbars/system/compile";
-import template from 'ember-htmlbars/system/template';
+import compile from "ember-template-compiler/system/compile";
+import template from 'ember-template-compiler/system/template';
 import { observersFor } from "ember-metal/observer";
 import ObjectController from 'ember-runtime/controllers/object_controller';
 

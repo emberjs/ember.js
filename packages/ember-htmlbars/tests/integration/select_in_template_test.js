@@ -8,7 +8,7 @@ import Namespace from "ember-runtime/system/namespace";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SelectView from "ember-views/views/select";
-import compile from 'ember-htmlbars/system/compile';
+import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var dispatcher, view;

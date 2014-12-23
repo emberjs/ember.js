@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import _MetamorphView from "ember-views/views/metamorph_view";
 
 var view, childView, metamorphView;

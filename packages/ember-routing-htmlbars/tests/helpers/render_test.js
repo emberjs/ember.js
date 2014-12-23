@@ -21,7 +21,7 @@ import HashLocation from "ember-routing/location/hash_location";
 
 import { registerHelper } from "ember-htmlbars/helpers";
 import helpers from "ember-htmlbars/helpers";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 import EmberView from "ember-routing/ext/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
