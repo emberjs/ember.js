@@ -998,7 +998,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     ```javascript
     App.Router.map(function() {
-      this.route("index");
+      this.route('index');
     });
 
     App.ApplicationRoute = Ember.Route.extend({
