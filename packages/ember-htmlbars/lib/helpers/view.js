@@ -123,73 +123,38 @@ export var ViewHelper = EmberObject.create({
     return extensions;
   },
 
-  helper: function(newView, hash, options, env) {
-    var data = env.data;
-    var template = options.template;
-    var newViewProto;
+  helper: function(viewInstanceOrClass, hash, options, env) {
+    var currentView = env.data.view;
+    var viewProto;
 
-    makeBindings(hash, options, env.data.view);
+    makeBindings(hash, options, currentView);
 
-    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
-    var currentView = data.view;
+    var props = this.propertiesFromHTMLOptions(hash, options, env);
 
-    if (View.detectInstance(newView)) {
-      newViewProto = newView;
+    if (View.detectInstance(viewInstanceOrClass)) {
+      viewProto = viewInstanceOrClass;
     } else {
-      newViewProto = newView.proto();
+      viewProto = viewInstanceOrClass.proto();
     }
 
-    if (template) {
-      Ember.assert(
-        "You cannot provide a template block if you also specified a templateName",
-        !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName')
-      );
-      viewOptions.template = template;
-    }
-
-    // We only want to override the `_context` computed property if there is
-    // no specified controller. See View#_context for more information.
-    if (!newViewProto.controller && !newViewProto.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
-      viewOptions._context = get(currentView, 'context'); // TODO: is this right?!
-    }
-
-    viewOptions._morph = options.morph;
-
-    currentView.appendChild(newView, viewOptions);
-  },
-
-  instanceHelper: function(newView, hash, options, env) {
-    var data = env.data;
     var template = options.template;
-
-    makeBindings(hash, options, env.data.view);
-
-    Ember.assert(
-      'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
-      View.detectInstance(newView)
-    );
-
-    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
-    var currentView = data.view;
-
     if (template) {
       Ember.assert(
         "You cannot provide a template block if you also specified a templateName",
-        !get(viewOptions, 'templateName') && !get(newView, 'templateName')
+        !get(props, 'templateName') && !get(viewProto, 'templateName')
       );
-      viewOptions.template = template;
+      props.template = template;
     }
 
     // We only want to override the `_context` computed property if there is
     // no specified controller. See View#_context for more information.
-    if (!newView.controller && !newView.controllerBinding &&
-        !viewOptions.controller && !viewOptions.controllerBinding) {
-      viewOptions._context = get(currentView, 'context'); // TODO: is this right?!
+    if (!viewProto.controller && !viewProto.controllerBinding && !props.controller && !props.controllerBinding) {
+      props._context = get(currentView, 'context'); // TODO: is this right?!
     }
 
-    viewOptions._morph = options.morph;
+    props._morph = options.morph;
 
-    currentView.appendChild(newView, viewOptions);
+    currentView.appendChild(viewInstanceOrClass, props);
   }
 });
 
