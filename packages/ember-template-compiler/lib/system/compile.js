@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-template-compiler
 */
 
 import Ember from "ember-metal/core";
