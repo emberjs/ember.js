@@ -17,7 +17,7 @@ import template from "ember-template-compiler/system/template";
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function(templateString) {
-  var templateSpec = compile(templateString, compileOptions);
+  var templateSpec = compile(templateString, compileOptions());
 
   return template(templateSpec);
 }
