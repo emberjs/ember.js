@@ -446,7 +446,7 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
 });
 
 test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   view = EmberView.create({
     template: compile('{{#each view.images}}<img {{bind-attr src=this}}>{{/each}}'),
@@ -462,7 +462,7 @@ test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]",
 });
 
 test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}} [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   view = EmberView.create({
     template: compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),

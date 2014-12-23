@@ -929,7 +929,7 @@ test("The {{link-to}} helper works in an #each'd array of string route names", f
 
   expectDeprecation(function() {
     bootApplication();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");

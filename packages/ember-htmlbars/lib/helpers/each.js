@@ -172,10 +172,9 @@ function eachHelper(params, hash, options, env) {
 
   Ember.deprecate(
     "Using the context switching form of {{each}} is deprecated. " +
-    "Please use the keyword form (`{{#each foo in bar}}`) instead. " +
-    "See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope " +
-    "for more details.",
-    hash.keyword === true || typeof hash.keyword === 'string'
+    "Please use the keyword form (`{{#each foo in bar}}`) instead.",
+    hash.keyword === true || typeof hash.keyword === 'string',
+    { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
   );
 
   hash.dataSource = path;

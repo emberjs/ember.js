@@ -104,7 +104,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
 
     expectDeprecation(function() {
       runAppend(view);
-    },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+    },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
   },
 
   teardown: function() {
@@ -774,7 +774,7 @@ test("views inside #each preserve the new context [DEPRECATED]", function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -789,7 +789,7 @@ test("single-arg each defaults to current context [DEPRECATED]", function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -804,7 +804,7 @@ test("single-arg each will iterate over controller if present [DEPRECATED]", fun
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -892,7 +892,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1013,7 +1013,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1028,7 +1028,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1040,4 +1040,3 @@ testEachWithItem("{{#each foo in bar}}", false);
 if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
   testEachWithItem("{{#each bar as |foo|}}", true);
 }
-
