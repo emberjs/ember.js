@@ -13,7 +13,7 @@ import {
   default as helpers
 } from "ember-htmlbars/helpers";
 
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, container;

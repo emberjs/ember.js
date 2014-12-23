@@ -1,4 +1,4 @@
-import template from "ember-htmlbars/system/template";
+import template from "ember-template-compiler/system/template";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 

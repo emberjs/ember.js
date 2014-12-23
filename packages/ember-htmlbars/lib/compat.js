@@ -1,7 +1,9 @@
 import Ember from "ember-metal/core";
 import helpers from "ember-htmlbars/helpers";
-import template from "ember-htmlbars/system/template";
-import compile from "ember-htmlbars/system/compile";
+import {
+  template,
+  compile
+} from "ember-template-compiler";
 import {
   registerHandlebarsCompatibleHelper as compatRegisterHelper,
   handlebarsHelper as compatHandlebarsHelper

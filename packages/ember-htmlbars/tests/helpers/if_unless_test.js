@@ -5,7 +5,7 @@ import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';

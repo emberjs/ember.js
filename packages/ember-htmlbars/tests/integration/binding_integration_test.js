@@ -5,7 +5,7 @@ import { Binding } from 'ember-metal/binding';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import ContainerView from 'ember-views/views/container_view';
-import compile from 'ember-htmlbars/system/compile';
+import compile from 'ember-template-compiler/system/compile';
 import { ViewHelper } from 'ember-htmlbars/helpers/view';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { registerHelper } from "ember-htmlbars/helpers";

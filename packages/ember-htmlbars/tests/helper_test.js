@@ -8,7 +8,7 @@ import {
   default as helpers,
   helper
 } from "ember-htmlbars/helpers";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 

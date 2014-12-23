@@ -7,7 +7,7 @@ import EmberView from "ember-views/views/view";
 import Test from "ember-testing/test";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 
 import 'ember-application';
 

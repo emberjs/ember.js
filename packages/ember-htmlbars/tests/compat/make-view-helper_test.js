@@ -1,6 +1,6 @@
 import EmberView from "ember-views/views/view";
 import Container from 'container/container';
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";

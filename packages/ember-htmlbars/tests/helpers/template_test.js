@@ -4,7 +4,7 @@ import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
 
 import Container from "ember-runtime/system/container";
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var MyApp, lookup, view, container;

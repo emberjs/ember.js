@@ -4,7 +4,7 @@ import EmberView from 'ember-views/views/view';
 import Container from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import compile from 'ember-htmlbars/system/compile';
+import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import { set } from 'ember-metal/property_set';

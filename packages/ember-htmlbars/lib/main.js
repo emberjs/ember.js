@@ -1,4 +1,11 @@
 import Ember from "ember-metal/core";
+
+import {
+  compile,
+  template,
+  registerASTPlugin
+} from "ember-template-compiler";
+
 import content from "ember-htmlbars/hooks/content";
 import component from "ember-htmlbars/hooks/component";
 import element from "ember-htmlbars/hooks/element";
@@ -8,8 +15,6 @@ import concat from "ember-htmlbars/hooks/concat";
 import get from "ember-htmlbars/hooks/get";
 import set from "ember-htmlbars/hooks/set";
 import { DOMHelper } from "morph";
-import template from "ember-htmlbars/system/template";
-import compile from "ember-htmlbars/system/compile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
@@ -43,10 +48,6 @@ import { collectionHelper } from "ember-htmlbars/helpers/collection";
 import { eachHelper } from "ember-htmlbars/helpers/each";
 import { unboundHelper } from "ember-htmlbars/helpers/unbound";
 
-import { registerASTPlugin } from "ember-htmlbars/plugins";
-import TransformEachInToHash from "ember-htmlbars/plugins/transform-each-in-to-hash";
-import TransformWithAsToHash from "ember-htmlbars/plugins/transform-with-as-to-hash";
-
 // importing adds template bootstrapping
 // initializer to enable embedded templates
 import "ember-htmlbars/system/bootstrap";
@@ -77,9 +78,6 @@ registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
 registerHelper('concat', concat);
-
-registerASTPlugin(TransformWithAsToHash);
-registerASTPlugin(TransformEachInToHash);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
