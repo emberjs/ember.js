@@ -1,6 +1,6 @@
 import {
   default as plugins,
-  registerASTPlugin
+  registerPlugin
 } from "ember-template-compiler/plugins";
 import compile from "ember-template-compiler/system/compile";
 
@@ -29,7 +29,13 @@ test("registering a plugin adds it to htmlbars-compiler options", function() {
     return ast;
   };
 
-  registerASTPlugin(TestPlugin);
+  registerPlugin('ast', TestPlugin);
 
   compile('some random template');
+});
+
+test('registering an unknown type throws an error', function() {
+  throws(function() {
+    registerPlugin('asdf', "whatever");
+  }, /Attempting to register "whatever" as "asdf" which is not a valid HTMLBars plugin type./);
 });
