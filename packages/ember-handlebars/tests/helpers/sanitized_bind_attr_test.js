@@ -31,7 +31,9 @@ var badTags = [
   { tag: 'link', attr: 'href',
     template: compile('<link {{bind-attr href=view.badValue}}>') },
   { tag: 'img', attr: 'src',
-    template: compile('<img {{bind-attr src=view.badValue}}>') }
+    template: compile('<img {{bind-attr src=view.badValue}}>') },
+  { tag: 'iframe', attr: 'src',
+    template: compile('<iframe {{bind-attr src=view.badValue}}></iframe>') }
 ];
 
 for (var i=0, l=badTags.length; i<l; i++) {
