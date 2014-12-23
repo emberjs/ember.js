@@ -45,8 +45,8 @@ test("quoted maxlength sets the property and attribute", function() {
   equal(view.element.firstChild.maxLength, '5');
 
   Ember.run(view, view.set, 'context.length', null);
-  equalInnerHTML(view.element, '<input maxlength="">', "attribute is output");
-  equal(view.element.firstChild.maxLength, 524288);
+  equalInnerHTML(view.element, '<input maxlength="0">', "attribute is output");
+  equal(view.element.firstChild.maxLength, 0);
 });
 
 }

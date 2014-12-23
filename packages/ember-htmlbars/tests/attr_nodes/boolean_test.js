@@ -78,7 +78,7 @@ test("disabled attribute turns a value to a string", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input disabled="false">',
+  equalInnerHTML(view.element, '<input disabled="">',
                  "attribute is output");
   equal(view.element.firstChild.disabled, true,
         'boolean property is set true');
@@ -91,10 +91,10 @@ test("disabled attribute preserves a blank string value", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input disabled="">',
-                 "attribute is output");
-  equal(view.element.firstChild.disabled, true,
-        'boolean property is set true');
+  equalInnerHTML(view.element, '<input>',
+                 "attribute is not output");
+  equal(view.element.firstChild.disabled, false,
+        'boolean property is set false');
 });
 
 }

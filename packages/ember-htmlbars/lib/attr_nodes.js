@@ -3,43 +3,21 @@
 @submodule ember-htmlbars
 */
 
-import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
-import UnquotedAttrNode from "ember-htmlbars/attr_nodes/unquoted";
-import UnquotedNonpropertyAttrNode from "ember-htmlbars/attr_nodes/unquoted_nonproperty";
-import { create as o_create } from "ember-metal/platform";
+import PropertyAttrNode from "ember-htmlbars/attr_nodes/property";
+import AttributeAttrNode from "ember-htmlbars/attr_nodes/attribute";
 import { normalizeProperty } from "ember-htmlbars/attr_nodes/utils";
 
 var svgNamespaceURI = 'http://www.w3.org/2000/svg';
 
-var unquotedAttrNodeTypes = o_create(null);
-unquotedAttrNodeTypes['class'] = UnquotedNonpropertyAttrNode;
-
-var quotedAttrNodeTypes = o_create(null);
-
-export default function attrNodeTypeFor(attrName, element, quoted) {
-  var result;
-  if (quoted) {
-    result = quotedAttrNodeTypes[attrName];
-    if (!result) {
-      result = QuotedAttrNode;
-      quotedAttrNodeTypes[attrName] = result;
-    }
+export default function attrNodeTypeFor(attrName, element) {
+  if (element.namespaceURI === svgNamespaceURI || attrName === 'style') {
+    return AttributeAttrNode;
   } else {
-    result = unquotedAttrNodeTypes[attrName];
-    if (!result) {
-      if (element.namespaceURI === svgNamespaceURI) {
-        result = UnquotedNonpropertyAttrNode;
-      } else {
-        var normalized = normalizeProperty(element, attrName);
-        if (normalized) {
-          result = UnquotedAttrNode;
-        } else {
-          result = UnquotedNonpropertyAttrNode;
-        }
-      }
-      unquotedAttrNodeTypes[attrName] = result;
+    var normalized = normalizeProperty(element, attrName);
+    if (normalized) {
+      return PropertyAttrNode;
+    } else {
+      return AttributeAttrNode;
     }
   }
-
-  return result;
 }

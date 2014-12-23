@@ -39,8 +39,8 @@ test("string property is output", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input value="rick">',
-                 "attribute is output");
+  equalInnerHTML(view.element, '<input>',
+                 "attribute is not output");
   equal(view.element.firstChild.value, "rick",
         'property is set true');
 });
