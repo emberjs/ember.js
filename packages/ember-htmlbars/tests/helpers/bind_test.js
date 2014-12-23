@@ -2,7 +2,7 @@ import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import compile from "ember-htmlbars/system/compile";
+import compile from "ember-template-compiler/system/compile";
 import Container from "ember-runtime/system/container";
 import ObjectController from "ember-runtime/controllers/object_controller";
 
