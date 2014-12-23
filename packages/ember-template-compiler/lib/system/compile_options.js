@@ -6,17 +6,19 @@
 import Ember from "ember-metal/core";
 import plugins from "ember-template-compiler/plugins";
 
-var disableComponentGeneration = true;
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
-  disableComponentGeneration = false;
-}
-
 /**
   @private
   @property compileOptions
 */
-export default {
-  disableComponentGeneration: disableComponentGeneration,
+export default function() {
+  var disableComponentGeneration = true;
+  if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+    disableComponentGeneration = false;
+  }
 
-  plugins: plugins
-};
+  return {
+    disableComponentGeneration: disableComponentGeneration,
+
+    plugins: plugins
+  };
+}
