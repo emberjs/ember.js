@@ -3,7 +3,7 @@ import Ember from "ember-metal/core";
 import {
   compile,
   template,
-  registerASTPlugin
+  registerPlugin
 } from "ember-template-compiler";
 
 import content from "ember-htmlbars/hooks/content";
@@ -87,7 +87,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     compile: compile,
     makeViewHelper: makeViewHelper,
     makeBoundHelper: makeBoundHelper,
-    registerASTPlugin: registerASTPlugin
+    registerPlugin: registerPlugin
   };
 
 }
