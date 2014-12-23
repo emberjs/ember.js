@@ -1,5 +1,21 @@
 # Ember Changelog
 
+### 1.10.0-beta.2 (December 23, 2014)
+
+* [BUGFIX] Allow makeBoundHelper to be a sub-expression.
+* [BUGFIX] Allow compat makeBoundHelpers to be sub-expressions.
+* [BUGFIX] Export Ember.Handlebars compat shim for `Ember.Handlebars.SafeString` and `Ember.Handlebars.Utils.escapeExpression`.
+* [BUGFIX] Allow `Ember.inject` injected properties to be overridden (makes testing significantly easier).
+* [BUGFIX] Don’t assert uncaught RSVP rejections. We are already logging the error, but asserting breaks everything else on the run loop queue.
+* [BUGFIX] Allow tagName to be a CP (with deprecation).
+* [BUGFIX] Allow view instances in {{view}}.
+* [BUGFIX] Ensure bound attrs flush immediately.
+* [PERFORMANCE] Initialize views in preRender state.
+* [PERFORMANCE] `View#element` should not be observable.
+* Add ember-template-compiler package.
+* Rename `Ember.HTMLBars.registerASTPlugin` to `Ember.HTMLBars.registerPlugin`.
+* Export `ember-template-compiler.js`.
+
 ### 1.10.0-beta.1 (December 10, 2014)
 
 * Move debugging file output from `ember.js` to `ember.debug.js`.
