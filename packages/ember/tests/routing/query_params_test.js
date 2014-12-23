@@ -585,7 +585,7 @@ test("warn user that routes query params configuration must be an Object, not an
 
   App.ApplicationRoute = Ember.Route.extend({
     queryParams: [
-      {'commitBy': { replace: true }}
+      { commitBy: { replace: true } }
     ]
   });
 
@@ -622,7 +622,7 @@ test("Route query params config can be configured using property name instead of
   expect(2);
   App.ApplicationController = Ember.Controller.extend({
     queryParams: [
-      {commitBy: "commit_by"}
+      { commitBy: 'commit_by' }
     ]
   });
 
