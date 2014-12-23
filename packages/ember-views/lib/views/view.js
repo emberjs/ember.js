@@ -51,6 +51,7 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
+import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
 
 
 /**
@@ -2240,7 +2241,8 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
-View.applyAttributeBindings = function(elem, name, value) {
+View.applyAttributeBindings = function(elem, name, initialValue) {
+  var value = sanitizeAttributeValue(elem[0], name, initialValue);
   var type = typeOf(value);
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js

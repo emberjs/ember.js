@@ -13,6 +13,8 @@ import { forEach } from "ember-metal/array";
 import View from "ember-views/views/view";
 import keys from "ember-metal/keys";
 
+import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
+
 var helpers = EmberHandlebars.helpers;
 var SafeString = EmberHandlebars.SafeString;
 
@@ -178,6 +180,7 @@ function bindAttrHelper(options) {
 
     var lazyValue = view.getStream(path);
     var value = lazyValue.value();
+    value = sanitizeAttributeValue(null, attr, value);
     var type = typeOf(value);
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), 
