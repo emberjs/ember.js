@@ -1,3 +1,4 @@
+import _Ember from "ember-metal/core";
 import precompile from "ember-template-compiler/system/precompile";
 import compile from "ember-template-compiler/system/compile";
 import template from "ember-template-compiler/system/template";
@@ -10,6 +11,7 @@ registerPlugin('ast', TransformWithAsToHash);
 registerPlugin('ast', TransformEachInToHash);
 
 export {
+  _Ember,
   precompile,
   compile,
   template,
