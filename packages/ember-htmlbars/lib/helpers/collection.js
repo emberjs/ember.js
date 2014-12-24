@@ -150,14 +150,15 @@ export function collectionHelper(params, hash, options, env) {
 
   Ember.assert("You cannot pass more than one argument to the collection helper", params.length <= 1);
 
-  var data      = env.data,
-      template  = options.template,
-      inverse   = options.inverse,
-      view      = data.view,
-      // This should be deterministic, and should probably come from a
-      // parent view and not the controller.
-      controller = get(view, 'controller'),
-      container = (controller && controller.container ? controller.container : view.container);
+  var data      = env.data;
+  var  template  = options.template;
+  var  inverse   = options.inverse;
+  var  view      = data.view;
+
+  // This should be deterministic, and should probably come from a
+  // parent view and not the controller.
+  var  controller = get(view, 'controller');
+  var  container = (controller && controller.container ? controller.container : view.container);
 
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.

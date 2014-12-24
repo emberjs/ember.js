@@ -1722,7 +1722,8 @@ test("A redirection hook is provided", function() {
     this.route("home");
   });
 
-  var chooseFollowed = 0, destination;
+  var chooseFollowed = 0;
+  var destination;
 
   App.ChooseRoute = Ember.Route.extend({
     redirect: function() {

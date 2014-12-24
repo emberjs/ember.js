@@ -22,7 +22,9 @@ QUnit.module("ember-testing Adapter", {
 // });
 
 test("exception throws", function() {
-  var error = "Hai", thrown;
+  var error = "Hai";
+  var thrown;
+
   try {
     adapter.exception(error);
   } catch (e) {

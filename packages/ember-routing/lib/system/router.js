@@ -174,7 +174,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   transitionTo: function() {
-    var args = slice.call(arguments), queryParams;
+    var args = slice.call(arguments);
+    var queryParams;
     if (resemblesURL(args[0])) {
       return this._doURLTransition('transitionTo', args[0]);
     }

@@ -120,7 +120,8 @@ test("generateController should create App.Controller if provided", function() {
 });
 
 test("generateController should create App.ObjectController if provided", function() {
-  var context = {}, controller;
+  var context = {};
+  var controller;
   namespace.ObjectController = ObjectController.extend();
 
   controller = generateController(container, 'home', context);
@@ -130,7 +131,8 @@ test("generateController should create App.ObjectController if provided", functi
 });
 
 test("generateController should create App.ArrayController if provided", function() {
-  var context = Ember.A(), controller;
+  var context = Ember.A();
+  var controller;
   namespace.ArrayController = ArrayController.extend();
 
   controller = generateController(container, 'home', context);
