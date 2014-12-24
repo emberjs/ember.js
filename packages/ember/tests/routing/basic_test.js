@@ -1097,7 +1097,10 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     "<p>LOADING!</p>"
   );
 
-  var rootSetup = 0, rootRender = 0, rootModel = 0, rootSerialize = 0;
+  var rootSetup = 0;
+  var rootRender = 0;
+  var rootModel = 0;
+  var rootSerialize = 0;
 
   bootApplication();
 

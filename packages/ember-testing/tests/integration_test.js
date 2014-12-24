@@ -11,7 +11,8 @@ import compile from "ember-template-compiler/system/compile";
 
 import 'ember-application';
 
-var App, find, visit, originalAdapter = Test.adapter;
+var App, find, visit;
+var originalAdapter = Test.adapter;
 
 QUnit.module("ember-testing Integration", {
   setup: function() {

@@ -14,7 +14,8 @@ import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
 import compile from "ember-template-compiler/system/compile";
 
-var App, originalAdapter = Test.adapter;
+var App;
+var originalAdapter = Test.adapter;
 
 function cleanup(){
   // Teardown setupForTesting

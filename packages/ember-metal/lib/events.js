@@ -278,7 +278,8 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  var listeners = obj['__ember_meta__'].listeners, ret = [];
+  var listeners = obj['__ember_meta__'].listeners;
+  var ret = [];
 
   if (listeners) {
     for (var eventName in listeners) {
@@ -319,7 +320,10 @@ export function sendEvent(obj, eventName, params, actions) {
   if (!actions) { return; }
 
   for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
-    var target = actions[i], method = actions[i+1], flags = actions[i+2];
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+
     if (!method) { continue; }
     if (flags & SUSPENDED) { continue; }
     if (flags & ONCE) { removeListener(obj, eventName, target, method); }
