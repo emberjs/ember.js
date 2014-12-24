@@ -618,7 +618,6 @@ test('views set the template of their children to a passed block', function() {
 test('{{view}} should not override class bindings defined on a child view', function() {
   var LabelView = EmberView.extend({
     container:         container,
-    templateName:      'nested',
     classNameBindings: ['something'],
     something:         'visible'
   });

@@ -10,8 +10,9 @@ import {
   generateControllerFactory,
   default as generateController
 } from "ember-routing/system/generate_controller";
-import { ViewHelper } from "ember-htmlbars/helpers/view";
 import { isStream } from "ember-metal/streams/utils";
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
+import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -105,8 +106,11 @@ export function renderHelper(params, hash, options, env) {
 
   if (params.length === 1) {
     // use the singleton controller
-    Ember.assert("You can only use the {{render}} helper once without a model object as its" +
-                 " second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
+    Ember.assert(
+      "You can only use the {{render}} helper once without a model object as " +
+      "its second argument, as in {{render \"post\" post}}.",
+      !router || !router._lookupActiveView(name)
+    );
   } else if (params.length === 2) {
     // create a new controller
     initialContext = context.value();
@@ -122,11 +126,23 @@ export function renderHelper(params, hash, options, env) {
   view = container.lookup('view:' + name) || container.lookup('view:default');
 
   // provide controller override
-  var controllerName = hash.controller || name;
-  var controllerFullName = 'controller:' + controllerName;
+  var controllerName;
+  var controllerFullName;
 
-  Ember.assert("The controller name you supplied '" + controllerName +
-               "' did not resolve to a controller.", !hash.controller || container._registry.has(controllerFullName));
+  if (hash.controller) {
+    controllerName = hash.controller;
+    controllerFullName = 'controller:' + controllerName;
+    delete hash.controller;
+
+    Ember.assert(
+      "The controller name you supplied '" + controllerName + "' " +
+      "did not resolve to a controller.",
+      container._registry.has(controllerFullName)
+    );
+  } else {
+    controllerName = name;
+    controllerFullName = 'controller:' + controllerName;
+  }
 
   var parentController = this._keywords.controller.value();
 
@@ -157,17 +173,23 @@ export function renderHelper(params, hash, options, env) {
   hash.viewName = camelize(name);
 
   var templateName = 'template:' + name;
-  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
-               " a template or a view.", container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.template);
-  hash.template = container.lookup(templateName);
-
-  hash.controller = controller;
+  Ember.assert(
+    "You used `{{render '" + name + "'}}`, but '" + name + "' can not be " +
+    "found as either a template or a view.",
+    container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.template
+  );
+  var template = options.template || container.lookup(templateName);
 
   if (router && !initialContext) {
     router._connectActiveView(name, view);
   }
 
-  options.helperName = options.helperName || ('render "' + name + '"');
+  var props = {
+    template: template,
+    controller: controller,
+    helperName: 'render "' + name + '"'
+  };
 
-  ViewHelper.helper(view, hash, options, env);
+  mergeViewBindings(this, props, hash);
+  appendTemplatedView(this, options.morph, view, props);
 }
