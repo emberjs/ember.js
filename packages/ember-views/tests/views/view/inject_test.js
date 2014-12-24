@@ -16,8 +16,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     registry.register('service:profiler', Service.extend());
 
-    var appView = container.lookup('view:application'),
-      profilerService = container.lookup('service:profiler');
+    var appView = container.lookup('view:application');
+    var profilerService = container.lookup('service:profiler');
 
     equal(profilerService, appView.get('profilerService'), "service.profiler is injected");
   });

@@ -51,7 +51,8 @@ function metaForDeps(meta) {
 export function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
-  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
+  var depsMeta, idx, len, depKey, keys;
+  var depKeys = desc._dependentKeys;
   if (!depKeys) return;
 
   depsMeta = metaForDeps(meta);
@@ -70,7 +71,8 @@ export function addDependentKeys(desc, obj, keyName, meta) {
 export function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // remove all of its dependent keys.
-  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
+  var depKeys = desc._dependentKeys;
+  var depsMeta, idx, len, depKey, keys;
   if (!depKeys) return;
 
   depsMeta = metaForDeps(meta);

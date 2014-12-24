@@ -131,7 +131,8 @@ export default EmberObject.extend({
     @param addedEvents {Hash}
   */
   setup: function(addedEvents, rootElement) {
-    var event, events = get(this, 'events');
+    var event;
+    var events = get(this, 'events');
 
     merge(events, addedEvents || {});
 

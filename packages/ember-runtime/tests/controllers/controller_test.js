@@ -212,8 +212,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     registry.register('controller:posts', Controller.extend());
 
-    var postController = container.lookup('controller:post'),
-      postsController = container.lookup('controller:posts');
+    var postController = container.lookup('controller:post');
+    var postsController = container.lookup('controller:posts');
 
     equal(postsController, postController.get('postsController'), "controller.posts is injected");
   });
@@ -228,8 +228,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     registry.register('service:auth', Service.extend());
 
-    var appController = container.lookup('controller:application'),
-      authService = container.lookup('service:auth');
+    var appController = container.lookup('controller:application');
+    var authService = container.lookup('service:auth');
 
     equal(authService, appController.get('authService'), "service.auth is injected");
   });

@@ -725,7 +725,8 @@ test("link-to with null/undefined dynamic parameters are put in a loading state"
 
   expect(19);
 
-  var oldWarn = Ember.Logger.warn, warnCalled = false;
+  var oldWarn = Ember.Logger.warn;
+  var warnCalled = false;
   Ember.Logger.warn = function() { warnCalled = true; };
   Ember.TEMPLATES.index = compile("{{#link-to destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}string{{/link-to}}{{#link-to secondRoute loadingClass='i-am-loading' id='static-link'}}string{{/link-to}}");
 
@@ -1813,7 +1814,9 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       }
     }
 
-    var $index = Ember.$('#index-link'), $about = Ember.$('#about-link'), $other = Ember.$('#other-link');
+    var $index = Ember.$('#index-link');
+    var $about = Ember.$('#about-link');
+    var $other = Ember.$('#other-link');
 
     Ember.run($about, 'click');
 

@@ -6,7 +6,8 @@ var define, requireModule, require, requirejs, Ember;
   function UNDEFINED() { }
 
   if (typeof Ember.__loader === 'undefined') {
-    var registry = {}, seen = {};
+    var registry = {};
+    var seen = {};
 
     define = function(name, deps, callback) {
       registry[name] = { deps: deps, callback: callback };

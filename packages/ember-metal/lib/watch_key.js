@@ -16,7 +16,8 @@ export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
-  var m = meta || metaFor(obj), watching = m.watching;
+  var m = meta || metaFor(obj);
+  var watching = m.watching;
 
   // activate watching first time
   if (!watching[keyName]) {

@@ -452,7 +452,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   copy: function() {
-    var C = this.constructor, ret = new C(), loc = get(this, 'length');
+    var C = this.constructor;
+    var ret = new C();
+    var loc = get(this, 'length');
+
     set(ret, 'length', loc);
     while(--loc>=0) {
       ret[loc] = this[loc];
@@ -462,7 +465,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   toString: function() {
-    var len = this.length, idx, array = [];
+    var len = this.length;
+    var array = [];
+    var idx;
+
     for(idx = 0; idx < len; idx++) {
       array[idx] = this[idx];
     }
