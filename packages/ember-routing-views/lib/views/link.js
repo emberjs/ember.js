@@ -20,8 +20,9 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;
   for (var i = 0, l = handlerInfos.length; i < l; i++) {
     req = req + handlerInfos[i].names.length;
-    if (handlerInfos[i].handler === handler)
+    if (handlerInfos[i].handler === handler) {
       break;
+    }
   }
 
   return req;

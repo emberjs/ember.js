@@ -64,7 +64,10 @@ Suite.reopenClass({
   },
 
   module: function(desc, opts) {
-    if (!opts) opts = {};
+    if (!opts) {
+      opts = {};
+    }
+
     var setup = opts.setup;
     var teardown = opts.teardown;
     this.reopen({
@@ -74,11 +77,15 @@ Suite.reopenClass({
         var ctx = this;
         QUnit.module(title, {
           setup: function() {
-            if (setup) setup.call(ctx);
+            if (setup) {
+              setup.call(ctx);
+            }
           },
 
           teardown: function() {
-            if (teardown) teardown.call(ctx);
+            if (teardown) {
+              teardown.call(ctx);
+            }
           }
         });
       }
@@ -90,8 +97,12 @@ Suite.reopenClass({
       run: function() {
         this._super();
         var ctx = this;
-        if (!func) test(name); // output warning
-        else test(name, function() { func.call(ctx); });
+
+        if (!func) {
+          test(name); // output warning
+        } else {
+          test(name, function() { func.call(ctx); });
+        }
       }
     });
   },

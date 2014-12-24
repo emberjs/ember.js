@@ -372,12 +372,17 @@ QUnit.module("Computed properties", {
       // two computed properties that depend on a third property
       state: 'on',
       isOn: computed(function(key, value) {
-        if (value !== undefined) this.set('state', 'on');
+        if (value !== undefined) {
+          this.set('state', 'on');
+        }
+
         return this.get('state') === 'on';
       }).property('state').volatile(),
 
       isOff: computed(function(key, value) {
-        if (value !== undefined) this.set('state', 'off');
+        if (value !== undefined) {
+          this.set('state', 'off');
+        }
         return this.get('state') === 'off';
       }).property('state').volatile()
 

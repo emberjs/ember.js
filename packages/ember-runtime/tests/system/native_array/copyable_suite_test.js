@@ -9,9 +9,18 @@ CopyableTests.extend({
   },
 
   isEqual: function(a,b) {
-    if (!(a instanceof Array)) return false;
-    if (!(b instanceof Array)) return false;
-    if (a.length !== b.length) return false;
+    if (!(a instanceof Array)) {
+      return false;
+    }
+
+    if (!(b instanceof Array)) {
+      return false;
+    }
+
+    if (a.length !== b.length) {
+      return false;
+    }
+
     return a[0]===b[0];
   },
 

@@ -2,5 +2,14 @@
   "esnext": true,
   "excludeFiles": ["ember-runtime/ext/rsvp.js"],
   "additionalRules": [ "lib/jscs-rules/*.js" ],
-  "disallowMultipleVarDeclWithAssignment": true
+  "disallowMultipleVarDeclWithAssignment": true,
+  "requireCurlyBraces": [
+    "if",
+    "else",
+    "for",
+    "while",
+    "do",
+    "try",
+    "catch"
+  ]
 }

@@ -18,7 +18,10 @@ test('should set arbitrary properties on an object', function() {
   };
 
   for(var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
+
     equal(set(newObj, key, obj[key]), obj[key], 'should return value');
     equal(get(newObj, key), obj[key], 'should set value');
   }

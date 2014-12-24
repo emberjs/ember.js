@@ -91,7 +91,9 @@ export function DEFAULT_GETTER_FUNCTION(name) {
 export function defineProperty(obj, keyName, desc, data, meta) {
   var descs, existingDesc, watching, value;
 
-  if (!meta) meta = metaFor(obj);
+  if (!meta) {
+    meta = metaFor(obj);
+  }
   descs = meta.descs;
   existingDesc = meta.descs[keyName];
   var watchEntry = meta.watching[keyName];

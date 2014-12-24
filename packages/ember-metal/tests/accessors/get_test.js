@@ -22,7 +22,9 @@ test('should get arbitrary properties on an object', function() {
   };
 
   for(var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
     equal(get(obj, key), obj[key], key);
   }
 
@@ -105,7 +107,9 @@ test('should get arbitrary properties on an object', function() {
   };
 
   for(var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
     equal(getWithDefault(obj, key, "fail"), obj[key], key);
   }
 

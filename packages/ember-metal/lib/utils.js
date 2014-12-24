@@ -98,7 +98,9 @@ function intern(str) {
   var obj = {};
   obj[str] = 1;
   for (var key in obj) {
-    if (key === str) return key;
+    if (key === str) {
+      return key;
+    }
   }
   return str;
 }
@@ -181,7 +183,10 @@ export var NEXT_SUPER_PROPERTY = {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix) {
-  if (!prefix) prefix = GUID_PREFIX;
+  if (!prefix) {
+    prefix = GUID_PREFIX;
+  }
+
   var ret = (prefix + uuid());
   if (obj) {
     if (obj[GUID_KEY] === null) {
@@ -215,8 +220,13 @@ export function generateGuid(obj, prefix) {
 export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
-  if (obj === undefined) return "(undefined)";
-  if (obj === null) return "(null)";
+  if (obj === undefined) {
+    return "(undefined)";
+  }
+
+  if (obj === null) {
+    return "(null)";
+  }
 
   var ret;
   var type = typeof obj;
@@ -225,21 +235,38 @@ export function guidFor(obj) {
   switch(type) {
     case 'number':
       ret = numberCache[obj];
-      if (!ret) ret = numberCache[obj] = 'nu'+obj;
+
+      if (!ret) {
+        ret = numberCache[obj] = 'nu'+obj;
+      }
+
       return ret;
 
     case 'string':
       ret = stringCache[obj];
-      if (!ret) ret = stringCache[obj] = 'st' + uuid();
+
+      if (!ret) {
+        ret = stringCache[obj] = 'st' + uuid();
+      }
+
       return ret;
 
     case 'boolean':
       return obj ? '(true)' : '(false)';
 
     default:
-      if (obj[GUID_KEY]) return obj[GUID_KEY];
-      if (obj === Object) return '(Object)';
-      if (obj === Array)  return '(Array)';
+      if (obj[GUID_KEY]) {
+        return obj[GUID_KEY];
+      }
+
+      if (obj === Object) {
+        return '(Object)';
+      }
+
+      if (obj === Array)  {
+        return '(Array)';
+      }
+
       ret = GUID_PREFIX + uuid();
 
       if (obj[GUID_KEY] === null) {
@@ -320,7 +347,9 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 */
 function meta(obj, writable) {
   var ret = obj['__ember_meta__'];
-  if (writable===false) return ret || EMPTY_META;
+  if (writable===false) {
+    return ret || EMPTY_META;
+  }
 
   if (!ret) {
     if (canDefineNonEnumerableProperties) {
@@ -847,11 +876,17 @@ function typeOf(item) {
   ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
-    if (EmberObject && EmberObject.detect(item)) ret = 'class';
+    if (EmberObject && EmberObject.detect(item)) {
+      ret = 'class';
+    }
   } else if (ret === 'object') {
-    if (item instanceof Error) ret = 'error';
-    else if (EmberObject && item instanceof EmberObject) ret = 'instance';
-    else if (item instanceof Date) ret = 'date';
+    if (item instanceof Error) {
+      ret = 'error';
+    } else if (EmberObject && item instanceof EmberObject) {
+      ret = 'instance';
+    } else if (item instanceof Date) {
+      ret = 'date';
+    }
   }
 
   return ret;

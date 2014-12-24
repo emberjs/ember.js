@@ -1067,7 +1067,10 @@ var View = CoreView.extend({
       keywords.view.setSource(this.isVirtual ? parentKeywords.view : this);
 
       for (var name in parentKeywords) {
-        if (keywords[name]) continue;
+        if (keywords[name]) {
+          continue;
+        }
+
         keywords[name] = parentKeywords[name];
       }
     } else {

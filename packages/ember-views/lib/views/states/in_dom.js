@@ -35,7 +35,9 @@ merge(inDOM, {
   exit: function(view) {
     if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
-    if (!this.isVirtual) delete View.views[view.elementId];
+    if (!this.isVirtual) {
+      delete View.views[view.elementId];
+    }
   }
 });
 

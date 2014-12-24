@@ -15,8 +15,11 @@ var testBoth = function(testname, callback) {
   });
 
   test(testname+' using accessors', function() {
-    if (Ember.USES_ACCESSORS) callback(aget, aset);
-    else ok('SKIPPING ACCESSORS');
+    if (Ember.USES_ACCESSORS) {
+      callback(aget, aset);
+    } else {
+      ok('SKIPPING ACCESSORS');
+    }
   });
 };
 
@@ -45,8 +48,11 @@ var testWithDefault = function(testname, callback) {
   });
 
   test(testname+' using accessors', function() {
-    if (Ember.USES_ACCESSORS) callback(aget, aset);
-    else ok('SKIPPING ACCESSORS');
+    if (Ember.USES_ACCESSORS) {
+      callback(aget, aset);
+    } else {
+      ok('SKIPPING ACCESSORS');
+    }
   });
 };
 

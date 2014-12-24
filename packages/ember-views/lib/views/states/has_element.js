@@ -35,7 +35,10 @@ merge(hasElement, {
     }
     // TODO: should be scheduled with renderer
     run.scheduleOnce('render', function () {
-      if (view.isDestroying) return;
+      if (view.isDestroying) {
+        return;
+      }
+
       view._renderer.renderTree(view, view._parentView);
     });
   },

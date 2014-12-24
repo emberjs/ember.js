@@ -136,7 +136,9 @@ test('_super from a first-of-two mixins with no superclass function does not err
   var remaining = 3;
   var MixinA = Mixin.create({
     foo: function() {
-      if (remaining-- > 0) this._super();
+      if (remaining-- > 0) {
+        this._super();
+      }
     }
   });
 
