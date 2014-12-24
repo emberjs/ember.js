@@ -245,8 +245,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     registry.register('service:auth', Service.extend());
 
-    var appRoute = container.lookup('route:application'),
-      authService = container.lookup('service:auth');
+    var appRoute = container.lookup('route:application');
+    var authService = container.lookup('service:auth');
 
     equal(authService, appRoute.get('authService'), "service.auth is injected");
   });

@@ -321,7 +321,8 @@ ControllerMixin.reopen({
 var ALL_PERIODS_REGEX = /\./g;
 
 function accumulateQueryParamDescriptors(_desc, accum) {
-  var desc = _desc, tmp;
+  var desc = _desc;
+  var tmp;
   if (typeOf(desc) === 'string') {
     tmp = {};
     tmp[desc] = { as: null };

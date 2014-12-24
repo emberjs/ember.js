@@ -1934,7 +1934,8 @@ function parentRoute(route) {
 function handlerInfoFor(route, handlerInfos, _offset) {
   if (!handlerInfos) { return; }
 
-  var offset = _offset || 0, current;
+  var offset = _offset || 0;
+  var current;
   for (var i=0, l=handlerInfos.length; i<l; i++) {
     current = handlerInfos[i].handler;
     if (current === route) { return handlerInfos[i+offset]; }
@@ -1942,7 +1943,8 @@ function handlerInfoFor(route, handlerInfos, _offset) {
 }
 
 function parentTemplate(route) {
-  var parent = parentRoute(route), template;
+  var parent = parentRoute(route);
+  var template;
 
   if (!parent) { return; }
 

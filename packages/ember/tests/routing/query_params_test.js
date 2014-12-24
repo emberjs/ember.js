@@ -36,7 +36,8 @@ function handleURL(path) {
   });
 }
 
-var startingURL = '', expectedReplaceURL, expectedPushURL;
+var startingURL = '';
+var expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
   Ember.run(obj, 'set', prop, value);
