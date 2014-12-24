@@ -197,7 +197,8 @@ export default EmberObject.extend({
 
   _parseName: function(fullName) {
     var nameParts = fullName.split(':');
-    var type = nameParts[0], fullNameWithoutType = nameParts[1];
+    var type = nameParts[0];
+    var fullNameWithoutType = nameParts[1];
     var name = fullNameWithoutType;
     var namespace = get(this, 'namespace');
     var root = namespace;

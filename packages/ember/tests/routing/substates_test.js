@@ -74,7 +74,8 @@ QUnit.module("Loading/Error Substates", {
 
 test("Slow promise from a child route of application enters nested loading state", function() {
 
-  var broModel = {}, broDeferred = Ember.RSVP.defer();
+  var broModel = {};
+  var broDeferred = Ember.RSVP.defer();
 
   Router.map(function() {
     this.route('bro');

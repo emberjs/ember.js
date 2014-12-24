@@ -358,7 +358,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setupRouter: function(router, location) {
-    var lastURL, emberRouter = this;
+    var lastURL;
+    var emberRouter = this;
 
     router.getHandler = this._getHandlerFunction();
 
@@ -463,7 +464,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
-    var map = {}, qps = [];
+    var map = {};
+    var qps = [];
     this._qpCache[leafRouteName] = {
       map: map,
       qps: qps

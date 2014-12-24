@@ -5,7 +5,8 @@ import keys from 'ember-metal/keys';
 
   ```javascript
   Ember.merge({first: 'Tom'}, {last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
-  var a = {first: 'Yehuda'}, b = {last: 'Katz'};
+  var a = {first: 'Yehuda'};
+  var b = {last: 'Katz'};
   Ember.merge(a, b); // a == {first: 'Yehuda', last: 'Katz'}, b == {last: 'Katz'}
   ```
 

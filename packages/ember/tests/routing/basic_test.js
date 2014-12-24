@@ -1576,8 +1576,13 @@ test("Route inherits model from parent route", function() {
     });
   });
 
-  var post1 = {}, post2 = {}, post3 = {}, currentPost;
-  var share1 = {}, share2 = {}, share3 = {};
+  var post1 = {};
+  var post2 = {};
+  var post3 = {};
+  var currentPost;
+  var share1 = {};
+  var share2 = {};
+  var share3 = {};
 
   var posts = {
     1: post1,
@@ -1643,7 +1648,10 @@ test("Resource inherits model from parent resource", function() {
     });
   });
 
-  var post1 = {}, post2 = {}, post3 = {}, currentPost;
+  var post1 = {};
+  var post2 = {};
+  var post3 = {};
+  var currentPost;
 
   var posts = {
     1: post1,
@@ -1686,7 +1694,10 @@ test("It is possible to get the model from a parent route", function() {
     });
   });
 
-  var post1 = {}, post2 = {}, post3 = {}, currentPost;
+  var post1 = {};
+  var post2 = {};
+  var post3 = {};
+  var currentPost;
 
   var posts = {
     1: post1,

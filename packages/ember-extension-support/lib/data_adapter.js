@@ -183,7 +183,10 @@ export default EmberObject.extend({
     @return {Function} Method to call to remove all observers
   */
   watchRecords: function(type, recordsAdded, recordsUpdated, recordsRemoved) {
-    var self = this, releaseMethods = emberA(), records = this.getRecords(type), release;
+    var self = this;
+    var releaseMethods = emberA();
+    var records = this.getRecords(type);
+    var release;
 
     var recordUpdated = function(updatedRecord) {
       recordsUpdated([updatedRecord]);

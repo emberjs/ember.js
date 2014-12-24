@@ -101,7 +101,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var qpProps = get(controllerProto, '_normalizedQueryParams');
     var cacheMeta = get(controllerProto, '_cacheMeta');
 
-    var qps = [], map = {}, self = this;
+    var qps = [];
+    var map = {};
+    var self = this;
     for (var propName in qpProps) {
       if (!qpProps.hasOwnProperty(propName)) { continue; }
 
@@ -1421,7 +1423,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     if (params.length < 1) { return; }
     if (!model) { return; }
 
-    var name = params[0], object = {};
+    var name = params[0];
+    var object = {};
 
     if (/_id$/.test(name) && params.length === 1) {
       object[name] = get(model, "id");
