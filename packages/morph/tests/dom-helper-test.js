@@ -155,7 +155,7 @@ test('#appendMorph', function(){
   var morph = dom.appendMorph(element);
   dom.appendText(element, 'c');
 
-  morph.update('b');
+  morph.setContent('b');
 
   equal(element.innerHTML, 'abc');
 });
@@ -167,7 +167,7 @@ test('#insertMorphBefore', function(){
   var c = dom.appendText(element, 'c');
   var morph = dom.insertMorphBefore(element, c);
 
-  morph.update('b');
+  morph.setContent('b');
 
   equal(element.innerHTML, 'abc');
 });

@@ -119,43 +119,43 @@ function morphTests(factory) {
       endHTML = setup.endHTML,
       html;
 
-    morph.update(element('p', 'updated'));
+    morph.setContent(element('p', 'updated'));
     html = startHTML+'<p>updated</p>'+endHTML;
     equalHTML(fragment, html);
 
-    morph.update('updated');
+    morph.setContent('updated');
     html = startHTML+'updated'+endHTML;
     equalHTML(fragment, html);
 
-    morph.update(new SafeString('<p>updated</p>'));
+    morph.setContent(new SafeString('<p>updated</p>'));
     html = startHTML+'<p>updated</p>'+endHTML;
     equalHTML(fragment, html);
 
     var duckTypedSafeString = {
       string: '<div>updated</div>'
     };
-    morph.update(duckTypedSafeString);
+    morph.setContent(duckTypedSafeString);
     html = startHTML+'<div>updated</div>'+endHTML;
     equalHTML(fragment, html);
 
     var newFrag = document.createDocumentFragment();
     newFrag.appendChild(fragment);
 
-    morph.update('oh hai');
+    morph.setContent('oh hai');
     html = startHTML+'oh hai'+endHTML;
     equalHTML(newFrag, html);
 
-    morph.update('oh bai');
+    morph.setContent('oh bai');
     html = startHTML+'oh bai'+endHTML;
     equalHTML(newFrag, html);
 
     div.appendChild(newFrag);
 
-    morph.update('oh hai');
+    morph.setContent('oh hai');
     html = '<div>'+startHTML+'oh hai'+endHTML+'</div>';
     equalHTML(div, html);
 
-    morph.update('oh bai');
+    morph.setContent('oh bai');
     html = '<div>'+startHTML+'oh bai'+endHTML+'</div>';
     equalHTML(div, html);
   });
@@ -253,8 +253,8 @@ function morphListTests(factory) {
     checkChildMorphState(morph);
 
     morphs[3].destroy();
-    morphs[3].update(element('i', 'E'));
-    morphs[1].update(element('b', 'D'));
+    morphs[3].setContent(element('i', 'E'));
+    morphs[1].setContent(element('b', 'D'));
     morphs[2].destroy();
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><b>D</b><i>E</i><p>F</p>'+endHTML;
@@ -266,7 +266,7 @@ function morphListTests(factory) {
 
     morph.replace(2,2);
 
-    morphs[1].update(
+    morphs[1].setContent(
       fragmentFor(
         element('p','D'),
         element('p','E'),

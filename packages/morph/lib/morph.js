@@ -70,7 +70,7 @@ Morph.prototype.removeMorph = function (morph) {
   }
 };
 
-Morph.prototype.update = function (nodeOrString) {
+Morph.prototype.setContent = function (nodeOrString) {
   this._update(this.element || this.parent(), nodeOrString);
 };
 
