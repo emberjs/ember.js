@@ -17,7 +17,7 @@
     "ember-cli": "0.0.46",
     "ember-cli-yuidoc": "^0.3.1",
     "ember-publisher": "0.0.6",
-    "emberjs-build": "0.0.7",
+    "emberjs-build": "0.0.9",
     "express": "^4.5.0",
     "glob": "~3.2.8",
     "htmlbars": "0.5.0",

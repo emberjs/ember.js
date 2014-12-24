@@ -1,0 +1,6 @@
+{
+  "esnext": true,
+  "excludeFiles": ["ember-runtime/ext/rsvp.js"],
+  "additionalRules": [ "lib/jscs-rules/*.js" ],
+  "disallowMultipleVarDeclWithAssignment": true
+}
