@@ -169,5 +169,5 @@ export function renderHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || ('render "' + name + '"');
 
-  ViewHelper.instanceHelper(view, hash, options, env);
+  ViewHelper.helper(view, hash, options, env);
 }
