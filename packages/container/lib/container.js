@@ -2,6 +2,10 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
 
+// TODO - Temporary workaround for v0.4.0 of the ES6 transpiler, which lacks support for circular dependencies.
+// See the below usage of requireModule. Instead, it should be possible to simply `import Registry from './registry';`
+var Registry;
+
 /**
  A lightweight container used to instantiate and cache objects.
 
@@ -16,16 +20,20 @@ import dictionary from 'ember-metal/dictionary';
  @class Container
  */
 function Container(registry, options) {
-  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", typeof registry === 'object');
+  this._registry = registry || (function() {
+    Ember.deprecate("A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.");
 
-  options = options || {};
+    // TODO - See note above about transpiler import workaround.
+    if (!Registry) { Registry = requireModule('container/registry')['default']; }
+    
+    return new Registry();
+  }());
 
-  this._registry    = registry;
-  this.cache        = dictionary(options.cache || null);
-  this.factoryCache = dictionary(options.factoryCache || null);
+  this.cache        = dictionary(options && options.cache ? options.cache : null);
+  this.factoryCache = dictionary(options && options.factoryCache ? options.factoryCache : null);
 
   if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-    this.validationCache = dictionary(options.validationCache || null);
+    this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   }
 }
 
