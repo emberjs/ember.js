@@ -115,8 +115,13 @@ function normalizeTuple(target, path) {
   var isGlobal = !hasThis && isGlobalPath(path);
   var key;
 
-  if (!target || isGlobal) target = Ember.lookup;
-  if (hasThis) path = path.slice(5);
+  if (!target || isGlobal) {
+    target = Ember.lookup;
+  }
+
+  if (hasThis) {
+    path = path.slice(5);
+  }
 
   Ember.deprecate(
     "normalizeTuple will return '"+path+"' as a non-global. This behavior will change in the future (issue #3852)",
@@ -130,7 +135,9 @@ function normalizeTuple(target, path) {
   }
 
   // must return some kind of path to be valid else other things will break.
-  if (!path || path.length===0) throw new EmberError('Path cannot be empty');
+  if (!path || path.length===0) {
+    throw new EmberError('Path cannot be empty');
+  }
 
   return [ target, path ];
 }

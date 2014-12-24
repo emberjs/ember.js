@@ -53,7 +53,9 @@ export function addDependentKeys(desc, obj, keyName, meta) {
   // add all of its dependent keys.
   var depsMeta, idx, len, depKey, keys;
   var depKeys = desc._dependentKeys;
-  if (!depKeys) return;
+  if (!depKeys) {
+    return;
+  }
 
   depsMeta = metaForDeps(meta);
 
@@ -73,7 +75,9 @@ export function removeDependentKeys(desc, obj, keyName, meta) {
   // remove all of its dependent keys.
   var depKeys = desc._dependentKeys;
   var depsMeta, idx, len, depKey, keys;
-  if (!depKeys) return;
+  if (!depKeys) {
+    return;
+  }
 
   depsMeta = metaForDeps(meta);
 

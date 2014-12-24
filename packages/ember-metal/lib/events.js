@@ -127,9 +127,13 @@ export function addListener(obj, eventName, target, method, once) {
   var actionIndex = indexOf(actions, target, method);
   var flags = 0;
 
-  if (once) flags |= ONCE;
+  if (once) {
+    flags |= ONCE;
+  }
 
-  if (actionIndex !== -1) { return; }
+  if (actionIndex !== -1) {
+    return;
+  }
 
   actions.push(target, method, flags);
 

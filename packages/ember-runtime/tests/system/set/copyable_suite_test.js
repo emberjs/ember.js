@@ -29,8 +29,14 @@ CopyableTests.extend({
   },
 
   isEqual: function(a,b) {
-    if (!(a instanceof Set)) return false;
-    if (!(b instanceof Set)) return false;
+    if (!(a instanceof Set)) {
+      return false;
+    }
+
+    if (!(b instanceof Set)) {
+      return false;
+    }
+
     return get(a, 'firstObject') === get(b, 'firstObject');
   },
 

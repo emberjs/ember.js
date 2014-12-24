@@ -41,9 +41,13 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // because length is a built-in property we need to know to just get the
   // original property.
   get: function(key) {
-    if (key==='length') return this.length;
-    else if ('number' === typeof key) return this[key];
-    else return this._super(key);
+    if (key==='length') {
+      return this.length;
+    } else if ('number' === typeof key) {
+      return this[key];
+    } else {
+      return this._super(key);
+    }
   },
 
   objectAt: function(idx) {
@@ -53,7 +57,9 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw FROZEN_ERROR;
+    if (this.isFrozen) {
+      throw FROZEN_ERROR;
+    }
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
@@ -97,7 +103,9 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
 forEach(NativeArray.keys(), function(methodName) {
-  if (Array.prototype[methodName]) ignore.push(methodName);
+  if (Array.prototype[methodName]) {
+    ignore.push(methodName);
+  }
 });
 
 if (ignore.length > 0) {

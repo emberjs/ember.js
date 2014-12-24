@@ -261,7 +261,10 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   _replace: function(idx, amt, objects) {
     var content = get(this, 'content');
     Ember.assert('The content property of '+ this.constructor + ' should be set before modifying it', content);
-    if (content) this.replaceContent(idx, amt, objects);
+    if (content) {
+      this.replaceContent(idx, amt, objects);
+    }
+
     return this;
   },
 
@@ -274,7 +277,10 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   _insertAt: function(idx, object) {
-    if (idx > get(this, 'content.length')) throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    if (idx > get(this, 'content.length')) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
     this._replace(idx, 0, [object]);
     return this;
   },
@@ -298,7 +304,9 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
         throw new EmberError(OUT_OF_RANGE_EXCEPTION);
       }
 
-      if (len === undefined) len = 1;
+      if (len === undefined) {
+        len = 1;
+      }
 
       // Get a list of indices in original content to remove
       for (i=start; i<start+len; i++) {
@@ -333,7 +341,9 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   setObjects: function(objects) {
-    if (objects.length === 0) return this.clear();
+    if (objects.length === 0) {
+      return this.clear();
+    }
 
     var len = get(this, 'length');
     this._replace(0, len, objects);

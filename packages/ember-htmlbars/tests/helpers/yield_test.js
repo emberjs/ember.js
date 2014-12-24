@@ -321,7 +321,10 @@ test("yield with nested components (#3220)", function(){
     layout: compile("{{yield}}"),
     _yield: function (context, options, morph) {
       count++;
-      if (count > 1) throw new EmberError('is looping');
+      if (count > 1) {
+        throw new EmberError('is looping');
+      }
+
       return this._super(context, options, morph);
     }
   });

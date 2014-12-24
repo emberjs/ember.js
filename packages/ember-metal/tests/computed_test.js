@@ -629,7 +629,9 @@ test('adding a computed property should show up in key iteration',function() {
   defineProperty(obj, 'foo', computed(function() {}));
 
   var found = [];
-  for(var key in obj) found.push(key);
+  for(var key in obj) {
+    found.push(key);
+  }
   ok(indexOf(found, 'foo')>=0, 'should find computed property in iteration found=' + found);
   ok('foo' in obj, 'foo in obj should pass');
 });

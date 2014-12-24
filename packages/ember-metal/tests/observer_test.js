@@ -450,8 +450,9 @@ testBoth('deferring property change notifications safely despite exceptions', fu
       throw exc;
     });
   } catch(err) {
-    if (err !== exc)
+    if (err !== exc) {
       throw err;
+    }
   }
 
   equal(fooCount, 1, 'foo should have fired once');

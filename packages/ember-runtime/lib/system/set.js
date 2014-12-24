@@ -197,13 +197,19 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   */
   isEqual: function(obj) {
     // fail fast
-    if (!Enumerable.detect(obj)) return false;
+    if (!Enumerable.detect(obj)) {
+      return false;
+    }
 
     var loc = get(this, 'length');
-    if (get(obj, 'length') !== loc) return false;
+    if (get(obj, 'length') !== loc) {
+      return false;
+    }
 
     while(--loc >= 0) {
-      if (!obj.contains(this[loc])) return false;
+      if (!obj.contains(this[loc])) {
+        return false;
+      }
     }
 
     return true;
@@ -263,7 +269,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @return {Object} The removed object from the set or null.
   */
   pop: function() {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
     var obj = this.length > 0 ? this[this.length-1] : null;
     this.remove(obj);
     return obj;
@@ -361,7 +370,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   init: function(items) {
     Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
     this._super();
-    if (items) this.addObjects(items);
+
+    if (items) {
+      this.addObjects(items);
+    }
   },
 
   // implement Ember.Enumerable
@@ -381,15 +393,22 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   // implements Ember.MutableEnumerable
   addObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
-    if (isNone(obj)) return this; // nothing to do
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
+    if (isNone(obj)) {
+      return this; // nothing to do
+    }
 
     var guid = guidFor(obj);
     var idx  = this[guid];
     var len  = get(this, 'length');
     var added;
 
-    if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
+    if (idx>=0 && idx<len && (this[idx] === obj)) {
+      return this; // added
+    }
 
     added = [obj];
 
@@ -409,8 +428,13 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   // implements Ember.MutableEnumerable
   removeObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
-    if (isNone(obj)) return this; // nothing to do
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
+    if (isNone(obj)) {
+      return this; // nothing to do
+    }
 
     var guid = guidFor(obj);
     var idx  = this[guid];

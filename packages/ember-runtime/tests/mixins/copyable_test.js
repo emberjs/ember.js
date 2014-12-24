@@ -30,7 +30,10 @@ CopyableTests.extend({
   },
 
   isEqual: function(a, b) {
-    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) return false;
+    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) {
+      return false;
+    }
+
     return get(a, 'id') === get(b,'id');
   }
 }).run();

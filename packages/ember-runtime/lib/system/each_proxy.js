@@ -55,7 +55,9 @@ var IS_OBSERVER = /^.+:(before|change)$/;
 function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   var objects = proxy._objects;
   var guid;
-  if (!objects) objects = proxy._objects = {};
+  if (!objects) {
+    objects = proxy._objects = {};
+  }
 
   while(--loc>=idx) {
     var item = content.objectAt(loc);
@@ -67,7 +69,10 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
       // keep track of the index each item was found at so we can map
       // it back when the obj changes.
       guid = guidFor(item);
-      if (!objects[guid]) objects[guid] = [];
+      if (!objects[guid]) {
+        objects[guid] = [];
+      }
+
       objects[guid].push(loc);
     }
   }
@@ -75,7 +80,10 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
 
 function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   var objects = proxy._objects;
-  if (!objects) objects = proxy._objects = {};
+  if (!objects) {
+    objects = proxy._objects = {};
+  }
+
   var indicies, guid;
 
   while(--loc>=idx) {
@@ -194,7 +202,10 @@ var EachProxy = EmberObject.extend({
 
   beginObservingContentKey: function(keyName) {
     var keys = this._keys;
-    if (!keys) keys = this._keys = {};
+    if (!keys) {
+      keys = this._keys = {};
+    }
+
     if (!keys[keyName]) {
       keys[keyName] = 1;
       var content = this._content;

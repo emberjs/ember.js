@@ -138,7 +138,10 @@ EmberView.reopen({
     @method _finishDisconnections
    */
   _finishDisconnections: function() {
-    if (this.isDestroyed) return; // _outlets will be gone anyway
+    if (this.isDestroyed) {
+      return; // _outlets will be gone anyway
+    }
+
     var outlets = get(this, '_outlets');
     var pendingDisconnections = this._pendingDisconnections;
     this._pendingDisconnections = null;

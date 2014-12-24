@@ -104,7 +104,9 @@ function ChainNode(parent, key, value) {
 var ChainNodePrototype = ChainNode.prototype;
 
 function lazyGet(obj, key) {
-  if (!obj) return undefined;
+  if (!obj) {
+    return undefined;
+  }
 
   var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype

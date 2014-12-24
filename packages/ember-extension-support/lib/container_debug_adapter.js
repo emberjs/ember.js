@@ -77,7 +77,10 @@ export default EmberObject.extend({
     @return {boolean} whether a list is available for this type.
   */
   canCatalogEntriesByType: function(type) {
-    if (type === 'model' || type === 'template') return false;
+    if (type === 'model' || type === 'template') {
+      return false;
+    }
+
     return true;
   },
 

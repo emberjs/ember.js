@@ -9,7 +9,9 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 
 function performTest(binding, a, b, get, set, connect) {
-  if (connect === undefined) connect = function() {binding.connect(a);};
+  if (connect === undefined) {
+    connect = function() {binding.connect(a);};
+  }
 
   ok(!run.currentRunLoop, 'performTest should not have a currentRunLoop');
 
