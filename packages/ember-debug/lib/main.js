@@ -188,7 +188,7 @@ Ember.runInDebug = function(func) {
   any specific FEATURES flag is truthy.
 
   This method is called automatically in debug canary builds.
-  
+
   @private
   @method _warnIfUsingStrippedFeatureFlags
   @return {void}
@@ -210,7 +210,7 @@ if (!Ember.testing) {
   // Complain if they're using FEATURE flags in builds other than canary
   Ember.FEATURES['features-stripped-test'] = true;
   var featuresWereStripped = true;
-  
+
   if (Ember.FEATURES.isEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }

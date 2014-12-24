@@ -90,7 +90,7 @@ test("HashLocation.getURL() returns a normal forward slash when there is no loca
     createLocation({
       _location: mockBrowserLocation('/')
     });
-    
+
     equal(location.getURL(), '/');
 });
 

@@ -25,7 +25,7 @@ function Container(registry, options) {
 
     // TODO - See note above about transpiler import workaround.
     if (!Registry) { Registry = requireModule('container/registry')['default']; }
-    
+
     return new Registry();
   }());
 
