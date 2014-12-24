@@ -221,7 +221,7 @@ export default Mixin.create({
     var found = this.find(function(item) {
       return item === obj;
     });
-    
+
     return found !== undefined;
   },
 

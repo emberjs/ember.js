@@ -61,7 +61,7 @@ test("the stream returned is labeled with the requested path", function() {
     controller: {
       name: 'Robert'
     },
-    
+
     foo: 'bar'
   });
 
