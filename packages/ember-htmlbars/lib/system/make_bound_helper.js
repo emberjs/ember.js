@@ -73,10 +73,7 @@ export default function makeBoundHelper(fn) {
     // If none of the hash parameters are bound, act as an unbound helper.
     // This prevents views from being unnecessarily created
     var hasStream = scanArray(params) || scanHash(hash);
-
-    if (env.data.isUnbound || !hasStream) {
-      return valueFn();
-    } else {
+    if (hasStream) {
       var lazyValue = new Stream(valueFn);
 
       for (var i = 0; i < numParams; i++) {
@@ -90,6 +87,8 @@ export default function makeBoundHelper(fn) {
       }
 
       return lazyValue;
+    } else {
+      return valueFn();
     }
   }
 

@@ -35,9 +35,7 @@ import {
 } from "ember-htmlbars/helpers/bind-attr";
 import {
   ifHelper,
-  unlessHelper,
-  unboundIfHelper,
-  boundIfHelper
+  unlessHelper
 } from "ember-htmlbars/helpers/if_unless";
 import { locHelper } from "ember-htmlbars/helpers/loc";
 import { partialHelper } from "ember-htmlbars/helpers/partial";
@@ -63,8 +61,6 @@ registerHelper('yield', yieldHelper);
 registerHelper('with', withHelper);
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
-registerHelper('unboundIf', unboundIfHelper);
-registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
 registerHelper('debugger', debuggerHelper);
 registerHelper('loc', locHelper);
