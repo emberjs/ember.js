@@ -5,7 +5,7 @@ function HydrationJavaScriptCompiler() {
   this.stack = [];
   this.source = [];
   this.mustaches = [];
-  this.parents = ['fragment'];
+  this.parents = [['fragment']];
   this.parentCount = 0;
   this.morphs = [];
   this.fragmentProcessing = [];
@@ -21,7 +21,7 @@ prototype.compile = function(opcodes, options) {
   this.mustaches.length = 0;
   this.source.length = 0;
   this.parents.length = 1;
-  this.parents[0] = 'fragment';
+  this.parents[0] = ['fragment'];
   this.morphs.length = 0;
   this.fragmentProcessing.length = 0;
   this.parentCount = 0;
@@ -218,11 +218,14 @@ prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
 prototype.shareElement = function(elementNum){
   var elementNodesName = "element" + elementNum;
   this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent()+';');
-  this.parents[this.parents.length-1] = elementNodesName;
+  this.parents[this.parents.length-1] = [elementNodesName];
 };
 
 prototype.consumeParent = function(i) {
-  this.parents.push(this.getParent() + '.childNodes[' + i + ']');
+  var newParent = this.lastParent().slice();
+  newParent.push(i);
+
+  this.parents.push(newParent);
 };
 
 prototype.popParent = function() {
@@ -230,5 +233,16 @@ prototype.popParent = function() {
 };
 
 prototype.getParent = function() {
+  var last = this.lastParent().slice();
+  var frag = last.shift();
+
+  if (!last.length) {
+    return frag;
+  }
+
+  return 'dom.childAt(' + frag + ', [' + last.join(', ') + '])';
+};
+
+prototype.lastParent = function() {
   return this.parents[this.parents.length-1];
 };

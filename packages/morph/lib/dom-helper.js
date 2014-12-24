@@ -130,6 +130,16 @@ prototype.appendChild = function(element, childElement) {
   return element.appendChild(childElement);
 };
 
+prototype.childAt = function(element, indices) {
+  var child = element;
+
+  for (var i = 0; i < indices.length; i++) {
+    child = child.childNodes[indices[i]];
+  }
+
+  return child;
+};
+
 prototype.appendText = function(element, text) {
   return element.appendChild(this.document.createTextNode(text));
 };
