@@ -127,7 +127,8 @@ export function helperMissingHelper(path) {
     resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
   } // ES6TODO: stupid circular dep
 
-  var error, fmtError, view = "";
+  var error, fmtError;
+  var view = "";
 
   var options = arguments[arguments.length - 1];
 

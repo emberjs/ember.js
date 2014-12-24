@@ -147,7 +147,8 @@ ControllerMixin.reopen({
     @private
   */
   _calculateCacheKey: function(prefix, _parts, values) {
-    var parts = _parts || [], suffixes = "";
+    var parts = _parts || [];
+    var suffixes = "";
     for (var i = 0, len = parts.length; i < len; ++i) {
       var part = parts[i];
       var value = get(values, part);
