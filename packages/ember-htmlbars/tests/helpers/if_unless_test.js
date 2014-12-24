@@ -219,11 +219,11 @@ test("The `if` helper ignores a controller option", function() {
   equal(lookupCalled, false, 'controller option should NOT be used');
 });
 
-test('should not update boundIf if truthiness does not change', function() {
+test('should not rerender if truthiness does not change', function() {
   var renderCount = 0;
 
   view = EmberView.create({
-    template: compile('<h1 id="first">{{#boundIf "view.shouldDisplay"}}{{view view.InnerViewClass}}{{/boundIf}}</h1>'),
+    template: compile('<h1 id="first">{{#if view.shouldDisplay}}{{view view.InnerViewClass}}{{/if}}</h1>'),
 
     shouldDisplay: true,
 
@@ -779,7 +779,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
     expectAssertion(function() {
       runAppend(view);
-    }, 'If helper in inline form expects between two and three arguments');
+    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
   });
 
   test("`if` helper with inline form: raises when using less than two arguments", function() {
@@ -790,7 +790,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
     expectAssertion(function() {
       runAppend(view);
-    }, 'If helper in inline form expects between two and three arguments');
+    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
   });
 
   test("`if` helper with inline form: works when used in a sub expression", function() {
