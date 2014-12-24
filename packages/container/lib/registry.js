@@ -18,12 +18,10 @@ var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
  @class Registry
 */
 function Registry(options) {
-  options = options || {};
+  this.resolver = options && options.resolver ? options.resolver : function() {};
 
-  this.resolver = options.resolver || function() {};
-
-  this.registrations  = dictionary(options.registrations || null);
-  this.typeInjections = dictionary(options.typeInjections || null);
+  this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
+  this.typeInjections = dictionary(options && options.typeInjections ? options.typeInjections : null);
   this.injections     = dictionary(null);
   this.factoryTypeInjections = dictionary(null);
   this.factoryInjections     = dictionary(null);
@@ -31,8 +29,8 @@ function Registry(options) {
   this._normalizeCache = dictionary(null);
   this._resolveCache   = dictionary(null);
 
-  this._options     = dictionary(options.options || null);
-  this._typeOptions = dictionary(options.typeOptions || null);
+  this._options     = dictionary(options && options.options ? options.options : null);
+  this._typeOptions = dictionary(options && options.typeOptions ? options.typeOptions : null);
 }
 
 Registry.prototype = {

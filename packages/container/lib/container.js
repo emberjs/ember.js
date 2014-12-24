@@ -20,23 +20,20 @@ var Registry;
  @class Container
  */
 function Container(registry, options) {
-  if (!registry) {
+  this._registry = registry || (function() {
     Ember.deprecate("A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.");
 
     // TODO - See note above about transpiler import workaround.
     if (!Registry) { Registry = requireModule('container/registry')['default']; }
+    
+    return new Registry();
+  }());
 
-    registry = new Registry();
-  }
-
-  options = options || {};
-
-  this._registry    = registry;
-  this.cache        = dictionary(options.cache || null);
-  this.factoryCache = dictionary(options.factoryCache || null);
+  this.cache        = dictionary(options && options.cache ? options.cache : null);
+  this.factoryCache = dictionary(options && options.factoryCache ? options.factoryCache : null);
 
   if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-    this.validationCache = dictionary(options.validationCache || null);
+    this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   }
 }
 
