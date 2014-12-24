@@ -2,6 +2,10 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
 
+// TODO - Temporary workaround for v0.4.0 of the ES6 transpiler, which lacks support for circular dependencies.
+// See the below usage of requireModule. Instead, it should be possible to simply `import Registry from './registry';`
+var Registry;
+
 /**
  A lightweight container used to instantiate and cache objects.
 
@@ -16,7 +20,14 @@ import dictionary from 'ember-metal/dictionary';
  @class Container
  */
 function Container(registry, options) {
-  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", typeof registry === 'object');
+  if (!registry) {
+    Ember.deprecate("A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.");
+
+    // TODO - See note above about transpiler import workaround.
+    if (!Registry) { Registry = requireModule('container/registry')['default']; }
+
+    registry = new Registry();
+  }
 
   options = options || {};
 

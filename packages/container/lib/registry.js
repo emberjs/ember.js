@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import dictionary from 'ember-metal/dictionary';
-import Container from 'container/container';
+import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 
