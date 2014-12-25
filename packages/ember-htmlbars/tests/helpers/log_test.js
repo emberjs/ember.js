@@ -57,7 +57,7 @@ test('should be able to log a view property', function() {
 test('should be able to log `this`', function() {
   view = EmberView.create({
     context: 'one',
-    template: compile('{{log this}}'),
+    template: compile('{{log this}}')
   });
 
   runAppend(view);

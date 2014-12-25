@@ -314,7 +314,7 @@ function testMap(nameAndFunc) {
     var expectations = [
       { value: 1, key: "a", context: unboundThis },
       { value: 2, key: "b", context: unboundThis },
-      { value: 3, key: "c", context: unboundThis },
+      { value: 3, key: "c", context: unboundThis }
     ];
 
     map.forEach(function(value, key, theMap) {
@@ -342,7 +342,7 @@ function testMap(nameAndFunc) {
     var expectations = [
       { value: 1, key: "a", context: context },
       { value: 2, key: "b", context: context },
-      { value: 3, key: "c", context: context },
+      { value: 3, key: "c", context: context }
     ];
 
     map.forEach(function(value, key, theMap) {
@@ -401,7 +401,7 @@ function testMap(nameAndFunc) {
       { value: 1, key: "a", context: unboundThis },
       { value: 2, key: "b", context: unboundThis },
       { value: 3, key: "c", context: unboundThis },
-      { value: 4, key: "d", context: unboundThis },
+      { value: 4, key: "d", context: unboundThis }
     ];
 
     map.forEach(function(value, key, theMap) {
