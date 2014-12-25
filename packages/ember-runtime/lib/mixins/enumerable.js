@@ -987,7 +987,7 @@ export default Mixin.create({
     var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
 
-    if (!hasObservers) { 
+    if (!hasObservers) {
       propertyWillChange(this, 'hasEnumerableObservers');
     }
 

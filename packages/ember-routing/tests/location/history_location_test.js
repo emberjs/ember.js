@@ -175,7 +175,7 @@ test("HistoryLocation.getURL() returns the current url, excluding both rootURL a
 test("HistoryLocation.getURL() includes location.search", function() {
     expect(1);
 
-    HistoryTestLocation.reopen({  
+    HistoryTestLocation.reopen({
       init: function() {
         this._super();
         set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
@@ -190,7 +190,7 @@ test("HistoryLocation.getURL() includes location.search", function() {
 test("HistoryLocation.getURL() includes location.hash", function() {
     expect(1);
 
-    HistoryTestLocation.reopen({  
+    HistoryTestLocation.reopen({
       init: function() {
         this._super();
         set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
@@ -205,7 +205,7 @@ test("HistoryLocation.getURL() includes location.hash", function() {
 test("HistoryLocation.getURL() includes location.hash and location.search", function() {
     expect(1);
 
-    HistoryTestLocation.reopen({  
+    HistoryTestLocation.reopen({
       init: function() {
         this._super();
         set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));

@@ -12,5 +12,6 @@
     "try",
     "catch"
   ],
+  "disallowTrailingWhitespace": true,
   "disallowTrailingComma": true
 }

@@ -17,7 +17,7 @@ import keys from 'ember-metal/keys';
   @return {Object}
 */
 export default function merge(original, updates) {
-  if (!updates || typeof updates !== 'object') { 
+  if (!updates || typeof updates !== 'object') {
     return original;
   }
 
