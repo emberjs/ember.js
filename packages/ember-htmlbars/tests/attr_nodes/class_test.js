@@ -140,7 +140,7 @@ test("class attribute stays in order", function() {
   view = EmberView.create({
     context: {
       showA: 'a',
-      showB: 'b',
+      showB: 'b'
     },
     template: compile("<div class='r {{showB}} {{showA}} c'></div>")
   });

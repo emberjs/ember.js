@@ -487,7 +487,7 @@ test("should teardown observers from bind-attr on rerender", function() {
 
 test("should keep class in the order it appears in", function() {
   view = EmberView.create({
-    template: compile('<span {{bind-attr class=":foo :baz"}}></span>'),
+    template: compile('<span {{bind-attr class=":foo :baz"}}></span>')
   });
 
   runAppend(view);

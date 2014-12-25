@@ -61,7 +61,9 @@ Ember.assert = function(desc, test) {
 Ember.warn = function(message, test) {
   if (!test) {
     Logger.warn("WARNING: "+message);
-    if ('trace' in Logger) Logger.trace();
+    if ('trace' in Logger) {
+      Logger.trace();
+    }
   }
 };
 
