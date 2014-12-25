@@ -322,7 +322,7 @@ test("it supports itemController", function() {
     })
   });
 
- runDestroy(view);
+  runDestroy(view);
 
   var parentController = {
     container: container
@@ -436,7 +436,7 @@ test("itemController's parentController property, when the ArrayController has a
         }),
         company: 'Yapp'
       });
-   var CompanyController = EmberController.extend();
+  var CompanyController = EmberController.extend();
 
   registry.register('controller:company', CompanyController);
   registry.register('controller:people', PeopleController);

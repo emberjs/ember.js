@@ -4,6 +4,7 @@ import {
 } from "htmlbars-compiler/compiler";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 QUnit.module('ember-htmlbars: compile');
 
@@ -25,4 +26,5 @@ test('calls template on the compiled function', function() {
   ok(actual.isMethod === false, 'sets isMethod via template function');
 });
 
+// jscs:enable validateIndentation
 }

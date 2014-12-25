@@ -20,6 +20,7 @@ function registerRepeatHelper() {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
@@ -276,4 +277,5 @@ test('when no hash parameters are bound, no new views are created', function(){
   equal(view.$().text(), 'aaa');
 });
 
+// jscs:enable validateIndentation
 }

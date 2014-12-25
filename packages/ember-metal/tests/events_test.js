@@ -102,12 +102,12 @@ test('suspending a listener should not invoke during callback', function() {
   addListener(obj, 'event!', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      sendEvent(obj, 'event!');
+    sendEvent(obj, 'event!');
 
-      return 'result';
+    return 'result';
   }
 
   sendEvent(obj, 'event!');

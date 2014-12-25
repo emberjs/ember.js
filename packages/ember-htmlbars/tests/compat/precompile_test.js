@@ -23,6 +23,7 @@ test("precompile creates a string when asObject is false", function(){
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 test("precompile creates an object when passed an AST", function(){
   var ast = parse(template);
@@ -30,4 +31,5 @@ test("precompile creates an object when passed an AST", function(){
   equal(typeof(result), "object");
 });
 
+// jscs:enable validateIndentation
 }

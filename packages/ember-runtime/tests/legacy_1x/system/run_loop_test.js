@@ -47,14 +47,14 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
   run(function () {
 
     //Binding of output of MyApp.first object to input of MyApp.second object
-      binding1 = Binding.from("first.output")
-        .to("second.input").connect(MyApp) ;
+    binding1 = Binding.from("first.output")
+      .to("second.input").connect(MyApp) ;
 
     //Binding of output of MyApp.second object to input of MyApp.third object
     binding2 = Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
-
   });
+
   run(function () {
     // Based on the above binding if you change the output of MyApp.first
     // object it should change the all the variable of
@@ -66,7 +66,6 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
 
     //since binding has not taken into effect the value still remains as change.
     equal(MyApp.second.get("output"), "MyApp.first") ;
-
   }); // allows bindings to trigger...
 
   //Value of the output variable changed to 'change'
@@ -84,7 +83,7 @@ test("Should propagate bindings after the RunLoop completes", function() {
 
     //Binding of output of MyApp.second object to input of MyApp.third object
     binding2 = Binding.from("second.output")
-        .to("third.input").connect(MyApp) ;
+      .to("third.input").connect(MyApp) ;
   });
 
   run(function () {

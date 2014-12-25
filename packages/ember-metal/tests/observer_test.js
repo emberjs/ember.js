@@ -289,12 +289,12 @@ testBoth('suspending an observer should not fire during callback', function(get,
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -326,12 +326,12 @@ testBoth('suspending an observer should not defer change notifications during ca
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -364,12 +364,12 @@ testBoth('suspending observers should not fire during callback', function(get,se
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -401,12 +401,12 @@ testBoth('suspending observers should not defer change notifications during call
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');

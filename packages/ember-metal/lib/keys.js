@@ -27,7 +27,7 @@ if (!keys || !canDefineNonEnumerableProperties) {
           'propertyIsEnumerable',
           'constructor'
         ];
-   var dontEnumsLength = dontEnums.length;
+    var dontEnumsLength = dontEnums.length;
 
     return function keys(obj) {
       if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {

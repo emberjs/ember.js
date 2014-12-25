@@ -100,7 +100,7 @@ test("throws if you try to define a computed property", function() {
 
 test("throws if you try to call _super in a method", function() {
   expectAssertion(function() {
-     EmberObject.create({
+    EmberObject.create({
       foo: function() {
         this._super();
       }

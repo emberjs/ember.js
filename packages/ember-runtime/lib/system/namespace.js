@@ -159,8 +159,11 @@ var NAME_KEY = Ember.NAME_KEY = GUID_KEY + '_name';
 function superClassString(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
-    if (superclass[NAME_KEY]) { return superclass[NAME_KEY]; }
-    else { return superClassString(superclass); }
+    if (superclass[NAME_KEY]) {
+      return superclass[NAME_KEY];
+    } else {
+      return superClassString(superclass);
+    }
   } else {
     return;
   }

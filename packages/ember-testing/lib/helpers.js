@@ -186,7 +186,9 @@ function wait(app, value) {
         var context = waiter[0];
         var callback = waiter[1];
         return !callback.call(context);
-      })) { return; }
+      })) {
+        return;
+      }
       // Stop polling
       clearInterval(watcher);
 

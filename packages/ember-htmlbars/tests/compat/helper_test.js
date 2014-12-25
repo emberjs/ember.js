@@ -11,6 +11,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   teardown: function() {
@@ -118,4 +119,5 @@ test('bound ordered params are provided with their original paths', function() {
   runAppend(view);
 });
 
+// jscs:enable validateIndentation
 }

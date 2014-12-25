@@ -642,8 +642,8 @@ export function tryInvoke(obj, methodName, args) {
 var needsFinallyFix = (function() {
   var count = 0;
   try{
-    try { }
-    finally {
+    try {
+    } finally {
       count++;
       throw new Error('needsFinallyFixTest');
     }

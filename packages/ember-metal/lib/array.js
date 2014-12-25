@@ -76,25 +76,25 @@ var indexOf = defineNativeShim(ArrayPrototype.indexOf, function (obj, fromIndex)
 });
 
 var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, function(obj, fromIndex) {
-    var len = this.length;
-    var idx;
+  var len = this.length;
+  var idx;
 
-    if (fromIndex === undefined) {
-      fromIndex = len-1;
-    } else {
-      fromIndex = (fromIndex < 0) ? Math.ceil(fromIndex) : Math.floor(fromIndex);
-    }
+  if (fromIndex === undefined) {
+    fromIndex = len-1;
+  } else {
+    fromIndex = (fromIndex < 0) ? Math.ceil(fromIndex) : Math.floor(fromIndex);
+  }
 
-    if (fromIndex < 0) {
-      fromIndex += len;
-    }
+  if (fromIndex < 0) {
+    fromIndex += len;
+  }
 
-    for(idx = fromIndex;idx>=0;idx--) {
-      if (this[idx] === obj) {
-        return idx ;
-      }
+  for(idx = fromIndex;idx>=0;idx--) {
+    if (this[idx] === obj) {
+      return idx ;
     }
-    return -1;
+  }
+  return -1;
 });
 
 var filter = defineNativeShim(ArrayPrototype.filter, function (fn, context) {

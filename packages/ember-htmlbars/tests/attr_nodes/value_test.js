@@ -10,6 +10,7 @@ function appendView(view) {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: value attribute", {
   teardown: function(){
@@ -45,4 +46,5 @@ test("string property is output", function() {
         'property is set true');
 });
 
+// jscs:enable validateIndentation
 }

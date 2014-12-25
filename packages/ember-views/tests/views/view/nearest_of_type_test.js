@@ -45,24 +45,23 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-test("nearestWithProperty should search immediate parent", function() {
-  var childView;
+  test("nearestWithProperty should search immediate parent", function() {
+    var childView;
 
-  view = View.create({
-    myProp: true,
+    view = View.create({
+      myProp: true,
 
-    render: function(buffer) {
-      this.appendChild(View.create());
-    }
+      render: function(buffer) {
+        this.appendChild(View.create());
+      }
+    });
+
+    run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    childView = view.get('childViews')[0];
+    equal(childView.nearestWithProperty('myProp'), view);
+
   });
-
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  childView = view.get('childViews')[0];
-  equal(childView.nearestWithProperty('myProp'), view);
-
-});
-
 }());

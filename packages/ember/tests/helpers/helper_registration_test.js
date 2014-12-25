@@ -81,6 +81,7 @@ test("Bound helpers registered on the container can be late-invoked", function()
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
   // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
   // and we are not going to recreate the handlebars helperMissing concept
@@ -111,4 +112,5 @@ test("Undashed helpers registered on the container can not (presently) be invoke
   helpers.helperMissing = realHelperMissing;
 });
 
+// jscs:enable validateIndentation
 }

@@ -13,5 +13,6 @@
     "catch"
   ],
   "disallowTrailingWhitespace": true,
-  "disallowTrailingComma": true
+  "disallowTrailingComma": true,
+  "validateIndentation": 2
 }

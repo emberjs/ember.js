@@ -90,129 +90,129 @@ test("webkit doesn't fire popstate on page load", function() {
 });
 
 test("base URL is removed when retrieving the current pathname", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-        init: function() {
-            this._super();
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
 
-            set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-            set(this, 'baseURL', '/base/');
-        },
+      set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+      set(this, 'baseURL', '/base/');
+    },
 
-        initState: function() {
-            this._super();
+    initState: function() {
+      this._super();
 
-            equal(this.getURL(), '/foo/bar');
-        }
-    });
+      equal(this.getURL(), '/foo/bar');
+    }
+  });
 
-    createLocation();
-    location.initState();
+  createLocation();
+  location.initState();
 });
 
 test("base URL is preserved when moving around", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-        init: function() {
-            this._super();
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
 
-            set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-            set(this, 'baseURL', '/base/');
-        }
-    });
+      set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+      set(this, 'baseURL', '/base/');
+    }
+  });
 
-    createLocation();
-    location.initState();
-    location.setURL('/one/two');
+  createLocation();
+  location.initState();
+  location.setURL('/one/two');
 
-    equal(location._historyState.path, '/base/one/two');
+  equal(location._historyState.path, '/base/one/two');
 });
 
 test("setURL continues to set even with a null state (iframes may set this)", function() {
-    expect(1);
+  expect(1);
 
-    createLocation();
-    location.initState();
+  createLocation();
+  location.initState();
 
-    FakeHistory.pushState(null);
-    location.setURL('/three/four');
+  FakeHistory.pushState(null);
+  location.setURL('/three/four');
 
-    equal(location._historyState.path, '/three/four');
+  equal(location._historyState.path, '/three/four');
 });
 
 test("replaceURL continues to set even with a null state (iframes may set this)", function() {
-    expect(1);
+  expect(1);
 
-    createLocation();
-    location.initState();
+  createLocation();
+  location.initState();
 
-    FakeHistory.pushState(null);
-    location.replaceURL('/three/four');
+  FakeHistory.pushState(null);
+  location.replaceURL('/three/four');
 
-    equal(location._historyState.path, '/three/four');
+  equal(location._historyState.path, '/three/four');
 });
 
 test("HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-      init: function() {
-        this._super();
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
 
-        set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-        set(this, 'rootURL', '/app/');
-        set(this, 'baseURL', '/base/');
-      }
-    });
+      set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+      set(this, 'rootURL', '/app/');
+      set(this, 'baseURL', '/base/');
+    }
+  });
 
-    createLocation();
+  createLocation();
 
-    equal(location.getURL(), '/foo/bar');
+  equal(location.getURL(), '/foo/bar');
 });
 
 test("HistoryLocation.getURL() includes location.search", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-      init: function() {
-        this._super();
-        set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
-      }
-    });
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
+      set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
+    }
+  });
 
-    createLocation();
+  createLocation();
 
-    equal(location.getURL(), '/foo/bar?time=morphin');
+  equal(location.getURL(), '/foo/bar?time=morphin');
 });
 
 test("HistoryLocation.getURL() includes location.hash", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-      init: function() {
-        this._super();
-        set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
-      }
-    });
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
+      set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
+    }
+  });
 
-    createLocation();
+  createLocation();
 
-    equal(location.getURL(), '/foo/bar#pink-power-ranger');
+  equal(location.getURL(), '/foo/bar#pink-power-ranger');
 });
 
 test("HistoryLocation.getURL() includes location.hash and location.search", function() {
-    expect(1);
+  expect(1);
 
-    HistoryTestLocation.reopen({
-      init: function() {
-        this._super();
-        set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
-      }
-    });
+  HistoryTestLocation.reopen({
+    init: function() {
+      this._super();
+      set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
+    }
+  });
 
-    createLocation();
+  createLocation();
 
-    equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+  equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
 });

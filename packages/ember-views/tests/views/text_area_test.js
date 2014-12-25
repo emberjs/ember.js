@@ -19,7 +19,7 @@ function append() {
 
 QUnit.module("TextArea", {
   setup: function() {
-   TestObject = window.TestObject = EmberObject.create({
+    TestObject = window.TestObject = EmberObject.create({
       value: null
     });
 

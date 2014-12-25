@@ -14,6 +14,7 @@ QUnit.module("ember-htmlbars: sanitized attribute", {
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 var badTags = [
   { tag: 'a', attr: 'href',
@@ -99,4 +100,5 @@ for (var i=0, l=badTags.length; i<l; i++) {
   })(); //jshint ignore:line
 }
 
+// jscs:enable validateIndentation
 }

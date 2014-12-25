@@ -181,6 +181,7 @@ test("Assigning templateName and layoutName should use the templates specified",
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
   // ember-htmlbars doesn't throw an exception when a helper is not found
 
 test('Using name of component that does not exist', function () {
@@ -191,6 +192,7 @@ test('Using name of component that does not exist', function () {
   }, /Could not find component or helper named 'no-good'/);
 });
 
+// jscs:enable validateIndentation
 }
 
 QUnit.module("Application Lifecycle - Component Context", {

@@ -55,132 +55,132 @@ QUnit.module("Ember.HashLocation", {
 });
 
 test("HashLocation.getURL() returns the current url", function() {
-    expect(1);
+  expect(1);
 
-    createLocation({
-      _location: mockBrowserLocation('/#/foo/bar')
-    });
+  createLocation({
+    _location: mockBrowserLocation('/#/foo/bar')
+  });
 
-    equal(location.getURL(), '/foo/bar');
+  equal(location.getURL(), '/foo/bar');
 });
 
 test("HashLocation.getURL() includes extra hashes", function() {
-    expect(1);
+  expect(1);
 
-    createLocation({
-      _location: mockBrowserLocation('/#/foo#bar#car')
-    });
+  createLocation({
+    _location: mockBrowserLocation('/#/foo#bar#car')
+  });
 
-    equal(location.getURL(), '/foo#bar#car');
+  equal(location.getURL(), '/foo#bar#car');
 });
 
 test("HashLocation.getURL() assumes location.hash without #/ prefix is not a route path", function() {
-    expect(1);
+  expect(1);
 
-    createLocation({
-      _location: mockBrowserLocation('/#foo#bar')
-    });
+  createLocation({
+    _location: mockBrowserLocation('/#foo#bar')
+  });
 
-    equal(location.getURL(), '/#foo#bar');
+  equal(location.getURL(), '/#foo#bar');
 });
 
 test("HashLocation.getURL() returns a normal forward slash when there is no location.hash", function() {
-    expect(1);
+  expect(1);
 
-    createLocation({
-      _location: mockBrowserLocation('/')
-    });
+  createLocation({
+    _location: mockBrowserLocation('/')
+  });
 
-    equal(location.getURL(), '/');
+  equal(location.getURL(), '/');
 });
 
 test("HashLocation.setURL() correctly sets the url", function() {
-    expect(2);
+  expect(2);
 
-    createLocation();
+  createLocation();
 
-    location.setURL('/bar');
+  location.setURL('/bar');
 
-    equal(get(location, 'location.hash'), '/bar');
-    equal(get(location, 'lastSetURL'), '/bar');
+  equal(get(location, 'location.hash'), '/bar');
+  equal(get(location, 'lastSetURL'), '/bar');
 });
 
 test("HashLocation.replaceURL() correctly replaces to the path with a page reload", function() {
-    expect(2);
+  expect(2);
 
-    createLocation({
-      _location: {
-        replace: function(path) {
-          equal(path, '#/foo');
-        }
+  createLocation({
+    _location: {
+      replace: function(path) {
+        equal(path, '#/foo');
       }
-    });
+    }
+  });
 
-    location.replaceURL('/foo');
+  location.replaceURL('/foo');
 
-    equal(get(location, 'lastSetURL'), '/foo');
+  equal(get(location, 'lastSetURL'), '/foo');
 });
 
 test("HashLocation.onUpdateURL() registers a hashchange callback", function() {
-    expect(3);
+  expect(3);
 
-    var oldJquery = Ember.$;
+  var oldJquery = Ember.$;
 
-    Ember.$ = function (element) {
-      equal(element, window);
-      return {
-        on: function(eventName, callback) {
-          equal(eventName, 'hashchange.ember-location-' + guid);
-          equal(Object.prototype.toString.call(callback), '[object Function]');
-        }
-      };
+  Ember.$ = function (element) {
+    equal(element, window);
+    return {
+      on: function(eventName, callback) {
+        equal(eventName, 'hashchange.ember-location-' + guid);
+        equal(Object.prototype.toString.call(callback), '[object Function]');
+      }
     };
+  };
 
-    createLocation({
-      // Mock so test teardown doesn't fail
-      willDestroy: function () {}
-    });
+  createLocation({
+    // Mock so test teardown doesn't fail
+    willDestroy: function () {}
+  });
 
-    var guid = guidFor(location);
+  var guid = guidFor(location);
 
-    location.onUpdateURL(function () {});
+  location.onUpdateURL(function () {});
 
-    // clean up
-    Ember.$ = oldJquery;
+  // clean up
+  Ember.$ = oldJquery;
 });
 
 test("HashLocation.formatURL() prepends a # to the provided string", function() {
-    expect(1);
+  expect(1);
 
-    createLocation();
+  createLocation();
 
-    equal(location.formatURL('/foo#bar'), '#/foo#bar');
+  equal(location.formatURL('/foo#bar'), '#/foo#bar');
 });
 
 test("HashLocation.willDestroy() cleans up hashchange event listener", function() {
-    expect(2);
+  expect(2);
 
-    var oldJquery = Ember.$;
+  var oldJquery = Ember.$;
 
-    Ember.$ = function (element) {
-      equal(element, window);
+  Ember.$ = function (element) {
+    equal(element, window);
 
-      return {
-        off: function(eventName) {
-          equal(eventName, 'hashchange.ember-location-' + guid);
-        }
-      };
+    return {
+      off: function(eventName) {
+        equal(eventName, 'hashchange.ember-location-' + guid);
+      }
     };
+  };
 
-    createLocation();
+  createLocation();
 
-    var guid = guidFor(location);
+  var guid = guidFor(location);
 
-    location.willDestroy();
+  location.willDestroy();
 
-    // noop so test teardown doesn't call our mocked jQuery again
-    location.willDestroy = function() {};
+  // noop so test teardown doesn't call our mocked jQuery again
+  location.willDestroy = function() {};
 
-    // clean up
-    Ember.$ = oldJquery;
+  // clean up
+  Ember.$ = oldJquery;
 });

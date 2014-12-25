@@ -251,7 +251,7 @@ export default {
       // If the path already has a trailing slash, remove the one
       // from the hashed route so we don't double up.
       if (path.slice(-1) === '/') {
-          routeHash = routeHash.substr(1);
+        routeHash = routeHash.substr(1);
       }
 
       // This is the "expected" final order

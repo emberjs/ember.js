@@ -32,7 +32,7 @@ function registerRepeatHelper() {
     var count = options.hash.count || 1;
     var a = [];
     while(a.length < count) {
-        a.push(value);
+      a.push(value);
     }
     return a.join('');
   });

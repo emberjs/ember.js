@@ -189,9 +189,9 @@ TrackedArray.prototype = {
     var rightOp = rightArrayOperation && rightArrayOperation.type;
 
     if (leftOp === INSERT) {
-        // merge left
-        leftArrayOperation.count += newArrayOperation.count;
-        leftArrayOperation.items = leftArrayOperation.items.concat(newArrayOperation.items);
+      // merge left
+      leftArrayOperation.count += newArrayOperation.count;
+      leftArrayOperation.items = leftArrayOperation.items.concat(newArrayOperation.items);
 
       if (rightOp === INSERT) {
         // also merge right (we have split an insert with an insert)

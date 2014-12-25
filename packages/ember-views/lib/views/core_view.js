@@ -66,8 +66,11 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   // return the current view, not including virtual views
   concreteView: computed('parentView', function() {
-    if (!this.isVirtual) { return this; }
-    else { return get(this, 'parentView.concreteView'); }
+    if (!this.isVirtual) {
+      return this;
+    } else {
+      return get(this, 'parentView.concreteView');
+    }
   }),
 
   instrumentName: 'core_view',

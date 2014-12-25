@@ -311,6 +311,7 @@ test("view should support disconnectOutlet for the main outlet", function() {
 
 // TODO: Remove flag when {{with}} is fixed.
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
   var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
@@ -337,6 +338,7 @@ test("Outlets bind to the current template's view, not inner contexts [DEPRECATE
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
+// jscs:enable validateIndentation
 }
 
 test("should support layouts", function() {

@@ -339,7 +339,7 @@ export default EmberObject.extend({
     var className = classify(parsedName.name);
     var factory = get(parsedName.root, className);
 
-     if (factory) { return factory; }
+    if (factory) { return factory; }
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
@@ -377,8 +377,11 @@ export default EmberObject.extend({
   _logLookup: function(found, parsedName) {
     var symbol, padding;
 
-    if (found) { symbol = '[✓]'; }
-    else       { symbol = '[ ]'; }
+    if (found) {
+      symbol = '[✓]';
+    } else {
+      symbol = '[ ]';
+    }
 
     if (parsedName.fullName.length > 60) {
       padding = '.';
