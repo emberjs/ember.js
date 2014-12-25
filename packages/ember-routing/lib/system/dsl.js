@@ -5,8 +5,9 @@ import Ember from "ember-metal/core"; // FEATURES, assert
 @submodule ember-routing
 */
 
-function DSL(name) {
+function DSL(name, options) {
   this.parent = name;
+  this.enableLoadingSubtates = options && options.enableLoadingSubtates;
   this.matches = [];
 }
 export default DSL;
@@ -26,13 +27,18 @@ DSL.prototype = {
     Ember.assert("'" + name + "' cannot be used as a " + type + " name.", name !== 'array' && name !== 'basic' && name !== 'object');
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
-      createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
+      if (this.enableLoadingSubtates) {
+        createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
+        createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
+      }
     }
 
     if (callback) {
       var fullName = getFullName(this, name, options.resetNamespace);
-      var dsl = new DSL(fullName);
+      var dsl = new DSL(fullName, {
+        enableLoadingSubtates: this.enableLoadingSubtates
+      });
+
       createRoute(dsl, 'loading');
       createRoute(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
 

@@ -70,16 +70,40 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
+  _initRouterJs: function(moduleBasedResolver) {
+    var router = this.router = new Router();
+    router.triggerEvent = triggerEvent;
+
+    router._triggerWillChangeContext = K;
+    router._triggerWillLeave = K;
+
+    var dslCallbacks = this.constructor.dslCallbacks || [K];
+    var dsl = new EmberRouterDSL(null, {
+      enableLoadingSubtates: !!moduleBasedResolver
+    });
+
+    function generateDSL() {
+      this.resource('application', { path: "/" }, function() {
+        for (var i=0; i < dslCallbacks.length; i++) {
+          dslCallbacks[i].call(this);
+        }
+      });
+    }
+
+    generateDSL.call(dsl);
+
+    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      router.log = Ember.Logger.debug;
+    }
+
+    router.map(dsl.generate());
+  },
+
   init: function() {
-    this.router = this.constructor.router || this.constructor.map(K);
     this._activeViews = {};
     this._setupLocation();
     this._qpCache = {};
     this._queuedQPChanges = {};
-
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      this.router.log = Ember.Logger.debug;
-    }
   },
 
   /**
@@ -102,8 +126,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting: function() {
-    this.router = this.router || this.constructor.map(K);
+  startRouting: function(moduleBasedResolver) {
+
+    this._initRouterJs(moduleBasedResolver);
 
     var router = this.router;
     var location = get(this, 'location');
@@ -267,7 +292,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method reset
    */
   reset: function() {
-    this.router.reset();
+    if (this.router) {
+      this.router.reset();
+    }
   },
 
   _lookupActiveView: function(templateName) {
@@ -807,30 +834,15 @@ EmberRouter.reopenClass({
     @param callback
   */
   map: function(callback) {
-    var router = this.router;
-    if (!router) {
-      router = new Router();
 
-      router._triggerWillChangeContext = K;
-      router._triggerWillLeave = K;
-
-      router.callbacks = [];
-      router.triggerEvent = triggerEvent;
-      this.reopenClass({ router: router });
+    if (!this.dslCallbacks) {
+      this.dslCallbacks = [];
+      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
-    var dsl = EmberRouterDSL.map(function() {
-      this.resource('application', { path: "/" }, function() {
-        for (var i=0; i < router.callbacks.length; i++) {
-          router.callbacks[i].call(this);
-        }
-        callback.call(this);
-      });
-    });
+    this.dslCallbacks.push(callback);
 
-    router.callbacks.push(callback);
-    router.map(dsl.generate());
-    return router;
+    return this;
   },
 
   _routePath: function(handlerInfos) {

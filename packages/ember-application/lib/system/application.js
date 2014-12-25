@@ -753,7 +753,9 @@ var Application = Namespace.extend(DeferredMixin, {
     var router = this.__container__.lookup('router:main');
     if (!router) { return; }
 
-    router.startRouting();
+    var moduleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
+
+    router.startRouting(moduleBasedResolver);
   },
 
   handleURL: function(url) {
