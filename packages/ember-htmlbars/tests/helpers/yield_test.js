@@ -215,6 +215,7 @@ test("can bind a keyword to a component and use it in yield", function() {
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 test("yield uses the layout context for non component [DEPRECATED]", function() {
   view = EmberView.create({
@@ -235,6 +236,7 @@ test("yield uses the layout context for non component [DEPRECATED]", function() 
   equal('outerinner', view.$('p').text(), "Yield points at the right context");
 });
 
+// jscs:enable validateIndentation
 }
 
 test("yield view should be a virtual view", function() {

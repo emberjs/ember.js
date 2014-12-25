@@ -47,7 +47,8 @@ function indexOf(array, target, method) {
   // of the array and search in reverse
   for (var i = array.length - 3 ; i >=0; i -= 3) {
     if (target === array[i] && method === array[i + 1]) {
-         index = i; break;
+      index = i;
+      break;
     }
   }
   return index;

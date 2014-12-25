@@ -145,6 +145,7 @@ test("Inside a yield, the target points at the original target", function() {
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
   var registeredTarget;
 
@@ -176,6 +177,7 @@ test("should target the current controller inside an {{each}} loop [DEPRECATED]"
 
   equal(registeredTarget, itemController, "the item controller is the target of action");
 });
+// jscs:enable validateIndentation
 }
 
 test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {

@@ -228,11 +228,11 @@ test("With ember-data like initializer and constant", function() {
   var DS = {
     Store: EmberObject.extend({
       init: function() {
-         if (!get(DS, 'defaultStore')) {
+        if (!get(DS, 'defaultStore')) {
           set(DS, 'defaultStore', this);
-         }
+        }
 
-         this._super();
+        this._super();
       },
       willDestroy: function() {
         if (get(DS, 'defaultStore') === this) {

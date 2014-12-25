@@ -64,11 +64,11 @@ suite.test('any should produce correct results even if the matching element is u
 
 suite.test('any should be aliased to some', function() {
   var obj = this.newObject();
-      var ary = this.toArray(obj);
-      var anyFound = [];
-      var someFound = [];
-      var cnt = ary.length - 2;
-      var anyResult, someResult;
+  var ary = this.toArray(obj);
+  var anyFound = [];
+  var someFound = [];
+  var cnt = ary.length - 2;
+  var anyResult, someResult;
 
   anyResult = obj.any(function(i) { anyFound.push(i); return false; });
   someResult = obj.some(function(i) { someFound.push(i); return false; });

@@ -55,38 +55,39 @@ QUnit.module("object.propertyChanges", {
       }
 
     });
-    }
+  }
 });
-
 
 test("should observe the changes within the nested begin / end property changes", function() {
 
   //start the outer nest
   ObjectA.beginPropertyChanges();
-    // Inner nest
-    ObjectA.beginPropertyChanges();
-        ObjectA.set('foo', 'changeFooValue');
-      equal(ObjectA.prop, "propValue") ;
-      ObjectA.endPropertyChanges();
+
+  // Inner nest
+  ObjectA.beginPropertyChanges();
+  ObjectA.set('foo', 'changeFooValue');
+
+  equal(ObjectA.prop, "propValue") ;
+  ObjectA.endPropertyChanges();
 
     //end inner nest
-    ObjectA.set('prop', 'changePropValue');
-    equal(ObjectA.newFoo, "newFooValue") ;
+  ObjectA.set('prop', 'changePropValue');
+  equal(ObjectA.newFoo, "newFooValue") ;
+
   //close the outer nest
   ObjectA.endPropertyChanges();
 
   equal(ObjectA.prop, "changedPropValue") ;
   equal(ObjectA.newFoo, "changedNewFooValue") ;
-
 });
 
 test("should observe the changes within the begin and end property changes", function() {
 
   ObjectA.beginPropertyChanges();
-    ObjectA.set('foo', 'changeFooValue');
+  ObjectA.set('foo', 'changeFooValue');
 
   equal(ObjectA.prop, "propValue") ;
-    ObjectA.endPropertyChanges();
+  ObjectA.endPropertyChanges();
 
   equal(ObjectA.prop, "changedPropValue") ;
 });

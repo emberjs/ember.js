@@ -1,6 +1,7 @@
 import template from "ember-template-compiler/system/template";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 QUnit.module('ember-htmlbars: template');
 
@@ -20,4 +21,5 @@ test('sets `isMethod` on the provided function', function() {
   equal(test.isMethod, false, 'sets isMethod on the provided function');
 });
 
+// jscs:enable validateIndentation
 }

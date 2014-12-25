@@ -313,16 +313,16 @@ QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
       sortedArrayController = ArrayController.create({
         sortProperties: ['name'],
         sortFunction: function(v, w) {
-            var lowerV = v.toLowerCase();
-            var lowerW = w.toLowerCase();
+          var lowerV = v.toLowerCase();
+          var lowerW = w.toLowerCase();
 
-            if (lowerV < lowerW) {
-              return -1;
-            }
-            if (lowerV > lowerW) {
-              return 1;
-            }
-            return 0;
+          if (lowerV < lowerW) {
+            return -1;
+          }
+          if (lowerV > lowerW) {
+            return 1;
+          }
+          return 0;
         }
       });
       var array = [{ id: 1, name: "Scumbag Dale" },
@@ -355,17 +355,17 @@ test("Ember.Sortable with sortFunction on ArrayProxy should work like ArrayContr
     sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
       sortProperties: ['name'],
       sortFunction: function(v, w) {
-            var lowerV = v.toLowerCase();
-            var lowerW = w.toLowerCase();
+        var lowerV = v.toLowerCase();
+        var lowerW = w.toLowerCase();
 
-            if (lowerV < lowerW) {
-              return -1;
-            }
-            if (lowerV > lowerW) {
-              return 1;
-            }
-            return 0;
+        if (lowerV < lowerW) {
+          return -1;
         }
+        if (lowerV > lowerW) {
+          return 1;
+        }
+        return 0;
+      }
     });
     var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
     unsortedArray = Ember.A(Ember.A(array).copy());

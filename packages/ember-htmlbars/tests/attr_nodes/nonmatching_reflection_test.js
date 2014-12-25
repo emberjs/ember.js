@@ -10,6 +10,7 @@ function appendView(view) {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: nonmatching reflection", {
   teardown: function(){
@@ -49,4 +50,5 @@ test("quoted maxlength sets the property and attribute", function() {
   equal(view.element.firstChild.maxLength, 524288);
 });
 
+// jscs:enable validateIndentation
 }

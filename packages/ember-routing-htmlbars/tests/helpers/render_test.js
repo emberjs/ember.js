@@ -556,6 +556,7 @@ test("{{render}} works with slash notation", function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 test("throws an assertion if {{render}} is called with an unquoted template name", function(){
   var template = '<h1>HI</h1>{{render home}}';
@@ -587,7 +588,9 @@ test("throws an assertion if {{render}} is called with a literal for a model", f
   }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
 });
 
+// jscs:enable validateIndentation
 } else {
+// jscs:disable validateIndentation
 
 test("Using quoteless templateName works properly (DEPRECATED)", function(){
   var template = '<h1>HI</h1>{{render home}}';
@@ -605,4 +608,5 @@ test("Using quoteless templateName works properly (DEPRECATED)", function(){
   equal(view.$('p:contains(BYE)').length, 1, "template was rendered");
 });
 
+// jscs:enable validateIndentation
 }
