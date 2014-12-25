@@ -372,7 +372,7 @@ test("should not throw deprecations if {{outlet}} is used without a name", funct
 test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
   expectNoDeprecation();
   view = EmberView.create({
-    template: compile("{{outlet \"foo\"}}"),
+    template: compile("{{outlet \"foo\"}}")
   });
   runAppend(view);
 });
@@ -380,7 +380,7 @@ test("should not throw deprecations if {{outlet}} is used with a quoted name", f
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   test("should throw an assertion if {{outlet}} used with unquoted name", function() {
     view = EmberView.create({
-      template: compile("{{outlet foo}}"),
+      template: compile("{{outlet foo}}")
     });
     expectAssertion(function() {
       runAppend(view);

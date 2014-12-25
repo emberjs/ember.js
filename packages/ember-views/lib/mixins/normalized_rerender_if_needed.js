@@ -36,5 +36,5 @@ export default Mixin.create({
 
   rerenderIfNeeded: function() {
     this.currentState.rerenderIfNeeded(this);
-  },
+  }
 });

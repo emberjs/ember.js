@@ -84,7 +84,7 @@ test('should read from an Object.create(null)', function() {
 test('should escape HTML in primitive value contexts when using normal mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
-    template: compile('{{this}}'),
+    template: compile('{{this}}')
   });
 
   runAppend(view);
@@ -103,7 +103,7 @@ test('should escape HTML in primitive value contexts when using normal mustaches
 test('should not escape HTML in primitive value contexts when using triple mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
-    template: compile('{{{this}}}'),
+    template: compile('{{{this}}}')
   });
 
   runAppend(view);
