@@ -915,6 +915,28 @@ QUnit.module("HTML-based compiler (invalid HTML errors)", {
   setup: commonSetup
 });
 
+test("A helpful error message is provided for unmatched end tags", function() {
+  expect(2);
+
+  QUnit.throws(function() {
+    compile("</p>");
+  }, /Closing tag `p` \(on line 1\) without an open tag\./);
+  QUnit.throws(function() {
+    compile("<em>{{ foo }}</em> \n {{ bar }}\n</div>");
+  }, /Closing tag `div` \(on line 3\) without an open tag\./);
+});
+
+test("A helpful error message is provided for end tags for void elements", function() {
+  expect(2);
+
+  QUnit.throws(function() {
+    compile("<input></input>");
+  }, /Invalid end tag `input` \(on line 1\) \(void elements cannot have end tags\)./);
+  QUnit.throws(function() {
+    compile("\n\n</br>");
+  }, /Invalid end tag `br` \(on line 3\) \(void elements cannot have end tags\)./);
+});
+
 test("A helpful error message is provided for mismatched start/end tags", function() {
   QUnit.throws(function() {
     compile("<div>\n<p>\nSomething\n\n</div>");
