@@ -11,5 +11,6 @@
     "do",
     "try",
     "catch"
-  ]
+  ],
+  "disallowTrailingComma": true
 }
