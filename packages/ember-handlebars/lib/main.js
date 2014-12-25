@@ -102,7 +102,7 @@ EmberHandlebars.registerHelper('collection', collectionHelper);
 EmberHandlebars.registerHelper('log', logHelper);
 EmberHandlebars.registerHelper('debugger', debuggerHelper);
 EmberHandlebars.registerHelper('each', eachHelper);
-EmberHandlebars.registerHelper('loc', locHelper);
+EmberHandlebars.registerBoundHelper('loc', locHelper);
 EmberHandlebars.registerHelper('partial', partialHelper);
 EmberHandlebars.registerHelper('template', templateHelper);
 EmberHandlebars.registerHelper('yield', yieldHelper);
