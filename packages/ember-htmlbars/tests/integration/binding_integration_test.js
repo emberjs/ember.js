@@ -6,7 +6,6 @@ import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
-import { ViewHelper } from 'ember-htmlbars/helpers/view';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { registerHelper } from "ember-htmlbars/helpers";
 
@@ -155,28 +154,26 @@ test("should update bound values after view's parent is removed and then re-appe
 });
 
 test('should accept bindings as a string or an Ember.Binding', function() {
-  var viewClass = EmberView.extend({
-    template: compile('binding: {{view.bindingTest}}, string: {{view.stringTest}}')
-  });
-
-  registerHelper('boogie', function(params, hash, options, env) {
-    var id = params[0];
-    hash.bindingTestBinding = Binding.oneWay('context.' + id._label);
-    hash.stringTestBinding = id;
-
-    var result = ViewHelper.helper(viewClass, hash, options, env);
-
-    return result;
+  var ViewWithBindings = EmberView.extend({
+    oneWayBindingTestBinding: Binding.oneWay('context.direction'),
+    twoWayBindingTestBinding: Binding.from('context.direction'),
+    stringBindingTestBinding: 'context.direction',
+    template: compile(
+      "one way: {{view.oneWayBindingTest}}, " +
+      "two way: {{view.twoWayBindingTest}}, " +
+      "string: {{view.stringBindingTest}}"
+    )
   });
 
   view = EmberView.create({
+    viewWithBindingsClass: ViewWithBindings,
     context: EmberObject.create({
-      direction: 'down'
+      direction: "down"
     }),
-    template: compile('{{boogie direction}}')
+    template: compile("{{view view.viewWithBindingsClass}}")
   });
 
   runAppend(view);
 
-  equal(trim(view.$().text()), 'binding: down, string: down');
+  equal(trim(view.$().text()), "one way: down, two way: down, string: down");
 });
