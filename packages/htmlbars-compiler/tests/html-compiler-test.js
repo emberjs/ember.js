@@ -1034,6 +1034,15 @@ test("The compiler pops back to the correct namespace", function() {
   equalTokens(fragment, html);
 });
 
+test("The compiler pops back to the correct namespace even if exiting last child", function () {
+  var html = '<div><svg></svg></div><div></div>';
+  var fragment = compile(html).render({}, env);
+
+  equal(fragment.firstChild.namespaceURI, xhtmlNamespace, "first div's namespace is xhtmlNamespace");
+  equal(fragment.firstChild.firstChild.namespaceURI, svgNamespace, "svg's namespace is svgNamespace");
+  equal(fragment.lastChild.namespaceURI, xhtmlNamespace, "last div's namespace is xhtmlNamespace");
+});
+
 test("The compiler preserves capitalization of tags", function() {
   var html = '<svg><linearGradient id="gradient"></linearGradient></svg>';
   var template = compile(html);
