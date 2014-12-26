@@ -124,12 +124,7 @@ var tokenHandlers = {
     var parent = this.currentElement();
     var disableComponentGeneration = this.options.disableComponentGeneration === true;
 
-    if (element.tag !== tag.tagName) {
-      throw new Error(
-        "Closing tag `" + tag.tagName + "` (on line " + tag.lastLine + ") " +
-        "did not match last open tag `" + element.tag + "` (on line " + element.loc.start.line + ")."
-      );
-    }
+    validateEndTag(tag, element);
 
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
@@ -144,5 +139,26 @@ var tokenHandlers = {
   }
 
 };
+
+function validateEndTag(tag, element) {
+  var error;
+
+  if (voidMap[tag.tagName] && element.tag === undefined) {
+    // For void elements, we check element.tag is undefined because endTag is called by the startTag token handler in
+    // the normal case, so checking only voidMap[tag.tagName] would lead to an error being thrown on the opening tag.
+    error = "Invalid end tag " + formatEndTagInfo(tag) + " (void elements cannot have end tags).";
+  } else if (element.tag === undefined) {
+    error = "Closing tag " + formatEndTagInfo(tag) + " without an open tag.";
+  } else if (element.tag !== tag.tagName) {
+    error = "Closing tag " + formatEndTagInfo(tag) + " did not match last open tag `" + element.tag + "` (on line " +
+            element.loc.start.line + ").";
+  }
+
+  if (error) { throw new Error(error); }
+}
+
+function formatEndTagInfo(tag) {
+  return "`" + tag.tagName + "` (on line " + tag.lastLine + ")";
+}
 
 export default tokenHandlers;
