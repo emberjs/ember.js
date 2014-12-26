@@ -63,7 +63,7 @@ test('#getElementById with different root node', function() {
       body = document.createElementNS(xhtmlNamespace, 'body'),
       parentNode = dom.createElement('div'),
       childNode = dom.createElement('div');
-      
+
   doc.documentElement.appendChild(body);
   dom.setAttribute(parentNode, 'id', 'parent');
   dom.setAttribute(childNode, 'id', 'child');
@@ -72,16 +72,17 @@ test('#getElementById with different root node', function() {
   equalHTML(dom.getElementById('child', doc), '<div id="child"></div>');
 });
 
-test('#setProperty', function(){
+test('#setPropertyStrict', function(){
   var node = dom.createElement('div');
-  dom.setProperty(node, 'id', 'super-tag');
+  dom.setPropertyStrict(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>');
 
   node = dom.createElement('input');
-  dom.setProperty(node, 'disabled', true);
+  dom.setPropertyStrict(node, 'disabled', true);
   equalHTML(node, '<input disabled="">');
-  dom.setProperty(node, 'disabled', false);
+  dom.setPropertyStrict(node, 'disabled', false);
   equalHTML(node, '<input>');
+
 });
 
 test('#removeAttribute', function(){
@@ -89,9 +90,37 @@ test('#removeAttribute', function(){
   dom.setAttribute(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>', 'precond - attribute exists');
 
-
   dom.removeAttribute(node, 'id');
   equalHTML(node, '<div></div>', 'attribute was removed');
+});
+
+test('#setProperty', function(){
+  var node = dom.createElement('div');
+  dom.setProperty(node, 'id', 'super-tag');
+  equalHTML(node, '<div id="super-tag"></div>');
+  dom.setProperty(node, 'id', null);
+  ok(node.getAttribute('id') !== 'super-tag', 'null property sets to the property');
+
+  node = dom.createElement('div');
+  dom.setProperty(node, 'data-fun', 'whoopie');
+  equalHTML(node, '<div data-fun="whoopie"></div>');
+  dom.setProperty(node, 'data-fun', null);
+  equalHTML(node, '<div></div>', 'null attribute removes the attribute');
+
+  node = dom.createElement('input');
+  dom.setProperty(node, 'disabled', true);
+  equal(node.disabled, true);
+  dom.setProperty(node, 'disabled', false);
+  equal(node.disabled, false);
+
+  node = dom.createElement('div');
+  dom.setProperty(node, 'style', 'color: red;');
+  equalHTML(node, '<div style="color: red;"></div>');
+
+  dom.setNamespace(svgNamespace);
+  node = dom.createElement('svg');
+  dom.setProperty(node, 'viewBox', '0 0 0 0');
+  equalHTML(node, '<svg viewBox="0 0 0 0"></svg>');
 });
 
 test('#addClasses', function(){

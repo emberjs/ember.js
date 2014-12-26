@@ -1,24 +1,9 @@
-var propertyCaches = {};
-
-function normalizeProperty(element, attrName) {
-  var tagName = element.tagName;
-  var cache = propertyCaches[tagName];
-  var key;
-  if (!cache) {
-    cache = {};
-    for (key in element) {
-      if (element.hasOwnProperty(key)) {
-        cache[key.toLowerCase()] = key;
-      }
-    }
-    propertyCaches[tagName] = cache;
-  }
-
-  return cache[attrName.toLowerCase()];
-}
+import { sanitizeAttributeValue } from "./attr-morph/sanitize-attribute-value";
+import { normalizeProperty } from "./dom-helper/prop";
+import { svgNamespace } from "./dom-helper/build-html-dom";
 
 function updateProperty(value) {
-  this.domHelper.setProperty(this.element, this.attrName, value);
+  this.domHelper.setPropertyStrict(this.element, this.attrName, value);
 }
 
 function updateAttribute(value) {
@@ -35,31 +20,19 @@ function AttrMorph(element, attrName, domHelper) {
   this.escaped = true;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);
-  if (normalizedAttrName) {
-    this.attrName = normalizedAttrName;
-    this._update = updateProperty;
-  } else {
+  if (element.namespaceURI === svgNamespace || attrName === 'style' || !normalizedAttrName) {
     this.attrName = attrName;
     this._update = updateAttribute;
+  } else {
+    this.attrName = normalizedAttrName;
+    this._update = updateProperty;
   }
-
-  this.reset();
 }
-
-AttrMorph.prototype.reset = function() {
-  this.owner = null;
-};
-
-AttrMorph.prototype.destroy = function () {
-  if (this.owner) {
-    this.owner.removeMorph(this);
-  }
-};
 
 AttrMorph.prototype.setContent = function (value) {
   if (this.escaped) {
-    // process value to be sanitized
-    this._update(value);
+    var sanitized = sanitizeAttributeValue(this.element, this.attrName, value);
+    this._update(sanitized);
   } else {
     this._update(value);
   }

@@ -121,7 +121,8 @@ test("unquoted attribute string is just that", function() {
   var template = compile('<input value=funstuff>');
   var fragment = template.render({}, env);
 
-  equalTokens(fragment, '<input value="funstuff">');
+  equal(fragment.tagName, 'INPUT', 'input tag');
+  equal(fragment.value, 'funstuff', 'value is set as property');
 });
 
 test("unquoted attribute expression is string", function() {
@@ -129,6 +130,7 @@ test("unquoted attribute expression is string", function() {
   var template = compile('<input value={{funstuff}}>');
   var fragment = template.render({funstuff: "oh my"}, env);
 
+  equal(fragment.tagName, 'INPUT', 'input tag');
   equal(fragment.value, 'oh my', 'string is set to property');
 });
 
@@ -163,8 +165,8 @@ test("Simple elements can have arbitrary attributes", function() {
 test("checked attribute and checked property are present after clone and hydrate", function() {
   var template = compile("<input checked=\"checked\">");
   var fragment = template.render({}, env);
-  ok(fragment.checked, 'input is checked');
-  equalTokens(fragment, "<input checked='checked'>");
+  equal(fragment.tagName, 'INPUT', 'input tag');
+  equal(fragment.checked, true, 'input tag is checked');
 });
 
 test("SVG element can have capitalized attributes", function() {

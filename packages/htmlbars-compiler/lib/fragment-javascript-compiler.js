@@ -61,7 +61,7 @@ FragmentJavaScriptCompiler.prototype.returnNode = function() {
 
 FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value) {
   var el = 'el'+this.depth;
-  this.source.push(this.indent+'  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
+  this.source.push(this.indent+'  dom.setProperty('+el+','+string(name)+','+string(value)+');\n');
 };
 
 FragmentJavaScriptCompiler.prototype.appendChild = function() {
