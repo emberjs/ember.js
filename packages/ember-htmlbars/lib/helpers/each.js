@@ -178,7 +178,6 @@ function eachHelper(params, hash, options, env) {
     hash.keyword === true || typeof hash.keyword === 'string'
   );
 
-  hash.emptyViewClass = Ember._MetamorphView;
   hash.dataSource = path;
   options.helperName = options.helperName || helperName;
 
