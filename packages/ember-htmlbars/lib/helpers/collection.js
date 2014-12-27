@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { ViewHelper } from "ember-htmlbars/helpers/view";
 import CollectionView from "ember-views/views/collection_view";
 import { readViewFactory } from "ember-views/streams/utils";
 import { map } from 'ember-metal/enumerable_utils';
@@ -15,6 +14,7 @@ import {
   streamifyClassNameBinding
 } from "ember-views/streams/class_name_binding";
 import { Binding } from 'ember-metal/binding';
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -137,9 +137,6 @@ import { Binding } from 'ember-metal/binding';
 
   @method collection
   @for Ember.Handlebars.helpers
-  @param {String} path
-  @param {Hash} options
-  @return {String} HTML string
   @deprecated Use `{{each}}` helper instead.
 */
 export function collectionHelper(params, hash, options, env) {
@@ -239,7 +236,7 @@ export function collectionHelper(params, hash, options, env) {
     itemHash._contextBinding = Binding.oneWay('content');
   }
 
-  var viewOptions = ViewHelper.propertiesFromHTMLOptions(itemHash, {}, { data: data });
+  var viewOptions = mergeViewBindings(this, {}, itemHash);
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');
