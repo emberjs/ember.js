@@ -290,7 +290,6 @@ function eachHelper(path) {
 
   Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName);
 
-  options.hash.emptyViewClass = Ember._MetamorphView;
   options.hash.dataSourceBinding = path;
   options.hashTypes.dataSourceBinding = 'STRING';
   options.helperName = options.helperName || helperName;
