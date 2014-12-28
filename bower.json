@@ -1,7 +1,6 @@
 {
   "name": "ember",
   "dependencies": {
-    "handlebars": "~2.0.0",
     "jquery": "~1.11.1",
     "qunit": "~1.12.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"

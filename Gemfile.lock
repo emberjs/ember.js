@@ -2,12 +2,10 @@ PATH
   remote: .
   specs:
     ember-source (1.11.0.beta.1.canary)
-      handlebars-source (~> 2.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    handlebars-source (2.0.0)
 
 PLATFORMS
   ruby
