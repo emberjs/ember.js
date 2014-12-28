@@ -1,13 +1,13 @@
 {
   "features": {
     "features-stripped-test": null,
-    "ember-routing-named-substates": null,
+    "ember-routing-named-substates": true,
     "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-htmlbars": true,
     "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": null,
-    "ember-htmlbars-inline-if-helper": null,
+    "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": null,
     "ember-routing-transitioning-classes": true
   },
