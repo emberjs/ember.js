@@ -1004,9 +1004,9 @@ test("The compiler sets a namespace on an HTML integration point", function() {
   var fragment = template.render({}, env);
 
   equal( fragment.namespaceURI, svgNamespace,
-         "creates the path element with a namespace" );
+         "creates the svg element with a namespace" );
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
-         "creates the path element with a namespace" );
+         "creates the foreignObject element with a namespace" );
   equalTokens(fragment, html);
 });
 
@@ -1016,7 +1016,7 @@ test("The compiler does not set a namespace on an element inside an HTML integra
   var fragment = template.render({}, env);
 
   equal( fragment.childNodes[0].childNodes[0].namespaceURI, xhtmlNamespace,
-         "creates the path element with a namespace" );
+         "creates the div inside the foreignObject without a namespace" );
   equalTokens(fragment, html);
 });
 
@@ -1026,11 +1026,11 @@ test("The compiler pops back to the correct namespace", function() {
   var fragment = template.render({}, env);
 
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
-         "creates the path element with a namespace" );
+         "creates the first svg element with a namespace" );
   equal( fragment.childNodes[1].namespaceURI, svgNamespace,
-         "creates the path element with a namespace" );
+         "creates the second svg element with a namespace" );
   equal( fragment.childNodes[2].namespaceURI, xhtmlNamespace,
-         "creates the path element with a namespace" );
+         "creates the div element without a namespace" );
   equalTokens(fragment, html);
 });
 
