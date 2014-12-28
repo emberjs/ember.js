@@ -4,8 +4,7 @@
   "type": "component",
   "license": "MIT",
   "require": {
-    "components/jquery": ">=1.7.0, <= 2.1.0",
-    "components/handlebars.js": "2.*"
+    "components/jquery": ">=1.7.0, <= 2.1.0"
   },
   "extra": {
     "component": {
@@ -20,8 +19,7 @@
       "shim": {
         "exports": "Ember",
         "deps": [
-          "jquery",
-          "handlebars"
+          "jquery"
         ]
       }
     }
