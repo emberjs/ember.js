@@ -1,7 +1,7 @@
 {
   "features": {
     "features-stripped-test": null,
-    "ember-routing-named-substates": null,
+    "ember-routing-named-substates": true,
     "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-htmlbars": true,
