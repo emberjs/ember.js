@@ -18,6 +18,8 @@ QUnit.module("ember-htmlbars: {{bind}} helper", {
     container.optionsForType('template', { instantiate: false });
     container.register('view:default', _MetamorphView);
     container.register('view:toplevel', EmberView.extend());
+
+    expectDeprecation('The `{{bind}}` helper has been deprecated and will be removed.');
   },
   teardown: function() {
     runDestroy(container);
@@ -85,6 +87,8 @@ QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
   setup: function() {
     container = new Container();
     container.optionsForType('template', { instantiate: false });
+
+    expectDeprecation('The `{{bind}}` helper has been deprecated and will be removed.');
   },
   teardown: function() {
     runDestroy(container);
