@@ -106,6 +106,8 @@ function bindHelper(params, hash, options, env) {
     Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);
   } else {
+    Ember.deprecate("The `{{bind}}` helper has been deprecated and will be removed.");
+
     return property;
   }
 }
