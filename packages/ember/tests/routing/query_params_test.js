@@ -1074,7 +1074,7 @@ test("Defaulting to params hash as the model should not result in that params ob
   // model if no other model could be resolved given the provided
   // params (and no custom model hook was defined), to be watched,
   // unless we return a copy of the params hash.
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     queryParams: ['woot'],
     woot: 'wat'
   });
@@ -1254,7 +1254,7 @@ QUnit.module("Model Dep Query Params", {
       }
     });
 
-    App.ArticleController = Ember.ObjectController.extend({
+    App.ArticleController = Ember.Controller.extend({
       queryParams: ['q', 'z'],
       q: 'wat',
       z: 0

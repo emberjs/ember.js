@@ -378,7 +378,7 @@ test("Default error event moves into nested route", function() {
   expect(5);
 
   templates['grandma'] = "GRANDMA {{outlet}}";
-  templates['grandma/error'] = "ERROR: {{msg}}";
+  templates['grandma/error'] = "ERROR: {{model.msg}}";
 
   Router.map(function() {
     this.resource('grandma', function() {
@@ -494,8 +494,8 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
 
     templates['grandma'] = "GRANDMA {{outlet}}";
-    templates['grandma/error'] = "ERROR: {{msg}}";
-    templates['grandma/mom_error'] = "MOM ERROR: {{msg}}";
+    templates['grandma/error'] = "ERROR: {{model.msg}}";
+    templates['grandma/mom_error'] = "MOM ERROR: {{model.msg}}";
 
     Router.map(function() {
       this.resource('grandma', function() {
@@ -609,7 +609,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     // fake a modules resolver
     App.Resolver = { moduleBasedResolver: true };
 
-    templates['foo/bar_error'] = "FOOBAR ERROR: {{msg}}";
+    templates['foo/bar_error'] = "FOOBAR ERROR: {{model.msg}}";
     templates['foo/bar'] = "YAY";
 
     Router.map(function() {
@@ -680,7 +680,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     // fake a modules resolver
     App.Resolver = { moduleBasedResolver: true };
 
-    templates['foo/index_error'] = "FOO ERROR: {{msg}}";
+    templates['foo/index_error'] = "FOO ERROR: {{model.msg}}";
     templates['foo/index'] = "YAY";
     templates['foo'] = "{{outlet}}";
 
@@ -717,7 +717,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     // fake a modules resolver
     App.Resolver = { moduleBasedResolver: true };
 
-    templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{msg}}</p>';
+    templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 
     var reject = true;
     App.ApplicationRoute = Ember.Route.extend({

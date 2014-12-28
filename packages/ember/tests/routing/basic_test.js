@@ -71,7 +71,7 @@ QUnit.module("Basic Routing", {
 
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
-      Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
+      Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{model.home}}</p>");
       Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
 
       originalLoggerError = Ember.Logger.error;
@@ -218,7 +218,9 @@ test("An alternate template will pull in an alternate controller", function() {
   });
 
   App.HomepageController = Ember.Controller.extend({
-    home: "Comes from homepage"
+    model: {
+      home: "Comes from homepage"
+    }
   });
 
   bootApplication();
@@ -239,11 +241,15 @@ test("An alternate template will pull in an alternate controller instead of cont
   });
 
   App.FooController = Ember.Controller.extend({
-    home: "Comes from Foo"
+    model: {
+      home: "Comes from Foo"
+    }
   });
 
   App.HomepageController = Ember.Controller.extend({
-    home: "Comes from homepage"
+    model: {
+      home: "Comes from homepage"
+    }
   });
 
   bootApplication();
@@ -263,7 +269,9 @@ test("The template will pull in an alternate controller via key/value", function
   });
 
   App.HomeController = Ember.Controller.extend({
-    home: "Comes from home."
+    model: {
+      home: "Comes from home."
+    }
   });
 
   bootApplication();
@@ -277,7 +285,9 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   });
 
   App.HomeController = Ember.Controller.extend({
-    home: "YES I AM HOME"
+    model: {
+      home: "YES I AM HOME"
+    }
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -292,9 +302,9 @@ test("The Homepage with explicit template name in renderTemplate and controller"
 });
 
 test("Model passed via renderTemplate model is set as controller's model", function() {
-  Ember.TEMPLATES['bio'] = compile("<p>{{name}}</p>");
+  Ember.TEMPLATES['bio'] = compile("<p>{{model.name}}</p>");
 
-  App.BioController = Ember.ObjectController.extend();
+  App.BioController = Ember.Controller.extend();
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -470,10 +480,10 @@ test('Specifying a name to render should have precedence over everything else', 
   });
 
   App.HomeView = Ember.View.extend({
-    template: compile("<h3>This should not be rendered</h3><p>{{home}}</p>")
+    template: compile("<h3>This should not be rendered</h3><p>{{model.home}}</p>")
   });
 
-  App.HomepageController = Ember.ObjectController.extend({
+  App.HomepageController = Ember.Controller.extend({
     model: {
       home: 'Tinytroll'
     }
@@ -1203,7 +1213,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   });
 
   Ember.TEMPLATES.home = compile(
-    "<a {{action 'showStuff' model}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{model.name}}</a>"
   );
 
   bootApplication();
@@ -1241,7 +1251,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   });
 
   Ember.TEMPLATES['root/index'] = compile(
-    "<a {{action 'showStuff' model}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{model.name}}</a>"
   );
 
   bootApplication();
@@ -2352,7 +2362,7 @@ test("The template is not re-rendered when the route's context changes", functio
   });
 
   Ember.TEMPLATES.page = compile(
-    "<p>{{name}}</p>"
+    "<p>{{model.name}}</p>"
   );
 
   bootApplication();
@@ -2459,7 +2469,7 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
     model: function () { return model; }
   });
 
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
