@@ -38,12 +38,8 @@ export function element(env, domElement, context, path, params, hash) {
   }
 }
 
-export function attribute(env, domElement, name, value) {
-  if (value === null) {
-    domElement.removeAttribute(name);
-  } else {
-    domElement.setAttribute(name, value);
-  }
+export function attribute(env, attrMorph, domElement, name, value) {
+  attrMorph.setContent(value);
 }
 
 export function subexpr(env, context, helperName, params, hash) {
