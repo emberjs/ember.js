@@ -353,7 +353,7 @@ test("Simple data binding using text nodes", function() {
 
   hooks.content = function(env, morph, context, path) {
     callback = function() {
-      morph.update(context[path]);
+      morph.setContent(context[path]);
     };
     callback();
   };
@@ -378,7 +378,7 @@ test("Simple data binding on fragments", function() {
   hooks.content = function(env, morph, context, path) {
     morph.escaped = false;
     callback = function() {
-      morph.update(context[path]);
+      morph.setContent(context[path]);
     };
     callback();
   };
@@ -407,7 +407,7 @@ test("morph receives escaping information", function() {
       equal(morph.escaped, false);
     }
 
-    morph.update(path);
+    morph.setContent(path);
   };
 
   // so we NEED a reference to div. because it's passed in twice.
