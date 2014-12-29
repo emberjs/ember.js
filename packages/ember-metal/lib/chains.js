@@ -272,7 +272,7 @@ ChainNodePrototype.unchain = function(key, path) {
 ChainNodePrototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
+    for (var key in chains) {
       if (!chains.hasOwnProperty(key)) {
         continue;
       }
@@ -342,7 +342,7 @@ ChainNodePrototype.didChange = function(events) {
   // then notify chains...
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
+    for (var key in chains) {
       if (!chains.hasOwnProperty(key)) { continue; }
       chains[key].didChange(events);
     }
@@ -368,7 +368,7 @@ export function finishChains(obj) {
     // finish any current chains node watchers that reference obj
     chainWatchers = m.chainWatchers;
     if (chainWatchers) {
-      for(var key in chainWatchers) {
+      for (var key in chainWatchers) {
         if (!chainWatchers.hasOwnProperty(key)) {
           continue;
         }

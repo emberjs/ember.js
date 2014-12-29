@@ -178,7 +178,7 @@ export default EmberObject.extend({
     if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');
       baseURL = baseURL.replace(/\/$/, '');
-    } else if(baseURL.match(/^\//) && rootURL.match(/^\//)) {
+    } else if (baseURL.match(/^\//) && rootURL.match(/^\//)) {
       baseURL = baseURL.replace(/\/$/, '');
     }
 

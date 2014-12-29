@@ -629,7 +629,7 @@ test('adding a computed property should show up in key iteration',function() {
   defineProperty(obj, 'foo', computed(function() {}));
 
   var found = [];
-  for(var key in obj) {
+  for (var key in obj) {
     found.push(key);
   }
   ok(indexOf(found, 'foo')>=0, 'should find computed property in iteration found=' + found);
@@ -641,7 +641,7 @@ testBoth("when setting a value after it had been retrieved empty don't pass func
   var oldValueIsNoFunction = true;
 
   defineProperty(obj, 'foo', computed(function(key, value, oldValue) {
-    if(typeof oldValue === 'function') {
+    if (typeof oldValue === 'function') {
       oldValueIsNoFunction = false;
     }
 

@@ -263,7 +263,7 @@ export default Mixin.create({
       target = null;
     }
 
-    for(var idx = 0; idx < len; idx++) {
+    for (var idx = 0; idx < len; idx++) {
       var next = this.nextObject(idx, last, context) ;
       callback.call(target, next, idx, this);
       last = next ;
@@ -541,7 +541,7 @@ export default Mixin.create({
     var last = null;
     var next, ret;
 
-    for(var idx = 0; idx < len && !found; idx++) {
+    for (var idx = 0; idx < len && !found; idx++) {
       next = this.nextObject(idx, last, context);
 
       if (found = callback.call(target, next, idx, this)) {
@@ -1161,7 +1161,7 @@ export default Mixin.create({
     var sortKeys = arguments;
 
     return this.toArray().sort(function(a, b) {
-      for(var i = 0; i < sortKeys.length; i++) {
+      for (var i = 0; i < sortKeys.length; i++) {
         var key = sortKeys[i];
         var propA = get(a, key);
         var propB = get(b, key);

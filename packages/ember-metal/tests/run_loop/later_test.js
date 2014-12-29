@@ -87,7 +87,7 @@ asyncTest('should always invoke within a separate runloop', function() {
     // run loop has to flush, it would have considered
     // the timer already expired.
     var pauseUntil = +new Date() + 100;
-    while(+new Date() < pauseUntil) { /* do nothing - sleeping */ }
+    while (+new Date() < pauseUntil) { /* do nothing - sleeping */ }
   });
 
   ok(firstRunLoop, "first run loop captured");
@@ -219,7 +219,7 @@ asyncTest('setTimeout should never run with a negative wait', function() {
       // make sure that invokeLaterTimers doesn't end up scheduling
       // a negative setTimeout.
       var pauseUntil = +new Date() + 60;
-      while(+new Date() < pauseUntil) { /* do nothing - sleeping */ }
+      while (+new Date() < pauseUntil) { /* do nothing - sleeping */ }
     }, 1);
 
     run.later(function() {

@@ -64,7 +64,7 @@ test('calling pop should return an object and remove it', function() {
     aSet = new Set([1,2,3]);
   });
 
-  while(count<10 && (obj = aSet.pop())) {
+  while (count<10 && (obj = aSet.pop())) {
     equal(aSet.contains(obj), false, 'set should no longer contain object');
     count++;
     equal(get(aSet, 'length'), 3-count, 'length should be shorter');

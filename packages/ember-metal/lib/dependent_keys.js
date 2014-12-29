@@ -59,7 +59,7 @@ export function addDependentKeys(desc, obj, keyName, meta) {
 
   depsMeta = metaForDeps(meta);
 
-  for(idx = 0, len = depKeys.length; idx < len; idx++) {
+  for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
     // Lookup keys meta for depKey
     keys = keysForDep(depsMeta, depKey);
@@ -81,7 +81,7 @@ export function removeDependentKeys(desc, obj, keyName, meta) {
 
   depsMeta = metaForDeps(meta);
 
-  for(idx = 0, len = depKeys.length; idx < len; idx++) {
+  for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
     // Lookup keys meta for depKey
     keys = keysForDep(depsMeta, depKey);

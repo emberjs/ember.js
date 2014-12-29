@@ -31,7 +31,7 @@ function registerRepeatHelper() {
   helper('repeat', function(value, options) {
     var count = options.hash.count || 1;
     var a = [];
-    while(a.length < count) {
+    while (a.length < count) {
       a.push(value);
     }
     return a.join('');
@@ -297,7 +297,7 @@ test("bound helpers should expose property names in options.data.properties", fu
     var options = arguments[arguments.length - 1];
     var values = [].slice.call(arguments, 0, -1);
     var a = [];
-    for(var i = 0; i < values.length; ++i) {
+    for (var i = 0; i < values.length; ++i) {
       var propertyName = options.data.properties[i];
       a.push(propertyName);
     }

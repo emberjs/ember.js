@@ -89,7 +89,7 @@ function processNamespace(paths, root, seen) {
   NAMESPACES_BY_ID[paths.join('.')] = root;
 
   // Loop over all of the keys in the namespace, looking for classes
-  for(var key in root) {
+  for (var key in root) {
     if (!hasOwnProp.call(root, key)) { continue; }
     var obj = root[key];
 

@@ -332,7 +332,7 @@ function sendAction(eventName, view, event) {
   view.sendAction(eventName, value);
 
   if (action || on === eventName) {
-    if(!get(view, 'bubbles')) {
+    if (!get(view, 'bubbles')) {
       event.stopPropagation();
     }
   }

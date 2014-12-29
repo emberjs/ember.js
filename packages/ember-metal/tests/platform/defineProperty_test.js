@@ -3,7 +3,7 @@ import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 function isEnumerable(obj, keyName) {
   var keys = [];
-  for(var key in obj) {
+  for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       keys.push(key);
     }

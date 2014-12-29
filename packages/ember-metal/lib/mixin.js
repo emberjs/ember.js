@@ -280,7 +280,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     delete values[keyName];
   }
 
-  for(var i=0, l=mixins.length; i<l; i++) {
+  for (var i=0, l=mixins.length; i<l; i++) {
     mixin = mixins[i];
     Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin),
                  typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
@@ -441,7 +441,7 @@ function applyMixin(obj, mixins, partial) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, mixinsMeta(obj), descs, values, obj, keys);
 
-  for(var i = 0, l = keys.length; i < l; i++) {
+  for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
     if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
 
@@ -612,7 +612,7 @@ MixinPrototype.reopen = function() {
   var mixins = this.mixins;
   var idx;
 
-  for(idx=0; idx < len; idx++) {
+  for (idx=0; idx < len; idx++) {
     mixin = arguments[idx];
     Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin),
                  typeof mixin === 'object' && mixin !== null &&
@@ -697,7 +697,7 @@ MixinPrototype.keys = function() {
   var seen = {};
   var ret = [];
   _keys(keys, this, seen);
-  for(var key in keys) {
+  for (var key in keys) {
     if (keys.hasOwnProperty(key)) {
       ret.push(key);
     }

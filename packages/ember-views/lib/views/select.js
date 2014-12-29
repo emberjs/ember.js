@@ -588,10 +588,10 @@ var Select = View.extend({
   _selectionDidChangeSingle: function() {
     var value = get(this, 'value');
     var self = this;
-    if(value && value.then) {
+    if (value && value.then) {
       value.then(function (resolved) {
         // Ensure that we don't overwrite new value
-        if(get(self, 'value') === value) {
+        if (get(self, 'value') === value) {
           self._setSelectedIndex(resolved);
         }
       });

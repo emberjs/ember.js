@@ -229,9 +229,9 @@ if (!Ember.testing) {
       if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
-        if(isChrome) {
+        if (isChrome) {
           downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
-        } else if(isFirefox) {
+        } else if (isFirefox) {
           downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
         }
 

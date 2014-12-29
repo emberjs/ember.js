@@ -16,7 +16,7 @@ QUnit.module('Namespace', {
   teardown: function() {
     Ember.BOOTED = false;
 
-    for(var prop in lookup) {
+    for (var prop in lookup) {
       if (lookup[prop]) { run(lookup[prop], 'destroy'); }
     }
 

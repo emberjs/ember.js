@@ -333,7 +333,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 
     if (result === UNDEFINED) {
       return undefined;
-    }  else if (result !== undefined) {
+    } else if (result !== undefined) {
       return result;
     }
 
@@ -429,7 +429,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   }
 
   if (cacheable && cache[keyName] !== undefined) {
-    if(cache[keyName] !== UNDEFINED) {
+    if (cache[keyName] !== UNDEFINED) {
       cachedValue = cache[keyName];
     }
 

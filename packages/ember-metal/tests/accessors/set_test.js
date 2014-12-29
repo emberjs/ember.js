@@ -17,7 +17,7 @@ test('should set arbitrary properties on an object', function() {
     undefinedValue: 'emberjs'
   };
 
-  for(var key in obj) {
+  for (var key in obj) {
     if (!obj.hasOwnProperty(key)) {
       continue;
     }

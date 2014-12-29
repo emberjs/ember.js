@@ -69,7 +69,7 @@ if (Ember.ENV) {
   // do nothing if Ember.ENV is already setup
 } else if ('undefined' !== typeof EmberENV) {
   Ember.ENV = EmberENV;
-} else if('undefined' !== typeof ENV) {
+} else if ('undefined' !== typeof ENV) {
   Ember.ENV = ENV;
 } else {
   Ember.ENV = {};

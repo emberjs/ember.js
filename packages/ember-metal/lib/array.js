@@ -89,9 +89,9 @@ var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, function(obj, fro
     fromIndex += len;
   }
 
-  for(idx = fromIndex;idx>=0;idx--) {
+  for (idx = fromIndex; idx >= 0; idx--) {
     if (this[idx] === obj) {
-      return idx ;
+      return idx;
     }
   }
   return -1;
