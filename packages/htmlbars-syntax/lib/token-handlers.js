@@ -17,28 +17,6 @@ forEach(voidTagNames.split(" "), function(tagName) {
   voidMap[tagName] = true;
 });
 
-var svgNamespace = "http://www.w3.org/2000/svg",
-    // http://www.w3.org/html/wg/drafts/html/master/syntax.html#html-integration-point
-    svgHTMLIntegrationPoints = {'foreignObject':true, 'desc':true, 'title':true};
-
-function applyNamespace(tag, element, currentElement){
-  if (tag.tagName === 'svg') {
-    element.namespaceURI = svgNamespace;
-  } else if (
-    currentElement.type === 'ElementNode' &&
-    currentElement.namespaceURI &&
-    !currentElement.isHTMLIntegrationPoint
-  ) {
-    element.namespaceURI = currentElement.namespaceURI;
-  }
-}
-
-function applyHTMLIntegrationPoint(tag, element){
-  if (svgHTMLIntegrationPoints[tag.tagName]) {
-    element.isHTMLIntegrationPoint = true;
-  }
-}
-
 // Except for `mustache`, all tokens are only allowed outside of
 // a start or end tag.
 var tokenHandlers = {
@@ -61,8 +39,6 @@ var tokenHandlers = {
       end: { line: null, column: null}
     };
 
-    applyNamespace(tag, element, this.currentElement());
-    applyHTMLIntegrationPoint(tag, element);
     this.elementStack.push(element);
     if (voidMap.hasOwnProperty(tag.tagName) || tag.selfClosing) {
       tokenHandlers.EndTag.call(this, tag);

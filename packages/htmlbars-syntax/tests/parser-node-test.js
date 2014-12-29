@@ -3,21 +3,7 @@ import { preprocess } from "../htmlbars-syntax/parser";
 
 import b from "../htmlbars-syntax/builders";
 
-var svgNamespace = "http://www.w3.org/2000/svg";
-
 QUnit.module("HTML-based compiler (AST)");
-
-function svgElement(tagName, attributes, helpers, children) {
-  var e = b.element(tagName, attributes, helpers, children);
-  e.namespaceURI = svgNamespace;
-  return e;
-}
-
-function svgHTMLIntegrationPoint(tagName, attributes, helpers, children) {
-  var e = svgElement(tagName, attributes, helpers, children);
-  e.isHTMLIntegrationPoint = true;
-  return e;
-}
 
 function normalizeNode(obj) {
   if (obj && typeof obj === 'object') {
@@ -118,7 +104,7 @@ test("elements can have empty attributes", function() {
 test("svg content", function() {
   var t = "<svg></svg>";
   astEqual(t, b.program([
-    svgElement("svg")
+    b.element("svg")
   ]));
 });
 
@@ -135,7 +121,7 @@ test("html content with svg content inline", function() {
   var t = '<div><svg></svg></div>';
   astEqual(t, b.program([
     b.element("div", [], [], [
-      svgElement("svg")
+      b.element("svg")
     ])
   ]));
 });
@@ -145,8 +131,8 @@ function buildIntegrationPointTest(integrationPoint){
   return function integrationPointTest(){
     var t = '<svg><'+integrationPoint+'><div></div></'+integrationPoint+'></svg>';
     astEqual(t, b.program([
-      svgElement("svg", [], [], [
-        svgHTMLIntegrationPoint(integrationPoint, [], [], [
+      b.element("svg", [], [], [
+        b.element(integrationPoint, [], [], [
           b.element("div")
         ])
       ])
