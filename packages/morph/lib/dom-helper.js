@@ -1,4 +1,5 @@
 import Morph from "../morph/morph";
+import AttrMorph from "../morph/attr-morph";
 import {
   buildHTMLDOM,
   svgNamespace,
@@ -8,6 +9,9 @@ import {
   addClasses,
   removeClasses
 } from "./dom-helper/classes";
+import {
+  normalizeProperty
+} from "./dom-helper/prop";
 
 var doc = typeof document === 'undefined' ? false : document;
 
@@ -152,8 +156,30 @@ prototype.removeAttribute = function(element, name) {
   element.removeAttribute(name);
 };
 
-prototype.setProperty = function(element, name, value) {
+prototype.setPropertyStrict = function(element, name, value) {
   element[name] = value;
+};
+
+prototype.setProperty = function(element, name, value) {
+  var lowercaseName = name.toLowerCase();
+  if (element.namespaceURI === svgNamespace || lowercaseName === 'style') {
+    if (value === null) {
+      element.removeAttribute(name);
+    } else {
+      element.setAttribute(name, value);
+    }
+  } else {
+    var normalized = normalizeProperty(element, name);
+    if (normalized) {
+      element[normalized] = value;
+    } else {
+      if (value === null) {
+        element.removeAttribute(name);
+      } else {
+        element.setAttribute(name, value);
+      }
+    }
+  }
 };
 
 if (doc && doc.createElementNS) {
@@ -224,6 +250,16 @@ prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
 prototype.cloneNode = function(element, deep){
   var clone = element.cloneNode(!!deep);
   return clone;
+};
+
+prototype.createAttrMorph = function(element, attrName){
+  return new AttrMorph(element, attrName, this);
+};
+
+prototype.createUnsafeAttrMorph = function(element, attrName){
+  var morph = this.createAttrMorph(element, attrName);
+  morph.escaped = false;
+  return morph;
 };
 
 prototype.createMorph = function(parent, start, end, contextualElement){

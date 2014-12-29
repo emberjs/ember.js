@@ -171,9 +171,10 @@ prototype.printComponentHook = function(morphNum, templateId) {
   ]);
 };
 
-prototype.printAttributeHook = function(elementNum) {
+prototype.printAttributeHook = function(attrMorphNum, elementNum) {
   this.printHook('attribute', [
     'env',
+    'attrMorph' + attrMorphNum,
     'element' + elementNum,
     this.stack.pop(), // name
     this.stack.pop() // value
@@ -202,6 +203,12 @@ prototype.createMorph = function(morphNum, parentPath, startIndex, endIndex, esc
     (isRoot ? ",contextualElement)" : ")");
 
   this.morphs.push(['morph' + morphNum, morph]);
+};
+
+prototype.createAttrMorph = function(attrMorphNum, elementNum, name, escaped) {
+  var morphMethod = escaped ? 'createAttrMorph' : 'createUnsafeAttrMorph';
+  var morph = "dom."+morphMethod+"(element"+elementNum+", '"+name+"')";
+  this.morphs.push(['attrMorph' + attrMorphNum, morph]);
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
