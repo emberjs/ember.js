@@ -119,8 +119,8 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(baz.context, context, 'context');
   equal(baz.path, 'baz', 'path');
 
-  foo.morph.update('A');
-  baz.morph.update('B');
+  foo.morph.setContent('A');
+  baz.morph.setContent('B');
 
   equalHTML(fragment, "<div>A bar B</div>");
 });
@@ -174,9 +174,9 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   equal(morphs[2].end.nodeType, 3);
   equal(morphs[2].end.textContent, '');
 
-  morphs[0].update('A');
-  morphs[1].update('B');
-  morphs[2].update('C');
+  morphs[0].setContent('A');
+  morphs[1].setContent('B');
+  morphs[2].setContent('C');
 
   equalHTML(fragment, "A<p>B</p>C");
 });

@@ -8,14 +8,14 @@ export function block(env, morph, context, path, params, hash, template, inverse
   var helper = lookupHelper(env, context, path);
   var value = helper.call(context, params, hash, options, env);
 
-  morph.update(value);
+  morph.setContent(value);
 }
 
 export function inline(env, morph, context, path, params, hash) {
   var helper = lookupHelper(env, context, path);
   var value = helper.call(context, params, hash, { morph: morph }, env);
 
-  morph.update(value);
+  morph.setContent(value);
 }
 
 export function content(env, morph, context, path) {
@@ -28,7 +28,7 @@ export function content(env, morph, context, path) {
     value = get(env, context, path);
   }
 
-  morph.update(value);
+  morph.setContent(value);
 }
 
 export function element(env, domElement, context, path, params, hash) {
@@ -91,7 +91,7 @@ export function component(env, morph, context, tagName, attrs, template) {
     value = componentFallback(env, morph, context, tagName, attrs, template);
   }
 
-  morph.update(value);
+  morph.setContent(value);
 }
 
 export function concat(env, params) {
