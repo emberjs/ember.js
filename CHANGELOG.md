@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### 1.10.0-beta.3 (December 29, 2014)
+
+* Deprecate `{{bind}}` helper.
+* Pass array to `Ember.computed.filter` callback
+* [BUGFIX] Prevent mandatory-setter when setter is already present.
+* Remove Handlebars from dependencies.
+* Update HTMLBars to 0.7.1.
+* Fix error when parsing templates with invalid end tags.
+
+
 ### 1.10.0-beta.2 (December 23, 2014)
 
 * [BUGFIX] Allow makeBoundHelper to be a sub-expression.
