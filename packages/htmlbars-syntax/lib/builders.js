@@ -28,7 +28,7 @@ export function buildPartial(sexpr, indent) {
 export function buildComment(value) {
   return {
     type: "CommentStatement",
-    value: value,
+    value: value
   };
 }
 
