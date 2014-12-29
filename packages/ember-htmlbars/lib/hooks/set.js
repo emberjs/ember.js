@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core";
 import EmberError from "ember-metal/error";
 
-export default function set(view, name, value) {
+export default function set(env, view, name, value) {
   if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     view._keywords[name] = value;
   } else {

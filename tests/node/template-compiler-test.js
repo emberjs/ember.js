@@ -26,7 +26,7 @@ test('uses plugins with precompile', function() {
   ok(templateOutput.match(/{"keyword": "foo"}/), 'transform each in to block params');
 
   templateOutput = templateCompiler.precompile('{{#with foo as bar}}{{/with}}');
-  ok(templateOutput.match(/set\(context, "bar", blockArguments\[0\]\);/), 'transform with as to block params');
+  ok(templateOutput.match(/set\(env, context, "bar", blockArguments\[0\]\);/), 'transform with as to block params');
 });
 
 test('allows enabling of features', function() {
@@ -36,5 +36,5 @@ test('allows enabling of features', function() {
   templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
 
   templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
-  ok(templateOutput.match(/component\(morph0, "some-thing"/), 'component generation can be enabled');
+  ok(templateOutput.match(/component\(env, morph0, context, "some-thing"/), 'component generation can be enabled');
 });

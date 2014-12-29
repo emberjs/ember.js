@@ -9,6 +9,13 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+function canSetFalsyMaxLength() {
+  var input = document.createElement('input');
+  input.maxLength = 0;
+
+  return input.maxLength === 0;
+}
+
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
 
@@ -45,9 +52,17 @@ test("quoted maxlength sets the property and attribute", function() {
   equalInnerHTML(view.element, '<input maxlength="5">', "attribute is output");
   equal(view.element.firstChild.maxLength, '5');
 
-  Ember.run(view, view.set, 'context.length', null);
-  equalInnerHTML(view.element, '<input maxlength="">', "attribute is output");
-  equal(view.element.firstChild.maxLength, 524288);
+  if (canSetFalsyMaxLength()) {
+    Ember.run(view, view.set, 'context.length', null);
+
+    equalInnerHTML(view.element, '<input maxlength="0">', "attribute is output");
+    equal(view.element.firstChild.maxLength, 0);
+  } else {
+    Ember.run(view, view.set, 'context.length', 1);
+
+    equalInnerHTML(view.element, '<input maxlength="1">', "attribute is output");
+    equal(view.element.firstChild.maxLength, 1);
+  }
 });
 
 // jscs:enable validateIndentation

@@ -6,10 +6,8 @@
 import Ember from "ember-metal/core"; // Ember.assert
 
 import { fmt } from "ember-runtime/system/string";
-import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
-import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
-import { badAttributes } from "ember-views/system/sanitize_attribute_value";
-import SanitizedAttrNode from "ember-htmlbars/attr_nodes/sanitized";
+import AttrNode from "ember-views/attr_nodes/attr_node";
+import LegacyBindAttrNode from "ember-views/attr_nodes/legacy_bind";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
 import { map } from 'ember-metal/enumerable_utils';
@@ -154,20 +152,23 @@ function bindAttrHelper(params, hash, options, env) {
   // Handle classes differently, as we can bind multiple classes
   var classNameBindings = hash['class'];
   if (classNameBindings !== null && classNameBindings !== undefined) {
-    if (isStream(classNameBindings)) {
-      new QuotedAttrNode(element, 'class', classNameBindings, env.dom);
-    } else {
-      var classNameBindingsStream = applyClassNameBindings(classNameBindings, view);
-      new QuotedAttrNode(element, 'class', classNameBindingsStream, env.dom);
+    if (!isStream(classNameBindings)) {
+      classNameBindings = applyClassNameBindings(classNameBindings, view);
     }
-    delete hash['class'];
+
+    var classView = new AttrNode('class', classNameBindings);
+    classView._morph = env.dom.createAttrMorph(element, 'class');
+    view.appendChild(classView);
   }
 
   var attrKeys = keys(hash);
 
-  var attr, path, lazyValue;
+  var attr, path, lazyValue, attrView;
   for (var i=0, l=attrKeys.length;i<l;i++) {
     attr = attrKeys[i];
+    if (attr === 'class') {
+      continue;
+    }
     path = hash[attr];
     if (isStream(path)) {
       lazyValue = path;
@@ -179,11 +180,10 @@ function bindAttrHelper(params, hash, options, env) {
       );
       lazyValue = view.getStream(path);
     }
-    if (badAttributes[attr]) {
-      new SanitizedAttrNode(element, attr, lazyValue, env.dom);
-    } else {
-      new LegacyBindAttrNode(element, attr, lazyValue, env.dom);
-    }
+
+    attrView = new LegacyBindAttrNode(attr, lazyValue);
+    attrView._morph = env.dom.createAttrMorph(element, attr);
+    view.appendChild(attrView);
   }
 }
 

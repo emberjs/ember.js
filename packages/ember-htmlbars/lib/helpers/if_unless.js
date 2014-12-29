@@ -38,7 +38,7 @@ function assertInlineIfNotEnabled() {
 }
 
 function appendConditional(view, inverted, helperName, params, hash, options, env) {
-  if (options.template || options.inverse) {
+  if (options.isBlock) {
     return appendBlockConditional(view, inverted, helperName, params, hash, options, env);
   } else {
     if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
