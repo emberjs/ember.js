@@ -142,7 +142,7 @@ test("should be able to render an unbound helper invocation", function() {
     registerBoundHelper('repeat', function(value, options) {
       var count = options.hash.count;
       var a = [];
-      while(a.length < count) {
+      while (a.length < count) {
         a.push(value);
       }
       return a.join('');

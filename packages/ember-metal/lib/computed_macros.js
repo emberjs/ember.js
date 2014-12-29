@@ -14,7 +14,7 @@ var a_slice = [].slice;
 
 function getProperties(self, propertyNames) {
   var ret = {};
-  for(var i = 0; i < propertyNames.length; i++) {
+  for (var i = 0; i < propertyNames.length; i++) {
     ret[propertyNames[i]] = get(self, propertyNames[i]);
   }
   return ret;

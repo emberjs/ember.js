@@ -21,7 +21,7 @@ test('should get arbitrary properties on an object', function() {
     nullValue: null
   };
 
-  for(var key in obj) {
+  for (var key in obj) {
     if (!obj.hasOwnProperty(key)) {
       continue;
     }
@@ -106,7 +106,7 @@ test('should get arbitrary properties on an object', function() {
     nullValue: null
   };
 
-  for(var key in obj) {
+  for (var key in obj) {
     if (!obj.hasOwnProperty(key)) {
       continue;
     }

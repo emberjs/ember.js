@@ -18,7 +18,7 @@ QUnit.module("EmberView#createChildView", {
   teardown: function() {
     run(function() {
       view.destroy();
-      if(newView) { newView.destroy(); }
+      if (newView) { newView.destroy(); }
     });
   }
 });

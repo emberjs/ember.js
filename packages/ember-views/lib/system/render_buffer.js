@@ -105,7 +105,7 @@ function escapeAttribute(value) {
 
   var string = value.toString();
 
-  if(!POSSIBLE_CHARS_REGEXP.test(string)) { return string; }
+  if (!POSSIBLE_CHARS_REGEXP.test(string)) { return string; }
   return string.replace(BAD_CHARS_REGEXP, escapeChar);
 }
 

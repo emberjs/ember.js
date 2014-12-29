@@ -59,7 +59,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
     objects = proxy._objects = {};
   }
 
-  while(--loc>=idx) {
+  while (--loc >= idx) {
     var item = content.objectAt(loc);
     if (item) {
       Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', typeOf(item) === 'instance' || typeOf(item) === 'object');
@@ -86,7 +86,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 
   var indicies, guid;
 
-  while(--loc>=idx) {
+  while (--loc >= idx) {
     var item = content.objectAt(loc);
     if (item) {
       removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
@@ -150,7 +150,7 @@ var EachProxy = EmberObject.extend({
     lim = removedCnt>0 ? idx+removedCnt : -1;
     beginPropertyChanges(this);
 
-    for(key in keys) {
+    for (key in keys) {
       if (!keys.hasOwnProperty(key)) { continue; }
 
       if (lim>0) { removeObserverForContentKey(content, key, this, idx, lim); }
@@ -168,7 +168,7 @@ var EachProxy = EmberObject.extend({
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     changeProperties(function() {
-      for(var key in keys) {
+      for (var key in keys) {
         if (!keys.hasOwnProperty(key)) { continue; }
 
         if (lim>0) { addObserverForContentKey(content, key, this, idx, lim); }

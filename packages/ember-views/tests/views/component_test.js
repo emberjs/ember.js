@@ -19,8 +19,8 @@ QUnit.module("Ember.Component", {
   },
   teardown: function() {
     run(function() {
-      if(component)  { component.destroy(); }
-      if(controller) { controller.destroy(); }
+      if (component)  { component.destroy(); }
+      if (controller) { controller.destroy(); }
     });
   }
 });

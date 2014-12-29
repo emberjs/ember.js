@@ -79,7 +79,7 @@ export function parsePropertyPath(path) {
   @private
 */
 export function classStringForValue(path, val, className, falsyClassName) {
-  if(isArray(val)) {
+  if (isArray(val)) {
     val = get(val, 'length') !== 0;
   }
 

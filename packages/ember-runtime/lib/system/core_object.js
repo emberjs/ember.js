@@ -751,7 +751,7 @@ var ClassMixinProps = {
 
   detect: function(obj) {
     if ('function' !== typeof obj) { return false; }
-    while(obj) {
+    while (obj) {
       if (obj===this) { return true; }
       obj = obj.superclass;
     }

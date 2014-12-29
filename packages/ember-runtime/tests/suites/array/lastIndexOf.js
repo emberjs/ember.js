@@ -11,7 +11,7 @@ suite.test("should return index of object's last occurrence", function() {
   var len      = 3;
   var idx;
 
-  for(idx=0;idx<len;idx++) {
+  for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx]), idx,
       fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }
@@ -24,7 +24,7 @@ suite.test("should return index of object's last occurrence even startAt search 
   var len      = 3;
   var idx;
 
-  for(idx=0;idx<len;idx++) {
+  for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len), idx,
       fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
   }
@@ -37,7 +37,7 @@ suite.test("should return index of object's last occurrence even startAt search 
   var len      = 3;
   var idx;
 
-  for(idx=0;idx<len;idx++) {
+  for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len + 1), idx,
       fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }

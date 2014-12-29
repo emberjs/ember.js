@@ -1360,7 +1360,7 @@ var View = CoreView.extend({
     var idx = childViews.length;
     var view;
 
-    while(--idx >= 0) {
+    while (--idx >= 0) {
       view = childViews[idx];
       callback(this, view, idx);
     }

@@ -61,7 +61,7 @@ SimpleBoundView.prototype = {
   },
 
   rerender: function() {
-    switch(this.state) {
+    switch (this.state) {
       case 'preRender':
       case 'destroyed':
         break;

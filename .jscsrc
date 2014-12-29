@@ -14,5 +14,22 @@
   ],
   "disallowTrailingWhitespace": true,
   "disallowTrailingComma": true,
-  "validateIndentation": 2
+  "validateIndentation": 2,
+  "requireSpaceBeforeKeywords": [
+    "else",
+    "while",
+    "catch"
+  ],
+  "requireSpaceAfterKeywords": [
+    "do",
+    "for",
+    "if",
+    "else",
+    "switch",
+    "case",
+    "try",
+    "while",
+    "with",
+    "return"
+  ]
 }

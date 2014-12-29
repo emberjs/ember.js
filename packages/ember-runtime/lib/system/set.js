@@ -206,7 +206,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
       return false;
     }
 
-    while(--loc >= 0) {
+    while (--loc >= 0) {
       if (!obj.contains(this[loc])) {
         return false;
       }
@@ -481,7 +481,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     var loc = get(this, 'length');
 
     set(ret, 'length', loc);
-    while(--loc>=0) {
+    while (--loc >= 0) {
       ret[loc] = this[loc];
       ret[guidFor(this[loc])] = loc;
     }
@@ -493,7 +493,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     var array = [];
     var idx;
 
-    for(idx = 0; idx < len; idx++) {
+    for (idx = 0; idx < len; idx++) {
       array[idx] = this[idx];
     }
     return fmt("Ember.Set<%@>", [array.join(',')]);

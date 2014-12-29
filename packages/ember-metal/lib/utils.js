@@ -232,7 +232,7 @@ export function guidFor(obj) {
   var type = typeof obj;
 
   // Don't allow prototype changes to String etc. to change the guidFor
-  switch(type) {
+  switch (type) {
     case 'number':
       ret = numberCache[obj];
 
@@ -641,7 +641,7 @@ export function tryInvoke(obj, methodName, args) {
 // https://github.com/emberjs/ember.js/pull/1617
 var needsFinallyFix = (function() {
   var count = 0;
-  try{
+  try {
     try {
     } finally {
       count++;
@@ -916,7 +916,7 @@ export function inspect(obj) {
 
   var v;
   var ret = [];
-  for(var key in obj) {
+  for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
