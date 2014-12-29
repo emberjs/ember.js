@@ -1,14 +1,5 @@
 var push = Array.prototype.push;
 
-function elementIntroducesNamespace(element, parentElement){
-  return (
-    // Root element. Those that have a namespace are entered.
-    (!parentElement && element.namespaceURI) ||
-    // Inner elements to a namespace
-    (parentElement && parentElement.namespaceURI !== element.namespaceURI)
-  );
-}
-
 function Frame() {
   this.parentNode = null;
   this.children = null;
@@ -129,10 +120,6 @@ TemplateVisitor.prototype.ElementNode = function(element) {
     parentNode.type === 'Program' && parentFrame.childCount === 1
   ];
 
-  var introducesNamespace = elementIntroducesNamespace(element, parentFrame.parentNode);
-  if ( introducesNamespace ) {
-    elementFrame.actions.push(['setNamespace', [parentNode.namespaceURI]]);
-  }
   elementFrame.actions.push(['closeElement', actionArgs]);
 
   for (var i = element.attributes.length - 1; i >= 0; i--) {
@@ -146,9 +133,6 @@ TemplateVisitor.prototype.ElementNode = function(element) {
 
   elementFrame.actions.push(['openElement', actionArgs.concat([
     elementFrame.mustacheCount, elementFrame.blankChildTextNodes.reverse() ])]);
-  if ( introducesNamespace ) {
-    elementFrame.actions.push(['setNamespace', [element.namespaceURI]]);
-  }
   this.popFrame();
 
   // Propagate the element's frame state to the parent frame

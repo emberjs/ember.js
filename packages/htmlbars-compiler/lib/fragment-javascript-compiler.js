@@ -1,6 +1,11 @@
 import { processOpcodes } from "./utils";
 import { string } from "../htmlbars-util/quoting";
 
+var svgNamespace = "http://www.w3.org/2000/svg",
+// http://www.w3.org/html/wg/drafts/html/master/syntax.html#html-integration-point
+    svgHTMLIntegrationPoints = {'foreignObject':true, 'desc':true, 'title':true};
+
+
 function FragmentJavaScriptCompiler() {
   this.source = [];
   this.depth = -1;
@@ -12,6 +17,8 @@ FragmentJavaScriptCompiler.prototype.compile = function(opcodes, options) {
   this.source.length = 0;
   this.depth = -1;
   this.indent = (options && options.indent) || "";
+  this.namespaceFrameStack = [{namespace: null, depth: null}];
+  this.domNamespace = null;
 
   this.source.push('function build(dom) {\n');
   processOpcodes(this, opcodes);
@@ -27,7 +34,14 @@ FragmentJavaScriptCompiler.prototype.createFragment = function() {
 
 FragmentJavaScriptCompiler.prototype.createElement = function(tagName) {
   var el = 'el'+(++this.depth);
+  if (tagName === 'svg') {
+    this.pushNamespaceFrame({namespace: svgNamespace, depth: this.depth});
+  }
+  this.ensureNamespace();
   this.source.push(this.indent+'  var '+el+' = dom.createElement('+string(tagName)+');\n');
+  if (svgHTMLIntegrationPoints[tagName]) {
+    this.pushNamespaceFrame({namespace: null, depth: this.depth});
+  }
 };
 
 FragmentJavaScriptCompiler.prototype.createText = function(str) {
@@ -51,11 +65,30 @@ FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value) {
 };
 
 FragmentJavaScriptCompiler.prototype.appendChild = function() {
+  if (this.depth === this.getCurrentNamespaceFrame().depth) {
+    this.popNamespaceFrame();
+  }
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
   this.source.push(this.indent+'  dom.appendChild('+el+', '+child+');\n');
 };
 
-FragmentJavaScriptCompiler.prototype.setNamespace = function(namespace) {
-  this.source.push(this.indent+'  dom.setNamespace('+(namespace ? string(namespace) : 'null')+');\n');
+FragmentJavaScriptCompiler.prototype.getCurrentNamespaceFrame = function() {
+  return this.namespaceFrameStack[this.namespaceFrameStack.length-1];
+};
+
+FragmentJavaScriptCompiler.prototype.pushNamespaceFrame = function(frame) {
+  this.namespaceFrameStack.push(frame);
+};
+
+FragmentJavaScriptCompiler.prototype.popNamespaceFrame = function() {
+  return this.namespaceFrameStack.pop();
+};
+
+FragmentJavaScriptCompiler.prototype.ensureNamespace = function() {
+  var correctNamespace = this.getCurrentNamespaceFrame().namespace;
+  if (this.domNamespace !== correctNamespace) {
+    this.source.push(this.indent+'  dom.setNamespace('+(correctNamespace ? string(correctNamespace) : 'null')+');\n');
+    this.domNamespace = correctNamespace;
+  }
 };
