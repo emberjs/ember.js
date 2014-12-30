@@ -3,6 +3,7 @@
   "excludeFiles": ["ember-runtime/ext/rsvp.js"],
   "additionalRules": [ "lib/jscs-rules/*.js" ],
   "disallowMultipleVarDeclWithAssignment": true,
+  "requireSpaceBeforeObjectValues": true,
   "requireCurlyBraces": [
     "if",
     "else",

@@ -669,7 +669,7 @@ QUnit.module("Observable objects & object properties ", {
         return ret ;
       },
 
-      newObserver:function() {
+      newObserver: function() {
         this.abnormal = 'changedValueObserved';
       },
 
@@ -758,8 +758,8 @@ QUnit.module("object.addObserver()", {
 
     ObjectC = ObservableObject.create({
 
-      objectE:ObservableObject.create({
-        propertyVal:"chainedProperty"
+      objectE: ObservableObject.create({
+        propertyVal: "chainedProperty"
       }),
 
       normal: 'value',
@@ -775,7 +775,7 @@ QUnit.module("object.addObserver()", {
         this.incrementor= this.incrementor+1;
       },
 
-      chainedObserver:function() {
+      chainedObserver: function() {
         this.normal2 = 'chainedPropertyObserved' ;
       }
 
@@ -802,8 +802,8 @@ QUnit.module("object.removeObserver()", {
   setup: function() {
     ObjectD = ObservableObject.create({
 
-      objectF:ObservableObject.create({
-        propertyVal:"chainedProperty"
+      objectF: ObservableObject.create({
+        propertyVal: "chainedProperty"
       }),
 
       normal: 'value',
@@ -817,7 +817,7 @@ QUnit.module("object.removeObserver()", {
       removeAction: function() {
         this.normal2 = 'newDependentValue';
       },
-      removeChainedObserver:function() {
+      removeChainedObserver: function() {
         this.normal2 = 'chainedPropertyObserved' ;
       },
 
@@ -896,7 +896,7 @@ QUnit.module("Bind function ", {
 
     objectB = ObservableObject.create({
       normal: "value",
-      computed:function() {
+      computed: function() {
         this.normal = 'newValue';
       }
     }) ;
