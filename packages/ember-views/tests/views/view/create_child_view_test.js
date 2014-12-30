@@ -37,7 +37,7 @@ test("should create view from class with any passed attributes", function() {
 });
 
 test("should set newView.parentView to receiver", function() {
-  newView = view.createChildView(myViewClass) ;
+  newView = view.createChildView(myViewClass);
 
   equal(newView.container, container, 'expects to share container with parent');
   equal(get(newView, 'parentView'), view, 'newView.parentView == view');

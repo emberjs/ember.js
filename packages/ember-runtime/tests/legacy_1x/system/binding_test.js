@@ -49,8 +49,8 @@ var originalLookup, lookup;
 
 QUnit.module("basic object binding", {
   setup: function() {
-    fromObject = EmberObject.create({ value: 'start' }) ;
-    toObject = EmberObject.create({ value: 'end' }) ;
+    fromObject = EmberObject.create({ value: 'start' });
+    toObject = EmberObject.create({ value: 'end' });
     root = { fromObject: fromObject, toObject: toObject };
     run(function () {
       binding = bind(root, 'toObject.value', 'fromObject.value');
@@ -64,18 +64,18 @@ test("binding should have synced on connect", function() {
 
 test("fromObject change should propagate to toObject only after flush", function() {
   run(function () {
-    set(fromObject, "value", "change") ;
-    equal(get(toObject, "value"), "start") ;
+    set(fromObject, "value", "change");
+    equal(get(toObject, "value"), "start");
   });
-  equal(get(toObject, "value"), "change") ;
+  equal(get(toObject, "value"), "change");
 });
 
 test("toObject change should propagate to fromObject only after flush", function() {
   run(function () {
-    set(toObject, "value", "change") ;
-    equal(get(fromObject, "value"), "start") ;
+    set(toObject, "value", "change");
+    equal(get(fromObject, "value"), "start");
   });
-  equal(get(fromObject, "value"), "change") ;
+  equal(get(fromObject, "value"), "change");
 });
 
 test("deferred observing during bindings", function() {
@@ -129,8 +129,8 @@ QUnit.module("one way binding", {
 
   setup: function() {
     run(function() {
-      fromObject = EmberObject.create({ value: 'start' }) ;
-      toObject = EmberObject.create({ value: 'end' }) ;
+      fromObject = EmberObject.create({ value: 'start' });
+      toObject = EmberObject.create({ value: 'end' });
       root = { fromObject: fromObject, toObject: toObject };
       binding = oneWay(root, 'toObject.value', 'fromObject.value');
     });
@@ -166,18 +166,18 @@ QUnit.module("chained binding", {
 
   setup: function() {
     run(function() {
-      first = EmberObject.create({ output: 'first' }) ;
+      first = EmberObject.create({ output: 'first' });
 
       second = EmberObject.createWithMixins({
         input: 'second',
         output: 'second',
 
         inputDidChange: emberObserver("input", function() {
-          set(this, "output", get(this, "input")) ;
+          set(this, "output", get(this, "input"));
         })
-      }) ;
+      });
 
-      third = EmberObject.create({ input: "third" }) ;
+      third = EmberObject.create({ input: "third" });
 
       root = { first: first, second: second, third: third };
       binding1 = bind(root, 'second.input', 'first.output');
@@ -191,15 +191,15 @@ QUnit.module("chained binding", {
 
 test("changing first output should propograte to third after flush", function() {
   run(function() {
-    set(first, "output", "change") ;
-    equal("change", get(first, "output"), "first.output") ;
-    ok("change" !== get(third, "input"), "third.input") ;
+    set(first, "output", "change");
+    equal("change", get(first, "output"), "first.output");
+    ok("change" !== get(third, "input"), "third.input");
   });
 
-  equal("change", get(first, "output"), "first.output") ;
-  equal("change", get(second, "input"), "second.input") ;
-  equal("change", get(second, "output"), "second.output") ;
-  equal("change", get(third, "input"), "third.input") ;
+  equal("change", get(first, "output"), "first.output");
+  equal("change", get(second, "input"), "second.input");
+  equal("change", get(second, "output"), "second.output");
+  equal("change", get(third, "input"), "third.input");
 });
 
 // ..........................................................

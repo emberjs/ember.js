@@ -264,15 +264,15 @@ export default Mixin.create({
     }
 
     for (var idx = 0; idx < len; idx++) {
-      var next = this.nextObject(idx, last, context) ;
+      var next = this.nextObject(idx, last, context);
       callback.call(target, next, idx, this);
-      last = next ;
+      last = next;
     }
 
-    last = null ;
+    last = null;
     context = pushCtx(context);
 
-    return this ;
+    return this;
   },
 
   /**
@@ -336,7 +336,7 @@ export default Mixin.create({
       ret[idx] = callback.call(target, x, idx, i);
     });
 
-    return ret ;
+    return ret;
   },
 
   /**
@@ -402,7 +402,7 @@ export default Mixin.create({
       }
     });
 
-    return ret ;
+    return ret;
   },
 
   /**
@@ -1143,7 +1143,7 @@ export default Mixin.create({
 
     propertyDidChange(this, '[]');
 
-    return this ;
+    return this;
   },
 
   /**

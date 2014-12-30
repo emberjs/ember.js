@@ -18,7 +18,7 @@ test('sync() will immediately flush the sync queue only', function() {
 
     syncfunc();
 
-    equal(cnt, 1, 'should not run action yet') ;
+    equal(cnt, 1, 'should not run action yet');
     run.sync();
 
     equal(cnt, 5, 'should have run sync queue continuously');

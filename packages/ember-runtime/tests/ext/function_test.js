@@ -6,7 +6,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
     ok("undefined" === typeof Function.prototype.observes, 'Function.prototype helper disabled');
-    return ;
+    return;
   }
 
   var MyMixin = Ember.Mixin.create({
@@ -33,7 +33,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
 
   if (Ember.EXTEND_PROTOTYPES === false) {
     ok("undefined" === typeof Function.prototype.on, 'Function.prototype helper disabled');
-    return ;
+    return;
   }
 
   var MyMixin = Ember.Mixin.create({
@@ -58,7 +58,7 @@ testBoth('can be chained with observes', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
     ok('Function.prototype helper disabled');
-    return ;
+    return;
   }
 
   var MyMixin = Ember.Mixin.create({
@@ -84,7 +84,7 @@ testBoth('sets up a ComputedProperty', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
     ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
-    return ;
+    return;
   }
 
   var MyClass = Ember.Object.extend({

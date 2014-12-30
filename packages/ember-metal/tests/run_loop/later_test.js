@@ -41,7 +41,7 @@ asyncTest('should invoke after specified period of time - function only', functi
 
 asyncTest('should invoke after specified period of time - target/method', function() {
 
-  var obj = { invoked: false } ;
+  var obj = { invoked: false };
 
   run(function() {
     run.later(obj, function() { this.invoked = true; }, 100);
@@ -55,7 +55,7 @@ asyncTest('should invoke after specified period of time - target/method', functi
 
 asyncTest('should invoke after specified period of time - target/method/args', function() {
 
-  var obj = { invoked: 0 } ;
+  var obj = { invoked: 0 };
 
   run(function() {
     run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);

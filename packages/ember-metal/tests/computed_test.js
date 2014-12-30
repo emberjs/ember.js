@@ -62,7 +62,7 @@ test('defining computed property should invoke property on set', function() {
 var objA, objB;
 QUnit.module('computed should inherit through prototype', {
   setup: function() {
-    objA = { __foo: 'FOO' } ;
+    objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed(function(key, value) {
       if (value !== undefined) {
         this['__'+key] = 'computed '+value;
@@ -98,7 +98,7 @@ testBoth('using get() and set()', function(get, set) {
 
 QUnit.module('redefining computed property to normal', {
   setup: function() {
-    objA = { __foo: 'FOO' } ;
+    objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed(function(key, value) {
       if (value !== undefined) {
         this['__'+key] = 'computed '+value;
@@ -134,7 +134,7 @@ testBoth('using get() and set()', function(get, set) {
 
 QUnit.module('redefining computed property to another property', {
   setup: function() {
-    objA = { __foo: 'FOO' } ;
+    objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed(function(key, value) {
       if (value !== undefined) {
         this['__'+key] = 'A '+value;

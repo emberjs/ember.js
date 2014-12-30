@@ -80,7 +80,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // If you ask for an unknown property, then try to collect the value
   // from member items.
   unknownProperty: function(key, value) {
-    var ret;// = this.reducedProperty(key, value) ;
+    var ret;// = this.reducedProperty(key, value);
     if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
     }

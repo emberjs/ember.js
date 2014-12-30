@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 
-var view ;
+var view;
 QUnit.module("EmberView#$", {
   setup: function() {
     view = EmberView.extend({

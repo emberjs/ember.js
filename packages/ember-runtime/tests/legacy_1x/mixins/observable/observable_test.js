@@ -62,8 +62,8 @@ QUnit.module("object.get()", {
       nullProperty: null,
 
       unknownProperty: function(key, value) {
-        this.lastUnknownProperty = key ;
-        return "unknown" ;
+        this.lastUnknownProperty = key;
+        return "unknown";
       }
 
     });
@@ -72,25 +72,25 @@ QUnit.module("object.get()", {
 });
 
 test("should get normal properties", function() {
-  equal(object.get('normal'), 'value') ;
+  equal(object.get('normal'), 'value');
 });
 
 test("should call computed properties and return their result", function() {
-  equal(object.get("computed"), "value") ;
+  equal(object.get("computed"), "value");
 });
 
 test("should return the function for a non-computed property", function() {
-  var value = object.get("method") ;
-  equal(typeOf(value), 'function') ;
+  var value = object.get("method");
+  equal(typeOf(value), 'function');
 });
 
 test("should return null when property value is null", function() {
-  equal(object.get("nullProperty"), null) ;
+  equal(object.get("nullProperty"), null);
 });
 
 test("should call unknownProperty when value is undefined", function() {
-  equal(object.get("unknown"), "unknown") ;
-  equal(object.lastUnknownProperty, "unknown") ;
+  equal(object.get("unknown"), "unknown");
+  equal(object.lastUnknownProperty, "unknown");
 });
 
 // ..........................................................
@@ -111,8 +111,8 @@ QUnit.module("Ember.get()", {
       nullProperty: null,
 
       unknownProperty: function(key, value) {
-        this.lastUnknownProperty = key ;
-        return "unknown" ;
+        this.lastUnknownProperty = key;
+        return "unknown";
       }
 
     });
@@ -126,25 +126,25 @@ QUnit.module("Ember.get()", {
 });
 
 test("should get normal properties on Ember.Observable", function() {
-  equal(get(objectA, 'normal'), 'value') ;
+  equal(get(objectA, 'normal'), 'value');
 });
 
 test("should call computed properties on Ember.Observable and return their result", function() {
-  equal(get(objectA, "computed"), "value") ;
+  equal(get(objectA, "computed"), "value");
 });
 
 test("should return the function for a non-computed property on Ember.Observable", function() {
-  var value = get(objectA, "method") ;
-  equal(typeOf(value), 'function') ;
+  var value = get(objectA, "method");
+  equal(typeOf(value), 'function');
 });
 
 test("should return null when property value is null on Ember.Observable", function() {
-  equal(get(objectA, "nullProperty"), null) ;
+  equal(get(objectA, "nullProperty"), null);
 });
 
 test("should call unknownProperty when value is undefined on Ember.Observable", function() {
-  equal(get(object, "unknown"), "unknown") ;
-  equal(object.lastUnknownProperty, "unknown") ;
+  equal(get(object, "unknown"), "unknown");
+  equal(object.lastUnknownProperty, "unknown");
 });
 
 test("should get normal properties on standard objects", function() {
@@ -240,18 +240,18 @@ QUnit.module("object.set()", {
       _computed: "computed",
       computed: computed(function(key, value) {
         if (value !== undefined) {
-          this._computed = value ;
+          this._computed = value;
         }
-        return this._computed ;
+        return this._computed;
       }).volatile(),
 
       // method, but not a property
       _method: "method",
       method: function(key, value) {
         if (value !== undefined) {
-          this._method = value ;
+          this._method = value;
         }
-        return this._method ;
+        return this._method;
       },
 
       // null property
@@ -260,12 +260,12 @@ QUnit.module("object.set()", {
       // unknown property
       _unknown: 'unknown',
       unknownProperty: function(key) {
-        return this._unknown ;
+        return this._unknown;
       },
 
       setUnknownProperty: function(key, value) {
-        this._unknown = value ;
-        return this._unknown ;
+        this._unknown = value;
+        return this._unknown;
       }
     });
   }
@@ -273,15 +273,15 @@ QUnit.module("object.set()", {
 });
 
 test("should change normal properties and return this", function() {
-  var ret = object.set("normal", "changed") ;
-  equal(object.normal, "changed") ;
-  equal(ret, object) ;
+  var ret = object.set("normal", "changed");
+  equal(object.normal, "changed");
+  equal(ret, object);
 });
 
 test("should call computed properties passing value and return this", function() {
-  var ret = object.set("computed", "changed") ;
-  equal(object._computed, "changed") ;
-  equal(ret, object) ;
+  var ret = object.set("computed", "changed");
+  equal(object._computed, "changed");
+  equal(ret, object);
 });
 
 test("should change normal properties when passing undefined", function() {
@@ -291,22 +291,22 @@ test("should change normal properties when passing undefined", function() {
 });
 
 test("should replace the function for a non-computed property and return this", function() {
-  var ret = object.set("method", "changed") ;
-  equal(object._method, "method") ; // make sure this was NOT run
-  ok(typeOf(object.method) !== 'function') ;
-  equal(ret, object) ;
+  var ret = object.set("method", "changed");
+  equal(object._method, "method"); // make sure this was NOT run
+  ok(typeOf(object.method) !== 'function');
+  equal(ret, object);
 });
 
 test("should replace prover when property value is null", function() {
-  var ret = object.set("nullProperty", "changed") ;
-  equal(object.nullProperty, "changed") ;
-  equal(ret, object) ;
+  var ret = object.set("nullProperty", "changed");
+  equal(object.nullProperty, "changed");
+  equal(ret, object);
 });
 
 test("should call unknownProperty with value when property is undefined", function() {
-  var ret = object.set("unknown", "changed") ;
-  equal(object._unknown, "changed") ;
-  equal(ret, object) ;
+  var ret = object.set("unknown", "changed");
+  equal(object._unknown, "changed");
+  equal(ret, object);
 });
 
 // ..........................................................
@@ -386,7 +386,7 @@ QUnit.module("Computed properties", {
         return this.get('state') === 'off';
       }).property('state').volatile()
 
-    }) ;
+    });
   },
   teardown: function() {
     Ember.lookup = originalLookup;
@@ -666,7 +666,7 @@ QUnit.module("Observable objects & object properties ", {
         for (var idx=0; idx<keys.length;idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
-        return ret ;
+        return ret;
       },
 
       newObserver: function() {
@@ -776,7 +776,7 @@ QUnit.module("object.addObserver()", {
       },
 
       chainedObserver: function() {
-        this.normal2 = 'chainedPropertyObserved' ;
+        this.normal2 = 'chainedPropertyObserved';
       }
 
     });
@@ -818,7 +818,7 @@ QUnit.module("object.removeObserver()", {
         this.normal2 = 'newDependentValue';
       },
       removeChainedObserver: function() {
-        this.normal2 = 'chainedPropertyObserved' ;
+        this.normal2 = 'chainedPropertyObserved';
       },
 
       observableValue: "hello world",
@@ -899,7 +899,7 @@ QUnit.module("Bind function ", {
       computed: function() {
         this.normal = 'newValue';
       }
-    }) ;
+    });
 
     lookup = Ember.lookup = {
       'Namespace': {
@@ -917,12 +917,12 @@ QUnit.module("Bind function ", {
 test("should bind property with method parameter as undefined", function() {
   // creating binding
   run(function() {
-    objectA.bind("name", "Namespace.objectB.normal", undefined) ;
+    objectA.bind("name", "Namespace.objectB.normal", undefined);
   });
 
   // now make a change to see if the binding triggers.
   run(function() {
-    objectB.set("normal", "changedValue") ;
+    objectB.set("normal", "changedValue");
   });
 
   // support new-style bindings if available
