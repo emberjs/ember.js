@@ -5,6 +5,9 @@ var domHelper = environment.hasDOM ? new DOMHelper() : null;
 
 function Renderer() {
   this._uuid = 0;
+
+  // These sizes and values are somewhat arbitrary (but sensible)
+  // pre-allocation defaults.
   this._views = new Array(2000);
   this._queue = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
