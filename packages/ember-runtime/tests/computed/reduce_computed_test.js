@@ -347,11 +347,11 @@ test("an error is thrown when a reduceComputed is defined without an initialValu
       exploder: reduceComputed('collection', {
         initialize: function(initialValue, changeMeta, instanceMeta) {},
 
-        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
           return item;
         },
 
-        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
           return item;
         }
       })
@@ -790,7 +790,7 @@ test("when initialValue is undefined, everything works as advertised", function(
         };
       },
 
-      addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+      addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
         var filterIndex;
         filterIndex = instanceMeta.subArray.addItem(changeMeta.index, item.toUpperCase() === item);
         if (filterIndex > -1) {
@@ -799,7 +799,7 @@ test("when initialValue is undefined, everything works as advertised", function(
         return instanceMeta.firstMatch();
       },
 
-      removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+      removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
         var filterIndex = instanceMeta.subArray.removeItem(changeMeta.index);
         if (filterIndex > -1) {
           instanceMeta.matchingItems.removeAt(filterIndex);

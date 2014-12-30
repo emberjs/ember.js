@@ -8,7 +8,7 @@ CopyableTests.extend({
     return Ember.A([generateGuid()]);
   },
 
-  isEqual: function(a,b) {
+  isEqual: function(a, b) {
     if (!(a instanceof Array)) {
       return false;
     }

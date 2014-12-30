@@ -184,7 +184,7 @@ test('registry.has should not accidentally cause injections on that factory to b
   var FirstApple = factory('first');
   var SecondApple = factory('second');
 
-  SecondApple.extend = function(a,b,c) {
+  SecondApple.extend = function(a, b, c) {
     ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
   };
 

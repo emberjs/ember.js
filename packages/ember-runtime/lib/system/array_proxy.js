@@ -315,7 +315,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       }
 
       // Replace in reverse order since indices will change
-      indices.sort(function(a,b) { return b - a; });
+      indices.sort(function(a, b) { return b - a; });
 
       beginPropertyChanges();
       for (i=0; i<indices.length; i++) {

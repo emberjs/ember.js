@@ -414,7 +414,7 @@ testBoth('circular keys should not blow up', function(get, set) {
   equal(get(obj, 'foo'), 'foo 3', 'cached retrieve');
 });
 
-testBoth('redefining a property should undo old dependent keys', function(get ,set) {
+testBoth('redefining a property should undo old dependent keys', function(get, set) {
 
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1');
@@ -610,7 +610,7 @@ testBoth('depending on Global chain', function(get, set) {
 
 });
 
-testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set) {
+testBoth('chained dependent keys should evaluate computed properties lazily', function(get, set) {
   defineProperty(obj.foo.bar, 'b', computed(func));
   defineProperty(obj.foo, 'c', computed(function() {}).property('bar.b'));
   equal(count, 0, 'b should not run');

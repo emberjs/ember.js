@@ -1172,7 +1172,7 @@ QUnit.module('computedSort - concurrency', {
 
         sortProps: Ember.A(['count']),
         sortedItems: computedSort('items', 'sortProps'),
-        customSortedItems: computedSort('items.@each.count', function(a,b){
+        customSortedItems: computedSort('items.@each.count', function(a, b){
           return get(a, 'count') - get(b, 'count');
         })
       });

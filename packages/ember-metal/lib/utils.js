@@ -934,8 +934,12 @@ export function inspect(obj) {
 
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
-
-export function apply(t /* target */, m /* method */, a /* args */) {
+/**
+  @param {Object} target
+  @param {Function} method
+  @param {Array} args
+*/
+export function apply(t, m, a) {
   var l = a && a.length;
   if (!a || !l) { return m.call(t); }
   switch (l) {
@@ -948,7 +952,12 @@ export function apply(t /* target */, m /* method */, a /* args */) {
   }
 }
 
-export function applyStr(t /* target */, m /* method */, a /* args */) {
+/**
+  @param {Object} target
+  @param {String} method
+  @param {Array} args
+*/
+export function applyStr(t, m, a) {
   var l = a && a.length;
   if (!a || !l) { return t[m](); }
   switch (l) {
