@@ -15,6 +15,13 @@ import { typeOf } from "ember-metal/utils";
 
 function K() { return this; }
 
+// Normally, the renderer is injected by the container when the view is looked
+// up. However, if someone creates a view without looking it up via the
+// container (e.g. `Ember.View.create().append()`) then we create a fallback
+// DOM renderer that is shared. In general, this path should be avoided since
+// views created this way cannot run in a node environment.
+var renderer;
+
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.View` and other classes that don't need
@@ -42,7 +49,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._isVisible = get(this, 'isVisible');
 
     if (!this.renderer) {
-      this.renderer = new Renderer();
+      renderer = renderer || new Renderer();
+      this.renderer = renderer;
     }
   },
 

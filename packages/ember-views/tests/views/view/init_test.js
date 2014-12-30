@@ -51,3 +51,33 @@ test("should warn if a non-array is used for classNamesBindings", function() {
     });
   }, /Only arrays are allowed/i);
 });
+
+test("creates a renderer if one is not provided", function() {
+  var childView;
+
+  view = EmberView.create({
+    render: function(buffer) {
+      buffer.push('Em');
+      this.appendChild(childView);
+    }
+  });
+
+  childView = EmberView.create({
+    template: function() { return 'ber'; }
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  run(function() {
+    ok(get(view, 'renderer'), "view created without container receives a renderer");
+    strictEqual(get(view, 'renderer'), get(childView, 'renderer'), "parent and child share a renderer");
+  });
+
+
+  run(function() {
+    view.destroy();
+    childView.destroy();
+  });
+});
