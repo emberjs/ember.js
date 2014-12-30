@@ -25,6 +25,16 @@ import 'ember-htmlbars';
   {{/link-to}}
   ```
 
+  You can also use an inline form of `{{link-to}}` helper by
+  passing the link text as the first argument
+  to the helper:
+
+  ```handlebars
+  {{link-to 'Great Hamster Photos' 'photoGallery'}}
+  ```
+
+  Both will result in:
+
   ```html
   <a href="/hamster-photos">
     Great Hamster Photos
