@@ -15,6 +15,6 @@ test("Ember.typeOf", function() {
   equal(typeOf(obj),           'object',    "item of type object");
   equal(typeOf(object),        'instance',  "item of type instance");
   equal(typeOf(object.method), 'function',  "item of type function");
-  equal(typeOf(EmberObject),     'class',     "item of type class");
+  equal(typeOf(EmberObject),   'class',     "item of type class");
   equal(typeOf(new Error()),   'error',     "item of type error");
 });
