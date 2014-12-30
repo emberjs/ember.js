@@ -55,9 +55,13 @@ var define, requireModule, require, requirejs, Ember;
       for (var i=0, l=parts.length; i<l; i++) {
         var part = parts[i];
 
-        if (part === '..') { parentBase.pop(); }
-        else if (part === '.') { continue; }
-        else { parentBase.push(part); }
+        if (part === '..') {
+          parentBase.pop();
+        } else if (part === '.') {
+          continue;
+        } else {
+          parentBase.push(part);
+        }
       }
 
       return parentBase.join('/');
