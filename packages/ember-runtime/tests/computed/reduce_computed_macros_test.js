@@ -372,10 +372,10 @@ QUnit.module('computedFilterBy', {
   setup: function() {
     obj = EmberObject.createWithMixins({
       array: Ember.A([
-        {name: "one", a:1, b:false},
-        {name: "two", a:2, b:false},
-        {name: "three", a:1, b:true},
-        {name: "four", b:true}
+        {name: "one", a: 1, b: false},
+        {name: "two", a: 2, b: false},
+        {name: "three", a: 1, b: true},
+        {name: "four", b: true}
       ]),
       a1s: computedFilterBy('array', 'a', 1),
       as: computedFilterBy('array', 'a'),
@@ -408,7 +408,7 @@ test("properties can be filtered by truthiness", function() {
   deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
 
   run(function() {
-    array.pushObject({name:"five", a:6, b:true});
+    array.pushObject({name: "five", a: 6, b: true});
   });
   deepEqual(as.mapBy('name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
   deepEqual(bs.mapBy('name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
@@ -420,7 +420,7 @@ test("properties can be filtered by truthiness", function() {
   deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
 
   run(function() {
-    set(obj, 'array', Ember.A([{name: "six", a:12, b:true}]));
+    set(obj, 'array', Ember.A([{name: "six", a: 12, b: true}]));
   });
   deepEqual(as.mapBy('name'), ['six'], "arrays computed by filter property respond to array changes");
   deepEqual(bs.mapBy('name'), ['six'], "arrays computed by filtered property respond to array changes");
@@ -433,7 +433,7 @@ test("properties can be filtered by values", function() {
   deepEqual(a1s.mapBy('name'), ['one', 'three'], "properties can be filtered by matching value");
 
   run(function() {
-    array.pushObject({ name: "five", a:1 });
+    array.pushObject({ name: "five", a: 1 });
   });
   deepEqual(a1s.mapBy('name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
 
@@ -460,7 +460,7 @@ test("properties values can be replaced", function() {
   deepEqual(a1bs.mapBy('name'), [], "properties can be filtered by matching value");
 
   run(function() {
-    set(obj, 'array', Ember.A([{name: 'item1', a:1, b:true}]));
+    set(obj, 'array', Ember.A([{name: 'item1', a: 1, b: true}]));
   });
 
   a1bs = get(obj, 'a1bs');

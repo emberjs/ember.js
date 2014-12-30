@@ -14,7 +14,7 @@ test("supports setting multiple attributes at once", function() {
 
   deepEqual(setProperties({}, {foo: 1}),  {foo: 1}, 'Set a single property');
 
-  deepEqual(setProperties({}, {foo:1, bar: 1}), {foo: 1, bar: 1}, 'Set multiple properties');
+  deepEqual(setProperties({}, {foo: 1, bar: 1}), {foo: 1, bar: 1}, 'Set multiple properties');
 
   deepEqual(setProperties({foo: 2, baz: 2}, {foo: 1}), {foo: 1, baz: 2}, 'Set one of multiple properties');
 
