@@ -41,7 +41,7 @@ test('should be able to use setProperties to set multiple properties at once', f
   equal("Cook", obj.get("lastName"));
 });
 
-testBoth('calling setProperties completes safely despite exceptions', function(get,set) {
+testBoth('calling setProperties completes safely despite exceptions', function(get, set) {
   var exc = new Error("Something unexpected happened!");
   var obj = EmberObject.createWithMixins({
     firstName: "Steve",

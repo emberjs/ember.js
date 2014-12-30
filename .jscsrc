@@ -17,6 +17,7 @@
   "disallowTrailingWhitespace": true,
   "disallowTrailingComma": true,
   "validateIndentation": 2,
+  "validateParameterSeparator": ", ",
   "requireSpaceBeforeKeywords": [
     "else",
     "while",

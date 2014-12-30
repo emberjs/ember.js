@@ -38,7 +38,7 @@ import {
 
 QUnit.module('addObserver');
 
-testBoth('observer should fire when property is modified', function(get,set) {
+testBoth('observer should fire when property is modified', function(get, set) {
 
   var obj = {};
   var count = 0;
@@ -185,7 +185,7 @@ testBoth('observers watching multiple properties via brace expansion should fire
   equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('nested observers should fire in order', function(get,set) {
+testBoth('nested observers should fire in order', function(get, set) {
   var obj = { foo: 'foo', bar: 'bar' };
   var fooCount = 0;
   var barCount = 0;
@@ -203,7 +203,7 @@ testBoth('nested observers should fire in order', function(get,set) {
 
 });
 
-testBoth('removing an chain observer on change should not fail', function(get,set) {
+testBoth('removing an chain observer on change should not fail', function(get, set) {
   var foo = { bar: 'bar' };
   var obj1 = { foo: foo };
   var obj2 = { foo: foo };
@@ -237,7 +237,7 @@ testBoth('removing an chain observer on change should not fail', function(get,se
   equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('removing an chain before observer on change should not fail', function(get,set) {
+testBoth('removing an chain before observer on change should not fail', function(get, set) {
   var foo = { bar: 'bar' };
   var obj1 = { foo: foo };
   var obj2 = { foo: foo };
@@ -271,7 +271,7 @@ testBoth('removing an chain before observer on change should not fail', function
   equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('suspending an observer should not fire during callback', function(get,set) {
+testBoth('suspending an observer should not fire during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -308,7 +308,7 @@ testBoth('suspending an observer should not fire during callback', function(get,
 });
 
 
-testBoth('suspending an observer should not defer change notifications during callback', function(get,set) {
+testBoth('suspending an observer should not defer change notifications during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -346,7 +346,7 @@ testBoth('suspending an observer should not defer change notifications during ca
   deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
-testBoth('suspending observers should not fire during callback', function(get,set) {
+testBoth('suspending observers should not fire during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -383,7 +383,7 @@ testBoth('suspending observers should not fire during callback', function(get,se
 });
 
 
-testBoth('suspending observers should not defer change notifications during callback', function(get,set) {
+testBoth('suspending observers should not defer change notifications during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -421,7 +421,7 @@ testBoth('suspending observers should not defer change notifications during call
   deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
-testBoth('deferring property change notifications', function(get,set) {
+testBoth('deferring property change notifications', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
@@ -435,7 +435,7 @@ testBoth('deferring property change notifications', function(get,set) {
   equal(fooCount, 1, 'foo should have fired once');
 });
 
-testBoth('deferring property change notifications safely despite exceptions', function(get,set) {
+testBoth('deferring property change notifications safely despite exceptions', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
   var exc = new Error("Something unexpected happened!");
@@ -465,7 +465,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
   equal(fooCount, 2, 'foo should have fired again once');
 });
 
-testBoth('deferring property change notifications will not defer before observers', function(get,set) {
+testBoth('deferring property change notifications will not defer before observers', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
@@ -506,7 +506,7 @@ testBoth('implementing sendEvent on object should invoke when deferring property
   equal(events[1], 'foo:change');
 });
 
-testBoth('addObserver should propagate through prototype', function(get,set) {
+testBoth('addObserver should propagate through prototype', function(get, set) {
   var obj = { foo: 'foo', count: 0 };
   var obj2;
 
@@ -524,7 +524,7 @@ testBoth('addObserver should propagate through prototype', function(get,set) {
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addObserver should respect targets with methods', function(get,set) {
+testBoth('addObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -594,7 +594,7 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 
 QUnit.module('removeObserver');
 
-testBoth('removing observer should stop firing', function(get,set) {
+testBoth('removing observer should stop firing', function(get, set) {
 
   var obj = {};
   var count = 0;
@@ -637,7 +637,7 @@ testBoth('local observers can be removed', function(get, set) {
   equal(barObserved, 1, 'removed observers should not be called');
 });
 
-testBoth('removeObserver should respect targets with methods', function(get,set) {
+testBoth('removeObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -678,7 +678,7 @@ testBoth('removeObserver should respect targets with methods', function(get,set)
 
 QUnit.module('addBeforeObserver');
 
-testBoth('observer should fire before a property is modified', function(get,set) {
+testBoth('observer should fire before a property is modified', function(get, set) {
 
   var obj = { foo: 'foo' };
   var count = 0;
@@ -806,7 +806,7 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('addBeforeObserver should propagate through prototype', function(get,set) {
+testBoth('addBeforeObserver should propagate through prototype', function(get, set) {
   var obj = { foo: 'foo', count: 0 };
   var obj2;
 
@@ -823,7 +823,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get,se
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addBeforeObserver should respect targets with methods', function(get,set) {
+testBoth('addBeforeObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -1162,7 +1162,7 @@ testBoth("immediate observers are for internal properties only", function(get, s
 
 QUnit.module("changeProperties");
 
-testBoth("observers added/removed during changeProperties should do the right thing.", function(get,set) {
+testBoth("observers added/removed during changeProperties should do the right thing.", function(get, set) {
   var obj = {
     foo: 0
   };

@@ -12,7 +12,7 @@ QUnit.module("ArrayProxy - arrangedContent", {
         content: Ember.A([1,2,4,5]),
         arrangedContent: computed(function() {
           var content = this.get('content');
-          return content && Ember.A(content.slice().sort(function(a,b) {
+          return content && Ember.A(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
@@ -210,7 +210,7 @@ QUnit.module("ArrayProxy - arrangedContent with transforms", {
 
         arrangedContent: computed(function() {
           var content = this.get('content');
-          return content && Ember.A(content.slice().sort(function(a,b) {
+          return content && Ember.A(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;

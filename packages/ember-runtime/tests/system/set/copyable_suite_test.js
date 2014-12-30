@@ -28,7 +28,7 @@ CopyableTests.extend({
     return set;
   },
 
-  isEqual: function(a,b) {
+  isEqual: function(a, b) {
     if (!(a instanceof Set)) {
       return false;
     }
