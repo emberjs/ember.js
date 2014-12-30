@@ -18,9 +18,10 @@ import { typeOf } from "ember-metal/utils";
   ```
 
   @method getProperties
-  @param obj
+  @for Ember
+  @param {Object} obj
   @param {String...|Array} list of keys to get
-  @return {Hash}
+  @return {Object}
 */
 export default function getProperties(obj) {
   var ret = {};
