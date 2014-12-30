@@ -139,6 +139,6 @@ test('rejections like jqXHR which have errorThrown property work', function() {
     run(RSVP, 'reject', jqXHR);
   } finally {
     Ember.onerror = wasOnError;
-    Ember.testing = wasEmberTesting ;
+    Ember.testing = wasEmberTesting;
   }
 });

@@ -8,7 +8,7 @@ test('scheduling item in queue should defer until finished', function() {
   run(function() {
     run.schedule('actions', function() { cnt++; });
     run.schedule('actions', function() { cnt++; });
-    equal(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet');
   });
 
   equal(cnt, 2, 'should flush actions now');
@@ -20,12 +20,12 @@ test('nested runs should queue each phase independently', function() {
 
   run(function() {
     run.schedule('actions', function() { cnt++; });
-    equal(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet');
 
     run(function() {
       run.schedule('actions', function() { cnt++; });
     });
-    equal(cnt, 1, 'should not run action yet') ;
+    equal(cnt, 1, 'should not run action yet');
 
   });
 

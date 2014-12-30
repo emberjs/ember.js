@@ -17,7 +17,7 @@ QUnit.module("Ember.View#element", {
 });
 
 test("returns null if the view has no element and no parent view", function() {
-  view = EmberView.create() ;
+  view = EmberView.create();
   equal(get(view, 'parentView'), null, 'precond - has no parentView');
   equal(get(view, 'element'), null, 'has no element');
 });

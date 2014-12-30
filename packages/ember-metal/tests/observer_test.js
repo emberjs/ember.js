@@ -921,7 +921,7 @@ testBoth('depending on a chain with a computed property', function (get, set){
 
 testBoth('depending on a simple chain', function(get, set) {
 
-  var val ;
+  var val;
   addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
     val = get(target, key);
     count++;

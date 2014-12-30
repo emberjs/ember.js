@@ -235,7 +235,7 @@ var ContainerView = View.extend(MutableArray, {
     this.childViewsWillChange(this._childViews, idx, removedCount);
 
     if (addedCount === 0) {
-      this._childViews.splice(idx, removedCount) ;
+      this._childViews.splice(idx, removedCount);
     } else {
       var args = [idx, removedCount].concat(addedViews);
       if (addedViews.length && !this._childViews.length) { this._childViews = this._childViews.slice(); }

@@ -50,7 +50,7 @@ QUnit.module("object.propertyChanges", {
 
       starProp: null,
       starObserver: function(target, key, value, rev) {
-        revMatches = (rev === target.propertyRevision) ;
+        revMatches = (rev === target.propertyRevision);
         this.starProp = key;
       }
 
@@ -67,18 +67,18 @@ test("should observe the changes within the nested begin / end property changes"
   ObjectA.beginPropertyChanges();
   ObjectA.set('foo', 'changeFooValue');
 
-  equal(ObjectA.prop, "propValue") ;
+  equal(ObjectA.prop, "propValue");
   ObjectA.endPropertyChanges();
 
     //end inner nest
   ObjectA.set('prop', 'changePropValue');
-  equal(ObjectA.newFoo, "newFooValue") ;
+  equal(ObjectA.newFoo, "newFooValue");
 
   //close the outer nest
   ObjectA.endPropertyChanges();
 
-  equal(ObjectA.prop, "changedPropValue") ;
-  equal(ObjectA.newFoo, "changedNewFooValue") ;
+  equal(ObjectA.prop, "changedPropValue");
+  equal(ObjectA.newFoo, "changedNewFooValue");
 });
 
 test("should observe the changes within the begin and end property changes", function() {
@@ -86,27 +86,27 @@ test("should observe the changes within the begin and end property changes", fun
   ObjectA.beginPropertyChanges();
   ObjectA.set('foo', 'changeFooValue');
 
-  equal(ObjectA.prop, "propValue") ;
+  equal(ObjectA.prop, "propValue");
   ObjectA.endPropertyChanges();
 
-  equal(ObjectA.prop, "changedPropValue") ;
+  equal(ObjectA.prop, "changedPropValue");
 });
 
 test("should indicate that the property of an object has just changed", function() {
   // inidicate that proprty of foo will change to its subscribers
-  ObjectA.propertyWillChange('foo') ;
+  ObjectA.propertyWillChange('foo');
 
   //Value of the prop is unchanged yet as this will be changed when foo changes
-  equal(ObjectA.prop, 'propValue' ) ;
+  equal(ObjectA.prop, 'propValue' );
 
   //change the value of foo.
   ObjectA.set('foo', 'changeFooValue');
 
   // Indicate the subscribers of foo that the value has just changed
-  ObjectA.propertyDidChange('foo', null) ;
+  ObjectA.propertyDidChange('foo', null);
 
   // Values of prop has just changed
-  equal(ObjectA.prop, 'changedPropValue') ;
+  equal(ObjectA.prop, 'changedPropValue');
 });
 
 test("should notify that the property of an object has changed", function() {
@@ -116,7 +116,7 @@ test("should notify that the property of an object has changed", function() {
   ObjectA.notifyPropertyChange('newFoo', 'fooValue');
 
   //value of newProp changed.
-  equal(ObjectA.newProp, 'changedNewPropValue') ;
+  equal(ObjectA.newProp, 'changedNewPropValue');
 });
 
 test("should invalidate function property cache when notifyPropertyChange is called", function() {

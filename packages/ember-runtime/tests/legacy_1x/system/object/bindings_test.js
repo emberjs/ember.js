@@ -40,20 +40,20 @@ var bindModuleOpts = {
     fromObject = EmberObject.create({
       bar: "foo",
       extraObject: null
-    }) ;
+    });
 
     extraObject = EmberObject.create({
       foo: "extraObjectValue"
-    }) ;
+    });
 
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: testObject
-    } ;
+    };
   },
 
   teardown: function() {
-    testObject = fromObject = extraObject = null ;
+    testObject = fromObject = extraObject = null;
     Ember.lookup = originalLookup;
   }
 
@@ -76,10 +76,10 @@ test("bind(TestNamespace.fromObject.bar) should follow absolute path", function(
 test("bind(.bar) should bind to relative path", function() {
   run(function() {
     // create binding
-    testObject.bind("foo", "bar") ;
+    testObject.bind("foo", "bar");
 
     // now make a change to see if the binding triggers.
-    set(testObject, "bar", "changedValue") ;
+    set(testObject, "bar", "changedValue");
   });
 
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
@@ -100,22 +100,22 @@ var fooBindingModuleOpts = {
     fromObject = EmberObject.create({
       bar: "foo",
       extraObject: null
-    }) ;
+    });
 
     extraObject = EmberObject.create({
       foo: "extraObjectValue"
-    }) ;
+    });
 
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: TestObject
-    } ;
+    };
   },
 
   teardown: function() {
     Ember.lookup = originalLookup;
-    TestObject = fromObject = extraObject = null ;
-  //  delete TestNamespace ;
+    TestObject = fromObject = extraObject = null;
+  //  delete TestNamespace;
   }
 
 };
@@ -128,10 +128,10 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
   run(function() {
     testObject = TestObject.createWithMixins({
       fooBinding: "TestNamespace.fromObject.bar"
-    }) ;
+    });
 
     // now make a change to see if the binding triggers.
-    set(fromObject, "bar", "changedValue") ;
+    set(fromObject, "bar", "changedValue");
   });
 
   equal("changedValue", get(testObject, "foo"), "testObject.foo");

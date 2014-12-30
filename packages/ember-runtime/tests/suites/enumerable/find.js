@@ -54,7 +54,7 @@ suite.test('should return first object of property matches', function() {
 });
 
 suite.test('should return first object with truthy prop', function() {
-  var ary, obj ;
+  var ary, obj;
 
   ary = [
     { foo: 'foo', bar: false },

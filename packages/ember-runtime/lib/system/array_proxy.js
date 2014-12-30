@@ -324,12 +324,12 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       endPropertyChanges();
     }
 
-    return this ;
+    return this;
   },
 
   pushObject: function(obj) {
-    this._insertAt(get(this, 'content.length'), obj) ;
-    return obj ;
+    this._insertAt(get(this, 'content.length'), obj);
+    return obj;
   },
 
   pushObjects: function(objects) {
@@ -351,8 +351,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   unshiftObject: function(obj) {
-    this._insertAt(0, obj) ;
-    return obj ;
+    this._insertAt(0, obj);
+    return obj;
   },
 
   unshiftObjects: function(objects) {
