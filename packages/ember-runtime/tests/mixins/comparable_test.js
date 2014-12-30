@@ -8,7 +8,7 @@ var Rectangle = EmberObject.extend(Comparable, {
   width: 0,
 
   area: function() {
-    return get(this,'length') * get(this, 'width');
+    return get(this, 'length') * get(this, 'width');
   },
 
   compare: function(a, b) {

@@ -76,7 +76,7 @@ test("it should find targets specified using a property path", function() {
 
 test("it should use an actionContext object specified as a property on the object", function() {
   expect(2);
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
         action: 'anEvent',
         actionContext: {},
         target: EmberObject.create({
@@ -95,7 +95,7 @@ test("it should find an actionContext specified as a property path", function() 
   Ember.lookup = { Test: Test };
   Test.aContext = {};
 
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
         action: 'anEvent',
         actionContext: 'Test.aContext',
         target: EmberObject.create({
@@ -114,7 +114,7 @@ test("it should use the target specified in the argument", function() {
           ok(true, "anEvent method was called");
         }
       });
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
         action: 'anEvent'
       });
 
@@ -124,7 +124,7 @@ test("it should use the target specified in the argument", function() {
 test("it should use the action specified in the argument", function() {
   expect(2);
 
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
       anEvent: function() {
         ok(true, "anEvent method was called");
@@ -137,7 +137,7 @@ test("it should use the action specified in the argument", function() {
 test("it should use the actionContext specified in the argument", function() {
   expect(2);
   var context = {};
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
       anEvent: function(ctx) {
         ok(context === ctx, "anEvent method was called with the expected context");
@@ -153,7 +153,7 @@ test("it should allow multiple arguments from actionContext", function() {
   expect(3);
   var param1 = 'someParam';
   var param2 = 'someOtherParam';
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
       anEvent: function(first, second) {
         ok(first === param1, "anEvent method was called with the expected first argument");
@@ -168,7 +168,7 @@ test("it should allow multiple arguments from actionContext", function() {
 
 test("it should use a null value specified in the actionContext argument", function() {
   expect(2);
-  var obj = EmberObject.createWithMixins(TargetActionSupport,{
+  var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
       anEvent: function(ctx) {
         ok(null === ctx, "anEvent method was called with the expected context (null)");

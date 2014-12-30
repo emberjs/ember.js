@@ -54,7 +54,7 @@ test("indexOf - returns index of object in arrangedContent", function() {
 
 test("insertAt - raises, indeterminate behavior", function() {
   raises(function() {
-    run(function() { array.insertAt(2,3); });
+    run(function() { array.insertAt(2, 3); });
   });
 });
 
@@ -98,7 +98,7 @@ test("pushObjects - adds multiple to end of content even if it already exists", 
 });
 
 test("removeAt - removes from index in arrangedContent", function() {
-  run(function() { array.removeAt(1,2); });
+  run(function() { array.removeAt(1, 2); });
   deepEqual(array.get('content'), [1,5]);
 });
 
@@ -142,7 +142,7 @@ test("shiftObject - removes from start of arrangedContent", function() {
 });
 
 test("slice - returns a slice of the arrangedContent", function() {
-  deepEqual(array.slice(1,3), [4,2], 'returns sliced arrangedContent');
+  deepEqual(array.slice(1, 3), [4,2], 'returns sliced arrangedContent');
 });
 
 test("toArray - returns copy of arrangedContent", function() {
@@ -282,7 +282,7 @@ test("shiftObject - removes from start of arrangedContent", function() {
 });
 
 test("slice - returns a slice of the arrangedContent", function() {
-  deepEqual(array.slice(1,3), ['4','2'], 'returns sliced arrangedContent');
+  deepEqual(array.slice(1, 3), ['4','2'], 'returns sliced arrangedContent');
 });
 
 test("toArray - returns copy of arrangedContent", function() {

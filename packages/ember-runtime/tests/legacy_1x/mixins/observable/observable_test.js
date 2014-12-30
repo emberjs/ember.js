@@ -686,22 +686,22 @@ QUnit.module("Observable objects & object properties ", {
 
 });
 
-test('incrementProperty and decrementProperty',function() {
+test('incrementProperty and decrementProperty', function() {
   var newValue = object.incrementProperty('numberVal');
 
-  equal(25,newValue,'numerical value incremented');
+  equal(25, newValue, 'numerical value incremented');
   object.numberVal = 24;
   newValue = object.decrementProperty('numberVal');
-  equal(23,newValue,'numerical value decremented');
+  equal(23, newValue, 'numerical value decremented');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', 5);
-  equal(30,newValue,'numerical value incremented by specified increment');
+  equal(30, newValue, 'numerical value incremented by specified increment');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', -5);
-  equal(20,newValue,'minus numerical value incremented by specified increment');
+  equal(20, newValue, 'minus numerical value incremented by specified increment');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', 0);
-  equal(25,newValue,'zero numerical value incremented by specified increment');
+  equal(25, newValue, 'zero numerical value incremented by specified increment');
 
   expectAssertion(function() {
     newValue = object.incrementProperty('numberVal', (0 - void(0))); // Increment by NaN
@@ -715,17 +715,17 @@ test('incrementProperty and decrementProperty',function() {
     newValue = object.incrementProperty('numberVal', 1/0); // Increment by Infinity
   }, /Must pass a numeric value to incrementProperty/i);
 
-  equal(25,newValue,'Attempting to increment by non-numeric values should not increment value');
+  equal(25, newValue, 'Attempting to increment by non-numeric values should not increment value');
 
   object.numberVal = 25;
-  newValue = object.decrementProperty('numberVal',5);
-  equal(20,newValue,'numerical value decremented by specified increment');
+  newValue = object.decrementProperty('numberVal', 5);
+  equal(20, newValue, 'numerical value decremented by specified increment');
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal', -5);
-  equal(30,newValue,'minus numerical value decremented by specified increment');
+  equal(30, newValue, 'minus numerical value decremented by specified increment');
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal', 0);
-  equal(25,newValue,'zero numerical value decremented by specified increment');
+  equal(25, newValue, 'zero numerical value decremented by specified increment');
 
   expectAssertion(function() {
     newValue = object.decrementProperty('numberVal', (0 - void(0))); // Decrement by NaN
@@ -739,17 +739,17 @@ test('incrementProperty and decrementProperty',function() {
     newValue = object.decrementProperty('numberVal', 1/0); // Decrement by Infinity
   }, /Must pass a numeric value to decrementProperty/i);
 
-  equal(25,newValue,'Attempting to decrement by non-numeric values should not decrement value');
+  equal(25, newValue, 'Attempting to decrement by non-numeric values should not decrement value');
 });
 
-test('toggle function, should be boolean',function() {
-  equal(object.toggleProperty('toggleVal',true,false),object.get('toggleVal'));
-  equal(object.toggleProperty('toggleVal',true,false),object.get('toggleVal'));
-  equal(object.toggleProperty('toggleVal',undefined,undefined),object.get('toggleVal'));
+test('toggle function, should be boolean', function() {
+  equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+  equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+  equal(object.toggleProperty('toggleVal', undefined, undefined), object.get('toggleVal'));
 });
 
-test('should notify array observer when array changes',function() {
-  get(object, 'normalArray').replace(0,0,6);
+test('should notify array observer when array changes', function() {
+  get(object, 'normalArray').replace(0, 0, 6);
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 
@@ -785,17 +785,17 @@ QUnit.module("object.addObserver()", {
 
 test("should register an observer for a property", function() {
   ObjectC.addObserver('normal', ObjectC, 'action');
-  ObjectC.set('normal','newValue');
+  ObjectC.set('normal', 'newValue');
   equal(ObjectC.normal1, 'newZeroValue');
 });
 
 test("should register an observer for a property - Special case of chained property", function() {
-  ObjectC.addObserver('objectE.propertyVal',ObjectC,'chainedObserver');
-  ObjectC.objectE.set('propertyVal',"chainedPropertyValue");
-  equal('chainedPropertyObserved',ObjectC.normal2);
+  ObjectC.addObserver('objectE.propertyVal', ObjectC, 'chainedObserver');
+  ObjectC.objectE.set('propertyVal', "chainedPropertyValue");
+  equal('chainedPropertyObserved', ObjectC.normal2);
   ObjectC.normal2 = 'dependentValue';
-  ObjectC.set('objectE','');
-  equal('chainedPropertyObserved',ObjectC.normal2);
+  ObjectC.set('objectE', '');
+  equal('chainedPropertyObserved', ObjectC.normal2);
 });
 
 QUnit.module("object.removeObserver()", {
@@ -842,26 +842,26 @@ QUnit.module("object.removeObserver()", {
 
 test("should unregister an observer for a property", function() {
   ObjectD.addObserver('normal', ObjectD, 'addAction');
-  ObjectD.set('normal','newValue');
+  ObjectD.set('normal', 'newValue');
   equal(ObjectD.normal1, 'newZeroValue');
 
-  ObjectD.set('normal1','zeroValue');
+  ObjectD.set('normal1', 'zeroValue');
 
   ObjectD.removeObserver('normal', ObjectD, 'addAction');
-  ObjectD.set('normal','newValue');
+  ObjectD.set('normal', 'newValue');
   equal(ObjectD.normal1, 'zeroValue');
 });
 
 
 test("should unregister an observer for a property - special case when key has a '.' in it.", function() {
-  ObjectD.addObserver('objectF.propertyVal',ObjectD,'removeChainedObserver');
-  ObjectD.objectF.set('propertyVal',"chainedPropertyValue");
-  ObjectD.removeObserver('objectF.propertyVal',ObjectD,'removeChainedObserver');
+  ObjectD.addObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
+  ObjectD.objectF.set('propertyVal', "chainedPropertyValue");
+  ObjectD.removeObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
   ObjectD.normal2 = 'dependentValue';
-  ObjectD.objectF.set('propertyVal',"removedPropertyValue");
-  equal('dependentValue',ObjectD.normal2);
-  ObjectD.set('objectF','');
-  equal('dependentValue',ObjectD.normal2);
+  ObjectD.objectF.set('propertyVal', "removedPropertyValue");
+  equal('dependentValue', ObjectD.normal2);
+  ObjectD.set('objectF', '');
+  equal('dependentValue', ObjectD.normal2);
 });
 
 
@@ -917,7 +917,7 @@ QUnit.module("Bind function ", {
 test("should bind property with method parameter as undefined", function() {
   // creating binding
   run(function() {
-    objectA.bind("name", "Namespace.objectB.normal",undefined) ;
+    objectA.bind("name", "Namespace.objectB.normal", undefined) ;
   });
 
   // now make a change to see if the binding triggers.

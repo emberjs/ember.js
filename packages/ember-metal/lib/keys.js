@@ -39,7 +39,7 @@ if (!keys || !canDefineNonEnumerableProperties) {
 
       for (prop in obj) {
         if (prop !== '_super' &&
-          prop.lastIndexOf('__',0) !== 0 &&
+          prop.lastIndexOf('__', 0) !== 0 &&
           hasOwnProperty.call(obj, prop)) {
           result.push(prop);
         }

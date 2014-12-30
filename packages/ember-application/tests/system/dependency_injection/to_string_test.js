@@ -7,7 +7,7 @@ import { guidFor } from "ember-metal/utils";
 
 var originalLookup, App, originalModelInjections;
 
-QUnit.module("Ember.Application Dependency Injection – toString",{
+QUnit.module("Ember.Application Dependency Injection – toString", {
   setup: function() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
@@ -45,7 +45,7 @@ test("instances", function() {
 });
 
 test("with a custom resolver", function() {
-  run(App,'destroy');
+  run(App, 'destroy');
 
   run(function(){
     App = Application.create({

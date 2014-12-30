@@ -106,17 +106,17 @@ test("should indicate that the property of an object has just changed", function
   ObjectA.propertyDidChange('foo', null) ;
 
   // Values of prop has just changed
-  equal(ObjectA.prop,'changedPropValue') ;
+  equal(ObjectA.prop, 'changedPropValue') ;
 });
 
 test("should notify that the property of an object has changed", function() {
   // Notify to its subscriber that the values of 'newFoo' will be changed. In this
   // case the observer is "newProp". Therefore this will call the notifyAction function
   // and value of "newProp" will be changed.
-  ObjectA.notifyPropertyChange('newFoo','fooValue');
+  ObjectA.notifyPropertyChange('newFoo', 'fooValue');
 
   //value of newProp changed.
-  equal(ObjectA.newProp,'changedNewPropValue') ;
+  equal(ObjectA.newProp, 'changedNewPropValue') ;
 });
 
 test("should invalidate function property cache when notifyPropertyChange is called", function() {

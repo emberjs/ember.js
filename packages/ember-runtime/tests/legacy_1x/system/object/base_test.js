@@ -54,7 +54,7 @@ test("Should return its properties when requested using EmberObject#get", functi
 });
 
 test("Should allow changing of those properties by calling EmberObject#set", function() {
-  equal(get(obj,'foo'), 'bar') ;
+  equal(get(obj, 'foo'), 'bar') ;
   equal(get(obj, 'total'), 12345) ;
 
   set(obj,  'foo', 'Chunky Bacon' ) ;

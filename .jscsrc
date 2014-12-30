@@ -31,5 +31,6 @@
     "while",
     "with",
     "return"
-  ]
+  ],
+  "requireSpaceBetweenArguments": true
 }
