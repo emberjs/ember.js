@@ -38,5 +38,5 @@ test("didInsertElement fires after children are rendered", function() {
   appendTo(view);
   equalHTML('qunit-fixture', "<ul><li>ohai</li></ul>");
 
-  subject().destroy(view);
+  subject().removeAndDestroy(view);
 });

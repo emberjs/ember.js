@@ -17,5 +17,5 @@ test('aliased attributeBindings', function() {
 
   equal(el.getAttribute('disabled'), 'disabled', "The attribute alias was set");
 
-  subject().destroy(view);
+  subject().removeAndDestroy(view);
 });

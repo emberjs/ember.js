@@ -1,4 +1,4 @@
-import Rerender from "ember-views/system/renderer";
+import Renderer from "ember-views/system/renderer";
 
 import {
   cloneStates,
@@ -40,6 +40,10 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._state = 'preRender';
     this.currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
+
+    if (!this.renderer) {
+      this.renderer = new Renderer();
+    }
   },
 
   /**
@@ -129,10 +133,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   clearRenderedChildren: K,
   _transitionTo: K,
   destroyElement: K
-});
-
-CoreView.reopenClass({
-  renderer: new Rerender()
 });
 
 export default CoreView;

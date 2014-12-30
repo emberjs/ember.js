@@ -266,7 +266,7 @@ function Renderer_afterRemove(view, shouldDestroy) {
 }
 
 Renderer.prototype.remove = Renderer_remove;
-Renderer.prototype.destroy = function (view) {
+Renderer.prototype.removeAndDestroy = function (view) {
   this.remove(view, true);
 };
 
