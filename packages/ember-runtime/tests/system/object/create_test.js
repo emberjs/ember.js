@@ -243,7 +243,7 @@ test('creating an object with required properties', function() {
   });
 
   var obj = ClassA.createWithMixins({ foo: 'FOO' }); // should not throw
-  equal(get(obj,'foo'), 'FOO');
+  equal(get(obj, 'foo'), 'FOO');
 });
 
 

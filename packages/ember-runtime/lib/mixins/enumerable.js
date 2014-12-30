@@ -333,7 +333,7 @@ export default Mixin.create({
     var ret = Ember.A();
 
     this.forEach(function(x, idx, i) {
-      ret[idx] = callback.call(target, x, idx,i);
+      ret[idx] = callback.call(target, x, idx, i);
     });
 
     return ret ;
@@ -1066,7 +1066,7 @@ export default Mixin.create({
     if ('number' === typeof adding) {
       addCnt = adding;
     } else if (adding) {
-      addCnt = get(adding,'length');
+      addCnt = get(adding, 'length');
     } else {
       addCnt = adding = -1;
     }

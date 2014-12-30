@@ -34,6 +34,6 @@ CopyableTests.extend({
       return false;
     }
 
-    return get(a, 'id') === get(b,'id');
+    return get(a, 'id') === get(b, 'id');
   }
 }).run();

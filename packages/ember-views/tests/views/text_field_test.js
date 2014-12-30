@@ -43,7 +43,7 @@ var setCaretPosition = function(element, pos) {
 
   if (ctrl.setSelectionRange) {
     ctrl.focus();
-    ctrl.setSelectionRange(pos,pos);
+    ctrl.setSelectionRange(pos, pos);
   } else if (ctrl.createTextRange) {
     var range = ctrl.createTextRange();
     range.collapse(true);

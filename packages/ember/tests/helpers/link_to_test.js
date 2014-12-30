@@ -320,7 +320,7 @@ test("The {{link-to}} helper does not disregard current-when when it is given ex
       this.route("about");
     });
 
-    this.resource("items",function(){
+    this.resource("items", function(){
       this.route('item');
     });
   });

@@ -623,7 +623,7 @@ testBoth('chained dependent keys should evaluate computed properties lazily', fu
 
 QUnit.module('computed edge cases');
 
-test('adding a computed property should show up in key iteration',function() {
+test('adding a computed property should show up in key iteration', function() {
 
   var obj = {};
   defineProperty(obj, 'foo', computed(function() {}));

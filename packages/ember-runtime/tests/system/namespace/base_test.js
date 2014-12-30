@@ -114,7 +114,7 @@ test("A nested namespace can be looked up by its name", function() {
 test("Destroying a namespace before caching lookup removes it from the list of namespaces", function(){
   var CF = lookup.CF = Namespace.create();
 
-  run(CF,'destroy');
+  run(CF, 'destroy');
   equal(Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
 });
 
@@ -123,6 +123,6 @@ test("Destroying a namespace after looking up removes it from the list of namesp
 
   equal(Namespace.byName('CF'), CF, "precondition - namespace can be looked up by name");
 
-  run(CF,'destroy');
+  run(CF, 'destroy');
   equal(Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
 });

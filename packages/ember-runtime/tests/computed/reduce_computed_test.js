@@ -316,7 +316,7 @@ test("modifying properties on dependent array items triggers observers exactly o
   equal(removeCalls, 0, 'precond - removed has not been called');
 
   run(function() {
-    numbers.replace(0,2,[7,8,9,10]);
+    numbers.replace(0, 2, [7,8,9,10]);
   });
 
   equal(addCalls, 10, 'add is called for each item added');

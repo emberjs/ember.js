@@ -1036,7 +1036,7 @@ function sortByLnameFname(a, b) {
     return lna > lnb ? 1 : -1;
   }
 
-  return sortByFnameAsc(a,b);
+  return sortByFnameAsc(a, b);
 }
 
 function sortByFnameAsc(a, b) {

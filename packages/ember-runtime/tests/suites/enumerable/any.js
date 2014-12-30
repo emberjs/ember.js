@@ -31,7 +31,7 @@ suite.test('any should stop invoking when you return true', function() {
   result = obj.any(function(i) { found.push(i); return --cnt <= 0; });
   equal(result, true, 'return value of obj.any');
   equal(found.length, exp, 'should invoke proper number of times');
-  deepEqual(found, ary.slice(0,-2), 'items passed during any() should match');
+  deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
 });
 
 

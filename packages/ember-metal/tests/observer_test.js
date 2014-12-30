@@ -55,7 +55,7 @@ testBoth('observer should fire when property is modified', function(get,set) {
 testBoth('observer should fire when dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toUpperCase();
+    return get(this, 'bar').toUpperCase();
   }).property('bar'));
 
   get(obj, 'foo');
@@ -115,11 +115,11 @@ if (Ember.EXTEND_PROTOTYPES) {
     var count = 0;
 
     defineProperty(obj, 'foo', computed(function() {
-      return get(this,'bar').toLowerCase();
+      return get(this, 'bar').toLowerCase();
     }).property('bar'));
 
     defineProperty(obj, 'bar', computed(function() {
-      return get(this,'baz').toUpperCase();
+      return get(this, 'baz').toUpperCase();
     }).property('baz'));
 
     mixin(obj, {
@@ -163,11 +163,11 @@ testBoth('observers watching multiple properties via brace expansion should fire
   var count = 0;
 
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toLowerCase();
+    return get(this, 'bar').toLowerCase();
   }).property('bar'));
 
   defineProperty(obj, 'bar', computed(function() {
-    return get(this,'baz').toUpperCase();
+    return get(this, 'baz').toUpperCase();
   }).property('baz'));
 
   mixin(obj, {
@@ -190,7 +190,7 @@ testBoth('nested observers should fire in order', function(get,set) {
   var fooCount = 0;
   var barCount = 0;
 
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
   addObserver(obj, 'bar', function() {
     set(obj, 'foo', 'BAZ');
     equal(fooCount, 1, 'fooCount should have fired already');
@@ -425,7 +425,7 @@ testBoth('deferring property change notifications', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
@@ -441,7 +441,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
   var exc = new Error("Something unexpected happened!");
 
   expect(2);
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
 
   try {
     changeProperties(function() {
@@ -469,7 +469,7 @@ testBoth('deferring property change notifications will not defer before observer
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  addBeforeObserver(obj, 'foo' ,function() { fooCount++; });
+  addBeforeObserver(obj, 'foo', function() { fooCount++; });
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
@@ -695,7 +695,7 @@ testBoth('observer should fire before a property is modified', function(get,set)
 testBoth('observer should fire before dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toUpperCase();
+    return get(this, 'bar').toUpperCase();
   }).property('bar'));
 
   get(obj, 'foo');
@@ -736,11 +736,11 @@ if (Ember.EXTEND_PROTOTYPES) {
     var count = 0;
 
     defineProperty(obj, 'foo', computed(function() {
-      return get(this,'bar').toLowerCase();
+      return get(this, 'bar').toLowerCase();
     }).property('bar'));
 
     defineProperty(obj, 'bar', computed(function() {
-      return get(this,'baz').toUpperCase();
+      return get(this, 'baz').toUpperCase();
     }).property('baz'));
 
     mixin(obj, {
@@ -784,11 +784,11 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   var count = 0;
 
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toLowerCase();
+    return get(this, 'bar').toLowerCase();
   }).property('bar'));
 
   defineProperty(obj, 'bar', computed(function() {
-    return get(this,'baz').toUpperCase();
+    return get(this, 'baz').toUpperCase();
   }).property('baz'));
 
   mixin(obj, {

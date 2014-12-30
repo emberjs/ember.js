@@ -641,14 +641,14 @@ test("should allow view objects to be swapped out without throwing an error (#78
       ready: true,
       items: A([1,2,3])
     });
-    TemplateTests.datasetController.set('dataset',dataset);
+    TemplateTests.datasetController.set('dataset', dataset);
   });
 
   equal(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
 
   run(function() {
     secondDataset = EmberObject.create({ready: false});
-    TemplateTests.datasetController.set('dataset',secondDataset);
+    TemplateTests.datasetController.set('dataset', secondDataset);
   });
 
   equal(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");

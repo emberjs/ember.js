@@ -330,7 +330,7 @@ test("the copy() should return an identical set", function() {
     obj = set.copy();
   });
 
-  equal(oldLength,obj.length,'length of the clone should be same');
+  equal(oldLength, obj.length, 'length of the clone should be same');
   equal(obj.contains(set[0]), true);
   equal(obj.contains(set[1]), true);
   equal(obj.contains(set[2]), true);
