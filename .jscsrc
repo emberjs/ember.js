@@ -12,6 +12,7 @@
     "try",
     "catch"
   ],
+  "requireLineFeedAtFileEnd": true,
   "disallowTrailingWhitespace": true,
   "disallowTrailingComma": true,
   "validateIndentation": 2,

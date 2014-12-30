@@ -76,3 +76,4 @@ test("Enabling a FEATURES flag in non-canary, debug build causes a warning", fun
 
   confirmWarns('FEATURE["fred"] is set as enabled, but FEATURE flags are only available in canary builds.');
 });
+

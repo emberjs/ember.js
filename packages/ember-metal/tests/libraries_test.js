@@ -91,3 +91,4 @@ test('Libraries#each allows us to loop through each registered library (but is d
     });
   }, 'Using Ember.libraries.each() is deprecated. Access to a list of registered libraries is currently a private API. If you are not knowingly accessing this method, your out-of-date Ember Inspector may be doing so.');
 });
+

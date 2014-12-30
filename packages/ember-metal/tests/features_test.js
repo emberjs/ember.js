@@ -52,3 +52,4 @@ test("isEnabled without ENV options", function(){
   equal(isEnabled('wilma'),  false, "returns false if flag is not set");
   equal(isEnabled('betty'),  undefined, "returns flag value if undefined");
 });
+
