@@ -62,3 +62,4 @@ Ember.runInDebug(function() {
     equal(view.get('elementId'), 'one', 'elementId is still "one"');
   });
 });
+

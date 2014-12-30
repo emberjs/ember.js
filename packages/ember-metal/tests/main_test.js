@@ -8,3 +8,4 @@ test('Ember registers itself', function() {
   equal(lib.name, 'Ember');
   equal(lib.version, Ember.VERSION);
 });
+

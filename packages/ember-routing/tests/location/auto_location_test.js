@@ -366,3 +366,4 @@ test("AutoLocation has valid references to window.location and window.history vi
   equal(AutoTestLocation._location, environment.location, 'AutoLocation._location === environment.location');
   equal(AutoTestLocation._history, environment.history, 'AutoLocation._history === environment.history');
 });
+
