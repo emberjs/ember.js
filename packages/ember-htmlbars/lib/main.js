@@ -27,6 +27,7 @@ import {
   default as helpers
 } from "ember-htmlbars/helpers";
 import { viewHelper } from "ember-htmlbars/helpers/view";
+import { componentHelper } from "ember-htmlbars/helpers/component";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
 import { withHelper } from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
@@ -59,6 +60,9 @@ import "ember-htmlbars/system/bootstrap";
 import "ember-htmlbars/compat";
 
 registerHelper('view', viewHelper);
+if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+  registerHelper('component', componentHelper);
+}
 registerHelper('yield', yieldHelper);
 registerHelper('with', withHelper);
 registerHelper('if', ifHelper);
