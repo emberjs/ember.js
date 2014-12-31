@@ -149,7 +149,7 @@ prototype.appendText = function(element, text) {
 };
 
 prototype.setAttribute = function(element, name, value) {
-  element.setAttribute(name, value);
+  element.setAttribute(name, String(value));
 };
 
 prototype.removeAttribute = function(element, name) {
