@@ -93,7 +93,7 @@ test("should observe the changes within the begin and end property changes", fun
 });
 
 test("should indicate that the property of an object has just changed", function() {
-  // inidicate that proprty of foo will change to its subscribers
+  // indicate that property of foo will change to its subscribers
   ObjectA.propertyWillChange('foo');
 
   //Value of the prop is unchanged yet as this will be changed when foo changes

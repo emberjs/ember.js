@@ -926,7 +926,7 @@ test("should bind property with method parameter as undefined", function() {
   });
 
   // support new-style bindings if available
-  equal("changedValue", objectA.get("name"), "objectA.name is binded");
+  equal("changedValue", objectA.get("name"), "objectA.name is bound");
 });
 
 // ..........................................................

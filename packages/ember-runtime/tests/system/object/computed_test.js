@@ -87,7 +87,7 @@ testWithDefault('complex depndent keys', function(get, set) {
   equal(get(obj2, 'foo'), 'BOOM 22');
 });
 
-testWithDefault('complex depndent keys changing complex dependent keys', function(get, set) {
+testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
 
   var MyClass = EmberObject.extend({
 

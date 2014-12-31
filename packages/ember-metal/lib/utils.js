@@ -72,8 +72,8 @@ var stringCache  = {};
   manipulation like splitting.
 
   Unfortunately checking equality of different ropes can be quite costly as
-  runtimes must resort to clever string comparison algorithims. These
-  algorithims typically cost in proportion to the length of the string.
+  runtimes must resort to clever string comparison algorithms. These
+  algorithms typically cost in proportion to the length of the string.
   Luckily, this is where the Symbols (interned strings) shine. As Symbols are
   unique by their string content, equality checks can be done by pointer
   comparison.

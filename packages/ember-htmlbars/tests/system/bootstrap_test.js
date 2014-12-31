@@ -143,7 +143,7 @@ if (Ember.component) {
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
   });
 
-  test('registerComponents and non-geneated components', function(){
+  test('registerComponents and non-generated components', function(){
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     run(function(){

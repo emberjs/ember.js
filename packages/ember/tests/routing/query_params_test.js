@@ -725,7 +725,7 @@ test("Use Ember.get to retrieve query params 'replace' configuration", function(
   App.ApplicationRoute = Ember.Route.extend({
     queryParams: Ember.Object.create({
       unknownProperty: function(keyName) {
-        // We are simulating all qps requiring refress
+        // We are simulating all qps requiring refresh
         return { replace: true };
       }
     })

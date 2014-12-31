@@ -84,7 +84,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
     objects = proxy._objects = {};
   }
 
-  var indicies, guid;
+  var indices, guid;
 
   while (--loc >= idx) {
     var item = content.objectAt(loc);
@@ -93,8 +93,8 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
       removeObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       guid = guidFor(item);
-      indicies = objects[guid];
-      indicies[indexOf.call(indicies, loc)] = null;
+      indices = objects[guid];
+      indices[indexOf.call(indices, loc)] = null;
     }
   }
 }

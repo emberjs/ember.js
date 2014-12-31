@@ -265,7 +265,7 @@ test("views that are removed from a ContainerView should have their child views 
   equal(container.$().html(),'', "the child view is removed from the DOM");
 });
 
-test("if a ContainerView starts with an empy currentView, nothing is displayed", function() {
+test("if a ContainerView starts with an empty currentView, nothing is displayed", function() {
   container = ContainerView.create();
 
   run(function() {

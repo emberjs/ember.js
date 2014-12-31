@@ -759,7 +759,7 @@ if (Ember.EXTEND_PROTOTYPES) {
   });
 }
 
-testBoth('before observer watching multiple properties via brce expansion should fire when properties change', function (get, set) {
+testBoth('before observer watching multiple properties via brace expansion should fire when properties change', function (get, set) {
   var obj = {};
   var count = 0;
 
@@ -819,7 +819,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get, s
 
   obj2.count = 0;
   set(obj, 'foo', 'baz');
-  equal(obj.count, 1, 'should have invoked oberver on parent');
+  equal(obj.count, 1, 'should have invoked observer on parent');
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 

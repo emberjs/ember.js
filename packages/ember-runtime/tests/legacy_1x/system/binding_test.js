@@ -189,7 +189,7 @@ QUnit.module("chained binding", {
   }
 });
 
-test("changing first output should propograte to third after flush", function() {
+test("changing first output should propagate to third after flush", function() {
   run(function() {
     set(first, "output", "change");
     equal("change", get(first, "output"), "first.output");

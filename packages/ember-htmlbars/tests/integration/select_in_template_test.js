@@ -215,7 +215,7 @@ function testSelectionBinding(templateString) {
   equal(view.get('selection.value'), 'g', "Precond: Initial bound property is correct");
   equal(select.get('selection.value'), 'g', "Precond: Initial selection is correct");
   equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
-  equal(select.$('option:eq(2)').prop('selected'), true, "Precond: selected proprty is set to proper option");
+  equal(select.$('option:eq(2)').prop('selected'), true, "Precond: selected property is set to proper option");
 
   select.$('option:eq(2)').removeAttr('selected');
   select.$('option:eq(1)').prop('selected', true);
@@ -224,7 +224,7 @@ function testSelectionBinding(templateString) {
   equal(view.get('selection.value'), 'w', "Updated bound property is correct");
   equal(select.get('selection.value'), 'w', "Updated selection is correct");
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
-  equal(select.$('option:eq(1)').prop('selected'), true, "Selected proprty is set to proper option");
+  equal(select.$('option:eq(1)').prop('selected'), true, "Selected property is set to proper option");
 }
 
 test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding (old xBinding='' syntax)", function() {
@@ -274,7 +274,7 @@ test("select element should correctly initialize and update selectedIndex and bo
   equal(view.get('selection.val'), 'g', "Precond: Initial bound property is correct");
   equal(select.get('selection.val'), 'g', "Precond: Initial selection is correct");
   equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
-  equal(select.$('option:eq(1)').prop('selected'), false, "Precond: selected proprty is set to proper option");
+  equal(select.$('option:eq(1)').prop('selected'), false, "Precond: selected property is set to proper option");
 
   select.$('option:eq(2)').removeAttr('selected');
   select.$('option:eq(1)').prop('selected', true);
@@ -283,5 +283,5 @@ test("select element should correctly initialize and update selectedIndex and bo
   equal(view.get('selection.val'), 'w', "Updated bound property is correct");
   equal(select.get('selection.val'), 'w', "Updated selection is correct");
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
-  equal(select.$('option:eq(1)').prop('selected'), true, "selected proprty is set to proper option");
+  equal(select.$('option:eq(1)').prop('selected'), true, "selected property is set to proper option");
 });

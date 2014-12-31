@@ -256,7 +256,7 @@ var EMPTY_ARRAY = [];
   <div id="ember1" class="ember-view enabled"></div>
   ```
 
-  When isEnabled is `false`, the resulting HTML reprensentation looks like
+  When isEnabled is `false`, the resulting HTML representation looks like
   this:
 
   ```html
@@ -567,7 +567,7 @@ var EMPTY_ARRAY = [];
   as the first argument to the method and an  `Ember.View` object as the
   second. The `Ember.View` will be the view whose rendered HTML was interacted
   with. This may be the view with the `eventManager` property or one of its
-  descendent views.
+  descendant views.
 
   ```javascript
   AView = Ember.View.extend({
@@ -575,7 +575,7 @@ var EMPTY_ARRAY = [];
       doubleClick: function(event, view) {
         // will be called when when an instance's
         // rendered element or any rendering
-        // of this views's descendent
+        // of this view's descendant
         // elements is clicked
       }
     })
@@ -599,11 +599,11 @@ var EMPTY_ARRAY = [];
   ```
 
   Similarly a view's event manager will take precedence for events of any views
-  rendered as a descendent. A method name that matches an event name will not
+  rendered as a descendant. A method name that matches an event name will not
   be called if the view instance was rendered inside the HTML representation of
   a view that has an `eventManager` property defined that handles events of the
   name. Events not handled by the event manager will still trigger method calls
-  on the descendent.
+  on the descendant.
 
   ```javascript
   var App = Ember.Application.create();

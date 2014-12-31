@@ -4,7 +4,7 @@ import Application from "ember-application/system/application";
 
 var application, registry;
 
-QUnit.module("Ember.Application Depedency Injection – normalization", {
+QUnit.module("Ember.Application Dependency Injection – normalization", {
   setup: function() {
     application = run(Application, 'create');
     registry = application.__registry__;

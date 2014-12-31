@@ -409,7 +409,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(willDestroyElement, 0);
   equal(willDestroy, 0);
   equal(destroy, 0);
-  // Remove whitspace added by IE 8
+  // Remove whitespace added by IE 8
   equal(trim(view.$().text()), '01234');
 
   run(function () {
@@ -432,7 +432,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(willDestroyElement, 5);
   equal(willDestroy, 5);
   equal(destroy, 5);
-  // Remove whitspace added by IE 8
+  // Remove whitespace added by IE 8
   equal(trim(view.$().text()), '789');
 
   run(function () {
