@@ -32,7 +32,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.IndexRoute = EmberRoute.extend({
-        model: function(){
+        model: function() {
           indexHitCount += 1;
         }
       });
@@ -249,7 +249,7 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   Test.adapter = QUnitAdapter.create({
     exception: function(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
-      asyncHandled['catch'](function(){ }); // handle the rejection so it doesn't leak later.
+      asyncHandled['catch'](function() { }); // handle the rejection so it doesn't leak later.
     }
   });
 
@@ -278,20 +278,20 @@ test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#except
   });
 });
 
-test("should not start routing on the root URL when visiting another", function(){
+test("should not start routing on the root URL when visiting another", function() {
   visit('/posts');
 
-  andThen(function(){
+  andThen(function() {
     ok(find('#comments-link'), 'found comments-link');
     equal(currentRoute, 'posts', "Successfully visited posts route");
     equal(indexHitCount, 0, 'should not hit index route when visiting another route');
   });
 });
 
-test("only enters the index route once when visiting /", function(){
+test("only enters the index route once when visiting /", function() {
   visit('/');
 
-  andThen(function(){
+  andThen(function() {
     equal(indexHitCount, 1, 'should hit index once when visiting /');
   });
 });

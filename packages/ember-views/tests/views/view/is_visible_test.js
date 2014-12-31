@@ -26,7 +26,7 @@ test("should hide views when isVisible is false", function() {
 
   ok(view.$().is(':hidden'), "the view is hidden");
 
-  run(function(){
+  run(function() {
     set(view, 'isVisible', true);
   });
 
@@ -55,7 +55,7 @@ test("should hide element if isVisible is false before element is created", func
     view.remove();
   });
 
-  run(function(){
+  run(function() {
     set(view, 'isVisible', true);
   });
 

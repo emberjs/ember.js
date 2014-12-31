@@ -50,7 +50,7 @@ export function scanArray(array) {
   var length = array.length;
   var containsStream = false;
 
-  for (var i = 0; i < length; i++){
+  for (var i = 0; i < length; i++) {
     if (isStream(array[i])) {
       containsStream = true;
       break;

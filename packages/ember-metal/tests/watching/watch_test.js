@@ -22,7 +22,7 @@ QUnit.module('watch', {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
   }
 });

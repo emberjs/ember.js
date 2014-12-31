@@ -658,7 +658,7 @@ function resolve(registry, normalizedName) {
   return resolved;
 }
 
-function has(registry, fullName){
+function has(registry, fullName) {
   return registry.resolve(fullName) !== undefined;
 }
 

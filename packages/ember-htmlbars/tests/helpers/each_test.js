@@ -431,7 +431,7 @@ test("itemController's parentController property, when the ArrayController has a
   var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
-        parentController: computed(function(){
+        parentController: computed(function() {
           return this.container.lookup('controller:company');
         }),
         company: 'Yapp'
@@ -544,7 +544,7 @@ test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
     deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
   }
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, deprecation);
 
@@ -555,7 +555,7 @@ test("it supports {{itemViewClass=}} via container", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name){
+      lookupFactory: function(name) {
         equal(name, 'view:my-view');
         return MyView;
       }
@@ -593,7 +593,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name){
+      lookupFactory: function(name) {
         return MyView;
       }
     },

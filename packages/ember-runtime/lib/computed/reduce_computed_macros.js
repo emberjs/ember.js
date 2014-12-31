@@ -34,15 +34,15 @@ var a_slice = [].slice;
  @since 1.4.0
 */
 
-export function sum(dependentKey){
+export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: 0,
 
-    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue + item;
     },
 
-    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue - item;
     }
   });

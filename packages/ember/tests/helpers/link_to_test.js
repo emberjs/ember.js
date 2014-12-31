@@ -320,7 +320,7 @@ test("The {{link-to}} helper does not disregard current-when when it is given ex
       this.route("about");
     });
 
-    this.resource("items", function(){
+    this.resource("items", function() {
       this.route('item');
     });
   });
@@ -1129,7 +1129,7 @@ test("The non-block form {{link-to}} protects against XSS", function() {
   equal(Ember.$('b', '#qunit-fixture').length, 0);
 });
 
-test("the {{link-to}} helper calls preventDefault", function(){
+test("the {{link-to}} helper calls preventDefault", function() {
   Router.map(function() {
     this.route("about");
   });
@@ -1144,7 +1144,7 @@ test("the {{link-to}} helper calls preventDefault", function(){
   equal(event.isDefaultPrevented(), true, "should preventDefault");
 });
 
-test("the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option", function(){
+test("the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option", function() {
   Ember.TEMPLATES.index = compile("{{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}");
 
   Router.map(function() {
@@ -1161,7 +1161,7 @@ test("the {{link-to}} helper does not call preventDefault if `preventDefault=fal
   equal(event.isDefaultPrevented(), false, "should not preventDefault");
 });
 
-test("the {{link-to}} helper does not throw an error if its route has exited", function(){
+test("the {{link-to}} helper does not throw an error if its route has exited", function() {
   expect(0);
 
   Ember.TEMPLATES.application = compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' id='post-link'}}Post{{/link-to}}{{/if}}");

@@ -90,7 +90,7 @@ test("itemViewClass works in the #collection helper with a global (DEPRECATED)",
   if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     deprecation = /Global lookup of TemplateTests.ExampleItemView from a Handlebars template is deprecated/;
   }
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, deprecation);
 
@@ -234,7 +234,7 @@ test("should be able to specify which class should be used for the empty view", 
 
   view = EmberView.create({
     container: {
-      lookupFactory: function(){
+      lookupFactory: function() {
         return EmptyView;
       }
     },
@@ -390,7 +390,7 @@ test("should give its item views the property specified by itemPropertyBinding",
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
     container: {
-      lookupFactory: function(){
+      lookupFactory: function() {
         return ItemPropertyBindingTestItemView;
       }
     },

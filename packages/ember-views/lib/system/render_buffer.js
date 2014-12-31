@@ -39,7 +39,7 @@ import environment from "ember-metal/environment";
 var omittedStartTagChildren;
 var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
 
-function detectOmittedStartTag(string, contextualElement){
+function detectOmittedStartTag(string, contextualElement) {
   omittedStartTagChildren = omittedStartTagChildren || {
     tr: document.createElement('tbody'),
     col: document.createElement('colgroup')

@@ -14,7 +14,7 @@ QUnit.module("Ember.Application Dependency Injection – toString", {
 
     originalLookup = Ember.lookup;
 
-    run(function(){
+    run(function() {
       App = Application.create();
       Ember.lookup = {
         App: App
@@ -47,7 +47,7 @@ test("instances", function() {
 test("with a custom resolver", function() {
   run(App, 'destroy');
 
-  run(function(){
+  run(function() {
     App = Application.create({
       Resolver: DefaultResolver.extend({
         makeToString: function(factory, fullName) {

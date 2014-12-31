@@ -6,7 +6,7 @@ import HashLocation from "ember-routing/location/hash_location";
 
 var HashTestLocation, location;
 
-function createLocation(options){
+function createLocation(options) {
   if (!options) { options = {}; }
   location = HashTestLocation.create(options);
 }

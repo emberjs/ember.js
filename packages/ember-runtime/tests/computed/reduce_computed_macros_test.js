@@ -1129,7 +1129,9 @@ QUnit.module('computedSort - stability', {
           name: "C", count: 1
         }, {
           name: "D", count: 1
-        }]).map(function(elt){return EmberObject.create(elt);})),
+        }]).map(function(elt) {
+          return EmberObject.create(elt);
+        })),
 
         sortProps: Ember.A(['count', 'name']),
         sortedItems: computedSort('items', 'sortProps')
@@ -1143,7 +1145,7 @@ QUnit.module('computedSort - stability', {
   }
 });
 
-test("sorts correctly as only one property changes", function(){
+test("sorts correctly as only one property changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('sortedItems');
@@ -1168,11 +1170,13 @@ QUnit.module('computedSort - concurrency', {
           name: "C", count: 3
         }, {
           name: "D", count: 4
-        }]).map(function(elt){return EmberObject.create(elt);})),
+        }]).map(function(elt) {
+          return EmberObject.create(elt);
+        })),
 
         sortProps: Ember.A(['count']),
         sortedItems: computedSort('items', 'sortProps'),
-        customSortedItems: computedSort('items.@each.count', function(a, b){
+        customSortedItems: computedSort('items.@each.count', function(a, b) {
           return get(a, 'count') - get(b, 'count');
         })
       });
@@ -1185,13 +1189,13 @@ QUnit.module('computedSort - concurrency', {
   }
 });
 
-test("sorts correctly when there are concurrent changes", function(){
+test("sorts correctly when there are concurrent changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('sortedItems');
   });
   deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
-  Ember.changeProperties(function(){
+  Ember.changeProperties(function() {
     obj.get('items').objectAt(1).set('count', 5);
     obj.get('items').objectAt(2).set('count', 6);
   });
@@ -1201,7 +1205,7 @@ test("sorts correctly when there are concurrent changes", function(){
   deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
 });
 
-test("sorts correctly with a user-provided comparator when there are concurrent changes", function(){
+test("sorts correctly with a user-provided comparator when there are concurrent changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('customSortedItems');
@@ -1209,7 +1213,7 @@ test("sorts correctly with a user-provided comparator when there are concurrent 
   });
 
   run(function() {
-    Ember.changeProperties(function(){
+    Ember.changeProperties(function() {
       obj.get('items').objectAt(1).set('count', 5);
       obj.get('items').objectAt(2).set('count', 6);
     });
@@ -1428,7 +1432,7 @@ QUnit.module('Ember.arrayComputed - chains', {
 });
 
 test("it can filter and sort when both depend on the same item property", function() {
-  run(function(){
+  run(function() {
     filtered = get(obj, 'filtered');
     sorted = get(obj, 'sorted');
     todos = get(obj, 'todos');
@@ -1465,7 +1469,7 @@ QUnit.module('Chaining array and reduced CPs', {
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
         mapped: computedMapBy('array', 'v'),
         max: computedMax('mapped'),
-        maxDidChange: observer('max', function(){
+        maxDidChange: observer('max', function() {
           userFnCalls++;
         })
       });
@@ -1485,7 +1489,9 @@ test("it computes interdependent array computed properties", function() {
   equal(userFnCalls, 0, 'observer is not called on initialisation');
 
   var calls = 0;
-  addObserver(obj, 'max', function(){ calls++; });
+  addObserver(obj, 'max', function() {
+    calls++;
+  });
 
   run(function() {
     obj.get('array').pushObject({ v: 5 });
@@ -1512,23 +1518,23 @@ QUnit.module('computedSum', {
   }
 });
 
-test('sums the values in the dependentKey', function(){
+test('sums the values in the dependentKey', function() {
   var sum = get(obj, 'total');
   equal(sum, 6, 'sums the values');
 });
 
-test('updates when array is modified', function(){
-  var sum = function(){
+test('updates when array is modified', function() {
+  var sum = function() {
     return get(obj, 'total');
   };
 
-  run(function(){
+  run(function() {
     get(obj, 'array').pushObject(1);
   });
 
   equal(sum(), 7, 'recomputed when elements are added');
 
-  run(function(){
+  run(function() {
     get(obj, 'array').popObject();
   });
 

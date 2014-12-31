@@ -123,7 +123,7 @@ export function equalHTML(element, expectedHTML, message) {
   }
 
   var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
-  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag){
+  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag) {
     return tag.toLowerCase();
   });
   actualHTML = actualHTML.replace(/\r\n/gm, '');

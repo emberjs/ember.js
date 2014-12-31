@@ -124,7 +124,7 @@ test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", functi
     template: compile('<img src="test.jpg" {{bind-attr alt=TemplateTests.value}}>')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of TemplateTests.value from a Handlebars template is deprecated/);
 
@@ -407,7 +407,7 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
     template: compile('<img src="test.jpg" {{bind-attr class="TemplateTests.isOpen"}}>')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of TemplateTests.isOpen from a Handlebars template is deprecated/);
 
@@ -522,7 +522,7 @@ test("property before didInsertElement", function() {
   view = EmberView.create({
     name: 'bob',
     template: compile('<div {{bind-attr alt=view.name}}></div>'),
-    didInsertElement: function(){
+    didInsertElement: function() {
       matchingElement = this.$('div[alt=bob]');
     }
   });

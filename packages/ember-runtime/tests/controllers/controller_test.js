@@ -184,7 +184,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('Controller injected properties');
 
   if (!EmberDev.runningProdBuild) {
-    test("defining a controller on a non-controller should fail assertion", function(){
+    test("defining a controller on a non-controller should fail assertion", function() {
       expectAssertion(function() {
         var registry = new Registry();
         var container = registry.container();

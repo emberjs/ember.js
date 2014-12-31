@@ -150,7 +150,7 @@ test("initializers can have multiple dependencies", function () {
   ok(indexOf.call(order, c.name) < indexOf.call(order, afterC.name), 'c < afterC');
 });
 
-test("initializers set on Application subclasses should not be shared between apps", function(){
+test("initializers set on Application subclasses should not be shared between apps", function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
@@ -186,7 +186,7 @@ test("initializers set on Application subclasses should not be shared between ap
   equal(secondInitializerRunCount, 1, 'second initializer only was run');
 });
 
-test("initializers are concatenated", function(){
+test("initializers are concatenated", function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
@@ -225,7 +225,7 @@ test("initializers are concatenated", function(){
   equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
 });
 
-test("initializers are per-app", function(){
+test("initializers are per-app", function() {
   expect(0);
   var FirstApp = Application.extend();
   FirstApp.initializer({

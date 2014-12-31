@@ -222,7 +222,7 @@ test("selection from a Promise don't overwrite newer selection once resolved, wh
     select.set('multiple', false);
     select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(function() {
-        run(function(){
+        run(function() {
           resolve(tom);
         });
         QUnit.start();

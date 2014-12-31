@@ -288,7 +288,7 @@ test("controllers won't be eagerly instantiated by internal query params logic",
   });
 
   App.CatsIndexRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return [];
     },
     setup: function() {

@@ -240,7 +240,7 @@ export function collectionHelper(params, hash, options, env) {
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');
-    viewOptions.classNameBindings = map(itemClassBindings, function(classBinding){
+    viewOptions.classNameBindings = map(itemClassBindings, function(classBinding) {
       return streamifyClassNameBinding(view, classBinding);
     });
   }

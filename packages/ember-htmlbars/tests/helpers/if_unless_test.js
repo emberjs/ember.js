@@ -155,7 +155,7 @@ test("The `if` helper updates when the value changes", function() {
   });
   runAppend(view);
   equal(view.$().text(), 'Yep');
-  run(function(){
+  run(function() {
     view.set('conditional', false);
   });
   equal(view.$().text(), '');
@@ -168,7 +168,7 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   runAppend(view);
   equal(view.$().text(), 'Yep');
-  run(function(){
+  run(function() {
     view.set('conditional', false);
   });
   equal(view.$().text(), 'Yep');
@@ -181,7 +181,7 @@ test("The `unless` helper updates when the value changes", function() {
   });
   runAppend(view);
   equal(view.$().text(), 'Nope');
-  run(function(){
+  run(function() {
     view.set('conditional', true);
   });
   equal(view.$().text(), '');
@@ -194,7 +194,7 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   runAppend(view);
   equal(view.$().text(), 'Nope');
-  run(function(){
+  run(function() {
     view.set('conditional', true);
   });
   equal(view.$().text(), 'Nope');

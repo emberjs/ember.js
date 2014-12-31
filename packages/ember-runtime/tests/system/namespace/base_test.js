@@ -111,14 +111,14 @@ test("A nested namespace can be looked up by its name", function() {
   equal(Namespace.byName('UI.Nav'), UI.Nav);
 });
 
-test("Destroying a namespace before caching lookup removes it from the list of namespaces", function(){
+test("Destroying a namespace before caching lookup removes it from the list of namespaces", function() {
   var CF = lookup.CF = Namespace.create();
 
   run(CF, 'destroy');
   equal(Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
 });
 
-test("Destroying a namespace after looking up removes it from the list of namespaces", function(){
+test("Destroying a namespace after looking up removes it from the list of namespaces", function() {
   var CF = lookup.CF = Namespace.create();
 
   equal(Namespace.byName('CF'), CF, "precondition - namespace can be looked up by name");

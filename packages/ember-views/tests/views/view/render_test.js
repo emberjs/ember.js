@@ -129,7 +129,7 @@ test("should allow tagName to be a computed property [DEPRECATED]", function() {
     })
   }).create();
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     run(function() {
       view.createElement();
     });

@@ -126,7 +126,7 @@ test('duplicated template data-template-name should throw exception', function()
 });
 
 if (Ember.component) {
-  test('registerComponents initializer', function(){
+  test('registerComponents initializer', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     App = run(Ember.Application, 'create');
@@ -135,7 +135,7 @@ if (Ember.component) {
     ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
   });
 
-  test('registerComponents and generated components', function(){
+  test('registerComponents and generated components', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     App = run(Ember.Application, 'create');
@@ -143,10 +143,10 @@ if (Ember.component) {
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
   });
 
-  test('registerComponents and non-generated components', function(){
+  test('registerComponents and non-generated components', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
-    run(function(){
+    run(function() {
       App = Ember.Application.create();
 
       // currently Component code must be loaded before initializers

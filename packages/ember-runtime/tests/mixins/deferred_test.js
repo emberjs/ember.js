@@ -345,7 +345,7 @@ test("can handle fulfillment without  fulfillment handler", function() {
   run(deferred, 'resolve', fulfillment);
 });
 
-if (!EmberDev.runningProdBuild){
+if (!EmberDev.runningProdBuild) {
   test("causes a deprecation warning when used", function() {
     var deferred, deprecationMade;
     var obj = {};

@@ -1342,7 +1342,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} type the model type
     @param {Object} value the value passed to find
   */
-  findModel: function(){
+  findModel: function() {
     var store = get(this, 'store');
     return store.find.apply(store, arguments);
   },
@@ -1360,7 +1360,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method store
     @param {Object} store
   */
-  store: computed(function(){
+  store: computed(function() {
     var container = this.container;
     var routeName = this.routeName;
     var namespace = get(this, 'router.namespace');

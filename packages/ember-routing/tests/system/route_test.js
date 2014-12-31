@@ -7,11 +7,11 @@ import inject from "ember-runtime/inject";
 
 var route, routeOne, routeTwo, lookupHash;
 
-function createRoute(){
+function createRoute() {
   route = EmberRoute.create();
 }
 
-function cleanupRoute(){
+function cleanupRoute() {
   run(route, 'destroy');
 }
 
@@ -64,7 +64,7 @@ test("'store' can be injected by data persistence frameworks", function() {
   };
 
   var Store = EmberObject.extend({
-    find: function(type, value){
+    find: function(type, value) {
       ok(true, 'injected model was called');
       equal(type, 'post', 'correct type was called');
       equal(value, 1, 'correct value was called');
@@ -128,7 +128,7 @@ test("'store' does not need to be injected", function() {
 
   route = container.lookup('route:index');
 
-  ignoreAssertion(function(){
+  ignoreAssertion(function() {
     route.model({ post_id: 1});
   });
 
@@ -182,19 +182,19 @@ QUnit.module("Ember.Route serialize", {
   teardown: cleanupRoute
 });
 
-test("returns the models properties if params does not include *_id", function(){
+test("returns the models properties if params does not include *_id", function() {
   var model = {id: 2, firstName: 'Ned', lastName: 'Ryerson'};
 
   deepEqual(route.serialize(model, ['firstName', 'lastName']), {firstName: 'Ned', lastName: 'Ryerson'}, "serialized correctly");
 });
 
-test("returns model.id if params include *_id", function(){
+test("returns model.id if params include *_id", function() {
   var model = {id: 2};
 
   deepEqual(route.serialize(model, ['post_id']), {post_id: 2}, "serialized correctly");
 });
 
-test("returns undefined if model is not set", function(){
+test("returns undefined if model is not set", function() {
   equal(route.serialize(undefined, ['post_id']), undefined, "serialized correctly");
 });
 

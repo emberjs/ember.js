@@ -4,13 +4,13 @@ var isEnabled = Ember.FEATURES.isEnabled;
 var origFeatures, origEnableAll, origEnableOptional;
 
 QUnit.module("Ember.FEATURES.isEnabled", {
-  setup: function(){
+  setup: function() {
     origFeatures       = Ember.FEATURES;
     origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.FEATURES                     = origFeatures;
     Ember.ENV.ENABLE_ALL_FEATURES      = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;
@@ -39,7 +39,7 @@ test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
   equal(isEnabled('betty'),  undefined, "returns flag value if undefined");
 });
 
-test("isEnabled without ENV options", function(){
+test("isEnabled without ENV options", function() {
   Ember.ENV.ENABLE_ALL_FEATURES = false;
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
 
@@ -52,4 +52,3 @@ test("isEnabled without ENV options", function(){
   equal(isEnabled('wilma'),  false, "returns false if flag is not set");
   equal(isEnabled('betty'),  undefined, "returns flag value if undefined");
 });
-

@@ -239,7 +239,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
   });
 
   var PostController = EmberObjectController.extend({
-    modelDidChange: observer('model', function(){
+    modelDidChange: observer('model', function() {
       modelDidChange++;
     })
   });
@@ -558,7 +558,7 @@ test("{{render}} works with slash notation", function() {
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
 
-test("throws an assertion if {{render}} is called with an unquoted template name", function(){
+test("throws an assertion if {{render}} is called with an unquoted template name", function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
@@ -573,7 +573,7 @@ test("throws an assertion if {{render}} is called with an unquoted template name
   }, "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.");
 });
 
-test("throws an assertion if {{render}} is called with a literal for a model", function(){
+test("throws an assertion if {{render}} is called with a literal for a model", function() {
   var template = '<h1>HI</h1>{{render "home" "model"}}';
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
@@ -592,7 +592,7 @@ test("throws an assertion if {{render}} is called with a literal for a model", f
 } else {
 // jscs:disable validateIndentation
 
-test("Using quoteless templateName works properly (DEPRECATED)", function(){
+test("Using quoteless templateName works properly (DEPRECATED)", function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({container: container});
   view = EmberView.create({

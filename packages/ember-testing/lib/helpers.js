@@ -13,27 +13,27 @@ var helper = Test.registerHelper;
 var asyncHelper = Test.registerAsyncHelper;
 var countAsync = 0;
 
-function currentRouteName(app){
+function currentRouteName(app) {
   var appController = app.__container__.lookup('controller:application');
 
   return get(appController, 'currentRouteName');
 }
 
-function currentPath(app){
+function currentPath(app) {
   var appController = app.__container__.lookup('controller:application');
 
   return get(appController, 'currentPath');
 }
 
-function currentURL(app){
+function currentURL(app) {
   var router = app.__container__.lookup('router:main');
 
   return get(router, 'location').getURL();
 }
 
-function pauseTest(){
+function pauseTest() {
   Test.adapter.asyncStart();
-  return new Ember.RSVP.Promise(function(){ }, 'TestAdapter paused promise');
+  return new Ember.RSVP.Promise(function() { }, 'TestAdapter paused promise');
 }
 
 function visit(app, url) {
@@ -58,7 +58,7 @@ function click(app, selector, context) {
   if ($el.is(':input')) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      run($el, function(){
+      run($el, function() {
         // Firefox does not trigger the `focusin` event if the window
         // does not have focus. If the document doesn't have focus just
         // use trigger('focusin') instead.
@@ -77,7 +77,7 @@ function click(app, selector, context) {
   return app.testHelpers.wait();
 }
 
-function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions){
+function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions) {
   var arity = arguments.length;
   var context, type, options;
 

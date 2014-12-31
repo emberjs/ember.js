@@ -97,7 +97,7 @@ QUnit.module("EmberObject observers", {
 
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
   }
 });

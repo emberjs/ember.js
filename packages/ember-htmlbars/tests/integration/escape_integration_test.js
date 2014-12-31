@@ -38,7 +38,7 @@ test('should read a number value', function() {
   runAppend(view);
   equal(view.$().text(), '1');
 
-  run(function(){
+  run(function() {
     set(context, 'aNumber', 2);
   });
 
@@ -55,7 +55,7 @@ test('should read an escaped number value', function() {
   runAppend(view);
   equal(view.$().text(), '1');
 
-  run(function(){
+  run(function() {
     set(context, 'aNumber', 2);
   });
 
@@ -74,7 +74,7 @@ test('should read from an Object.create(null)', function() {
   runAppend(view);
   equal(view.$().text(), 'bar');
 
-  run(function(){
+  run(function() {
     set(nullObject, 'foo', 'baz');
   });
 

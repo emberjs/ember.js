@@ -139,7 +139,7 @@ test("View lookup - App.FuView (DEPRECATED)", function() {
     template: compile("{{view App.FuView}}")
   }).create();
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of App.FuView from a Handlebars template is deprecated./);
 
@@ -251,7 +251,7 @@ test("specifying `id` as a static value works properly", function() {
 });
 
 test("mixing old and new styles of property binding fires a warning, treats value as if it were quoted", function() {
-  if (EmberDev && EmberDev.runningProdBuild){
+  if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
   }
@@ -1245,7 +1245,7 @@ test("{{view}} asserts that a view class is present", function() {
     })
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     runAppend(view);
   }, /must be a subclass or an instance of Ember.View/);
 });
@@ -1261,7 +1261,7 @@ test("{{view}} asserts that a view class is present off controller", function() 
     })
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     runAppend(view);
   }, /must be a subclass or an instance of Ember.View/);
 });
@@ -1275,7 +1275,7 @@ test("{{view}} asserts that a view instance is present", function() {
     })
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     runAppend(view);
   }, /must be a subclass or an instance of Ember.View/);
 });
@@ -1291,7 +1291,7 @@ test("{{view}} asserts that a view subclass instance is present off controller",
     })
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     runAppend(view);
   }, /must be a subclass or an instance of Ember.View/);
 });

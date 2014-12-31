@@ -84,7 +84,7 @@ test("fallback for to create time injections if factory has no extend", function
   ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
 });
 
-test("The descendants of a factory returned from lookupFactory have a container and debugkey", function(){
+test("The descendants of a factory returned from lookupFactory have a container and debugkey", function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();

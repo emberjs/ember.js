@@ -12,7 +12,7 @@ var dom = defaultEnv.dom;
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   QUnit.module("ember-htmlbars: data attribute", {
-    teardown: function(){
+    teardown: function() {
       runDestroy(view);
     }
   });
@@ -30,7 +30,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   test("property set before didInsertElement", function() {
     var matchingElement;
     view = EmberView.create({
-      didInsertElement: function(){
+      didInsertElement: function() {
         matchingElement = this.$('div[data-name=erik]');
       },
       context: {name: 'erik'},

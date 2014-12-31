@@ -37,7 +37,7 @@ test('only the first registration of a library is stored', function() {
 });
 
 test('attempting to register a library that is already registered warns you', function() {
-  if (EmberDev && EmberDev.runningProdBuild){
+  if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
   }
@@ -91,4 +91,3 @@ test('Libraries#each allows us to loop through each registered library (but is d
     });
   }, 'Using Ember.libraries.each() is deprecated. Access to a list of registered libraries is currently a private API. If you are not knowingly accessing this method, your out-of-date Ember Inspector may be doing so.');
 });
-

@@ -68,10 +68,10 @@ test("Model types added with DefaultResolver", function() {
 test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend();
   var StubContainerDebugAdapter = DefaultResolver.extend({
-    canCatalogEntriesByType: function(type){
+    canCatalogEntriesByType: function(type) {
       return true;
     },
-    catalogEntriesByType: function(type){
+    catalogEntriesByType: function(type) {
       return [PostClass];
     }
   });

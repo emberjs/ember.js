@@ -488,7 +488,7 @@ test("should allow items to access to the CollectionView's current index in the 
 
 test("should allow declaration of itemViewClass as a string", function() {
   var container = {
-    lookupFactory: function(){
+    lookupFactory: function() {
       return Ember.View.extend();
     }
   };

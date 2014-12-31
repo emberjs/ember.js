@@ -90,7 +90,7 @@ test("should create from string via container lookup", function() {
 test("should assert when trying to create childView from string, but no such view is registered", function() {
   view.container.lookupFactory = function() {};
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     view.createChildView('bro');
   });
 });

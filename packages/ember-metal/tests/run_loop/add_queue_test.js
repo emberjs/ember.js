@@ -5,10 +5,10 @@ var originalQueues = run.queues;
 var queues;
 
 QUnit.module('system/run_loop/add_queue_test', {
-  setup: function(){
+  setup: function() {
     run.queues = queues = ['blork', 'bleep'];
   },
-  teardown: function(){
+  teardown: function() {
     run.queues = originalQueues;
   }
 });
@@ -19,7 +19,7 @@ test('adds a queue after a specified one', function() {
   equal(indexOf.call(queues, 'testeroo'), 1, "new queue was added after specified queue");
 });
 
-test('does not add the queue if it already exists', function(){
+test('does not add the queue if it already exists', function() {
   run._addQueue('testeroo', 'blork');
   run._addQueue('testeroo', 'blork');
 

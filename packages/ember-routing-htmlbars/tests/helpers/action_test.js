@@ -859,7 +859,7 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
-test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
+test("a quoteless parameter should allow dynamic lookup of the actionName", function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -879,7 +879,7 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -891,12 +891,12 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
     view.appendTo('#qunit-fixture');
   });
 
-  var testBoundAction = function(propertyValue){
+  var testBoundAction = function(propertyValue) {
     run(function() {
       controller.set('hookMeUp', propertyValue);
     });
 
-    run(function(){
+    run(function() {
       view.$("#woot-bound-param").click();
     });
 
@@ -910,7 +910,7 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function(){
+test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function() {
   expect(5);
   var lastAction;
   var actionOrder = [];
@@ -932,7 +932,7 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -946,8 +946,8 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
     });
   }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
-  var testBoundAction = function(propertyValue){
-    run(function(){
+  var testBoundAction = function(propertyValue) {
+    run(function() {
       view.$("#"+propertyValue).click();
     });
 
@@ -961,7 +961,7 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should resolve actionName, including path", function(){
+test("a quoteless parameter should resolve actionName, including path", function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -983,7 +983,7 @@ test("a quoteless parameter should resolve actionName, including path", function
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -995,8 +995,8 @@ test("a quoteless parameter should resolve actionName, including path", function
     view.appendTo('#qunit-fixture');
   });
 
-  var testBoundAction = function(propertyValue){
-    run(function(){
+  var testBoundAction = function(propertyValue) {
+    run(function() {
       view.$("#"+propertyValue).click();
     });
 
@@ -1010,7 +1010,7 @@ test("a quoteless parameter should resolve actionName, including path", function
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter that does not resolve to a value asserts", function(){
+test("a quoteless parameter that does not resolve to a value asserts", function() {
   var triggeredAction;
 
   view = EmberView.create({
@@ -1030,8 +1030,8 @@ test("a quoteless parameter that does not resolve to a value asserts", function(
     view.appendTo('#qunit-fixture');
   });
 
-  expectAssertion(function(){
-    run(function(){
+  expectAssertion(function() {
+    run(function() {
       view.$("#oops-bound-param").click();
     });
   }, "You specified a quoteless path to the {{action}} helper " +
@@ -1057,7 +1057,7 @@ QUnit.module("ember-routing-htmlbars: action helper - deprecated invoking direct
   }
 });
 
-test("should respect preventDefault=false option if provided", function(){
+test("should respect preventDefault=false option if provided", function() {
   view = EmberView.create({
     template: compile("<a {{action 'show' preventDefault=false}}>Hi</a>")
   });

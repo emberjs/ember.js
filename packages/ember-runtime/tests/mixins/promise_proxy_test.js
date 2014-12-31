@@ -8,7 +8,7 @@ var RSVP = requireModule("rsvp"); // jshint ignore:line
 
 var ObjectPromiseProxy;
 
-test("present on ember namespace", function(){
+test("present on ember namespace", function() {
   ok(PromiseProxyMixin, "expected PromiseProxyMixin to exist");
 });
 
@@ -18,15 +18,15 @@ QUnit.module("Ember.PromiseProxy - ObjectProxy", {
   }
 });
 
-test("no promise, invoking then should raise", function(){
+test("no promise, invoking then should raise", function() {
   var proxy = ObjectPromiseProxy.create();
 
-  raises(function(){
+  raises(function() {
     proxy.then(function() { return this; }, function() { return this; });
   }, new RegExp("PromiseProxy's promise must be set"));
 });
 
-test("fulfillment", function(){
+test("fulfillment", function() {
   var value = {
     firstName: 'stef',
     lastName: 'penner'
@@ -41,9 +41,9 @@ test("fulfillment", function(){
   var didFulfillCount = 0;
   var didRejectCount  = 0;
 
-  proxy.then(function(){
+  proxy.then(function() {
     didFulfillCount++;
-  }, function(){
+  }, function() {
     didRejectCount++;
   });
 
@@ -89,7 +89,7 @@ test("fulfillment", function(){
   // rest of the promise semantics are tested in directly in RSVP
 });
 
-test("rejection", function(){
+test("rejection", function() {
   var reason = new Error("failure");
   var deferred = RSVP.defer();
   var proxy = ObjectPromiseProxy.create({
@@ -99,9 +99,9 @@ test("rejection", function(){
   var didFulfillCount = 0;
   var didRejectCount  = 0;
 
-  proxy.then(function(){
+  proxy.then(function() {
     didFulfillCount++;
-  }, function(){
+  }, function() {
     didRejectCount++;
   });
 
@@ -145,7 +145,7 @@ test("rejection", function(){
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("unhandled rejects still propagate to RSVP.on('error', ...) ", function(){
+test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
   expect(1);
 
   RSVP.on('error', onerror);
@@ -178,7 +178,7 @@ test("unhandled rejects still propagate to RSVP.on('error', ...) ", function(){
   RSVP.off('error', onerror);
 });
 
-test("should work with promise inheritance", function(){
+test("should work with promise inheritance", function() {
   function PromiseSubclass() {
     RSVP.Promise.apply(this, arguments);
   }
@@ -188,7 +188,7 @@ test("should work with promise inheritance", function(){
   PromiseSubclass.cast = RSVP.Promise.cast;
 
   var proxy = ObjectPromiseProxy.create({
-    promise: new PromiseSubclass(function(){ })
+    promise: new PromiseSubclass(function() { })
   });
 
   ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
