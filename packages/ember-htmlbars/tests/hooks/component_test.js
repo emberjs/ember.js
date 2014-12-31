@@ -24,7 +24,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
         registry.register('component-lookup:main', ComponentLookup);
       },
 
-      teardown: function(){
+      teardown: function() {
         runDestroy(view);
         runDestroy(container);
         registry = container = view = null;

@@ -9,7 +9,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view;
 
 QUnit.module("ember-htmlbars: sanitized attribute", {
-  teardown: function(){
+  teardown: function() {
     runDestroy(view);
   }
 });
@@ -26,7 +26,7 @@ var badTags = [
 ];
 
 for (var i=0, l=badTags.length; i<l; i++) {
-  (function(){
+  (function() {
     var tagName = badTags[i].tag;
     var attr = badTags[i].attr;
     var template = badTags[i].template;

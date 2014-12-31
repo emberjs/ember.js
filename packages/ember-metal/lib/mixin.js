@@ -49,7 +49,7 @@ import { isStream } from "ember-metal/streams/utils";
 var REQUIRED;
 var a_slice = [].slice;
 
-function superFunction(){
+function superFunction() {
   var func = this.__nextSuper;
   var ret;
 

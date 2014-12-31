@@ -26,7 +26,7 @@ test('should read from globals (DEPRECATED)', function() {
     template: compile('{{Global}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global from a Handlebars template is deprecated.');
 
@@ -39,7 +39,7 @@ test('should read from globals with a path (DEPRECATED)', function() {
     template: compile('{{Global.Space}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);
@@ -52,7 +52,7 @@ test('with context, should read from globals (DEPRECATED)', function() {
     template: compile('{{Global}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global);
@@ -65,7 +65,7 @@ test('with context, should read from globals with a path (DEPRECATED)', function
     template: compile('{{Global.Space}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);

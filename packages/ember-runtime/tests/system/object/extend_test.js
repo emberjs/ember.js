@@ -54,7 +54,7 @@ test('Overriding a method several layers deep', function() {
   equal(obj.barCnt, 2, 'should invoke both');
 });
 
-test('With concatenatedProperties', function(){
+test('With concatenatedProperties', function() {
   var SomeClass = EmberObject.extend({ things: 'foo', concatenatedProperties: ['things'] });
   var AnotherClass = SomeClass.extend({ things: 'bar' });
   var YetAnotherClass = SomeClass.extend({ things: 'baz' });
@@ -66,7 +66,7 @@ test('With concatenatedProperties', function(){
   deepEqual(yetAnother.get('things'), ['foo', 'baz'], "subclass should have base class' and its own");
 });
 
-test('With concatenatedProperties class properties', function(){
+test('With concatenatedProperties class properties', function() {
   var SomeClass = EmberObject.extend();
   SomeClass.reopenClass({
     concatenatedProperties: ['things'],

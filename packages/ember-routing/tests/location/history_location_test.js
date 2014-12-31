@@ -4,7 +4,7 @@ import HistoryLocation from "ember-routing/location/history_location";
 
 var FakeHistory, HistoryTestLocation, location;
 
-function createLocation(options){
+function createLocation(options) {
   if (!options) { options = {}; }
   location = HistoryTestLocation.create(options);
 }
@@ -35,11 +35,11 @@ QUnit.module("Ember.HistoryLocation", {
     FakeHistory = {
       state: null,
       _states: [],
-      replaceState: function(state, title, url){
+      replaceState: function(state, title, url) {
         this.state = state;
         this._states[0] = state;
       },
-      pushState: function(state, title, url){
+      pushState: function(state, title, url) {
         this.state = state;
         this._states.unshift(state);
       }
@@ -61,7 +61,7 @@ test("HistoryLocation initState does not get fired on init", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function(){
+    init: function() {
       ok(true, 'init was called');
       this._super();
     },

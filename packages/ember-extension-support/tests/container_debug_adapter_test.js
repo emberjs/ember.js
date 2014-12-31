@@ -32,18 +32,18 @@ QUnit.module("Container Debug Adapter", {
   }
 });
 
-test("the default ContainerDebugAdapter cannot catalog certain entries by type", function(){
+test("the default ContainerDebugAdapter cannot catalog certain entries by type", function() {
   equal(adapter.canCatalogEntriesByType('model'), false, "canCatalogEntriesByType should return false for model");
   equal(adapter.canCatalogEntriesByType('template'), false, "canCatalogEntriesByType should return false for template");
 });
 
-test("the default ContainerDebugAdapter can catalog typical entries by type", function(){
+test("the default ContainerDebugAdapter can catalog typical entries by type", function() {
   equal(adapter.canCatalogEntriesByType('controller'), true, "canCatalogEntriesByType should return true for controller");
   equal(adapter.canCatalogEntriesByType('route'), true, "canCatalogEntriesByType should return true for route");
   equal(adapter.canCatalogEntriesByType('view'), true, "canCatalogEntriesByType should return true for view");
 });
 
-test("the default ContainerDebugAdapter catalogs controller entries", function(){
+test("the default ContainerDebugAdapter catalogs controller entries", function() {
   App.PostController = EmberController.extend();
   var controllerClasses = adapter.catalogEntriesByType('controller');
 

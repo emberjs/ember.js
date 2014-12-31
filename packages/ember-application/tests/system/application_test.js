@@ -204,7 +204,7 @@ test("Minimal Application initialized with just an application template", functi
 });
 
 test('enable log of libraries with an ENV var', function() {
-  if (EmberDev && EmberDev.runningProdBuild){
+  if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
   }
@@ -259,11 +259,11 @@ test('disable log version of libraries with an ENV var', function() {
   ok(!logged, 'library version logging skipped');
 });
 
-test("can resolve custom router", function(){
+test("can resolve custom router", function() {
   var CustomRouter = Router.extend();
 
   var CustomResolver = DefaultResolver.extend({
-    resolveOther: function(parsedName){
+    resolveOther: function(parsedName) {
       if (parsedName.type === "router") {
         return CustomRouter;
       } else {
@@ -272,7 +272,7 @@ test("can resolve custom router", function(){
     }
   });
 
-  app = run(function(){
+  app = run(function() {
     return Application.create({
       Resolver: CustomResolver
     });

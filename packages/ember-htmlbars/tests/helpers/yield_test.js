@@ -317,7 +317,7 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
   }
 });
 
-test("yield with nested components (#3220)", function(){
+test("yield with nested components (#3220)", function() {
   var count = 0;
   var InnerComponent = Component.extend({
     layout: compile("{{yield}}"),

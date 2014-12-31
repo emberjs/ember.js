@@ -18,7 +18,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: class attribute", {
-  teardown: function(){
+  teardown: function() {
     if (view) {
       run(view, view.destroy);
     }
@@ -28,7 +28,7 @@ QUnit.module("ember-htmlbars: class attribute", {
 test("class renders before didInsertElement", function() {
   var matchingElement;
   view = EmberView.create({
-    didInsertElement: function(){
+    didInsertElement: function() {
       matchingElement = this.$('div.blue');
     },
     context: {color: 'blue'},

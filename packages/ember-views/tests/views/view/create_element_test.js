@@ -35,8 +35,8 @@ test('should assert if `tagName` is an empty string and `classNameBindings` are 
     classNameBindings: ['foo:is-foo:is-bar']
   });
 
-  expectAssertion(function(){
-    run(function(){
+  expectAssertion(function() {
+    run(function() {
       view.createElement();
     });
   }, /You cannot use `classNameBindings` on a tag-less view/);

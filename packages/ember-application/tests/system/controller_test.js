@@ -10,12 +10,12 @@ import { computed } from "ember-metal/computed";
 
 QUnit.module("Controller dependencies");
 
-test("If a controller specifies a dependency, but does not have a container it should error", function(){
+test("If a controller specifies a dependency, but does not have a container it should error", function() {
   var AController = Controller.extend({
     needs: 'posts'
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     AController.create();
   }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
 });
@@ -91,20 +91,20 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
   var fooController = container.lookup('controller:foo');
   var barController = container.lookup('controller:bar');
 
-  throws(function(){
+  throws(function() {
     fooController.get('controllers.bar');
   }, /#needs does not include `bar`/,
   'throws if controllers is accesed but needs not defined');
 
   equal(barController.get('controllers.foo'), fooController, 'correctly needed controllers should continue to work');
 
-  throws(function(){
+  throws(function() {
     barController.get('controllers.baz');
   }, /#needs does not include `baz`/,
   'should throw if no such controller was needed');
 });
 
-test ("setting the value of a controller dependency should not be possible", function(){
+test ("setting the value of a controller dependency should not be possible", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -117,7 +117,7 @@ test ("setting the value of a controller dependency should not be possible", fun
   var postController = container.lookup('controller:post');
   container.lookup('controller:posts');
 
-  throws(function(){
+  throws(function() {
     postController.set('controllers.posts', 'epic-self-troll');
   },
   /You cannot overwrite the value of `controllers.posts` of .+/,

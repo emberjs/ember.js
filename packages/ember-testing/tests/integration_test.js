@@ -112,7 +112,7 @@ test("template is again bound to empty array of people", function() {
   });
 });
 
-test("`visit` can be called without advancedReadiness.", function(){
+test("`visit` can be called without advancedReadiness.", function() {
   App.Person.find = function() {
     return Ember.A();
   };

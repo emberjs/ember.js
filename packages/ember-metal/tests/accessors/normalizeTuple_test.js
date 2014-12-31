@@ -75,7 +75,7 @@ test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
 //
 
 test('[obj, Foo] -> [obj, Foo]', function() {
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
   }, "normalizeTuple will return 'Foo' as a non-global. This behavior will change in the future (issue #3852)");
 });

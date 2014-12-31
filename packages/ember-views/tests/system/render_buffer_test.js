@@ -12,7 +12,7 @@ QUnit.module("RenderBuffer");
 
 test("RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div');
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     buffer.generateElement();
     var el = buffer.element();
     equal(el.tagName.toLowerCase(), 'div');
@@ -22,7 +22,7 @@ test("RenderBuffers raise a deprecation warning without a contextualElement", fu
 test("reset RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div', document.body);
   buffer.reset('span');
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     buffer.generateElement();
     var el = buffer.element();
     equal(el.tagName.toLowerCase(), 'span');
@@ -59,7 +59,7 @@ test("RenderBuffers cannot push fragments when something else is in the buffer",
   buffer.generateElement();
 
   buffer.push(fragment);
-  expectAssertion(function(){
+  expectAssertion(function() {
     buffer.push(fragment);
   });
 });
@@ -70,7 +70,7 @@ test("RenderBuffers cannot push strings after fragments", function() {
   buffer.generateElement();
 
   buffer.push(fragment);
-  expectAssertion(function(){
+  expectAssertion(function() {
     buffer.push('howdy');
   });
 });

@@ -956,8 +956,12 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
     var Type = EmberObject.extend({
       rc: reduceComputed('array', {
         initialValue: 0,
-        addedItem: function(v){ return v; },
-        removedItem: function(v){ return v; }
+        addedItem: function(v) {
+          return v;
+        },
+        removedItem: function(v) {
+          return v;
+        }
       })
     });
 

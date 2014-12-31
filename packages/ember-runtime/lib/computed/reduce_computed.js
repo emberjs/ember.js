@@ -371,7 +371,7 @@ function normalizeRemoveCount(index, length, removedCount) {
   return Math.min(removedCount, length - index);
 }
 
-function ChangeMeta(dependentArray, item, index, propertyName, property, changedCount, previousValues){
+function ChangeMeta(dependentArray, item, index, propertyName, property, changedCount, previousValues) {
   this.arrayChanged = dependentArray;
   this.index = index;
   this.item = item;

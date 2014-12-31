@@ -205,8 +205,8 @@ test("should be able to push initial views onto the ContainerView and have it be
     lengthSquared: function () {
       return this.get('length') * this.get('length');
     },
-    mapViewNames: function(){
-      return this.map(function(_view){
+    mapViewNames: function() {
+      return this.map(function(_view) {
         return _view.get('name');
       });
     }
@@ -765,11 +765,11 @@ test("if a containerView appends a child in its didInsertElement event, the didI
 });
 
 
-test("ContainerView is observable [DEPRECATED]", function(){
+test("ContainerView is observable [DEPRECATED]", function() {
   container = ContainerView.create();
   var observerFired = false;
-  expectDeprecation(function(){
-    container.addObserver('this.[]', function(){
+  expectDeprecation(function() {
+    container.addObserver('this.[]', function() {
       observerFired = true;
     });
   }, /ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView./);

@@ -92,11 +92,11 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
   }
 });
 
-test("re-using the same variable with different #with blocks does not override each other", function(){
+test("re-using the same variable with different #with blocks does not override each other", function() {
   equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
 });
 
-test("the scoped variable is not available outside the {{with}} block.", function(){
+test("the scoped variable is not available outside the {{with}} block.", function() {
   run(function() {
     view.set('template', compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
@@ -108,7 +108,7 @@ test("the scoped variable is not available outside the {{with}} block.", functio
   equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
 });
 
-test("nested {{with}} blocks shadow the outer scoped variable properly.", function(){
+test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   run(function() {
     view.set('template', compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {
@@ -236,7 +236,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 
   registry.register('controller:person', Controller);
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
@@ -380,7 +380,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
 
   registry.register('controller:person', Controller);
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
@@ -444,7 +444,7 @@ QUnit.module("{{#with}} helper binding to view keyword", {
   }
 });
 
-test("{{with}} helper can bind to keywords with 'as'", function(){
+test("{{with}} helper can bind to keywords with 'as'", function() {
   equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
 });
 
@@ -474,11 +474,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     }
   });
 
-  test("re-using the same variable with different #with blocks does not override each other", function(){
+  test("re-using the same variable with different #with blocks does not override each other", function() {
     equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
   });
 
-  test("the scoped variable is not available outside the {{with}} block.", function(){
+  test("the scoped variable is not available outside the {{with}} block.", function() {
     run(function() {
       view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
       view.set('context', {
@@ -490,7 +490,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
   });
 
-  test("nested {{with}} blocks shadow the outer scoped variable properly.", function(){
+  test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
     run(function() {
       view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
       view.set('context', {

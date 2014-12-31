@@ -24,7 +24,7 @@ test("should call didInsertElement on child views before parent", function() {
   var insertedLast;
 
   view = EmberView.create({
-    didInsertElement: function(){
+    didInsertElement: function() {
       insertedLast = "outer";
     },
     container: container,
@@ -32,7 +32,7 @@ test("should call didInsertElement on child views before parent", function() {
   });
 
   registry.register("view:inner", EmberView.extend({
-    didInsertElement: function(){
+    didInsertElement: function() {
       insertedLast = "inner";
     }
   }));

@@ -27,7 +27,7 @@ test("should not create nested objects if writable is false", function() {
   var obj = {};
 
   ok(!meta(obj).foo, "precond - foo property on meta does not yet exist");
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     equal(metaPath(obj, ['foo', 'bar', 'baz'], false), undefined, "should return undefined when writable is false and doesn't already exist");
   });
   equal(meta(obj).foo, undefined, "foo property is not created");
@@ -38,7 +38,7 @@ test("should create nested objects if writable is true", function() {
 
   ok(!meta(obj).foo, "precond - foo property on meta does not yet exist");
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     equal(typeof metaPath(obj, ['foo', 'bar', 'baz'], true), "object", "should return hash when writable is true and doesn't already exist");
   });
   ok(meta(obj).foo.bar.baz['bat'] = true, "can set a property on the newly created hash");

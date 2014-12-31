@@ -97,8 +97,8 @@ test("warn on URLs not included in the route set", function () {
 
   bootApplication();
 
-  expectAssertion(function(){
-    Ember.run(function(){
+  expectAssertion(function() {
+    Ember.run(function() {
       router.handleURL("/what-is-this-i-dont-even");
     });
   }, "The URL '/what-is-this-i-dont-even' did not match any routes in your application");
@@ -291,17 +291,17 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("Model passed via renderTemplate model is set as controller's model", function(){
+test("Model passed via renderTemplate model is set as controller's model", function() {
   Ember.TEMPLATES['bio'] = compile("<p>{{name}}</p>");
 
   App.BioController = Ember.ObjectController.extend();
 
-  Router.map(function(){
+  Router.map(function() {
     this.route('home', { path: '/'});
   });
 
   App.HomeRoute = Ember.Route.extend({
-    renderTemplate: function(){
+    renderTemplate: function() {
       this.render('bio', {
         model: {name: 'emberjs'}
       });
@@ -432,7 +432,7 @@ test('defining templateName allows other templates to be rendered', function() {
   App.HomeRoute = Ember.Route.extend({
     templateName: 'the_real_home_template',
     actions: {
-      showAlert: function(){
+      showAlert: function() {
         this.render('alert', {
           into: 'home',
           outlet: 'alert'
@@ -445,7 +445,7 @@ test('defining templateName allows other templates to be rendered', function() {
 
   equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
 
-  Ember.run(function(){
+  Ember.run(function() {
     router.send('showAlert');
   });
 
@@ -2175,7 +2175,7 @@ test("The rootURL is passed properly to the location implementation", function()
     rootURL: rootURL,
     // if we transition in this test we will receive failures
     // if the tests are run from a static file
-    _doURLTransition: function(){}
+    _doURLTransition: function() { }
   });
 
   bootApplication();
@@ -2434,7 +2434,7 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   // Then transition directly by route name
   Ember.run(function() {
-    router.transitionTo('third').then(function(value){
+    router.transitionTo('third').then(function(value) {
       ok(true, 'expected transition');
     }, function(reason) {
       ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
@@ -2800,19 +2800,19 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
 test("`didTransition` event fires on the router", function() {
   expect(3);
 
-  Router.map(function(){
+  Router.map(function() {
     this.route("nork");
   });
 
   router = container.lookup('router:main');
 
-  router.one('didTransition', function(){
+  router.one('didTransition', function() {
     ok(true, 'didTransition fired on initial routing');
   });
 
   bootApplication();
 
-  router.one('didTransition', function(){
+  router.one('didTransition', function() {
     ok(true, 'didTransition fired on the router');
     equal(router.get('url'), "/nork", 'The url property is updated by the time didTransition fires');
   });
@@ -2822,12 +2822,12 @@ test("`didTransition` event fires on the router", function() {
 test("`didTransition` can be reopened", function() {
   expect(1);
 
-  Router.map(function(){
+  Router.map(function() {
     this.route("nork");
   });
 
   Router.reopen({
-    didTransition: function(){
+    didTransition: function() {
       this._super.apply(this, arguments);
       ok(true, 'reopened didTransition was called');
     }
@@ -2841,7 +2841,7 @@ test("`activate` event fires on the route", function() {
 
   var eventFired = 0;
 
-  Router.map(function(){
+  Router.map(function() {
     this.route("nork");
   });
 
@@ -2869,7 +2869,7 @@ test("`deactivate` event fires on the route", function() {
 
   var eventFired = 0;
 
-  Router.map(function(){
+  Router.map(function() {
     this.route("nork");
     this.route("dork");
   });
@@ -2995,7 +2995,7 @@ test("Route model hook finds the same model as a manual find", function() {
   equal(App.Post, Post);
 });
 
-test("Can register an implementation via Ember.Location.registerImplementation (DEPRECATED)", function(){
+test("Can register an implementation via Ember.Location.registerImplementation (DEPRECATED)", function() {
   var TestLocation = Ember.NoneLocation.extend({
     implementation: 'test'
   });
@@ -3013,12 +3013,12 @@ test("Can register an implementation via Ember.Location.registerImplementation (
   equal(router.get('location.implementation'), 'test', 'custom location implementation can be registered with registerImplementation');
 });
 
-test("Ember.Location.registerImplementation is deprecated", function(){
+test("Ember.Location.registerImplementation is deprecated", function() {
   var TestLocation = Ember.NoneLocation.extend({
     implementation: 'test'
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     Ember.Location.registerImplementation('test', TestLocation);
   }, "Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.");
 });
@@ -3136,7 +3136,7 @@ test("rejecting the model hooks promise with a non-error prints the `message` pr
   };
 
   App.YippieRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return Ember.RSVP.reject({message: rejectedMessage, stack: rejectedStack});
     }
   });
@@ -3154,7 +3154,7 @@ test("rejecting the model hooks promise with no reason still logs error", functi
   };
 
   App.WowzersRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return Ember.RSVP.reject();
     }
   });
@@ -3176,7 +3176,7 @@ test("rejecting the model hooks promise with a string shows a good error", funct
   };
 
   App.YondoRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return Ember.RSVP.reject(rejectedMessage);
     }
   });
@@ -3225,7 +3225,7 @@ test("Errors in transitionTo within redirect hook are logged", function() {
   });
 
   App.YondoRoute = Ember.Route.extend({
-    redirect: function(){
+    redirect: function() {
       this.transitionTo('stink-bomb', {something: 'goes boom'});
     }
   });
@@ -3251,7 +3251,7 @@ test("Errors in transition show error template if available", function() {
   });
 
   App.YondoRoute = Ember.Route.extend({
-    redirect: function(){
+    redirect: function() {
       this.transitionTo('stink-bomb', {something: 'goes boom'});
     }
   });
@@ -3314,7 +3314,7 @@ test("Exception during initialization of non-initial route is not swallowed", fu
     }
   });
   bootApplication();
-  throws(function(){
+  throws(function() {
     Ember.run(router, 'transitionTo', 'boom');
   }, /\bboom\b/);
 });
@@ -3337,7 +3337,7 @@ test("Exception during load of non-initial route is not swallowed", function() {
     }
   });
   bootApplication();
-  throws(function(){
+  throws(function() {
     Ember.run(router, 'transitionTo', 'boom');
   });
 });
@@ -3351,7 +3351,7 @@ test("Exception during initialization of initial route is not swallowed", functi
       throw new Error("boom!");
     }
   });
-  throws(function(){
+  throws(function() {
     bootApplication();
   }, /\bboom\b/);
 });
@@ -3372,7 +3372,7 @@ test("Exception during load of initial route is not swallowed", function() {
       throw new Error("boom!");
     }
   });
-  throws(function(){
+  throws(function() {
     bootApplication();
   }, /\bboom\b/);
 });

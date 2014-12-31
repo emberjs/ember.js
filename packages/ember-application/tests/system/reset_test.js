@@ -103,7 +103,7 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
 
   // this is pretty awful. We should make this less Global-ly.
   var originalRegister = Registry.prototype.register;
-  Registry.prototype.register = function(name, type, options){
+  Registry.prototype.register = function(name, type, options) {
     if (name === "event_dispatcher:main") {
       return mock_event_dispatcher;
     } else {
@@ -265,7 +265,7 @@ test("With ember-data like initializer and constant", function() {
   ok(application.__container__.lookup("store:main"), 'store is still present');
 });
 
-test("Ensure that the hashchange event listener is removed", function(){
+test("Ensure that the hashchange event listener is removed", function() {
   var listeners;
 
   jQuery(window).off('hashchange'); // ensure that any previous listeners are cleared

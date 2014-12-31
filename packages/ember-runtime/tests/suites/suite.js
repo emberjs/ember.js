@@ -131,7 +131,7 @@ var SuiteModuleBuilder = EmberObject.extend({
   _module: null,
   _tests: null,
 
-  init: function(){
+  init: function() {
     this._tests = [];
   },
 

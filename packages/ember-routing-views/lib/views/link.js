@@ -234,7 +234,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
    @method _setupPathObservers
    @since 1.3.0
   **/
-  _setupPathObservers: function(){
+  _setupPathObservers: function() {
     var params = this.params;
 
     var scheduledRerender = this._wrapAsScheduled(this.rerender);
@@ -262,7 +262,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     }
   },
 
-  afterRender: function(){
+  afterRender: function() {
     this._super.apply(this, arguments);
     this._setupPathObservers();
   },

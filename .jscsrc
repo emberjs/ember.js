@@ -17,6 +17,7 @@
   "requireLineFeedAtFileEnd": true,
   "disallowTrailingWhitespace": true,
   "disallowTrailingComma": true,
+  "requireSpaceBeforeBlockStatements": true,
   "validateIndentation": 2,
   "validateParameterSeparator": ", ",
   "requireSpaceBeforeKeywords": [

@@ -61,7 +61,7 @@ function K() { return this; }
 
 // Circular dep
 var _htmlbarsDefaultEnv;
-function buildHTMLBarsDefaultEnv(){
+function buildHTMLBarsDefaultEnv() {
   if (!_htmlbarsDefaultEnv) {
     _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
   }

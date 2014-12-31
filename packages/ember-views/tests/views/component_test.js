@@ -14,7 +14,7 @@ var a_slice = Array.prototype.slice;
 var component, controller, actionCounts, sendCount, actionArguments;
 
 QUnit.module("Ember.Component", {
-  setup: function(){
+  setup: function() {
     component = Component.create();
   },
   teardown: function() {
@@ -33,7 +33,7 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
   strictEqual(component, component.get('controller'), "A component's controller is itself");
 });
 
-test("A templateName specified to a component is moved to the layoutName", function(){
+test("A templateName specified to a component is moved to the layoutName", function() {
   expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
   component = Component.extend({
     templateName: 'blah-blah'
@@ -42,7 +42,7 @@ test("A templateName specified to a component is moved to the layoutName", funct
   equal(component.get('layoutName'), 'blah-blah', "The layoutName now contains the templateName specified.");
 });
 
-test("A template specified to a component is moved to the layout", function(){
+test("A template specified to a component is moved to the layout", function() {
   expectDeprecation(/Do not specify template on a Component, use layout instead/);
   component = Component.extend({
     template: 'blah-blah'
@@ -51,23 +51,23 @@ test("A template specified to a component is moved to the layout", function(){
   equal(component.get('layout'), 'blah-blah', "The layoutName now contains the templateName specified.");
 });
 
-test("A template specified to a component is deprecated", function(){
-  expectDeprecation(function(){
+test("A template specified to a component is deprecated", function() {
+  expectDeprecation(function() {
     component = Component.extend({
       template: 'blah-blah'
     }).create();
   }, 'Do not specify template on a Component, use layout instead.');
 });
 
-test("A templateName specified to a component is deprecated", function(){
-  expectDeprecation(function(){
+test("A templateName specified to a component is deprecated", function() {
+  expectDeprecation(function() {
     component = Component.extend({
       templateName: 'blah-blah'
     }).create();
   }, 'Do not specify templateName on a Component, use layoutName instead.');
 });
 
-test("Specifying both templateName and layoutName to a component is NOT deprecated", function(){
+test("Specifying both templateName and layoutName to a component is NOT deprecated", function() {
   expectNoDeprecation();
   component = Component.extend({
     templateName: 'blah-blah',
@@ -78,7 +78,7 @@ test("Specifying both templateName and layoutName to a component is NOT deprecat
   equal(get(component, 'layoutName'), 'hum-drum');
 });
 
-test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function(){
+test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function() {
   expectNoDeprecation();
   var Parent = Component.extend({
     layoutName: 'hum-drum'

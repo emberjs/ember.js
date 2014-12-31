@@ -75,13 +75,13 @@ test("the default resolver resolves models on the namespace", function() {
   detectEqual(application.Post, locator.lookupFactory('model:post'), "looks up Post model on application");
 });
 
-test("the default resolver resolves helpers", function(){
+test("the default resolver resolves helpers", function() {
   expect(2);
 
-  function fooresolvertestHelper(){
+  function fooresolvertestHelper() {
     ok(true, 'found fooresolvertestHelper');
   }
-  function barBazResolverTestHelper(){
+  function barBazResolverTestHelper() {
     ok(true, 'found barBazResolverTestHelper');
   }
   registerHelper('fooresolvertest', fooresolvertestHelper);
@@ -101,24 +101,24 @@ test("the default resolver resolves helpers", function(){
   barBazResolverTestHelper();
 });
 
-test("the default resolver resolves container-registered helpers", function(){
-  function gooresolvertestHelper(){ return 'GOO'; }
-  function gooGazResolverTestHelper(){ return 'GAZ'; }
+test("the default resolver resolves container-registered helpers", function() {
+  function gooresolvertestHelper() { return 'GOO'; }
+  function gooGazResolverTestHelper() { return 'GAZ'; }
   application.register('helper:gooresolvertest', gooresolvertestHelper);
   application.register('helper:goo-baz-resolver-test', gooGazResolverTestHelper);
   equal(gooresolvertestHelper, locator.lookup('helper:gooresolvertest'), "looks up gooresolvertest helper");
   equal(gooGazResolverTestHelper, locator.lookup('helper:goo-baz-resolver-test'), "looks up gooGazResolverTestHelper helper");
 });
 
-test("the default resolver throws an error if the fullName to resolve is invalid", function(){
-  raises(function(){ registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve(null);     }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve(':');      }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve('model');  }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  raises(function(){ registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
+test("the default resolver throws an error if the fullName to resolve is invalid", function() {
+  raises(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  raises(function() { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
 
 test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {
@@ -152,7 +152,7 @@ test("the default resolver logs misses if `LOG_RESOLVER` is set", function() {
   registry.resolve('doo:scooby');
 });
 
-test("doesn't log without LOG_RESOLVER", function(){
+test("doesn't log without LOG_RESOLVER", function() {
   var infoCount = 0;
 
   application.ScoobyDoo = EmberObject.extend();

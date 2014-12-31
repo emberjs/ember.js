@@ -12,12 +12,12 @@ import keys from "ember-metal/keys";
 var moduleOptions, originalLookup;
 
 moduleOptions = {
-  setup: function(){
+  setup: function() {
     originalLookup = Ember.lookup;
     Ember.lookup = {};
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
   }
 };
@@ -136,7 +136,7 @@ test("inherits properties from passed in EmberObject", function() {
   equal(secondaryObj.foo, baseObj.foo, "Em.O.create inherits properties from EmberObject parameter");
 });
 
-test("throws if you try to pass anything a string as a parameter", function(){
+test("throws if you try to pass anything a string as a parameter", function() {
   var expected = "EmberObject.create only accepts an objects.";
 
   throws(function() {
@@ -144,12 +144,12 @@ test("throws if you try to pass anything a string as a parameter", function(){
   }, expected);
 });
 
-test("EmberObject.create can take undefined as a parameter", function(){
+test("EmberObject.create can take undefined as a parameter", function() {
   var o = EmberObject.create(undefined);
   deepEqual(EmberObject.create(), o);
 });
 
-test("EmberObject.create can take null as a parameter", function(){
+test("EmberObject.create can take null as a parameter", function() {
   var o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
 });
@@ -229,7 +229,7 @@ test("Calls all mixin inits if defined", function() {
 test("Triggers init", function() {
   var completed = false;
   EmberObject.createWithMixins({
-    markAsCompleted: on("init", function(){
+    markAsCompleted: on("init", function() {
       completed = true;
     })
   });
@@ -339,7 +339,7 @@ test("created objects should not share a guid with their superclass", function()
   ok(guidFor(objA) !== guidFor(objB), "two instances do not share a guid");
 });
 
-test("ensure internal properties do not leak", function(){
+test("ensure internal properties do not leak", function() {
   var obj = EmberObject.create({
     firstName: 'Joe',
     lastName:  'Black'

@@ -14,7 +14,7 @@ function AttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
-AttrNode.prototype.init = function init(attrName, simpleAttrValue){
+AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isView = true;
 
   // That these semantics are used is very unfortunate.
@@ -29,7 +29,7 @@ AttrNode.prototype.init = function init(attrName, simpleAttrValue){
   subscribe(this.attrValue, this.rerender, this);
 };
 
-AttrNode.prototype.renderIfDirty = function renderIfDirty(){
+AttrNode.prototype.renderIfDirty = function renderIfDirty() {
   if (this.isDirty) {
     var value = read(this.attrValue);
     if (value !== this.lastValue) {

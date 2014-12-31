@@ -48,13 +48,13 @@ test("A registered factory returns true for `has` if an item is registered", fun
   equal(registry.has('controller:posts'), false, "The `has` method returned false for unregistered factories");
 });
 
-test("Throw exception when trying to inject `type:thing` on all type(s)", function(){
+test("Throw exception when trying to inject `type:thing` on all type(s)", function() {
   var registry = new Registry();
   var PostController = factory();
 
   registry.register('controller:post', PostController);
 
-  throws(function(){
+  throws(function() {
     registry.typeInjection('controller', 'injected', 'controller:post');
   }, 'Cannot inject a `controller:post` on other controller(s). Register the `controller:post` as a different type and perform the typeInjection.');
 });
@@ -143,15 +143,15 @@ test("The registry normalizes names when injecting", function() {
   deepEqual(registry.resolve('controller:post'), user, "Normalizes the name when injecting");
 });
 
-test("cannot register an `undefined` factory", function(){
+test("cannot register an `undefined` factory", function() {
   var registry = new Registry();
 
-  throws(function(){
+  throws(function() {
     registry.register('controller:apple', undefined);
   }, '');
 });
 
-test("can re-register a factory", function(){
+test("can re-register a factory", function() {
   var registry = new Registry();
   var FirstApple = factory('first');
   var SecondApple = factory('second');
@@ -162,7 +162,7 @@ test("can re-register a factory", function(){
   ok(registry.resolve('controller:apple').create() instanceof SecondApple);
 });
 
-test("cannot re-register a factory if it has been resolved", function(){
+test("cannot re-register a factory if it has been resolved", function() {
   var registry = new Registry();
   var FirstApple = factory('first');
   var SecondApple = factory('second');
@@ -170,14 +170,14 @@ test("cannot re-register a factory if it has been resolved", function(){
   registry.register('controller:apple', FirstApple);
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 
-  throws(function(){
+  throws(function() {
     registry.register('controller:apple', SecondApple);
   }, 'Cannot re-register: `controller:apple`, as it has already been resolved.');
 
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 });
 
-test('registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function(){
+test('registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function() {
   expect(1);
 
   var registry = new Registry();

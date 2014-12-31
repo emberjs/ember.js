@@ -117,7 +117,7 @@ export function classStringForValue(path, val, className, falsyClassName) {
   }
 }
 
-export function streamifyClassNameBinding(view, classNameBinding, prefix){
+export function streamifyClassNameBinding(view, classNameBinding, prefix) {
   prefix = prefix || '';
   Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", classNameBinding.indexOf(' ') === -1);
   var parsedPath = parsePropertyPath(classNameBinding);
@@ -130,7 +130,7 @@ export function streamifyClassNameBinding(view, classNameBinding, prefix){
     );
   } else {
     var pathValue = view.getStream(prefix+parsedPath.path);
-    return chainStream(pathValue, function(){
+    return chainStream(pathValue, function() {
       return classStringForValue(
         parsedPath.path,
         read(pathValue),

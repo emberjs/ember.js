@@ -44,9 +44,9 @@ test("should fail when using a reserved route name", function() {
   });
 });
 
-test("should reset namespace if nested with resource", function(){
-  Router = Router.map(function(){
-    this.resource('bleep', function(){
+test("should reset namespace if nested with resource", function() {
+  Router = Router.map(function() {
+    this.resource('bleep', function() {
       this.resource('bloop', function() {
         this.resource('blork');
       });
@@ -61,9 +61,9 @@ test("should reset namespace if nested with resource", function(){
   ok(router.router.recognizer.names['blork'], 'nested resources do not contain parent name');
 });
 
-test("should retain resource namespace if nested with routes", function(){
-  Router = Router.map(function(){
-    this.route('bleep', function(){
+test("should retain resource namespace if nested with routes", function() {
+  Router = Router.map(function() {
+    this.route('bleep', function() {
       this.route('bloop', function() {
         this.route('blork');
       });
@@ -81,8 +81,8 @@ test("should retain resource namespace if nested with routes", function(){
 if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 // jscs:disable validateIndentation
 
-test("should add loading and error routes if _isRouterMapResult is true", function(){
-  Router.map(function(){
+test("should add loading and error routes if _isRouterMapResult is true", function() {
+  Router.map(function() {
     this.route('blork');
   });
 
@@ -94,8 +94,8 @@ test("should add loading and error routes if _isRouterMapResult is true", functi
   ok(router.router.recognizer.names['blork_error'], 'error route was added');
 });
 
-test("should not add loading and error routes if _isRouterMapResult is false", function(){
-  Router.map(function(){
+test("should not add loading and error routes if _isRouterMapResult is false", function() {
+  Router.map(function() {
     this.route('blork');
   });
 

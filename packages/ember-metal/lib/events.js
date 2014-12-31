@@ -410,7 +410,7 @@ export function listenersFor(obj, eventName) {
   @param {Function} func
   @return func
 */
-export function on(){
+export function on() {
   var func = a_slice.call(arguments, -1)[0];
   var events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
