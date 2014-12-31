@@ -113,7 +113,7 @@ run.join = function() {
 /**
   Allows you to specify which context to call the specified function in while
   adding the execution of that function to the Ember run loop. This ability
-  makes this method a great way to asynchronusly integrate third-party libraries
+  makes this method a great way to asynchronously integrate third-party libraries
   into your Ember application.
 
   `run.bind` takes two main arguments, the desired context and the function to
@@ -144,7 +144,7 @@ run.join = function() {
 
   In this example, we use Ember.run.bind to bind the setupEditor message to the
   context of the App.RichTextEditorComponent and to have the invocation of that
-  method be safely handled and excuted by the Ember run loop.
+  method be safely handled and executed by the Ember run loop.
 
   @method bind
   @namespace Ember

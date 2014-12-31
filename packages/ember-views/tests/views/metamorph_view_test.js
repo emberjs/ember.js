@@ -120,7 +120,7 @@ test("a metamorph view can be rerendered", function() {
 // Redefining without setup/teardown
 QUnit.module("Metamorph views correctly handle DOM");
 
-test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function() {
+test("a metamorph view calls its children's willInsertElement and didInsertElement", function() {
   var parentView;
   var willInsertElementCalled = false;
   var didInsertElementCalled = false;

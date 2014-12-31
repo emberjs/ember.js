@@ -210,7 +210,7 @@ test("it maps properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
 });
 
-test("it is observerable", function() {
+test("it is observable", function() {
   get(obj, 'mapped');
   var calls = 0;
 
@@ -224,7 +224,7 @@ test("it is observerable", function() {
     obj.get('array').pushObject({ v: 5 });
   });
 
-  equal(calls, 1, 'computedMapBy is observerable');
+  equal(calls, 1, 'computedMapBy is observable');
 });
 
 

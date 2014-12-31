@@ -152,7 +152,7 @@ export default {
   /**
     @private
 
-    Redirects the browser using location.replace, prepending the locatin.origin
+    Redirects the browser using location.replace, prepending the location.origin
     to prevent phishing attempts
 
     @method _replacePath

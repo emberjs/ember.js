@@ -15,13 +15,13 @@ import { forEach } from "ember-metal/enumerable_utils";
   own code to verify compliance.
 
   To define a suite, you need to define the tests themselves as well as a
-  callback API implementors can use to tie your tests to their specific class.
+  callback API implementers can use to tie your tests to their specific class.
 
   ## Defining a Callback API
 
   To define the callback API, just extend this class and add your properties
   or methods that must be provided.  Use Ember.required() placeholders for
-  any properties that implementors must define themselves.
+  any properties that implementers must define themselves.
 
   ## Defining Unit Tests
 

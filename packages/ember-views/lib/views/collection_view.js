@@ -121,7 +121,7 @@ import EmberArray from "ember-runtime/mixins/array";
 
   For cases where additional customization beyond the use of a single
   `itemViewClass` or `tagName` matching is required CollectionView's
-  `createChildView` method can be overidden:
+  `createChildView` method can be overridden:
 
   ```javascript
   App.CustomCollectionView = Ember.CollectionView.extend({

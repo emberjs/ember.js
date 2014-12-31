@@ -137,7 +137,7 @@ test("prevents XSS injection via `style`", function() {
   var el = buffer.element();
   var div = document.createElement('div');
 
-  // some browsers have different escaping strageties
+  // some browsers have different escaping strategies
   // we should ensure the outcome is consistent. Ultimately we now use
   // setAttribute under the hood, so we should always do the right thing.  But
   // this test should be kept to ensure we do. Also, I believe/hope it is

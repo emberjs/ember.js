@@ -955,7 +955,7 @@ export default Mixin.create({
 
   /**
     This property will trigger anytime the enumerable's content changes.
-    You can observe this property to be notified of changes to the enumerables
+    You can observe this property to be notified of changes to the enumerable's
     content.
 
     For plain enumerables, this property is read only. `Array` overrides

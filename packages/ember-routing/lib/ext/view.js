@@ -132,7 +132,7 @@ EmberView.reopen({
 
   /**
     Gets an outlet that is pending disconnection and then
-    nullifys the object on the `_outlet` object.
+    nullifies the object on the `_outlet` object.
 
     @private
     @method _finishDisconnections

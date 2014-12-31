@@ -26,11 +26,11 @@ QUnit.module("Ember.Component", {
 });
 
 test("The context of an Ember.Component is itself", function() {
-  strictEqual(component, component.get('context'), "A components's context is itself");
+  strictEqual(component, component.get('context'), "A component's context is itself");
 });
 
 test("The controller (target of `action`) of an Ember.Component is itself", function() {
-  strictEqual(component, component.get('controller'), "A components's controller is itself");
+  strictEqual(component, component.get('controller'), "A component's controller is itself");
 });
 
 test("A templateName specified to a component is moved to the layoutName", function(){
