@@ -200,6 +200,15 @@ test("The `unbound if` helper does not update when the value changes", function(
   equal(view.$().text(), 'Nope');
 });
 
+test("The `unbound if` helper should work when its inverse is not present", function() {
+  view = EmberView.create({
+    conditional: false,
+    template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
+  });
+  runAppend(view);
+  equal(view.$().text(), '');
+});
+
 test("The `if` helper ignores a controller option", function() {
   var lookupCalled = false;
 
