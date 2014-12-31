@@ -23,7 +23,7 @@ function fragmentFor(ast) {
   return fn(new DOMHelper());
 }
 
-function hydratorFor(ast) {
+function hydratorFor(ast, cachedFragment) {
   /* jshint evil: true */
   var hydrate = new HydrationOpcodeCompiler();
   var opcodes = hydrate.compile(ast);
@@ -34,7 +34,8 @@ function hydratorFor(ast) {
   for (var hook in hydrate2.hooks) {
     hookVars.push(hook + ' = hooks.' + hook);
   }
-  program =  'var ' + hookVars.join(', ') + ';\n' + program;
+  program =  'var ' + hookVars.join(', ') + ';\n' +
+             'this.cachedFragment = ' + !!cachedFragment + ';\n' + program;
   return new Function("fragment", "context", "dom", "hooks", "env", "contextualElement", program);
 }
 
@@ -129,7 +130,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
   var dom = new DOMHelper();
   var fragment = dom.cloneNode(fragmentFor(ast), true);
-  var hydrate = hydratorFor(ast);
+  var hydrate = hydratorFor(ast, true);
 
   var morphs = [];
   var fakeMorphDOM = new DOMHelper();

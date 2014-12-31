@@ -37,11 +37,11 @@ test("can update attribute", function(){
 test("can update svg attribute", function(){
   domHelper.setNamespace(svgNamespace);
   var element = domHelper.createElement('svg');
-  var morph = domHelper.createAttrMorph(element, 'viewBox');
-  morph.setContent('0 0 0 0');
-  equal(element.getAttribute('viewBox'), '0 0 0 0', 'svg attr is set');
+  var morph = domHelper.createAttrMorph(element, 'height');
+  morph.setContent('50%');
+  equal(element.getAttribute('height'), '50%', 'svg attr is set');
   morph.setContent(null);
-  equal(element.getAttribute('viewBox'), undefined, 'svg attr is removed');
+  equal(element.getAttribute('height'), undefined, 'svg attr is removed');
 });
 
 test("can update style attribute", function(){
