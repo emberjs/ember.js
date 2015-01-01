@@ -5,6 +5,12 @@
   "disallowMultipleVarDeclWithAssignment": true,
   "requireSpaceBeforeObjectValues": true,
   "disallowSpacesBeforeSemicolons": true,
+  "requireSpacesInConditionalExpression": {
+    "afterTest": true,
+    "beforeConsequent": true,
+    "afterConsequent": true,
+    "beforeAlternate": true
+  },
   "requireCurlyBraces": [
     "if",
     "else",
