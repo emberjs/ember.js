@@ -164,7 +164,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   @param {Object} options
   @return {Ember.ComputedProperty}
 */
-function arrayComputed (options) {
+function arrayComputed(options) {
   var args;
 
   if (arguments.length > 1) {

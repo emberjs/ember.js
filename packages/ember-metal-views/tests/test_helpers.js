@@ -3,7 +3,7 @@ import { Renderer } from "ember-metal-views";
 
 var renderer;
 
-function MetalRenderer () {
+function MetalRenderer() {
   MetalRenderer._super.call(this);
 }
 MetalRenderer._super = Renderer;

@@ -19,7 +19,7 @@ export default SubArray;
   @class SubArray
   @namespace Ember
 */
-function SubArray (length) {
+function SubArray(length) {
   if (arguments.length < 1) { length = 0; }
 
   if (length > 0) {

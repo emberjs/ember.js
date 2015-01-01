@@ -37,5 +37,9 @@
     "with",
     "return"
   ],
-  "requireSpaceBetweenArguments": true
+  "requireSpaceBetweenArguments": true,
+  "requireSpacesAfterClosingParenthesisInFunctionDeclaration": {
+    "beforeOpeningRoundBrace": false,
+    "beforeOpeningCurlyBrace": true
+  }
 }

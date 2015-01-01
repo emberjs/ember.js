@@ -298,7 +298,7 @@ TrackedArray.prototype = {
   @param {Array} items The items of the operation, if included.  RETAIN and
   INSERT include their items, DELETE does not.
 */
-function ArrayOperation (operation, count, items) {
+function ArrayOperation(operation, count, items) {
   this.type = operation; // RETAIN | INSERT | DELETE
   this.count = count;
   this.items = items;

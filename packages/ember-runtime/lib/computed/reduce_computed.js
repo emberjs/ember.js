@@ -86,7 +86,7 @@ function DependentArraysObserver(callbacks, cp, instanceMeta, context, propertyN
   this.changedItemCount = 0;
 }
 
-function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
+function ItemPropertyObserverContext(dependentArray, index, trackedArray) {
   Ember.assert('Internal error: trackedArray is null or undefined', trackedArray);
 
   this.dependentArray = dependentArray;
