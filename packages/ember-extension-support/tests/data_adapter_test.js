@@ -46,7 +46,7 @@ test("Model types added with DefaultResolver", function() {
       return Ember.A([1,2,3]);
     },
     columnsForType: function() {
-      return [ { name: 'title', desc: 'Title'} ];
+      return [{ name: 'title', desc: 'Title'}];
     }
   });
 
@@ -59,7 +59,7 @@ test("Model types added with DefaultResolver", function() {
     equal(postType.name, 'post', 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, App.Post, 'Correctly sets the object');
-    deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');
+    deepEqual(postType.columns, [{name: 'title', desc: 'Title'}], 'Correctly sets the columns');
   };
 
   adapter.watchModelTypes(modelTypesAdded);
@@ -83,7 +83,7 @@ test("Model types added with custom container-debug-adapter", function() {
       return Ember.A([1,2,3]);
     },
     columnsForType: function() {
-      return [ { name: 'title', desc: 'Title'} ];
+      return [{ name: 'title', desc: 'Title'}];
     }
   });
 
@@ -97,7 +97,7 @@ test("Model types added with custom container-debug-adapter", function() {
     equal(postType.name, PostClass.toString(), 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, PostClass, 'Correctly sets the object');
-    deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');
+    deepEqual(postType.columns, [{name: 'title', desc: 'Title'}], 'Correctly sets the columns');
   };
 
   adapter.watchModelTypes(modelTypesAdded);

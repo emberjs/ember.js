@@ -22,7 +22,7 @@ QUnit.module("Ember.ArrayController - itemController", {
     jaime = EmberObject.create({ name: 'Jaime' });
     cersei = EmberObject.create({ name: 'Cersei' });
     tyrion = EmberObject.create({ name: 'Tyrion' });
-    lannisters = Ember.A([ tywin, jaime, cersei ]);
+    lannisters = Ember.A([tywin, jaime, cersei]);
 
     itemControllerCount = 0;
     controllerClass = ObjectController.extend({
@@ -340,7 +340,7 @@ QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
 
     cersei = EmberObject.create({ name: 'Cersei' });
     jaime = EmberObject.create({ name: 'Jaime' });
-    lannisters = Ember.A([ jaime, cersei ]);
+    lannisters = Ember.A([jaime, cersei]);
 
     controllerClass = ObjectController.extend({
       title: computed(function () {

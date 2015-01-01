@@ -68,7 +68,7 @@ test("calls render and parses the buffer string in the right context", function(
 
   view = ContainerView.create({
     tagName: 'table',
-    childViews: [ EmberView.create({
+    childViews: [EmberView.create({
       tagName: '',
       render: function(buffer) {
         // Emulate a metamorph
@@ -128,7 +128,7 @@ test("generated element include HTML from child views as well", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
-    childViews: [ EmberView.create({ elementId: "foo" })]
+    childViews: [EmberView.create({ elementId: "foo" })]
   });
 
   run(function() {

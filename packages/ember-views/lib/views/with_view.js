@@ -30,7 +30,7 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
       this._generatedController = controller;
 
       if (this.preserveContext) {
-        this._blockArguments = [ controller ];
+        this._blockArguments = [controller];
         this.withValue.subscribe(function(modelStream) {
           set(controller, 'model', modelStream.value());
         });
@@ -41,7 +41,7 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
       set(controller, 'model', this.withValue.value());
     } else {
       if (this.preserveContext) {
-        this._blockArguments = [ this.withValue ];
+        this._blockArguments = [this.withValue];
       }
     }
   },

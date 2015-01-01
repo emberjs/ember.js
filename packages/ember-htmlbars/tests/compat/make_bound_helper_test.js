@@ -366,7 +366,8 @@ test("should observe dependent keys passed to registerBoundHelper", function() {
       return [
         value.get('firstName'),
         value.get('lastName'),
-        value.get('birthday.year') ].join(' ');
+        value.get('birthday.year')
+      ].join(' ');
     }, 'firstName', 'lastName', 'birthday.year');
 
     view = EmberView.create({
@@ -445,7 +446,7 @@ test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", f
 
   view = EmberView.create({
     controller: EmberObject.create({
-      things: A([ null, 0, undefined, false, "OMG" ])
+      things: A([null, 0, undefined, false, "OMG"])
     }),
     template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
   });
@@ -473,7 +474,7 @@ test("bound helpers can handle nulls in array (with objects)", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({
-      things: A([ null, { foo: 5 } ])
+      things: A([null, { foo: 5 }])
     }),
     template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
   });

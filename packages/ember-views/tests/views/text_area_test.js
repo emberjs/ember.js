@@ -178,7 +178,7 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
-forEach.call([ 'cut', 'paste', 'input' ], function(eventName) {
+forEach.call(['cut', 'paste', 'input'], function(eventName) {
   test("should update the value on " + eventName + " events", function() {
 
     run(function() {

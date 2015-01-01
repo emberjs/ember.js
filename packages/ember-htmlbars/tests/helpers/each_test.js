@@ -647,7 +647,7 @@ test("it works with the controller keyword", function() {
 test("views inside #each preserve the new context [DEPRECATED]", function() {
   runDestroy(view);
 
-  var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
+  var controller = A([{ name: "Adam" }, { name: "Steve" }]);
 
   view = EmberView.create({
     container: container,
@@ -667,7 +667,7 @@ test("single-arg each defaults to current context [DEPRECATED]", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    context: A([ { name: "Adam" }, { name: "Steve" } ]),
+    context: A([{ name: "Adam" }, { name: "Steve" }]),
     template: templateFor('{{#each}}{{name}}{{/each}}')
   });
 
@@ -682,7 +682,7 @@ test("single-arg each will iterate over controller if present [DEPRECATED]", fun
   runDestroy(view);
 
   view = EmberView.create({
-    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+    controller: A([{ name: "Adam" }, { name: "Steve" }]),
     template: templateFor('{{#each}}{{name}}{{/each}}')
   });
 
@@ -768,7 +768,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
   if (!useBlockParams) {
     test("views inside #each preserve the new context [DEPRECATED]", function() {
-      var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
+      var controller = A([{ name: "Adam" }, { name: "Steve" }]);
 
       view = EmberView.create({
         container: container,
@@ -786,7 +786,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
   test("controller is assignable inside an #each", function() {
     var controller = ArrayController.create({
-      model: A([ { name: "Adam" }, { name: "Steve" } ])
+      model: A([{ name: "Adam" }, { name: "Steve" }])
     });
 
     view = EmberView.create({
@@ -895,7 +895,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       expect(2);
 
       view = EmberView.create({
-        controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+        controller: A([{ name: "Adam" }, { name: "Steve" }]),
         template: templateFor('{{#each}}{{name}}{{/each}}', useBlockParams)
       });
 
@@ -910,7 +910,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       expect(2);
 
       view = EmberView.create({
-        controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+        controller: A([{ name: "Adam" }, { name: "Steve" }]),
         template: templateFor('{{#each this}}{{name}}{{/each}}', useBlockParams)
       });
 

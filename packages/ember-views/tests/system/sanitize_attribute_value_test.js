@@ -3,7 +3,7 @@ import { SafeString } from "ember-htmlbars/utils/string";
 
 QUnit.module('ember-views: sanitizeAttributeValue(null, "href")');
 
-var goodProtocols = [ 'https', 'http', 'ftp', 'tel', 'file'];
+var goodProtocols = ['https', 'http', 'ftp', 'tel', 'file'];
 
 for (var i = 0, l = goodProtocols.length; i < l; i++) {
   buildProtocolTest(goodProtocols[i]);
