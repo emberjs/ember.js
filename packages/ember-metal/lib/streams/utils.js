@@ -1,21 +1,59 @@
 import Stream from "./stream";
 
+/**
+ Check whether an object is a stream or not
+
+ @private
+ @function isStream
+ @param {Object|Stream} object object to check whether it is a stream
+ @return {Boolean} `true` if the object is a stream, `false` otherwise
+*/
 export function isStream(object) {
   return object && object.isStream;
 }
 
+/**
+ A method of subscribing to a stream which is safe for use with a non-stream
+ object. If a non-stream object is passed, the function does nothing.
+
+ @private
+ @function subscribe
+ @param {Object|Stream} object object or stream to potentially subscribe to
+ @param {Function} callback function to run when stream value changes
+ @param {Object} [context] the callback will be executed with this context if it
+                           is provided
+ */
 export function subscribe(object, callback, context) {
   if (object && object.isStream) {
     object.subscribe(callback, context);
   }
 }
 
+/**
+ A method of unsubscribing from a stream which is safe for use with a non-stream
+ object. If a non-stream object is passed, the function does nothing.
+
+ @private
+ @function unsubscribe
+ @param {Object|Stream} object object or stream to potentially unsubscribe from
+ @param {Function} callback function originally passed to `subscribe()`
+ @param {Object} [context] object originally passed to `subscribe()`
+ */
 export function unsubscribe(object, callback, context) {
   if (object && object.isStream) {
     object.unsubscribe(callback, context);
   }
 }
 
+/**
+ Retrieve the value of a stream, or in the case a non-stream object is passed,
+ return the object itself.
+
+ @private
+ @function read
+ @param {Object|Stream} object object to return the value of
+ @return the stream's current value, or the non-stream object itself
+ */
 export function read(object) {
   if (object && object.isStream) {
     return object.value();
@@ -24,6 +62,17 @@ export function read(object) {
   }
 }
 
+/**
+ Map an array, replacing any streams with their values.
+
+ @private
+ @function readArray
+ @param {Array} array The array to read values from
+ @return {Array} a new array of the same length with the values of non-stream
+                 objects mapped from their original positions untouched, and
+                 the values of stream objects retaining their original position
+                 and replaced with the stream's current value.
+ */
 export function readArray(array) {
   var length = array.length;
   var ret = new Array(length);
@@ -33,6 +82,18 @@ export function readArray(array) {
   return ret;
 }
 
+/**
+ Map a hash, replacing any stream property values with the current value of that
+ stream.
+
+ @private
+ @function readHash
+ @param {Object} object The hash to read keys and values from
+ @return {Object} a new object with the same keys as the passed object. The
+                  property values in the new object are the original values in
+                  the case of non-stream objects, and the streams' current
+                  values in the case of stream objects.
+ */
 export function readHash(object) {
   var ret = {};
   for (var key in object) {
@@ -42,9 +103,13 @@ export function readHash(object) {
 }
 
 /**
- * @function scanArray
- * @param array Array array given to a handlebars helper
- * @return Boolean whether the array contains a stream/bound value
+ Check whether an array contains any stream values
+
+ @private
+ @function scanArray
+ @param {Array} array array given to a handlebars helper
+ @return {Boolean} `true` if the array contains a stream/bound value, `false`
+                   otherwise
 */
 export function scanArray(array) {
   var length = array.length;
@@ -61,10 +126,14 @@ export function scanArray(array) {
 }
 
 /**
- * @function scanHash
- * @param Object hash "hash" argument given to a handlebars helper
- * @return Boolean whether the object contains a stream/bound value
-*/
+ Check whether a hash has any stream property values
+
+ @private
+ @function scanHash
+ @param {Object} hash "hash" argument given to a handlebars helper
+ @return {Boolean} `true` if the object contains a stream/bound value, `false`
+                   otherwise
+ */
 export function scanHash(hash) {
   var containsStream = false;
 
@@ -78,14 +147,26 @@ export function scanHash(hash) {
   return containsStream;
 }
 
-// TODO: Create subclass ConcatStream < Stream. Defer
-// subscribing to streams until the value() is called.
-export function concat(array, key) {
+/**
+ Join an array, with any streams replaced by their current values
+
+ @private
+ @function concat
+ @param {Array} array An array containing zero or more stream objects and
+                      zero or more non-stream objects
+ @param {String} separator string to be used to join array elements
+ @return {String} String with array elements concatenated and joined by the
+                  provided separator, and any stream array members having been
+                  replaced by the current value of the stream
+ */
+export function concat(array, separator) {
+  // TODO: Create subclass ConcatStream < Stream. Defer
+  // subscribing to streams until the value() is called.
   var hasStream = scanArray(array);
   if (hasStream) {
     var i, l;
     var stream = new Stream(function() {
-      return readArray(array).join(key);
+      return readArray(array).join(separator);
     });
 
     for (i = 0, l=array.length; i < l; i++) {
@@ -94,11 +175,42 @@ export function concat(array, key) {
 
     return stream;
   } else {
-    return array.join(key);
+    return array.join(separator);
   }
 }
 
-export function chainStream(value, fn) {
+/**
+ Generate a new stream by providing a source stream and a function that can
+ be used to transform the stream's value. In the case of a non-stream object,
+ returns the result of the function.
+
+ The value to transform would typically be available to the function you pass
+ to `chain()` via scope. For example:
+
+ ```javascript
+     var source = ...;  // stream returning a number
+                            // or a numeric (non-stream) object
+     var result = chain(source, function(){
+       var currentValue = read(source);
+       return currentValue + 1;
+     });
+ ```
+
+ In the example, result is a stream if source is a stream, or a number of
+ source was numeric.
+
+ @private
+ @function chain
+ @param {Object|Stream} array An array containing zero or more stream objects
+                              and zero or more non-stream objects
+ @param {Function} fn function becoming the value function of a new stream,
+                      or in the case of a non-stream object, executed once
+ @return {Object|Stream} String with array elements concatenated and joined by
+                         the provided separator, and any stream array members
+                         having been replaced by the current value of the
+                         stream
+ */
+export function chain(value, fn) {
   if (isStream(value)) {
     var stream = new Stream(fn);
     subscribe(value, stream.notify, stream);

@@ -1,5 +1,5 @@
 import {
-  chainStream,
+  chain,
   read
 } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
@@ -130,7 +130,7 @@ export function streamifyClassNameBinding(view, classNameBinding, prefix) {
     );
   } else {
     var pathValue = view.getStream(prefix+parsedPath.path);
-    return chainStream(pathValue, function() {
+    return chain(pathValue, function() {
       return classStringForValue(
         parsedPath.path,
         read(pathValue),
