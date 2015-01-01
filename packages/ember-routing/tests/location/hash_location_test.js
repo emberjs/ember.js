@@ -14,7 +14,7 @@ function createLocation(options) {
 function mockBrowserLocation(path) {
   // This is a neat trick to auto-magically extract the hostname from any
   // url by letting the browser do the work ;)
-  var tmp = document.createElement ('a');
+  var tmp = document.createElement('a');
   tmp.href = path;
 
   var protocol = (!tmp.protocol || tmp.protocol === ':') ? 'http' : tmp.protocol;

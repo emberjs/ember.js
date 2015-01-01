@@ -20,8 +20,8 @@ test("numericals should be equal", function() {
 });
 
 test("dates should be equal", function() {
-  ok (  isEqual(new Date(1985, 7, 22), new Date(1985, 7, 22)), "same dates are equal" );
-  ok ( !isEqual(new Date(2014, 7, 22), new Date(1985, 7, 22)), "different dates are not equal" );
+  ok(  isEqual(new Date(1985, 7, 22), new Date(1985, 7, 22)), "same dates are equal" );
+  ok( !isEqual(new Date(2014, 7, 22), new Date(1985, 7, 22)), "different dates are not equal" );
 });
 
 test("array should be equal", function() {

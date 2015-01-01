@@ -11,6 +11,7 @@
     "afterConsequent": true,
     "beforeAlternate": true
   },
+  "disallowSpacesInCallExpression": true,
   "requireCurlyBraces": [
     "if",
     "else",

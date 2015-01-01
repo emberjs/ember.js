@@ -124,13 +124,13 @@ test("Global+Local observer works", function() {
 
 QUnit.module("EmberObject superclass and subclasses", {
   setup: function() {
-    obj = EmberObject.extend ({
+    obj = EmberObject.extend({
       method1: function() {
         return "hello";
       }
     });
     obj1 = obj.extend();
-    don = obj1.create ({
+    don = obj1.create({
       method2: function() {
         return this.superclass();
       }

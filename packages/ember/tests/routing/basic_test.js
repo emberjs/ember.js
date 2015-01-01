@@ -1163,7 +1163,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   var controller = Ember.Controller.extend({
     actions: {
       showStuff: function(context) {
-        ok (stateIsNotCalled, "an event on the state is not triggered");
+        ok(stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
         QUnit.start();
       }
@@ -1380,7 +1380,7 @@ asyncTest("Actions are not triggered on the controller if a matching action name
 
     actions: {
       showStuff: function(context) {
-        ok (stateIsNotCalled, "an event on the state is not triggered");
+        ok(stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
         QUnit.start();
       }
@@ -1394,7 +1394,7 @@ asyncTest("Actions are not triggered on the controller if a matching action name
   var controller = Ember.Controller.extend({
     showStuff: function(context) {
       stateIsNotCalled = false;
-      ok (stateIsNotCalled, "an event on the state is not triggered");
+      ok(stateIsNotCalled, "an event on the state is not triggered");
     }
   });
 

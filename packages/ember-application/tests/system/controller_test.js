@@ -104,7 +104,7 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
   'should throw if no such controller was needed');
 });
 
-test ("setting the value of a controller dependency should not be possible", function() {
+test("setting the value of a controller dependency should not be possible", function() {
   var registry = new Registry();
   var container = registry.container();
 
