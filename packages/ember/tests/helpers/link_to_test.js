@@ -580,7 +580,7 @@ test("The {{link-to}} helper accepts string/numeric arguments", function() {
 
   App.FilterController = Ember.Controller.extend({
     filter: "unpopular",
-    repo: Ember.Object.create({owner: 'ember', name: 'ember.js'}),
+    repo: Ember.Object.create({ owner: 'ember', name: 'ember.js' }),
     post_id: 123
   });
   Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#link-to "filter" "unpopular" id="link"}}Unpopular{{/link-to}}{{#link-to "filter" filter id="path-link"}}Unpopular{{/link-to}}{{#link-to "post" post_id id="post-path-link"}}Post{{/link-to}}{{#link-to "post" 123 id="post-number-link"}}Post{{/link-to}}{{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}');
@@ -815,8 +815,8 @@ test("The {{link-to}} helper refreshes href element when one of params changes",
     this.route('post', { path: '/posts/:post_id' });
   });
 
-  var post = Ember.Object.create({id: '1'});
-  var secondPost = Ember.Object.create({id: '2'});
+  var post = Ember.Object.create({ id: '1' });
+  var secondPost = Ember.Object.create({ id: '2' });
 
   Ember.TEMPLATES.index = compile('{{#link-to "post" post id="post"}}post{{/link-to}}');
 
@@ -845,8 +845,8 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
     this.route('post', { path: '/posts/:post_id' });
   });
 
-  var post = Ember.Object.create({id: '1'});
-  var secondPost = Ember.Object.create({id: '2'});
+  var post = Ember.Object.create({ id: '1' });
+  var secondPost = Ember.Object.create({ id: '2' });
 
   Ember.TEMPLATES = {
     index: compile(' '),
@@ -1172,11 +1172,11 @@ test("the {{link-to}} helper does not throw an error if its route has exited", f
   });
 
   App.PostController = Ember.Controller.extend({
-    model: {id: 1}
+    model: { id: 1 }
   });
 
   Router.map(function() {
-    this.route("post", {path: 'post/:post_id'});
+    this.route("post", { path: 'post/:post_id' });
   });
 
   bootApplication();

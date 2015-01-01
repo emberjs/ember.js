@@ -61,7 +61,7 @@ test('should bind to the property if no registered helper found for a mustache w
 });
 
 test("should be able to update when bound property updates", function() {
-  MyApp.set('controller', EmberObject.create({name: 'first'}));
+  MyApp.set('controller', EmberObject.create({ name: 'first' }));
 
   var View = EmberView.extend({
     template: compile('<i>{{view.value.name}}, {{view.computed}}</i>'),
@@ -89,7 +89,7 @@ test("should be able to update when bound property updates", function() {
 
 test('should cleanup bound properties on rerender', function() {
   view = EmberView.create({
-    controller: EmberObject.create({name: 'wycats'}),
+    controller: EmberObject.create({ name: 'wycats' }),
     template: compile('{{name}}')
   });
 

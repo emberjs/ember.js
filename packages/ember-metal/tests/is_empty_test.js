@@ -9,7 +9,7 @@ QUnit.module("Ember.isEmpty");
 test("Ember.isEmpty", function() {
   var string = "string";
   var fn = function() {};
-  var object = {length: 0};
+  var object = { length: 0 };
 
   equal(true,  isEmpty(null),      "for null");
   equal(true,  isEmpty(undefined), "for undefined");

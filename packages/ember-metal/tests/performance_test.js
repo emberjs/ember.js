@@ -19,7 +19,7 @@ import { addObserver } from "ember-metal/observer";
 QUnit.module("Computed Properties - Number of times evaluated");
 
 test("computed properties that depend on multiple properties should run only once per run loop", function() {
-  var obj = {a: 'a', b: 'b', c: 'c'};
+  var obj = { a: 'a', b: 'b', c: 'c' };
   var cpCount = 0;
   var obsCount = 0;
 

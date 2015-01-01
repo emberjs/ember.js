@@ -19,7 +19,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("property is output", function() {
     view = EmberView.create({
-      context: {name: 'erik'},
+      context: { name: 'erik' },
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
     runAppend(view);
@@ -33,7 +33,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       didInsertElement: function() {
         matchingElement = this.$('div[data-name=erik]');
       },
-      context: {name: 'erik'},
+      context: { name: 'erik' },
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
     runAppend(view);
@@ -44,7 +44,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("quoted attributes are concatenated", function() {
     view = EmberView.create({
-      context: {firstName: 'max', lastName: 'jackson'},
+      context: { firstName: 'max', lastName: 'jackson' },
       template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
     });
     runAppend(view);
@@ -54,7 +54,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("quoted attributes are updated when changed", function() {
     view = EmberView.create({
-      context: {firstName: 'max', lastName: 'jackson'},
+      context: { firstName: 'max', lastName: 'jackson' },
       template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
     });
     runAppend(view);
@@ -68,7 +68,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("quoted attributes are not removed when value is null", function() {
     view = EmberView.create({
-      context: {firstName: 'max', lastName: 'jackson'},
+      context: { firstName: 'max', lastName: 'jackson' },
       template: compile("<div data-name='{{firstName}}'>Hi!</div>")
     });
     runAppend(view);
@@ -82,7 +82,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("unquoted attributes are removed when value is null", function() {
     view = EmberView.create({
-      context: {firstName: 'max'},
+      context: { firstName: 'max' },
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
     runAppend(view);
@@ -96,7 +96,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("unquoted attributes that are null are not added", function() {
     view = EmberView.create({
-      context: {firstName: null},
+      context: { firstName: null },
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
     runAppend(view);
@@ -106,7 +106,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("unquoted attributes are added when changing from null", function() {
     view = EmberView.create({
-      context: {firstName: null},
+      context: { firstName: null },
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
     runAppend(view);
@@ -120,7 +120,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("property value is directly added to attribute", function() {
     view = EmberView.create({
-      context: {name: '"" data-foo="blah"'},
+      context: { name: '"" data-foo="blah"' },
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
     runAppend(view);
@@ -130,7 +130,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("path is output", function() {
     view = EmberView.create({
-      context: {name: {firstName: 'erik'}},
+      context: { name: { firstName: 'erik' } },
       template: compile("<div data-name={{name.firstName}}>Hi!</div>")
     });
     runAppend(view);
@@ -139,7 +139,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   });
 
   test("changed property updates", function() {
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
@@ -156,7 +156,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   test("updates are scheduled in the render queue", function() {
     expect(4);
 
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
@@ -182,7 +182,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   test("updates fail silently after an element is destroyed", function() {
 
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
@@ -217,7 +217,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   });
 
   test('calls setAttribute for new values', function() {
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
@@ -235,7 +235,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   });
 
   test('does not call setAttribute if the same value is set', function() {
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")

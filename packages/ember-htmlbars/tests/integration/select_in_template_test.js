@@ -36,15 +36,15 @@ test("works from a template with bindings", function() {
     }).property('firstName', 'lastName')
   });
 
-  var erik = Person.create({id: 4, firstName: 'Erik', lastName: 'Bryn'});
+  var erik = Person.create({ id: 4, firstName: 'Erik', lastName: 'Bryn' });
 
   var application = Namespace.create();
 
   application.peopleController = ArrayController.create({
     content: Ember.A([
-      Person.create({id: 1, firstName: 'Yehuda', lastName: 'Katz'}),
-      Person.create({id: 2, firstName: 'Tom', lastName: 'Dale'}),
-      Person.create({id: 3, firstName: 'Peter', lastName: 'Wagenet'}),
+      Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
+      Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
+      Person.create({ id: 3, firstName: 'Peter', lastName: 'Wagenet' }),
       erik
     ])
   });
@@ -80,7 +80,7 @@ test("works from a template with bindings", function() {
 
   equal(select.get('selection'), erik, "Selection was updated through binding");
   run(function() {
-    application.peopleController.pushObject(Person.create({id: 5, firstName: "James", lastName: "Rosen"}));
+    application.peopleController.pushObject(Person.create({ id: 5, firstName: "James", lastName: "Rosen" }));
   });
 
   equal(select.$('option').length, 6, "New option was added");
@@ -88,8 +88,8 @@ test("works from a template with bindings", function() {
 });
 
 test("upon content change, the DOM should reflect the selection (#481)", function() {
-  var userOne = {name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a'};
-  var userTwo = {name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd'};
+  var userOne = { name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a' };
+  var userTwo = { name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd' };
 
   view = EmberView.create({
     user: userOne,
@@ -118,8 +118,8 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
 });
 
 test("upon content change with Array-like content, the DOM should reflect the selection", function() {
-  var tom = {id: 4, name: 'Tom'};
-  var sylvain = {id: 5, name: 'Sylvain'};
+  var tom = { id: 4, name: 'Tom' };
+  var sylvain = { id: 5, name: 'Sylvain' };
 
   var proxy = ArrayProxy.create({
     content: Ember.A(),
@@ -153,7 +153,7 @@ test("upon content change with Array-like content, the DOM should reflect the se
 
 function testValueBinding(templateString) {
   view = EmberView.create({
-    collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
+    collection: Ember.A([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
     val: 'g',
     selectView: SelectView,
     template: compile(templateString)
@@ -201,8 +201,8 @@ test("select element should correctly initialize and update selectedIndex and bo
 
 function testSelectionBinding(templateString) {
   view = EmberView.create({
-    collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
-    selection: {name: 'Gordon', value: 'g'},
+    collection: Ember.A([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
+    selection: { name: 'Gordon', value: 'g' },
     selectView: SelectView,
     template: compile(templateString)
   });
@@ -258,8 +258,8 @@ test("select element should correctly initialize and update selectedIndex and bo
     '    selection=view.selection}}';
 
   view = EmberView.create({
-    collection: Ember.A([{name: 'Wes', val: 'w'}, {name: 'Gordon', val: 'g'}]),
-    selection: {name: 'Gordon', val: 'g'},
+    collection: Ember.A([{ name: 'Wes', val: 'w' }, { name: 'Gordon', val: 'g' }]),
+    selection: { name: 'Gordon', val: 'g' },
     selectView: SelectView,
     template: Ember.Handlebars.compile(templateString)
   });

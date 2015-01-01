@@ -38,9 +38,9 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       defineProperty(obj, 'a', { value: true });
       defineProperty(obj, 'b', { value: false });
       defineProperty(obj, 'c', { value: undefined });
-      defineProperty(obj, 'd', { value: undefined, writable: false});
-      defineProperty(obj, 'e', { value: undefined, configurable: false});
-      defineProperty(obj, 'f', { value: undefined, configurable: true});
+      defineProperty(obj, 'd', { value: undefined, writable: false });
+      defineProperty(obj, 'e', { value: undefined, configurable: false });
+      defineProperty(obj, 'f', { value: undefined, configurable: true });
 
       watch(obj, 'a');
       watch(obj, 'b');

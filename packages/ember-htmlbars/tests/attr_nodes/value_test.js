@@ -22,7 +22,7 @@ QUnit.module("ember-htmlbars: value attribute", {
 
 test("property is output", function() {
   view = EmberView.create({
-    context: {name: 'rick'},
+    context: { name: 'rick' },
     template: compile("<input value={{name}}>")
   });
   appendView(view);
@@ -35,7 +35,7 @@ test("property is output", function() {
 
 test("string property is output", function() {
   view = EmberView.create({
-    context: {name: 'rick'},
+    context: { name: 'rick' },
     template: compile("<input value='{{name}}'>")
   });
   appendView(view);

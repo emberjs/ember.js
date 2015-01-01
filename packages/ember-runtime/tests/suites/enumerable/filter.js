@@ -64,10 +64,10 @@ suite.test('should filter on second argument if provided', function() {
   var obj, ary;
 
   ary = [
-    { name: 'obj1', foo: 3},
-    EmberObject.create({ name: 'obj2', foo: 2}),
-    { name: 'obj3', foo: 2},
-    EmberObject.create({ name: 'obj4', foo: 3})
+    { name: 'obj1', foo: 3 },
+    EmberObject.create({ name: 'obj2', foo: 2 }),
+    { name: 'obj3', foo: 2 },
+    EmberObject.create({ name: 'obj4', foo: 3 })
   ];
 
   obj = this.newObject(ary);
@@ -79,10 +79,10 @@ suite.test('should correctly filter null second argument', function() {
   var obj, ary;
 
   ary = [
-    { name: 'obj1', foo: 3},
-    EmberObject.create({ name: 'obj2', foo: null}),
-    { name: 'obj3', foo: null},
-    EmberObject.create({ name: 'obj4', foo: 3})
+    { name: 'obj1', foo: 3 },
+    EmberObject.create({ name: 'obj2', foo: null }),
+    { name: 'obj3', foo: null },
+    EmberObject.create({ name: 'obj4', foo: 3 })
   ];
 
   obj = this.newObject(ary);
@@ -94,8 +94,8 @@ suite.test('should not return all objects on undefined second argument', functio
   var obj, ary;
 
   ary = [
-    { name: 'obj1', foo: 3},
-    EmberObject.create({ name: 'obj2', foo: 2})
+    { name: 'obj1', foo: 3 },
+    EmberObject.create({ name: 'obj2', foo: 2 })
   ];
 
   obj = this.newObject(ary);
@@ -107,12 +107,12 @@ suite.test('should correctly filter explicit undefined second argument', functio
   var obj, ary;
 
   ary = [
-    { name: 'obj1', foo: 3},
-    EmberObject.create({ name: 'obj2', foo: 3}),
-    { name: 'obj3', foo: undefined},
-    EmberObject.create({ name: 'obj4', foo: undefined}),
-    { name: 'obj5'},
-    EmberObject.create({ name: 'obj6'})
+    { name: 'obj1', foo: 3 },
+    EmberObject.create({ name: 'obj2', foo: 3 }),
+    { name: 'obj3', foo: undefined },
+    EmberObject.create({ name: 'obj4', foo: undefined }),
+    { name: 'obj5' },
+    EmberObject.create({ name: 'obj6' })
   ];
 
   obj = this.newObject(ary);
@@ -124,12 +124,12 @@ suite.test('should not match undefined properties without second argument', func
   var obj, ary;
 
   ary = [
-    { name: 'obj1', foo: 3},
-    EmberObject.create({ name: 'obj2', foo: 3}),
-    { name: 'obj3', foo: undefined},
-    EmberObject.create({ name: 'obj4', foo: undefined}),
-    { name: 'obj5'},
-    EmberObject.create({ name: 'obj6'})
+    { name: 'obj1', foo: 3 },
+    EmberObject.create({ name: 'obj2', foo: 3 }),
+    { name: 'obj3', foo: undefined },
+    EmberObject.create({ name: 'obj4', foo: undefined }),
+    { name: 'obj5' },
+    EmberObject.create({ name: 'obj6' })
   ];
 
   obj = this.newObject(ary);

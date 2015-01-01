@@ -31,7 +31,7 @@ test("class renders before didInsertElement", function() {
     didInsertElement: function() {
       matchingElement = this.$('div.blue');
     },
-    context: {color: 'blue'},
+    context: { color: 'blue' },
     template: compile("<div class={{color}}>Hi!</div>")
   });
   appendView(view);
@@ -42,7 +42,7 @@ test("class renders before didInsertElement", function() {
 
 test("class property can contain multiple classes", function() {
   view = EmberView.create({
-    context: {classes: 'large blue'},
+    context: { classes: 'large blue' },
     template: compile("<div class={{classes}}></div>")
   });
   appendView(view);
@@ -55,7 +55,7 @@ test("class property can contain multiple classes", function() {
 
 test("class property is removed when updated with a null value", function() {
   view = EmberView.create({
-    context: {class: 'large'},
+    context: { class: 'large' },
     template: compile("<div class={{class}}></div>")
   });
   appendView(view);
@@ -71,7 +71,7 @@ test("class property is removed when updated with a null value", function() {
 
 test("class attribute concats bound values", function() {
   view = EmberView.create({
-    context: {size: 'large', color: 'blue'},
+    context: { size: 'large', color: 'blue' },
     template: compile("<div class='{{size}} {{color}} round'></div>")
   });
   appendView(view);

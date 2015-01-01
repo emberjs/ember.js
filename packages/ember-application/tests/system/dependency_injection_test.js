@@ -20,11 +20,11 @@ QUnit.module("Ember.Application Dependency Injection", {
     application.User                = EmberObject.extend({});
     application.PostIndexController = EmberObject.extend({});
 
-    application.register('model:person', application.Person, {singleton: false });
-    application.register('model:user', application.User, {singleton: false });
+    application.register('model:person', application.Person, { singleton: false });
+    application.register('model:user', application.User, { singleton: false });
     application.register('fruit:favorite', application.Orange);
-    application.register('communication:main', application.Email, {singleton: false});
-    application.register('controller:postIndex', application.PostIndexController, {singleton: true});
+    application.register('communication:main', application.Email, { singleton: false });
+    application.register('controller:postIndex', application.PostIndexController, { singleton: true });
 
     registry = application.__registry__;
     locator = application.__container__;

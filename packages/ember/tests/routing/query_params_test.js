@@ -518,7 +518,7 @@ test("Use Ember.get to retrieve query params 'refreshModel' configuration", func
   App.IndexRoute = Ember.Route.extend({
     queryParams: Ember.Object.create({
       unknownProperty: function(keyName) {
-        return {refreshModel: true};
+        return { refreshModel: true };
       }
     }),
     model: function(params) {

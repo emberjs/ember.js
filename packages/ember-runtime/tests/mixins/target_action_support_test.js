@@ -118,7 +118,7 @@ test("it should use the target specified in the argument", function() {
         action: 'anEvent'
       });
 
-  ok(true === obj.triggerAction({target: targetObj}), "a valid target and action were specified");
+  ok(true === obj.triggerAction({ target: targetObj }), "a valid target and action were specified");
 });
 
 test("it should use the action specified in the argument", function() {
@@ -131,7 +131,7 @@ test("it should use the action specified in the argument", function() {
       }
     })
   });
-  ok(true === obj.triggerAction({action: 'anEvent'}), "a valid target and action were specified");
+  ok(true === obj.triggerAction({ action: 'anEvent' }), "a valid target and action were specified");
 });
 
 test("it should use the actionContext specified in the argument", function() {
@@ -146,7 +146,7 @@ test("it should use the actionContext specified in the argument", function() {
     action: 'anEvent'
   });
 
-  ok(true === obj.triggerAction({actionContext: context}), "a valid target and action were specified");
+  ok(true === obj.triggerAction({ actionContext: context }), "a valid target and action were specified");
 });
 
 test("it should allow multiple arguments from actionContext", function() {
@@ -163,7 +163,7 @@ test("it should allow multiple arguments from actionContext", function() {
     action: 'anEvent'
   });
 
-  ok(true === obj.triggerAction({actionContext: [param1, param2]}), "a valid target and action were specified");
+  ok(true === obj.triggerAction({ actionContext: [param1, param2] }), "a valid target and action were specified");
 });
 
 test("it should use a null value specified in the actionContext argument", function() {
@@ -176,5 +176,5 @@ test("it should use a null value specified in the actionContext argument", funct
     }),
     action: 'anEvent'
   });
-  ok(true === obj.triggerAction({actionContext: null}), "a valid target and action were specified");
+  ok(true === obj.triggerAction({ actionContext: null }), "a valid target and action were specified");
 });

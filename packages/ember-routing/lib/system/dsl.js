@@ -28,8 +28,8 @@ DSL.prototype = {
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       if (this.enableLoadingSubtates) {
-        createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
-        createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
+        createRoute(this, name + '_loading', { resetNamespace: options.resetNamespace });
+        createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
       }
     }
 

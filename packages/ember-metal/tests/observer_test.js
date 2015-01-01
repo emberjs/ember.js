@@ -905,7 +905,7 @@ QUnit.module('addObserver - dependentkey with chained properties', {
 
 testBoth('depending on a chain with a computed property', function (get, set) {
   defineProperty(obj, 'computed', computed(function () {
-    return {foo: 'bar'};
+    return { foo: 'bar' };
   }));
 
   var changed = 0;

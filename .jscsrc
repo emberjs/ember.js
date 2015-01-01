@@ -17,6 +17,7 @@
   },
   "disallowSpacesInCallExpression": true,
   "disallowEmptyBlocks": true,
+  "requireSpacesInsideObjectBrackets": "all",
   "requireCurlyBraces": [
     "if",
     "else",

@@ -536,7 +536,7 @@ test("should not render the emptyView if content is emptied and refilled in the 
 test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
 
   var array = Ember.A([{ name: "Other Katz" }]);
-  var arrayProxy = ArrayProxy.create({content: array});
+  var arrayProxy = ArrayProxy.create({ content: array });
 
   var sortedController = ArrayController.create({
     content: arrayProxy,

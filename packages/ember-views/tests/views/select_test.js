@@ -686,10 +686,10 @@ test("should be able to select an option and then reselect the prompt", function
 test("should be able to get the current selection's value", function() {
   run(function() {
     select.set('content', Ember.A([
-      {label: 'Yehuda Katz', value: 'wycats'},
-      {label: 'Tom Dale', value: 'tomdale'},
-      {label: 'Peter Wagenet', value: 'wagenet'},
-      {label: 'Erik Bryn', value: 'ebryn'}
+      { label: 'Yehuda Katz', value: 'wycats' },
+      { label: 'Tom Dale', value: 'tomdale' },
+      { label: 'Peter Wagenet', value: 'wagenet' },
+      { label: 'Erik Bryn', value: 'ebryn' }
     ]));
     select.set('optionLabelPath', 'content.label');
     select.set('optionValuePath', 'content.value');
@@ -701,13 +701,13 @@ test("should be able to get the current selection's value", function() {
 });
 
 test("should be able to set the current selection by value", function() {
-  var ebryn = {label: 'Erik Bryn', value: 'ebryn'};
+  var ebryn = { label: 'Erik Bryn', value: 'ebryn' };
 
   run(function() {
     select.set('content', Ember.A([
-      {label: 'Yehuda Katz', value: 'wycats'},
-      {label: 'Tom Dale', value: 'tomdale'},
-      {label: 'Peter Wagenet', value: 'wagenet'},
+      { label: 'Yehuda Katz', value: 'wycats' },
+      { label: 'Tom Dale', value: 'tomdale' },
+      { label: 'Peter Wagenet', value: 'wagenet' },
       ebryn
     ]));
     select.set('optionLabelPath', 'content.label');

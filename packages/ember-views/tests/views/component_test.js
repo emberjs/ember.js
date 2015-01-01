@@ -172,7 +172,7 @@ test("Calling sendAction when the action name is not a string raises an exceptio
 test("Calling sendAction on a component with a context", function() {
   set(component, 'playing', "didStartPlaying");
 
-  var testContext = {song: 'She Broke My Ember'};
+  var testContext = { song: 'She Broke My Ember' };
 
   component.sendAction('playing', testContext);
 
@@ -182,8 +182,8 @@ test("Calling sendAction on a component with a context", function() {
 test("Calling sendAction on a component with multiple parameters", function() {
   set(component, 'playing', "didStartPlaying");
 
-  var firstContext  = {song: 'She Broke My Ember'};
-  var secondContext = {song: 'My Achey Breaky Ember'};
+  var firstContext  = { song: 'She Broke My Ember' };
+  var secondContext = { song: 'My Achey Breaky Ember' };
 
   component.sendAction('playing', firstContext, secondContext);
 

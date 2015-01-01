@@ -24,7 +24,7 @@ QUnit.module("EmberView - Template Functionality", {
 test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
-    container: { lookup: function() { }}
+    container: { lookup: function() { } }
   });
 
   expectAssertion(function() {

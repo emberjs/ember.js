@@ -9,7 +9,7 @@ test("Ember.typeOf", function() {
   var mockedDate  = new MockedDate();
   var date        = new Date();
   var error       = new Error('boum');
-  var object      = {a: 'b'};
+  var object      = { a: 'b' };
 
   equal( typeOf(),            'undefined',  "undefined");
   equal( typeOf(null),        'null',       "null");

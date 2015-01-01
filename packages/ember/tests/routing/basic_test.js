@@ -132,7 +132,7 @@ test("The Home page and the Camelot page with multiple Router.map calls", functi
   });
 
   Router.map(function() {
-    this.route("camelot", {path: "/camelot"});
+    this.route("camelot", { path: "/camelot" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -258,7 +258,7 @@ test("The template will pull in an alternate controller via key/value", function
 
   App.HomepageRoute = Ember.Route.extend({
     renderTemplate: function() {
-      this.render({controller: 'home'});
+      this.render({ controller: 'home' });
     }
   });
 
@@ -297,13 +297,13 @@ test("Model passed via renderTemplate model is set as controller's model", funct
   App.BioController = Ember.ObjectController.extend();
 
   Router.map(function() {
-    this.route('home', { path: '/'});
+    this.route('home', { path: '/' });
   });
 
   App.HomeRoute = Ember.Route.extend({
     renderTemplate: function() {
       this.render('bio', {
-        model: {name: 'emberjs'}
+        model: { name: 'emberjs' }
       });
     }
   });
@@ -344,7 +344,7 @@ test("Renders the view given in the view option", function() {
 
   App.HomeRoute = Ember.Route.extend({
     renderTemplate: function() {
-      this.render({view: 'homePage'});
+      this.render({ view: 'homePage' });
     }
   });
 
@@ -1570,7 +1570,7 @@ test("Route inherits model from parent route", function() {
     this.resource("the_post", { path: "/posts/:post_id" }, function() {
       this.route("comments");
 
-      this.resource("shares", { path: "/shares/:share_id"}, function() {
+      this.resource("shares", { path: "/shares/:share_id" }, function() {
         this.route("share");
       });
     });
@@ -2059,7 +2059,7 @@ test("Parent route context change", function() {
 
   App.PostRoute = Ember.Route.extend({
     model: function(params) {
-      return {id: params.postId};
+      return { id: params.postId };
     },
 
     actions: {
@@ -2090,7 +2090,7 @@ test("Parent route context change", function() {
   });
 
   Ember.run(function() {
-    router.send('showPost', {id: '2'});
+    router.send('showPost', { id: '2' });
   });
 
   Ember.run(function() {
@@ -2340,7 +2340,7 @@ test("The template is not re-rendered when the route's context changes", functio
 
   App.PageRoute = Ember.Route.extend({
     model: function(params) {
-      return Ember.Object.create({name: params.name});
+      return Ember.Object.create({ name: params.name });
     }
   });
 
@@ -2368,7 +2368,7 @@ test("The template is not re-rendered when the route's context changes", functio
   equal(insertionCount, 1, "view should have inserted only once");
 
   Ember.run(function() {
-    router.transitionTo('page', Ember.Object.create({name: 'third'}));
+    router.transitionTo('page', Ember.Object.create({ name: 'third' }));
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "third");
@@ -2592,7 +2592,7 @@ test("Route supports clearing outlet explicitly", function() {
         });
       },
       hideModal: function() {
-        this.disconnectOutlet({outlet: 'modal', parentView: 'application'});
+        this.disconnectOutlet({ outlet: 'modal', parentView: 'application' });
       }
     }
   });
@@ -2605,7 +2605,7 @@ test("Route supports clearing outlet explicitly", function() {
         });
       },
       hideExtra: function() {
-        this.disconnectOutlet({parentView: 'posts/index'});
+        this.disconnectOutlet({ parentView: 'posts/index' });
       }
     }
   });
@@ -2708,13 +2708,13 @@ test("Route silently fails when cleaning an outlet from an inactive view", funct
   App.PostsRoute = Ember.Route.extend({
     actions: {
       hideSelf: function() {
-        this.disconnectOutlet({outlet: 'main', parentView: 'application'});
+        this.disconnectOutlet({ outlet: 'main', parentView: 'application' });
       },
       showModal: function() {
-        this.render('modal', {into: 'posts', outlet: 'modal'});
+        this.render('modal', { into: 'posts', outlet: 'modal' });
       },
       hideModal: function() {
-        this.disconnectOutlet({outlet: 'modal', parentView: 'posts'});
+        this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
       }
     }
   });
@@ -3137,7 +3137,7 @@ test("rejecting the model hooks promise with a non-error prints the `message` pr
 
   App.YippieRoute = Ember.Route.extend({
     model: function() {
-      return Ember.RSVP.reject({message: rejectedMessage, stack: rejectedStack});
+      return Ember.RSVP.reject({ message: rejectedMessage, stack: rejectedStack });
     }
   });
 
@@ -3226,7 +3226,7 @@ test("Errors in transitionTo within redirect hook are logged", function() {
 
   App.YondoRoute = Ember.Route.extend({
     redirect: function() {
-      this.transitionTo('stink-bomb', {something: 'goes boom'});
+      this.transitionTo('stink-bomb', { something: 'goes boom' });
     }
   });
 
@@ -3252,7 +3252,7 @@ test("Errors in transition show error template if available", function() {
 
   App.YondoRoute = Ember.Route.extend({
     redirect: function() {
-      this.transitionTo('stink-bomb', {something: 'goes boom'});
+      this.transitionTo('stink-bomb', { something: 'goes boom' });
     }
   });
 
@@ -3344,7 +3344,7 @@ test("Exception during load of non-initial route is not swallowed", function() {
 
 test("Exception during initialization of initial route is not swallowed", function() {
   Router.map(function() {
-    this.route('boom', {path: '/'});
+    this.route('boom', { path: '/' });
   });
   App.BoomRoute = Ember.Route.extend({
     init: function() {
@@ -3358,7 +3358,7 @@ test("Exception during initialization of initial route is not swallowed", functi
 
 test("Exception during load of initial route is not swallowed", function() {
   Router.map(function() {
-    this.route('boom', {path: '/'});
+    this.route('boom', { path: '/' });
   });
   var lookup = container.lookup;
   container.lookup = function() {

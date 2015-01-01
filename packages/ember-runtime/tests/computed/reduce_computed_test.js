@@ -249,7 +249,7 @@ test("multiple item property keys can be specified via brace expansion", functio
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   run(function() {
     obj = EmberObject.createWithMixins({
-      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })])}]),
+      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })]) }]),
       people: arrayComputed({
         addedItem: function (array, item) {
           array.pushObject(get(item, 'first.firstObject'));
@@ -270,7 +270,7 @@ test("doubly nested item property keys (@each.foo.@each) are not supported", fun
 
   throws(function() {
     obj = EmberObject.createWithMixins({
-      people: [{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })])}],
+      people: [{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })]) }],
       names: arrayComputed({
         addedItem: function (array, item) {
           array.pushObject(item);

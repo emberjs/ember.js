@@ -75,7 +75,7 @@ test("should update bound helpers when properties change", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({name: "Brogrammer"}),
+    controller: EmberObject.create({ name: "Brogrammer" }),
     template: compile("{{capitalize name}}")
   });
 
@@ -98,7 +98,7 @@ test("should update bound helpers in a subexpression when properties change", fu
   });
 
   view = EmberView.create({
-    controller: {prop: "isThing"},
+    controller: { prop: "isThing" },
     template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
   });
 
@@ -142,7 +142,7 @@ test("bound helpers should support options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
-    controller: EmberObject.create({text: 'ab'}),
+    controller: EmberObject.create({ text: 'ab' }),
     template: compile("{{repeat text count=3}}")
   });
 
@@ -175,7 +175,7 @@ test("bound helpers should support global paths [DEPRECATED]", function() {
     return value.toUpperCase();
   });
 
-  Ember.lookup = {Text: 'ab'};
+  Ember.lookup = { Text: 'ab' };
 
   view = EmberView.create({
     template: compile("{{capitalize Text}}")
@@ -196,7 +196,7 @@ test("bound helper should support this keyword", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({text: 'ab'}),
+    controller: EmberObject.create({ text: 'ab' }),
     template: compile("{{capitalize this}}")
   });
 
@@ -209,7 +209,7 @@ test("bound helpers should support bound options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
-    controller: EmberObject.create({text: 'ab', numRepeats: 3}),
+    controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
     template: compile('{{repeat text countBinding="numRepeats"}}')
   });
 
@@ -235,7 +235,7 @@ test("bound helpers should support unquoted values as bound options", function()
   registerRepeatHelper();
 
   view = EmberView.create({
-    controller: EmberObject.create({text: 'ab', numRepeats: 3}),
+    controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
     template: compile('{{repeat text count=numRepeats}}')
   });
 
@@ -266,7 +266,7 @@ test("bound helpers should support multiple bound properties", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({thing1: 'ZOID', thing2: 'BERG'}),
+    controller: EmberObject.create({ thing1: 'ZOID', thing2: 'BERG' }),
     template: compile('{{combine thing1 thing2}}')
   });
 
@@ -328,7 +328,7 @@ test("bound helpers can be invoked with zero args", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({trollText: "yumad"}),
+    controller: EmberObject.create({ trollText: "yumad" }),
     template: compile('{{troll}} and {{troll text="bork"}}')
   });
 
@@ -398,7 +398,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({aNumber: 1}),
+    controller: EmberObject.create({ aNumber: 1 }),
     template: compile("{{sum aNumber 1}} {{sum 0 aNumber}} {{sum 5 6}}")
   });
 
@@ -421,7 +421,7 @@ test("shouldn't treat quoted strings as bound paths", function() {
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({word: "jerkwater", loo: "unused"}),
+    controller: EmberObject.create({ word: "jerkwater", loo: "unused" }),
     template: compile("{{combine word 'loo'}} {{combine '' word}} {{combine 'will' \"didi\"}}")
   });
 

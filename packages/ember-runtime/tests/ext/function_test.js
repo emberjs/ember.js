@@ -95,7 +95,7 @@ testBoth('sets up a ComputedProperty', function(get, set) {
     }.property('firstName', 'lastName')
   });
 
-  var obj = MyClass.create({firstName: 'Fred', lastName: 'Flinstone'});
+  var obj = MyClass.create({ firstName: 'Fred', lastName: 'Flinstone' });
   equal(get(obj, 'fullName'), 'Fred Flinstone', 'should return the computed value');
 
   set(obj, 'firstName', "Wilma");

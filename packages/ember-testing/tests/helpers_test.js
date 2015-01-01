@@ -220,7 +220,7 @@ test("Ember.Application#injectTestHelpers adds helpers to provided object.", fun
 });
 
 test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function() {
-  var helpers = {visit: 'snazzleflabber'};
+  var helpers = { visit: 'snazzleflabber' };
 
   run(function() {
     App = EmberApplication.create();
@@ -640,7 +640,7 @@ QUnit.module("ember-testing pendingAjaxRequests", {
 
 test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", function() {
   equal(Test.pendingAjaxRequests, 0);
-  var xhr = {some: 'xhr'};
+  var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
@@ -649,7 +649,7 @@ test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", f
 
 test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls", function() {
   equal(Test.pendingAjaxRequests, 0);
-  var xhr = {some: 'xhr'};
+  var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 
@@ -658,7 +658,7 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
   });
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
 
-  var altXhr = {some: 'more xhr'};
+  var altXhr = { some: 'more xhr' };
   jQuery(document).trigger('ajaxSend', altXhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
@@ -716,7 +716,7 @@ QUnit.module("ember-testing async router", {
             // should be enough.
             setTimeout(function() {
               run(function() {
-                resolve(EmberObject.create({firstName: 'Tom'}));
+                resolve(EmberObject.create({ firstName: 'Tom' }));
               });
             }, 20);
           });
