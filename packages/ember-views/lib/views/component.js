@@ -309,11 +309,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     var hasAction = this._actions && this._actions[actionName];
 
     if (hasAction) {
-      if (this._actions[actionName].apply(this, args) === true) {
-        // handler returned true, so this action will bubble
-      } else {
-        return;
-      }
+      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+      if (!shouldBubble) { return; }
     }
 
     if (target = get(this, 'target')) {
