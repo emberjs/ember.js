@@ -543,7 +543,10 @@ test("should be able to modify childViews then remove the ContainerView in same 
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {
@@ -563,7 +566,10 @@ test("should be able to modify childViews then destroy the ContainerView in same
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {
@@ -584,7 +590,10 @@ test("should be able to modify childViews then rerender the ContainerView in sam
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {

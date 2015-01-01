@@ -215,11 +215,17 @@ test("Calls init if defined", function() {
 test("Calls all mixin inits if defined", function() {
   var completed = 0;
   var Mixin1 = Mixin.create({
-    init: function() { this._super(); completed++; }
+    init: function() {
+      this._super();
+      completed++;
+    }
   });
 
   var Mixin2 = Mixin.create({
-    init: function() { this._super(); completed++; }
+    init: function() {
+      this._super();
+      completed++;
+    }
   });
 
   EmberObject.createWithMixins(Mixin1, Mixin2);

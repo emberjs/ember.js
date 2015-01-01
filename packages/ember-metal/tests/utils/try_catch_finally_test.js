@@ -13,9 +13,18 @@ QUnit.module("Ember.tryFinally", {
     catchableResult = 'catchable return value';
     finalizerResult = undefined;
 
-    tryable   = function() { tryCount++;      return tryableResult;   };
-    catchable = function() { catchCount++;    return catchableResult; };
-    finalizer = function() { finalizeCount++; return finalizerResult; };
+    tryable   = function() {
+      tryCount++;
+      return tryableResult;
+    };
+    catchable = function() {
+      catchCount++;
+      return catchableResult;
+    };
+    finalizer = function() {
+      finalizeCount++;
+      return finalizerResult;
+    };
   },
 
   teardown: function() {
@@ -55,7 +64,10 @@ test("no failure, return from finally", function() {
 });
 
 test("try failed", function() {
-  tryable = function() { tryCount++; throw error; };
+  tryable = function() {
+    tryCount++;
+    throw error;
+  };
 
   var result = tryCatchFinally(tryable, catchable, finalizer);
 
@@ -67,7 +79,10 @@ test("try failed", function() {
 });
 
 test("catch failed", function() {
-  catchable = function() { catchCount++; throw error; };
+  catchable = function() {
+    catchCount++;
+    throw error;
+  };
 
   tryCatchFinally(tryable, catchable, finalizer);
 
@@ -77,8 +92,14 @@ test("catch failed", function() {
 });
 
 test("try and catch failed", function() {
-  tryable = function() { tryCount++; throw error; };
-  catchable = function() { catchCount++; throw error; };
+  tryable = function() {
+    tryCount++;
+    throw error;
+  };
+  catchable = function() {
+    catchCount++;
+    throw error;
+  };
 
   callTryCatchFinallyWithError();
 
@@ -88,7 +109,10 @@ test("try and catch failed", function() {
 });
 
 test("finally failed", function() {
-  finalizer = function() { finalizeCount++; throw error; };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryCatchFinallyWithError();
 
@@ -98,8 +122,14 @@ test("finally failed", function() {
 });
 
 test("finally and try failed", function() {
-  tryable   = function() { tryCount++;      throw error; };
-  finalizer = function() { finalizeCount++; throw error; };
+  tryable   = function() {
+    tryCount++;
+    throw error;
+  };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryCatchFinallyWithError();
 
@@ -109,9 +139,18 @@ test("finally and try failed", function() {
 });
 
 test("finally, catch and try failed", function() {
-  tryable   = function() { tryCount++;      throw error; };
-  catchable = function() { catchCount++; throw error; };
-  finalizer = function() { finalizeCount++; throw error; };
+  tryable   = function() {
+    tryCount++;
+    throw error;
+  };
+  catchable = function() {
+    catchCount++;
+    throw error;
+  };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryCatchFinallyWithError();
 

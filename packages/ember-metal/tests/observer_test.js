@@ -562,7 +562,8 @@ testBoth('addObserver should respect targets with methods', function(get, set) {
 
 });
 
-testBoth('addObserver should allow multiple objects to observe a property', function(get, set) { var observed = { foo: 'foo' };
+testBoth('addObserver should allow multiple objects to observe a property', function(get, set) {
+  var observed = { foo: 'foo' };
 
   var target1 = {
     count: 0,

@@ -4,6 +4,7 @@
   "additionalRules": [ "lib/jscs-rules/*.js" ],
   "disallowMultipleVarDeclWithAssignment": true,
   "requireSpaceBeforeObjectValues": true,
+  "requireBlocksOnNewline": 1,
   "disallowSpacesBeforeSemicolons": true,
   "requireSpacesInConditionalExpression": {
     "afterTest": true,

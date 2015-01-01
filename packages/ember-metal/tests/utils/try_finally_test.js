@@ -10,8 +10,14 @@ QUnit.module("Ember.tryFinally", {
     tryableResult = 'tryable return value';
     finalizerResult = undefined;
 
-    tryable   = function() { tryCount++;      return tryableResult;   };
-    finalizer = function() { finalizeCount++; return finalizerResult; };
+    tryable   = function() {
+      tryCount++;
+      return tryableResult;
+    };
+    finalizer = function() {
+      finalizeCount++;
+      return finalizerResult;
+    };
   },
 
   teardown: function() {
@@ -48,7 +54,10 @@ test("no failure, return from finally", function() {
 });
 
 test("try failed", function() {
-  tryable = function() { tryCount++; throw error; };
+  tryable = function() {
+    tryCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 
@@ -57,7 +66,10 @@ test("try failed", function() {
 });
 
 test("finally failed", function() {
-  finalizer = function() { finalizeCount++; throw error; };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 
@@ -66,8 +78,14 @@ test("finally failed", function() {
 });
 
 test("finally and try failed", function() {
-  tryable   = function() { tryCount++;      throw error; };
-  finalizer = function() { finalizeCount++; throw error; };
+  tryable   = function() {
+    tryCount++;
+    throw error;
+  };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 

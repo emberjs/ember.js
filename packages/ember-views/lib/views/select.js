@@ -557,7 +557,10 @@ var Select = View.extend({
     var prompt = get(this, 'prompt');
 
     if (!content || !get(content, 'length')) { return; }
-    if (prompt && selectedIndex === 0) { set(this, 'selection', null); return; }
+    if (prompt && selectedIndex === 0) {
+      set(this, 'selection', null);
+      return;
+    }
 
     if (prompt) { selectedIndex -= 1; }
     set(this, 'selection', content.objectAt(selectedIndex));

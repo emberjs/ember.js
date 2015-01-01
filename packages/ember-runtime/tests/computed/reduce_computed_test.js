@@ -180,8 +180,14 @@ test("multiple dependent keys can be specified via brace expansion", function() 
     baz: Ember.A(),
     foo: reduceComputed({
       initialValue: Ember.A(),
-      addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
-      removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
+      addedItem: function(array, item) {
+        array.pushObject('a:' + item);
+        return array;
+      },
+      removedItem: function(array, item) {
+        array.pushObject('r:' + item);
+        return array;
+      }
     }).property('{bar,baz}')
   });
 
@@ -423,7 +429,10 @@ test("dependent arrays can use `replace` with a negative index to remove items i
     dependentArray: dependentArray,
     computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item) { return acc; },
-      removedItem: function (acc, item) { acc.pushObject(item); return acc; }
+      removedItem: function (acc, item) {
+        acc.pushObject(item);
+        return acc;
+      }
     })
   }).create();
 
@@ -465,7 +474,10 @@ test("dependent arrays that call `replace` with a too-large removedCount a) work
     dependentArray: dependentArray,
     computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item) { return acc; },
-      removedItem: function (acc, item) { acc.pushObject(item); return acc; }
+      removedItem: function (acc, item) {
+        acc.pushObject(item);
+        return acc;
+      }
     })
   }).create();
 

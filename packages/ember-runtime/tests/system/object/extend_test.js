@@ -29,12 +29,18 @@ test('Overriding a method several layers deep', function() {
 
   var AnotherClass = SomeClass.extend({
     barCnt: 0,
-    bar: function() { this.barCnt++; this._super(); }
+    bar: function() {
+      this.barCnt++;
+      this._super();
+    }
   });
 
   var FinalClass = AnotherClass.extend({
     fooCnt: 0,
-    foo: function() { this.fooCnt++; this._super(); }
+    foo: function() {
+      this.fooCnt++;
+      this._super();
+    }
   });
 
   var obj = new FinalClass();
@@ -45,7 +51,10 @@ test('Overriding a method several layers deep', function() {
 
   // Try overriding on create also
   obj = FinalClass.createWithMixins({
-    foo: function() { this.fooCnt++; this._super(); }
+    foo: function() {
+      this.fooCnt++;
+      this._super();
+    }
   });
 
   obj.foo();
