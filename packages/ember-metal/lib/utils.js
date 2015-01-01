@@ -642,11 +642,13 @@ export function tryInvoke(obj, methodName, args) {
 var needsFinallyFix = (function() {
   var count = 0;
   try {
+    // jscs:disable
     try {
     } finally {
       count++;
       throw new Error('needsFinallyFixTest');
     }
+    // jscs:enable
   } catch (e) {}
 
   return count !== 1;
