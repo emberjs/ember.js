@@ -264,7 +264,7 @@ test("factory for non extendables resolves are cached", function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
-test ("registry.container creates an associated container", function() {
+test("registry.container creates an associated container", function() {
   var registry = new Registry();
   var PostController = factory();
   registry.register('controller:post', PostController);
