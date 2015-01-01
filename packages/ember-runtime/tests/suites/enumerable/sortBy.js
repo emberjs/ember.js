@@ -1,5 +1,5 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {get} from 'ember-metal/property_get';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
+import { get } from 'ember-metal/property_get';
 
 var suite = SuiteModuleBuilder.create();
 
