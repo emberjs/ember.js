@@ -70,7 +70,10 @@ test('overriding inherited objects', function() {
   });
 
   var MixinB = Mixin.create({
-    foo: function() { this._super(); cnt++; }
+    foo: function() {
+      this._super();
+      cnt++;
+    }
   });
 
   var objA = {};
@@ -189,11 +192,17 @@ test('applying several mixins at once with sup already defined causes infinite l
   });
 
   var MixinB = Mixin.create({
-    foo: function() { this._super(); cnt++; }
+    foo: function() {
+      this._super();
+      cnt++;
+    }
   });
 
   var MixinC = Mixin.create({
-    foo: function() { this._super(); cnt++; }
+    foo: function() {
+      this._super();
+      cnt++;
+    }
   });
 
   var obj = {};

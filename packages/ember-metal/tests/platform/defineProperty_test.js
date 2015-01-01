@@ -79,8 +79,14 @@ if (hasPropertyAccessors) {
 
     var desc = {
       enumerable: true,
-      get: function() { getCnt++; return v; },
-      set: function(val) { setCnt++; v = val; }
+      get: function() {
+        getCnt++;
+        return v;
+      },
+      set: function(val) {
+        setCnt++;
+        v = val;
+      }
     };
 
     defineProperty(obj, 'foo', desc);
