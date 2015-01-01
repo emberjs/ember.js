@@ -201,14 +201,14 @@ export function concat(array, separator) {
 
  @private
  @function chain
- @param {Object|Stream} array An array containing zero or more stream objects
-                              and zero or more non-stream objects
- @param {Function} fn function becoming the value function of a new stream,
-                      or in the case of a non-stream object, executed once
- @return {Object|Stream} String with array elements concatenated and joined by
-                         the provided separator, and any stream array members
-                         having been replaced by the current value of the
-                         stream
+ @param {Object|Stream} value A stream or non-stream object
+ @param {Function} fn function to be run when the stream value changes, or to
+                      be run once in the case of a non-stream object
+ @return {Object|Stream} In the case of a stream `value` parameter, a new
+                         stream that will be updated with the return value of
+                         the provided function `fn`. In the case of a
+                         non-stream object, the return value of the provided
+                         function `fn`.
  */
 export function chain(value, fn) {
   if (isStream(value)) {
