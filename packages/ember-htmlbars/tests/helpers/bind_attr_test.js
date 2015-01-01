@@ -529,3 +529,29 @@ test("property before didInsertElement", function() {
   runAppend(view);
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
+
+test("asserts for <div class='foo' {{bind-attr class='bar'}}></div>", function() {
+  var template = compile('<div class="foo" {{bind-attr class=view.foo}}></div>');
+
+  view = EmberView.create({
+    template: template,
+    foo: 'bar'
+  });
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, /You cannot set `class` manually and via `{{bind-attr}}` helper on the same element/);
+});
+
+test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>", function() {
+  var template = compile('<div data-bar="foo" {{bind-attr data-bar=view.blah}}></div>');
+
+  view = EmberView.create({
+    template: template,
+    blah: 'bar'
+  });
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, /You cannot set `data-bar` manually and via `{{bind-attr}}` helper on the same element/);
+});
