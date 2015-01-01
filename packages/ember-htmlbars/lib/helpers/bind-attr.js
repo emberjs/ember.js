@@ -158,6 +158,13 @@ function bindAttrHelper(params, hash, options, env) {
 
     var classView = new AttrNode('class', classNameBindings);
     classView._morph = env.dom.createAttrMorph(element, 'class');
+
+    Ember.assert(
+      'You cannot set `class` manually and via `{{bind-attr}}` helper on the same element. ' +
+      'Please use `{{bind-attr}}`\'s `:static-class` syntax instead.',
+      !element.getAttribute('class')
+    );
+
     view.appendChild(classView);
   }
 
@@ -183,6 +190,12 @@ function bindAttrHelper(params, hash, options, env) {
 
     attrView = new LegacyBindAttrNode(attr, lazyValue);
     attrView._morph = env.dom.createAttrMorph(element, attr);
+
+    Ember.assert(
+      'You cannot set `' + attr + '` manually and via `{{bind-attr}}` helper on the same element.',
+      !element.getAttribute(attr)
+    );
+
     view.appendChild(attrView);
   }
 }
