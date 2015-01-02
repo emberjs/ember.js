@@ -19,14 +19,14 @@ if (!keys || !canDefineNonEnumerableProperties) {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString');
     var dontEnums = [
-          'toString',
-          'toLocaleString',
-          'valueOf',
-          'hasOwnProperty',
-          'isPrototypeOf',
-          'propertyIsEnumerable',
-          'constructor'
-        ];
+      'toString',
+      'toLocaleString',
+      'valueOf',
+      'hasOwnProperty',
+      'isPrototypeOf',
+      'propertyIsEnumerable',
+      'constructor'
+    ];
     var dontEnumsLength = dontEnums.length;
 
     return function keys(obj) {
