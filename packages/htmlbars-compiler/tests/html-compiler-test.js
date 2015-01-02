@@ -152,7 +152,7 @@ test("Unquoted attribute value with multiple nodes throws an exception", functio
   QUnit.throws(function() { compile('<div \nclass\n=\n{{foo}}&amp;bar ></div>'); }, expectedError(4));
 
   function expectedError(line) {
-    return new Error("Unquoted attribute value must be a single string or mustache (line " + line + ")");
+    return new Error("Unquoted attribute value must be a single string or mustache (on line " + line + ")");
   }
 });
 
@@ -938,6 +938,21 @@ test("A helpful error message is provided for end tags for void elements", funct
   QUnit.throws(function() {
     compile("\n\n</br>");
   }, /Invalid end tag `br` \(on line 3\) \(void elements cannot have end tags\)./);
+});
+
+test("A helpful error message is provided for end tags with attributes", function() {
+  QUnit.throws(function() {
+    compile('<div>\nSomething\n\n</div foo="bar">');
+  }, /Invalid end tag: closing tag must not have attributes, in `div` \(on line 4\)\./);
+});
+
+test("A helpful error message is provided for missing whitespace when self-closing a tag", function () {
+  QUnit.throws(function() {
+    compile('<div foo=bar/>');
+  }, /A space is required between an unquoted attribute value and `\/`, in `div` \(on line 1\)\./);
+  QUnit.throws(function() {
+    compile('<span\n foo={{bar}}/>');
+  }, /A space is required between an unquoted attribute value and `\/`, in `span` \(on line 2\)\./);
 });
 
 test("A helpful error message is provided for mismatched start/end tags", function() {
