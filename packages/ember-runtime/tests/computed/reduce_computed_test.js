@@ -632,9 +632,11 @@ QUnit.module('arrayComputed - changeMeta property observers', {
         itemsN: arrayComputed('items.@each.n', {
           addedItem: function (array, item, changeMeta, instanceMeta) {
             callbackItems.push('add:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
+            return array;
           },
           removedItem: function (array, item, changeMeta, instanceMeta) {
             callbackItems.push('remove:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
+            return array;
           }
         })
       });
@@ -732,9 +734,11 @@ test("changeMeta includes changedCount and arrayChanged", function() {
     lettersArrayComputed: arrayComputed('letters', {
       addedItem: function (array, item, changeMeta, instanceMeta) {
         callbackItems.push('add:' + changeMeta.changedCount + ":" + changeMeta.arrayChanged.join(''));
+        return array;
       },
       removedItem: function (array, item, changeMeta, instanceMeta) {
         callbackItems.push('remove:' + changeMeta.changedCount + ":" + changeMeta.arrayChanged.join(''));
+        return array;
       }
     })
   });

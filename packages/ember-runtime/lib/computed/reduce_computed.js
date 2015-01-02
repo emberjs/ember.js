@@ -17,8 +17,7 @@ import {
   removeBeforeObserver
 } from 'ember-metal/observer';
 import {
-  ComputedProperty,
-  cacheFor
+  ComputedProperty
 } from 'ember-metal/computed';
 import { create as o_create } from 'ember-metal/platform';
 import { forEach } from 'ember-metal/enumerable_utils';
@@ -27,9 +26,6 @@ import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
 import { isArray } from 'ember-metal/utils';
 
-var cacheSet = cacheFor.set;
-var cacheGet = cacheFor.get;
-var cacheRemove = cacheFor.remove;
 var a_slice = [].slice;
 // Here we explicitly don't allow `@each.foo`; it would require some special
 // testing, but there's no particular reason why it should be disallowed.
@@ -426,8 +422,9 @@ function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue)
 }
 
 ReduceComputedPropertyInstanceMeta.prototype = {
+  value: undefined,
   getValue: function () {
-    var value = cacheGet(this.cache, this.propertyName);
+    var value = this.value;
 
     if (value !== undefined) {
       return value;
@@ -439,7 +436,7 @@ ReduceComputedPropertyInstanceMeta.prototype = {
   setValue: function(newValue, triggerObservers) {
     // This lets sugars force a recomputation, handy for very simple
     // implementations of eg max.
-    if (newValue === cacheGet(this.cache, this.propertyName)) {
+    if (newValue === this.value) {
       return;
     }
 
@@ -447,11 +444,7 @@ ReduceComputedPropertyInstanceMeta.prototype = {
       propertyWillChange(this.context, this.propertyName);
     }
 
-    if (newValue === undefined) {
-      cacheRemove(this.cache, this.propertyName);
-    } else {
-      cacheSet(this.cache, this.propertyName, newValue);
-    }
+    this.value = newValue;
 
     if (triggerObservers) {
       propertyDidChange(this.context, this.propertyName);
@@ -546,11 +539,22 @@ function ReduceComputedProperty(options) {
 
   this.func = function (propertyName) {
     Ember.assert('Computed reduce values require at least one dependent key', cp._dependentKeys);
-
-    recompute.call(this, propertyName);
-
+    if (!cp._hasInstanceMeta(this, propertyName)) {
+      // When we recompute an array computed property, we need already
+      // retrieved arrays to be updated; we can't simply empty the cache and
+      // hope the array is re-retrieved.
+      forEach(cp._dependentKeys, function(dependentKey) {
+          addObserver(this, dependentKey, function() {
+              cp.recomputeOnce.call(this, propertyName);
+          });
+      }, this);
+      recompute.call(this, propertyName);
+    }
+    if(cp._instanceMeta(this, propertyName).value === undefined){
+      recompute.call(this, propertyName);
+    }
     return cp._instanceMeta(this, propertyName).getValue();
-  };
+ };
 }
 
 ReduceComputedProperty.prototype = o_create(ComputedProperty.prototype);
