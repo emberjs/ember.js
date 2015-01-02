@@ -1311,8 +1311,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return copy(params); }
-    else if (!name) {
+    if (!name && sawParams) {
+      return copy(params);
+    } else if (!name) {
       if (transition.resolveIndex < 1) { return; }
 
       var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
