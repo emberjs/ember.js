@@ -139,7 +139,7 @@ function normalizeTuple(target, path) {
     throw new EmberError('Path cannot be empty');
   }
 
-  return [ target, path ];
+  return [target, path];
 }
 
 function _getPath(root, path) {

@@ -58,9 +58,9 @@ function testMap(nameAndFunc) {
     map.set(string, "winning");
 
     mapHasEntries([
-      [ object, "winning" ],
-      [ number, "winning" ],
-      [ string, "winning" ]
+      [object, "winning"],
+      [number, "winning"],
+      [string, "winning"]
     ]);
 
     map.set(object, "losing");
@@ -68,9 +68,9 @@ function testMap(nameAndFunc) {
     map.set(string, "losing");
 
     mapHasEntries([
-      [ object, "losing" ],
-      [ number, "losing" ],
-      [ string, "losing" ]
+      [object, "losing"],
+      [number, "losing"],
+      [string, "losing"]
     ]);
 
     equal(map.has("nope"), false, "expected the key `nope` to not be present");
@@ -83,9 +83,9 @@ function testMap(nameAndFunc) {
         set(string, "winning");
 
     mapHasEntries([
-      [ object, "winning" ],
-      [ number, "winning" ],
-      [ string, "winning" ]
+      [object, "winning"],
+      [number, "winning"],
+      [string, "winning"]
     ]);
 
     map.set(object, "losing").
@@ -93,9 +93,9 @@ function testMap(nameAndFunc) {
         set(string, "losing");
 
     mapHasEntries([
-      [ object, "losing" ],
-      [ number, "losing" ],
-      [ string, "losing" ]
+      [object, "losing"],
+      [number, "losing"],
+      [string, "losing"]
     ]);
 
     equal(map.has("nope"), false, "expected the key `nope` to not be present");
@@ -175,15 +175,15 @@ function testMap(nameAndFunc) {
     map2.set(string, "losing");
 
     mapHasEntries([
-      [ object, "winning" ],
-      [ number, "winning" ],
-      [ string, "winning" ]
+      [object, "winning"],
+      [number, "winning"],
+      [string, "winning"]
     ]);
 
     mapHasEntries([
-      [ object, "losing" ],
-      [ number, "losing" ],
-      [ string, "losing" ]
+      [object, "losing"],
+      [number, "losing"],
+      [string, "losing"]
     ], map2);
   });
 
@@ -199,12 +199,12 @@ function testMap(nameAndFunc) {
     map2.delete(string);
 
     mapHasEntries([
-      [ object, "winning" ],
-      [ number, "winning" ],
-      [ string, "winning" ]
+      [object, "winning"],
+      [number, "winning"],
+      [string, "winning"]
     ]);
 
-    mapHasEntries([ ], map2);
+    mapHasEntries([], map2);
   });
 
   if (hasPropertyAccessors) {
@@ -520,7 +520,7 @@ test("Retrieving a value that has not been set returns and sets a default value"
   });
 
   var value = map.get('ohai');
-  deepEqual(value, [ 'ohai' ]);
+  deepEqual(value, ['ohai']);
 
   strictEqual(value, map.get('ohai'));
 });

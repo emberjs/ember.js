@@ -39,7 +39,7 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
     if (pluginContext.validate(node)) {
       var removedParams = node.sexpr.params.splice(1, 2);
       var keyword = removedParams[1].original;
-      node.program.blockParams = [ keyword ];
+      node.program.blockParams = [keyword];
     }
   });
 

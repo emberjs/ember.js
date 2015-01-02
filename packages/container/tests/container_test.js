@@ -489,7 +489,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     Apple.reopenClass({
       _lazyInjections: function() {
-        return [ 'orange:main', 'banana:main' ];
+        return ['orange:main', 'banana:main'];
       }
     });
 
@@ -512,7 +512,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     Apple.reopenClass({
       _lazyInjections: function() {
         ok(true, 'should call lazy injection method');
-        return [ 'orange:main' ];
+        return ['orange:main'];
       }
     });
 

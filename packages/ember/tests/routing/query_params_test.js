@@ -301,7 +301,7 @@ test("controllers won't be eagerly instantiated by internal query params logic",
   });
 
   App.CatsIndexController = Ember.Controller.extend({
-    queryParams: ['breed', 'name' ],
+    queryParams: ['breed', 'name'],
     breed: 'Golden',
     name: null,
     init: function() {

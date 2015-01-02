@@ -26,8 +26,8 @@ QUnit.module('arrayComputed', {
     addCalls = removeCalls = 0;
 
     obj = EmberObject.createWithMixins({
-      numbers:  Ember.A([ 1, 2, 3, 4, 5, 6 ]),
-      otherNumbers: Ember.A([ 7, 8, 9 ]),
+      numbers:  Ember.A([1, 2, 3, 4, 5, 6]),
+      otherNumbers: Ember.A([7, 8, 9]),
 
       // Users would obviously just use `Ember.computed.map`
       // This implementation is fine for these tests, but doesn't properly work as

@@ -26,7 +26,7 @@ test("returns null if the view has no element and parent view has no element", f
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({
-    childViews: [ EmberView.extend() ]
+    childViews: [EmberView.extend()]
   });
   view = get(parentView, 'childViews').objectAt(0);
 

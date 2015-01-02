@@ -234,7 +234,7 @@ test("should be able to render an unbound helper invocation for helpers with dep
 test("should be able to render an unbound helper invocation in #each helper", function() {
   view = EmberView.create({
     template: compile(
-      [ "{{#each person in people}}",
+      ["{{#each person in people}}",
         "{{capitalize person.firstName}} {{unbound capitalize person.firstName}}",
         "{{/each}}"].join("")),
     context: {

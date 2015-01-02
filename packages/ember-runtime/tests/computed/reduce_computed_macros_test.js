@@ -1506,7 +1506,7 @@ QUnit.module('computedSum', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
-        array: Ember.A([ 1, 2, 3 ]),
+        array: Ember.A([1, 2, 3]),
         total: computedSum('array')
       });
     });

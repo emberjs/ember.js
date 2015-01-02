@@ -47,7 +47,7 @@ test("triggering an event can have arguments", function() {
 
   obj.trigger('event!', "foo", "bar");
 
-  deepEqual(args, [ "foo", "bar" ]);
+  deepEqual(args, ["foo", "bar"]);
   equal(self, obj);
 });
 
@@ -65,13 +65,13 @@ test("a listener can be added and removed automatically and have arguments", fun
 
   obj.trigger('event!', "foo", "bar");
 
-  deepEqual(args, [ "foo", "bar" ]);
+  deepEqual(args, ["foo", "bar"]);
   equal(self, obj);
   equal(count, 1, "the event is triggered once");
 
   obj.trigger('event!', "baz", "bat");
 
-  deepEqual(args, [ "foo", "bar" ]);
+  deepEqual(args, ["foo", "bar"]);
   equal(count, 1, "the event was not triggered again");
   equal(self, obj);
 });
@@ -89,7 +89,7 @@ test("binding an event can specify a different target", function() {
 
   obj.trigger('event!', "foo", "bar");
 
-  deepEqual(args, [ "foo", "bar" ]);
+  deepEqual(args, ["foo", "bar"]);
   equal(self, target);
 });
 
