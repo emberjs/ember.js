@@ -3,6 +3,9 @@ import { isHelper } from "./utils";
 import builders from "./builders";
 
 Tokenizer.prototype.createAttribute = function(char) {
+  if (this.token.type === 'EndTag') {
+    throw new Error('Invalid end tag: closing tag must not have attributes, in ' + formatTokenInfo(this) + '.');
+  }
   this.currentAttribute = builders.attr(char.toLowerCase(), [], null);
   this.token.attributes.push(this.currentAttribute);
   this.state = 'attributeName';
@@ -19,12 +22,13 @@ Tokenizer.prototype.addToAttributeName = function(char) {
 Tokenizer.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
+  if (!this.currentAttribute.quoted && char === '/') {
+    throw new Error("A space is required between an unquoted attribute value and `/`, in " + formatTokenInfo(this) +
+                    '.');
+  }
   if (!this.currentAttribute.quoted && value.length > 0 &&
       (char.type === 'MustacheStatement' || value[0].type === 'MustacheStatement')) {
-    // Get the line number from a mustache, whether it's the one to add or the one already added
-    var mustache = char.type === 'MustacheStatement' ? char : value[0],
-        line = mustache.loc.start.line;
-    throw new Error("Unquoted attribute value must be a single string or mustache (line " + line + ")");
+    throw new Error("Unquoted attribute value must be a single string or mustache (on line " + this.line + ")");
   }
 
   if (typeof char === 'object') {
@@ -75,6 +79,10 @@ function prepareConcatPart(node) {
     default:
       throw new Error("Unsupported node in quoted attribute value: " + node.type);
   }
+}
+
+function formatTokenInfo(tokenizer) {
+  return '`' + tokenizer.token.tagName + '` (on line ' + tokenizer.line + ')';
 }
 
 export function unwrapMustache(mustache) {
