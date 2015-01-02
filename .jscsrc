@@ -6,6 +6,7 @@
   "requireSpaceBeforeObjectValues": true,
   "requireBlocksOnNewline": 1,
   "disallowSpacesBeforeSemicolons": true,
+  "disallowNewlineBeforeBlockStatements": true,
   "requireSpacesInConditionalExpression": {
     "afterTest": true,
     "beforeConsequent": true,
