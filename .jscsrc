@@ -5,6 +5,7 @@
   "disallowMultipleVarDeclWithAssignment": true,
   "requireSpaceBeforeObjectValues": true,
   "requireBlocksOnNewline": 1,
+  "disallowKeywordsOnNewLine": ["else"],
   "disallowSpacesBeforeSemicolons": true,
   "requireSpacesInConditionalExpression": {
     "afterTest": true,

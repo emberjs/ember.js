@@ -592,8 +592,7 @@ ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName
 ReduceComputedProperty.prototype.initialValue = function () {
   if (typeof this.options.initialValue === 'function') {
     return this.options.initialValue();
-  }
-  else {
+  } else {
     return this.options.initialValue;
   }
 };

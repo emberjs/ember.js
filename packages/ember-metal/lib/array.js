@@ -62,8 +62,7 @@ var forEach = defineNativeShim(ArrayPrototype.forEach, function(fun /*, thisp */
 var indexOf = defineNativeShim(ArrayPrototype.indexOf, function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) {
     fromIndex = 0;
-  }
-  else if (fromIndex < 0) {
+  } else if (fromIndex < 0) {
     fromIndex = Math.max(0, this.length + fromIndex);
   }
 

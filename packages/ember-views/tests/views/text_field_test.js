@@ -29,9 +29,8 @@ var caretPosition = function(element) {
     selection.moveStart('character', -ctrl.value.length);
 
     caretPos = selection.text.length;
-  }
-  // Firefox support
-  else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
+  } else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
+    // Firefox support
     caretPos = ctrl.selectionStart;
   }
 

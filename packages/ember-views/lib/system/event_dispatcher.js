@@ -223,8 +223,7 @@ export default EmberObject.extend({
       result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
-    }
-    else {
+    } else {
       result = this._bubbleEvent(view, evt, eventName);
     }
 

@@ -163,8 +163,7 @@ export function collectionHelper(params, hash, options, env) {
   if (path) {
     collectionClass = readViewFactory(path, container);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
-  }
-  else {
+  } else {
     collectionClass = CollectionView;
   }
 
