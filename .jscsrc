@@ -5,6 +5,7 @@
   "disallowSpacesInsideArrayBrackets": "all",
   "disallowMultipleVarDeclWithAssignment": true,
   "requireSpaceBeforeObjectValues": true,
+  "requireCommaBeforeLineBreak": true,
   "requireBlocksOnNewline": 1,
   "disallowKeywordsOnNewLine": ["else"],
   "disallowSpacesBeforeSemicolons": true,
