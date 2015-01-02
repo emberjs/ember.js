@@ -12,9 +12,7 @@ test("The `contentArrayDidChange` method is invoked after `content` is updated."
   proxy = ArrayProxy.createWithMixins({
     content: Ember.A(),
 
-    arrangedContent: computed('content', function(key, value) {
-      // setup arrangedContent as a different object than content,
-      // which is the default
+    arrangedContent: computed('content', function(key) {
       return Ember.A(this.get('content').slice());
     }),
 
