@@ -14,7 +14,7 @@ import precompile from 'ember-htmlbars/compat/precompile';
 import compile from "ember-template-compiler/system/compile";
 import template from 'ember-template-compiler/system/template';
 import { observersFor } from "ember-metal/observer";
-import ObjectController from 'ember-runtime/controllers/object_controller';
+import Controller from 'ember-runtime/controllers/controller';
 
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { set } from 'ember-metal/property_set';
@@ -622,7 +622,7 @@ test('{{view}} should not override class bindings defined on a child view', func
     something:         'visible'
   });
 
-  registry.register('controller:label', ObjectController, { instantiate: true });
+  registry.register('controller:label', Controller, { instantiate: true });
   registry.register('view:label',       LabelView);
   registry.register('template:label',   compile('<div id="child-view"></div>'));
   registry.register('template:nester',  compile('{{render "label"}}'));
@@ -630,7 +630,7 @@ test('{{view}} should not override class bindings defined on a child view', func
   view = EmberView.create({
     container:    container,
     templateName: 'nester',
-    controller:   ObjectController.create({
+    controller:   Controller.create({
       container: container
     })
   });

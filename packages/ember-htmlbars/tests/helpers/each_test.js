@@ -861,7 +861,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   test("itemController specified in ArrayController with name binding does not change context", function() {
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
-    var PersonController = ObjectController.extend({
+    var PersonController = EmberController.extend({
           controllerName: computed(function() {
             return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
           })

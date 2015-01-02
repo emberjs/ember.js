@@ -1,5 +1,6 @@
 import "ember";
 
+import { objectControllerDeprecation } from "ember-runtime/controllers/object_controller";
 import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
@@ -74,7 +75,7 @@ QUnit.module("The {{link-to}} helper", {
       Ember.TEMPLATES.app = compile("{{outlet}}");
       Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'about' id='about-link'}}About{{/link-to}}{{#link-to 'index' id='self-link'}}Self{{/link-to}}");
       Ember.TEMPLATES.about = compile("<h3>About</h3>{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'about' id='self-link'}}Self{{/link-to}}");
-      Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+      Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
       AppView = Ember.View.extend({
         templateName: 'app'
@@ -448,7 +449,7 @@ test("The {{link-to}} helper moves into the named route with context", function(
     this.resource("item", { path: "/item/:id" });
   });
 
-  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in controller}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in model}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
     model: function() {
@@ -655,7 +656,7 @@ test("The {{link-to}} helper unwraps controllers", function() {
     }
   });
 
-  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>');
+  Ember.TEMPLATES.filter = compile('<p>{{model.filter}}</p>');
   Ember.TEMPLATES.index = compile('{{#link-to "filter" this id="link"}}Filter{{/link-to}}');
 
   bootApplication();
@@ -841,6 +842,8 @@ test("The {{link-to}} helper refreshes href element when one of params changes",
 });
 
 test("The {{link-to}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
+  expectDeprecation(objectControllerDeprecation);
+
   Router.map(function() {
     this.route('post', { path: '/posts/:post_id' });
   });
@@ -1050,7 +1053,7 @@ test("The non-block form {{link-to}} helper moves into the named route with cont
   });
 
   Ember.TEMPLATES.index = compile("<h3>Home</h3><ul>{{#each person in controller}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
-  Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   bootApplication();
 
@@ -1572,7 +1575,7 @@ test("The {{link-to}} helper applies active class to parent route", function() {
     "{{outlet}}"
   );
 
-  App.ParentChildController = Ember.ObjectController.extend({
+  App.ParentChildController = Ember.Controller.extend({
     queryParams: ['foo'],
     foo: 'bar'
   });
@@ -1596,7 +1599,7 @@ test("The {{link-to}} helper disregards query-params in activeness computation w
   Ember.TEMPLATES.parent = compile(
     "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
 
-  App.ParentController = Ember.ObjectController.extend({
+  App.ParentController = Ember.Controller.extend({
     queryParams: ['page'],
     page: 1
   });

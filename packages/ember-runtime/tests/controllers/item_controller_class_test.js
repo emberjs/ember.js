@@ -6,7 +6,7 @@ import {computed} from "ember-metal/computed";
 import compare from "ember-runtime/compare";
 import EmberObject from "ember-runtime/system/object";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import Controller from "ember-runtime/controllers/controller";
 import {sort} from "ember-runtime/computed/reduce_computed_macros";
 import Registry from "container/registry";
 
@@ -25,7 +25,7 @@ QUnit.module("Ember.ArrayController - itemController", {
     lannisters = Ember.A([tywin, jaime, cersei]);
 
     itemControllerCount = 0;
-    controllerClass = ObjectController.extend({
+    controllerClass = Controller.extend({
       init: function() {
         ++itemControllerCount;
         this._super();
@@ -36,7 +36,7 @@ QUnit.module("Ember.ArrayController - itemController", {
       }
     });
 
-    otherControllerClass = ObjectController.extend({
+    otherControllerClass = Controller.extend({
       toString: function() {
         return "otherItemController for " + this.get('name');
       }
@@ -305,7 +305,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
     lannistersWillChange: function() { return this; },
     lannistersDidChange: function(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
-      equal(this.objectAt(idx).get('name'), "Tyrion", "Array observers get the right object via `objectAt`");
+      equal(this.objectAt(idx).get('model.name'), "Tyrion", "Array observers get the right object via `objectAt`");
     }
   });
   arrayController.addArrayObserver(arrayController, {
@@ -318,7 +318,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   });
 
   equal(arrayObserverCalled, true, "Array observers are called normally");
-  equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' model");
+  equal(tywinController.get('model.name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' model");
 });
 
 test("`itemController`'s life cycle should be entangled with its parent controller", function() {
@@ -342,7 +342,7 @@ QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
     jaime = EmberObject.create({ name: 'Jaime' });
     lannisters = Ember.A([jaime, cersei]);
 
-    controllerClass = ObjectController.extend({
+    controllerClass = Controller.extend({
       title: computed(function () {
         switch (get(this, 'name')) {
           case 'Jaime':   return 'Kingsguard';
@@ -374,5 +374,5 @@ test("item controllers can be used to provide properties for array computed macr
     sorted: sort('@this', 'sortProperties')
   });
 
-  deepEqual(arrayController.get('sorted').mapProperty('name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
+  deepEqual(arrayController.get('sorted').mapProperty('model.name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
 });

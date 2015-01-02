@@ -7,7 +7,6 @@ import ActionManager from "ember-views/system/action_manager";
 import { Registry } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import { default as EmberController } from "ember-runtime/controllers/controller";
-import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import compile from "ember-template-compiler/system/compile";
@@ -153,7 +152,7 @@ test("should target the current controller inside an {{each}} loop [DEPRECATED]"
     registeredTarget = options.target.value();
   };
 
-  var itemController = EmberObjectController.create();
+  var itemController = EmberController.create();
 
   var ArrayController = EmberArrayController.extend({
     itemController: 'stub',
@@ -187,7 +186,7 @@ test("should target the with-controller inside an {{#with controller='person'}} 
     registeredTarget = options.target.value();
   };
 
-  var PersonController = EmberObjectController.extend();
+  var PersonController = EmberController.extend();
   var registry = new Registry();
   var container = registry.container();
   var parentController = EmberObject.create({
@@ -693,7 +692,7 @@ test("should only trigger actions for the event they were registered on", functi
 test("should unwrap controllers passed as a context", function() {
   var passedContext;
   var model = EmberObject.create();
-  var controller = EmberObjectController.extend({
+  var controller = EmberController.extend({
     model: model,
     actions: {
       edit: function(context) {
@@ -717,7 +716,7 @@ test("should unwrap controllers passed as a context", function() {
 test("should not unwrap controllers passed as `controller`", function() {
   var passedContext;
   var model = EmberObject.create();
-  var controller = EmberObjectController.extend({
+  var controller = EmberController.extend({
     model: model,
     actions: {
       edit: function(context) {

@@ -2,7 +2,10 @@
 
 import Controller from "ember-runtime/controllers/controller";
 import Service from "ember-runtime/system/service";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import {
+  default as ObjectController,
+  objectControllerDeprecation
+} from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
 import Object from "ember-runtime/system/object";
 import { Registry } from "ember-runtime/system/container";
@@ -55,6 +58,8 @@ test("When `_actions` is provided, `actions` is left alone", function() {
 });
 
 test("Actions object doesn't shadow a proxied object's 'actions' property", function() {
+  expectDeprecation(objectControllerDeprecation);
+
   var TestController = ObjectController.extend({
     model: {
       actions: 'foo'

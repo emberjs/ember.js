@@ -5,7 +5,11 @@ import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import {
+  default as ObjectController,
+  objectControllerDeprecation
+} from "ember-runtime/controllers/object_controller";
+import EmberController from 'ember-runtime/controllers/controller';
 import { Registry } from "ember-runtime/system/container";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -212,6 +216,8 @@ test("it should support #with this as qux", function() {
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
 test("it should wrap context with object controller [DEPRECATED]", function() {
+  expectDeprecation(objectControllerDeprecation);
+
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
@@ -301,7 +307,9 @@ test("it should still have access to original parentController within an {{#each
 });
 */
 
-test("it should wrap keyword with object controller", function() {
+test("it should wrap keyword with object controller [DEPRECATED]", function() {
+  expectDeprecation(objectControllerDeprecation);
+
   var PersonController = ObjectController.extend({
     name: computed('model.name', function() {
       return get(this, 'model.name').toUpperCase();
@@ -355,7 +363,7 @@ test("it should wrap keyword with object controller", function() {
 
 test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
   var destroyed = false;
-  var Controller = ObjectController.extend({
+  var Controller = EmberController.extend({
     willDestroy: function() {
       this._super();
       destroyed = true;
@@ -391,7 +399,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
 
 test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
   var destroyed = false;
-  var Controller = ObjectController.extend({
+  var Controller = EmberController.extend({
     willDestroy: function() {
       this._super();
       destroyed = true;

@@ -7,7 +7,9 @@ import Registry from 'container/registry';
 import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import {
+  default as ObjectController
+} from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
 import {
@@ -95,7 +97,7 @@ test("generateController should create Ember.Controller", function() {
   ok(controller instanceof Controller, 'should create controller');
 });
 
-test("generateController should create Ember.ObjectController", function() {
+test("generateController should create Ember.ObjectController [DEPRECATED]", function() {
   var context = {};
   var controller = generateController(container, 'home', context);
 
