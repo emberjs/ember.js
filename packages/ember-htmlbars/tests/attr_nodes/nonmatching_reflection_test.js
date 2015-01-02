@@ -29,7 +29,7 @@ QUnit.module("ember-htmlbars: nonmatching reflection", {
 
 test("maxlength sets the property and attribute", function() {
   view = EmberView.create({
-    context: {length: 5},
+    context: { length: 5 },
     template: compile("<input maxlength={{length}}>")
   });
   appendView(view);
@@ -44,7 +44,7 @@ test("maxlength sets the property and attribute", function() {
 
 test("quoted maxlength sets the property and attribute", function() {
   view = EmberView.create({
-    context: {length: 5},
+    context: { length: 5 },
     template: compile("<input maxlength='{{length}}'>")
   });
   appendView(view);

@@ -621,8 +621,8 @@ test("should be able to modify childViews then rerender then modify again the Co
       buffer.push(this.label);
     }
   });
-  var one = Child.create({label: 'one'});
-  var two = Child.create({label: 'two'});
+  var one = Child.create({ label: 'one' });
+  var two = Child.create({ label: 'two' });
 
   run(function() {
     container.pushObject(one);
@@ -649,8 +649,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
       buffer.push(this.label);
     }
   });
-  var one = Child.create({label: 'one'});
-  var two = Child.create({label: 'two'});
+  var one = Child.create({ label: 'one' });
+  var two = Child.create({ label: 'two' });
 
   run(function() {
     container.pushObject(one);

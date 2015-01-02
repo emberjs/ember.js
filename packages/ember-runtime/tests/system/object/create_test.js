@@ -25,7 +25,7 @@ moduleOptions = {
 QUnit.module('EmberObject.create', moduleOptions);
 
 test("simple properties are set", function() {
-  var o = EmberObject.create({ohai: 'there'});
+  var o = EmberObject.create({ ohai: 'there' });
   equal(o.get('ohai'), 'there');
 });
 
@@ -37,7 +37,7 @@ test("calls computed property setters", function() {
     })
   });
 
-  var o = MyClass.create({foo: 'bar'});
+  var o = MyClass.create({ foo: 'bar' });
   equal(o.get('foo'), 'bar');
 });
 
@@ -50,7 +50,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       fooDidChange: observer('foo', function() {})
     });
 
-    var o = MyClass.create({foo: 'bar', bar: 'baz'});
+    var o = MyClass.create({ foo: 'bar', bar: 'baz' });
     equal(o.get('foo'), 'bar');
 
     // Catch IE8 where Object.getOwnPropertyDescriptor exists but only works on DOM elements
@@ -86,7 +86,7 @@ test("calls setUnknownProperty if defined", function() {
     }
   });
 
-  MyClass.create({foo: 'bar'});
+  MyClass.create({ foo: 'bar' });
   ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
 });
 

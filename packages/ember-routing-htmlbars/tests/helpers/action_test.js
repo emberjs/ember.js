@@ -228,8 +228,8 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
   var parentController = EmberObject.create({
     container: container,
     people: Ember.A([
-      {name: 'robert'},
-      {name: 'brian'}
+      { name: 'robert' },
+      { name: 'brian' }
     ])
   });
 
@@ -487,7 +487,7 @@ test("should work properly in a {{#with foo as bar}} block", function() {
 
   view = EmberView.create({
     controller: controller,
-    something: {ohai: 'there'},
+    something: { ohai: 'there' },
     template: compile('{{#with view.something as somethingElse}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
@@ -507,7 +507,7 @@ test("should work properly in a #with block [DEPRECATED]", function() {
 
   view = EmberView.create({
     controller: controller,
-    something: {ohai: 'there'},
+    something: { ohai: 'there' },
     template: compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
@@ -920,9 +920,9 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{title: 'Biggity Boom',name: 'biggityBoom'},
-                         {title: 'Whomp Whomp',name: 'whompWhomp'},
-                         {title: 'Sloopy Dookie',name: 'sloopyDookie'}]),
+    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
+                         { title: 'Whomp Whomp',name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
     actions: {
       biggityBoom: function() {
         lastAction = 'biggityBoom';
@@ -971,9 +971,9 @@ test("a quoteless parameter should resolve actionName, including path", function
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{title: 'Biggity Boom',name: 'biggityBoom'},
-                         {title: 'Whomp Whomp',name: 'whompWhomp'},
-                         {title: 'Sloopy Dookie',name: 'sloopyDookie'}]),
+    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
+                         { title: 'Whomp Whomp',name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
     actions: {
       biggityBoom: function() {
         lastAction = 'biggityBoom';

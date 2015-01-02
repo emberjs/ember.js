@@ -247,7 +247,8 @@ test("should be able to render an unbound helper invocation in #each helper", fu
           firstName: 'cindy',
           lastName:  'taylor'
         }
-    ])}
+      ])
+    }
   });
   runAppend(view);
 
@@ -385,7 +386,7 @@ test("should be able to use unbound helper in #each helper", function() {
 
 test("should be able to use unbound helper in #each helper (with objects)", function() {
   view = EmberView.create({
-    items: A([{wham: 'bam'}, {wham: 1}]),
+    items: A([{ wham: 'bam' }, { wham: 1 }]),
     template: compile('<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
   });
 

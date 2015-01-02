@@ -37,7 +37,7 @@ test("asyncEnd calls start", function() {
 });
 
 test("exception causes a failing assertion", function() {
-  var error = {err: 'hai'};
+  var error = { err: 'hai' };
   var originalOk = window.ok;
   try {
     window.ok = function(val, msg) {

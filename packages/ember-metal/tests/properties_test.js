@@ -46,7 +46,7 @@ if (hasPropertyAccessors) {
 
   test("enables access to deprecated property and returns the value of the new property", function() {
     expect(3);
-    var obj = {foo: 'bar'};
+    var obj = { foo: 'bar' };
 
     deprecateProperty(obj, 'baz', 'foo');
 
@@ -59,7 +59,7 @@ if (hasPropertyAccessors) {
 
   test("deprecatedKey is not enumerable", function() {
     expect(2);
-    var obj = {foo: 'bar', blammo: 'whammy'};
+    var obj = { foo: 'bar', blammo: 'whammy' };
 
     deprecateProperty(obj, 'baz', 'foo');
 
@@ -72,7 +72,7 @@ if (hasPropertyAccessors) {
 
   test("enables setter to deprecated property and updates the value of the new property", function() {
     expect(3);
-    var obj = {foo: 'bar'};
+    var obj = { foo: 'bar' };
 
     deprecateProperty(obj, 'baz', 'foo');
 

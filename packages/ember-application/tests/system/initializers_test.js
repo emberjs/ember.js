@@ -21,13 +21,13 @@ test("initializers require proper 'name' and 'initialize' properties", function(
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.initializer({name: 'initializer'});
+      MyApplication.initializer({ name: 'initializer' });
     });
   });
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.initializer({initialize: Ember.K});
+      MyApplication.initializer({ initialize: Ember.K });
     });
   });
 

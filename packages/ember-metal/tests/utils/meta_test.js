@@ -57,7 +57,7 @@ QUnit.module("Ember.meta enumerable");
 if (canDefineNonEnumerableProperties) {
   test("meta is not enumerable", function () {
     var proto, obj, props, prop;
-    proto = {foo: 'bar'};
+    proto = { foo: 'bar' };
     meta(proto);
     obj = create(proto);
     meta(obj);
@@ -81,7 +81,7 @@ if (canDefineNonEnumerableProperties) {
   if (Ember.imports.jQuery) {
     test("meta is not jQuery.isPlainObject", function () {
       var proto, obj;
-      proto = {foo: 'bar'};
+      proto = { foo: 'bar' };
       equal(jQuery.isPlainObject(meta(proto)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
       obj = create(proto);
       equal(jQuery.isPlainObject(meta(obj)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');

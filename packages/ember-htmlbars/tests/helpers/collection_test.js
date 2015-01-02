@@ -165,7 +165,7 @@ test("collection helper should try to use container to resolve view", function()
 
   registry.register('view:collectionTest', ACollectionView);
 
-  var controller = {container: container};
+  var controller = { container: container };
   view = EmberView.create({
     controller: controller,
     template: compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
@@ -214,7 +214,7 @@ test("empty views should be removed when content is added to the collection (reg
   equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
 
   run(function() {
-    listController.pushObject({title : "Go Away, Placeholder Row!"});
+    listController.pushObject({ title : "Go Away, Placeholder Row!" });
   });
 
   equal(view.$('tr').length, 1, 'has one row');
@@ -647,7 +647,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
   equal(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
 
   run(function() {
-    secondDataset = EmberObject.create({ready: false});
+    secondDataset = EmberObject.create({ ready: false });
     TemplateTests.datasetController.set('dataset', secondDataset);
   });
 
@@ -663,9 +663,9 @@ test("context should be content", function() {
   container = registry.container();
 
   var items = A([
-    EmberObject.create({name: 'Dave'}),
-    EmberObject.create({name: 'Mary'}),
-    EmberObject.create({name: 'Sara'})
+    EmberObject.create({ name: 'Dave' }),
+    EmberObject.create({ name: 'Mary' }),
+    EmberObject.create({ name: 'Sara' })
   ]);
 
   registry.register('view:an-item', EmberView.extend({

@@ -190,7 +190,7 @@ test("View lookup - 'fu' when fu is a property and a view name", function() {
 
   view = EmberView.extend({
     template: compile("{{view 'fu'}}"),
-    context: {fu: 'boom!'},
+    context: { fu: 'boom!' },
     container: container
   }).create();
 

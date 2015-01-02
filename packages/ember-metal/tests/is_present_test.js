@@ -5,7 +5,7 @@ QUnit.module("Ember.isPresent");
 test("Ember.isPresent", function() {
   var string = "string";
   var fn = function() {};
-  var object = {length: 0};
+  var object = { length: 0 };
 
   equal(false, isPresent(),          "for no params");
   equal(false, isPresent(null),      "for null");

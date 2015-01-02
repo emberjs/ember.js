@@ -24,7 +24,7 @@ QUnit.module("EmberView - Layout Functionality", {
 test("Layout views return throw if their layout cannot be found", function() {
   view = EmberView.create({
     layoutName: 'cantBeFound',
-    container: { lookup: function() { }}
+    container: { lookup: function() { } }
   });
 
   expectAssertion(function() {

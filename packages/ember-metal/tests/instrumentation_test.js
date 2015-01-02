@@ -122,7 +122,7 @@ test("instrument with 3 args (name, callback, binding) no payload", function() {
 test("instrument with 3 args (name, payload, callback) with payload", function() {
   expect(1);
 
-  var expectedPayload = { hi: 1};
+  var expectedPayload = { hi: 1 };
   subscribe("render", {
     before: function(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);

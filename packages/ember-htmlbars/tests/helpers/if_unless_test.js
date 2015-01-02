@@ -40,7 +40,7 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
 
 test("unless should keep the current context (#784) [DEPRECATED]", function() {
   view = EmberView.create({
-    o: EmberObject.create({foo: '42'}),
+    o: EmberObject.create({ foo: '42' }),
 
     template: compile('{{#with view.o}}{{#view}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
   });
@@ -784,7 +784,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
   test("`if` helper with inline form: respects isTruthy when object changes", function() {
     view = EmberView.create({
-      conditional: Ember.Object.create({isTruthy: false}),
+      conditional: Ember.Object.create({ isTruthy: false }),
       template: compile('{{if view.conditional "truthy" "falsy"}}')
     });
 
@@ -793,13 +793,13 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'falsy');
 
     run(function() {
-      view.set('conditional', Ember.Object.create({isTruthy: true}));
+      view.set('conditional', Ember.Object.create({ isTruthy: true }));
     });
 
     equal(view.$().text(), 'truthy');
 
     run(function() {
-      view.set('conditional', Ember.Object.create({isTruthy: false}));
+      view.set('conditional', Ember.Object.create({ isTruthy: false }));
     });
 
     equal(view.$().text(), 'falsy');
@@ -807,7 +807,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
   });
 
   test("`if` helper with inline form: respects isTruthy when property changes", function() {
-    var candidate = Ember.Object.create({isTruthy: false});
+    var candidate = Ember.Object.create({ isTruthy: false });
 
     view = EmberView.create({
       conditional: candidate,

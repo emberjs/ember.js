@@ -25,7 +25,7 @@ QUnit.module('Ember.compare()', {
     data[8]  = [1, 2];
     data[9]  = [1, 2, 3];
     data[10] = [1, 3];
-    data[11] = {a: 'hash'};
+    data[11] = { a: 'hash' };
     data[12] = EmberObject.create();
     data[13] = function (a) {return a;};
     data[14] = new Date('2012/01/01');

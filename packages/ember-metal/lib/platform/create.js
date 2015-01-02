@@ -22,7 +22,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
   /* jshint scripturl:true, proto:true */
   // Contributed by Brandon Benvie, October, 2012
   var createEmpty;
-  var supportsProto = !({'__proto__': null} instanceof Object);
+  var supportsProto = !({ '__proto__': null } instanceof Object);
   // the following produces false positives
   // in Opera Mini => not a reliable check
   // Object.prototype.__proto__ === null

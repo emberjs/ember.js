@@ -372,7 +372,7 @@ test("The container can get options that should be applied to a given factory", 
     }
   };
 
-  registry.options('view:post', {instantiate: true, singleton: false});
+  registry.options('view:post', { instantiate: true, singleton: false });
 
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');

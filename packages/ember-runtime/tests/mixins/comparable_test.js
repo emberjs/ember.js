@@ -22,8 +22,8 @@ var r1, r2;
 QUnit.module("Comparable", {
 
   setup: function() {
-    r1 = Rectangle.create({length: 6, width: 12});
-    r2 = Rectangle.create({length: 6, width: 13});
+    r1 = Rectangle.create({ length: 6, width: 12 });
+    r2 = Rectangle.create({ length: 6, width: 13 });
   },
 
   teardown: function() {

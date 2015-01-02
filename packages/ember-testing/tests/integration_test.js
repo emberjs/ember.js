@@ -88,8 +88,8 @@ test("template is bound to empty array of people", function() {
 test("template is bound to array of 2 people", function() {
   App.Person.find = function() {
     var people = Ember.A();
-    var first = App.Person.create({firstName: "x"});
-    var last = App.Person.create({firstName: "y"});
+    var first = App.Person.create({ firstName: "x" });
+    var last = App.Person.create({ firstName: "y" });
     run(people, people.pushObject, first);
     run(people, people.pushObject, last);
     return people;

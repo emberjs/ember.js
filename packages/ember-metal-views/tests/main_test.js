@@ -16,7 +16,7 @@ testsFor("ember-metal-views", {
 
 // Test the behavior of the helper createElement stub
 test("by default, view renders as a div", function() {
-  view = {isView: true};
+  view = { isView: true };
 
   appendTo(view);
   equalHTML('qunit-fixture', "<div></div>");

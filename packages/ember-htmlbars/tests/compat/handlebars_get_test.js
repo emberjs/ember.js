@@ -80,7 +80,7 @@ test('it can lookup a path from the current keywords', function() {
 test('it can lookup a path from globals', function() {
   expect(1);
 
-  lookup.Blammo = { foo: 'blah'};
+  lookup.Blammo = { foo: 'blah' };
 
   registry.register('helper:handlebars-get', function(path, options) {
     var context = options.contexts && options.contexts[0] || this;

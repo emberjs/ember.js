@@ -212,7 +212,7 @@ test("log which view is used with a template", function() {
 
   App.register('template:application', function() { return 'Template with default view'; });
   App.register('template:foo', function() { return 'Template with custom view'; });
-  App.register('view:posts', View.extend({templateName: 'foo'}));
+  App.register('view:posts', View.extend({ templateName: 'foo' }));
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {

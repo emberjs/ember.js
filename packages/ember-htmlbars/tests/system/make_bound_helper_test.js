@@ -43,7 +43,7 @@ test("should update bound helpers in a subexpression when properties change", fu
 
   view = EmberView.create({
     container: container,
-    controller: {prop: "isThing"},
+    controller: { prop: "isThing" },
     template: compile("<div {{bind-attr data-foo=(x-dasherize prop)}}>{{prop}}</div>")
   });
 
@@ -63,7 +63,7 @@ test("should update bound helpers when properties change", function() {
 
   view = EmberView.create({
     container: container,
-    controller: {name: "Brogrammer"},
+    controller: { name: "Brogrammer" },
     template: compile("{{x-capitalize name}}")
   });
 
@@ -199,7 +199,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
 
   view = EmberView.create({
     container: container,
-    controller: {aNumber: 1},
+    controller: { aNumber: 1 },
     template: compile("{{x-sum aNumber 1}} {{x-sum 0 aNumber}} {{x-sum 5 6}}")
   });
 

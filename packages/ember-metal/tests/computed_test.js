@@ -802,17 +802,17 @@ testBoth('protects against setting', function(get, set) {
 QUnit.module('CP macros');
 
 testBoth('computed.not', function(get, set) {
-  var obj = {foo: true};
+  var obj = { foo: true };
   defineProperty(obj, 'notFoo', computed.not('foo'));
   equal(get(obj, 'notFoo'), false);
 
-  obj = {foo: {bar: true}};
+  obj = { foo: { bar: true } };
   defineProperty(obj, 'notFoo', computed.not('foo.bar'));
   equal(get(obj, 'notFoo'), false);
 });
 
 testBoth('computed.empty', function(get, set) {
-  var obj = {foo: [], bar: undefined, baz: null, quz: ''};
+  var obj = { foo: [], bar: undefined, baz: null, quz: '' };
   defineProperty(obj, 'fooEmpty', computed.empty('foo'));
   defineProperty(obj, 'barEmpty', computed.empty('bar'));
   defineProperty(obj, 'bazEmpty', computed.empty('baz'));
@@ -829,7 +829,7 @@ testBoth('computed.empty', function(get, set) {
 });
 
 testBoth('computed.bool', function(get, set) {
-  var obj = {foo: function() {}, bar: 'asdf', baz: null, quz: false};
+  var obj = { foo: function() {}, bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'fooBool', computed.bool('foo'));
   defineProperty(obj, 'barBool', computed.bool('bar'));
   defineProperty(obj, 'bazBool', computed.bool('baz'));
@@ -841,7 +841,7 @@ testBoth('computed.bool', function(get, set) {
 });
 
 testBoth('computed.alias', function(get, set) {
-  var obj = { bar: 'asdf', baz: null, quz: false};
+  var obj = { bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'bay', computed(function(key) {
     return 'apple';
   }));
@@ -1122,7 +1122,7 @@ testBoth('computed.readOnly', function(get, set) {
 });
 
 testBoth('computed.deprecatingAlias', function(get, set) {
-  var obj = { bar: 'asdf', baz: null, quz: false};
+  var obj = { bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'bay', computed(function(key) {
     return 'apple';
   }));

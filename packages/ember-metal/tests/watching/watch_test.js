@@ -118,7 +118,7 @@ test("watching an object THEN defining it should work also", function() {
 
 test("watching a chain then defining the property", function () {
   var obj = {};
-  var foo = {bar: 'bar'};
+  var foo = { bar: 'bar' };
   addListeners(obj, 'foo.bar');
   addListeners(foo, 'bar');
 
@@ -135,8 +135,8 @@ test("watching a chain then defining the property", function () {
 
 test("watching a chain then defining the nested property", function () {
   var bar = {};
-  var obj = {foo: bar};
-  var baz = {baz: 'baz'};
+  var obj = { foo: bar };
+  var baz = { baz: 'baz' };
   addListeners(obj, 'foo.bar.baz');
   addListeners(baz, 'baz');
 
@@ -218,7 +218,7 @@ test('when watching a global object, destroy should remove chain watchers from t
 
 test('when watching another object, destroy should remove chain watchers from the other object', function() {
   var objA = {};
-  var objB = {foo: 'bar'};
+  var objB = { foo: 'bar' };
   objA.b = objB;
   addListeners(objA, 'b.foo');
 

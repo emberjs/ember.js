@@ -117,7 +117,7 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
         state: null,
         napTime: notSleepy
       });
-    var obj0 = Type0.create({ state: 'sleepy'});
+    var obj0 = Type0.create({ state: 'sleepy' });
     var obj1 = Type1.create({ state: 'sleepy' });
 
     equal(get(obj0, 'state'), 'sleepy');

@@ -242,7 +242,7 @@ test("it does not mark each option tag as selected", function() {
   equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
@@ -282,7 +282,7 @@ test("it works inside a ul element", function() {
   equal(ulView.$('li').length, 2, "renders two <li> elements");
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(ulView.$('li').length, 3, "renders an additional <li> element when an object is added");
@@ -301,13 +301,13 @@ test("it works inside a table element", function() {
   equal(tableView.$('td').length, 2, "renders two <td> elements");
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(tableView.$('td').length, 3, "renders an additional <td> element when an object is added");
 
   run(function() {
-    people.insertAt(0, {name: "Kim Deal"});
+    people.insertAt(0, { name: "Kim Deal" });
   });
 
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");

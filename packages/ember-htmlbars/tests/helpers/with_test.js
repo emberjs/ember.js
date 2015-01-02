@@ -78,7 +78,7 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
       template: compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
       context: {
         admin: { name: "Tom Dale" },
-        user: { name: "Yehuda Katz"}
+        user: { name: "Yehuda Katz" }
       }
     });
 
@@ -218,7 +218,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
     })
   });
 
-  var person = EmberObject.create({name: 'Steve Holt'});
+  var person = EmberObject.create({ name: 'Steve Holt' });
   var registry = new Registry();
   var container = registry.container();
 
@@ -308,7 +308,7 @@ test("it should wrap keyword with object controller", function() {
     })
   });
 
-  var person = EmberObject.create({name: 'Steve Holt'});
+  var person = EmberObject.create({ name: 'Steve Holt' });
   var registry = new Registry();
   var container = registry.container();
 
@@ -362,7 +362,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
     }
   });
 
-  var person = EmberObject.create({name: 'Steve Holt'});
+  var person = EmberObject.create({ name: 'Steve Holt' });
   var registry = new Registry();
   var container = registry.container();
 
@@ -398,7 +398,7 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
     }
   });
 
-  var person = EmberObject.create({name: 'Steve Holt'});
+  var person = EmberObject.create({ name: 'Steve Holt' });
   var registry = new Registry();
   var container = registry.container();
 
@@ -461,7 +461,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
         template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
         context: {
           admin: { name: "Tom Dale" },
-          user: { name: "Yehuda Katz"}
+          user: { name: "Yehuda Katz" }
         }
       });
 

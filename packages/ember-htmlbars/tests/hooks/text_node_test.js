@@ -16,7 +16,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   test("property is output", function() {
     view = EmberView.create({
-      context: {name: 'erik'},
+      context: { name: 'erik' },
       template: compile("ohai {{name}}")
     });
     runAppend(view);
@@ -26,7 +26,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   test("path is output", function() {
     view = EmberView.create({
-      context: {name: {firstName: 'erik'}},
+      context: { name: { firstName: 'erik' } },
       template: compile("ohai {{name.firstName}}")
     });
     runAppend(view);
@@ -35,7 +35,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   });
 
   test("changed property updates", function() {
-    var context = EmberObject.create({name: 'erik'});
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("ohai {{name}}")

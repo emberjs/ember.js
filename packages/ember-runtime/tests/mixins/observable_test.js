@@ -36,7 +36,7 @@ test('should be able to use setProperties to set multiple properties at once', f
     companyName: "Apple, Inc."
   });
 
-  obj.setProperties({firstName: "Tim", lastName: "Cook"});
+  obj.setProperties({ firstName: "Tim", lastName: "Cook" });
   equal("Tim", obj.get("firstName"));
   equal("Cook", obj.get("lastName"));
 });
