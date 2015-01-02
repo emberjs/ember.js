@@ -205,12 +205,23 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   var originalBindAttr = helpers['bind-attr'];
 
   try {
-    helpers['bind-attr'] = function() {
-      equal(arguments[0], 'foo', 'First arg match');
-      equal(arguments[1], 'bar', 'Second arg match');
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      helpers['bind-attr'] = {
+        helperFunction: function() {
+          equal(arguments[0], 'foo', 'First arg match');
+          equal(arguments[1], 'bar', 'Second arg match');
 
-      return 'result';
-    };
+          return 'result';
+        }
+      };
+    } else {
+      helpers['bind-attr'] = function() {
+        equal(arguments[0], 'foo', 'First arg match');
+        equal(arguments[1], 'bar', 'Second arg match');
+
+        return 'result';
+      };
+    }
 
     expectDeprecation(function() {
       var result;
@@ -225,6 +236,27 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   } finally {
     helpers['bind-attr'] = originalBindAttr;
   }
+});
+
+test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function() {
+  expect(3);
+
+  view = EmberView.create({
+    value: 'Test',
+    template: compile('<img src="test.jpg" {{bindAttr alt=view.value}}>')
+  });
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /The 'bindAttr' view helper is deprecated in favor of 'bind-attr'/);
+
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
+
+  run(function() {
+    view.set('value', 'Updated');
+  });
+
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
 test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
