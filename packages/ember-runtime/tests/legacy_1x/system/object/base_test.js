@@ -57,13 +57,12 @@ test("Should allow changing of those properties by calling EmberObject#set", fun
   equal(get(obj, 'foo'), 'bar');
   equal(get(obj, 'total'), 12345);
 
-  set(obj,  'foo', 'Chunky Bacon' );
-  set(obj,  'total', 12 );
+  set(obj,  'foo', 'Chunky Bacon');
+  set(obj,  'total', 12);
 
   equal(get(obj, 'foo'), 'Chunky Bacon');
   equal(get(obj, 'total'), 12);
 });
-
 
 QUnit.module("EmberObject observers", {
   setup: function() {
@@ -119,8 +118,6 @@ test("Global+Local observer works", function() {
   set(obj, "prop1", false);
   equal(obj._both, true, "Both observer did change.");
 });
-
-
 
 QUnit.module("EmberObject superclass and subclasses", {
   setup: function() {

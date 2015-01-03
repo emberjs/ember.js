@@ -387,7 +387,7 @@ function ChangeMeta(dependentArray, item, index, propertyName, property, changed
 
 function addItems(dependentArray, callbacks, cp, propertyName, meta) {
   forEach(dependentArray, function (item, index) {
-    meta.setValue( callbacks.addedItem.call(
+    meta.setValue(callbacks.addedItem.call(
       this, meta.getValue(), item, new ChangeMeta(dependentArray, item, index, propertyName, cp, dependentArray.length), meta.sugarMeta));
   }, this);
   callbacks.flushedChanges.call(this, meta.getValue(), meta.sugarMeta);

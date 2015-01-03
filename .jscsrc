@@ -17,6 +17,7 @@
     "beforeAlternate": true
   },
   "disallowSpacesInCallExpression": true,
+  "disallowSpacesInsideRoundBracesInCallExpression": true,
   "disallowEmptyBlocks": true,
   "requireSpacesInsideObjectBrackets": "all",
   "requireCurlyBraces": [

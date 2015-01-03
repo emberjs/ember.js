@@ -11,7 +11,7 @@ test('adds new properties to subclass instance', function() {
     bar: 'BAR'
   });
 
-  equal( new Subclass().foo(), 'FOO', 'Adds method');
+  equal(new Subclass().foo(), 'FOO', 'Adds method');
   equal(get(new Subclass(), 'bar'), 'BAR', 'Adds property');
 });
 
@@ -26,7 +26,7 @@ test('reopened properties inherited by subclasses', function() {
   });
 
 
-  equal( new SubSub().foo(), 'FOO', 'Adds method');
+  equal(new SubSub().foo(), 'FOO', 'Adds method');
   equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });
 

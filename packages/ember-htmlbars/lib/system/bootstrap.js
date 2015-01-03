@@ -65,7 +65,7 @@ function bootstrap(ctx) {
 }
 
 function _bootstrap() {
-  bootstrap( jQuery(document) );
+  bootstrap(jQuery(document));
 }
 
 function registerComponentLookup(registry) {

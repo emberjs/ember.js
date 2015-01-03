@@ -50,9 +50,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
       });
       runAppend(view);
 
-      equal( view.element.firstChild.getAttribute(subject.attr),
+      equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",
-             "attribute is output" );
+             "attribute is output");
     });
 
     test(subject.tag +" "+subject.attr+" is sanitized when using quoted non-whitelisted protocol", function() {
@@ -62,9 +62,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
       });
       runAppend(view);
 
-      equal( view.element.firstChild.getAttribute(subject.attr),
+      equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",
-             "attribute is output" );
+             "attribute is output");
     });
 
     test(subject.tag +" "+subject.attr+" is not sanitized when using non-whitelisted protocol with a SafeString", function() {
@@ -76,9 +76,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
       try {
         runAppend(view);
 
-        equal( view.element.firstChild.getAttribute(subject.attr),
+        equal(view.element.firstChild.getAttribute(subject.attr),
                "javascript://example.com",
-               "attribute is output" );
+               "attribute is output");
       } catch(e) {
         // IE does not allow javascript: to be set on img src
         ok(true, 'caught exception '+e);
@@ -92,9 +92,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
       });
       runAppend(view);
 
-      equal( view.element.firstChild.getAttribute(subject.attr),
+      equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",
-             "attribute is output" );
+             "attribute is output");
     });
 
   })(); //jshint ignore:line

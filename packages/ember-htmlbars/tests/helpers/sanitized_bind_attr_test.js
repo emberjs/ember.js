@@ -39,9 +39,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
 
       runAppend(view);
 
-      equal( view.element.firstChild.getAttribute(attr),
+      equal(view.element.firstChild.getAttribute(attr),
              "unsafe:javascript:alert('XSS')",
-             "attribute is output" );
+             "attribute is output");
     });
 
     test("XSS - should not bind unsafe "+tagName+" "+attr+" values on rerender", function() {
@@ -52,15 +52,15 @@ for (var i=0, l=badTags.length; i<l; i++) {
 
       runAppend(view);
 
-      equal( view.element.firstChild.getAttribute(attr),
+      equal(view.element.firstChild.getAttribute(attr),
              "/sunshine/and/rainbows",
-             "attribute is output" );
+             "attribute is output");
 
       run(view, 'set', 'badValue', "javascript:alert('XSS')");
 
-      equal( view.element.firstChild.getAttribute(attr),
+      equal(view.element.firstChild.getAttribute(attr),
              "unsafe:javascript:alert('XSS')",
-             "attribute is output" );
+             "attribute is output");
     });
 
     test("should bind unsafe "+tagName+" "+attr+" values if they are SafeString", function() {
@@ -72,9 +72,9 @@ for (var i=0, l=badTags.length; i<l; i++) {
       try {
         runAppend(view);
 
-        equal( view.element.firstChild.getAttribute(attr),
+        equal(view.element.firstChild.getAttribute(attr),
                "javascript:alert('XSS')",
-               "attribute is output" );
+               "attribute is output");
       } catch(e) {
         // IE does not allow javascript: to be set on img src
         ok(true, 'caught exception '+e);

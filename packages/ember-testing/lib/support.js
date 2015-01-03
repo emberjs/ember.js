@@ -42,7 +42,7 @@ if (environment.hasDOM) {
         $.event.special.click = {
           // For checkbox, fire native event so checked state will be right
           trigger: function() {
-            if ($.nodeName( this, "input" ) && this.type === "checkbox" && this.click) {
+            if ($.nodeName(this, "input") && this.type === "checkbox" && this.click) {
               this.click();
               return false;
             }

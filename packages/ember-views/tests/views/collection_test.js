@@ -206,7 +206,7 @@ test("it updates the view if an item is replaced", function() {
 
   run(function() {
     content.removeAt(1);
-    content.insertAt(1, "Kazuki" );
+    content.insertAt(1, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -235,9 +235,9 @@ test("can add and replace in the same runloop", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale" );
+    content.pushObject("Tom Dale");
     content.removeAt(0);
-    content.insertAt(0, "Kazuki" );
+    content.insertAt(0, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -267,9 +267,9 @@ test("can add and replace the object before the add in the same runloop", functi
   });
 
   run(function() {
-    content.pushObject("Tom Dale" );
+    content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki" );
+    content.insertAt(1, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -298,11 +298,11 @@ test("can add and replace complicatedly", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale" );
+    content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki" );
-    content.pushObject("Firestone" );
-    content.pushObject("McMunch" );
+    content.insertAt(1, "Kazuki");
+    content.pushObject("Firestone");
+    content.pushObject("McMunch");
   });
 
   forEach(content, function(item, idx) {
@@ -331,11 +331,11 @@ test("can add and replace complicatedly harder", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale" );
+    content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki" );
-    content.pushObject("Firestone" );
-    content.pushObject("McMunch" );
+    content.insertAt(1, "Kazuki");
+    content.pushObject("Firestone");
+    content.pushObject("McMunch");
     content.removeAt(2);
   });
 
