@@ -1788,7 +1788,7 @@ var View = CoreView.extend({
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
 
-    Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
+    Ember.assert("Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.", typeOf(this.classNames) === 'array');
     this.classNames = emberA(this.classNames.slice());
   },
 
