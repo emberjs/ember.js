@@ -8,6 +8,7 @@ import run from 'ember-metal/run_loop';
 import _MetamorphView from "ember-views/views/metamorph_view";
 import NormalizedRerenderIfNeededSupport from "ember-views/mixins/normalized_rerender_if_needed";
 import run from 'ember-metal/run_loop';
+import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
@@ -58,13 +59,8 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
       set(this, '_context', withValue);
     }
 
-    if (withValue) {
-      set(this, 'template', this.mainTemplate);
-    } else {
-      set(this, 'template', this.inverseTemplate);
-    }
-
-    return this._super(buffer);
+    var template = withValue ? this.mainTemplate : this.inverseTemplate;
+    renderView(this, buffer, template);
   },
 
   willDestroy: function() {

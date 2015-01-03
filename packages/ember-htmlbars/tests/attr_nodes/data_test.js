@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-template-compiler/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
-import { defaultEnv } from "ember-htmlbars";
+import defaultEnv from "ember-htmlbars/env";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, originalSetAttribute, setAttributeCalls;

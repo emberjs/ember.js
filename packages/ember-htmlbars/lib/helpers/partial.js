@@ -2,7 +2,6 @@ import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
 import BoundPartialView from "ember-views/views/bound_partial_view";
 import lookupPartial from "ember-views/system/lookup_partial";
-import emptyTemplate from "ember-htmlbars/templates/empty";
 
 /**
 @module ember
@@ -57,7 +56,6 @@ export function partialHelper(params, hash, options, env) {
       _morph: options.morph,
       _context: get(this, 'context'),
       templateNameStream: templateName,
-      emptyTemplate: emptyTemplate,
       helperName: options.helperName || 'partial'
     });
   } else {

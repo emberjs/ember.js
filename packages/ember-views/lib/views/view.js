@@ -60,12 +60,12 @@ import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value"
 function K() { return this; }
 
 // Circular dep
-var _htmlbarsDefaultEnv;
-function buildHTMLBarsDefaultEnv() {
-  if (!_htmlbarsDefaultEnv) {
-    _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
+var _renderView;
+function renderView(view, buffer, template) {
+  if (_renderView === undefined) {
+    _renderView = require('ember-htmlbars/system/render-view')['default'];
   }
-  return create(_htmlbarsDefaultEnv);
+  _renderView(view, buffer, template);
 }
 
 /**
@@ -1095,43 +1095,7 @@ var View = CoreView.extend({
     // the layout to render the view's template. Otherwise, render the template
     // directly.
     var template = get(this, 'layout') || get(this, 'template');
-
-    if (template) {
-      var context = get(this, 'context');
-      var output;
-
-      var data = {
-        view: this,
-        buffer: buffer,
-        isRenderData: true
-      };
-
-      // Invoke the template with the provided template context, which
-      // is the view's controller by default. A hash of data is also passed that provides
-      // the template with access to the view and render buffer.
-
-      // The template should write directly to the render buffer instead
-      // of returning a string.
-      var options = { data: data };
-      var useHTMLBars = false;
-
-      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.isHTMLBars;
-      }
-
-      if (useHTMLBars) {
-        Ember.assert('template must be an object. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'object');
-        var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
-        output = template.render(this, env, buffer.innerContextualElement(), this._blockArguments);
-      } else {
-        Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
-        output = template(context, options);
-      }
-
-      // If the template returned a string instead of writing to the buffer,
-      // push the string onto the buffer.
-      if (output !== undefined) { buffer.push(output); }
-    }
+    renderView(this, buffer, template);
   },
 
   /**
