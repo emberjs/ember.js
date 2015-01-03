@@ -319,8 +319,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
     ```
 
-    Using the `concatenatedProperties` property, we can tell to Ember that mix
-    the content of the properties.
+    Using the `concatenatedProperties` property, we can tell Ember to mix the
+    content of the properties.
 
     In `Ember.View` the `classNameBindings` and `attributeBindings` properties
     are also concatenated, in addition to `classNames`.
