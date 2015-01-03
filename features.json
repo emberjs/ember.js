@@ -9,7 +9,7 @@
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-component-helper": null,
     "ember-htmlbars-inline-if-helper": true,
-    "ember-htmlbars-attribute-syntax": null,
+    "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
     "new-computed-syntax": null
   },
