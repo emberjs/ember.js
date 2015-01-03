@@ -15,7 +15,7 @@ var view, registry, container;
 function registerRepeatHelper() {
   registry.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
     var times = hash.times || 1;
-    return new Array(times + 1).join( params[0] );
+    return new Array(times + 1).join(params[0]);
   }));
 }
 

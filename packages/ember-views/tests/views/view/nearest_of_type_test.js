@@ -17,7 +17,7 @@ QUnit.module("View#nearest*", {
   var Mixin = EmberMixin.create({});
   var Parent = View.extend(Mixin, {
     render: function(buffer) {
-      this.appendChild( View.create() );
+      this.appendChild(View.create());
     }
   });
 

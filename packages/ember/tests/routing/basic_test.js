@@ -2283,7 +2283,7 @@ test("Generated route should be an instance of App.Route if provided", function(
 test("Nested index route is not overriden by parent's implicit index route", function() {
   Router.map(function() {
     this.resource('posts', function() {
-      this.route('index', { path: ':category' } );
+      this.route('index', { path: ':category' });
     });
   });
 

@@ -314,7 +314,7 @@ test("additional events which should be listened on can be passed", function () 
       myEvent: function() {
         ok(true, "custom event has been triggered");
       }
-    }).appendTo( dispatcher.get("rootElement") );
+    }).appendTo(dispatcher.get("rootElement"));
   });
 
   jQuery("#leView").trigger("myevent");
@@ -333,7 +333,7 @@ test("additional events and rootElement can be specified", function () {
       myEvent: function() {
         ok(true, "custom event has been triggered");
       }
-    }).appendTo( dispatcher.get("rootElement") );
+    }).appendTo(dispatcher.get("rootElement"));
   });
 
   ok(jQuery(".custom-root").hasClass("ember-application"), "the custom rootElement is used");

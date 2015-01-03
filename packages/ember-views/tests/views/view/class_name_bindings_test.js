@@ -80,7 +80,7 @@ test("should add, remove, or change class names if changed after element is crea
     set(view, 'canIgnore', true);
     set(view, 'isEnabled', false);
     set(view, 'messages.count', 'six-messages');
-    set(view, 'messages.resent', true );
+    set(view, 'messages.resent', true);
   });
 
   ok(view.$().hasClass('orange'), "updates string values");
