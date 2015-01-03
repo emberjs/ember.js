@@ -85,9 +85,14 @@ require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
 [wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
 
-4. Make the test pass.
+4. Make sure to check out the
+   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
+   ensure that your code complies with the rules. If you missed a rule or two, don't worry, our
+   tests will warn you.
 
-5. Commit your changes. Please use an appropriate commit prefix.
+5. Make the test pass.
+
+6. Commit your changes. Please use an appropriate commit prefix.
 If your pull request fixes an issue specify it in the commit message. Some examples:
 
   ```
@@ -101,7 +106,7 @@ If your pull request fixes an issue specify it in the commit message. Some examp
   [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
 
 
-6. Push to your fork and submit a pull request. Please provide us with some
+7. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
 explain a standard use case to us.
 
