@@ -1,5 +1,6 @@
 {
   "features": {
+    "default-template-name": null,
     "features-stripped-test": null,
     "ember-routing-named-substates": true,
     "ember-metal-injected-properties": true,

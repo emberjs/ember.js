@@ -68,6 +68,8 @@ function buildHTMLBarsDefaultEnv() {
   return create(_htmlbarsDefaultEnv);
 }
 
+var defaultTemplateNameEnabled = Ember.FEATURES.isEnabled('default-template-name');
+
 /**
 @module ember
 @submodule ember-views
@@ -725,6 +727,15 @@ var View = CoreView.extend({
   templateName: null,
 
   /**
+    The name of the default template to lookup if no template is provided.
+
+    @property defaultTemplateName
+    @type String
+    @default null
+  */
+  defaultTemplateName: null,
+
+  /**
     The name of the layout to lookup if no layout is provided.
 
     By default `Ember.View` will lookup a template with this name in
@@ -749,6 +760,27 @@ var View = CoreView.extend({
   }),
 
   /**
+    The template used to render the view when a template is not specified.
+    This should be a function that accepts an optional context parameter and
+    returns a string of HTML that will be inserted into the DOM relative to
+    its parent view.
+
+    In general, you should set the `defaultTemplateName` property instead of
+    setting the template yourself.
+
+    @property defaultTemplate
+    @type Function
+  */
+  defaultTemplate: defaultTemplateNameEnabled ? computed('defaultTemplateName', function () {
+    var defaultTemplateName = get(this, 'defaultTemplateName');
+    var template = this.templateForName(defaultTemplateName, 'template');
+
+    Ember.assert("You specified the defaultTemplateName " + defaultTemplateName + " for " + this + ", but it did not exist.", !defaultTemplateName || !!template);
+
+    return template;
+  }) : null,
+
+  /**
     The template used to render the view. This should be a function that
     accepts an optional context parameter and returns a string of HTML that
     will be inserted into the DOM relative to its parent view.
@@ -759,7 +791,7 @@ var View = CoreView.extend({
     @property template
     @type Function
   */
-  template: computed('templateName', function(key, value) {
+  template: computed('templateName', 'defaultTemplate', function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName');
@@ -807,7 +839,7 @@ var View = CoreView.extend({
     @property layout
     @type Function
   */
-  layout: computed(function(key) {
+  layout: computed(function() {
     var layoutName = get(this, 'layoutName');
     var layout = this.templateForName(layoutName, 'layout');
 
