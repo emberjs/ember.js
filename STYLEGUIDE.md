@@ -23,6 +23,12 @@
 var foo = {};
 ```
 
++ Pad single-line objects with white-space.
+
+```javascript
+var bar = { color: 'orange' };
+```
+
 ## Arrays
 
 + Use literal form for array creation (unless you know the exact length).
@@ -46,7 +52,7 @@ foo.push('bar');
 
 ## Variables
 
-+ Put all non assigning declarations on one line.
++ Put all non-assigning declarations on one line.
 
 ```javascript
 var a, b;
@@ -98,7 +104,7 @@ test('foo-bar', function() {
 var foo = {};
 ```
 
-+ No spaces after the function name when it's declared or called.
++ Keep parenthesis adjecent to the function name when declared or called.
 
 ```javascript
 function foo() {
@@ -109,14 +115,14 @@ foo();
 
 ## Commas
 
-+ No trailing commas.
++ Skip trailing commas.
 
 ```javascript
 var foo = [1, 2, 3];
-var bar = {a: 'a'};
+var bar = { a: 'a' };
 ```
 
-+ No leading commas.
++ Skip leading commas.
 
 ```javascript
 var foo = [
@@ -143,7 +149,7 @@ if (notFound) {
 }
 
 switch (condition) {
-  case "yes":
+  case 'yes':
     // code
     break;
 }
@@ -168,7 +174,7 @@ try {
 }
 ```
 
-+ Don't use new lines before opening curly brace.
++ Opening curly brace on the same line as the beginning of a statement or declaration.
 
 ```javascript
 function foo() {
@@ -194,7 +200,7 @@ while (true) {
 }
 ```
 
-+ Don't place `else` on a new line.
++ Keep `else` and its accompanying braces on the same line.
 
 ```javascript
 if (foo === 1) {
@@ -237,7 +243,7 @@ if (foo !== '') {
 
 ## Properties
 
-+ Use dot notation when accessing properties.
++ Use dot-notation when accessing properties.
 
 ```javascript
 var foo = {
@@ -260,7 +266,7 @@ foo[propertyName];
 
 ## Functions
 
-+ Make sure to name the functions when you define them.
++ Make sure to name functions when you define them.
 
 ```javascript
 function fooBar() {
@@ -272,7 +278,7 @@ function fooBar() {
 `arguments` object must not be passed or leaked anywhere.
 See the [reference](https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments).
 
-+ Don't use `slice` with `arguments`, use `for` loop.
++ Use a `for` loop with `arguments` (instead of `slice`).
 
 ```javascript
 function fooBar() {
@@ -298,7 +304,7 @@ function fooBar(opt) {
 }
 ```
 
-+ Use a new variable if you need to re-assign the argument.
++ Use a new variable if you need to re-assign an argument.
 
 ```javascript
 function fooBar(opt) {
