@@ -7,6 +7,7 @@
     "ember-htmlbars": true,
     "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": null,
+    "ember-htmlbars-component-helper": null,
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": null,
     "ember-routing-transitioning-classes": true,
