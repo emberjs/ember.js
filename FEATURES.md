@@ -106,6 +106,6 @@ for a detailed explanation.
   a function that acts both as getter and setter for the property, `Ember.computed`
   receives an object with `get` and `set` keys, each one containing a function.
   If the object does not contain a `set` key, the property will simply be overridden.
-  Passing just function is still supported, and is equivalent to pass only a getter.
+  Passing just function is still supported, and is equivalent to passing only a getter.
 
   Added in [#9527](https://github.com/emberjs/ember.js/pull/9527).
