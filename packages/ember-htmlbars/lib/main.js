@@ -7,17 +7,6 @@ import {
   registerPlugin
 } from "ember-template-compiler";
 
-import inline from "ember-htmlbars/hooks/inline";
-import content from "ember-htmlbars/hooks/content";
-import component from "ember-htmlbars/hooks/component";
-import block from "ember-htmlbars/hooks/block";
-import element from "ember-htmlbars/hooks/element";
-import subexpr from "ember-htmlbars/hooks/subexpr";
-import attribute from "ember-htmlbars/hooks/attribute";
-import concat from "ember-htmlbars/hooks/concat";
-import get from "ember-htmlbars/hooks/get";
-import set from "ember-htmlbars/hooks/set";
-import { DOMHelper } from "morph";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
@@ -49,8 +38,6 @@ import { collectionHelper } from "ember-htmlbars/helpers/collection";
 import { eachHelper } from "ember-htmlbars/helpers/each";
 import { unboundHelper } from "ember-htmlbars/helpers/unbound";
 
-import environment from "ember-metal/environment";
-
 // importing adds template bootstrapping
 // initializer to enable embedded templates
 import "ember-htmlbars/system/bootstrap";
@@ -79,7 +66,6 @@ registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
-registerHelper('concat', concat);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
@@ -95,24 +81,3 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   };
 
 }
-
-var domHelper = environment.hasDOM ? new DOMHelper() : null;
-
-export var defaultEnv = {
-  dom: domHelper,
-
-  hooks: {
-    get: get,
-    set: set,
-    inline: inline,
-    content: content,
-    block: block,
-    element: element,
-    subexpr: subexpr,
-    component: component,
-    attribute: attribute,
-    concat: concat
-  },
-
-  helpers: helpers
-};

@@ -1,7 +1,7 @@
-import { set } from "ember-metal/property_set";
 import run from 'ember-metal/run_loop';
 import _MetamorphView from "ember-views/views/metamorph_view";
 import NormalizedRerenderIfNeededSupport from "ember-views/mixins/normalized_rerender_if_needed";
+import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
@@ -22,12 +22,7 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     var result = this.conditionStream.value();
     this._lastNormalizedValue = result;
 
-    if (result) {
-      set(this, 'template', this.truthyTemplate);
-    } else {
-      set(this, 'template', this.falsyTemplate);
-    }
-
-    return this._super(buffer);
+    var template = result ? this.truthyTemplate : this.falsyTemplate;
+    renderView(this, buffer, template);
   }
 });
