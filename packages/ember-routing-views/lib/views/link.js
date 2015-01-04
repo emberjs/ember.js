@@ -589,6 +589,8 @@ function computeActive(route, routerState) {
       return get(route, 'activeClass');
     }
   }
+
+  return false;
 }
 
 function isActiveForRoute(route, routeName, isCurrentWhenSpecified, routerState) {
