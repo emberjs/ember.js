@@ -45,11 +45,11 @@ function copyNull(obj) {
 }
 
 function copyMap(original, newObject) {
-  var keys = original.keys.copy();
-  var values = copyNull(original.values);
+  var keys = original._keys.copy();
+  var values = copyNull(original._values);
 
-  newObject.keys = keys;
-  newObject.values = values;
+  newObject._keys = keys;
+  newObject._values = values;
   newObject.size = original.size;
 
   return newObject;
@@ -252,9 +252,9 @@ deprecateProperty(OrderedSet.prototype, 'length', 'size');
 */
 function Map() {
   if (this instanceof this.constructor) {
-    this.keys = OrderedSet.create();
-    this.keys._silenceRemoveDeprecation = true;
-    this.values = create(null);
+    this._keys = OrderedSet.create();
+    this._keys._silenceRemoveDeprecation = true;
+    this._values = create(null);
     this.size = 0;
   } else {
     missingNew("OrderedSet");
@@ -294,7 +294,7 @@ Map.prototype = {
   get: function(key) {
     if (this.size === 0) { return; }
 
-    var values = this.values;
+    var values = this._values;
     var guid = guidFor(key);
 
     return values[guid];
@@ -310,8 +310,8 @@ Map.prototype = {
     @return {Ember.Map}
   */
   set: function(key, value) {
-    var keys = this.keys;
-    var values = this.values;
+    var keys = this._keys;
+    var values = this._values;
     var guid = guidFor(key);
 
     // ensure we don't store -0
@@ -351,8 +351,8 @@ Map.prototype = {
     if (this.size === 0) { return false; }
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
-    var keys = this.keys;
-    var values = this.values;
+    var keys = this._keys;
+    var values = this._values;
     var guid = guidFor(key);
 
     if (keys.delete(key, guid)) {
@@ -372,7 +372,7 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
-    return this.keys.has(key);
+    return this._keys.has(key);
   },
 
   /**
@@ -409,15 +409,15 @@ Map.prototype = {
       };
     }
 
-    this.keys.forEach(cb);
+    this._keys.forEach(cb);
   },
 
   /**
     @method clear
   */
   clear: function() {
-    this.keys.clear();
-    this.values = create(null);
+    this._keys.clear();
+    this._values = create(null);
     this.size = 0;
   },
 
