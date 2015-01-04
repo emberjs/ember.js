@@ -282,9 +282,7 @@ export default Mixin.create({
     @param {String} key name of the property
     @return {Array} The mapped array.
   */
-  getEach: function(key) {
-    return this.mapBy(key);
-  },
+  getEach: aliasMethod('mapBy'),
 
   /**
     Sets the value on the named property for each member. This is more
