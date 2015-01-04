@@ -636,12 +636,13 @@ export default Mixin.create({
   everyProperty: aliasMethod('isEvery'),
 
   /**
-    Returns `true` if the passed property resolves to `true` for all items in
-    the enumerable. This method is often simpler/faster than using a callback.
+    Returns `true` if the passed property resolves to the value of the second
+    argument for all items in the enumerable. This method is often simpler/faster 
+    than using a callback.
 
     @method isEvery
     @param {String} key the property to test
-    @param {String} [value] optional value to test against.
+    @param {String} [value] optional value to test against. Defaults to `true`
     @return {Boolean}
     @since 1.3.0
     @public
@@ -748,12 +749,13 @@ export default Mixin.create({
   some: aliasMethod('any'),
 
   /**
-    Returns `true` if the passed property resolves to `true` for any item in
-    the enumerable. This method is often simpler/faster than using a callback.
+    Returns `true` if the passed property resolves to the value of the second
+    argument for any item in the enumerable. This method is often simpler/faster 
+    than using a callback.
 
     @method isAny
     @param {String} key the property to test
-    @param {String} [value] optional value to test against.
+    @param {String} [value] optional value to test against. Defaults to `true`
     @return {Boolean}
     @since 1.3.0
     @private
