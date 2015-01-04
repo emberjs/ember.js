@@ -762,7 +762,7 @@ export default Mixin.create({
     @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Boolean} `true` if the passed function returns `true` for any item
+    @return {Boolean}
     @since 1.3.0
   */
   isAny: function(key, value) {
@@ -773,7 +773,7 @@ export default Mixin.create({
     @method anyBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Boolean} `true` if the passed function returns `true` for any item
+    @return {Boolean}
     @deprecated Use `isAny` instead
   */
   anyBy: aliasMethod('isAny'),
@@ -782,7 +782,7 @@ export default Mixin.create({
     @method someProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Boolean} `true` if the passed function returns `true` for any item
+    @return {Boolean}
     @deprecated Use `isAny` instead
   */
   someProperty: aliasMethod('isAny'),
