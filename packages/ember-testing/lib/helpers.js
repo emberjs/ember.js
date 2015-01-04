@@ -52,7 +52,7 @@ function visit(app, url) {
 }
 
 function click(app, selector, context) {
-  var $el = app.testHelpers.findWithAssert(selector, context);
+  var $el = app.testHelpers.findOneWithAssert(selector, context);
   run($el, 'mousedown');
 
   if ($el.is(':input')) {
@@ -106,7 +106,7 @@ function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptio
     options = possibleOptions;
   }
 
-  var $el = app.testHelpers.findWithAssert(selector, context);
+  var $el = app.testHelpers.findOneWithAssert(selector, context);
 
   var event = jQuery.Event(type, options);
 
@@ -137,7 +137,7 @@ function fillIn(app, selector, contextOrText, text) {
   } else {
     context = contextOrText;
   }
-  $el = app.testHelpers.findWithAssert(selector, context);
+  $el = app.testHelpers.findOneWithAssert(selector, context);
   run(function() {
     $el.val(text).change();
   });
@@ -148,6 +148,14 @@ function findWithAssert(app, selector, context) {
   var $el = app.testHelpers.find(selector, context);
   if ($el.length === 0) {
     throw new EmberError("Element " + selector + " not found.");
+  }
+  return $el;
+}
+
+function findOneWithAssert(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  if ($el.length > 1) {
+    throw new EmberError("More then one element was found for " + selector);
   }
   return $el;
 }
@@ -313,6 +321,27 @@ helper('find', find);
 * @throws {Error} throws error if jQuery object returned has a length of 0
 */
 helper('findWithAssert', findWithAssert);
+
+/**
+* Like `find`, but throws an error if the element selector returns no results or
+* returns more than one result.
+*
+* Example:
+*
+* ```javascript
+* var $el = findOneWithAssert('.doesnt-exist'); // throws error
+* // or
+* var $el = findOneWithAssert('li.multiple-items'); // throws error
+* ```
+*
+* @method findOneWithAssert
+* @param {String} selector jQuery selector string for finding an element within
+* the DOM
+* @return {Object} jQuery object representing the results of the query
+* @throws {Error} throws error if jQuery object returned has a length of 0
+* or greater than 1
+*/
+helper('findOneWithAssert', findOneWithAssert);
 
 /**
   Causes the run loop to process any pending events. This is used to ensure that
