@@ -36,6 +36,24 @@ function pauseTest() {
   return new Ember.RSVP.Promise(function() { }, 'TestAdapter paused promise');
 }
 
+function focus(el) {
+  if (el && el.is(':input')) {
+    var type = el.prop('type');
+    if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
+      run(el, function() {
+        // Firefox does not trigger the `focusin` event if the window
+        // does not have focus. If the document doesn't have focus just
+        // use trigger('focusin') instead.
+        if (!document.hasFocus || document.hasFocus()) {
+          this.focus();
+        } else {
+          this.trigger('focusin');
+        }
+      });
+    }
+  }
+}
+
 function visit(app, url) {
   var router = app.__container__.lookup('router:main');
   router.location.setURL(url);
@@ -55,21 +73,7 @@ function click(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
 
-  if ($el.is(':input')) {
-    var type = $el.prop('type');
-    if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      run($el, function() {
-        // Firefox does not trigger the `focusin` event if the window
-        // does not have focus. If the document doesn't have focus just
-        // use trigger('focusin') instead.
-        if (!document.hasFocus || document.hasFocus()) {
-          this.focus();
-        } else {
-          this.trigger('focusin');
-        }
-      });
-    }
-  }
+  focus($el);
 
   run($el, 'mouseup');
   run($el, 'click');
@@ -138,6 +142,7 @@ function fillIn(app, selector, contextOrText, text) {
     context = contextOrText;
   }
   $el = app.testHelpers.findWithAssert(selector, context);
+  focus($el);
   run(function() {
     $el.val(text).change();
   });
