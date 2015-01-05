@@ -94,6 +94,23 @@ var childViewsProperty = computed(function() {
   return ret;
 });
 
+var findRecursivelyByType = function (klass, children) {
+  var grandchildren = [];
+
+  for (var i = 0, len = children.length; i < len; i++) {
+    var child = children[i];
+    if (klass.detectInstance(child)) {
+      return child;
+    }
+    grandchildren.pushObjects(child.get('childViews'));
+  }
+
+  if (grandchildren.length === 0) {
+    return null;
+  }
+  return findRecursivelyByType(klass, grandchildren);
+};
+
 Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.", Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
 
 /**
@@ -1022,12 +1039,25 @@ var View = CoreView.extend({
     @return Ember.View
   */
   nearestChildOf: function(klass) {
+    Ember.deprecate("Ember.View#nearestChildOf has been deprecated, for existing behavior, use Ember.View#nearestOfType. If you intend to find the nearest child of a type use Ember.View#nearestChildOfType instead.");
+
     var view = get(this, 'parentView');
 
     while (view) {
       if (get(view, 'parentView') instanceof klass) { return view; }
       view = get(view, 'parentView');
     }
+  },
+
+  /**
+    Return the nearest child that is an instance of `klass`.
+
+    @method nearestChildOfType
+    @param {Class} klass Subclass of Ember.View (or Ember.View itself)
+    @return Ember.View
+  */
+  nearestChildOfType: function(klass) {
+    return findRecursivelyByType(klass, get(this, 'childViews'));
   },
 
   /**
