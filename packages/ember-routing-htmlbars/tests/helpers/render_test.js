@@ -1,29 +1,19 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
-import { get } from "ember-metal/property_get";
-import { set as emberSet } from "ember-metal/property_set";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { observer } from 'ember-metal/mixin';
 
-import Registry from 'container/registry';
 import Namespace from "ember-runtime/system/namespace";
-import {
-  classify,
-  decamelize
-} from "ember-runtime/system/string";
 
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
-
-import EmberRouter from "ember-routing/system/router";
-import HashLocation from "ember-routing/location/hash_location";
 
 import { registerHelper } from "ember-htmlbars/helpers";
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
 
 import EmberView from "ember-routing/ext/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
 import ActionManager from "ember-views/system/action_manager";
 
@@ -31,53 +21,13 @@ import { renderHelper } from "ember-routing-htmlbars/helpers/render";
 import { actionHelper } from "ember-routing-htmlbars/helpers/action";
 import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
+import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-function set(object, key, value) {
-  run(function() { emberSet(object, key, value); });
-}
-
-function buildContainer(namespace) {
-  var registry = new Registry();
-  var container = registry.container();
-
-  registry.set = emberSet;
-  registry.resolver = resolverFor(namespace);
-  registry.optionsForType('view', { singleton: false });
-  registry.optionsForType('template', { instantiate: false });
-  registry.register('application:main', namespace, { instantiate: false });
-  registry.injection('router:main', 'namespace', 'application:main');
-
-  registry.register('location:hash', HashLocation);
-
-  registry.register('controller:basic', EmberController, { instantiate: false });
-  registry.register('controller:array', EmberArrayController, { instantiate: false });
-
-  registry.typeInjection('route', 'router', 'router:main');
-
-  return container;
-}
-
-function resolverFor(namespace) {
-  return function(fullName) {
-    var nameParts = fullName.split(":");
-    var type = nameParts[0];
-    var name = nameParts[1];
-
-    if (type === 'template') {
-      var templateName = decamelize(name);
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
-      }
-    }
-
-    var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
-
-    if (factory) { return factory; }
-  };
+function runSet(object, key, value) {
+  run(function() {
+    set(object, key, value);
+  });
 }
 
 var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
@@ -95,10 +45,10 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
 
 
     var namespace = Namespace.create();
-    container = buildContainer(namespace);
-    container._registry.register('view:default', _MetamorphView);
-    container._registry.register('router:main', EmberRouter.extend());
+    var registry = buildRegistry(namespace);
+    container = registry.container();
   },
+
   teardown: function() {
     delete helpers['render'];
     helpers['render'] = originalRenderHelper;
@@ -109,15 +59,8 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
     delete helpers['outlet'];
     helpers['outlet'] = originalOutletHelper;
 
-    run(function () {
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-      container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
 
     Ember.TEMPLATES = {};
   }
@@ -133,7 +76,7 @@ test("{{render}} helper should render given template", function() {
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HIBYE');
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
@@ -148,7 +91,7 @@ test("{{render}} helper should have assertion if neither template nor view exist
   });
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
 });
 
@@ -161,7 +104,7 @@ test("{{render}} helper should not have assertion if template is supplied in blo
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI Rob');
 });
@@ -176,7 +119,7 @@ test("{{render}} helper should not have assertion if view exists without a templ
 
   container._registry.register('view:oops', EmberView.extend());
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 });
@@ -205,14 +148,14 @@ test("{{render}} helper should render given template with a supplied model", fun
 
   Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var postController = view.get('_childViews')[0].get('controller');
 
   equal(view.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);
 
-  set(controller, 'post', { title: "Rails is unagi" });
+  runSet(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HIRails is unagi');
   if (canDefineNonEnumerableProperties) {
@@ -247,7 +190,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
   var modelDidChange = 0;
-  appendView(view);
+  runAppend(view);
   equal(modelDidChange, 0, "model observer did not fire");
 
 });
@@ -264,7 +207,7 @@ test("{{render}} helper should raise an error when a given controller name does 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });
 
@@ -279,7 +222,7 @@ test("{{render}} helper should render with given controller", function() {
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var renderedView = container.lookup('router:main')._lookupActiveView('home');
   equal(container.lookup('controller:posts'), renderedView.get('controller'), 'rendered with correct controller');
@@ -296,7 +239,7 @@ test("{{render}} helper should render a template without a model only once", fun
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, /\{\{render\}\} helper once/i);
 });
 
@@ -327,7 +270,7 @@ test("{{render}} helper should render templates with models multiple times", fun
 
   Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var postController1 = view.get('_childViews')[0].get('controller');
   var postController2 = view.get('_childViews')[1].get('controller');
@@ -336,7 +279,7 @@ test("{{render}} helper should render templates with models multiple times", fun
   equal(postController1.get('model'), post1);
   equal(postController2.get('model'), post2);
 
-  set(controller, 'post1', { title: "I am new" });
+  runSet(controller, 'post1', { title: "I am new" });
 
   ok(view.$().text().match(/^HI ?I am new ?Then me$/));
   if (canDefineNonEnumerableProperties) {
@@ -369,11 +312,11 @@ test("{{render}} helper should not leak controllers", function() {
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var postController1 = view.get('_childViews')[0].get('controller');
 
-  run(view, 'destroy');
+  runDestroy(view);
 
   ok(postController1.isDestroyed, 'expected postController to be destroyed');
 });
@@ -394,7 +337,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
 
   Ember.TEMPLATES['post'] = compile("<p>{{#unless model}}NOTHING{{/unless}}</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var postController1 = view.get('_childViews')[0].get('controller');
   var postController2 = view.get('_childViews')[1].get('controller');
@@ -427,7 +370,7 @@ test("{{render}} helper should render templates both with and without models", f
 
   Ember.TEMPLATES['post'] = compile("<p>Title:{{model.title}}</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var postController1 = view.get('_childViews')[0].get('controller');
   var postController2 = view.get('_childViews')[1].get('controller');
@@ -436,7 +379,7 @@ test("{{render}} helper should render templates both with and without models", f
   equal(postController1.get('model'), null);
   equal(postController2.get('model'), post);
 
-  set(controller, 'post', { title: "Rails is unagi" });
+  runSet(controller, 'post', { title: "Rails is unagi" });
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
   if (canDefineNonEnumerableProperties) {
@@ -469,7 +412,7 @@ test("{{render}} helper should link child controllers to the parent controller",
 
   Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to {{parentController.role}}</button>');
 
-  appendView(view);
+  runAppend(view);
 
   var button = jQuery("#parent-action");
   var actionId = button.data('ember-action');
@@ -492,7 +435,7 @@ test("{{render}} helper should be able to render a template again when it was re
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  appendView(view);
+  runAppend(view);
 
   run(function() {
     view.connectOutlet('main', EmberView.create({
@@ -526,7 +469,7 @@ test("{{render}} works with dot notation", function() {
 
   Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
   equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
@@ -546,7 +489,7 @@ test("{{render}} works with slash notation", function() {
 
   Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
-  appendView(view);
+  runAppend(view);
 
   var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
   equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
@@ -567,7 +510,7 @@ test("throws an assertion if {{render}} is called with an unquoted template name
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.");
 });
 
@@ -582,7 +525,7 @@ test("throws an assertion if {{render}} is called with a literal for a model", f
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
 });
 
@@ -601,7 +544,7 @@ test("Using quoteless templateName works properly (DEPRECATED)", function() {
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
   expectDeprecation("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"home\"}}.");
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('p:contains(BYE)').length, 1, "template was rendered");
 });
