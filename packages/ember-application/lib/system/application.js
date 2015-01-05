@@ -1000,9 +1000,9 @@ Application.reopenClass({
     registry.register('controller:object', ObjectController, { instantiate: false });
     registry.register('controller:array', ArrayController, { instantiate: false });
 
-    registry.register('renderer:dom', { create: function(opts) { return new Renderer(opts); } });
+    registry.register('renderer:-dom', { create: function(opts) { return new Renderer(opts); } });
 
-    registry.injection('view', 'renderer', 'renderer:dom');
+    registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
 
     registry.register('route:basic', Route, { instantiate: false });
