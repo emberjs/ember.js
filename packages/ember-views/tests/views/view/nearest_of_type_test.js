@@ -15,9 +15,10 @@ QUnit.module("View#nearest*", {
 
 (function() {
   var Mixin = EmberMixin.create({});
+  var Child = View.extend();
   var Parent = View.extend(Mixin, {
     render: function(buffer) {
-      this.appendChild(View.create());
+      this.appendChild(Child.create());
     }
   });
 
@@ -63,5 +64,17 @@ QUnit.module("View#nearest*", {
     childView = view.get('childViews')[0];
     equal(childView.nearestWithProperty('myProp'), view);
 
+  });
+
+  test("nearestChildOfType should return the closest child by view class", function() {
+    var child;
+
+    run(function() {
+      parentView = Parent.create();
+      parentView.appendTo('#qunit-fixture');
+    });
+
+    child = parentView.get('childViews')[0];
+    equal(parentView.nearestChildOfType(Child), child, "finds closest child by class");
   });
 }());
