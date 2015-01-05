@@ -12,9 +12,9 @@ QUnit.module("EmberView.create", {
     Ember.lookup = lookup = {};
   },
   teardown: function() {
-    run(function() {
-      view.destroy();
-    });
+    if (view) {
+      run(view, 'destroy');
+    }
 
     Ember.lookup = originalLookup;
   }
@@ -28,11 +28,9 @@ test("registers view in the global views hash using layerId for event targeted",
   equal(EmberView.views[get(view, 'elementId')], view, 'registers view');
 });
 
-QUnit.module("EmberView.createWithMixins");
-
 test("should warn if a non-array is used for classNames", function() {
   expectAssertion(function() {
-    EmberView.createWithMixins({
+    view = EmberView.createWithMixins({
       elementId: 'test',
       classNames: computed(function() {
         return ['className'];
@@ -43,11 +41,38 @@ test("should warn if a non-array is used for classNames", function() {
 
 test("should warn if a non-array is used for classNamesBindings", function() {
   expectAssertion(function() {
-    EmberView.createWithMixins({
+    view = EmberView.createWithMixins({
       elementId: 'test',
       classNameBindings: computed(function() {
         return ['className'];
       }).volatile()
     });
   }, /Only arrays are allowed/i);
+});
+
+test("setting classNameBindings does not trigger a mandatory-setter assertion", function() {
+  view = EmberView.create({
+    elementId: 'test',
+    classNameBindings: ['foo'],
+    foo: true
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  ok(view.$().hasClass('foo'), 'proper class was applied');
+});
+
+test("setting classNames does not trigger a mandatory-setter assertion", function() {
+  view = EmberView.create({
+    elementId: 'test',
+    classNames: ['foo']
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  ok(view.$().hasClass('foo'), 'proper class was applied');
 });

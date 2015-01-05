@@ -1078,6 +1078,16 @@ var View = CoreView.extend({
     }
   },
 
+  _setupClasses: function() {
+    var classNameBindings = this.classNameBindings;
+    Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(classNameBindings) === 'array');
+    set(this, 'classNameBindings', emberA(classNameBindings.slice()));
+
+    var classNames = this.classNames;
+    Ember.assert("Only arrays are allowed for 'classNames'", typeOf(classNames) === 'array');
+    set(this, 'classNames', emberA(classNames.slice()));
+  },
+
   /**
     Called on your view when it should push strings of HTML into a
     `Ember.RenderBuffer`. Most users will want to override the `template`
@@ -1751,12 +1761,7 @@ var View = CoreView.extend({
     this._keywords._view = this;
     this._keywords.controller = new KeyStream(this, 'controller');
     this._setupKeywords();
-
-    Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
-    this.classNameBindings = emberA(this.classNameBindings.slice());
-
-    Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
-    this.classNames = emberA(this.classNames.slice());
+    this._setupClasses();
   },
 
   __defineNonEnumerable: function(property) {
