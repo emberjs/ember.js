@@ -1,4 +1,4 @@
-import Rerender from "ember-views/system/renderer";
+import Renderer from "ember-views/system/renderer";
 
 import {
   cloneStates,
@@ -14,6 +14,13 @@ import { computed } from "ember-metal/computed";
 import { typeOf } from "ember-metal/utils";
 
 function K() { return this; }
+
+// Normally, the renderer is injected by the container when the view is looked
+// up. However, if someone creates a view without looking it up via the
+// container (e.g. `Ember.View.create().append()`) then we create a fallback
+// DOM renderer that is shared. In general, this path should be avoided since
+// views created this way cannot run in a node environment.
+var renderer;
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -40,6 +47,11 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._state = 'preRender';
     this.currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
+
+    if (!this.renderer) {
+      renderer = renderer || new Renderer();
+      this.renderer = renderer;
+    }
   },
 
   /**
@@ -132,10 +144,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   clearRenderedChildren: K,
   _transitionTo: K,
   destroyElement: K
-});
-
-CoreView.reopenClass({
-  renderer: new Rerender()
 });
 
 export default CoreView;

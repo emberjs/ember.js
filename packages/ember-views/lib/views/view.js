@@ -1377,7 +1377,7 @@ var View = CoreView.extend({
     Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
     Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
-    this.constructor.renderer.appendTo(this, target[0]);
+    this.renderer.appendTo(this, target[0]);
 
     return this;
   },
@@ -1401,7 +1401,7 @@ var View = CoreView.extend({
     Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
     Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
-    this.constructor.renderer.replaceIn(this, target[0]);
+    this.renderer.replaceIn(this, target[0]);
 
     return this;
   },
@@ -1489,7 +1489,7 @@ var View = CoreView.extend({
     if (this.element) { return this; }
 
     this._didCreateElementWithoutMorph = true;
-    this.constructor.renderer.renderTree(this);
+    this.renderer.renderTree(this);
 
     return this;
   },

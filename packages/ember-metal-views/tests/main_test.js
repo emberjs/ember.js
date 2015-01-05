@@ -9,7 +9,7 @@ var view;
 
 testsFor("ember-metal-views", {
   teardown: function(renderer) {
-    if (view) { renderer.destroy(view); }
+    if (view) { renderer.removeAndDestroy(view); }
     view = null;
   }
 });
