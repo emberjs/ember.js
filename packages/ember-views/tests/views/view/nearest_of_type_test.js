@@ -76,6 +76,6 @@ QUnit.module("View#nearest*", {
     child = parentView.get('childViews')[0];
     expectDeprecation(function() {
       child.nearestChildOf(Parent);
-    }, 'nearestChildOf has been deprecated.\nFor existing behavior, use nearestOfType.');
+    }, 'nearestChildOf has been deprecated.');
   });
 }());
