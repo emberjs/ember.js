@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
@@ -77,6 +78,34 @@ function click(app, selector, context) {
 
   run($el, 'mouseup');
   run($el, 'click');
+
+  return app.testHelpers.wait();
+}
+
+function check(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  Ember.assert('To check \'' + selector +
+      '\', the input must be a checkbox', type === 'checkbox');
+
+  run(function() {
+    $el.prop('checked', true).change();
+  });
+
+  return app.testHelpers.wait();
+}
+
+function uncheck(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  Ember.assert('To uncheck \'' + selector +
+      '\', the input must be a checkbox', type === 'checkbox');
+
+  run(function() {
+    $el.prop('checked', false).change();
+  });
 
   return app.testHelpers.wait();
 }
@@ -247,6 +276,43 @@ asyncHelper('visit', visit);
 */
 asyncHelper('click', click);
 
+if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+  /**
+  * Checks a checkbox. Ensures the presence of the `checked` attribute
+  *
+  * Example:
+  *
+  * ```javascript
+  * check('#remember-me').then(function() {
+  *   // assert something
+  * });
+  * ```
+  *
+  * @method check
+  * @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+  * element on the DOM to check
+  * @return {RSVP.Promise}
+  */
+  asyncHelper('check', check);
+
+  /**
+  * Unchecks a checkbox. Ensures the absence of the `checked` attribute
+  *
+  * Example:
+  *
+  * ```javascript
+  * uncheck('#remember-me').then(function() {
+  *   // assert something
+  * });
+  * ```
+  *
+  * @method check
+  * @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+  * element on the DOM to uncheck
+  * @return {RSVP.Promise}
+  */
+  asyncHelper('uncheck', uncheck);
+}
 /**
 * Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode
 *
