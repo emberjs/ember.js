@@ -67,6 +67,7 @@ Building Ember is quite simple.
 ```sh
 cd ember.js
 npm install
+bower install
 npm run-script build
 ```
 
@@ -77,7 +78,7 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `npm install && npm test`.
+to know that you have a clean slate: `npm install && bower install && npm test`.
 (To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
