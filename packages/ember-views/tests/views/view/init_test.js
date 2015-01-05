@@ -30,7 +30,7 @@ test("registers view in the global views hash using layerId for event targeted",
 
 QUnit.module("EmberView.createWithMixins");
 
-test("should warn if a non-array is used for classNames", function() {
+test("should warn if a computed property is used for classNames", function() {
   expectAssertion(function() {
     EmberView.createWithMixins({
       elementId: 'test',
@@ -38,10 +38,10 @@ test("should warn if a non-array is used for classNames", function() {
         return ['className'];
       }).volatile()
     });
-  }, /Only arrays are allowed/i);
+  }, /Only arrays of static class strings.*For dynamic classes/i);
 });
 
-test("should warn if a non-array is used for classNamesBindings", function() {
+test("should warn if a non-array is used for classNameBindings", function() {
   expectAssertion(function() {
     EmberView.createWithMixins({
       elementId: 'test',
