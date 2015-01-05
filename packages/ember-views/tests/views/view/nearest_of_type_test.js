@@ -64,4 +64,18 @@ QUnit.module("View#nearest*", {
     equal(childView.nearestWithProperty('myProp'), view);
 
   });
+
+  test("nearestChildOf should be deprecated", function() {
+    var child;
+
+    run(function() {
+      parentView = Parent.create();
+      parentView.appendTo('#qunit-fixture');
+    });
+
+    child = parentView.get('childViews')[0];
+    expectDeprecation(function() {
+      child.nearestChildOf(Parent);
+    }, 'nearestChildOf has been deprecated.\nFor existing behavior, use nearestOfType.');
+  });
 }());
