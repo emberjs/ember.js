@@ -1020,8 +1020,11 @@ var View = CoreView.extend({
     @method nearestChildOf
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @return Ember.View
+    @deprecated
   */
   nearestChildOf: function(klass) {
+    Ember.deprecate("nearestChildOf has been deprecated.");
+
     var view = get(this, 'parentView');
 
     while (view) {
