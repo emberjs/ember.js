@@ -512,6 +512,36 @@ test("`fillIn` takes context into consideration", function() {
   });
 });
 
+test("`fillIn` focuses on the element", function() {
+  expect(2);
+  var fillIn, find, visit, andThen;
+
+  App.ApplicationRoute = Ember.Route.extend({
+    actions: {
+      wasFocused: function() {
+        ok(true, 'focusIn event was triggered');
+      }
+    }
+  });
+
+  App.IndexView = EmberView.extend({
+    template: compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>')
+  });
+
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+
+  visit('/');
+  fillIn('#first', 'current value');
+  andThen(function() {
+    equal(find('#first').val(), 'current value');
+  });
+});
+
 test("`triggerEvent accepts an optional options hash and context", function() {
   expect(3);
 
