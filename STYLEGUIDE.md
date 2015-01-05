@@ -174,7 +174,7 @@ try {
 }
 ```
 
-+ Opening curly brace on the same line as the beginning of a statement or declaration.
++ Opening curly brace should be on the same line as the beginning of a statement or declaration.
 
 ```javascript
 function foo() {
