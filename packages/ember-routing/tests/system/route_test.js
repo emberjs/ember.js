@@ -1,4 +1,4 @@
-import run from "ember-metal/run_loop";
+import { runDestroy } from "ember-runtime/tests/utils";
 import Registry from "container/registry";
 import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
@@ -7,55 +7,52 @@ import inject from "ember-runtime/inject";
 
 var route, routeOne, routeTwo, lookupHash;
 
-function createRoute() {
+function setup() {
   route = EmberRoute.create();
 }
 
-function cleanupRoute() {
-  run(route, 'destroy');
+function teardown() {
+  runDestroy(route);
 }
 
 QUnit.module("Ember.Route", {
-  setup: createRoute,
-  teardown: cleanupRoute
+  setup: setup,
+  teardown: teardown
 });
 
 test("default store utilizes the container to acquire the model factory", function() {
-  var Post, post;
-
   expect(4);
 
-  post = {};
+  var Post = EmberObject.extend();
+  var post = {};
 
-  Post = EmberObject.extend();
   Post.reopenClass({
     find: function(id) {
       return post;
     }
   });
 
-  var container = {
-    has: function() { return true; },
-    lookupFactory: lookupFactory
+  route.container = {
+    has: function() {
+      return true;
+    },
+
+    lookupFactory: function(fullName) {
+      equal(fullName, "model:post", "correct factory was looked up");
+
+      return Post;
+    }
   };
 
-  route.container = container;
   route.set('_qp', null);
 
   equal(route.model({ post_id: 1 }), post);
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-
-  function lookupFactory(fullName) {
-    equal(fullName, "model:post", "correct factory was looked up");
-
-    return Post;
-  }
-
 });
 
 test("'store' can be injected by data persistence frameworks", function() {
   expect(8);
-  run(route, 'destroy');
+  runDestroy(route);
 
   var registry = new Registry();
   var container = registry.container();
@@ -85,7 +82,7 @@ test("'store' can be injected by data persistence frameworks", function() {
 
 test("assert if 'store.find' method is not found", function() {
   expect(1);
-  run(route, 'destroy');
+  runDestroy(route);
 
   var registry = new Registry();
   var container = registry.container();
@@ -103,7 +100,7 @@ test("assert if 'store.find' method is not found", function() {
 
 test("asserts if model class is not found", function() {
   expect(1);
-  run(route, 'destroy');
+  runDestroy(route);
 
   var registry = new Registry();
   var container = registry.container();
@@ -119,12 +116,12 @@ test("asserts if model class is not found", function() {
 test("'store' does not need to be injected", function() {
   expect(1);
 
-  run(route, 'destroy');
+  runDestroy(route);
 
   var registry = new Registry();
   var container = registry.container();
 
-  registry.register('route:index',  EmberRoute);
+  registry.register('route:index', EmberRoute);
 
   route = container.lookup('route:index');
 
@@ -155,7 +152,7 @@ test("modelFor doesn't require the router", function() {
 
 test(".send just calls an action if the router is absent", function() {
   expect(7);
-  var route = Ember.Route.createWithMixins({
+  var route = EmberRoute.createWithMixins({
     actions: {
       returnsTrue: function(foo, bar) {
         equal(foo, 1);
@@ -178,8 +175,8 @@ test(".send just calls an action if the router is absent", function() {
 
 
 QUnit.module("Ember.Route serialize", {
-  setup: createRoute,
-  teardown: cleanupRoute
+  setup: setup,
+  teardown: teardown
 });
 
 test("returns the models properties if params does not include *_id", function() {
@@ -222,10 +219,8 @@ QUnit.module("Ember.Route interaction", {
   },
 
   teardown: function() {
-    run(function() {
-      routeOne.destroy();
-      routeTwo.destroy();
-    });
+    runDestroy(routeOne);
+    runDestroy(routeTwo);
   }
 });
 
