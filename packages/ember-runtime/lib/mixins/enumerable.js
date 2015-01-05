@@ -667,7 +667,7 @@ export default Mixin.create({
 
   /**
     Returns `true` if the passed property resolves to the value of the second
-    argument for all items in the enumerable. This method is often simpler/faster 
+    argument for all items in the enumerable. This method is often simpler/faster
     than using a callback.
 
     @method isEvery
@@ -780,7 +780,7 @@ export default Mixin.create({
 
   /**
     Returns `true` if the passed property resolves to the value of the second
-    argument for any item in the enumerable. This method is often simpler/faster 
+    argument for any item in the enumerable. This method is often simpler/faster
     than using a callback.
 
     @method isAny
