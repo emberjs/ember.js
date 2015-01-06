@@ -29,10 +29,6 @@ var ignoresCheckedAttribute = doc && (function(document){
   return !clonedElement.checked;
 })(doc);
 
-function isSVG(ns){
-  return ns === svgNamespace;
-}
-
 // This is not the namespace of the element, but of
 // the elements inside that elements.
 function interiorNamespace(element){
@@ -319,12 +315,7 @@ prototype.appendMorph = function(element, contextualElement) {
 };
 
 prototype.parseHTML = function(html, contextualElement) {
-  var isSVGContent = (
-    isSVG(this.namespace) &&
-    !svgHTMLIntegrationPoints[contextualElement.tagName]
-  );
-
-  if (isSVGContent) {
+  if (interiorNamespace(contextualElement) === svgNamespace) {
     return buildSVGDOM(html, this);
   } else {
     var nodes = buildHTMLDOM(html, contextualElement, this);

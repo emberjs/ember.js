@@ -1086,6 +1086,22 @@ test("svg can live with hydration", function() {
     "svg namespace inside a block is present" );
 });
 
+test("top-level unsafe morph uses the correct namespace", function() {
+  var template = compile('<svg></svg>{{{foo}}}');
+  var fragment = template.render({ foo: '<span>FOO</span>' }, env, document.body);
+
+  equal(fragment.textContent, 'FOO', 'element from unsafe morph is displayed');
+  equal(fragment.childNodes[1].namespaceURI, xhtmlNamespace, 'element from unsafe morph has correct namespace');
+});
+
+test("nested unsafe morph uses the correct namespace", function() {
+  var template = compile('<svg>{{{foo}}}</svg><div></div>');
+  var fragment = template.render({ foo: '<path></path>' }, env, document.body);
+
+  equal(fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+        'element from unsafe morph has correct namespace');
+});
+
 test("svg can take some hydration", function() {
   var template = compile('<div><svg>{{name}}</svg></div>');
 
