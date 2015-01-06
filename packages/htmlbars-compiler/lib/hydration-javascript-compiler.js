@@ -205,9 +205,9 @@ prototype.createMorph = function(morphNum, parentPath, startIndex, endIndex, esc
   this.morphs.push(['morph' + morphNum, morph]);
 };
 
-prototype.createAttrMorph = function(attrMorphNum, elementNum, name, escaped) {
+prototype.createAttrMorph = function(attrMorphNum, elementNum, name, escaped, namespace) {
   var morphMethod = escaped ? 'createAttrMorph' : 'createUnsafeAttrMorph';
-  var morph = "dom."+morphMethod+"(element"+elementNum+", '"+name+"')";
+  var morph = "dom."+morphMethod+"(element"+elementNum+", '"+name+(namespace ? "', '"+namespace : '')+"')";
   this.morphs.push(['attrMorph' + attrMorphNum, morph]);
 };
 

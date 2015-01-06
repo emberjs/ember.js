@@ -169,7 +169,7 @@ test("attribute mustache", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
@@ -182,7 +182,7 @@ test("quoted attribute mustache", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
@@ -193,7 +193,7 @@ test("safe bare attribute mustache", function() {
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
@@ -204,7 +204,7 @@ test("unsafe bare attribute mustache", function() {
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createAttrMorph", [ 0, 0, "class", false ] ],
+    [ "createAttrMorph", [ 0, 0, "class", false, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
@@ -223,7 +223,7 @@ test("attribute helper", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ]
   ]);
 });
@@ -243,11 +243,11 @@ test("attribute helpers", function() {
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
-    [ "createAttrMorph", [ 0, 0, "class", true ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
     [ "printAttributeHook", [ 0, 0 ] ],
     [ "pushGetHook", [ 'bare' ] ],
     [ "pushLiteral", [ 'id' ] ],
-    [ "createAttrMorph", [ 1, 0, 'id', true ] ],
+    [ "createAttrMorph", [ 1, 0, 'id', true, null ] ],
     [ "printAttributeHook", [ 1, 0 ] ],
     [ "popParent", [] ],
     [ "createMorph", [ 0, [], 0, 1, true ] ],
@@ -259,7 +259,7 @@ test("attribute helpers", function() {
     [ "pushConcatHook", [] ],
     [ "pushLiteral", [ 'class' ] ],
     [ "shareElement", [ 1 ] ],
-    [ "createAttrMorph", [ 2, 1, 'class', true ] ],
+    [ "createAttrMorph", [ 2, 1, 'class', true, null ] ],
     [ "printAttributeHook", [ 2, 1 ] ],
     [ "popParent", [] ]
   ]);

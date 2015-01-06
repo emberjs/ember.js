@@ -47,6 +47,21 @@ test('#setAttribute', function(){
   equalHTML(node, '<input disabled="false">');
 });
 
+test('#setAttributeNS', function(){
+  var node = dom.createElement('svg');
+  dom.setAttributeNS(node, 'http://www.w3.org/1999/xlink', 'xlink:href', 'super-fun');
+  // chrome adds (xmlns:xlink="http://www.w3.org/1999/xlink") property while others don't
+  // thus equalHTML is not useful
+  var el = document.createElement('div');
+  el.appendChild(node);
+  // phantomjs omits the prefix, thus we can't find xlink:
+  ok(el.innerHTML.indexOf('href="super-fun"') > 0);
+  dom.setAttributeNS(node, 'http://www.w3.org/1999/xlink', 'href', null);
+  
+  ok(el.innerHTML.indexOf('href="null"') > 0);
+
+});
+
 test('#getElementById', function() {
   var parentNode = dom.createElement('div'),
       childNode = dom.createElement('div');
@@ -121,6 +136,14 @@ test('#setProperty', function(){
   node = dom.createElement('svg');
   dom.setProperty(node, 'viewBox', '0 0 0 0');
   equalHTML(node, '<svg viewBox="0 0 0 0"></svg>');
+  
+  dom.setProperty(node, 'xlink:title', 'super-blast','http://www.w3.org/1999/xlink');
+  // chrome adds (xmlns:xlink="http://www.w3.org/1999/xlink") property while others don't
+  // thus equalHTML is not useful
+  var el = document.createElement('div');
+  el.appendChild(node);
+  // phantom js omits the prefix so we can't look for xlink:
+  ok(el.innerHTML.indexOf('title="super-blast"') > 0 );
 });
 
 test('#addClasses', function(){

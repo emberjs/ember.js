@@ -68,6 +68,17 @@ test('compiles an svg element with classes', function () {
   equal(fragment.getAttribute('class'), 'red right hand');
 });
 
+test('compiles an svg element with proper namespace', function () {
+  var ast = preprocess('<svg><use xlink:title="nice-title"></use></svg>');
+  var fragment = fragmentFor(ast);
+
+  equal(fragment.childNodes[0].getAttributeNS('http://www.w3.org/1999/xlink', 'title'), 'nice-title');
+  equal(fragment.childNodes[0].attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+  equal(fragment.childNodes[0].attributes[0].name, 'xlink:title');
+  equal(fragment.childNodes[0].attributes[0].localName, 'title');
+  equal(fragment.childNodes[0].attributes[0].value, 'nice-title');
+});
+
 test('converts entities to their char/string equivalent', function () {
   var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
   var fragment = fragmentFor(ast);

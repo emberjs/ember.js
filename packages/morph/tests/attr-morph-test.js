@@ -44,6 +44,21 @@ test("can update svg attribute", function(){
   equal(element.getAttribute('viewBox'), undefined, 'svg attr is removed');
 });
 
+test("can update namespaced attribute", function(){
+  domHelper.setNamespace(svgNamespace);
+  var element = domHelper.createElement('svg');
+  var morph = domHelper.createAttrMorph(element, 'xlink:href', 'http://www.w3.org/1999/xlink');
+  morph.setContent('#other');
+  equal(element.getAttributeNS('http://www.w3.org/1999/xlink','href'), '#other', 'namespaced attr is set');
+  equal(element.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+  equal(element.attributes[0].name, 'xlink:href');
+  equal(element.attributes[0].localName, 'href');
+  equal(element.attributes[0].value, '#other');
+  morph.setContent(null);
+  // safari returns '' while other browsers return undefined
+  equal(!!element.getAttributeNS('http://www.w3.org/1999/xlink','href'), false, 'namespaced attr is removed');
+});
+
 test("can update style attribute", function(){
   var element = domHelper.createElement('div');
   var morph = domHelper.createAttrMorph(element, 'style');
