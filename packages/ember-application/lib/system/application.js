@@ -57,7 +57,11 @@ var librariesRegistered = false;
   very first thing you should do in your application is create the instance:
 
   ```javascript
-  window.App = Ember.Application.create();
+  // app/app.js
+
+  import Ember from 'ember';
+
+  export default Ember.Application.create({});
   ```
 
   Typically, the application object is the only global variable. All other
@@ -67,7 +71,11 @@ var librariesRegistered = false;
   For example, if you define a view class, it might look like this:
 
   ```javascript
-  App.MyView = Ember.View.extend();
+  // app/views/my.js
+
+  import Ember from 'ember';
+
+  export default Ember.View.extend({});
   ```
 
   By default, calling `Ember.Application.create()` will automatically initialize
@@ -109,7 +117,11 @@ var librariesRegistered = false;
   names by setting the application's `customEvents` property:
 
   ```javascript
-  var App = Ember.Application.create({
+  // app/app.js
+
+  import Ember from 'ember';
+
+  export default Ember.Application.create({
     customEvents: {
       // add support for the paste event
       paste: 'paste'
@@ -126,7 +138,11 @@ var librariesRegistered = false;
   should be delegated, set your application's `rootElement` property:
 
   ```javascript
-  var App = Ember.Application.create({
+  // app/app.js
+
+  import Ember from 'ember';
+
+  export default Ember.Application.create({
     rootElement: '#ember-app'
   });
   ```
@@ -145,6 +161,10 @@ var librariesRegistered = false;
   Libraries on top of Ember can add initializers, like so:
 
   ```javascript
+  // app/initializers/api-adapter.js
+
+  import Ember from 'ember';
+
   Ember.Application.initializer({
     name: 'api-adapter',
 
@@ -169,7 +189,11 @@ var librariesRegistered = false;
   the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
-  var App = Ember.Application.create({
+  // app/app.js
+
+  import Ember from 'ember';
+
+  export default Ember.Application.create({
     LOG_TRANSITIONS: true, // basic logging of successful transitions
     LOG_TRANSITIONS_INTERNAL: true // detailed logging of all routing steps
   });
@@ -238,7 +262,7 @@ var Application = Namespace.extend(DeferredMixin, {
     corresponding view method name as the value. For example:
 
     ```javascript
-    var App = Ember.Application.create({
+    export default Ember.Application.create({
       customEvents: {
         // add support for the paste event
         paste: 'paste'
