@@ -1039,6 +1039,32 @@ function testEachWithItem(moduleName, useBlockParams) {
       equal(view.$().text(), "AdamSteve");
     });
   }
+
+  if (useBlockParams) {
+    if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+      test("the index is passed as the second parameter to #each blocks", function() {
+        expect(3);
+
+        var adam = { name: "Adam" };
+        view = EmberView.create({
+          controller: A([adam, { name: "Steve" }]),
+          template: templateFor('{{#each this as |person index|}}{{index}}. {{person.name}}{{/each}}', true)
+        });
+        runAppend(view);
+        equal(view.$().text(), "0. Adam1. Steve");
+
+        run(function() {
+          view.get('controller').unshiftObject({ name: "Bob" });
+        });
+        equal(view.$().text(), "0. Bob1. Adam2. Steve");
+
+        run(function() {
+          view.get('controller').removeObject(adam);
+        });
+        equal(view.$().text(), "0. Bob1. Steve");
+      });
+    }
+  }
 }
 
 testEachWithItem("{{#each foo in bar}}", false);

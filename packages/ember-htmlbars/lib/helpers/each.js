@@ -166,8 +166,11 @@ function eachHelper(params, hash, options, env) {
     params.length <= 1
   );
 
-  if (options.template && options.template.blockParams) {
+  var blockParams = options.template && options.template.blockParams;
+
+  if (blockParams) {
     hash.keyword = true;
+    hash.blockParams = blockParams;
   }
 
   Ember.deprecate(
