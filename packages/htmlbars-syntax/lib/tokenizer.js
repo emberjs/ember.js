@@ -1,5 +1,6 @@
 import { Tokenizer } from "../simple-html-tokenizer";
 import { isHelper } from "./utils";
+import { map } from "../htmlbars-util/array-utils";
 import builders from "./builders";
 
 Tokenizer.prototype.createAttribute = function(char) {
@@ -61,14 +62,16 @@ Tokenizer.prototype.addTagHelper = function(helper) {
 
 function prepareAttributeValue(attr) {
   var parts = attr.value;
-  if (parts.length === 0) {
+  var length = parts.length;
+
+  if (length === 0) {
     return builders.text('');
-  } else if (parts.length === 1 && parts[0].type === "TextNode") {
+  } else if (length === 1 && parts[0].type === "TextNode") {
     return parts[0];
   } else if (!attr.quoted) {
     return parts[0];
   } else {
-    return builders.concat(parts.map(prepareConcatPart));
+    return builders.concat(map(parts, prepareConcatPart));
   }
 }
 
