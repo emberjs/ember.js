@@ -70,8 +70,7 @@ registerHelper('unbound', unboundHelper);
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
     helpers: helpers,
-    helper: helper,
-    _registerHelper: registerHelper,
+    registerHelper: registerHelper,
     template: template,
     compile: compile,
     precompile: precompile,
