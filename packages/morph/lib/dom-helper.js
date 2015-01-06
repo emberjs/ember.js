@@ -152,6 +152,10 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, value);
 };
 
+prototype.setAttributeNS = function(element, namespace, name, value) {
+  element.setAttributeNS(namespace, name, value);
+};
+
 prototype.removeAttribute = function(element, name) {
   element.removeAttribute(name);
 };
@@ -160,13 +164,17 @@ prototype.setPropertyStrict = function(element, name, value) {
   element[name] = value;
 };
 
-prototype.setProperty = function(element, name, value) {
+prototype.setProperty = function(element, name, value, namespace) {
   var lowercaseName = name.toLowerCase();
   if (element.namespaceURI === svgNamespace || lowercaseName === 'style') {
     if (value === null) {
       element.removeAttribute(name);
     } else {
-      element.setAttribute(name, value);
+      if (namespace) {
+        element.setAttributeNS(namespace, name, value);
+      } else {
+        element.setAttribute(name, value);
+      }
     }
   } else {
     var normalized = normalizeProperty(element, name);
@@ -176,7 +184,11 @@ prototype.setProperty = function(element, name, value) {
       if (value === null) {
         element.removeAttribute(name);
       } else {
-        element.setAttribute(name, value);
+        if (namespace) {
+          element.setAttributeNS(namespace, name, value);
+        } else {
+          element.setAttribute(name, value);
+        }
       }
     }
   }
@@ -252,12 +264,12 @@ prototype.cloneNode = function(element, deep){
   return clone;
 };
 
-prototype.createAttrMorph = function(element, attrName){
-  return new AttrMorph(element, attrName, this);
+prototype.createAttrMorph = function(element, attrName, namespace){
+  return new AttrMorph(element, attrName, this, namespace);
 };
 
-prototype.createUnsafeAttrMorph = function(element, attrName){
-  var morph = this.createAttrMorph(element, attrName);
+prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
+  var morph = this.createAttrMorph(element, attrName, namespace);
   morph.escaped = false;
   return morph;
 };
