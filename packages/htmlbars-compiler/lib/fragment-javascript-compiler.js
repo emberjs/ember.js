@@ -61,7 +61,11 @@ FragmentJavaScriptCompiler.prototype.returnNode = function() {
 
 FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value, namespace) {
   var el = 'el'+this.depth;
-  this.source.push(this.indent+'  dom.setProperty('+el+','+string(name)+','+string(value)+(namespace? ',"'+namespace+'"' : '')+');\n');
+  if (namespace) {
+    this.source.push(this.indent+'  dom.setAttributeNS('+el+','+string(namespace)+','+string(name)+','+string(value)+');\n');
+  } else {
+    this.source.push(this.indent+'  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
+  }
 };
 
 FragmentJavaScriptCompiler.prototype.appendChild = function() {
