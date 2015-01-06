@@ -12,7 +12,8 @@
     "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
     "new-computed-syntax": null,
-    "ember-testing-checkbox-helpers": null
+    "ember-testing-checkbox-helpers": null,
+    "ember-metal-stream": null
   },
   "debugStatements": [
     "Ember.warn",

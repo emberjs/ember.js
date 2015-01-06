@@ -166,6 +166,20 @@ import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
 import Backburner from 'backburner';
+import {
+  isStream,
+  subscribe,
+  unsubscribe,
+  read,
+  readHash,
+  readArray,
+  scanArray,
+  scanHash,
+  concat,
+  chain
+} from "ember-metal/streams/utils";
+
+import Stream from "ember-metal/streams/stream";
 
 // END IMPORTS
 
@@ -326,6 +340,23 @@ Ember.isBlank = isBlank;
 Ember.isPresent = isPresent;
 
 Ember.merge = merge;
+
+if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
+  Ember.stream = {
+    Stream: Stream,
+
+    isStream: isStream,
+    subscribe: subscribe,
+    unsubscribe: unsubscribe,
+    read: read,
+    readHash: readHash,
+    readArray: readArray,
+    scanArray: scanArray,
+    scanHash: scanHash,
+    concat: concat,
+    chain: chain
+  };
+}
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
