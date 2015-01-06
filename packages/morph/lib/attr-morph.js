@@ -14,27 +14,41 @@ function updateAttribute(value) {
   }
 }
 
-function AttrMorph(element, attrName, domHelper) {
+function updateAttributeNS(value) {
+  if (value === null) {
+    this.domHelper.removeAttribute(this.element, this.attrName);
+  } else {
+    this.domHelper.setAttributeNS(this.element, this.namespace, this.attrName, value);
+  }
+}
+
+function AttrMorph(element, attrName, domHelper, namespace) {
   this.element = element;
   this.domHelper = domHelper;
+  this.namespace = namespace || null;
   this.escaped = true;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);
-  if (element.namespaceURI === svgNamespace || attrName === 'style' || !normalizedAttrName) {
+  if (this.namespace) {
+    this._update = updateAttributeNS;
     this.attrName = attrName;
-    this._update = updateAttribute;
   } else {
-    this.attrName = normalizedAttrName;
-    this._update = updateProperty;
+    if (element.namespaceURI === svgNamespace || attrName === 'style' || !normalizedAttrName) {
+      this.attrName = attrName;
+      this._update = updateAttribute;
+    } else {
+      this.attrName = normalizedAttrName;
+      this._update = updateProperty;
+    }
   }
 }
 
 AttrMorph.prototype.setContent = function (value) {
   if (this.escaped) {
     var sanitized = sanitizeAttributeValue(this.element, this.attrName, value);
-    this._update(sanitized);
+    this._update(sanitized, this.namespace);
   } else {
-    this._update(value);
+    this._update(value, this.namespace);
   }
 };
 

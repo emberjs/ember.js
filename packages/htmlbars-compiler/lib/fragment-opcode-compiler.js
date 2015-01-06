@@ -1,5 +1,5 @@
 import TemplateVisitor from "./template-visitor";
-import { processOpcodes } from "./utils";
+import { processOpcodes, getNamespace } from "./utils";
 import { forEach } from "../htmlbars-util/array-utils";
 
 function FragmentOpcodeCompiler() {
@@ -59,7 +59,10 @@ FragmentOpcodeCompiler.prototype.block = function () {};
 
 FragmentOpcodeCompiler.prototype.attribute = function(attr) {
   if (attr.value.type === 'TextNode') {
-    this.opcode('setAttribute', [attr.name, attr.value.chars]);
+
+    var namespace = getNamespace(attr.name) || null;
+
+    this.opcode('setAttribute', [attr.name, attr.value.chars, namespace]);
   }
 };
 

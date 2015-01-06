@@ -59,9 +59,9 @@ FragmentJavaScriptCompiler.prototype.returnNode = function() {
   this.source.push(this.indent+'  return '+el+';\n');
 };
 
-FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value) {
+FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value, namespace) {
   var el = 'el'+this.depth;
-  this.source.push(this.indent+'  dom.setProperty('+el+','+string(name)+','+string(value)+');\n');
+  this.source.push(this.indent+'  dom.setProperty('+el+','+string(name)+','+string(value)+(namespace? ',"'+namespace+'"' : '')+');\n');
 };
 
 FragmentJavaScriptCompiler.prototype.appendChild = function() {
