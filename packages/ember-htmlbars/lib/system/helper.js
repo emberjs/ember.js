@@ -7,18 +7,11 @@
   @class Helper
   @namespace Ember.HTMLBars
 */
-function Helper(helper, preprocessArguments) {
+function Helper(helper) {
   this.helperFunction = helper;
 
-  if (preprocessArguments) {
-    this.preprocessArguments = preprocessArguments;
-  }
-
+  this.isHelper = true;
   this.isHTMLBars = true;
 }
-
-Helper.prototype = {
-  preprocessArguments: function() { }
-};
 
 export default Helper;

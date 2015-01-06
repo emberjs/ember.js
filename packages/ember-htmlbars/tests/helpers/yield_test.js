@@ -9,9 +9,10 @@ import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import EmberError from "ember-metal/error";
 import {
-  helper,
+  registerHelper,
   default as helpers
 } from "ember-htmlbars/helpers";
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -323,13 +324,13 @@ test("yield with nested components (#3220)", function(){
     }
   });
 
-  helper('inner-component', InnerComponent);
+  registerHelper('inner-component', makeViewHelper(InnerComponent));
 
   var OuterComponent = Component.extend({
     layout: compile("{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}")
   });
 
-  helper('outer-component', OuterComponent);
+  registerHelper('outer-component', makeViewHelper(OuterComponent));
 
   view = EmberView.create({
     template: compile(
