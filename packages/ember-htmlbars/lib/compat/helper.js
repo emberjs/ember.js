@@ -61,7 +61,15 @@ HandlebarsCompatibleHelper.prototype = {
 };
 
 export function registerHandlebarsCompatibleHelper(name, value) {
-  helpers[name] = new HandlebarsCompatibleHelper(value);
+  var helper;
+
+  if (value && value.isHTMLBars) {
+    helper = value;
+  } else {
+    helper = new HandlebarsCompatibleHelper(value);
+  }
+
+  helpers[name] = helper;
 }
 
 export function handlebarsHelper(name, value) {

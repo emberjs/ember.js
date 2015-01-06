@@ -3,7 +3,9 @@ import {
 } from "ember-htmlbars/compat/helper";
 
 import EmberView from "ember-views/views/view";
+import Component from "ember-views/views/component";
 
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -18,6 +20,7 @@ QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
     runDestroy(view);
 
     delete helpers.test;
+    delete helpers['view-helper'];
   }
 });
 
@@ -117,6 +120,25 @@ test('bound ordered params are provided with their original paths', function() {
   });
 
   runAppend(view);
+});
+
+test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
+  expect(1);
+
+  var ViewHelperComponent = Component.extend({
+    layout: compile('woot!')
+  });
+
+  var helper = makeViewHelper(ViewHelperComponent);
+  registerHandlebarsCompatibleHelper('view-helper', helper);
+
+  view = EmberView.extend({
+    template: compile('{{view-helper}}')
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'woot!');
 });
 
 // jscs:enable validateIndentation
