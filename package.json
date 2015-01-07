@@ -42,6 +42,6 @@
     "qunit": "^0.7.2",
     "rsvp": "~3.0.6",
     "saucie": "johanneswuerbach/sauce-js-tests-integration#updates",
-    "testem": "0.6.26"
+    "testem": "0.6.24"
   }
 }
