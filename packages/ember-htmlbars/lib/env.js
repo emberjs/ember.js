@@ -15,11 +15,7 @@ import set from "ember-htmlbars/hooks/set";
 
 import helpers from "ember-htmlbars/helpers";
 
-var domHelper = environment.hasDOM ? new DOMHelper() : null;
-
 export default {
-  dom: domHelper,
-
   hooks: {
     get: get,
     set: set,
@@ -35,3 +31,7 @@ export default {
 
   helpers: helpers
 };
+
+var domHelper = environment.hasDOM ? new DOMHelper() : null;
+
+export { domHelper };

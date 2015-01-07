@@ -1,4 +1,5 @@
 import Renderer from "ember-views/system/renderer";
+import { DOMHelper } from "morph";
 
 import {
   cloneStates,
@@ -48,8 +49,10 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     this.currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
 
+    // Fallback for legacy cases where the view was created directly
+    // via `create()` instead of going through the container.
     if (!this.renderer) {
-      renderer = renderer || new Renderer();
+      renderer = renderer || new Renderer(new DOMHelper());
       this.renderer = renderer;
     }
   },

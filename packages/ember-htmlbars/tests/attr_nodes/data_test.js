@@ -2,12 +2,12 @@ import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-template-compiler/system/compile";
+import Renderer from "ember-views/system/renderer";
 import { equalInnerHTML } from "htmlbars-test-helpers";
-import defaultEnv from "ember-htmlbars/env";
+import { domHelper as dom } from "ember-htmlbars/env";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var view, originalSetAttribute, setAttributeCalls;
-var dom = defaultEnv.dom;
+var view, originalSetAttribute, setAttributeCalls, renderer;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
@@ -199,9 +199,13 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
     setup: function() {
+      renderer = new Renderer(dom);
+
       originalSetAttribute = dom.setAttribute;
       dom.setAttribute = function(element, name, value) {
-        setAttributeCalls.push([name, value]);
+        if (name.substr(0, 5) === 'data-') {
+          setAttributeCalls.push([name, value]);
+        }
 
         originalSetAttribute.call(dom, element, name, value);
       };
@@ -219,6 +223,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   test('calls setAttribute for new values', function() {
     var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
+      renderer: renderer,
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
@@ -237,6 +242,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   test('does not call setAttribute if the same value is set', function() {
     var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
+      renderer: renderer,
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });

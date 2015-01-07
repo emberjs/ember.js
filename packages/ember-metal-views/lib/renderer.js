@@ -3,7 +3,7 @@ import environment from "ember-metal/environment";
 
 var domHelper = environment.hasDOM ? new DOMHelper() : null;
 
-function Renderer() {
+function Renderer(_helper) {
   this._uuid = 0;
 
   // These sizes and values are somewhat arbitrary (but sensible)
@@ -13,7 +13,7 @@ function Renderer() {
   this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._elements = new Array(17);
   this._inserts = {};
-  this._dom = domHelper;
+  this._dom = _helper || domHelper;
 }
 
 function Renderer_renderTree(_view, _parentView, _insertAt) {

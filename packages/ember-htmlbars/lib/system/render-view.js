@@ -27,7 +27,7 @@ function renderHTMLBarsTemplate(view, buffer, template) {
   var args = view._blockArguments;
   var env = {
     view: this,
-    dom: defaultEnv.dom,
+    dom: view.renderer._dom,
     hooks: defaultEnv.hooks,
     helpers: defaultEnv.helpers,
     data: {
