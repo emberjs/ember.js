@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import Renderer from 'ember-metal-views/renderer';
 import { create } from 'ember-metal/platform';
-import renderBuffer from "ember-views/system/render_buffer";
+import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
@@ -10,9 +10,9 @@ import {
   subscribers
 } from "ember-metal/instrumentation";
 
-function EmberRenderer() {
-  this.buffer = renderBuffer();
-  this._super$constructor();
+function EmberRenderer(domHelper) {
+  this._super$constructor(domHelper);
+  this.buffer = new RenderBuffer(domHelper);
 }
 
 EmberRenderer.prototype = create(Renderer.prototype);

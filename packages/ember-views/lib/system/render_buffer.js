@@ -4,7 +4,6 @@
 */
 
 import jQuery from "ember-views/system/jquery";
-import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
 import { create } from "ember-metal/platform";
 import environment from "ember-metal/environment";
@@ -39,10 +38,10 @@ import environment from "ember-metal/environment";
 var omittedStartTagChildren;
 var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
 
-function detectOmittedStartTag(string, contextualElement) {
+function detectOmittedStartTag(dom, string, contextualElement) {
   omittedStartTagChildren = omittedStartTagChildren || {
-    tr: document.createElement('tbody'),
-    col: document.createElement('colgroup')
+    tr: dom.createElement('tbody'),
+    col: dom.createElement('colgroup')
   };
 
   // Omitted start tags are only inside table tags.
@@ -125,31 +124,29 @@ var canSetNameOnInputs = (function() {
 })();
 
 /**
-  `Ember.renderBuffer` gathers information regarding the view and generates the
-  final representation. `Ember.renderBuffer` will generate HTML which can be pushed
+  `Ember.RenderBuffer` gathers information regarding the view and generates the
+  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
 
    ```javascript
-   var buffer = Ember.renderBuffer('div', contextualElement);
+   var buffer = new Ember.RenderBuffer('div', contextualElement);
   ```
 
   @method renderBuffer
   @namespace Ember
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function renderBuffer(tagName, contextualElement) {
-  return new _RenderBuffer(tagName, contextualElement); // jshint ignore:line
-}
 
-function _RenderBuffer(tagName, contextualElement) {
-  this.tagName = tagName;
-  this._outerContextualElement = contextualElement;
+var RenderBuffer = function(domHelper) {
   this.buffer = null;
   this.childViews = [];
-  this.dom = environment.hasDOM ? new DOMHelper() : null;
-}
 
-_RenderBuffer.prototype = {
+  Ember.assert("RenderBuffer requires a DOM helper to be passed to its constructor.", !!domHelper);
+
+  this.dom = domHelper;
+};
+
+RenderBuffer.prototype = {
 
   reset: function(tagName, contextualElement) {
     this.tagName = tagName;
@@ -580,7 +577,7 @@ _RenderBuffer.prototype = {
 
     var omittedStartTag;
     if (html) {
-      omittedStartTag = detectOmittedStartTag(html, innerContextualElement);
+      omittedStartTag = detectOmittedStartTag(this.dom, html, innerContextualElement);
     }
     return omittedStartTag || innerContextualElement;
   },
@@ -596,3 +593,5 @@ _RenderBuffer.prototype = {
     return this.buffer;
   }
 };
+
+export default RenderBuffer;

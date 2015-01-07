@@ -20,6 +20,7 @@ import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-views/system/renderer";
+import { DOMHelper } from "morph";
 import SelectView from "ember-views/views/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
@@ -1002,7 +1003,7 @@ Application.reopenClass({
     registry.register('controller:object', ObjectController, { instantiate: false });
     registry.register('controller:array', ArrayController, { instantiate: false });
 
-    registry.register('renderer:-dom', { create: function(opts) { return new Renderer(opts); } });
+    registry.register('renderer:-dom', { create: function() { return new Renderer(new DOMHelper()); } });
 
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
