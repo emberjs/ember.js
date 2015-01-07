@@ -2,8 +2,6 @@ language: node_js
 node_js:
 - '0.10'
 sudo: false
-addons:
-  sauce_connect: true
 env:
   global:
   - SAUCE_USERNAME=htmlbars-ci
@@ -15,3 +13,8 @@ matrix:
   fast_finish: true
   allow_failures:
     - env: TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_9
+before_script:
+  - curl -L https://gist.githubusercontent.com/johanneswuerbach/ce15304c6d33538ecc6e/raw/sauce-connect.sh | bash
+after_script:
+  - sleep 10
+  - killall sc

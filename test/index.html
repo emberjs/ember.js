@@ -17,28 +17,7 @@
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
 
-    var log = [];
-    QUnit.testStart(function(testDetails) {
-      QUnit.log = function(details) {
-        if (!details.result) {
-          details.name = testDetails.name;
-          log.push(details);
-        }
-      };
-    });
     QUnit.done(function(testResults) {
-      var tests = [];
-      for (var i = 0, len = log.length; i < len; i++) {
-        var details = log[i];
-        tests.push({
-          name: details.name,
-          result: details.result,
-          expected: details.expected,
-          actual: details.actual,
-          source: details.source
-        });
-      }
-      testResults.tests = tests;
       window.global_test_results = testResults;
     });
 
