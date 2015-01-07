@@ -143,3 +143,19 @@ for a detailed explanation.
   Exposes the basic internal stream implementation as `Ember.Stream`.
 
   Added in [#9693](https://github.com/emberjs/ember.js/pull/9693)
+
+* `ember-htmlbars-each-with-index`
+
+  Adds an optional second parameter to `{{each}}` block parameters that is the index of the item.
+
+  For example,
+
+  ```handlebars
+  <ul>
+    {{#each people as |person index|}}
+       <li>{{index}}) {{person.name}}</li>
+    {{/each}}
+  </ul>
+  ```
+
+  Added in [#10160](https://github.com/emberjs/ember.js/pull/10160)

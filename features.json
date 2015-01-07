@@ -13,7 +13,8 @@
     "ember-routing-transitioning-classes": true,
     "new-computed-syntax": null,
     "ember-testing-checkbox-helpers": null,
-    "ember-metal-stream": null
+    "ember-metal-stream": null,
+    "ember-htmlbars-each-with-index": null
   },
   "debugStatements": [
     "Ember.warn",
