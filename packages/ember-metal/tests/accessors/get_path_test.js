@@ -2,6 +2,12 @@
 
 import { get } from 'ember-metal/property_get';
 
+function expectGlobalContextDeprecation(assertion) {
+  expectDeprecation(function() {
+    assertion();
+  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
+}
+
 var obj;
 var moduleOpts = {
   setup: function() {
@@ -81,15 +87,15 @@ test('[obj, falseValue.notDefined] -> (null)', function() {
 //
 
 test('[null, length] returning data is deprecated', function() {
-  expectDeprecation(function() {
+  expectGlobalContextDeprecation(function() {
     equal(5, get(null, 'localPathGlobal'));
-  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
+  });
 });
 
 test('[length] returning data is deprecated', function() {
-  expectDeprecation(function() {
+  expectGlobalContextDeprecation(function() {
     equal(5, get('localPathGlobal'));
-  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
+  });
 });
 
 // ..........................................................
