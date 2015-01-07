@@ -83,7 +83,11 @@ ControllerMixin.reopen({
     For example, when you define a controller:
 
     ```javascript
-    App.CommentsController = Ember.ArrayController.extend({
+    // app/controllers/comments.js
+
+    import Ember from "ember";
+
+    export default Ember.ArrayController.extend({
       needs: ['post']
     });
     ```
@@ -93,20 +97,28 @@ ControllerMixin.reopen({
     `controllers` property:
 
     ```javascript
-    this.get('controllers.post'); // instance of App.PostController
+    this.get('controllers.post'); // instance of PostController
     ```
 
     Given that you have a nested controller (nested resource):
 
     ```javascript
-    App.CommentsNewController = Ember.ObjectController.extend({
+    // app/controllers/comments/new.js
+
+    import Ember from 'ember';
+
+    export default Ember.ObjectController.extend({
     });
     ```
 
     When you define a controller that requires access to a nested one:
 
     ```javascript
-    App.IndexController = Ember.ObjectController.extend({
+    // app/controllers/index.js
+
+    import Ember from 'ember';
+
+    export default Ember.ObjectController.extend({
       needs: ['commentsNew']
     });
     ```
@@ -114,7 +126,7 @@ ControllerMixin.reopen({
     You will be able to get access to it:
 
     ```javascript
-    this.get('controllers.commentsNew'); // instance of App.CommentsNewController
+    this.get('controllers.commentsNew'); // instance of CommentsNewController
     ```
 
     This is only available for singleton controllers.
@@ -161,10 +173,14 @@ ControllerMixin.reopen({
     property will be accessible by name through this property.
 
     ```javascript
-    App.CommentsController = Ember.ArrayController.extend({
+    // app/controllers/comments.js
+
+    import Ember from 'ember';
+
+    export default Ember.ArrayController.extend({
       needs: ['post'],
       postTitle: function(){
-        var currentPost = this.get('controllers.post'); // instance of App.PostController
+        var currentPost = this.get('controllers.post'); // instance of PostController
         return currentPost.get('title');
       }.property('controllers.post.title')
     });

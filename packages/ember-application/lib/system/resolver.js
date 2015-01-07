@@ -62,7 +62,11 @@ export var Resolver = EmberObject.extend({
   is resolved like so:
 
   ```javascript
-  App = Ember.Application.create({
+  // app/app.js
+
+  import Ember from 'ember';
+
+  export default Ember.Application.create({
     Resolver: Ember.DefaultResolver.extend({
       resolveTemplate: function(parsedName) {
         var resolvedTemplate = this._super(parsedName);
@@ -82,20 +86,20 @@ export var Resolver = EmberObject.extend({
   'template:blogPost'       //=> Ember.TEMPLATES['blogPost']
                             //   OR
                             //   Ember.TEMPLATES['blog_post']
-  'controller:post'         //=> App.PostController
-  'controller:posts.index'  //=> App.PostsIndexController
+  'controller:post'         //=> PostController
+  'controller:posts.index'  //=> PostsIndexController
   'controller:blog/post'    //=> Blog.PostController
   'controller:basic'        //=> Ember.Controller
-  'route:post'              //=> App.PostRoute
-  'route:posts.index'       //=> App.PostsIndexRoute
+  'route:post'              //=> PostRoute
+  'route:posts.index'       //=> PostsIndexRoute
   'route:blog/post'         //=> Blog.PostRoute
   'route:basic'             //=> Ember.Route
-  'view:post'               //=> App.PostView
-  'view:posts.index'        //=> App.PostsIndexView
+  'view:post'               //=> PostView
+  'view:posts.index'        //=> PostsIndexView
   'view:blog/post'          //=> Blog.PostView
   'view:basic'              //=> Ember.View
-  'foo:post'                //=> App.PostFoo
-  'model:post'              //=> App.Post
+  'foo:post'                //=> PostFoo
+  'model:post'              //=> Post
   ```
 
   @class DefaultResolver
