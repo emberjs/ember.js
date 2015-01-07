@@ -17,7 +17,7 @@ var environment;
 // defining a `disableBrowserEnvironment` ENV.
 var hasDOM = typeof window !== 'undefined' &&
              typeof document !== 'undefined' &&
-             typeof document.createElement === 'function' &&
+             typeof document.createElement !== 'undefined' &&
              !Ember.ENV.disableBrowserEnvironment;
 
 if (hasDOM) {
