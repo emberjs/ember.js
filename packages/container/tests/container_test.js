@@ -404,7 +404,23 @@ QUnit.test('Options can be registered that should be applied to all factories fo
   ok(postView1 !== postView2, 'The two lookups are different');
 });
 
-QUnit.test('factory resolves are cached', function() {
+QUnit.test('An injected non-singleton instance is never cached', function() {
+  var registry = new Registry();
+  var container = registry.container();
+  var PostView = factory();
+  var PostViewHelper = factory();
+
+  registry.register('view:post', PostView, { singleton: false });
+  registry.register('view_helper:post', PostViewHelper, { singleton: false });
+  registry.injection('view:post', 'viewHelper', 'view_helper:post');
+
+  var postView1 = container.lookup('view:post');
+  var postView2 = container.lookup('view:post');
+
+  ok(postView1.viewHelper !== postView2.viewHelper, 'Injected non-singletons are not cached');
+});
+
+QUnit.test('Factory resolves are cached', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
