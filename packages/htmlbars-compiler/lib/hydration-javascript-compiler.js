@@ -213,10 +213,10 @@ prototype.createAttrMorph = function(attrMorphNum, elementNum, name, escaped, na
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
   var parent = this.getParent(),
-      processing = 'dom.repairClonedNode('+parent+','+
+      processing = 'if (this.cachedFragment) { dom.repairClonedNode('+parent+','+
                    array(blankChildTextNodes)+
                    ( isElementChecked ? ',true' : '' )+
-                   ');';
+                   '); }';
   this.fragmentProcessing.push(
     processing
   );
