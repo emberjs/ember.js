@@ -1,3 +1,7 @@
+export function isAttrRemovalValue(value) {
+  return value === null || value === undefined;
+}
+
 // TODO should this be an o_create kind of thing?
 export var propertyCaches = {};
 
