@@ -26,19 +26,6 @@ test('#createElement', function(){
   equalHTML(node, '<div></div>');
 });
 
-test('#childAtIndex', function() {
-  var node = dom.createElement('div');
-
-  var child1 = dom.createElement('p');
-  var child2 = dom.createElement('img');
-
-  dom.appendChild(node, child1);
-  equal(dom.childAtIndex(node, 0).tagName, 'P');
-
-  dom.insertBefore(node, child2, child1);
-  equal(dom.childAtIndex(node, 0).tagName, 'IMG');
-});
-
 test('#appendText adds text', function(){
   var node = dom.createElement('div');
   var text = dom.appendText(node, 'Howdy');
