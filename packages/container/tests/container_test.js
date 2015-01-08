@@ -360,7 +360,7 @@ QUnit.test('The container normalizes names when looking factory up', function() 
   equal(fact.toString() === PostController.extend().toString(), true, 'Normalizes the name when looking factory up');
 });
 
-QUnit.test('The container can get options that should be applied to a given factory', function() {
+QUnit.test('Options can be registered that should be applied to a given factory', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostView = factory();
@@ -382,7 +382,7 @@ QUnit.test('The container can get options that should be applied to a given fact
   ok(postView1 !== postView2, 'The two lookups are different');
 });
 
-QUnit.test('The container can get options that should be applied to all factories for a given type', function() {
+QUnit.test('Options can be registered that should be applied to all factories for a given type', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostView = factory();
