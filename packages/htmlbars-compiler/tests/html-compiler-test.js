@@ -109,6 +109,13 @@ test("Simple elements can have an empty attribute", function() {
   equalTokens(fragment, '<div class="">content</div>');
 });
 
+test("presence of `disabled` attribute without value marks as disabled", function() {
+  var template = compile('<input disabled>');
+  var fragment = template.render({}, env);
+
+  ok(fragment.disabled, 'disabled without value set as property is true');
+});
+
 test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
   var fragment = template.render({isDisabled: null}, env);
