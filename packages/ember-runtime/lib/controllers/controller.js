@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import EmberObject from 'ember-runtime/system/object';
 import Mixin from 'ember-runtime/mixins/controller';
-import { createInjectionHelper } from 'ember-runtime/inject';
+import { registerInjectionType } from 'ember-runtime/inject';
 
 /**
 @module ember
@@ -51,7 +51,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
            to the property's name
     @return {Ember.InjectedProperty} injection descriptor instance
     */
-  createInjectionHelper('controller', controllerInjectionHelper);
+  registerInjectionType('controller', controllerInjectionHelper);
 }
 
 export default Controller;

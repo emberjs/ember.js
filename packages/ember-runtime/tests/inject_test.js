@@ -2,7 +2,7 @@
 
 import InjectedProperty from "ember-metal/injected_property";
 import {
-  createInjectionHelper,
+  registerInjectionType,
   default as inject
 } from "ember-runtime/inject";
 import { Registry } from "ember-runtime/system/container";
@@ -23,7 +23,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     test("injection type validation is run when first looked up", function() {
       expect(1);
 
-      createInjectionHelper('foo', function() {
+      registerInjectionType('foo', function() {
         ok(true, 'should call validation method');
       });
 

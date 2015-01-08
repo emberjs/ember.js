@@ -1,5 +1,5 @@
 import Object from "ember-runtime/system/object";
-import { createInjectionHelper } from 'ember-runtime/inject';
+import { registerInjectionType } from 'ember-runtime/inject';
 
 var Service;
 
@@ -37,7 +37,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
            the property's name
     @return {Ember.InjectedProperty} injection descriptor instance
   */
-  createInjectionHelper('service');
+  registerInjectionType('service');
 }
 
 export default Service;
