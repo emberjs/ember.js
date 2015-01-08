@@ -17,8 +17,9 @@
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
 
+    window.global_test_results = null;
     QUnit.done(function(testResults) {
-      window.global_test_results = testResults;
+      global_test_results = testResults;
     });
 
     function injectScript(url) {
