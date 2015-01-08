@@ -15,7 +15,7 @@ function inject() {
                keys(inject).join("`, `") + "`");
 }
 
-// Dictionary of injection validations by type, added to by `createInjectionHelper`
+// Dictionary of injection validations by type, added to by `registerInjectionType`
 var typeValidators = {};
 
 /**
@@ -24,12 +24,12 @@ var typeValidators = {};
   container type itself.
 
   @private
-  @method createInjectionHelper
-  @namespace Ember
+  @method registerInjectionType
+  @namespace Ember.inject
   @param {String} type The container type the helper will inject
   @param {Function} validator A validation callback that is executed at mixin-time
 */
-export function createInjectionHelper(type, validator) {
+export function registerInjectionType(type, validator) {
   typeValidators[type] = validator;
 
   inject[type] = function(name) {
