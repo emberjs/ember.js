@@ -38,7 +38,22 @@ merge(inDOM, {
     if (!this.isVirtual) {
       delete View.views[view.elementId];
     }
+  },
+
+  appendAttr: function(view, attrNode) {
+    var _childViews = view._childViews;
+
+    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
+    _childViews.push(attrNode);
+
+    attrNode._parentView = view;
+    view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);
+
+    view.propertyDidChange('childViews');
+
+    return attrNode;
   }
+
 });
 
 export default inDOM;
