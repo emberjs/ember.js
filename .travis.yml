@@ -7,12 +7,12 @@ env:
   - SAUCE_USERNAME=htmlbars-ci
   - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
-  - TEST_NODE=1 TEST_BROWSERS=PhantomJS,SL_Chrome_Current,SL_Chrome_Last,SL_Firefox_Current,SL_Firefox_Last,SL_Safari_Current,SL_Safari_Last,SL_IE_8
-  - TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_9
+  - TEST_NODE=1 TEST_BROWSERS=PhantomJS,SL_Chrome_Current,SL_Chrome_Last,SL_Firefox_Current,SL_Firefox_Last,SL_Safari_Current,SL_Safari_Last,SL_IE_9
+  - TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_8
 matrix:
   fast_finish: true
   allow_failures:
-    - env: TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_9
+    - env: TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_8
 before_script:
   - curl -L https://gist.githubusercontent.com/johanneswuerbach/ce15304c6d33538ecc6e/raw/sauce-connect.sh | bash
 after_script:
