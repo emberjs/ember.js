@@ -24,6 +24,16 @@ export function equalHTML(node, html) {
 var ie8InnerHTMLTestElement = document.createElement('div');
 ie8InnerHTMLTestElement.setAttribute('id', 'womp');
 var ie8InnerHTML = (ie8InnerHTMLTestElement.outerHTML.indexOf('id=womp') > -1);
+
+// detect side-effects of cloning svg elements in IE9-11
+var ieSVGInnerHTML = (function () {
+  var div = document.createElement('div');
+  var node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  div.appendChild(node);
+  var clone = div.cloneNode(true);
+  return clone.innerHTML === '<svg xmlns="http://www.w3.org/2000/svg" />';
+})();
+
 export function normalizeInnerHTML(actualHTML) {
   if (ie8InnerHTML) {
     // drop newlines in IE8
@@ -37,6 +47,16 @@ export function normalizeInnerHTML(actualHTML) {
       return 'id="'+id+'"';
     });
   }
+  if (ieSVGInnerHTML) {
+    // Replace `<svg xmlns="http://www.w3.org/2000/svg" height="50%" />` with `<svg height="50%"></svg>`, etc.
+    // drop namespace attribute
+    actualHTML = actualHTML.replace(/ xmlns="[^"]+"/, '');
+    // replace self-closing elements
+    actualHTML = actualHTML.replace(/<([A-Z]+) [^\/>]*\/>/gi, function(tag, tagName) {
+      return tag.slice(0, tag.length - 3) + '></' + tagName + '>';
+    });
+  }
+
   return actualHTML;
 }
 
