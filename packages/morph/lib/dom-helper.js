@@ -140,6 +140,10 @@ prototype.childAt = function(element, indices) {
   return child;
 };
 
+prototype.childAtIndex = function(element, index) {
+  return element.childNodes.item(index);
+};
+
 prototype.appendText = function(element, text) {
   return element.appendChild(this.document.createTextNode(text));
 };
@@ -242,7 +246,7 @@ prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
     for (var i=0, len=blankChildTextNodes.length;i<len;i++){
       var textNode = this.document.createTextNode(''),
           offset = blankChildTextNodes[i],
-          before = element.childNodes[offset];
+          before = this.childAtIndex(element, offset);
       if (before) {
         element.insertBefore(textNode, before);
       } else {
@@ -286,9 +290,8 @@ prototype.createUnsafeMorph = function(parent, start, end, contextualElement){
 // This helper is just to keep the templates good looking,
 // passing integers instead of element references.
 prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
-  var childNodes = parent.childNodes,
-      start = startIndex === -1 ? null : childNodes[startIndex],
-      end = endIndex === -1 ? null : childNodes[endIndex];
+  var start = startIndex === -1 ? null : this.childAtIndex(parent, startIndex),
+      end = endIndex === -1 ? null : this.childAtIndex(parent, endIndex);
   return this.createMorph(parent, start, end, contextualElement);
 };
 
