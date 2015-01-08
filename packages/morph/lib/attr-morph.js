@@ -1,5 +1,5 @@
 import { sanitizeAttributeValue } from "./attr-morph/sanitize-attribute-value";
-import { normalizeProperty } from "./dom-helper/prop";
+import { isAttrRemovalValue, normalizeProperty } from "./dom-helper/prop";
 import { svgNamespace } from "./dom-helper/build-html-dom";
 
 function updateProperty(value) {
@@ -7,7 +7,7 @@ function updateProperty(value) {
 }
 
 function updateAttribute(value) {
-  if (value === null) {
+  if (isAttrRemovalValue(value)) {
     this.domHelper.removeAttribute(this.element, this.attrName);
   } else {
     this.domHelper.setAttribute(this.element, this.attrName, value);
@@ -15,7 +15,7 @@ function updateAttribute(value) {
 }
 
 function updateAttributeNS(value) {
-  if (value === null) {
+  if (isAttrRemovalValue(value)) {
     this.domHelper.removeAttribute(this.element, this.attrName);
   } else {
     this.domHelper.setAttributeNS(this.element, this.namespace, this.attrName, value);

@@ -3,7 +3,8 @@
 import DOMHelper from "../morph/dom-helper";
 import SafeString from "htmlbars-util/safe-string";
 
-var svgNamespace = "http://www.w3.org/2000/svg";
+var svgNamespace = "http://www.w3.org/2000/svg",
+    xlinkNamespace = "http://www.w3.org/1999/xlink";
 var domHelper = new DOMHelper();
 
 QUnit.module('morph: AttrMorph');
@@ -32,6 +33,30 @@ test("can update attribute", function(){
   equal(element.getAttribute('data-bop'), 'kpow', 'data-bop attribute is set');
   morph.setContent(null);
   equal(element.getAttribute('data-bop'), undefined, 'data-bop attribute is removed');
+});
+
+test("can remove ns attribute with null", function(){
+  var element = domHelper.createElement('svg');
+  domHelper.setAttribute(element, 'xlink:title', 'Great Title', xlinkNamespace);
+  var morph = domHelper.createAttrMorph(element, 'xlink:title', xlinkNamespace);
+  morph.setContent(null);
+  equal(element.getAttribute('xlink:title'), undefined, 'ns attribute is removed');
+});
+
+test("can remove attribute with undefined", function(){
+  var element = domHelper.createElement('div');
+  element.setAttribute('data-bop', 'kpow');
+  var morph = domHelper.createAttrMorph(element, 'data-bop');
+  morph.setContent(undefined);
+  equal(element.getAttribute('data-bop'), undefined, 'data-bop attribute is removed');
+});
+
+test("can remove ns attribute with undefined", function(){
+  var element = domHelper.createElement('svg');
+  domHelper.setAttribute(element, 'xlink:title', 'Great Title', xlinkNamespace);
+  var morph = domHelper.createAttrMorph(element, 'xlink:title', xlinkNamespace);
+  morph.setContent(undefined);
+  equal(element.getAttribute('xlink:title'), undefined, 'ns attribute is removed');
 });
 
 test("can update svg attribute", function(){

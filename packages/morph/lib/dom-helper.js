@@ -12,6 +12,7 @@ import {
 import {
   normalizeProperty
 } from "./dom-helper/prop";
+import { isAttrRemovalValue } from "./dom-helper/prop";
 
 var doc = typeof document === 'undefined' ? false : document;
 
@@ -167,7 +168,7 @@ prototype.setPropertyStrict = function(element, name, value) {
 prototype.setProperty = function(element, name, value, namespace) {
   var lowercaseName = name.toLowerCase();
   if (element.namespaceURI === svgNamespace || lowercaseName === 'style') {
-    if (value === null) {
+    if (isAttrRemovalValue(value)) {
       element.removeAttribute(name);
     } else {
       if (namespace) {
@@ -181,7 +182,7 @@ prototype.setProperty = function(element, name, value, namespace) {
     if (normalized) {
       element[normalized] = value;
     } else {
-      if (value === null) {
+      if (isAttrRemovalValue(value)) {
         element.removeAttribute(name);
       } else {
         if (namespace) {
