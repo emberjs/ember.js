@@ -153,7 +153,7 @@ prototype.setAttribute = function(element, name, value) {
 };
 
 prototype.setAttributeNS = function(element, namespace, name, value) {
-  element.setAttributeNS(namespace, name, value);
+  element.setAttributeNS(namespace, name, String(value));
 };
 
 prototype.removeAttribute = function(element, name) {
