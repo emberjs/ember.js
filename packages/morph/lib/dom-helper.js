@@ -134,7 +134,7 @@ prototype.childAt = function(element, indices) {
   var child = element;
 
   for (var i = 0; i < indices.length; i++) {
-    child = child.childNodes[indices[i]];
+    child = child.childNodes.item(indices[i]);
   }
 
   return child;
