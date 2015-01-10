@@ -93,8 +93,10 @@ Ember.debug = function(message) {
   @param {String} message A description of the deprecation.
   @param {Boolean} test An optional boolean. If falsy, the deprecation
     will be displayed.
+  @param {Object} options An optional object that can be used to pass
+    in a `url` to the transition guide on the emberjs.com website.
 */
-Ember.deprecate = function(message, test) {
+Ember.deprecate = function(message, test, options) {
   var noDeprecation;
 
   if (typeof test === 'function') {
@@ -111,6 +113,13 @@ Ember.deprecate = function(message, test) {
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
   try { __fail__.fail(); } catch (e) { error = e; }
+
+  if (arguments.length === 3) {
+    Ember.assert('options argument to Ember.deprecate should be an object', options && typeof options === 'object');
+    if (options.url) {
+      message += ' See ' + options.url + ' for more details.';
+    }
+  }
 
   if (Ember.LOG_STACKTRACE_ON_DEPRECATION && error.stack) {
     var stack;

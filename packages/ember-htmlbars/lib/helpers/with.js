@@ -72,9 +72,9 @@ export function withHelper(params, hash, options, env) {
   } else {
     Ember.deprecate(
       "Using the context switching form of `{{with}}` is deprecated. " +
-      "Please use the keyword form (`{{with foo as bar}}`) instead. " +
-      "See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope " +
-      "for more details."
+      "Please use the keyword form (`{{with foo as bar}}`) instead.",
+      false,
+      { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
     );
     preserveContext = false;
   }
