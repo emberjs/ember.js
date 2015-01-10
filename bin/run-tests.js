@@ -92,7 +92,7 @@ var testRuns = RSVP.resolve();
 
 if (process.env.CI && process.env.TEST_BROWSERS) {
   testRuns = testRuns.then(function() {
-    return runBrowserTests('./node_modules/.bin/testem', ['ci', '--port', '7000', '--timeout', '540', '--launch', process.env.TEST_BROWSERS]);
+    return runBrowserTests('./node_modules/.bin/testem', ['ci', '--port', '7000', '--timeout', '540', '-P', '2', '--launch', process.env.TEST_BROWSERS]);
   });
 }
 

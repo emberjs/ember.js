@@ -12,14 +12,10 @@
   <script src="/testem.js"></script>
   <script src="../assets/loader.js"></script>
   <script src="packages-config.js"></script>
+  <script src="export-test-results.js"></script>
 
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
-
-    window.global_test_results = null;
-    QUnit.done(function(testResults) {
-      global_test_results = testResults;
-    });
 
     function injectScript(url) {
       document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
