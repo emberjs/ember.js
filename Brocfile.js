@@ -97,8 +97,14 @@ var qunit = new Funnel(bower, {
   destDir: '/test'
 });
 
+var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
+  srcDir: '/vendor',
+  files: [ 'export-test-results.js' ],
+  destDir: '/test'
+});
+
 // Export trees
-var trees = [demos, test, loader, qunit];
+var trees = [demos, test, loader, qunit, cliSauce];
 
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
