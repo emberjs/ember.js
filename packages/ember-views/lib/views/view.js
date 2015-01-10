@@ -1878,9 +1878,11 @@ var View = CoreView.extend({
     var attrs = _attrs || {};
     var view;
     attrs._parentView = this;
+    attrs.renderer = this.renderer;
 
     if (CoreView.detect(maybeViewClass)) {
       attrs.container = this.container;
+
       view = maybeViewClass.create(attrs);
 
       // don't set the property on a virtual view, as they are invisible to
