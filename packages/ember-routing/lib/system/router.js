@@ -79,7 +79,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     var dslCallbacks = this.constructor.dslCallbacks || [K];
     var dsl = new EmberRouterDSL(null, {
-      enableLoadingSubtates: !!moduleBasedResolver
+      enableLoadingSubstates: !!moduleBasedResolver
     });
 
     function generateDSL() {

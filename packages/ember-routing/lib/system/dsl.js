@@ -7,7 +7,7 @@ import Ember from "ember-metal/core"; // FEATURES, assert
 
 function DSL(name, options) {
   this.parent = name;
-  this.enableLoadingSubtates = options && options.enableLoadingSubtates;
+  this.enableLoadingSubstates = options && options.enableLoadingSubstates;
   this.matches = [];
 }
 export default DSL;
@@ -27,7 +27,7 @@ DSL.prototype = {
     Ember.assert("'" + name + "' cannot be used as a " + type + " name.", name !== 'array' && name !== 'basic' && name !== 'object');
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      if (this.enableLoadingSubtates) {
+      if (this.enableLoadingSubstates) {
         createRoute(this, name + '_loading', { resetNamespace: options.resetNamespace });
         createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
       }
@@ -36,7 +36,7 @@ DSL.prototype = {
     if (callback) {
       var fullName = getFullName(this, name, options.resetNamespace);
       var dsl = new DSL(fullName, {
-        enableLoadingSubtates: this.enableLoadingSubtates
+        enableLoadingSubstates: this.enableLoadingSubstates
       });
 
       createRoute(dsl, 'loading');
