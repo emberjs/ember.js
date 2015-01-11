@@ -5,6 +5,7 @@ import {
 } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
+    xlinkNamespace = "http://www.w3.org/1999/xlink",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
 var foreignNamespaces = ['foreignObject', 'desc', 'title'];
@@ -62,14 +63,14 @@ test('#setAttribute', function(){
 
 test('#setAttributeNS', function(){
   var node = dom.createElement('svg');
-  dom.setAttributeNS(node, 'http://www.w3.org/1999/xlink', 'xlink:href', 'super-fun');
+  dom.setAttributeNS(node, xlinkNamespace, 'xlink:href', 'super-fun');
   // chrome adds (xmlns:xlink="http://www.w3.org/1999/xlink") property while others don't
   // thus equalHTML is not useful
   var el = document.createElement('div');
   el.appendChild(node);
   // phantomjs omits the prefix, thus we can't find xlink:
   ok(el.innerHTML.indexOf('href="super-fun"') > 0);
-  dom.setAttributeNS(node, 'http://www.w3.org/1999/xlink', 'href', null);
+  dom.setAttributeNS(node, xlinkNamespace, 'href', null);
   
   ok(el.innerHTML.indexOf('href="null"') > 0);
 
@@ -149,14 +150,30 @@ test('#setProperty', function(){
   node = dom.createElement('svg');
   dom.setProperty(node, 'viewBox', '0 0 0 0');
   equalHTML(node, '<svg viewBox="0 0 0 0"></svg>');
-  
-  dom.setProperty(node, 'xlink:title', 'super-blast','http://www.w3.org/1999/xlink');
+
+  dom.setProperty(node, 'xlink:title', 'super-blast', xlinkNamespace);
   // chrome adds (xmlns:xlink="http://www.w3.org/1999/xlink") property while others don't
   // thus equalHTML is not useful
   var el = document.createElement('div');
   el.appendChild(node);
   // phantom js omits the prefix so we can't look for xlink:
   ok(el.innerHTML.indexOf('title="super-blast"') > 0 );
+
+  dom.setProperty(node, 'xlink:title', null, xlinkNamespace);
+  equal(node.getAttribute('xlink:title'), null, 'ns attr is removed');
+});
+
+test('#setProperty removes attr with undefined', function(){
+  var node = dom.createElement('div');
+  dom.setProperty(node, 'data-fun', 'whoopie');
+  equalHTML(node, '<div data-fun="whoopie"></div>');
+  dom.setProperty(node, 'data-fun', undefined);
+  equalHTML(node, '<div></div>', 'undefined attribute removes the attribute');
+
+  node = dom.createElement('svg');
+  dom.setProperty(node, 'xlink:title', 'Great Title', xlinkNamespace);
+  dom.setProperty(node, 'xlink:title', undefined, xlinkNamespace);
+  equal(node.getAttribute('xlink:title'), undefined, 'ns attr is removed');
 });
 
 test('#addClasses', function(){
