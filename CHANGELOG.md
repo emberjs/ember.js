@@ -1,5 +1,28 @@
 # Ember Changelog
 
+### 1.10.0-beta.4 (January 11, 2015)
+
+* [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
+* Assert if an attribute set statically and via bind-attr.  For example:
+  `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
+  silently failing).
+* [BUGFIX] Fix deprecated bindAttr helper.
+* [BUGFIX] Do not allow both keyword and block params.
+* Update to HTMLBars v0.8.1
+  * Improve HTML validation and error messages thrown.
+  * Fix a number of template compliation issues in IE8.
+  * Use the correct namespace in `parseHTML` (fixes various issues that occur
+    when changing to and from alternate namespaces).
+  * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
+  * Change `setProperty` and `morph` to remove an `undefined` attr value.
+* Cleanup HTMLBars public API
+  * Remove `Ember.HTMLBars.helper`.
+  * Remove internal `registerBoundHelper` function (use
+    `registerHelper('blah', makeViewHelper(SomeView))` or `registerHelper('blah', makeBoundHelper(func))`).
+* [BUGFIX] Fix Handlebars compat mode `registerHelper` interop with `makeViewHelper`.
+* [BUGFIX] Ensure that `mergedProperties` are properly merged when all properties are not present.
+* Add options argument to pass url to `Ember.deprecate`.
+
 ### 1.10.0-beta.3 (December 29, 2014)
 
 * Deprecate `{{bind}}` helper.
