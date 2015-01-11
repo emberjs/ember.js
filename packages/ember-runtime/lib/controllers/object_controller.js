@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 
-export var objectControllerDeprecation = 'Ember.ObjectController is deprected, ' +
+export var objectControllerDeprecation = 'Ember.ObjectController is deprecated, ' +
   'please use Ember.Controller and use `model.propertyName`.';
 
 /**
