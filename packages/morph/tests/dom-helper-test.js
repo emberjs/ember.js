@@ -373,6 +373,13 @@ test('#parseHTML with retains whitespace after script', function(){
   equalHTML(nodes, '<span>hello</span><script id="first"></script><span><script></script> kwoop</span>');
 });
 
+test('#parseHTML of number', function(){
+  var div = document.createElement('div');
+  var nodes = dom.parseHTML(5, div);
+  equal(nodes[0].data, '5');
+  equalHTML(nodes, '5');
+});
+
 test('#cloneNode shallow', function(){
   var divElement = document.createElement('div');
 
