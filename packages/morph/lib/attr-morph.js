@@ -1,6 +1,7 @@
 import { sanitizeAttributeValue } from "./attr-morph/sanitize-attribute-value";
 import { isAttrRemovalValue, normalizeProperty } from "./dom-helper/prop";
 import { svgNamespace } from "./dom-helper/build-html-dom";
+import { getAttrNamespace } from "../htmlbars-util";
 
 function updateProperty(value) {
   this.domHelper.setPropertyStrict(this.element, this.attrName, value);
@@ -25,7 +26,7 @@ function updateAttributeNS(value) {
 function AttrMorph(element, attrName, domHelper, namespace) {
   this.element = element;
   this.domHelper = domHelper;
-  this.namespace = namespace || null;
+  this.namespace = namespace !== undefined ? namespace : getAttrNamespace(attrName);
   this.escaped = true;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);

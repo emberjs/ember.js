@@ -102,6 +102,14 @@ test("Simple elements can have namespaced attributes", function() {
   equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
 
+test("Simple elements can have bound namespaced attributes", function() {
+  var template = compile("<svg xlink:title={{title}}>content</svg>");
+  var fragment = template.render({title: 'svg-title'}, env);
+
+  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
+  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+});
+
 test("Simple elements can have an empty attribute", function() {
   var template = compile("<div class=''>content</div>");
   var fragment = template.render({}, env);
