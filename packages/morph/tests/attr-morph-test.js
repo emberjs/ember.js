@@ -9,6 +9,13 @@ var domHelper = new DOMHelper();
 
 QUnit.module('morph: AttrMorph');
 
+test("detects attribute's namespace if it is not passed as an argument", function () {
+  var element = domHelper.createElement('div');
+  var morph = domHelper.createAttrMorph(element, 'xlink:href');
+  morph.setContent('#circle');
+  equal(element.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink', 'attribute has correct namespace');
+});
+
 test("can update a dom node", function(){
   var element = domHelper.createElement('div');
   var morph = domHelper.createAttrMorph(element, 'id');
