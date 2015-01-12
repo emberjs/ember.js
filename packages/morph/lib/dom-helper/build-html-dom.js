@@ -187,15 +187,17 @@ if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
     // script tags without any whitespace for easier processing later.
     var spacesBefore = [];
     var spacesAfter = [];
-    html = html.replace(/(\s*)(<script)/g, function(match, spaces, tag) {
-      spacesBefore.push(spaces);
-      return tag;
-    });
+    if (typeof html === 'string') {
+      html = html.replace(/(\s*)(<script)/g, function(match, spaces, tag) {
+        spacesBefore.push(spaces);
+        return tag;
+      });
 
-    html = html.replace(/(<\/script>)(\s*)/g, function(match, tag, spaces) {
-      spacesAfter.push(spaces);
-      return tag;
-    });
+      html = html.replace(/(<\/script>)(\s*)/g, function(match, tag, spaces) {
+        spacesAfter.push(spaces);
+        return tag;
+      });
+    }
 
     // Fetch nodes
     var nodes;

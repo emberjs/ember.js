@@ -145,6 +145,10 @@ function morphTests(factory) {
     html = startHTML+'oh hai'+endHTML;
     equalHTML(newFrag, html);
 
+    morph.setContent(5);
+    html = startHTML+'5'+endHTML;
+    equalHTML(newFrag, html);
+
     morph.setContent('oh bai');
     html = startHTML+'oh bai'+endHTML;
     equalHTML(newFrag, html);
