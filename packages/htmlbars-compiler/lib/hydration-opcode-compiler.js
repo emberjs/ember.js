@@ -1,5 +1,6 @@
 import TemplateVisitor from "./template-visitor";
-import { processOpcodes, getNamespace } from "./utils";
+import { processOpcodes } from "./utils";
+import { getAttrNamespace } from "../htmlbars-util";
 import { forEach } from "../htmlbars-util/array-utils";
 import { isHelper } from "../htmlbars-syntax/utils";
 
@@ -173,7 +174,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   var value = attr.value;
   var escaped = true;
-  var namespace = getNamespace(attr.name) || null;
+  var namespace = getAttrNamespace(attr.name);
 
   // TODO: Introduce context specific AST nodes to avoid switching here.
   if (value.type === 'TextNode') {
