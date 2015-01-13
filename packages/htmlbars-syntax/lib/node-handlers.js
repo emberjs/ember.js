@@ -27,7 +27,7 @@ var nodeHandlers = {
     // Ensure that that the element stack is balanced properly.
     var poppedNode = this.elementStack.pop();
     if (poppedNode !== node) {
-      throw new Error("Unclosed element: " + poppedNode.tag);
+      throw new Error("Unclosed element `" + poppedNode.tag + "` (on line " + poppedNode.loc.start.line + ").");
     }
 
     return node;
