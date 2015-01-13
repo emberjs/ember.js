@@ -28,8 +28,7 @@
 {{some-other-component action="saveMe"}}
 ```
 
-Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action
-it would silently continue.  Now, an assertion would be triggered.
+Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action, it would silently continue.  Now, an assertion would be triggered.
 
 * [PERF] Speedup Mixin creation.
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
