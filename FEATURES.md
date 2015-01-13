@@ -123,10 +123,12 @@ for a detailed explanation.
   Disables eager URL updates during slow transitions in favor of new CSS
   classes added to `link-to`s (in addition to `active` class):
 
-  - `transitioning-in`: link-to is not currently active, but will be
+  - `ember-transitioning-in`: link-to is not currently active, but will be
     when the current underway (slow) transition completes.
-  - `transitioning-out`: link-to is currently active, but will no longer
+  - `ember-transitioning-out`: link-to is currently active, but will no longer
     be active when the current underway (slow) transition completes.
+
+  Added in [#9919](https://github.com/emberjs/ember.js/pull/9919)
 
 * `new-computed-syntax`
 
