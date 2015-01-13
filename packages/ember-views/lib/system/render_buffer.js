@@ -7,6 +7,7 @@ import jQuery from "ember-views/system/jquery";
 import Ember from "ember-metal/core";
 import { create } from "ember-metal/platform";
 import environment from "ember-metal/environment";
+import { normalizeProperty } from "morph/dom-helper/prop";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -491,7 +492,9 @@ RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        this.dom.setPropertyStrict(element, prop, props[prop]);
+        var normalizedCase = normalizeProperty(element, prop) || prop;
+
+        this.dom.setPropertyStrict(element, normalizedCase, props[prop]);
       }
 
       this.elementProperties = null;
