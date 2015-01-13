@@ -122,8 +122,10 @@ Renderer.prototype.didInsertElement = function (view) {
 Renderer.prototype.willRemoveElement = function (view) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
-  if (view.trigger) { view.trigger('willDestroyElement'); }
-  if (view.trigger) { view.trigger('willClearRender'); }
+  if (view.trigger) {
+    view.trigger('willDestroyElement');
+    view.trigger('willClearRender');
+  }
 };
 
 Renderer.prototype.didDestroyElement = function (view) {
