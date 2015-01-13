@@ -239,3 +239,25 @@ test("initializers are per-app", function() {
     initialize: function(registry) {}
   });
 });
+
+if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+  test("initializers should be executed in their own context", function() {
+    expect(1);
+    var MyApplication = Application.extend();
+
+    MyApplication.initializer({
+      name: 'coolBabeInitializer',
+      myProperty: 'coolBabe',
+      initialize: function(registry, application) {
+        equal(this.myProperty, 'coolBabe', 'should have access to its own context');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  });
+}

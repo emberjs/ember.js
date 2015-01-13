@@ -695,13 +695,19 @@ var Application = Namespace.extend(DeferredMixin, {
 
     for (var i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
-      graph.addEdges(initializer.name, initializer.initialize, initializer.before, initializer.after);
+      graph.addEdges(initializer.name, initializer, initializer.before, initializer.after);
     }
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
       Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
-      initializer(registry, namespace);
+
+      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+        initializer.initialize(registry, namespace);
+      } else {
+        var ref = initializer.initialize;
+        ref(registry, namespace);
+      }
     });
   },
 
