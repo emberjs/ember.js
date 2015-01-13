@@ -941,6 +941,17 @@ QUnit.module("HTML-based compiler (invalid HTML errors)", {
   setup: commonSetup
 });
 
+test("A helpful error message is provided for unclosed elements", function() {
+  expect(2);
+
+  QUnit.throws(function() {
+    compile('\n<div class="my-div" \n foo={{bar}}>\n<span>\n</span>\n');
+  }, /Unclosed element `div` \(on line 2\)\./);
+  QUnit.throws(function() {
+    compile('\n<div class="my-div">\n<span>\n');
+  }, /Unclosed element `span` \(on line 3\)\./);
+});
+
 test("A helpful error message is provided for unmatched end tags", function() {
   expect(2);
 
