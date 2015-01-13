@@ -12,7 +12,6 @@ import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
 import {
   registerHelper,
-  helper,
   default as helpers
 } from "ember-htmlbars/helpers";
 import { viewHelper } from "ember-htmlbars/helpers/view";
