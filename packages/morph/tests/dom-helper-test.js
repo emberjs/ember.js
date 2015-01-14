@@ -13,10 +13,10 @@ var foreignNamespaces = ['foreignObject', 'desc', 'title'];
 var dom, i, foreignNamespace;
 
 QUnit.module('morph: DOM Helper', {
-  setup: function() {
+  beforeEach: function() {
     dom = new DOMHelper();
   },
-  teardown: function() {
+  afterEach: function() {
     dom = null;
   }
 });
@@ -456,10 +456,10 @@ test('dom node checked after cloning and ensuringChecked', function(){
 if ('namespaceURI' in document.createElement('div')) {
 
 QUnit.module('morph: DOM Helper namespaces', {
-  setup: function() {
+  beforeEach: function() {
     dom = new DOMHelper();
   },
-  teardown: function() {
+  afterEach: function() {
     dom = null;
   }
 });
