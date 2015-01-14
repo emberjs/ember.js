@@ -105,22 +105,18 @@ import EmberError from 'ember-metal/error';
 export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   /**
-    The controller used to wrap items, if any. If the value is a string, it will
-    be used to lookup the container for the controller. As an alternative, you
-    can also provide a controller class as the value.
+    A string containing the controller name used to wrap items.
 
     For example:
 
     ```javascript
     App.MyArrayController = Ember.ArrayController.extend({
-      itemController: Ember.ObjectController.extend({
-        //Item Controller Implementation
-      })
+      itemController: 'myItem' // use App.MyItemController
     });
     ```
 
     @property itemController
-    @type String | Ember.Controller
+    @type String
     @default null
   */
   itemController: null,
