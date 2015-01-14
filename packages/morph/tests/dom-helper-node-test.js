@@ -3,9 +3,7 @@ import {DOMHelper} from "../morph";
 var dom;
 
 QUnit.module('morph: DOM Helper', {
-  setup: function() {
-  },
-  teardown: function() {
+  afterEach: function() {
     dom = null;
   }
 });
