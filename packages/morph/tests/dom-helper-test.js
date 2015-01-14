@@ -118,6 +118,16 @@ test('#removeAttribute', function(){
   equalHTML(node, '<div></div>', 'attribute was removed');
 });
 
+test('#removeAttribute of SVG', function(){
+  dom.setNamespace(svgNamespace);
+  var node = dom.createElement('svg');
+  dom.setAttribute(node, 'viewBox', '0 0 100 100');
+  equalHTML(node, '<svg viewBox="0 0 100 100"></svg>', 'precond - attribute exists');
+
+  dom.removeAttribute(node, 'viewBox');
+  equalHTML(node, '<svg></svg>', 'attribute was removed');
+});
+
 test('#setProperty', function(){
   var node = dom.createElement('div');
   dom.setProperty(node, 'id', 'super-tag');
