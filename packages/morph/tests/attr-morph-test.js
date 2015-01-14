@@ -95,7 +95,13 @@ test("can update style attribute", function(){
   var element = domHelper.createElement('div');
   var morph = domHelper.createAttrMorph(element, 'style');
   morph.setContent('color: red;');
-  equal(element.getAttribute('style'), 'color: red;', 'style attr is set');
+  // IE8 capitalizes css property names and removes trailing semicolons
+  var value = element.getAttribute('style');
+  value = value.toLowerCase();
+  if (value.lastIndexOf(';') !== value.length - 1) {
+    value += ';';
+  }
+  equal(value, 'color: red;', 'style attr is set');
   morph.setContent(null);
   equal(element.getAttribute('style'), undefined, 'style attr is removed');
 });
