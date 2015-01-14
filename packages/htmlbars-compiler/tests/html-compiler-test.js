@@ -70,7 +70,7 @@ function commonSetup() {
 }
 
 QUnit.module("HTML-based compiler (output)", {
-  setup: commonSetup
+  beforeEach: commonSetup
 });
 
 test("Simple content produces a document fragment", function() {
@@ -938,7 +938,7 @@ test("Block params in HTML syntax - Throws an error on invalid identifiers for p
 });
 
 QUnit.module("HTML-based compiler (invalid HTML errors)", {
-  setup: commonSetup
+  beforeEach: commonSetup
 });
 
 test("A helpful error message is provided for unclosed elements", function() {
@@ -1028,7 +1028,7 @@ test("error line numbers include multiple mustache lines", function() {
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
-  setup: commonSetup
+  beforeEach: commonSetup
 });
 
 test("The compiler can handle namespaced elements", function() {
