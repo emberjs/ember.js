@@ -1,5 +1,5 @@
 import { buildText } from "./builders";
-
+import { indexOfArray } from "../htmlbars-util/array-utils";
 // Regex to validate the identifier for block parameters. 
 // Based on the ID validation regex in Handlebars.
 
@@ -17,7 +17,7 @@ export function parseComponentBlockParams(element, program) {
     attrNames.push(element.attributes[i].name);
   }
 
-  var asIndex = attrNames.indexOf('as');
+  var asIndex = indexOfArray(attrNames, 'as');
 
   if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves

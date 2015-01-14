@@ -142,7 +142,8 @@ prototype.childAt = function(element, indices) {
 };
 
 prototype.childAtIndex = function(element, index) {
-  return element.childNodes.item(index);
+  // IE8 throws an error if index is out of bounds
+  return element.childNodes.length > index ? element.childNodes.item(index) : null;
 };
 
 prototype.appendText = function(element, text) {
@@ -151,10 +152,6 @@ prototype.appendText = function(element, text) {
 
 prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, String(value));
-};
-
-prototype.setAttributeNS = function(element, namespace, name, value) {
-  element.setAttributeNS(namespace, name, String(value));
 };
 
 prototype.removeAttribute = function(element, name) {
@@ -185,7 +182,7 @@ prototype.setProperty = function(element, name, value, namespace) {
       if (isAttrRemovalValue(value)) {
         element.removeAttribute(name);
       } else {
-        if (namespace) {
+        if (namespace && element.setAttributeNS) {
           element.setAttributeNS(namespace, name, value);
         } else {
           element.setAttribute(name, value);
@@ -213,9 +210,15 @@ if (doc && doc.createElementNS) {
       return this.document.createElement(tagName);
     }
   };
+  prototype.setAttributeNS = function(element, namespace, name, value) {
+    element.setAttributeNS(namespace, name, String(value));
+  };
 } else {
   prototype.createElement = function(tagName) {
     return this.document.createElement(tagName);
+  };
+  prototype.setAttributeNS = function(element, namespace, name, value) {
+    element.setAttribute(name, String(value));
   };
 }
 

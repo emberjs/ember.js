@@ -5,7 +5,7 @@ import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
 import { DOMHelper } from "../morph";
-import { normalizeInnerHTML } from "../htmlbars-test-helpers";
+import { normalizeInnerHTML, getTextContent } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
@@ -94,21 +94,25 @@ test("Simple elements can have attributes", function() {
   equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
-test("Simple elements can have namespaced attributes", function() {
-  var template = compile("<svg xlink:title='svg-title'>content</svg>");
-  var fragment = template.render({}, env);
+if ('namespaceURI' in document.createElement('div')) {
+  test("Simple elements can have namespaced attributes", function() {
+    var template = compile("<svg xlink:title='svg-title'>content</svg>");
+    var fragment = template.render({}, env);
 
-  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
-  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
-});
+    equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
+    equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+  });
 
-test("Simple elements can have bound namespaced attributes", function() {
+  test("Simple elements can have bound namespaced attributes", function() {
   var template = compile("<svg xlink:title={{title}}>content</svg>");
   var fragment = template.render({title: 'svg-title'}, env);
 
   equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
   equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
+}
+
+
 
 test("Simple elements can have an empty attribute", function() {
   var template = compile("<div class=''>content</div>");
@@ -163,7 +167,14 @@ test("unquoted attribute expression works when followed by another attribute", f
   var fragment = template.render({funstuff: "oh my"}, env);
 
   equal(fragment.value, 'oh my', 'string is set to property');
-  equalTokens(fragment, '<input name="Alice">');
+  var html;
+  if ('textContent' in fragment) {
+    html = '<input name="Alice">';
+  } else {
+    // IE8 expect a value attrubute
+    html = '<input name="Alice" value="oh my">';
+  }
+  equalTokens(fragment, html);
 });
 
 test("Unquoted attribute value with multiple nodes throws an exception", function () {
@@ -192,13 +203,17 @@ test("checked attribute and checked property are present after clone and hydrate
   equal(fragment.checked, true, 'input tag is checked');
 });
 
-test("SVG element can have capitalized attributes", function() {
-  var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
-  var fragment = template.render({}, env);
-  equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
-});
+if ('namespaceURI' in document.createElement('div')) {
+  test("SVG element can have capitalized attributes", function() {
+    var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
+    var fragment = template.render({}, env);
+    equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
+  });
+}
+  
 
 function shouldBeVoid(tagName) {
+
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
   var fragment = template.render({}, env);
@@ -209,10 +224,11 @@ function shouldBeVoid(tagName) {
 
   var tag = '<' + tagName + ' data-foo="bar">';
   var closing = '</' + tagName + '>';
+
   var extra = "<p>hello</p>";
   html = normalizeInnerHTML(div.innerHTML);
 
-  QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + "should be a void element");
+  QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + " should be a void element");
 }
 
 test("Void elements are self-closing", function() {
@@ -224,7 +240,8 @@ test("Void elements are self-closing", function() {
 });
 
 test("The compiler can handle nesting", function() {
-  var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content';
+
+  var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div>&nbsp;More content';
   var template = compile(html);
   var fragment = template.render({}, env);
 
@@ -1116,7 +1133,7 @@ test("top-level unsafe morph uses the correct namespace", function() {
   var template = compile('<svg></svg>{{{foo}}}');
   var fragment = template.render({ foo: '<span>FOO</span>' }, env, document.body);
 
-  equal(fragment.textContent, 'FOO', 'element from unsafe morph is displayed');
+  equal(getTextContent(fragment), 'FOO', 'element from unsafe morph is displayed');
   equal(fragment.childNodes[1].namespaceURI, xhtmlNamespace, 'element from unsafe morph has correct namespace');
 });
 
