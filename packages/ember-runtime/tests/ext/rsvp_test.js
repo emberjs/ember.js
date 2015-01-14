@@ -142,3 +142,30 @@ test('rejections like jqXHR which have errorThrown property work', function() {
     Ember.testing = wasEmberTesting ;
   }
 });
+
+
+test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
+  expect(2);
+
+  var wasEmberTesting = Ember.testing;
+  var wasOnError      = Ember.onerror;
+
+  try {
+    Ember.testing = false;
+    Ember.onerror = function(error) {
+      console.log('error', error);
+      equal(error.message, actualError, 'expected the real error on the jqXHR');
+      equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
+    };
+
+    var actualError = "OMG what really happened";
+    var jqXHR = {
+      errorThrown: actualError
+    };
+
+    run(RSVP, 'reject', jqXHR);
+  } finally {
+    Ember.onerror = wasOnError;
+    Ember.testing = wasEmberTesting;
+  }
+});
