@@ -30,6 +30,13 @@ var ignoresCheckedAttribute = doc && (function(document){
   return !clonedElement.checked;
 })(doc);
 
+var canRemoveSvgViewBoxAttribute = doc && (doc.createElementNS ? (function(document){
+  var element = document.createElementNS(svgNamespace, 'svg');
+  element.setAttribute('viewBox', '0 0 100 100');
+  element.removeAttribute('viewBox');
+  return !element.getAttribute('viewBox');
+})(doc) : true);
+
 // This is not the namespace of the element, but of
 // the elements inside that elements.
 function interiorNamespace(element){
@@ -154,9 +161,23 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, String(value));
 };
 
-prototype.removeAttribute = function(element, name) {
-  element.removeAttribute(name);
+prototype.setAttributeNS = function(element, namespace, name, value) {
+  element.setAttributeNS(namespace, name, String(value));
 };
+
+if (canRemoveSvgViewBoxAttribute){
+  prototype.removeAttribute = function(element, name) {
+    element.removeAttribute(name);
+  };
+} else {
+  prototype.removeAttribute = function(element, name) {
+    if (element.tagName === 'svg' && name === 'viewBox') {
+      element.setAttribute(name, null);
+    } else {
+      element.removeAttribute(name);
+    }
+  };
+}
 
 prototype.setPropertyStrict = function(element, name, value) {
   element[name] = value;
