@@ -1,5 +1,4 @@
 import { get } from 'ember-metal/property_get';
-import isNone from 'ember-metal/is_none';
 import __isEmpty__ from 'lodash/objects/isEmpty';
 import isBoolean from 'lodash/objects/isBoolean';
 import isFunction from 'lodash/objects/isFunction';

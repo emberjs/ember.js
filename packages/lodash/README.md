@@ -1,6 +1,6 @@
 # Lodash
 
-Replacing Ember's internal helper utilities with lodash's comparable functions.
+Replacing Ember's internal helper utilities with lodash's functions.
 
 ## Utilities Checklist
 

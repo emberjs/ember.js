@@ -9,15 +9,8 @@ import filter from "lodash/collections/filter";
 
 var ArrayPrototype = Array.prototype;
 
-// Testing this is not ideal, but we want to use native functions
-// if available, but not to use versions created by libraries like Prototype
-var isNativeFunc = function(func) {
-  // This should probably work in all browsers likely to have ES5 array methods
-  return func && Function.prototype.toString.call(func).indexOf('[native code]') > -1;
-};
-
 var defineNativeShim = function(nativeFunc, shim) {
-  if (isNativeFunc(nativeFunc)) {
+  if (isNative(nativeFunc)) {
     return nativeFunc;
   }
   return shim;
