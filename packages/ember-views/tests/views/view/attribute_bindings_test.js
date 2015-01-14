@@ -57,6 +57,21 @@ test("should render attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
+test("should normalize case for attribute bindings", function() {
+  view = EmberView.create({
+    tagName: 'form',
+    attributeBindings: ['novalidate'],
+
+    novalidate: true // intentionally lowercase
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  ok(view.$().prop('noValidate'), "sets property with correct case");
+});
+
 test("should update attribute bindings", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
