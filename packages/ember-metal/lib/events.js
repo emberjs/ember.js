@@ -221,7 +221,7 @@ export function suspendListener(obj, eventName, target, method, callback) {
     actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
   }
 
-  function tryable()   { return callback.call(target); }
+  function tryable() { return callback.call(target); }
   function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
 
   return tryFinally(tryable, finalizer);

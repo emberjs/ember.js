@@ -362,7 +362,8 @@ function normalizeIndex(index, length, newItemsOffset) {
     return Math.max(0, length + index);
   } else if (index < length) {
     return index;
-  } else /* index > length */ {
+  } else {
+    /* index > length */
     return Math.min(length - newItemsOffset, index);
   }
 }

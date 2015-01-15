@@ -15,7 +15,7 @@ function bootApplication() {
 
 // IE includes the host name
 function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^\/]+/,'');
+  return url.replace(/https?:\/\/[^\/]+/, '');
 }
 
 function shouldNotBeActive(selector) {
