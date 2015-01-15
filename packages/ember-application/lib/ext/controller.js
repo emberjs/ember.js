@@ -6,10 +6,9 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
-import { inspect } from "ember-metal/utils";
+import { inspect, meta } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import ControllerMixin from "ember-runtime/mixins/controller";
-import { meta } from "ember-metal/utils";
 import controllerFor from "ember-routing/system/controller_for";
 
 function verifyNeedsDependencies(controller, container, needs) {

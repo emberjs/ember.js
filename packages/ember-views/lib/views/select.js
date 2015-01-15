@@ -7,7 +7,8 @@ import {
   forEach,
   indexOf,
   indexesOf,
-  replace
+  replace,
+  map
 } from "ember-metal/enumerable_utils";
 
 import { get } from "ember-metal/property_get";
@@ -21,7 +22,6 @@ import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 import run from "ember-metal/run_loop";
-import { map } from "ember-metal/enumerable_utils";
 
 import htmlbarsTemplate from "ember-htmlbars/templates/select";
 

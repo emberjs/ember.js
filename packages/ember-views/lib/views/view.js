@@ -14,17 +14,22 @@ import setProperties from "ember-metal/set_properties";
 import run from "ember-metal/run_loop";
 import { addObserver, removeObserver } from "ember-metal/observer";
 import { defineProperty } from "ember-metal/properties";
-import { guidFor } from "ember-metal/utils";
+import {
+  guidFor,
+  typeOf
+} from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
-import { observer } from "ember-metal/mixin";
+import {
+  Mixin,
+  observer,
+  beforeObserver
+} from "ember-metal/mixin";
 import SimpleStream from "ember-metal/streams/simple";
 import KeyStream from "ember-views/streams/key_stream";
 import StreamBinding from "ember-metal/streams/stream_binding";
 import ContextStream from "ember-views/streams/context_stream";
 
-import { typeOf } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
-import { Mixin } from 'ember-metal/mixin';
 import { deprecateProperty } from "ember-metal/deprecate_property";
 import { A as emberA } from "ember-runtime/system/native_array";
 
@@ -38,8 +43,6 @@ import {
   addObject,
   removeObject
 } from "ember-metal/enumerable_utils";
-
-import { beforeObserver } from "ember-metal/mixin";
 
 import {
   propertyWillChange,
