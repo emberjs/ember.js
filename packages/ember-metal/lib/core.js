@@ -1,4 +1,4 @@
-/*globals Ember:true,ENV,EmberENV,MetamorphENV:true */
+/*globals Ember:true,ENV,EmberENV */
 
 /**
 @module ember
@@ -83,12 +83,6 @@ Ember.config = Ember.config || {};
 if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
   Ember.ENV.DISABLE_RANGE_API = true;
 }
-
-if ("undefined" === typeof MetamorphENV) {
-  exports.MetamorphENV = {};
-}
-
-MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
 
 /**
   Hash of enabled Canary features. Add to this before creating your application.
