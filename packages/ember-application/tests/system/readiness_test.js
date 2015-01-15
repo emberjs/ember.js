@@ -1,8 +1,7 @@
 import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
-var EmberApplication = Application;
+import EmberApplication from "ember-application/system/application";
 
-var jQuery, application;
+var jQuery, application, Application;
 var readyWasCalled, domReady, readyCallbacks;
 
 // We are using a small mock of jQuery because jQuery is third-party code with

@@ -3,8 +3,11 @@ import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
-import EmberRSVP from "ember-runtime/ext/rsvp";
 var RSVP = requireModule("rsvp"); // jshint ignore:line
+import {
+  default as EmberRSVP,
+  onerrorDefault
+} from "ember-runtime/ext/rsvp";
 
 var ObjectPromiseProxy;
 
@@ -149,7 +152,7 @@ test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
   expect(1);
 
   RSVP.on('error', onerror);
-  RSVP.off('error', RSVP.onerrorDefault);
+  RSVP.off('error', onerrorDefault);
 
   var expectedReason = new Error("failure");
   var deferred = RSVP.defer();
@@ -165,16 +168,16 @@ test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
   }
 
   RSVP.on('error', onerror);
-  RSVP.off('error', RSVP.onerrorDefault);
+  RSVP.off('error', onerrorDefault);
 
   run(deferred, 'reject', expectedReason);
 
-  RSVP.on('error', RSVP.onerrorDefault);
+  RSVP.on('error', onerrorDefault);
   RSVP.off('error', onerror);
 
   run(deferred, 'reject', expectedReason);
 
-  RSVP.on('error', RSVP.onerrorDefault);
+  RSVP.on('error', onerrorDefault);
   RSVP.off('error', onerror);
 });
 
