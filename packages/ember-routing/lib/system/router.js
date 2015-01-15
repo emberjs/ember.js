@@ -701,7 +701,7 @@ function logError(error, initialMessage) {
 
   if (error) {
     if (error.message) { errorArgs.push(error.message); }
-    if (error.stack)   { errorArgs.push(error.stack); }
+    if (error.stack) { errorArgs.push(error.stack); }
 
     if (typeof error === "string") { errorArgs.push(error); }
   }

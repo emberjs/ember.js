@@ -449,7 +449,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
       this.enumerableContentWillChange(removed, null);
       if (isFirst) { propertyWillChange(this, 'firstObject'); }
-      if (isLast)  { propertyWillChange(this, 'lastObject'); }
+      if (isLast) { propertyWillChange(this, 'lastObject'); }
 
       // swap items - basically move the item to the end so it can be removed
       if (idx < len-1) {
@@ -463,7 +463,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
       set(this, 'length', len-1);
 
       if (isFirst) { propertyDidChange(this, 'firstObject'); }
-      if (isLast)  { propertyDidChange(this, 'lastObject'); }
+      if (isLast) { propertyDidChange(this, 'lastObject'); }
       this.enumerableContentDidChange(removed, null);
     }
 
