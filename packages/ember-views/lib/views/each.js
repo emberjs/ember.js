@@ -15,8 +15,10 @@ import {
   removeBeforeObserver
 } from "ember-metal/observer";
 
-import _MetamorphView from "ember-views/views/metamorph_view";
-import { _Metamorph } from "ember-views/views/metamorph_view";
+import {
+  default as _MetamorphView,
+  _Metamorph
+} from "ember-views/views/metamorph_view";
 
 export default CollectionView.extend(_Metamorph, {
 

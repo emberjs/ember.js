@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.A
 
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
-import { Mixin } from "ember-metal/mixin";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import compare from "ember-runtime/compare";
 import {
@@ -16,6 +15,7 @@ import {
 } from "ember-metal/observer";
 import { computed } from "ember-metal/computed";
 import {
+  Mixin,
   beforeObserver,
   observer
 } from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?

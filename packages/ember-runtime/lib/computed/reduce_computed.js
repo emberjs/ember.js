@@ -2,7 +2,8 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import { get as e_get } from 'ember-metal/property_get';
 import {
   guidFor,
-  meta as metaFor
+  meta as metaFor,
+  isArray
 } from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
 import {
@@ -25,7 +26,6 @@ import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
-import { isArray } from 'ember-metal/utils';
 
 var cacheSet = cacheFor.set;
 var cacheGet = cacheFor.get;

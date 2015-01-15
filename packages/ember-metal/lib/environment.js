@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 
 /*
   Ember can run in many different environments, including environments like
