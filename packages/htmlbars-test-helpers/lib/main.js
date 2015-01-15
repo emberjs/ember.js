@@ -27,6 +27,9 @@ var ie8InnerHTML = (ie8InnerHTMLTestElement.outerHTML.indexOf('id=womp') > -1);
 
 // detect side-effects of cloning svg elements in IE9-11
 var ieSVGInnerHTML = (function () {
+  if (!document.createElementNS) {
+    return false;
+  }
   var div = document.createElement('div');
   var node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   div.appendChild(node);
@@ -46,6 +49,17 @@ export function normalizeInnerHTML(actualHTML) {
     actualHTML = actualHTML.replace(/id=([^ >]+)/gi, function(match, id){
       return 'id="'+id+'"';
     });
+    // IE8 adds ':' to some tags
+    // <keygen> becomes <:keygen>
+    actualHTML = actualHTML.replace(/<(\/?):([^ >]+)/gi, function(match, slash, tag){
+      return '<'+slash+tag;
+    });
+
+    // Normalize the style attribute
+    actualHTML = actualHTML.replace(/style="(.+?)"/gi, function(match, val){
+      return 'style="'+val.toLowerCase()+';"';
+    });
+
   }
   if (ieSVGInnerHTML) {
     // Replace `<svg xmlns="http://www.w3.org/2000/svg" height="50%" />` with `<svg height="50%"></svg>`, etc.
@@ -67,3 +81,21 @@ var checkedInputString = checkedInput.outerHTML;
 export function isCheckedInputHTML(element) {
   equal(element.outerHTML, checkedInputString);
 }
+
+// check which property has the node's text content
+var dummy = document.createElement('div');
+var textProp;
+if (dummy.textContent !== undefined) {
+  textProp = 'textContent';
+} else {
+  textProp = 'innerText';
+}
+export function getTextContent(el) {
+  // textNode
+  if (el.nodeType === 3) {
+    return el.nodeValue;
+  } else {
+    return el[textProp];
+  }
+}
+

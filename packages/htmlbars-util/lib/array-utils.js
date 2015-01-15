@@ -21,3 +21,26 @@ export function map(array, callback) {
 
   return output;
 }
+
+var getIdx;
+if (Array.prototype.indexOf) {
+  getIdx = function(array, obj, from){
+    return array.indexOf(obj, from);
+  };
+} else {
+  getIdx = function(array, obj, from) {
+    if (from === undefined || from === null) {
+      from = 0;
+    } else if (from < 0) {
+      from = Math.max(0, array.length + from);
+    }
+    for (var i = from, l= array.length; i < l; i++) {
+      if (array[i] === obj) {
+        return i;
+      }
+    }
+    return -1;
+  };
+}
+
+export var indexOfArray = getIdx;
