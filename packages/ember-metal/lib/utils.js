@@ -263,7 +263,7 @@ export function guidFor(obj) {
         return '(Object)';
       }
 
-      if (obj === Array)  {
+      if (obj === Array) {
         return '(Array)';
       }
 
@@ -804,7 +804,7 @@ if (needsFinallyFix) {
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
 forEach.call(t, function(name) {
-  TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
+  TYPE_MAP["[object " + name + "]"] = name.toLowerCase();
 });
 
 var toString = Object.prototype.toString;
