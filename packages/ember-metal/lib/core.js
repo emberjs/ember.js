@@ -32,9 +32,10 @@ if ('undefined' === typeof Ember) {
 }
 
 // Default imports, exports and lookup to the global object;
-Ember.imports = Ember.imports || this;
-Ember.lookup  = Ember.lookup  || this;
-var exports   = Ember.exports = Ember.exports || this;
+var global = this || {}; // `this` may be undefined in strict mode
+Ember.imports = Ember.imports || global;
+Ember.lookup  = Ember.lookup  || global;
+var exports   = Ember.exports = Ember.exports || global;
 
 // aliases needed to keep minifiers from removing the global context
 exports.Em = exports.Ember = Ember;
