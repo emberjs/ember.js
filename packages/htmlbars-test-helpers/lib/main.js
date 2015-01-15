@@ -42,7 +42,7 @@ export function normalizeInnerHTML(actualHTML) {
     // drop newlines in IE8
     actualHTML = actualHTML.replace(/\r\n/gm, '');
     // downcase ALLCAPS tags in IE8
-    actualHTML = actualHTML.replace(/<\/?[A-Z]+/gi, function(tag){
+    actualHTML = actualHTML.replace(/<\/?[A-Z\-]+/gi, function(tag){
       return tag.toLowerCase();
     });
     // quote ids in IE8
@@ -66,7 +66,7 @@ export function normalizeInnerHTML(actualHTML) {
     // drop namespace attribute
     actualHTML = actualHTML.replace(/ xmlns="[^"]+"/, '');
     // replace self-closing elements
-    actualHTML = actualHTML.replace(/<([A-Z]+) [^\/>]*\/>/gi, function(tag, tagName) {
+    actualHTML = actualHTML.replace(/<([^ >]+) [^\/>]*\/>/gi, function(tag, tagName) {
       return tag.slice(0, tag.length - 3) + '></' + tagName + '>';
     });
   }
@@ -83,19 +83,24 @@ export function isCheckedInputHTML(element) {
 }
 
 // check which property has the node's text content
-var dummy = document.createElement('div');
-var textProp;
-if (dummy.textContent !== undefined) {
-  textProp = 'textContent';
-} else {
-  textProp = 'innerText';
-}
+var textProperty = document.createElement('div').textContent === undefined ? 'innerText' : 'textContent';
 export function getTextContent(el) {
   // textNode
   if (el.nodeType === 3) {
     return el.nodeValue;
   } else {
-    return el[textProp];
+    return el[textProperty];
   }
 }
 
+// IE8 does not have Object.create, so use a polyfill if needed.
+// Polyfill based on Mozilla's (MDN)
+export function createObject(obj) {
+  if (typeof Object.create === 'function') {
+    return Object.create(obj);
+  } else {
+    var Temp = function() {};
+    Temp.prototype = obj;
+    return new Temp();
+  }
+}
