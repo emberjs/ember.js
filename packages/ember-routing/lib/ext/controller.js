@@ -186,7 +186,7 @@ ControllerMixin.reopen({
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function(){
+      this.resource('blogPost', {path:':blogPostId'}, function() {
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });
@@ -275,7 +275,7 @@ ControllerMixin.reopen({
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function(){
+      this.resource('blogPost', {path:':blogPostId'}, function() {
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });

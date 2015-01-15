@@ -162,7 +162,7 @@ ControllerMixin.reopen({
     ```javascript
     App.CommentsController = Ember.ArrayController.extend({
       needs: ['post'],
-      postTitle: function(){
+      postTitle: function() {
         var currentPost = this.get('controllers.post'); // instance of App.PostController
         return currentPost.get('title');
       }.property('controllers.post.title')

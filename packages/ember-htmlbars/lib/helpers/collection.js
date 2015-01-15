@@ -43,7 +43,7 @@ import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });
@@ -76,7 +76,7 @@ import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });

@@ -1696,7 +1696,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```javascript
     // posts route
     Ember.Route.extend({
-      renderTemplate: function(){
+      renderTemplate: function() {
         this.render('photos', {
           into: 'application',
           outlet: 'anOutletName'
