@@ -5,12 +5,33 @@ import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
 import { DOMHelper } from "../morph";
-import { normalizeInnerHTML, getTextContent } from "../htmlbars-test-helpers";
+import { createObject, normalizeInnerHTML, getTextContent } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
 var hooks, helpers, partials, env;
+
+// IE8 doesn't correctly handle these html strings
+var innerHTMLSupportsCustomTags = (function() {
+  var div = document.createElement('div');
+  div.innerHTML = '<x-bar></x-bar>';
+  return normalizeInnerHTML(div.innerHTML) === '<x-bar></x-bar>';
+})();
+
+// IE8 doesn't handle newlines in innerHTML correctly
+var innerHTMLHandlesNewlines = (function() {
+  var div = document.createElement('div');
+  div.innerHTML = 'foo\n\nbar';
+  return div.innerHTML.length === 8;
+})();
+
+// IE8 removes comments and does other unspeakable things with innerHTML
+var ie8GenerateTokensNeeded = (function() {
+  var div = document.createElement("div");
+  div.innerHTML = "<!-- foobar -->";
+  return div.innerHTML === "";
+})();
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
@@ -27,14 +48,26 @@ function compilesTo(html, expected, context) {
   return fragment;
 }
 
-function equalTokens(fragment, html) {
+function generateTokens(fragmentOrHtml) {
   var div = document.createElement("div");
-  div.appendChild(fragment.cloneNode(true));
-  var fragTokens = tokenize(div.innerHTML);
+  if (typeof fragmentOrHtml === 'string') {
+    div.innerHTML = fragmentOrHtml;
+  } else {
+    div.appendChild(fragmentOrHtml.cloneNode(true));
+  }
+  if (ie8GenerateTokensNeeded) {
+    // IE8 drops comments and does other unspeakable things on `innerHTML`.
+    // So in that case we do it to both the expected and actual so that they match.
+    var div2 = document.createElement("div");
+    div2.innerHTML = div.innerHTML;
+    div.innerHTML = div2.innerHTML;
+  }
+  return tokenize(div.innerHTML);
+}
 
-  div.removeChild(div.childNodes[0]);
-  div.innerHTML = html;
-  var htmlTokens = tokenize(div.innerHTML);
+function equalTokens(fragment, html) {
+  var fragTokens = generateTokens(fragment);
+  var htmlTokens = generateTokens(html);
 
   function normalizeTokens(token) {
     if (token.type === 'StartTag') {
@@ -94,26 +127,6 @@ test("Simple elements can have attributes", function() {
   equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
-if ('namespaceURI' in document.createElement('div')) {
-  test("Simple elements can have namespaced attributes", function() {
-    var template = compile("<svg xlink:title='svg-title'>content</svg>");
-    var fragment = template.render({}, env);
-
-    equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
-    equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
-  });
-
-  test("Simple elements can have bound namespaced attributes", function() {
-  var template = compile("<svg xlink:title={{title}}>content</svg>");
-  var fragment = template.render({title: 'svg-title'}, env);
-
-  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
-  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
-});
-}
-
-
-
 test("Simple elements can have an empty attribute", function() {
   var template = compile("<div class=''>content</div>");
   var fragment = template.render({}, env);
@@ -162,19 +175,10 @@ test("unquoted attribute expression is string", function() {
 });
 
 test("unquoted attribute expression works when followed by another attribute", function() {
-
-  var template = compile('<input value={{funstuff}} name="Alice">');
+  var template = compile('<div foo={{funstuff}} name="Alice"></div>');
   var fragment = template.render({funstuff: "oh my"}, env);
 
-  equal(fragment.value, 'oh my', 'string is set to property');
-  var html;
-  if ('textContent' in fragment) {
-    html = '<input name="Alice">';
-  } else {
-    // IE8 expect a value attrubute
-    html = '<input name="Alice" value="oh my">';
-  }
-  equalTokens(fragment, html);
+  equalTokens(fragment, '<div foo="oh my" name="Alice"></div>');
 });
 
 test("Unquoted attribute value with multiple nodes throws an exception", function () {
@@ -203,17 +207,8 @@ test("checked attribute and checked property are present after clone and hydrate
   equal(fragment.checked, true, 'input tag is checked');
 });
 
-if ('namespaceURI' in document.createElement('div')) {
-  test("SVG element can have capitalized attributes", function() {
-    var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
-    var fragment = template.render({}, env);
-    equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
-  });
-}
-  
 
 function shouldBeVoid(tagName) {
-
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
   var fragment = template.render({}, env);
@@ -224,7 +219,6 @@ function shouldBeVoid(tagName) {
 
   var tag = '<' + tagName + ' data-foo="bar">';
   var closing = '</' + tagName + '>';
-
   var extra = "<p>hello</p>";
   html = normalizeInnerHTML(div.innerHTML);
 
@@ -240,7 +234,6 @@ test("Void elements are self-closing", function() {
 });
 
 test("The compiler can handle nesting", function() {
-
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div>&nbsp;More content';
   var template = compile(html);
   var fragment = template.render({}, env);
@@ -256,9 +249,13 @@ test("The compiler can handle backslashes", function() {
   compilesTo('<div>This is a backslash: \\</div>');
 });
 
+if (innerHTMLHandlesNewlines) {
+
 test("The compiler can handle newlines", function() {
   compilesTo("<div>common\n\nbro</div>");
 });
+
+}
 
 test("The compiler can handle comments", function() {
   compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
@@ -796,6 +793,8 @@ test('Components - Called as helpers', function () {
   compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcdef', object);
 });
 
+if (innerHTMLSupportsCustomTags) {
+
 test('Components - Unknown helpers fall back to elements', function () {
   var object = { size: 'med', foo: 'b' };
   compilesTo('<x-bar class="btn-{{size}}">a{{foo}}c</x-bar>','<x-bar class="btn-med">abc</x-bar>', object);
@@ -815,6 +814,8 @@ test('Components - Text-only dashed attributes work', function () {
   compilesTo('<x-bar aria-label="foo" id="test">{{foo}}</x-bar>','<x-bar aria-label="foo" id="test">qux</x-bar>', object);
 });
 
+}
+
 test('Repaired text nodes are ensured in the right place', function () {
   var object = { a: "A", b: "B", c: "C", d: "D" };
   compilesTo('{{a}} {{b}}', 'A B', object);
@@ -831,19 +832,19 @@ test("Simple elements can have dashed attributes", function() {
 
 test("Block params", function() {
   registerHelper('a', function(params, hash, options, env) {
-    var context = Object.create(this);
+    var context = createObject(this);
     var span = document.createElement('span');
     span.appendChild(options.template.render(context, env, document.body, ['W', 'X1']));
     return 'A(' + span.innerHTML + ')';
   });
   registerHelper('b', function(params, hash, options, env) {
-    var context = Object.create(this);
+    var context = createObject(this);
     var span = document.createElement('span');
     span.appendChild(options.template.render(context, env, document.body, ['X2', 'Y']));
     return 'B(' + span.innerHTML + ')';
   });
   registerHelper('c', function(params, hash, options, env) {
-    var context = Object.create(this);
+    var context = createObject(this);
     var span = document.createElement('span');
     span.appendChild(options.template.render(context, env, document.body, ['Z']));
     return 'C(' + span.innerHTML + ')';
@@ -868,7 +869,7 @@ test("Block params - Helper should know how many block params it was called with
 
 test('Block params in HTML syntax', function () {
   registerHelper('x-bar', function(params, hash, options, env) {
-    var context = Object.create(this);
+    var context = createObject(this);
     var span = document.createElement('span');
     span.appendChild(options.template.render(context, env, document.body, ['Xerxes', 'York', 'Zed']));
     return 'BAR(' + span.innerHTML + ')';
@@ -1012,6 +1013,8 @@ test("A helpful error message is provided for mismatched start/end tags", functi
   }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
 });
 
+if (innerHTMLHandlesNewlines) {
+
 test("error line numbers include comment lines", function() {
   QUnit.throws(function() {
     compile("<div>\n<p>\n{{! some comment}}\n\n</div>");
@@ -1042,10 +1045,34 @@ test("error line numbers include multiple mustache lines", function() {
   }, /Closing tag `div` \(on line 3\) did not match last open tag `p` \(on line 2\)\./);
 });
 
+}
+
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
   beforeEach: commonSetup
+});
+
+test("Simple elements can have namespaced attributes", function() {
+  var template = compile("<svg xlink:title='svg-title'>content</svg>");
+  var fragment = template.render({}, env);
+
+  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
+  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+});
+
+test("Simple elements can have bound namespaced attributes", function() {
+  var template = compile("<svg xlink:title={{title}}>content</svg>");
+  var fragment = template.render({title: 'svg-title'}, env);
+
+  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
+  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+});
+
+test("SVG element can have capitalized attributes", function() {
+  var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
+  var fragment = template.render({}, env);
+  equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
 test("The compiler can handle namespaced elements", function() {
