@@ -41,7 +41,7 @@ RSVP.Promise.prototype.fail = function(callback, label){
   return this['catch'](callback, label);
 };
 
-RSVP.onerrorDefault = function (e) {
+export function onerrorDefault(e) {
   var error;
 
   if (e && e.errorThrown) {
@@ -74,8 +74,8 @@ RSVP.onerrorDefault = function (e) {
       Logger.error(error.stack);
     }
   }
-};
+}
 
-RSVP.on('error', RSVP.onerrorDefault);
+RSVP.on('error', onerrorDefault);
 
 export default RSVP;
