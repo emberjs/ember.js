@@ -520,7 +520,7 @@ RenderBuffer.prototype = {
     this.dom.detectNamespace(contextualElement);
 
     if (!this._element) {
-      this._element = document.createDocumentFragment();
+      this._element = this.dom.createDocumentFragment();
     }
 
     if (content.nodeType) {
