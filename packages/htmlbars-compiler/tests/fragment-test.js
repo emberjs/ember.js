@@ -5,7 +5,7 @@ import HydrationJavaScriptCompiler from "../htmlbars-compiler/hydration-javascri
 import { DOMHelper } from "../morph";
 import { preprocess } from "../htmlbars-syntax/parser";
 import { get } from "../htmlbars-runtime/hooks";
-import { equalHTML } from "../htmlbars-test-helpers";
+import { equalHTML, getTextContent } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace = "http://www.w3.org/2000/svg";
@@ -48,20 +48,22 @@ test('compiles a fragment', function () {
   equalHTML(fragment, "<div> bar </div>");
 });
 
-test('compiles an svg fragment', function () {
-  var ast = preprocess("<div><svg><circle/><foreignObject><span></span></foreignObject></svg></div>");
-  var fragment = fragmentFor(ast);
+if (document && document.createElementNS) {
+  test('compiles an svg fragment', function () {
+    var ast = preprocess("<div><svg><circle/><foreignObject><span></span></foreignObject></svg></div>");
+    var fragment = fragmentFor(ast);
 
-  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
-         'svg has the right namespace' );
-  equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
-         'circle has the right namespace' );
-  equal( fragment.childNodes[0].childNodes[1].namespaceURI, svgNamespace,
-         'foreignObject has the right namespace' );
-  equal( fragment.childNodes[0].childNodes[1].childNodes[0].namespaceURI, xhtmlNamespace,
-         'span has the right namespace' );
-});
-
+    equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+           'svg has the right namespace' );
+    equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+           'circle has the right namespace' );
+    equal( fragment.childNodes[0].childNodes[1].namespaceURI, svgNamespace,
+           'foreignObject has the right namespace' );
+    equal( fragment.childNodes[0].childNodes[1].childNodes[0].namespaceURI, xhtmlNamespace,
+           'span has the right namespace' );
+  });
+}
+  
 test('compiles an svg element with classes', function () {
   var ast = preprocess('<svg class="red right hand"></svg>');
   var fragment = fragmentFor(ast);
@@ -69,23 +71,26 @@ test('compiles an svg element with classes', function () {
   equal(fragment.getAttribute('class'), 'red right hand');
 });
 
-test('compiles an svg element with proper namespace', function () {
-  var ast = preprocess('<svg><use xlink:title="nice-title"></use></svg>');
-  var fragment = fragmentFor(ast);
+if (document && document.createElementNS) {
+  test('compiles an svg element with proper namespace', function () {
+    var ast = preprocess('<svg><use xlink:title="nice-title"></use></svg>');
+    var fragment = fragmentFor(ast);
 
-  equal(fragment.childNodes[0].getAttributeNS('http://www.w3.org/1999/xlink', 'title'), 'nice-title');
-  equal(fragment.childNodes[0].attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
-  equal(fragment.childNodes[0].attributes[0].name, 'xlink:title');
-  equal(fragment.childNodes[0].attributes[0].localName, 'title');
-  equal(fragment.childNodes[0].attributes[0].value, 'nice-title');
-});
+    equal(fragment.childNodes[0].getAttributeNS('http://www.w3.org/1999/xlink', 'title'), 'nice-title');
+    equal(fragment.childNodes[0].attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+    equal(fragment.childNodes[0].attributes[0].name, 'xlink:title');
+    equal(fragment.childNodes[0].attributes[0].localName, 'title');
+    equal(fragment.childNodes[0].attributes[0].value, 'nice-title');
+  });
 
+}
+  
 test('converts entities to their char/string equivalent', function () {
   var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
   var fragment = fragmentFor(ast);
 
   equal(fragment.getAttribute('title'), '"Foo & Bar"');
-  equal(fragment.textContent, "lol < << < < ≧̸ &Borksnorlax;");
+  equal(getTextContent(fragment), "lol < << < < ≧̸ &Borksnorlax;");
 });
 
 test('hydrates a fragment with morph mustaches', function () {
@@ -178,13 +183,13 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
 
   var t = morphs[0].start;
   equal(t.nodeType, 3);
-  equal(t.textContent , '');
+  equal(getTextContent(t) , '');
   equal(morphs[1].start, null);
   equal(morphs[1].end, null);
 
   equal(morphs[2].start, morphs[1].parent());
   equal(morphs[2].end.nodeType, 3);
-  equal(morphs[2].end.textContent, '');
+  equal(getTextContent(morphs[2].end), '');
 
   morphs[0].setContent('A');
   morphs[1].setContent('B');
