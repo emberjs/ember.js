@@ -100,7 +100,11 @@ MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
   @since 1.1.0
 */
 
-Ember.FEATURES = Ember.ENV.FEATURES || {};
+Ember.FEATURES = Ember.ENV.FEATURES;
+
+if (!Ember.FEATURES) {
+  Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
+}
 
 /**
   Test that a feature is enabled. Parsed by Ember's build tools to leave
