@@ -97,7 +97,7 @@ export function yieldHelper(params, hash, options, env) {
     if (view._contextView) {
       view = view._contextView;
     } else {
-      view = get(view, '_parentView');
+      view = view._parentView;
     }
   }
 
