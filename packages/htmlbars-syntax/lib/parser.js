@@ -11,6 +11,20 @@ import tokenHandlers from "./token-handlers";
 // But this version of the transpiler does not support it properly
 module syntax from "../htmlbars-syntax";
 
+var splitLines;
+// IE8 throws away blank pieces when splitting strings with a regex
+// So we split using a string instead as appropriate
+if ("foo\n\nbar".split(/\n/).length === 2) {
+  splitLines = function(str) {
+     var clean = str.replace(/\r\n?/g, '\n');
+     return clean.split('\n');
+  };
+} else {
+  splitLines = function(str) {
+    return str.split(/(?:\r\n?|\n)/g);
+  };
+}
+
 export function preprocess(html, options) {
   var ast = (typeof html === 'object') ? html : parse(html);
   var combined = new HTMLProcessor(html, options).acceptNode(ast);
@@ -36,7 +50,7 @@ function HTMLProcessor(source, options) {
   this.tokenHandlers = tokenHandlers;
 
   if (typeof source === 'string') {
-    this.source = source.split(/(?:\r\n?|\n)/g);
+    this.source = splitLines(source);
   }
 }
 

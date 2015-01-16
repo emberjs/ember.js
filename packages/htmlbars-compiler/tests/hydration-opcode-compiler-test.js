@@ -18,7 +18,7 @@ test("simple example", function() {
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ]
   ]);
 });
 
@@ -49,7 +49,7 @@ test("element with a sole mustache child", function() {
   deepEqual(opcodes, [
     [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ]
   ]);
 });
 
@@ -58,7 +58,7 @@ test("element with a mustache between two text nodes", function() {
   deepEqual(opcodes, [
     [ "createMorph", [ 0, [ 0 ], 0, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ]
   ]);
 });
 
@@ -98,7 +98,7 @@ test("mustaches at the root", function() {
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ]
   ]);
 });
 
@@ -117,7 +117,7 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "pushLiteral", [ "baz" ] ],
     [ "printContentHook", [ 2 ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printContentHook", [ 3 ] ],
+    [ "printContentHook", [ 3 ] ]
   ]);
 });
 
