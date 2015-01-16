@@ -1013,6 +1013,9 @@ test("A helpful error message is provided for mismatched start/end tags", functi
   }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
 });
 
+// These skipped tests don't actually have anything to do with innerHTML,
+// but are related to IE8 doing Bad Things with newlines. This should
+// likely have its own feature detect instead of using this one.
 if (innerHTMLHandlesNewlines) {
 
 test("error line numbers include comment lines", function() {
