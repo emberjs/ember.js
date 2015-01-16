@@ -90,6 +90,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   /**
     Sets the `target` attribute of the `LinkView`'s HTML element.
 
+    @since 1.8.0
     @property target
     @default null
   **/

@@ -482,6 +482,7 @@ helper('currentURL', currentURL);
  click('.btn');
  ```
 
+ @since 1.9.0
  @method pauseTest
  @return {Object} A promise that will never resolve
  */

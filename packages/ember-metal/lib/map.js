@@ -131,6 +131,7 @@ OrderedSet.prototype = {
   },
 
   /**
+    @since 1.8.0
     @method delete
     @param obj
     @param _guid (optional and for internal use only)
@@ -278,6 +279,7 @@ Map.prototype = {
   /**
     This property will change as the number of objects in the map changes.
 
+    @since 1.8.0
     @property size
     @type number
     @default 0
@@ -343,6 +345,7 @@ Map.prototype = {
   /**
     Removes a value from the map for an associated key.
 
+    @since 1.8.0
     @method delete
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
