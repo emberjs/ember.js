@@ -529,7 +529,7 @@ export function mixin(obj) {
 
   //filters will be a separate  array for every object implementing the mixin
   App.Filterable = Ember.Mixin.create({
-    filters: Ember.computed(function(){return Ember.A();})
+    filters: Ember.computed(function() {return Ember.A();})
   });
 
   //filters will be created as a separate array during the object's initialization

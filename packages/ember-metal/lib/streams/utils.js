@@ -199,7 +199,7 @@ export function concat(array, separator) {
  ```javascript
      var source = ...;  // stream returning a number
                             // or a numeric (non-stream) object
-     var result = chain(source, function(){
+     var result = chain(source, function() {
        var currentValue = read(source);
        return currentValue + 1;
      });

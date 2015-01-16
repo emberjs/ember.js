@@ -33,7 +33,7 @@ import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
   ```javascript
   App = Ember.Application.create();
   App.ApplicationController = Ember.Controller.extend({
-    infographicComponentName: function(){
+    infographicComponentName: function() {
       if (this.get('isMarketOpen')) {
         return "live-updating-chart";
       } else {

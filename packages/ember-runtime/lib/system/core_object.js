@@ -712,7 +712,7 @@ var ClassMixinProps = {
     ```javascript
     App.Person = Ember.Object.extend({
       name : "",
-      sayHello : function(){
+      sayHello : function() {
         alert("Hello. My name is " + this.get('name'));
       }
     });

@@ -207,7 +207,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
     ```javascript
     App.PlayButtonComponent = Ember.Component.extend({
-      click: function(){
+      click: function() {
         if (this.get('isPlaying')) {
           this.sendAction('play');
         } else {
@@ -234,11 +234,11 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     ```javascript
     App.ApplicationController = Ember.Controller.extend({
       actions: {
-        musicStarted: function(){
+        musicStarted: function() {
           // called when the play button is clicked
           // and the music started playing
         },
-        musicStopped: function(){
+        musicStopped: function() {
           // called when the play button is clicked
           // and the music stopped playing
         }
@@ -251,7 +251,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
     ```javascript
     App.NextButtonComponent = Ember.Component.extend({
-      click: function(){
+      click: function() {
         this.sendAction();
       }
     });
@@ -265,7 +265,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     ```javascript
     App.ApplicationController = Ember.Controller.extend({
       actions: {
-        playNextSongInAlbum: function(){
+        playNextSongInAlbum: function() {
           ...
         }
       }

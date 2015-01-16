@@ -249,7 +249,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   ```javascript
   App.ApplicationView = Ember.View.extend({
     actions: {
-      anActionName: function(){}
+      anActionName: function() {}
     }
   });
 
