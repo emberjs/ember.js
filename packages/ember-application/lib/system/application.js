@@ -189,7 +189,6 @@ var librariesRegistered = false;
   If there is any setup required before routing begins, you can implement a
   `ready()` method on your app that will be invoked immediately before routing
   begins.
-  ```
 
   @class Application
   @namespace Ember
