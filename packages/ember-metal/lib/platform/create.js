@@ -12,6 +12,7 @@
 /**
   Identical to `Object.create()`. Implements if not available natively.
 
+  @since 1.8.0
   @method create
   @for Ember
 */

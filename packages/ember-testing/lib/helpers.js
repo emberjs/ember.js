@@ -410,6 +410,7 @@ if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
    click('.btn');
    ```
 
+   @since 1.9.0
    @method pauseTest
    @return {Object} A promise that will never resolve
    */
