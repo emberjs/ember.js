@@ -268,7 +268,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 
   equal(view.$().text(), "controller:Gob and Carl Weathers");
 
-  strictEqual(view.get('_childViews')[0].get('controller.target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(view._childViews[0].get('controller.target'), parentController, "the target property of the child controllers are set correctly");
 
   runDestroy(view);
 });

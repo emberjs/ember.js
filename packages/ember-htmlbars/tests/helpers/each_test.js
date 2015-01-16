@@ -366,7 +366,7 @@ test("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(view._childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
 test("itemController specified in template gets a parentController property", function() {
@@ -973,7 +973,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-    strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+    strictEqual(view._childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
   });
 
   test("itemController specified in ArrayController with name binding does not change context", function() {

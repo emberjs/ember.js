@@ -228,8 +228,8 @@ test("re-rendering and then changing the property does not raise an exception", 
   equal(view.$().text(), 'truth');
 
   run(function() {
-    view.get('_childViews')[0].rerender();
-    view.get('_childViews')[0].rerender();
+    view._childViews[0].rerender();
+    view._childViews[0].rerender();
   });
 
   equal(view.$().text(), 'truth');
