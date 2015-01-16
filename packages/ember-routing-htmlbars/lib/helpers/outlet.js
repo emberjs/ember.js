@@ -85,7 +85,7 @@ export function outletHelper(params, hash, options, env) {
 
   outletSource = this;
   while (!outletSource.get('template.isTop')) {
-    outletSource = outletSource.get('_parentView');
+    outletSource = outletSource._parentView;
   }
   set(this, 'outletSource', outletSource);
 

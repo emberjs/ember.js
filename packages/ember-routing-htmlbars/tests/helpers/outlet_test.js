@@ -125,7 +125,7 @@ test("outlet should correctly lookup a view", function() {
     view.connectOutlet('main', childView);
   });
 
-  ok(ContainerView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
+  ok(ContainerView.detectInstance(childView._parentView), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
   equal(trim(view.$().text()), 'HIBYE');
@@ -185,7 +185,7 @@ test("outlet should support an optional view class", function() {
     view.connectOutlet('main', childView);
   });
 
-  ok(view.outletView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
+  ok(view.outletView.detectInstance(childView._parentView), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
   equal(trim(view.$().text()), 'HIBYE');

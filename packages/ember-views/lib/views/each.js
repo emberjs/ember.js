@@ -41,7 +41,7 @@ export default CollectionView.extend(_Metamorph, {
         binding.connect(controller);
       });
 
-      set(this, '_arrayController', controller);
+      this._arrayController = controller;
     } else {
       this.disableContentObservers(function() {
         binding = new Binding('content', 'dataSource').oneWay();
@@ -101,10 +101,8 @@ export default CollectionView.extend(_Metamorph, {
   destroy: function() {
     if (!this._super()) { return; }
 
-    var arrayController = get(this, '_arrayController');
-
-    if (arrayController) {
-      arrayController.destroy();
+    if (this._arrayController) {
+      this._arrayController.destroy();
     }
 
     return this;

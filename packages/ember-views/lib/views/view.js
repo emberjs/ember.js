@@ -792,7 +792,7 @@ var View = CoreView.extend({
       return this._controller;
     }
 
-    var parentView = get(this, '_parentView');
+    var parentView = this._parentView;
     return parentView ? get(parentView, 'controller') : null;
   }),
 

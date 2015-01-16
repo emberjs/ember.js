@@ -150,7 +150,7 @@ test("{{render}} helper should render given template with a supplied model", fun
 
   runAppend(view);
 
-  var postController = view.get('_childViews')[0].get('controller');
+  var postController = view._childViews[0].get('controller');
 
   equal(view.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);
@@ -272,8 +272,8 @@ test("{{render}} helper should render templates with models multiple times", fun
 
   runAppend(view);
 
-  var postController1 = view.get('_childViews')[0].get('controller');
-  var postController2 = view.get('_childViews')[1].get('controller');
+  var postController1 = view._childViews[0].get('controller');
+  var postController2 = view._childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?Me first ?Then me$/));
   equal(postController1.get('model'), post1);
@@ -314,7 +314,7 @@ test("{{render}} helper should not leak controllers", function() {
 
   runAppend(view);
 
-  var postController1 = view.get('_childViews')[0].get('controller');
+  var postController1 = view._childViews[0].get('controller');
 
   runDestroy(view);
 
@@ -339,8 +339,8 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
 
   runAppend(view);
 
-  var postController1 = view.get('_childViews')[0].get('controller');
-  var postController2 = view.get('_childViews')[1].get('controller');
+  var postController1 = view._childViews[0].get('controller');
+  var postController2 = view._childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?NOTHING ?NOTHING$/));
   equal(postController1.get('model'), 0);
@@ -372,8 +372,8 @@ test("{{render}} helper should render templates both with and without models", f
 
   runAppend(view);
 
-  var postController1 = view.get('_childViews')[0].get('controller');
-  var postController2 = view.get('_childViews')[1].get('controller');
+  var postController1 = view._childViews[0].get('controller');
+  var postController2 = view._childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is omakase$/));
   equal(postController1.get('model'), null);

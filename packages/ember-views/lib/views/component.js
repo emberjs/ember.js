@@ -192,7 +192,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @default null
   */
   targetObject: computed(function(key) {
-    var parentView = get(this, '_parentView');
+    var parentView = this._parentView;
     return parentView ? get(parentView, 'controller') : null;
   }).property('_parentView'),
 
