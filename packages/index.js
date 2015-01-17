@@ -40,7 +40,7 @@ module.exports = {
     },
     "htmlbars-compiler": {
       node: true,
-      lib: ["syntax-handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "htmlbars-syntax"],
+      lib: ["syntax-handlebars-inliner", "util-handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "htmlbars-syntax"],
       test: ["htmlbars-runtime", "morph", "htmlbars-test-helpers"]
     },
     "htmlbars-runtime": {
