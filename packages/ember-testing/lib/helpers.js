@@ -55,7 +55,7 @@ function click(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
 
-  if ($el.is(':input')) {
+  if ($el.is(':input, [contenteditable=true]')) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
       run($el, function(){
