@@ -307,7 +307,7 @@ test("`wait` helper can be passed a resolution value", function() {
 });
 
 test("`click` triggers appropriate events in order", function() {
-  expect(4);
+  expect(5);
 
   var click, wait, events;
 
@@ -331,7 +331,7 @@ test("`click` triggers appropriate events in order", function() {
     })
   });
 
-  Ember.TEMPLATES.index = compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}}');
+  Ember.TEMPLATES.index = compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>');
 
   run(App, App.advanceReadiness);
 
@@ -359,6 +359,13 @@ test("`click` triggers appropriate events in order", function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on textareas');
+  }).then(function() {
+    events = [];
+    return click('.index-view div');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on contenteditable');
   }).then(function() {
     // In IE (< 8), the change event only fires when the value changes before element focused.
     jQuery('.index-view input[type=checkbox]').focus();
