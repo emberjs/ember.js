@@ -38,7 +38,7 @@ function pauseTest() {
 }
 
 function focus(el) {
-  if (el && el.is(':input')) {
+  if (el && el.is(':input, [contenteditable=true]')) {
     var type = el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
       run(el, function() {
