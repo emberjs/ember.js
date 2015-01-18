@@ -5,6 +5,7 @@ var distPath = path.join(__dirname, '../../dist');
 
 /*jshint -W079 */
 var Ember = require(path.join(distPath, 'ember.debug.cjs'));
+var compile = require(path.join(distPath, 'ember-template-compiler')).compile;
 Ember.testing = true;
 var DOMHelper = Ember.View.DOMHelper;
 var SimpleDOM = require('simple-dom');
@@ -30,7 +31,7 @@ QUnit.test("App is created without throwing an exception", function() {
 QUnit.test("It is possible to render a view in Node", function() {
   var View = Ember.View.extend({
     renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
-    template: Ember.Handlebars.compile("<h1>Hello</h1>")
+    template: compile("<h1>Hello</h1>")
   });
 
   var morph = {
@@ -58,7 +59,7 @@ QUnit.test("It is possible to render a view in Node", function() {
 QUnit.test("It is possible to render a view with curlies in Node", function() {
   var View = Ember.Component.extend({
     renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
-    layout: Ember.Handlebars.compile("<h1>Hello {{location}}</h1>"),
+    layout: compile("<h1>Hello {{location}}</h1>"),
     location: "World"
   });
 
@@ -87,11 +88,11 @@ QUnit.test("It is possible to render a view with curlies in Node", function() {
 QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function() {
   var View = Ember.Component.extend({
     renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
-    layout: Ember.Handlebars.compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
+    layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
     location: "World",
     hasExistence: true,
     bar: Ember.View.extend({
-      template: Ember.Handlebars.compile("<p>The files are *inside* the computer?!</p>")
+      template: compile("<p>The files are *inside* the computer?!</p>")
     })
   });
 

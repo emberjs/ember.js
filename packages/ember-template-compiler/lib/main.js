@@ -7,6 +7,9 @@ import { registerPlugin } from "ember-template-compiler/plugins";
 import TransformEachInToHash from "ember-template-compiler/plugins/transform-each-in-to-hash";
 import TransformWithAsToHash from "ember-template-compiler/plugins/transform-with-as-to-hash";
 
+// used for adding Ember.Handlebars.compile for backwards compat
+import "ember-template-compiler/compat";
+
 registerPlugin('ast', TransformWithAsToHash);
 registerPlugin('ast', TransformEachInToHash);
 
