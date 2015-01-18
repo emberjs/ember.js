@@ -15,7 +15,8 @@
     "ember-testing-checkbox-helpers": null,
     "ember-metal-stream": null,
     "ember-htmlbars-each-with-index": true,
-    "ember-application-initializer-context": null
+    "ember-application-initializer-context": null,
+    "ember-htmlbars-scoped-helpers": null
   },
   "debugStatements": [
     "Ember.warn",

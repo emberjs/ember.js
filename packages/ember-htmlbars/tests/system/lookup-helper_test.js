@@ -1,5 +1,6 @@
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
+import EmberComponent from "ember-views/views/component";
 import Registry from "container/registry";
 import Component from "ember-views/views/component";
 
@@ -33,7 +34,7 @@ test('looks for helpers in the provided `env.helpers`', function() {
 
 test('returns undefined if no container exists (and helper is not found in env)', function() {
   var env = generateEnv();
-  var view = {};
+  var view = EmberComponent.create();
 
   var actual = lookupHelper('flubarb', view, env);
 
@@ -42,13 +43,13 @@ test('returns undefined if no container exists (and helper is not found in env)'
 
 test('does not lookup in the container if the name does not contain a dash (and helper is not found in env)', function() {
   var env = generateEnv();
-  var view = {
+  var view = EmberComponent.create({
     container: {
       lookup: function() {
         ok(false, 'should not lookup in the container');
       }
     }
-  };
+  });
 
   var actual = lookupHelper('flubarb', view, env);
 
@@ -57,9 +58,9 @@ test('does not lookup in the container if the name does not contain a dash (and 
 
 test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
   var env = generateEnv();
-  var view = {
+  var view = EmberComponent.create({
     container: generateContainer()
-  };
+  });
 
   function someName() {}
   someName.isHTMLBars = true;
@@ -73,9 +74,9 @@ test('does a lookup in the container if the name contains a dash (and helper is 
 test('wraps helper from container in a Handlebars compat helper', function() {
   expect(2);
   var env = generateEnv();
-  var view = {
+  var view = EmberComponent.create({
     container: generateContainer()
-  };
+  });
   var called;
 
   function someName() {
@@ -100,9 +101,9 @@ test('wraps helper from container in a Handlebars compat helper', function() {
 
 test('asserts if component-lookup:main cannot be found', function() {
   var env = generateEnv();
-  var view = {
+  var view = EmberComponent.create({
     container: generateContainer()
-  };
+  });
 
   view.container._registry.unregister('component-lookup:main');
 
@@ -113,9 +114,9 @@ test('asserts if component-lookup:main cannot be found', function() {
 
 test('registers a helper in the container if component is found', function() {
   var env = generateEnv();
-  var view = {
+  var view = EmberComponent.create({
     container: generateContainer()
-  };
+  });
 
   view.container._registry.register('component:some-name', Component);
 
@@ -123,3 +124,45 @@ test('registers a helper in the container if component is found', function() {
 
   ok(view.container.lookup('helper:some-name'), 'new helper was registered');
 });
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars-scoped-helpers')) {
+  test('local helpers do not override global helpers', function() {
+    var env = generateEnv({
+      'flubarb': function() { }
+    });
+
+    var view = EmberComponent.create({
+      flubarb: {
+        isHTMLBars: true
+      }
+    });
+
+    var actual = lookupHelper('flubarb', view, env);
+
+    equal(actual, env.helpers.flubarb, 'helper from env wins over view local helpers');
+  });
+
+  test('looks helpers up on the view for non-global helpers', function() {
+    var env = generateEnv();
+    var view = EmberComponent.create({
+      flubarb: {
+        isHTMLBars: true
+      }
+    });
+
+    var actual = lookupHelper('flubarb', view, env);
+
+    equal(actual, view.flubarb, 'matches helpers in the root of the view');
+  });
+
+  test('does not match local helpers/props without isHTMLBars: true', function() {
+    var env = generateEnv();
+    var view = EmberComponent.create({
+      flubarb: { }
+    });
+
+    var actual = lookupHelper('flubarb', view, env);
+
+    equal(actual, undefined, 'does not match local helpers without isHTMLBars: true');
+  });
+}

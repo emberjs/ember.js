@@ -182,3 +182,42 @@ for a detailed explanation.
   ```
 
   Added in [#10160](https://github.com/emberjs/ember.js/pull/10160)
+
+* `ember-htmlbars-scoped-helpers`
+
+  Adds the ability for helpers to be resolved from the local component.  Allowing components to
+  use local helpers (that do not get made available globally) AND/OR providing local helpers to
+  the provided block param.
+
+  Block Params Example:
+
+```javascript
+// app/components/form-for.js
+
+import Ember from "ember";
+import FormForInput from "./helpers/input";
+
+var makeViewHelper = Ember.HTMLBars.makeViewHelper;
+
+export default Ember.Component.extend({
+  formHelpers: {
+    input: makeViewHelper(FormForInput)
+  }
+});
+```
+
+```handlebars
+{{! app/templates/components/form-for.hbs }}
+
+{{yield formHelpers}}
+```
+
+```handlebars
+{{! app/templates/post/new.hbs }}
+
+{{#form-for as |f|}}
+  {{f.input label="Title" value=model.title}}
+{{/form-for}}
+```
+
+  Added in [#10244](https://github.com/emberjs/ember.js/pull/10244)
