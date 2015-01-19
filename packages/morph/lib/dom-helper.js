@@ -148,9 +148,53 @@ prototype.childAt = function(element, indices) {
   return child;
 };
 
+// Note to a Fellow Implementor:
+// Ahh, accessing a child node at an index. Seems like it should be so simple,
+// doesn't it? Unfortunately, this particular method has caused us a surprising
+// amount of pain. As you'll note below, this method has been modified to walk
+// the linked list of child nodes rather than access the child by index
+// directly, even though there are two (2) APIs in the DOM that do this for us.
+// If you're thinking to yourself, "What an oversight! What an opportunity to
+// optimize this code!" then to you I say: stop! For I have a tale to tell.
+//
+// First, this code must be compatible with simple-dom for rendering on the
+// server where there is no real DOM. Previously, we accessed a child node
+// directly via `element.childNodes[index]`. While we *could* in theory do a
+// full-fidelity simulation of a live `childNodes` array, this is slow,
+// complicated and error-prone.
+//
+// "No problem," we thought, "we'll just use the similar
+// `childNodes.item(index)` API." Then, we could just implement our own `item`
+// method in simple-dom and walk the child node linked list there, allowing
+// us to retain the performance advantages of the (surely optimized) `item()`
+// API in the browser.
+//
+// Unfortunately, an enterprising soul named Samy Alzahrani discovered that in
+// IE8, accessing an item out-of-bounds via `item()` causes an exception where
+// other browsers return null. This necessitated a... check of
+// `childNodes.length`, bringing us back around to having to support a
+// full-fidelity `childNodes` array!
+//
+// Worst of all, Kris Selden investigated how browsers are actualy implemented
+// and discovered that they're all linked lists under the hood anyway. Accessing
+// `childNodes` requires them to allocate a new live collection backed by that
+// linked list, which is itself a rather expensive operation. Our assumed
+// optimization had backfired! That is the danger of magical thinking about
+// the performance of native implementations.
+//
+// And this, my friends, is why the following implementation just walks the
+// linked list, as surprised as that may make you. Please ensure you understand
+// the above before changing this and submitting a PR.
+//
+// Tom Dale, January 18th, 2015, Portland OR
 prototype.childAtIndex = function(element, index) {
-  // IE8 throws an error if index is out of bounds
-  return element.childNodes.length > index ? element.childNodes.item(index) : null;
+  var node = element.firstChild;
+
+  for (var idx = 0; node && idx < index; idx++) {
+    node = node.nextSibling;
+  }
+
+  return node;
 };
 
 prototype.appendText = function(element, text) {
