@@ -40,11 +40,19 @@ test('#childAtIndex', function() {
   var child1 = dom.createElement('p');
   var child2 = dom.createElement('img');
 
+  strictEqual(dom.childAtIndex(node, 0), null);
+  strictEqual(dom.childAtIndex(node, 1), null);
+  strictEqual(dom.childAtIndex(node, 2), null);
+
   dom.appendChild(node, child1);
-  equal(dom.childAtIndex(node, 0).tagName, 'P');
+  strictEqual(dom.childAtIndex(node, 0).tagName, 'P');
+  strictEqual(dom.childAtIndex(node, 1), null);
+  strictEqual(dom.childAtIndex(node, 2), null);
 
   dom.insertBefore(node, child2, child1);
-  equal(dom.childAtIndex(node, 0).tagName, 'IMG');
+  strictEqual(dom.childAtIndex(node, 0).tagName, 'IMG');
+  strictEqual(dom.childAtIndex(node, 1).tagName, 'P');
+  strictEqual(dom.childAtIndex(node, 2), null);
 });
 
 test('#appendText adds text', function(){
