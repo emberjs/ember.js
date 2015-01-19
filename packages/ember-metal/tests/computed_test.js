@@ -665,6 +665,24 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
     testObj.set('aInt', '123');
     ok(testObj.get('aInt') === '123', 'cp has been updated too');
   });
+
+  test('the return value of the setter gets cached', function() {
+    var testObj = Ember.Object.extend({
+      a: '1',
+      sampleCP: computed('a', {
+        get: function(keyName) {
+          ok(false, "The getter should not be invoked");
+          return 'get-value';
+        },
+        set: function(keyName, value, oldValue) {
+          return 'set-value';
+        }
+      })
+    }).create();
+
+    testObj.set('sampleCP', 'abcd');
+    ok(testObj.get('sampleCP') === 'set-value', 'The return value of the CP was cached');
+  });
 }
 
 // ..........................................................

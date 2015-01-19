@@ -152,6 +152,7 @@ for a detailed explanation.
     },
     set: function(key, boolValue) {
       this.set('visibility', boolValue ? 'visible' : 'hidden');
+      return boolValue;
     }
   })
   ```
