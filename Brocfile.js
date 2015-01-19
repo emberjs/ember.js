@@ -72,14 +72,14 @@ function getPackageTrees(packageName, dependencies) {
 
 // Test Assets
 
-var test = new Funnel('test', {
+var test = new Funnel('tests', {
   srcDir: '/',
   files: [ 'index.html', 'packages-config.js' ],
-  destDir: '/test'
+  destDir: '/tests'
 });
 
 test = replace(test, {
-  files: [ 'test/packages-config.js' ],
+  files: [ 'tests/packages-config.js' ],
   pattern: {
     match: /\{\{PACKAGES_CONFIG\}\}/g,
     replacement: JSON.stringify(packages, null, 2)
@@ -94,13 +94,13 @@ var loader = new Funnel(bower, {
 
 var qunit = new Funnel(bower, {
   srcDir: '/qunit/qunit',
-  destDir: '/test'
+  destDir: '/tests'
 });
 
 var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   srcDir: '/vendor',
   files: [ 'export-test-results.js' ],
-  destDir: '/test'
+  destDir: '/tests'
 });
 
 // Export trees
@@ -156,7 +156,7 @@ for (var packageName in packages.dependencies) {
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), { moduleName: true, type: 'amd' });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
     inputFiles: ['**/*.js'],
-    outputFile: '/test/' + packageName + '-tests.amd.js'
+    outputFile: '/tests/' + packageName + '-tests.amd.js'
   });
   trees.push(concatenatedAmdTests);
 

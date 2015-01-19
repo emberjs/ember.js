@@ -1,10 +1,10 @@
 {
   "framework": "qunit",
-  "test_page": "dist/test/index.html?hidepassed",
+  "test_page": "dist/tests/index.html?hidepassed",
   "before_tests": "ember build",
   "watch_files": [
     "packages/**/*.js",
-    "test/**/*.js"
+    "tests/**/*.js"
   ],
   "launchers":
     {
