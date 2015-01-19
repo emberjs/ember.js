@@ -66,7 +66,7 @@ function runNodeTests(testDir) {
     console.log('----');
     console.log("Running: Node test runner against "+testPaths.join(", "));
     testrunner.run({
-      code: "test/node-context.js",
+      code: "tests/node-context.js",
       tests: testPaths
     }, function(e, summary){
       if (e) {
