@@ -20,7 +20,7 @@ var a_slice = Array.prototype.slice;
 
 /**
   An `Ember.Component` is a view that is completely
-  isolated. Property access in its templates go
+  isolated. Properties accessed in its templates go
   to the view object and actions are targeted at
   the view object. There is no access to the
   surrounding context or outer controller; all
