@@ -297,6 +297,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
+  willDestroy: function() {
+    this.reset();
+  },
+
   _lookupActiveView: function(templateName) {
     var active = this._activeViews[templateName];
     return active && active[0];

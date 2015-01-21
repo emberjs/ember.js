@@ -270,7 +270,7 @@ var Application = Namespace.extend(DeferredMixin, {
     this.buildRegistry();
 
     // TODO:(tomdale+wycats) Move to session creation phase
-    this.buildContainer();
+    this.buildInstance();
 
     registerLibraries();
     logLibraryVersions();
@@ -295,13 +295,19 @@ var Application = Namespace.extend(DeferredMixin, {
     Create a container for the current application's registry.
 
     @private
-    @method buildContainer
+    @method buildInstance
     @return {Ember.Container} the configured container
   */
-  buildContainer: function() {
+  buildInstance: function() {
     var container = this.__container__ = this.__registry__.container();
 
-    return container;
+    var instance = this.__instance__ = ApplicationInstance.create({
+      customEvents: get(this, 'customEvents'),
+      rootElement: get(this, 'rootElement'),
+      container: container
+    });
+
+    return instance;
   },
 
   /**
@@ -599,15 +605,14 @@ var Application = Namespace.extend(DeferredMixin, {
     @method reset
   **/
   reset: function() {
+    var instance = this.__instance__;
+
     this._readinessDeferrals = 1;
 
     function handleReset() {
-      var router = this.__container__.lookup('router:main');
-      router.reset();
+      run(instance, 'destroy');
 
-      run(this.__container__, 'destroy');
-
-      this.buildContainer();
+      this.buildInstance();
 
       run.schedule('actions', this, '_initialize');
     }
@@ -651,7 +656,7 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   didBecomeReady: function() {
     if (environment.hasDOM) {
-      this.setupEventDispatcher();
+      this.__instance__.setupEventDispatcher();
     }
 
     this.ready(); // user hook
@@ -667,23 +672,6 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Setup up the event dispatcher to receive events on the
-    application's `rootElement` with any registered
-    `customEvents`.
-
-    @private
-    @method setupEventDispatcher
-  */
-  setupEventDispatcher: function() {
-    var customEvents = get(this, 'customEvents');
-    var rootElement = get(this, 'rootElement');
-    var dispatcher = this.__container__.lookup('event_dispatcher:main');
-
-    set(this, 'eventDispatcher', dispatcher);
-    dispatcher.setup(customEvents, rootElement);
-  },
-
-  /**
     If the application has a router, use it to route to the current URL, and
     trigger a new call to `route` whenever the URL changes.
 
@@ -692,18 +680,12 @@ var Application = Namespace.extend(DeferredMixin, {
     @property router {Ember.Router}
   */
   startRouting: function() {
-    var router = this.__container__.lookup('router:main');
-    if (!router) { return; }
-
-    var moduleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
-
-    router.startRouting(moduleBasedResolver);
+    var isModuleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
+    this.__instance__.startRouting(isModuleBasedResolver);
   },
 
   handleURL: function(url) {
-    var router = this.__container__.lookup('router:main');
-
-    router.handleURL(url);
+    return this.__instance__.handleURL(url);
   },
 
   /**
@@ -730,12 +712,10 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   Resolver: null,
 
+  // This method must be moved to the application instance object
   willDestroy: function() {
     Ember.BOOTED = false;
-    // Ensure deactivation of routes before objects are destroyed
-    this.__container__.lookup('router:main').reset();
-
-    this.__container__.destroy();
+    this.__instance__.destroy();
   },
 
   initializer: function(options) {
@@ -1062,5 +1042,36 @@ function logLibraryVersions() {
     Ember.debug('-------------------------------');
   }
 }
+
+var ApplicationInstance = Ember.Object.extend({
+  container: null,
+  customEvents: null,
+  rootElement: null,
+
+  startRouting: function(isModuleBasedResolver) {
+    var router = this.container.lookup('router:main');
+    if (!router) { return; }
+
+    router.startRouting(isModuleBasedResolver);
+  },
+
+  handleURL: function(url) {
+    var router = this.container.lookup('router:main');
+
+    return router.handleURL(url);
+  },
+
+  setupEventDispatcher: function() {
+    var dispatcher = this.container.lookup('event_dispatcher:main');
+
+    dispatcher.setup(this.customEvents, this.rootElement);
+
+    return dispatcher;
+  },
+
+  willDestroy: function() {
+    run(this.container, 'destroy');
+  }
+});
 
 export default Application;
