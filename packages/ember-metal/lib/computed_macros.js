@@ -478,6 +478,7 @@ registerComputedWithProperties('or', function(properties) {
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
+  @deprecated Use `Ember.computed.or` instead.
 */
 registerComputedWithProperties('any', function(properties) {
   for (var key in properties) {
