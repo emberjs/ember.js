@@ -399,6 +399,8 @@ registerComputed('lte', function(dependentKey, value) {
   hamster.get('readyForCamp'); // false
   hamster.set('hasBackpack', true);
   hamster.get('readyForCamp'); // true
+  hamster.set('hasBackpack', 'Yes');
+  hamster.get('readyForCamp'); // 'Yes'
   ```
 
   @method computed.and
@@ -408,12 +410,14 @@ registerComputed('lte', function(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
 */
 registerComputedWithProperties('and', function(properties) {
+  var value;
   for (var key in properties) {
-    if (properties.hasOwnProperty(key) && !properties[key]) {
+    value = properties[key];
+    if (properties.hasOwnProperty(key) && !value) {
       return false;
     }
   }
-  return true;
+  return value;
 });
 
 /**
@@ -430,8 +434,10 @@ registerComputedWithProperties('and', function(properties) {
   var hamster = Hamster.create();
 
   hamster.get('readyForRain'); // false
-  hamster.set('hasJacket', true);
+  hamster.set('hasUmbrella', true);
   hamster.get('readyForRain'); // true
+  hamster.set('hasJacket', 'Yes');
+  hamster.get('readyForRain'); // 'Yes'
   ```
 
   @method computed.or
@@ -443,7 +449,7 @@ registerComputedWithProperties('and', function(properties) {
 registerComputedWithProperties('or', function(properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key) && properties[key]) {
-      return true;
+      return properties[key];
     }
   }
   return false;

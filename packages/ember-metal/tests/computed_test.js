@@ -1085,6 +1085,11 @@ testBoth('computed.and', function(get, set) {
   set(obj, 'one', false);
 
   equal(get(obj, 'oneAndTwo'), false, 'one and not two');
+
+  set(obj, 'one', true);
+  set(obj, 'two', 2);
+
+  equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
 });
 
 testBoth('computed.or', function(get, set) {
@@ -1101,9 +1106,13 @@ testBoth('computed.or', function(get, set) {
 
   equal(get(obj, 'oneOrTwo'), false, 'nore one nore two');
 
-  set(obj, 'one', true);
+  set(obj, 'two', true);
 
   equal(get(obj, 'oneOrTwo'), true, 'one or two');
+
+  set(obj, 'one', 1);
+
+  equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
 });
 
 testBoth('computed.any', function(get, set) {
