@@ -467,12 +467,14 @@ export var and = generateComputedWithProperties(function(properties) {
   @public
 */
 export var or = generateComputedWithProperties(function(properties) {
+  var value;
   for (var key in properties) {
-    if (properties.hasOwnProperty(key) && properties[key]) {
-      return properties[key];
+    value = properties[key];
+    if (properties.hasOwnProperty(key) && value) {
+      return value;
     }
   }
-  return false;
+  return value;
 });
 
 /**
