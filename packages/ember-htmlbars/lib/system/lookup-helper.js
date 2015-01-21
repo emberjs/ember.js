@@ -33,6 +33,13 @@ export default function lookupHelper(name, view, env) {
     return helper;
   }
 
+  if (Ember.FEATURES.isEnabled('ember-htmlbars-scoped-helpers')) {
+    helper = view.getStream(name).value();
+    if (helper && helper.isHTMLBars) {
+      return helper;
+    }
+  }
+
   var container = view.container;
 
   if (!container || ISNT_HELPER_CACHE.get(name)) {
