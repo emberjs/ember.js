@@ -3,7 +3,7 @@
 @submodule ember-template-compiler
 */
 
-import { compile } from "htmlbars-compiler/compiler";
+var compile;
 import compileOptions from "ember-template-compiler/system/compile_options";
 import template from "ember-template-compiler/system/template";
 
@@ -17,6 +17,14 @@ import template from "ember-template-compiler/system/template";
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function(templateString) {
+  if (!compile && Ember.__loader.registry['htmlbars-compiler/compiler']) {
+    compile = requireModule('htmlbars-compiler/compiler').compile;
+  }
+
+  if (!compile) {
+    throw new Error('Cannot call `compile` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compile`.');
+  }
+
   var templateSpec = compile(templateString, compileOptions());
 
   return template(templateSpec);
