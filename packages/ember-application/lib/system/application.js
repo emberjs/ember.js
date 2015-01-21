@@ -253,6 +253,8 @@ var Application = Namespace.extend(DeferredMixin, {
   customEvents: null,
 
   init: function() {
+    this._super();
+
     // Start off the number of deferrals at 1. This will be
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
@@ -261,42 +263,19 @@ var Application = Namespace.extend(DeferredMixin, {
       this.$ = jQuery;
     }
 
+    // Create subclass of Ember.Router for this Application instance.
+    // This is to ensure that someone reopening `App.Router` does not
+    // tamper with the default `Ember.Router`.
+    this.Router = Router.extend();
     this.buildRegistry();
+
+    // TODO:(tomdale+wycats) Move to session creation phase
     this.buildContainer();
 
-    this.Router = this.defaultRouter();
-
-    this._super();
+    registerLibraries();
+    logLibraryVersions();
 
     this.scheduleInitialize();
-
-    if (!librariesRegistered) {
-      librariesRegistered = true;
-
-      if (environment.hasDOM) {
-        Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
-      }
-    }
-
-    if (Ember.LOG_VERSION) {
-      // we only need to see this once per Application#init
-      Ember.LOG_VERSION = false;
-      var libs = Ember.libraries._registry;
-
-      var nameLengths = EnumerableUtils.map(libs, function(item) {
-        return get(item, 'name.length');
-      });
-
-      var maxNameLength = Math.max.apply(this, nameLengths);
-
-      Ember.debug('-------------------------------');
-      for (var i = 0, l = libs.length; i < l; i++) {
-        var lib = libs[i];
-        var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-        Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
-      }
-      Ember.debug('-------------------------------');
-    }
   },
 
   /**
@@ -323,39 +302,6 @@ var Application = Namespace.extend(DeferredMixin, {
     var container = this.__container__ = this.__registry__.container();
 
     return container;
-  },
-
-  /**
-    If the application has not opted out of routing and has not explicitly
-    defined a router, supply a default router for the application author
-    to configure.
-
-    This allows application developers to do:
-
-    ```javascript
-    var App = Ember.Application.create();
-
-    App.Router.map(function() {
-      this.resource('posts');
-    });
-    ```
-
-    @private
-    @method defaultRouter
-    @return {Ember.Router} the default router
-  */
-
-  defaultRouter: function() {
-    if (this.Router === false) { return; }
-    var container = this.__container__;
-    var registry = this.__registry__;
-
-    if (this.Router) {
-      registry.unregister('router:main');
-      registry.register('router:main', this.Router);
-    }
-
-    return container.lookupFactory('router:main');
   },
 
   /**
@@ -572,17 +518,6 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   _initialize: function() {
     if (this.isDestroyed) { return; }
-
-    // At this point, the App.Router must already be assigned
-    if (this.Router) {
-      var registry = this.__registry__;
-      var container = this.__container__;
-
-      registry.unregister('router:main');
-      registry.register('router:main', this.Router);
-
-      container.reset('router:main');
-    }
 
     this.runInitializers();
     runLoadHooks('application', this);
@@ -1016,7 +951,6 @@ Application.reopenClass({
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);
 
-    registry.register('router:main',  Router);
     registry.injection('router:main', 'namespace', 'application:main');
 
     registry.register('location:auto', AutoLocation);
@@ -1095,6 +1029,38 @@ function resolverFor(namespace) {
   resolve.__resolver__ = resolver;
 
   return resolve;
+}
+
+function registerLibraries() {
+  if (!librariesRegistered) {
+    librariesRegistered = true;
+
+    if (environment.hasDOM) {
+      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    }
+  }
+}
+
+function logLibraryVersions() {
+  if (Ember.LOG_VERSION) {
+    // we only need to see this once per Application#init
+    Ember.LOG_VERSION = false;
+    var libs = Ember.libraries._registry;
+
+    var nameLengths = EnumerableUtils.map(libs, function(item) {
+      return get(item, 'name.length');
+    });
+
+    var maxNameLength = Math.max.apply(this, nameLengths);
+
+    Ember.debug('-------------------------------');
+    for (var i = 0, l = libs.length; i < l; i++) {
+      var lib = libs[i];
+      var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+      Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
+    }
+    Ember.debug('-------------------------------');
+  }
 }
 
 export default Application;
