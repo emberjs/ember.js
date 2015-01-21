@@ -75,6 +75,12 @@ test("the default resolver resolves models on the namespace", function() {
   detectEqual(application.Post, locator.lookupFactory('model:post'), "looks up Post model on application");
 });
 
+test("the default resolver resolves *:main on the namespace", function() {
+  application.FooBar = EmberObject.extend({});
+
+  detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), "looks up FooBar type without name on application");
+});
+
 test("the default resolver resolves helpers", function() {
   expect(2);
 
