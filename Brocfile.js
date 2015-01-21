@@ -540,6 +540,7 @@ function packageDependencyTree(packageName) {
 }
 
 var vendorTrees          = [];
+var testVendorTrees      = [];
 var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
@@ -558,10 +559,16 @@ for (var packageName in packages) {
     });
   }
 
+  if (currentPackage['testingVendorRequirements']) {
+    currentPackage['testingVendorRequirements'].forEach(function(dependency) {
+      testVendorTrees.push(vendoredPackages[dependency]);
+    });
+  }
+
   if (packagesTrees.lib) {
     devSourceTrees.push(packagesTrees.lib);
 
-    if (currentPackage.developmentOnly) {
+    if (currentPackage.testing) {
       testingSourceTrees.push(packagesTrees.lib);
     } else {
       prodSourceTrees.push(packagesTrees.lib);
@@ -579,6 +586,7 @@ for (var packageName in packages) {
 
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees, { overwrite: true });
+testVendorTrees = mergeTrees(testVendorTrees, { overwrite: true });
 devSourceTrees = mergeTrees(devSourceTrees);
 
 testTrees   = mergeTrees(testTrees);
@@ -704,7 +712,7 @@ function buildTemplateCompilerTree() {
   es6Package('ember-template-compiler');
 
   var trees = [packages['ember-template-compiler'].trees.lib];
-  var vendorTrees = packages['ember-template-compiler'].vendorRequirements.map(function(req){ return vendoredPackages[req];});
+  var vendorTrees = packages['ember-template-compiler'].templateCompilerVendor.map(function(req){ return vendoredPackages[req];});
 
   var metalSubset = pickFiles(packages['ember-metal'].trees.lib, {
     files: ['ember-metal/core.js'],
@@ -773,7 +781,8 @@ var compiledTests = concatES6(testTrees, {
   derequire: env !== 'development',
   includeLoader: true,
   inputFiles: ['**/*.js'],
-  destFile: '/ember-tests.js'
+  destFile: '/ember-tests.js',
+  vendorTrees: testVendorTrees
 });
 
 // Take testsTrees and compile them for consumption in the browser test suite
