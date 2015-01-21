@@ -31,6 +31,7 @@ import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
+import ApplicationInstance from "ember-application/system/application-instance";
 
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
@@ -1042,36 +1043,5 @@ function logLibraryVersions() {
     Ember.debug('-------------------------------');
   }
 }
-
-var ApplicationInstance = Ember.Object.extend({
-  container: null,
-  customEvents: null,
-  rootElement: null,
-
-  startRouting: function(isModuleBasedResolver) {
-    var router = this.container.lookup('router:main');
-    if (!router) { return; }
-
-    router.startRouting(isModuleBasedResolver);
-  },
-
-  handleURL: function(url) {
-    var router = this.container.lookup('router:main');
-
-    return router.handleURL(url);
-  },
-
-  setupEventDispatcher: function() {
-    var dispatcher = this.container.lookup('event_dispatcher:main');
-
-    dispatcher.setup(this.customEvents, this.rootElement);
-
-    return dispatcher;
-  },
-
-  willDestroy: function() {
-    run(this.container, 'destroy');
-  }
-});
 
 export default Application;
