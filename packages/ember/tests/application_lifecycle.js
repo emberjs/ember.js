@@ -9,7 +9,7 @@ QUnit.module("Application Lifecycle", {
         rootElement: '#qunit-fixture'
       });
 
-      App.Router.extend({
+      App.Router = App.Router.extend({
         location: 'none'
       });
 

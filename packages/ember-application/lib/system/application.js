@@ -31,6 +31,7 @@ import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
+import ApplicationInstance from "ember-application/system/application-instance";
 
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
@@ -253,6 +254,8 @@ var Application = Namespace.extend(DeferredMixin, {
   customEvents: null,
 
   init: function() {
+    this._super();
+
     // Start off the number of deferrals at 1. This will be
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
@@ -261,42 +264,20 @@ var Application = Namespace.extend(DeferredMixin, {
       this.$ = jQuery;
     }
 
+    // Create subclass of Ember.Router for this Application instance.
+    // This is to ensure that someone reopening `App.Router` does not
+    // tamper with the default `Ember.Router`.
+    // 2.0TODO: Can we move this into a globals-mode-only library?
+    this.Router = Router.extend();
     this.buildRegistry();
-    this.buildContainer();
 
-    this.Router = this.defaultRouter();
+    // TODO:(tomdale+wycats) Move to session creation phase
+    this.buildInstance();
 
-    this._super();
+    registerLibraries();
+    logLibraryVersions();
 
     this.scheduleInitialize();
-
-    if (!librariesRegistered) {
-      librariesRegistered = true;
-
-      if (environment.hasDOM) {
-        Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
-      }
-    }
-
-    if (Ember.LOG_VERSION) {
-      // we only need to see this once per Application#init
-      Ember.LOG_VERSION = false;
-      var libs = Ember.libraries._registry;
-
-      var nameLengths = EnumerableUtils.map(libs, function(item) {
-        return get(item, 'name.length');
-      });
-
-      var maxNameLength = Math.max.apply(this, nameLengths);
-
-      Ember.debug('-------------------------------');
-      for (var i = 0, l = libs.length; i < l; i++) {
-        var lib = libs[i];
-        var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-        Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
-      }
-      Ember.debug('-------------------------------');
-    }
   },
 
   /**
@@ -316,46 +297,20 @@ var Application = Namespace.extend(DeferredMixin, {
     Create a container for the current application's registry.
 
     @private
-    @method buildContainer
+    @method buildInstance
     @return {Ember.Container} the configured container
   */
-  buildContainer: function() {
-    var container = this.__container__ = this.__registry__.container();
-
-    return container;
-  },
-
-  /**
-    If the application has not opted out of routing and has not explicitly
-    defined a router, supply a default router for the application author
-    to configure.
-
-    This allows application developers to do:
-
-    ```javascript
-    var App = Ember.Application.create();
-
-    App.Router.map(function() {
-      this.resource('posts');
+  buildInstance: function() {
+    var instance = this.__instance__ = ApplicationInstance.create({
+      customEvents: get(this, 'customEvents'),
+      rootElement: get(this, 'rootElement'),
+      registry: this.__registry__
     });
-    ```
 
-    @private
-    @method defaultRouter
-    @return {Ember.Router} the default router
-  */
+    // TODO2.0: Legacy support for App.__container__
+    this.__container__ = instance.container;
 
-  defaultRouter: function() {
-    if (this.Router === false) { return; }
-    var container = this.__container__;
-    var registry = this.__registry__;
-
-    if (this.Router) {
-      registry.unregister('router:main');
-      registry.register('router:main', this.Router);
-    }
-
-    return container.lookupFactory('router:main');
+    return instance;
   },
 
   /**
@@ -573,18 +528,9 @@ var Application = Namespace.extend(DeferredMixin, {
   _initialize: function() {
     if (this.isDestroyed) { return; }
 
-    // At this point, the App.Router must already be assigned
-    if (this.Router) {
-      var registry = this.__registry__;
-      var container = this.__container__;
+    this.runInitializers(this.__registry__);
+    this.runInstanceInitializers(this.__instance__);
 
-      registry.unregister('router:main');
-      registry.register('router:main', this.Router);
-
-      container.reset('router:main');
-    }
-
-    this.runInitializers();
     runLoadHooks('application', this);
 
     // At this point, any initializers or load hooks that would have wanted
@@ -664,15 +610,14 @@ var Application = Namespace.extend(DeferredMixin, {
     @method reset
   **/
   reset: function() {
+    var instance = this.__instance__;
+
     this._readinessDeferrals = 1;
 
     function handleReset() {
-      var router = this.__container__.lookup('router:main');
-      router.reset();
+      run(instance, 'destroy');
 
-      run(this.__container__, 'destroy');
-
-      this.buildContainer();
+      this.buildInstance();
 
       run.schedule('actions', this, '_initialize');
     }
@@ -684,12 +629,31 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method runInitializers
   */
-  runInitializers: function() {
-    var initializersByName = get(this.constructor, 'initializers');
+  runInitializers: function(registry) {
+    var App = this;
+    this._runInitializer('initializers', function(name, initializer) {
+      Ember.assert("No application initializer named '" + name + "'", !!initializer);
+
+      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+        initializer.initialize(registry, App);
+      } else {
+        var ref = initializer.initialize;
+        ref(registry, App);
+      }
+    });
+  },
+
+  runInstanceInitializers: function(instance) {
+    this._runInitializer('instanceInitializers', function(name, initializer) {
+      Ember.assert("No instance initializer named '" + name + "'", !!initializer);
+      initializer.initialize(instance);
+    });
+  },
+
+  _runInitializer: function(bucketName, cb) {
+    var initializersByName = get(this.constructor, bucketName);
     var initializers = props(initializersByName);
-    var registry = this.__registry__;
     var graph = new DAG();
-    var namespace = this;
     var initializer;
 
     for (var i = 0; i < initializers.length; i++) {
@@ -698,15 +662,7 @@ var Application = Namespace.extend(DeferredMixin, {
     }
 
     graph.topsort(function (vertex) {
-      var initializer = vertex.value;
-      Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
-
-      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
-        initializer.initialize(registry, namespace);
-      } else {
-        var ref = initializer.initialize;
-        ref(registry, namespace);
-      }
+      cb(vertex.name, vertex.value);
     });
   },
 
@@ -716,7 +672,7 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   didBecomeReady: function() {
     if (environment.hasDOM) {
-      this.setupEventDispatcher();
+      this.__instance__.setupEventDispatcher();
     }
 
     this.ready(); // user hook
@@ -732,23 +688,6 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Setup up the event dispatcher to receive events on the
-    application's `rootElement` with any registered
-    `customEvents`.
-
-    @private
-    @method setupEventDispatcher
-  */
-  setupEventDispatcher: function() {
-    var customEvents = get(this, 'customEvents');
-    var rootElement = get(this, 'rootElement');
-    var dispatcher = this.__container__.lookup('event_dispatcher:main');
-
-    set(this, 'eventDispatcher', dispatcher);
-    dispatcher.setup(customEvents, rootElement);
-  },
-
-  /**
     If the application has a router, use it to route to the current URL, and
     trigger a new call to `route` whenever the URL changes.
 
@@ -757,18 +696,12 @@ var Application = Namespace.extend(DeferredMixin, {
     @property router {Ember.Router}
   */
   startRouting: function() {
-    var router = this.__container__.lookup('router:main');
-    if (!router) { return; }
-
-    var moduleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
-
-    router.startRouting(moduleBasedResolver);
+    var isModuleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
+    this.__instance__.startRouting(isModuleBasedResolver);
   },
 
   handleURL: function(url) {
-    var router = this.__container__.lookup('router:main');
-
-    router.handleURL(url);
+    return this.__instance__.handleURL(url);
   },
 
   /**
@@ -795,12 +728,10 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   Resolver: null,
 
+  // This method must be moved to the application instance object
   willDestroy: function() {
     Ember.BOOTED = false;
-    // Ensure deactivation of routes before objects are destroyed
-    this.__container__.lookup('router:main').reset();
-
-    this.__container__.destroy();
+    this.__instance__.destroy();
   },
 
   initializer: function(options) {
@@ -819,8 +750,21 @@ var Application = Namespace.extend(DeferredMixin, {
   }
 });
 
+if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+  Application.reopen({
+    instanceInitializer: function(options) {
+      this.constructor.instanceInitializer(options);
+    }
+  });
+
+  Application.reopenClass({
+    instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+  });
+}
+
 Application.reopenClass({
   initializers: create(null),
+  instanceInitializers: create(null),
 
   /**
     Initializer receives an object which has the following attributes:
@@ -945,23 +889,7 @@ Application.reopenClass({
     @method initializer
     @param initializer {Object}
    */
-  initializer: function(initializer) {
-    // If this is the first initializer being added to a subclass, we are going to reopen the class
-    // to make sure we have a new `initializers` object, which extends from the parent class' using
-    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
-    // pollute the parent class as well as other subclasses.
-    if (this.superclass.initializers !== undefined && this.superclass.initializers === this.initializers) {
-      this.reopenClass({
-        initializers: create(this.initializers)
-      });
-    }
-
-    Ember.assert("The initializer '" + initializer.name + "' has already been registered", !this.initializers[initializer.name]);
-    Ember.assert("An initializer cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
-    Ember.assert("An initializer cannot be registered without a name property", initializer.name !== undefined);
-
-    this.initializers[initializer.name] = initializer;
-  },
+  initializer: buildInitializerMethod('initializers', 'initializer'),
 
   /**
     This creates a registry with the default Ember naming conventions.
@@ -1016,7 +944,6 @@ Application.reopenClass({
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);
 
-    registry.register('router:main',  Router);
     registry.injection('router:main', 'namespace', 'application:main');
 
     registry.register('location:auto', AutoLocation);
@@ -1095,6 +1022,58 @@ function resolverFor(namespace) {
   resolve.__resolver__ = resolver;
 
   return resolve;
+}
+
+function registerLibraries() {
+  if (!librariesRegistered) {
+    librariesRegistered = true;
+
+    if (environment.hasDOM) {
+      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    }
+  }
+}
+
+function logLibraryVersions() {
+  if (Ember.LOG_VERSION) {
+    // we only need to see this once per Application#init
+    Ember.LOG_VERSION = false;
+    var libs = Ember.libraries._registry;
+
+    var nameLengths = EnumerableUtils.map(libs, function(item) {
+      return get(item, 'name.length');
+    });
+
+    var maxNameLength = Math.max.apply(this, nameLengths);
+
+    Ember.debug('-------------------------------');
+    for (var i = 0, l = libs.length; i < l; i++) {
+      var lib = libs[i];
+      var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+      Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
+    }
+    Ember.debug('-------------------------------');
+  }
+}
+
+function buildInitializerMethod(bucketName, humanName) {
+  return function(initializer) {
+    // If this is the first initializer being added to a subclass, we are going to reopen the class
+    // to make sure we have a new `initializers` object, which extends from the parent class' using
+    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
+    // pollute the parent class as well as other subclasses.
+    if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
+      var attrs = {};
+      attrs[bucketName] = create(this[bucketName]);
+      this.reopenClass(attrs);
+    }
+
+    Ember.assert("The " + humanName + " '" + initializer.name + "' has already been registered", !this[bucketName][initializer.name]);
+    Ember.assert("An " + humanName + " cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
+    Ember.assert("An " + humanName + " cannot be registered without a name property", initializer.name !== undefined);
+
+    this[bucketName][initializer.name] = initializer;
+  };
 }
 
 export default Application;

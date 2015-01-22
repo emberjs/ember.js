@@ -136,13 +136,21 @@ Registry.prototype = {
 
   lookup: function(fullName, options) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
-    Ember.deprecate('`lookup` should not be called on a Registry. Call `lookup` directly on an associated Container instead.');
+
+    if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+      Ember.deprecate('`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
+    }
+
     return this._defaultContainer.lookup(fullName, options);
   },
 
   lookupFactory: function(fullName) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
-    Ember.deprecate('`lookupFactory` should not be called on a Registry. Call `lookupFactory` directly on an associated Container instead.');
+
+    if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+      Ember.deprecate('`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
+    }
+
     return this._defaultContainer.lookupFactory(fullName);
   },
 

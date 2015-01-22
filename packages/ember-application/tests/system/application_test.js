@@ -263,7 +263,7 @@ test("can resolve custom router", function() {
   var CustomRouter = Router.extend();
 
   var CustomResolver = DefaultResolver.extend({
-    resolveOther: function(parsedName) {
+    resolveMain: function(parsedName) {
       if (parsedName.type === "router") {
         return CustomRouter;
       } else {
