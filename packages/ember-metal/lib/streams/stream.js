@@ -85,9 +85,15 @@ Stream.prototype = {
   },
 
   subscribe: function(callback, context) {
-    if (this.subscribers === undefined) {
+    var subscribers = this.subscribers;
+    if (subscribers === undefined) {
       this.subscribers = [callback, context];
     } else {
+      for (var i = 0, length = subscribers.length; i < length; i+=2) {
+        if (subscribers[i] === callback && subscribers[i+1] === context) {
+          return;
+        }
+      }
       this.subscribers.push(callback, context);
     }
   },
