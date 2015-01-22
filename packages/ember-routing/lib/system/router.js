@@ -298,6 +298,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   willDestroy: function() {
+    this._super.apply(this, arguments);
     this.reset();
   },
 
