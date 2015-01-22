@@ -528,7 +528,9 @@ var Application = Namespace.extend(DeferredMixin, {
   _initialize: function() {
     if (this.isDestroyed) { return; }
 
-    this.runInitializers();
+    this.runInitializers(this.__registry__);
+    this.runInstanceInitializers(this.__instance__);
+
     runLoadHooks('application', this);
 
     // At this point, any initializers or load hooks that would have wanted
@@ -627,12 +629,31 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method runInitializers
   */
-  runInitializers: function() {
-    var initializersByName = get(this.constructor, 'initializers');
+  runInitializers: function(registry) {
+    var App = this;
+    this._runInitializer('initializers', function(name, initializer) {
+      Ember.assert("No application initializer named '" + name + "'", !!initializer);
+
+      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+        initializer.initialize(registry, App);
+      } else {
+        var ref = initializer.initialize;
+        ref(registry, App);
+      }
+    });
+  },
+
+  runInstanceInitializers: function(instance) {
+    this._runInitializer('instanceInitializers', function(name, initializer) {
+      Ember.assert("No instance initializer named '" + name + "'", !!initializer);
+      initializer.initialize(instance);
+    });
+  },
+
+  _runInitializer: function(bucketName, cb) {
+    var initializersByName = get(this.constructor, bucketName);
     var initializers = props(initializersByName);
-    var registry = this.__registry__;
     var graph = new DAG();
-    var namespace = this;
     var initializer;
 
     for (var i = 0; i < initializers.length; i++) {
@@ -641,15 +662,7 @@ var Application = Namespace.extend(DeferredMixin, {
     }
 
     graph.topsort(function (vertex) {
-      var initializer = vertex.value;
-      Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
-
-      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
-        initializer.initialize(registry, namespace);
-      } else {
-        var ref = initializer.initialize;
-        ref(registry, namespace);
-      }
+      cb(vertex.name, vertex.value);
     });
   },
 
@@ -737,8 +750,21 @@ var Application = Namespace.extend(DeferredMixin, {
   }
 });
 
+if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+  Application.reopen({
+    instanceInitializer: function(options) {
+      this.constructor.instanceInitializer(options);
+    }
+  });
+
+  Application.reopenClass({
+    instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+  });
+}
+
 Application.reopenClass({
   initializers: create(null),
+  instanceInitializers: create(null),
 
   /**
     Initializer receives an object which has the following attributes:
@@ -863,23 +889,7 @@ Application.reopenClass({
     @method initializer
     @param initializer {Object}
    */
-  initializer: function(initializer) {
-    // If this is the first initializer being added to a subclass, we are going to reopen the class
-    // to make sure we have a new `initializers` object, which extends from the parent class' using
-    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
-    // pollute the parent class as well as other subclasses.
-    if (this.superclass.initializers !== undefined && this.superclass.initializers === this.initializers) {
-      this.reopenClass({
-        initializers: create(this.initializers)
-      });
-    }
-
-    Ember.assert("The initializer '" + initializer.name + "' has already been registered", !this.initializers[initializer.name]);
-    Ember.assert("An initializer cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
-    Ember.assert("An initializer cannot be registered without a name property", initializer.name !== undefined);
-
-    this.initializers[initializer.name] = initializer;
-  },
+  initializer: buildInitializerMethod('initializers', 'initializer'),
 
   /**
     This creates a registry with the default Ember naming conventions.
@@ -1044,6 +1054,26 @@ function logLibraryVersions() {
     }
     Ember.debug('-------------------------------');
   }
+}
+
+function buildInitializerMethod(bucketName, humanName) {
+  return function(initializer) {
+    // If this is the first initializer being added to a subclass, we are going to reopen the class
+    // to make sure we have a new `initializers` object, which extends from the parent class' using
+    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
+    // pollute the parent class as well as other subclasses.
+    if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
+      var attrs = {};
+      attrs[bucketName] = create(this[bucketName]);
+      this.reopenClass(attrs);
+    }
+
+    Ember.assert("The " + humanName + " '" + initializer.name + "' has already been registered", !this[bucketName][initializer.name]);
+    Ember.assert("An " + humanName + " cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
+    Ember.assert("An " + humanName + " cannot be registered without a name property", initializer.name !== undefined);
+
+    this[bucketName][initializer.name] = initializer;
+  };
 }
 
 export default Application;

@@ -2,6 +2,7 @@ import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import { indexOf } from "ember-metal/array";
 import jQuery from "ember-views/system/jquery";
+import Registry from "container/registry";
 
 var app;
 
@@ -31,6 +32,25 @@ test("initializers require proper 'name' and 'initialize' properties", function(
     });
   });
 
+});
+
+test("initializers are passed a registry and App", function() {
+  var MyApplication = Application.extend();
+
+  MyApplication.initializer({
+    name: 'initializer',
+    initialize: function(registry, App) {
+      ok(registry instanceof Registry, "initialize is passed a registry");
+      ok(App instanceof Application, "initialize is passed an Application");
+    }
+  });
+
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
+    });
+  });
 });
 
 test("initializers can be registered in a specified order", function() {
