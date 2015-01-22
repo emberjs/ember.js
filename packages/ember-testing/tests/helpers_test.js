@@ -416,6 +416,14 @@ test("`wait` respects registerWaiters with optional context", function() {
   });
 });
 
+test("`wait` does not error if routing has not begun", function() {
+  expect(1);
+
+  App.testHelpers.wait().then(function() {
+    ok(true, 'should not error without `visit`');
+  });
+});
+
 test("`triggerEvent accepts an optional options hash without context", function() {
   expect(3);
 
