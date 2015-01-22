@@ -114,6 +114,69 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
   });
 
+  test("initializers can be registered in a specified order as an array", function() {
+    var order = [];
+    var MyApplication = Application.extend();
+
+
+    MyApplication.instanceInitializer({
+      name: 'third',
+      initialize: function(registry) {
+        order.push('third');
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'second',
+      after: 'first',
+      before: ['third', 'fourth'],
+      initialize: function(registry) {
+        order.push('second');
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'fourth',
+      after: ['second', 'third'],
+      initialize: function(registry) {
+        order.push('fourth');
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'fifth',
+      after: 'fourth',
+      before: 'sixth',
+      initialize: function(registry) {
+        order.push('fifth');
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'first',
+      before: ['second'],
+      initialize: function(registry) {
+        order.push('first');
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'sixth',
+      initialize: function(registry) {
+        order.push('sixth');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+
+    deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
+  });
+
   test("initializers can have multiple dependencies", function () {
     var order = [];
     var a = {
