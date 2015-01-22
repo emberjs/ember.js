@@ -173,8 +173,10 @@ function wait(app, value) {
 
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
+      var router = app.__container__.lookup('router:main');
+
       // 1. If the router is loading, keep polling
-      var routerIsLoading = !!app.__container__.lookup('router:main').router.activeTransition;
+      var routerIsLoading = router.router && !!router.router.activeTransition;
       if (routerIsLoading) { return; }
 
       // 2. If there are pending Ajax requests, keep polling
