@@ -267,6 +267,7 @@ var Application = Namespace.extend(DeferredMixin, {
     // Create subclass of Ember.Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
     // tamper with the default `Ember.Router`.
+    // 2.0TODO: Can we move this into a globals-mode-only library?
     this.Router = Router.extend();
     this.buildRegistry();
 
@@ -300,13 +301,14 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Container} the configured container
   */
   buildInstance: function() {
-    var container = this.__container__ = this.__registry__.container();
-
     var instance = this.__instance__ = ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
-      container: container
+      registry: this.__registry__
     });
+
+    // TODO2.0: Legacy support for App.__container__
+    this.__container__ = instance.container;
 
     return instance;
   },
