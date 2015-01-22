@@ -146,3 +146,47 @@ test('continues to notify subscribers after first consumption, even if not consu
   });
   equal(counter, 2);
 });
+
+test('only runs subscription callbacks once per subscription/context pair', function() {
+  var counter = 0;
+  var counter2 = 0;
+  var binding = new StreamBinding(source);
+
+  binding.value();
+
+  function incrementCounter() {
+    source.value();
+    if (this === context) {
+      counter++;
+    } else {
+      counter2++;
+    }
+  }
+  var context = {};
+  var context2 = {};
+
+  binding.subscribe(incrementCounter, context);
+  binding.subscribe(incrementCounter, context);
+
+  // Subscribe with the same function but a different context.
+  binding.subscribe(incrementCounter, context2);
+  binding.subscribe(incrementCounter, context2);
+
+  run(function() {
+    source.setValue('blorg');
+    equal(counter, 0, 'counter remains the same inside run loop');
+    equal(counter2, 0, 'counter remains the same inside run loop for 2nd context');
+  });
+
+  equal(counter, 1, 'callback runs after run loop flush');
+  equal(counter2, 1, 'callback runs after run loop flush for 2nd context');
+
+  run(function() {
+    source.setValue('burrito memory leak');
+    equal(counter, 1, 'counter remains the same inside run loop');
+    equal(counter2, 1, 'counter remains the same inside run loop for 2nd context');
+  });
+
+  equal(counter, 2, 'subscriber did not fire twice for same context');
+  equal(counter2, 2, 'subscriber did not fire twice for 2nd context');
+});
