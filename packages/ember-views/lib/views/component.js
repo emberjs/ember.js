@@ -113,6 +113,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   init: function() {
     this._super();
+    this._keywords.view = this;
     set(this, 'context', this);
     set(this, 'controller', this);
   },
@@ -158,9 +159,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   templateName: null,
 
-  _setupKeywords: function() {
-    this._keywords.view.setSource(this);
-  },
+  _setupKeywords: function() {},
 
   _yield: function(context, options, morph, blockArguments) {
     var view = options.data.view;

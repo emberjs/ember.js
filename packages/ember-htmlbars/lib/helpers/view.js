@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
-
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
@@ -374,11 +373,9 @@ export var ViewHelper = EmberObject.create({
 export function viewHelper(params, hash, options, env) {
   Ember.assert("The view helper only takes a single argument", params.length <= 2);
 
-  var container = this.container || this._keywords.view.value().container;
+  var container = this.container || read(this._keywords.view).container;
   var viewClass;
 
-  // If no path is provided, treat path param as options
-  // and get an instance of the registered `view:toplevel`
   if (params.length === 0) {
     if (container) {
       viewClass = container.lookupFactory('view:toplevel');

@@ -17,7 +17,6 @@ import { defineProperty } from "ember-metal/properties";
 import { guidFor } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import { observer } from "ember-metal/mixin";
-import SimpleStream from "ember-metal/streams/simple";
 import KeyStream from "ember-views/streams/key_stream";
 import StreamBinding from "ember-metal/streams/stream_binding";
 import ContextStream from "ember-views/streams/context_stream";
@@ -1064,14 +1063,14 @@ var View = CoreView.extend({
     if (contextView) {
       var parentKeywords = contextView._keywords;
 
-      keywords.view.setSource(this.isVirtual ? parentKeywords.view : this);
+      keywords.view = this.isVirtual ? parentKeywords.view : this;
 
       for (var name in parentKeywords) {
         if (keywords[name]) continue;
         keywords[name] = parentKeywords[name];
       }
     } else {
-      keywords.view.setSource(this.isVirtual ? null : this);
+      keywords.view = this.isVirtual ? null : this;
     }
   },
 
@@ -1780,8 +1779,8 @@ var View = CoreView.extend({
     if (!this._keywords) {
       this._keywords = create(null);
     }
-    this._keywords.view = new SimpleStream();
     this._keywords._view = this;
+    this._keywords.view = undefined;
     this._keywords.controller = new KeyStream(this, 'controller');
     this._setupKeywords();
 
