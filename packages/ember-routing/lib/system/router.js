@@ -438,9 +438,11 @@ var EmberRouter = EmberObject.extend(Evented, {
       emberRouter.didTransition(infos);
     };
 
-    router.willTransition = function(oldInfos, newInfos, transition) {
-      emberRouter.willTransition(oldInfos, newInfos, transition);
-    };
+    if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+      router.willTransition = function(oldInfos, newInfos, transition) {
+        emberRouter.willTransition(oldInfos, newInfos, transition);
+      };
+    }
   },
 
   _serializeQueryParams: function(targetRouteName, queryParams) {
