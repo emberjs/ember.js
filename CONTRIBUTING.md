@@ -9,6 +9,10 @@ The Ember.js community is very active on Stack Overflow and most questions
 receive attention the same day they're posted:
 http://stackoverflow.com/questions/tagged/ember.js
 
+# Issue Labeling
+
+Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
+
 # Issues
 
 Think you've found a bug or have a new feature to suggest? Let us know!
