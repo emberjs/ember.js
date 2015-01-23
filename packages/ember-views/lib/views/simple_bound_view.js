@@ -37,6 +37,7 @@ SimpleBoundView.prototype = {
       this._parentView.removeChild(this);
     }
     this.morph = null;
+    this.stream.destroy();
     this.state = 'destroyed';
   },
 
