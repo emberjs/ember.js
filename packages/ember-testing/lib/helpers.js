@@ -64,7 +64,7 @@ function visit(app, url) {
     run(app, 'advanceReadiness');
     delete router['initialURL'];
   } else {
-    run(app, app.handleURL, url);
+    run(app, app.legacyHandleURL, app.__legacyInstance__, url);
   }
 
   return app.testHelpers.wait();

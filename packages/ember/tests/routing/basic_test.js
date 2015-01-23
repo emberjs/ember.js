@@ -66,7 +66,7 @@ QUnit.module("Basic Routing", {
       App.LoadingRoute = Ember.Route.extend({
       });
 
-      registry = App.__registry__;
+      registry = App.registry;
       container = App.__container__;
 
       Ember.TEMPLATES.application = compile("{{outlet}}");
