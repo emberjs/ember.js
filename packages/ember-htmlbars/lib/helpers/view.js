@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
+import { read } from "ember-metal/streams/utils";
 import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
@@ -190,7 +191,7 @@ export function viewHelper(params, hash, options, env) {
     params.length <= 2
   );
 
-  var container = this.container || this._keywords.view.value().container;
+  var container = this.container || read(this._keywords.view).container;
   var viewClassOrInstance;
   if (params.length === 0) {
     if (container) {
