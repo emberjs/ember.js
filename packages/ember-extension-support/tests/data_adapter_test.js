@@ -26,7 +26,7 @@ QUnit.module("Data Adapter", {
       App = EmberApplication.create();
       App.toString = function() { return 'App'; };
       App.deferReadiness();
-      App.__registry__.register('data-adapter:main', DataAdapter);
+      App.registry.register('data-adapter:main', DataAdapter);
     });
   },
   teardown: function() {
@@ -75,7 +75,7 @@ test("Model types added with custom container-debug-adapter", function() {
       return [PostClass];
     }
   });
-  App.__registry__.register('container-debug-adapter:main', StubContainerDebugAdapter);
+  App.registry.register('container-debug-adapter:main', StubContainerDebugAdapter);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({

@@ -256,28 +256,27 @@ var Application = Namespace.extend(DeferredMixin, {
   init: function() {
     this._super.apply(this, arguments);
 
-    // Start off the number of deferrals at 1. This will be
-    // decremented by the Application's own `initialize` method.
-    this._readinessDeferrals = 1;
-
     if (!this.$) {
       this.$ = jQuery;
     }
 
-    // Create subclass of Ember.Router for this Application instance.
-    // This is to ensure that someone reopening `App.Router` does not
-    // tamper with the default `Ember.Router`.
-    // 2.0TODO: Can we move this into a globals-mode-only library?
-    this.Router = Router.extend();
     this.buildRegistry();
-
-    // TODO:(tomdale+wycats) Move to session creation phase
-    this.buildInstance();
 
     registerLibraries();
     logLibraryVersions();
 
-    this.scheduleInitialize();
+    // Start off the number of deferrals at 1. This will be
+    // decremented by the Application's own `initialize` method.
+    this._readinessDeferrals = 1;
+
+    if (true) {
+      // Create subclass of Ember.Router for this Application instance.
+      // This is to ensure that someone reopening `App.Router` does not
+      // tamper with the default `Ember.Router`.
+      // 2.0TODO: Can we move this into a globals-mode-only library?
+      this.Router = Router.extend();
+      this.waitForDOMReady(this.buildDefaultInstance());
+    }
   },
 
   /**
@@ -288,7 +287,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry: function() {
-    var registry = this.__registry__ = Application.buildRegistry(this);
+    var registry = this.registry = Application.buildRegistry(this);
 
     return registry;
   },
@@ -301,13 +300,20 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Container} the configured container
   */
   buildInstance: function() {
-    var instance = this.__instance__ = ApplicationInstance.create({
+    return ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
-      registry: this.__registry__
+      registry: this.registry
     });
+  },
+
+  buildDefaultInstance: function() {
+    var instance = this.buildInstance();
 
     // TODO2.0: Legacy support for App.__container__
+    // and global methods on App that rely on a single,
+    // default instance.
+    this.__legacyInstance__ = instance;
     this.__container__ = instance.container;
 
     return instance;
@@ -329,11 +335,11 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method scheduleInitialize
   */
-  scheduleInitialize: function() {
+  waitForDOMReady: function(legacyInstance) {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, '_initialize');
+      run.schedule('actions', this, 'domReady', legacyInstance);
     } else {
-      this.$().ready(Ember.run.bind(this, '_initialize'));
+      this.$().ready(Ember.run.bind(this, 'domReady', legacyInstance));
     }
   },
 
@@ -443,8 +449,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  options {Object} (optional) disable instantiation or singleton usage
   **/
   register: function() {
-    var registry = this.__registry__;
-    registry.register.apply(registry, arguments);
+    this.registry.register.apply(this.registry, arguments);
   },
 
   /**
@@ -497,8 +502,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  injectionName {String}
   **/
   inject: function() {
-    var registry = this.__registry__;
-    registry.injection.apply(registry, arguments);
+    this.registry.injection.apply(this.registry, arguments);
   },
 
   /**
@@ -525,20 +529,31 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method _initialize
   */
-  _initialize: function() {
+  domReady: function(legacyInstance) {
     if (this.isDestroyed) { return; }
 
-    this.runInitializers(this.__registry__);
-    this.runInstanceInitializers(this.__instance__);
+    var app = this;
 
-    runLoadHooks('application', this);
-
-    // At this point, any initializers or load hooks that would have wanted
-    // to defer readiness have fired. In general, advancing readiness here
-    // will proceed to didBecomeReady.
-    this.advanceReadiness();
+    this.boot().then(function() {
+      app.runInstanceInitializers(legacyInstance);
+    });
 
     return this;
+  },
+
+  boot: function() {
+    if (this._bootPromise) { return this._bootPromise; }
+
+    var defer = new Ember.RSVP.defer();
+    this._bootPromise = defer.promise;
+    this._bootResolver = defer;
+
+    this.runInitializers(this.registry);
+    runLoadHooks('application', this);
+
+    this.advanceReadiness();
+
+    return this._bootPromise;
   },
 
   /**
@@ -610,16 +625,18 @@ var Application = Namespace.extend(DeferredMixin, {
     @method reset
   **/
   reset: function() {
-    var instance = this.__instance__;
+    var instance = this.__legacyInstance__;
 
     this._readinessDeferrals = 1;
+    this._bootPromise = null;
+    this._bootResolver = null;
 
     function handleReset() {
       run(instance, 'destroy');
 
-      this.buildInstance();
+      this.buildDefaultInstance();
 
-      run.schedule('actions', this, '_initialize');
+      run.schedule('actions', this, 'domReady');
     }
 
     run.join(this, handleReset);
@@ -671,20 +688,24 @@ var Application = Namespace.extend(DeferredMixin, {
     @method didBecomeReady
   */
   didBecomeReady: function() {
-    if (environment.hasDOM) {
-      this.__instance__.setupEventDispatcher();
+    if (true) {
+      if (environment.hasDOM) {
+        this.__legacyInstance__.setupEventDispatcher();
+      }
+
+      this.ready(); // user hook
+      this.legacyStartRouting(this.__legacyInstance__);
+
+      if (!Ember.testing) {
+        // Eagerly name all classes that are already loaded
+        Ember.Namespace.processAll();
+        Ember.BOOTED = true;
+      }
+
+      this.resolve(this);
+    } else {
+      this._bootResolver.resolve();
     }
-
-    this.ready(); // user hook
-    this.startRouting();
-
-    if (!Ember.testing) {
-      // Eagerly name all classes that are already loaded
-      Ember.Namespace.processAll();
-      Ember.BOOTED = true;
-    }
-
-    this.resolve(this);
   },
 
   /**
@@ -695,13 +716,13 @@ var Application = Namespace.extend(DeferredMixin, {
     @method startRouting
     @property router {Ember.Router}
   */
-  startRouting: function() {
+  legacyStartRouting: function(instance) {
     var isModuleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
-    this.__instance__.startRouting(isModuleBasedResolver);
+    instance.startRouting(isModuleBasedResolver);
   },
 
-  handleURL: function(url) {
-    return this.__instance__.handleURL(url);
+  legacyHandleURL: function(instance, url) {
+    return instance.handleURL(url);
   },
 
   /**
@@ -731,7 +752,9 @@ var Application = Namespace.extend(DeferredMixin, {
   // This method must be moved to the application instance object
   willDestroy: function() {
     Ember.BOOTED = false;
-    this.__instance__.destroy();
+    this._bootPromise = null;
+    this._bootResolver = null;
+    this.__legacyInstance__.destroy();
   },
 
   initializer: function(options) {
