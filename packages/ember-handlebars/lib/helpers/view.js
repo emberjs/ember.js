@@ -13,6 +13,7 @@ import { IS_BINDING } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/read";
 import View from "ember-views/views/view";
 import SimpleStream from "ember-metal/streams/simple";
+import { read } from "ember-metal/streams/read";
 
 function makeBindings(options) {
   var hash = options.hash;
@@ -378,7 +379,7 @@ export function viewHelper(path) {
   var options = arguments[arguments.length - 1];
   var types = options.types;
   var view = options.data.view;
-  var container = view.container || view._keywords.view.value().container;
+  var container = view.container || read(view._keywords.view).container;
   var viewClass;
 
   // If no path is provided, treat path param as options
