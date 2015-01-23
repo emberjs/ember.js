@@ -188,6 +188,24 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
+  /**
+    Handles notifying any listeners of an impending URL
+    change.
+
+    Triggers the router level `willTransition` hook.
+
+    @method willTransition
+    @private
+    @since 1.11.0
+  */
+  willTransition: function(oldInfos, newInfos, transition) {
+    run.once(this, this.trigger, 'willTransition', transition);
+
+    if (get(this, 'namespace').LOG_TRANSITIONS) {
+      Ember.Logger.log("Preparing to transition from '" + EmberRouter._routePath(oldInfos) + "' to '" + EmberRouter._routePath(newInfos) + "'");
+    }
+  },
+
   handleURL: function(url) {
     // Until we have an ember-idiomatic way of accessing #hashes, we need to
     // remove it because router.js doesn't know how to handle it.
@@ -418,6 +436,10 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     router.didTransition = function(infos) {
       emberRouter.didTransition(infos);
+    };
+
+    router.willTransition = function(oldInfos, newInfos, transition) {
+      emberRouter.willTransition(oldInfos, newInfos, transition);
     };
   },
 
