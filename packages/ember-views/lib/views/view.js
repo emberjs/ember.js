@@ -1854,6 +1854,9 @@ var View = CoreView.extend({
       nonVirtualParentView.set(viewName, null);
     }
 
+    // teardown keywords stream
+    this._keywords.view.destroy();
+
     return this;
   },
 
