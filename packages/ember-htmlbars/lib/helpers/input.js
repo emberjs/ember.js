@@ -188,7 +188,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 export function inputHelper(params, hash, options, env) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', params.length === 0);
 
-  var onEvent = hash.on;
   var inputType;
 
   inputType = read(hash.type);
@@ -201,9 +200,6 @@ export function inputHelper(params, hash, options, env) {
 
     env.helpers.view.helperFunction.call(this, [Checkbox], hash, options, env);
   } else {
-    delete hash.on;
-
-    hash.onEvent = onEvent || 'enter';
     env.helpers.view.helperFunction.call(this, [TextField], hash, options, env);
   }
 }
