@@ -35,7 +35,6 @@ import ApplicationInstance from "ember-application/system/application-instance";
 
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
-import { K } from 'ember-metal/core';
 import environment from 'ember-metal/environment';
 
 function props(obj) {
@@ -313,7 +312,7 @@ var Application = Namespace.extend(DeferredMixin, {
     // TODO2.0: Legacy support for App.__container__
     // and global methods on App that rely on a single,
     // default instance.
-    this.__legacyInstance__ = instance;
+    this.__deprecatedInstance__ = instance;
     this.__container__ = instance.container;
 
     return instance;
@@ -335,11 +334,11 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method scheduleInitialize
   */
-  waitForDOMReady: function(legacyInstance) {
+  waitForDOMReady: function(_instance) {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady', legacyInstance);
+      run.schedule('actions', this, 'domReady', _instance);
     } else {
-      this.$().ready(Ember.run.bind(this, 'domReady', legacyInstance));
+      this.$().ready(Ember.run.bind(this, 'domReady', _instance));
     }
   },
 
@@ -529,13 +528,13 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method _initialize
   */
-  domReady: function(legacyInstance) {
+  domReady: function(_instance) {
     if (this.isDestroyed) { return; }
 
     var app = this;
 
     this.boot().then(function() {
-      app.runInstanceInitializers(legacyInstance);
+      app.runInstanceInitializers(_instance);
     });
 
     return this;
@@ -625,7 +624,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method reset
   **/
   reset: function() {
-    var instance = this.__legacyInstance__;
+    var instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
     this._bootPromise = null;
@@ -690,11 +689,11 @@ var Application = Namespace.extend(DeferredMixin, {
   didBecomeReady: function() {
     if (true) {
       if (environment.hasDOM) {
-        this.__legacyInstance__.setupEventDispatcher();
+        this.__deprecatedInstance__.setupEventDispatcher();
       }
 
       this.ready(); // user hook
-      this.legacyStartRouting(this.__legacyInstance__);
+      this.__deprecatedInstance__.startRouting();
 
       if (!Ember.testing) {
         // Eagerly name all classes that are already loaded
@@ -731,7 +730,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @event ready
   */
-  ready: K,
+  ready: function() { return this; },
 
   /**
     @deprecated Use 'Resolver' instead
@@ -754,7 +753,7 @@ var Application = Namespace.extend(DeferredMixin, {
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
-    this.__legacyInstance__.destroy();
+    this.__deprecatedInstance__.destroy();
   },
 
   initializer: function(options) {
