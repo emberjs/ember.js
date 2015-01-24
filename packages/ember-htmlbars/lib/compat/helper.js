@@ -22,12 +22,21 @@ var slice = [].slice;
 */
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
-    var param;
+    var param, blockResult, fnResult;
+    var context = this;
     var handlebarsOptions = {};
+
     merge(handlebarsOptions, options);
     merge(handlebarsOptions, env);
 
     handlebarsOptions.hash = {};
+
+    if (options.isBlock) {
+      handlebarsOptions.fn = function() {
+        blockResult = options.template.render(context, env, options.morph.contextualElement);
+      };
+    }
+
     for (var prop in hash) {
       param = hash[prop];
 
@@ -50,7 +59,9 @@ function HandlebarsCompatibleHelper(fn) {
     }
     args.push(handlebarsOptions);
 
-    return fn.apply(this, args);
+    fnResult = fn.apply(this, args);
+
+    return options.isBlock ? blockResult : fnResult;
   };
 
   this.isHTMLBars = true;
