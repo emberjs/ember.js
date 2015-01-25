@@ -20,17 +20,8 @@ function getProperties(self, propertyNames) {
   return ret;
 }
 
-function registerComputed(name, macro) {
-  computed[name] = function(dependentKey) {
-    var args = a_slice.call(arguments);
-    return computed(dependentKey, function() {
-      return macro.apply(this, args);
-    });
-  };
-}
-
-function registerComputedWithProperties(name, macro) {
-  computed[name] = function() {
+function generateComputedWithProperties(macro) {
+  return function() {
     var properties = a_slice.call(arguments);
 
     var computedFunc = computed(function() {
@@ -68,11 +59,11 @@ function registerComputedWithProperties(name, macro) {
   @return {Ember.ComputedProperty} computed property which negate
   the original value for property
 */
-computed.empty = function (dependentKey) {
+export function empty(dependentKey) {
   return computed(dependentKey + '.length', function () {
     return isEmpty(get(this, dependentKey));
   });
-};
+}
 
 /**
   A computed property that returns true if the value of the dependent
@@ -98,11 +89,11 @@ computed.empty = function (dependentKey) {
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
 */
-computed.notEmpty = function(dependentKey) {
+export function notEmpty(dependentKey) {
   return computed(dependentKey + '.length', function () {
     return !isEmpty(get(this, dependentKey));
   });
-};
+}
 
 /**
   A computed property that returns true if the value of the dependent
@@ -131,9 +122,11 @@ computed.notEmpty = function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which
   returns true if original value for property is null or undefined.
 */
-registerComputed('none', function(dependentKey) {
-  return isNone(get(this, dependentKey));
-});
+export function none(dependentKey) {
+  return computed(dependentKey, function () {
+    return isNone(get(this, dependentKey));
+  });
+}
 
 /**
   A computed property that returns the inverse boolean value
@@ -159,9 +152,11 @@ registerComputed('none', function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which returns
   inverse of the original value for property
 */
-registerComputed('not', function(dependentKey) {
-  return !get(this, dependentKey);
-});
+export function not(dependentKey) {
+  return computed(dependentKey, function () {
+    return !get(this, dependentKey);
+  });
+}
 
 /**
   A computed property that converts the provided dependent property
@@ -189,9 +184,11 @@ registerComputed('not', function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which converts
   to boolean the original value for property
 */
-registerComputed('bool', function(dependentKey) {
-  return !!get(this, dependentKey);
-});
+export function bool(dependentKey) {
+  return computed(dependentKey, function () {
+    return !!get(this, dependentKey);
+  });
+}
 
 /**
   A computed property which matches the original value for the
@@ -221,10 +218,13 @@ registerComputed('bool', function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which match
   the original value for property against a given RegExp
 */
-registerComputed('match', function(dependentKey, regexp) {
-  var value = get(this, dependentKey);
-  return typeof value === 'string' ? regexp.test(value) : false;
-});
+export function match(dependentKey, regexp) {
+  return computed(dependentKey, function () {
+    var value = get(this, dependentKey);
+
+    return typeof value === 'string' ? regexp.test(value) : false;
+  });
+}
 
 /**
   A computed property that returns true if the provided dependent property
@@ -253,9 +253,11 @@ registerComputed('match', function(dependentKey, regexp) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is equal to the given value.
 */
-registerComputed('equal', function(dependentKey, value) {
-  return get(this, dependentKey) === value;
-});
+export function equal(dependentKey, value) {
+  return computed(dependentKey, function () {
+    return get(this, dependentKey) === value;
+  });
+}
 
 /**
   A computed property that returns true if the provided dependent property
@@ -284,9 +286,11 @@ registerComputed('equal', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater than given value.
 */
-registerComputed('gt', function(dependentKey, value) {
-  return get(this, dependentKey) > value;
-});
+export function gt(dependentKey, value) {
+  return computed(dependentKey, function () {
+    return get(this, dependentKey) > value;
+  });
+}
 
 /**
   A computed property that returns true if the provided dependent property
@@ -315,9 +319,11 @@ registerComputed('gt', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater or equal then given value.
 */
-registerComputed('gte', function(dependentKey, value) {
-  return get(this, dependentKey) >= value;
-});
+export function gte(dependentKey, value) {
+  return computed(dependentKey, function () {
+    return get(this, dependentKey) >= value;
+  });
+}
 
 /**
   A computed property that returns true if the provided dependent property
@@ -346,9 +352,11 @@ registerComputed('gte', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less then given value.
 */
-registerComputed('lt', function(dependentKey, value) {
-  return get(this, dependentKey) < value;
-});
+export function lt(dependentKey, value) {
+  return computed(dependentKey, function () {
+    return get(this, dependentKey) < value;
+  });
+}
 
 /**
   A computed property that returns true if the provided dependent property
@@ -377,9 +385,11 @@ registerComputed('lt', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less or equal than given value.
 */
-registerComputed('lte', function(dependentKey, value) {
-  return get(this, dependentKey) <= value;
-});
+export function lte(dependentKey, value) {
+  return computed(dependentKey, function () {
+    return get(this, dependentKey) <= value;
+  });
+}
 
 /**
   A computed property that performs a logical `and` on the
@@ -409,7 +419,7 @@ registerComputed('lte', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
-registerComputedWithProperties('and', function(properties) {
+export var and = generateComputedWithProperties(function(properties) {
   var value;
   for (var key in properties) {
     value = properties[key];
@@ -446,7 +456,7 @@ registerComputedWithProperties('and', function(properties) {
   @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
-registerComputedWithProperties('or', function(properties) {
+export var or = generateComputedWithProperties(function(properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key) && properties[key]) {
       return properties[key];
@@ -480,7 +490,7 @@ registerComputedWithProperties('or', function(properties) {
   the first truthy value of given list of properties.
   @deprecated Use `Ember.computed.or` instead.
 */
-registerComputedWithProperties('any', function(properties) {
+export var any = generateComputedWithProperties(function(properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key) && properties[key]) {
       return properties[key];
@@ -514,7 +524,7 @@ registerComputedWithProperties('any', function(properties) {
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed in properties to an array.
 */
-registerComputedWithProperties('collect', function(properties) {
+export var collect = generateComputedWithProperties(function(properties) {
   var res = Ember.A();
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -554,7 +564,6 @@ registerComputedWithProperties('collect', function(properties) {
   @return {Ember.ComputedProperty} computed property which creates an
   alias to the original value for property.
 */
-computed.alias = alias;
 
 /**
   Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
@@ -588,9 +597,9 @@ computed.alias = alias;
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
 */
-computed.oneWay = function(dependentKey) {
+export function oneWay(dependentKey) {
   return alias(dependentKey).oneWay();
-};
+}
 
 /**
   This is a more semantically meaningful alias of `computed.oneWay`,
@@ -602,7 +611,6 @@ computed.oneWay = function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which creates a
     one way computed property to the original value for property.
  */
-computed.reads = computed.oneWay;
 
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
@@ -638,9 +646,10 @@ computed.reads = computed.oneWay;
   one way computed property to the original value for property.
   @since 1.5.0
 */
-computed.readOnly = function(dependentKey) {
+export function readOnly(dependentKey) {
   return alias(dependentKey).readOnly();
-};
+}
+
 /**
   A computed property that acts like a standard getter and setter,
   but returns the value at the provided `defaultPath` if the
@@ -668,8 +677,7 @@ computed.readOnly = function(dependentKey) {
   a standard getter and setter, but defaults to the value from `defaultPath`.
   @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
 */
-// ES6TODO: computed should have its own export path so you can do import {defaultTo} from computed
-computed.defaultTo = function(defaultPath) {
+export function defaultTo(defaultPath) {
   return computed(function(key, newValue, cachedValue) {
     Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
 
@@ -678,7 +686,7 @@ computed.defaultTo = function(defaultPath) {
     }
     return newValue != null ? newValue : get(this, defaultPath);
   });
-};
+}
 
 /**
   Creates a new property that is an alias for another property
@@ -693,7 +701,7 @@ computed.defaultTo = function(defaultPath) {
   alias with a deprecation to the original value for property.
   @since 1.7.0
 */
-computed.deprecatingAlias = function(dependentKey) {
+export function deprecatingAlias(dependentKey) {
   return computed(dependentKey, function(key, value) {
     Ember.deprecate('Usage of `' + key + '` is deprecated, use `' + dependentKey + '` instead.');
 
@@ -704,4 +712,4 @@ computed.deprecatingAlias = function(dependentKey) {
       return get(this, dependentKey);
     }
   });
-};
+}
