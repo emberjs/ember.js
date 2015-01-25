@@ -127,8 +127,50 @@ import {
   cacheFor
 } from "ember-metal/computed";
 
-// side effect of defining the computed.* macros
-import "ember-metal/computed_macros";
+import alias from 'ember-metal/alias';
+import {
+  empty,
+  notEmpty,
+  none,
+  not,
+  bool,
+  match,
+  equal,
+  gt,
+  gte,
+  lt,
+  lte,
+  oneWay,
+  readOnly,
+  defaultTo,
+  deprecatingAlias,
+  and,
+  or,
+  any,
+  collect
+} from "ember-metal/computed_macros";
+
+computed.empty = empty;
+computed.notEmpty = notEmpty;
+computed.none = none;
+computed.not = not;
+computed.bool = bool;
+computed.match = match;
+computed.equal = equal;
+computed.gt = gt;
+computed.gte = gte;
+computed.lt = lt;
+computed.lte = lte;
+computed.alias = alias;
+computed.oneWay = oneWay;
+computed.reads = oneWay;
+computed.readOnly = readOnly;
+computed.defaultTo = defaultTo;
+computed.deprecatingAlias = deprecatingAlias;
+computed.and = and;
+computed.or = or;
+computed.any = any;
+computed.collect = collect;
 
 import {
   _suspendBeforeObserver,
