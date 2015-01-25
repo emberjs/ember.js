@@ -3,9 +3,49 @@ import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
+import TextField from "ember-views/views/text_field";
 
 var view;
 var controller;
+var CustomTextField;
+
+QUnit.module("{{input type='text'}}", {
+  setup: function() {
+    function lookupFactory(fullName) {
+      equal(fullName, 'view:custom-text-field');
+
+      return CustomTextField;
+    }
+
+    var container = {
+      lookupFactory: lookupFactory
+    };
+
+    CustomTextField = TextField.extend({
+      attributeBindings: ['foo']
+    });
+
+    controller = {
+      val: "hello"
+    };
+
+    view = View.extend({
+      controller: controller,
+      template: compile('{{input type="text" value=val foo="bar" view="custom-text-field"}}'),
+      container: container
+    }).create();
+
+    runAppend(view);
+  },
+
+  teardown: function() {
+    runDestroy(view);
+  }
+});
+
+test("custom view with extended attribute bindings is used", function() {
+  equal(view.$('input').attr('foo'), "bar", "sets foo attribute to 'bar'");
+});
 
 QUnit.module("{{input type='text'}}", {
   setup: function() {
