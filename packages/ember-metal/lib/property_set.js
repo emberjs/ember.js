@@ -10,6 +10,7 @@ import {
   isPath
 } from "ember-metal/path_cache";
 import { hasPropertyAccessors } from "ember-metal/platform";
+import { isEqual } from "ember-runtime/core";
 
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
@@ -79,7 +80,7 @@ export function set(obj, keyName, value, tolerant) {
         }
       }
       // only trigger a change if the value has changed
-      if (value !== currentValue) {
+      if (!isEqual(value, currentValue)) {
         propertyWillChange(obj, keyName);
         if (Ember.FEATURES.isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
