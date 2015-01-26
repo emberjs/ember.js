@@ -207,7 +207,7 @@ for a detailed explanation.
 
 * `ember-router-willtransition`
   
-  Adds `willTransition` hook to `Ember.Router`. For example,
+  Adds `willTransition` hook to `Ember.Router`. For example:
 
   ```js
   Ember.Router.extend({
