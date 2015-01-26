@@ -56,6 +56,9 @@ export default View.extend({
   indeterminate: false,
 
   init: function() {
+    Ember.assert("{{input type='checkbox'}} (or Ember.Checkbox) does not support setting `value` property;" +
+                 " you must use `checked` property instead.", !(this.hasOwnProperty('value') || this.hasOwnProperty('valueBinding')));
+
     this._super.apply(this, arguments);
     this.on('change', this, this._updateElementValue);
   },

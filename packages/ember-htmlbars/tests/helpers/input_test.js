@@ -278,7 +278,7 @@ QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
 test("It asserts the presence of checked=", function() {
   expectAssertion(function() {
     runAppend(view);
-  }, /you must use `checked=/);
+  }, /you must use `checked/);
 });
 
 QUnit.module("{{input type=boundType}}", {
