@@ -3,7 +3,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var compile, view, originalLookup, lookup;
+var view, originalLookup, lookup;
 
 var originalLookup = Ember.lookup;
 

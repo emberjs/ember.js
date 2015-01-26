@@ -6,7 +6,7 @@ import { set } from 'ember-metal/property_set';
 import { create as o_create } from 'ember-metal/platform';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var compile, view;
+var view;
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
   teardown: function() {
