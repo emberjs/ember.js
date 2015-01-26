@@ -11,7 +11,7 @@ import { registerHelper } from "ember-htmlbars/helpers";
 
 import { set } from 'ember-metal/property_set';
 
-var compile, view, MyApp, originalLookup, lookup;
+var view, MyApp, originalLookup, lookup;
 
 var trim = jQuery.trim;
 

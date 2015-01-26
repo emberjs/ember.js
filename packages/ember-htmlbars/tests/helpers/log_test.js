@@ -3,7 +3,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var originalLookup, originalLog, logCalls, lookup, view, compile;
+var originalLookup, originalLog, logCalls, lookup, view;
 
 QUnit.module('ember-htmlbars: {{#log}} helper', {
   setup: function() {
