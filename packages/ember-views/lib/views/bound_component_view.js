@@ -8,8 +8,9 @@ import { read, chain, subscribe, unsubscribe } from "ember-metal/streams/utils";
 import { readComponentFactory } from "ember-views/streams/utils";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 import EmberError from "ember-metal/error";
+import ContainerView from "ember-views/views/container_view";
 
-export default Ember.ContainerView.extend(_Metamorph, {
+export default ContainerView.extend(_Metamorph, {
   init: function() {
     this._super();
     var componentNameStream = this._boundComponentOptions.componentNameStream;

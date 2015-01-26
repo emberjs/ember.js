@@ -8,7 +8,9 @@
   @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core";
+// using ember-metal/lib/main here to ensure that ember-debug is setup
+// if present
+import Ember from "ember-metal";
 import merge from "ember-metal/merge";
 // Ember.assert, Ember.config
 
