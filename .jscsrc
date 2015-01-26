@@ -54,6 +54,29 @@
     "with",
     "return"
   ],
+  "requireSpaceBeforeBinaryOperators": [
+    "=",
+    "+",
+    "-",
+    "/",
+    "*",
+    "==",
+    "===",
+    "!=",
+    "!=="
+  ],
+  "requireSpaceAfterBinaryOperators": [
+    "=",
+    ",",
+    "+",
+    "-",
+    "/",
+    "*",
+    "==",
+    "===",
+    "!=",
+    "!=="
+  ],
   "requireSpaceBetweenArguments": true,
   "requireSpacesAfterClosingParenthesisInFunctionDeclaration": {
     "beforeOpeningRoundBrace": false,
