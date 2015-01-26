@@ -2,6 +2,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
+import { read } from "ember-metal/streams/utils";
 import Controller from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
@@ -300,8 +301,8 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
-  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
+  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
+  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
@@ -329,8 +330,8 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
-  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
+  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
+  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
@@ -364,8 +365,8 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
-  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
+  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
+  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
@@ -394,8 +395,8 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
-  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
+  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
+  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
@@ -431,8 +432,8 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
-  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
+  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
+  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
