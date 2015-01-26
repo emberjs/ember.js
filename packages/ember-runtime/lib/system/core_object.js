@@ -795,7 +795,7 @@ var ClassMixinProps = {
     ```
 
     This will return the original hash that was passed to `meta()`.
-    
+
     @static
     @method metaForProperty
     @param key {String} property name
@@ -831,7 +831,7 @@ var ClassMixinProps = {
   /**
     Iterate over each computed property for the class, passing its name
     and any associated metadata (see `metaForProperty`) to the callback.
-    
+
     @static
     @method eachComputedProperty
     @param {Function} callback
