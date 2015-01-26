@@ -1,4 +1,3 @@
-import { buildText } from "./builders";
 import { indexOfArray } from "../htmlbars-util/array-utils";
 // Regex to validate the identifier for block parameters. 
 // Based on the ID validation regex in Handlebars.
@@ -46,25 +45,6 @@ export function parseComponentBlockParams(element, program) {
   }
 }
 
-// Adds an empty text node at the beginning and end of a program.
-// The empty text nodes *between* nodes are handled elsewhere.
-
-export function postprocessProgram(program) {
-  var body = program.body;
-
-  if (body.length === 0) {
-    return;
-  }
-
-  if (usesMorph(body[0])) {
-    body.unshift(buildText(''));
-  }
-
-  if (usesMorph(body[body.length-1])) {
-    body.push(buildText(''));
-  }
-}
-
 export function childrenFor(node) {
   if (node.type === 'Program') {
     return node.body;
@@ -74,23 +54,8 @@ export function childrenFor(node) {
   }
 }
 
-export function usesMorph(node) {
-  return node.type === 'MustacheStatement' ||
-         node.type === 'BlockStatement' ||
-         node.type === 'ComponentNode';
-}
-
 export function appendChild(parent, node) {
-  var children = childrenFor(parent);
-
-  var len = children.length, last;
-  if (len > 0) {
-    last = children[len-1];
-    if (usesMorph(last) && usesMorph(node)) {
-      children.push(buildText(''));
-    }
-  }
-  children.push(node);
+  childrenFor(parent).push(node);
 }
 
 export function isHelper(sexpr) {

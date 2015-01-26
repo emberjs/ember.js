@@ -50,11 +50,20 @@ FragmentOpcodeCompiler.prototype.endProgram = function() {
   this.opcode('returnNode');
 };
 
-FragmentOpcodeCompiler.prototype.mustache = function () {};
+FragmentOpcodeCompiler.prototype.mustache = function () {
+  this.opcode('createComment', ['']);
+  this.opcode('appendChild');
+};
 
-FragmentOpcodeCompiler.prototype.component = function () {};
+FragmentOpcodeCompiler.prototype.component = function () {
+  this.opcode('createComment', ['']);
+  this.opcode('appendChild');
+};
 
-FragmentOpcodeCompiler.prototype.block = function () {};
+FragmentOpcodeCompiler.prototype.block = function () {
+  this.opcode('createComment', ['']);
+  this.opcode('appendChild');
+};
 
 FragmentOpcodeCompiler.prototype.attribute = function(attr) {
   if (attr.value.type === 'TextNode') {

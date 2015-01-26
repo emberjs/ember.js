@@ -1,9 +1,6 @@
 import { buildProgram, buildBlock, buildHash } from "./builders";
 import { forEach } from "../htmlbars-util/array-utils";
-import {
-  appendChild,
-  postprocessProgram
-} from "./utils";
+import { appendChild } from "./utils";
 
 var nodeHandlers = {
 
@@ -21,8 +18,6 @@ var nodeHandlers = {
     }
 
     this.acceptToken(this.tokenizer.tokenizeEOF());
-
-    postprocessProgram(node);
 
     // Ensure that that the element stack is balanced properly.
     var poppedNode = this.elementStack.pop();

@@ -2,8 +2,7 @@ import { forEach } from "../htmlbars-util/array-utils";
 import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "./builders";
 import {
   appendChild,
-  parseComponentBlockParams,
-  postprocessProgram
+  parseComponentBlockParams
 } from "./utils";
 
 // The HTML elements in this list are speced by
@@ -107,7 +106,6 @@ var tokenHandlers = {
     } else {
       var program = buildProgram(element.children);
       parseComponentBlockParams(element, program);
-      postprocessProgram(program);
       var component = buildComponent(element.tag, element.attributes, program);
       appendChild(parent, component);
     }
