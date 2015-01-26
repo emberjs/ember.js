@@ -423,7 +423,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(2);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     var appDeferred = Ember.RSVP.defer();
 
@@ -453,7 +453,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(3);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['application_loading'] = 'TOPLEVEL LOADING';
 
@@ -490,7 +490,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(5);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
 
     templates['grandma'] = "GRANDMA {{outlet}}";
@@ -538,7 +538,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(2);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['foo/bar_loading'] = "FOOBAR LOADING";
     templates['foo/bar/index'] = "YAY";
@@ -573,7 +573,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(2);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['foo/bar_loading'] = "FOOBAR LOADING";
     templates['foo/bar'] = "YAY";
@@ -607,7 +607,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(1);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['foo/bar_error'] = "FOOBAR ERROR: {{model.msg}}";
     templates['foo/bar'] = "YAY";
@@ -638,7 +638,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(2);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['foo/index_loading'] = "FOO LOADING";
     templates['foo/index'] = "YAY";
@@ -678,7 +678,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(1);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['foo/index_error'] = "FOO ERROR: {{model.msg}}";
     templates['foo/index'] = "YAY";
@@ -715,7 +715,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     expect(2);
 
     // fake a modules resolver
-    App.Resolver = { moduleBasedResolver: true };
+    App.registry.resolver.moduleBasedResolver = true;
 
     templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 

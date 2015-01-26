@@ -11,9 +11,7 @@ import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
-import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   routeArgs,
   getActiveTargetName,
@@ -127,38 +125,39 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
   */
   startRouting: function(moduleBasedResolver) {
+    var initialURL = get(this, 'initialURL');
+    var location = get(this, 'location');
 
+    if (this.setupRouter(moduleBasedResolver, location)) {
+      if (typeof initialURL === "undefined") {
+        initialURL = get(this, 'location').getURL();
+      }
+      var initialTransition = this.handleURL(initialURL);
+      if (initialTransition && initialTransition.error) {
+        throw initialTransition.error;
+      }
+    }
+  },
+
+  setupRouter: function(moduleBasedResolver, location) {
     this._initRouterJs(moduleBasedResolver);
 
     var router = this.router;
-    var location = get(this, 'location');
-    var container = this.container;
     var self = this;
-    var initialURL = get(this, 'initialURL');
-    var initialTransition;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
     if (get(location, 'cancelRouterSetup')) {
-      return;
+      return false;
     }
 
     this._setupRouter(router, location);
-
-    container._registry.register('view:default', _MetamorphView);
-    container._registry.register('view:toplevel', EmberView.extend());
 
     location.onUpdateURL(function(url) {
       self.handleURL(url);
     });
 
-    if (typeof initialURL === "undefined") {
-      initialURL = location.getURL();
-    }
-    initialTransition = this.handleURL(initialURL);
-    if (initialTransition && initialTransition.error) {
-      throw initialTransition.error;
-    }
+    return true;
   },
 
   /**
