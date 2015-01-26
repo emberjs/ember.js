@@ -32,7 +32,7 @@ if ('undefined' === typeof Ember) {
 }
 
 // Default imports, exports and lookup to the global object;
-var global = this || {}; // `this` may be undefined in strict mode
+var global = mainContext || {}; // jshint ignore:line
 Ember.imports = Ember.imports || global;
 Ember.lookup  = Ember.lookup  || global;
 var exports   = Ember.exports = Ember.exports || global;
