@@ -21,7 +21,7 @@
   @param {Object} b second object to compare
   @return {Boolean}
 */
-export var isEqual = function isEqual(a, b) {
+export function isEqual(a, b) {
   if (a && typeof a.isEqual === 'function') {
     return a.isEqual(b);
   }
@@ -31,4 +31,4 @@ export var isEqual = function isEqual(a, b) {
   }
 
   return a === b;
-};
+}

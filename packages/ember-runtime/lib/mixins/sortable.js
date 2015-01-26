@@ -14,6 +14,7 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import { computed } from "ember-metal/computed";
+import { notEmpty } from "ember-metal/computed_macros";
 import {
   Mixin,
   beforeObserver,
@@ -152,7 +153,7 @@ export default Mixin.create(MutableEnumerable, {
     return this._super();
   },
 
-  isSorted: computed.notEmpty('sortProperties'),
+  isSorted: notEmpty('sortProperties'),
 
   /**
     Overrides the default `arrangedContent` from `ArrayProxy` in order to sort by `sortFunction`.

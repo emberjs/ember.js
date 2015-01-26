@@ -1,4 +1,7 @@
-import { computed } from "ember-metal/computed";
+import {
+  empty,
+  notEmpty
+} from "ember-metal/computed_macros";
 import EmberObject from "ember-runtime/system/object";
 import { testBoth } from "ember-metal/tests/props_helper";
 
@@ -9,8 +12,8 @@ testBoth('Ember.computed.empty', function (get, set) {
     bestLannister: null,
     lannisters: null,
 
-    bestLannisterUnspecified: computed.empty('bestLannister'),
-    noLannistersKnown: computed.empty('lannisters')
+    bestLannisterUnspecified: empty('bestLannister'),
+    noLannistersKnown: empty('lannisters')
   }).create({
     lannisters: Ember.A([])
   });
@@ -30,8 +33,8 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
     bestLannister: null,
     lannisters: null,
 
-    bestLannisterSpecified: computed.notEmpty('bestLannister'),
-    LannistersKnown: computed.notEmpty('lannisters')
+    bestLannisterSpecified: notEmpty('bestLannister'),
+    LannistersKnown: notEmpty('lannisters')
   }).create({
     lannisters: Ember.A([])
   });
