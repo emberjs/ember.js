@@ -76,10 +76,11 @@ export default EmberObject.extend({
   /**
     @private
   */
-  startRouting: function(isModuleBasedResolver) {
+  startRouting: function() {
     var router = this.container.lookup('router:main');
     if (!router) { return; }
 
+    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
     router.startRouting(isModuleBasedResolver);
   },
 
