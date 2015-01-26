@@ -6,7 +6,7 @@ import {
 
 import {
   hasPropertyAccessors
-} from "ember-metal/platform";
+} from "ember-metal/platform/define_property";
 
 var object, number, string, map, variety;
 var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];

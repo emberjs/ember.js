@@ -3,7 +3,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
 import { set } from 'ember-metal/property_set';
-import { create as o_create } from 'ember-metal/platform';
+import o_create from 'ember-metal/platform/create';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;

@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { observer } from "ember-metal/mixin";
 import { set } from "ember-metal/property_set";
 import { bind } from "ember-metal/binding";

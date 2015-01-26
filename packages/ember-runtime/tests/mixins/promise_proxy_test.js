@@ -1,4 +1,4 @@
-import {create} from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import ObjectProxy from "ember-runtime/system/object_proxy";

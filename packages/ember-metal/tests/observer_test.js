@@ -12,7 +12,7 @@ import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 import { defineProperty } from 'ember-metal/properties';
 import {
   computed,

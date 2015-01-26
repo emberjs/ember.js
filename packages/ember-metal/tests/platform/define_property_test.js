@@ -1,4 +1,8 @@
-import { defineProperty, hasPropertyAccessors, canDefineNonEnumerableProperties } from 'ember-metal/platform';
+import {
+  defineProperty,
+  hasPropertyAccessors,
+  canDefineNonEnumerableProperties
+} from 'ember-metal/platform/define_property';
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 function isEnumerable(obj, keyName) {

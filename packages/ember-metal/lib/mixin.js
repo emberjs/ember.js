@@ -14,9 +14,7 @@ import {
   indexOf as a_indexOf,
   forEach as a_forEach
 } from "ember-metal/array";
-import {
-  create as o_create
-} from "ember-metal/platform";
+import o_create from "ember-metal/platform/create";
 import { get } from "ember-metal/property_get";
 import { set, trySet } from "ember-metal/property_set";
 import {

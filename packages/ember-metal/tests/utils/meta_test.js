@@ -1,9 +1,9 @@
 /*global jQuery*/
 import Ember from 'ember-metal/core';
 import {
-  create,
   canDefineNonEnumerableProperties
-} from 'ember-metal/platform';
+} from 'ember-metal/platform/define_property';
+import create from 'ember-metal/platform/create';
 import {
   getMeta,
   setMeta,

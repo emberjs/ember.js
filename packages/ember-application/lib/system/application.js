@@ -12,7 +12,7 @@ import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
 import DefaultResolver from "ember-application/system/resolver";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
 import Controller from "ember-runtime/controllers/controller";

@@ -1,4 +1,4 @@
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 
 // the delete is meant to hint at runtimes that this object should remain in
 // dictionary mode. This is clearly a runtime specific hack, but currently it

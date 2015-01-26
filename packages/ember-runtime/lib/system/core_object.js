@@ -21,7 +21,7 @@ import {
   guidFor,
   apply
 } from "ember-metal/utils";
-import { create as o_create } from "ember-metal/platform";
+import o_create from 'ember-metal/platform/create';
 import {
   generateGuid,
   GUID_KEY_PROPERTY,
@@ -38,7 +38,7 @@ import {
 } from "ember-metal/mixin";
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
-import { defineProperty as o_defineProperty } from "ember-metal/platform";
+import { defineProperty as o_defineProperty } from "ember-metal/platform/define_property";
 import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import { defineProperty } from "ember-metal/properties";
@@ -50,7 +50,7 @@ import { destroy } from "ember-metal/watching";
 import {
   K
 } from 'ember-metal/core';
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { validatePropertyInjections } from "ember-runtime/inject";
 
 var schedule = run.schedule;

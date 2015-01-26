@@ -9,7 +9,7 @@ import {
   isPath,
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 
 var FIRST_KEY = /^([^\.]+)/;
 

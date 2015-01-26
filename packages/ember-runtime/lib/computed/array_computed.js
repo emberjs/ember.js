@@ -3,7 +3,7 @@ import {
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
 import { forEach } from 'ember-metal/enumerable_utils';
-import { create as o_create } from 'ember-metal/platform';
+import o_create from 'ember-metal/platform/create';
 import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
 

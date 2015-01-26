@@ -7,7 +7,7 @@ import { meta as metaFor } from "ember-metal/utils";
 import {
   defineProperty as objectDefineProperty,
   hasPropertyAccessors
-} from "ember-metal/platform";
+} from 'ember-metal/platform/define_property';
 import { overrideChains } from "ember-metal/property_events";
 // ..........................................................
 // DESCRIPTOR

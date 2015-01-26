@@ -3,9 +3,10 @@
 import { get } from 'ember-metal/property_get';
 
 function expectGlobalContextDeprecation(assertion) {
-  expectDeprecation(function() {
-    assertion();
-  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
+  expectDeprecation(
+    assertion,
+    "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)"
+  );
 }
 
 var obj;

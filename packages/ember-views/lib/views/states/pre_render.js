@@ -1,5 +1,5 @@
 import _default from "ember-views/views/states/default";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 
 /**
 @module ember

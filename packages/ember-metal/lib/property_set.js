@@ -9,7 +9,7 @@ import EmberError from "ember-metal/error";
 import {
   isPath
 } from "ember-metal/path_cache";
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 

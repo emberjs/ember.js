@@ -1,4 +1,4 @@
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 
 /**
   Returns all of the keys defined on an object or hash. This is useful

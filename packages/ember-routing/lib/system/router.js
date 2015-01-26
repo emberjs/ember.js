@@ -19,7 +19,7 @@ import {
   getActiveTargetName,
   stashParamNames
 } from "ember-routing/utils";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 
 import RouterState from "./router_state";
 

@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 import { observer } from 'ember-metal/mixin';
 
 import Namespace from "ember-runtime/system/namespace";

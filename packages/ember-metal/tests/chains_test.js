@@ -1,6 +1,6 @@
 import { addObserver } from "ember-metal/observer";
 import { finishChains } from "ember-metal/chains";
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 
 QUnit.module("Chains");
 

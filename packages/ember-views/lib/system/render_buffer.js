@@ -5,7 +5,7 @@
 
 import jQuery from "ember-views/system/jquery";
 import Ember from "ember-metal/core";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import environment from "ember-metal/environment";
 import { normalizeProperty } from "morph/dom-helper/prop";
 

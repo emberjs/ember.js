@@ -5,7 +5,7 @@ import {
   unsubscribe,
   isStream
 } from "ember-metal/streams/utils";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
 

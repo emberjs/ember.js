@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import { testBoth } from 'ember-metal/tests/props_helper';
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 import {
   ComputedProperty,
   computed,

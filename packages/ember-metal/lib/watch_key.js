@@ -6,7 +6,7 @@ import {
 import {
   defineProperty as o_defineProperty,
   hasPropertyAccessors
-} from "ember-metal/platform";
+} from "ember-metal/platform/define_property";
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION

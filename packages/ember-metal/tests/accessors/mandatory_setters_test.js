@@ -3,9 +3,9 @@ import { set } from "ember-metal/property_set";
 import { watch } from "ember-metal/watching";
 import {
   hasPropertyAccessors,
-  defineProperty,
-  create
-} from "ember-metal/platform";
+  defineProperty
+} from "ember-metal/platform/define_property";
+import create from 'ember-metal/platform/create';
 import { meta as metaFor } from "ember-metal/utils";
 
 QUnit.module('mandatory-setters');
