@@ -26,7 +26,7 @@ var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
   @param {Object} value The value to set
   @return {Object} the passed value.
 */
-var set = function set(obj, keyName, value, tolerant) {
+export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
     Ember.assert("Path '" + obj + "' must be global if no obj is given.", IS_GLOBAL.test(obj));
     value = keyName;
@@ -104,7 +104,7 @@ var set = function set(obj, keyName, value, tolerant) {
     }
   }
   return value;
-};
+}
 
 function setPath(root, path, value, tolerant) {
   var keyName;
@@ -152,7 +152,3 @@ function setPath(root, path, value, tolerant) {
 export function trySet(root, path, value) {
   return set(root, path, value, true);
 }
-
-export {
-  set
-};
