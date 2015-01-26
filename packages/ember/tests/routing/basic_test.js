@@ -2738,6 +2738,54 @@ test("Route silently fails when cleaning an outlet from an inactive view", funct
   Ember.run(function() { router.send('hideModal'); });
 });
 
+if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+  test("Router `willTransition` hook passes in cancellable transition", function() {
+    // Should hit willTransition 3 times, once for the initial route, and then 2 more times
+    // for the two handleURL calls below
+    expect(3);
+
+    Router.map(function() {
+      this.route("nork");
+      this.route("about");
+    });
+
+    Router.reopen({
+      init: function() {
+        this._super();
+        this.on('willTransition', this.testWillTransitionHook);
+      },
+      testWillTransitionHook: function(transition, url) {
+        ok(true, "willTransition was called " + url);
+        transition.abort();
+      }
+    });
+
+    App.LoadingRoute = Ember.Route.extend({
+      activate: function() {
+        ok(false, "LoadingRoute was not entered");
+      }
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      activate: function() {
+        ok(false, "NorkRoute was not entered");
+      }
+    });
+
+    App.AboutRoute = Ember.Route.extend({
+      activate: function() {
+        ok(false, "AboutRoute was not entered");
+      }
+    });
+
+    bootApplication();
+
+    // Attempted transitions out of index should abort.
+    Ember.run(router, 'handleURL', '/nork');
+    Ember.run(router, 'handleURL', '/about');
+  });
+}
+
 test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
   expect(8);
 
