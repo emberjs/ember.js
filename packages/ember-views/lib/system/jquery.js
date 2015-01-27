@@ -16,7 +16,8 @@ Ember Views
 var jQuery;
 
 if (environment.hasDOM) {
-  jQuery = (Ember.imports && Ember.imports.jQuery) || (this && this.jQuery);
+  // mainContext is set in `package/loader/lib/main.js` to the `this` context before entering strict mode
+  jQuery = (Ember.imports && Ember.imports.jQuery) || (mainContext && mainContext.jQuery); //jshint ignore:line
   if (!jQuery && typeof require === 'function') {
     jQuery = require('jquery');
   }

@@ -22,7 +22,7 @@
 
 import { guidFor } from "ember-metal/utils";
 import { indexOf } from "ember-metal/array";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import { deprecateProperty } from "ember-metal/deprecate_property";
 
 function missingFunction(fn) {

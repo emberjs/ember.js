@@ -1,6 +1,6 @@
 import "ember";
 import { computed } from "ember-metal/computed";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 import { capitalize } from "ember-runtime/system/string";
 
 import EmberHandlebars from "ember-htmlbars/compat";

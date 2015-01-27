@@ -4,12 +4,12 @@
 // REMOVE_USE_STRICT: true
 
 import Ember from "ember-metal/core";
+import o_create from 'ember-metal/platform/create';
 import {
-  defineProperty as o_defineProperty,
-  canDefineNonEnumerableProperties,
   hasPropertyAccessors,
-  create as o_create
-} from "ember-metal/platform";
+  defineProperty as o_defineProperty,
+  canDefineNonEnumerableProperties
+} from 'ember-metal/platform/define_property';
 
 import {
   forEach

@@ -13,7 +13,7 @@ import {
   apply,
   applyStr
 } from "ember-metal/utils";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 
 var a_slice = [].slice;
 

@@ -1,4 +1,4 @@
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 

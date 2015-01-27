@@ -3,7 +3,7 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 
 import Evented from "ember-runtime/mixins/evented";
 import EmberObject from "ember-runtime/system/object";

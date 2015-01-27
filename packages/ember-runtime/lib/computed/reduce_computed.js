@@ -21,7 +21,7 @@ import {
   ComputedProperty,
   cacheFor
 } from 'ember-metal/computed';
-import { create as o_create } from 'ember-metal/platform';
+import o_create from 'ember-metal/platform/create';
 import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import EmberArray from 'ember-runtime/mixins/array';

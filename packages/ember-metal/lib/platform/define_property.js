@@ -121,12 +121,17 @@ if (hasES5CompliantDefineProperty && typeof document !== 'undefined') {
 }
 
 if (!hasES5CompliantDefineProperty) {
-  defineProperty = function defineProperty(obj, keyName, desc) {
+  defineProperty = function definePropertyPolyfill(obj, keyName, desc) {
     if (!desc.get) { obj[keyName] = desc.value; }
   };
 }
 
+var hasPropertyAccessors = hasES5CompliantDefineProperty;
+var canDefineNonEnumerableProperties = hasES5CompliantDefineProperty;
+
 export {
   hasES5CompliantDefineProperty,
-  defineProperty
+  defineProperty,
+  hasPropertyAccessors,
+  canDefineNonEnumerableProperties
 };

@@ -1,6 +1,8 @@
 var define, requireModule, require, requirejs, Ember;
+var mainContext = this;
 
 (function() {
+
   Ember = this.Ember = this.Ember || {};
   if (typeof Ember === 'undefined') { Ember = {}; };
   function UNDEFINED() { }
@@ -10,7 +12,17 @@ var define, requireModule, require, requirejs, Ember;
     var seen = {};
 
     define = function(name, deps, callback) {
-      registry[name] = { deps: deps, callback: callback };
+      var value = { };
+
+      if (!callback) {
+        value.deps = [];
+        value.callback = deps;
+      } else {
+        value.deps = deps;
+        value.callback = callback;
+      }
+
+        registry[name] = value;
     };
 
     requirejs = require = requireModule = function(name) {

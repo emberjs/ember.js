@@ -3,9 +3,7 @@
 //
 // REMOVE_USE_STRICT: true
 
-import {
-  create as o_create
-} from "ember-metal/platform";
+import o_create from "ember-metal/platform/create";
 import {
   watch,
   unwatch

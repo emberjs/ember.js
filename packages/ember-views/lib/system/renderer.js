@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import Renderer from 'ember-metal-views/renderer';
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";

@@ -5,7 +5,7 @@ import {
   unsubscribe,
   isStream
 } from "ember-metal/streams/utils";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 
 export default function conditional(test, consequent, alternate) {
   if (isStream(test)) {

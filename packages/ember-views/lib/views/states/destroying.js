@@ -1,5 +1,5 @@
 import merge from "ember-metal/merge";
-import {create} from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import {fmt} from "ember-runtime/system/string";
 import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";

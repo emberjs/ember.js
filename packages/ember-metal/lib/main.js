@@ -41,9 +41,9 @@ import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import Cache from "ember-metal/cache";
 import {
-  create,
   hasPropertyAccessors
-} from "ember-metal/platform";
+} from 'ember-metal/platform/define_property';
+import create from 'ember-metal/platform/create';
 import {
   filter,
   forEach,

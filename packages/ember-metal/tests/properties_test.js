@@ -1,4 +1,4 @@
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from "ember-metal/properties";
 import { deprecateProperty } from "ember-metal/deprecate_property";

@@ -7,7 +7,7 @@ import {
   defineProperty
 } from "ember-metal/properties";
 import { ComputedProperty } from "ember-metal/computed";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import {
   meta,
   inspect

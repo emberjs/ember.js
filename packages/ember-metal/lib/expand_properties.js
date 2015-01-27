@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core";
 import EmberError from 'ember-metal/error';
 import { forEach } from 'ember-metal/enumerable_utils';
+import { typeOf } from 'ember-metal/utils';
 
 /**
   @module ember-metal
@@ -40,7 +40,7 @@ export default function expandProperties(pattern, callback) {
       'e.g. `user.{firstName, lastName}` should be `user.{firstName,lastName}`');
   }
 
-  if ('string' === Ember.typeOf(pattern)) {
+  if ('string' === typeOf(pattern)) {
     var parts = pattern.split(SPLIT_REGEX);
     var properties = [parts];
 
