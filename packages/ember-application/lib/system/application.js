@@ -718,9 +718,9 @@ var Application = Namespace.extend(DeferredMixin, {
       }
 
       this.resolve(this);
-    } else {
-      this._bootResolver.resolve();
     }
+
+    this._bootResolver.resolve();
   },
 
   /**

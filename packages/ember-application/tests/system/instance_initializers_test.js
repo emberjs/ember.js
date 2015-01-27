@@ -326,6 +326,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
     test("initializers should be executed in their own context", function() {
       expect(1);
+
       var MyApplication = Application.extend();
 
       MyApplication.instanceInitializer({
