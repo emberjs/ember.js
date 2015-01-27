@@ -2011,21 +2011,21 @@ function appendView(route, view, options) {
     replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
     parentView.connectOutlet(options.outlet, view);
   } else {
-    var rootElement = get(route.router, 'namespace.rootElement');
     // tear down view if one is already rendered
     if (route.teardownTopLevelView) {
       route.teardownTopLevelView();
     }
-    route.router._connectActiveView(options.name, view);
-    route.teardownTopLevelView = generateTopLevelTeardown(view);
-    view.appendTo(rootElement);
-  }
-}
 
-function generateTopLevelTeardown(view) {
-  return function() {
-    view.destroy();
-  };
+    route.router._connectActiveView(options.name, view);
+    route.teardownTopLevelView = function() { view.destroy(); };
+
+    // Notify the application instance that we have created the root-most
+    // view. It is the responsibility of the instance to tell the root view
+    // how to render, typically by appending it to the application's
+    // `rootElement`.
+    var instance = route.container.lookup('-application-instance:main');
+    instance.didCreateRootView(view);
+  }
 }
 
 function generateOutletTeardown(parentView, outlet) {
