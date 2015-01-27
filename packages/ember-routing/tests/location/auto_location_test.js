@@ -6,7 +6,7 @@ import copy from "ember-runtime/copy";
 import EmberObject from "ember-runtime/system/object";
 import AutoLocation from "ember-routing/location/auto_location";
 import EmberLocation from "ember-routing/location/api";
-import { supportsHistory, supportsHashChange } from "ember-routing/location/feature_detect";
+import { supportsHistory, supportsHashChange } from "ember-routing/location/util";
 
 var AutoTestLocation, location;
 

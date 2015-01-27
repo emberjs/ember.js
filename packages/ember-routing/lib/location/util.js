@@ -1,3 +1,67 @@
+/**
+  @private
+
+  Returns the current `location.pathname`, normalized for IE inconsistencies.
+*/
+export function getPath(location) {
+  var pathname = location.pathname;
+  // Various versions of IE/Opera don't always return a leading slash
+  if (pathname.charAt(0) !== '/') {
+    pathname = '/' + pathname;
+  }
+
+  return pathname;
+}
+
+/**
+  @private
+
+  Returns the current `location.search`.
+*/
+export function getQuery(location) {
+  return location.search;
+}
+
+/**
+  @private
+
+  Returns the current `location.hash` by parsing location.href since browsers
+  inconsistently URL-decode `location.hash`.
+
+  Should be passed the browser's `location` object as the first argument.
+
+  https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+*/
+export function getHash(location) {
+  var href = location.href;
+  var hashIndex = href.indexOf('#');
+
+  if (hashIndex === -1) {
+    return '';
+  } else {
+    return href.substr(hashIndex);
+  }
+}
+
+export function getFullPath(location) {
+  return getPath(location) + getQuery(location) + getHash(location);
+}
+
+export function getOrigin(location) {
+  var origin = location.origin;
+
+  // Older browsers, especially IE, don't have origin
+  if (!origin) {
+    origin = location.protocol + '//' + location.hostname;
+
+    if (location.port) {
+      origin += ':' + location.port;
+    }
+  }
+
+  return origin;
+}
+
 /*
   `documentMode` only exist in Internet Explorer, and it's tested because IE8 running in
   IE7 compatibility mode claims to support `onhashchange` but actually does not.
@@ -20,7 +84,6 @@ export function supportsHashChange(documentMode, global) {
   @private
   @function supportsHistory
 */
-
 export function supportsHistory(userAgent, history) {
   // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
   // The stock browser on Android 2.2 & 2.3 returns positive on history support
