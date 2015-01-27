@@ -212,6 +212,11 @@ export function replace(array, idx, amt, objects) {
  */
 export function intersection(array1, array2) {
   var result = [];
+
+  // Account for undefined/null array parameters
+  array1 = array1 || [];
+  array2 = array2 || [];
+
   forEach(array1, function(element) {
     if (indexOf(array2, element) >= 0) {
       result.push(element);

@@ -5,12 +5,27 @@ QUnit.module('Ember.EnumerableUtils.intersection');
 test('returns an array of objects that appear in both enumerables', function() {
   var a = [1,2,3];
   var b = [2,3,4];
-  var result;
-
-  result = EnumerableUtils.intersection(a, b);
+  var result = EnumerableUtils.intersection(a, b);
 
   deepEqual(result, [2,3]);
 });
+
+test('returns an empty array if one of the arrays is undefined', function() {
+  var a; //undefined
+  var b = [2,3,4];
+  var result = EnumerableUtils.intersection(a, b);
+
+  deepEqual(result, []);
+});
+
+test('returns an empty array if one of the arrays is null', function() {
+  var a = null;
+  var b = [2,3,4];
+  var result = EnumerableUtils.intersection(a, b);
+
+  deepEqual(result, []);
+});
+
 
 test("large replace", function() {
   expect(0);
