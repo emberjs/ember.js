@@ -104,7 +104,7 @@ test('foo-bar', function() {
 var foo = {};
 ```
 
-+ Keep parenthesis adjecent to the function name when declared or called.
++ Keep parenthesis adjacent to the function name when declared or called.
 
 ```javascript
 function foo() {
@@ -316,7 +316,7 @@ function fooBar(opt) {
 
 ## Comments
 
-+ Use [Yuidoc](http://yui.github.io/yuidoc/syntax/index.html) comments for
++ Use [YUIDoc](http://yui.github.io/yuidoc/syntax/index.html) comments for
   documenting functions.
 + Use `//` for single line comments.
 
