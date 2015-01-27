@@ -16,7 +16,8 @@
     "ember-metal-stream": null,
     "ember-htmlbars-each-with-index": true,
     "ember-application-instance-initializers": null,
-    "ember-application-initializer-context": null
+    "ember-application-initializer-context": null,
+    "ember-views-text-support-on-change": null
   },
   "debugStatements": [
     "Ember.warn",

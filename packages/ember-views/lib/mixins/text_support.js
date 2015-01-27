@@ -3,6 +3,7 @@
 @submodule ember-views
 */
 
+import Ember from "ember-metal/core"; // FEATURES
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { Mixin } from "ember-metal/mixin";
@@ -187,8 +188,50 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     set(this, 'value', this.$().val());
   },
 
+
+  /**
+    This event is behind the `ember-views-text-support-on-change` feature flag.
+
+    Allows you to specify a controller action to invoke when a field changes
+    **and** loses focus. To use this method, set the `on-change` attribute.
+    The value of that attribute should be the name of the action in
+    your controller that you wish to invoke.
+
+    To handle a value change without losing focus, see: `input` event.
+
+    For an example on how to use the `on-change` attribute, please reference the
+    example near the top of this file.
+
+    @method change
+    @param {Event} event
+  */
   change: function(event) {
     this._elementValueDidChange(event);
+
+    if (Ember.FEATURES.isEnabled('ember-views-text-support-on-change')) {
+      sendAction('on-change', this, event);
+    }
+  },
+
+  /**
+    This event is behind the `ember-views-text-support-on-change` feature flag.
+
+    Allows you to specify a controller action to invoke when a text field changes.
+    To use this method, set the `on-input` attribute. The value of that attribute
+    should be the name of the action in your controller that you wish to invoke.
+
+    For an example on how to use the `on-input` attribute, please reference the
+    example near the top of this file.
+
+    @method change
+    @param {Event} event
+  */
+  input: function(event) {
+    this._elementValueDidChange(event);
+
+    if (Ember.FEATURES.isEnabled('ember-views-text-support-on-change')) {
+      sendAction('on-input', this, event);
+    }
   },
 
   /**

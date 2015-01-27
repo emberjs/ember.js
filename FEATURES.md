@@ -5,26 +5,29 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `ember-application-instance-initializers`
+* `ember-views-text-support-on-change`
 
-  Splits apart initializers into two phases:
+  Firing an `on-change` event indicates that `focusOut` has happened
+  and that the value has changed. Observers exist for detecting changes to
+  the underlying value, but `on-change` will only fire when the value changes
+  **and** `focusOut` fires.
 
-  * Boot-time Initializers that receive a registry, and use it to set up
-    code structures
-  * Instance Initializers that receive an application instance, and use
-    it to set up application state per run of the application.
+  Usage:
 
-  In FastBoot, each request will have its own run of the application,
-  and will only need to run the instance initializers.
+  ```hbs
+  {{input type="text" on-change="handleChange"}}
+  ```
 
-  In the future, tests will also be able to use this differentiation to
-  run just the instance initializers per-test.
+  Firing an `on-input` event indicates that the value has changed and focus
+  **has not been lost**.
 
-  With this change, `App.initializer` becomes a "boot-time" initializer,
-  and issues a deprecation warning if instances are accessed.
+  Usage:
 
-  Apps should migrate any initializers that require instances to the new
-  `App.instanceInitializer` API.
+  ```hbs
+  {{input type="text" on-input="handleChange"}}
+  ```
+
+  Added in [#9734](https://github.com/emberjs/ember.js/pull/9734)
 
 * `ember-application-initializer-context`
 
