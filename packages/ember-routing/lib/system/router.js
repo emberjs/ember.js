@@ -139,10 +139,11 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  setupRouter: function(moduleBasedResolver, location) {
+  setupRouter: function(moduleBasedResolver) {
     this._initRouterJs(moduleBasedResolver);
 
     var router = this.router;
+    var location = get(this, 'location');
     var self = this;
 
     // Allow the Location class to cancel the router setup while it refreshes

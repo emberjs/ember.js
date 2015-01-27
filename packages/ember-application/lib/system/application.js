@@ -22,6 +22,8 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-views/system/renderer";
 import { DOMHelper } from "morph";
 import SelectView from "ember-views/views/select";
+import EmberView from "ember-views/views/view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
@@ -252,6 +254,20 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   customEvents: null,
 
+  /**
+    Whether the application should automatically start routing and render
+    templates to the `rootElement` on DOM ready. While default by true,
+    other environments such as FastBoot or a testing harness can set this
+    property to `false` and control the precise timing and behavior of the boot
+    process.
+
+    @property autoboot
+    @type Boolean
+    @default true
+    @private
+  */
+  autoboot: true,
+
   init: function() {
     this._super.apply(this, arguments);
 
@@ -268,7 +284,7 @@ var Application = Namespace.extend(DeferredMixin, {
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
-    if (true) {
+    if (this.autoboot) {
       // Create subclass of Ember.Router for this Application instance.
       // This is to ensure that someone reopening `App.Router` does not
       // tamper with the default `Ember.Router`.
@@ -687,7 +703,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method didBecomeReady
   */
   didBecomeReady: function() {
-    if (true) {
+    if (this.autoboot) {
       if (environment.hasDOM) {
         this.__deprecatedInstance__.setupEventDispatcher();
       }
@@ -705,23 +721,6 @@ var Application = Namespace.extend(DeferredMixin, {
     } else {
       this._bootResolver.resolve();
     }
-  },
-
-  /**
-    If the application has a router, use it to route to the current URL, and
-    trigger a new call to `route` whenever the URL changes.
-
-    @private
-    @method startRouting
-    @property router {Ember.Router}
-  */
-  legacyStartRouting: function(instance) {
-    var isModuleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
-    instance.startRouting(isModuleBasedResolver);
-  },
-
-  legacyHandleURL: function(instance, url) {
-    return instance.handleURL(url);
   },
 
   /**
@@ -758,6 +757,38 @@ var Application = Namespace.extend(DeferredMixin, {
 
   initializer: function(options) {
     this.constructor.initializer(options);
+  },
+
+  /**
+    Creates a new instance of the application and instructs it to route to the
+    specified initial URL. This method returns a promise that will be resolved
+    once rendering is complete. That promise is resolved with the instance.
+
+    ```js
+    App.visit('/users').then(function(instance) {
+      var view = instance.view;
+      view.appendTo('#qunit-test-fixtures');
+    });
+   ```
+
+    @method visit
+    @private
+  */
+  visit: function(url) {
+    var instance = this.buildInstance();
+
+    var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
+      instance.didCreateRootView = function(view) {
+        instance.view = view;
+        res(instance);
+      };
+    });
+
+    instance.setupRouter({ location: 'none' });
+
+    return instance.handleURL(url).then(function() {
+      return renderPromise;
+    });
   },
 
   /**
@@ -962,6 +993,9 @@ Application.reopenClass({
 
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
+
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
 
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);
