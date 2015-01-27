@@ -643,9 +643,9 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
     visit = App.testHelpers.visit;
 
     visit('/').then(function() {
-      expectAssertion(function() {
-        check('#text');
-      }, /must be a checkbox/);
+      check('#text').catch(function(error) {
+        ok(/must be a checkbox/.test(error.message));
+      });
     });
   });
 
@@ -662,9 +662,9 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
     uncheck = App.testHelpers.uncheck;
 
     visit('/').then(function() {
-      expectAssertion(function() {
-        uncheck('#text');
-      }, /must be a checkbox/);
+      uncheck('#text').catch(function(error) {
+        ok(/must be a checkbox/.test(error.message));
+      });
     });
   });
 }
