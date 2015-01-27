@@ -12,7 +12,7 @@ import emptyTemplate from "ember-htmlbars/templates/empty";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
 
     var self = this;
 

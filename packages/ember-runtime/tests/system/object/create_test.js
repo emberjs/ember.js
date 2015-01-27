@@ -102,7 +102,7 @@ test("throws if you try to call _super in a method", function() {
   expectAssertion(function() {
     EmberObject.create({
       foo: function() {
-        this._super();
+        this._super.apply(this, arguments);
       }
     });
   }, 'Ember.Object.create no longer supports defining methods that call _super.');
@@ -191,7 +191,7 @@ test("Configures _super() on methods with override", function() {
   var MixinA = Mixin.create({ method: function() {} });
   var obj = EmberObject.createWithMixins(MixinA, {
     method: function() {
-      this._super();
+      this._super.apply(this, arguments);
       completed = true;
     }
   });
@@ -204,7 +204,7 @@ test("Calls init if defined", function() {
   var completed = false;
   EmberObject.createWithMixins({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       completed = true;
     }
   });
@@ -216,14 +216,14 @@ test("Calls all mixin inits if defined", function() {
   var completed = 0;
   var Mixin1 = Mixin.create({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       completed++;
     }
   });
 
   var Mixin2 = Mixin.create({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       completed++;
     }
   });

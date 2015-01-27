@@ -63,7 +63,7 @@ test("HistoryLocation initState does not get fired on init", function() {
   HistoryTestLocation.reopen({
     init: function() {
       ok(true, 'init was called');
-      this._super();
+      this._super.apply(this, arguments);
     },
     initState: function() {
       ok(false, 'initState() should not be called automatically');
@@ -78,7 +78,7 @@ test("webkit doesn't fire popstate on page load", function() {
 
   HistoryTestLocation.reopen({
     initState: function() {
-      this._super();
+      this._super.apply(this, arguments);
       // these two should be equal to be able
       // to successfully detect webkit initial popstate
       equal(this._previousURL, this.getURL());
@@ -94,14 +94,14 @@ test("base URL is removed when retrieving the current pathname", function() {
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'baseURL', '/base/');
     },
 
     initState: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       equal(this.getURL(), '/foo/bar');
     }
@@ -116,7 +116,7 @@ test("base URL is preserved when moving around", function() {
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'baseURL', '/base/');
@@ -159,7 +159,7 @@ test("HistoryLocation.getURL() returns the current url, excluding both rootURL a
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'rootURL', '/app/');
@@ -177,7 +177,7 @@ test("HistoryLocation.getURL() includes location.search", function() {
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
     }
   });
@@ -192,7 +192,7 @@ test("HistoryLocation.getURL() includes location.hash", function() {
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
     }
   });
@@ -207,7 +207,7 @@ test("HistoryLocation.getURL() includes location.hash and location.search", func
 
   HistoryTestLocation.reopen({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
     }
   });

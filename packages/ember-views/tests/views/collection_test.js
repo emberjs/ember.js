@@ -382,11 +382,11 @@ test("should fire life cycle events when elements are added and removed", functi
         },
         willDestroy: function () {
           willDestroy++;
-          this._super();
+          this._super.apply(this, arguments);
         },
         destroy: function() {
           destroy++;
-          this._super();
+          this._super.apply(this, arguments);
         }
       })
     });
@@ -570,7 +570,7 @@ test("when a collection view is emptied, deeply nested views elements are not re
       if (this._state === 'inDOM') {
         ok(this.get('element'), this + ' still exists in DOM');
       }
-      return this._super();
+      return this._super.apply(this, arguments);
     }
   });
 

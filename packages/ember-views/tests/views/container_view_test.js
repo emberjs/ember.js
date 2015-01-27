@@ -187,7 +187,7 @@ test("should trigger parentViewDidChange when parentView is changed", function()
 test("should be able to push initial views onto the ContainerView and have it behave", function() {
   var Container = ContainerView.extend({
     init: function () {
-      this._super();
+      this._super.apply(this, arguments);
       this.pushObject(View.create({
         name: 'A',
         template: function () {
@@ -245,7 +245,7 @@ test("views that are removed from a ContainerView should have their child views 
   container = ContainerView.create();
   view = View.createWithMixins({
     remove: function() {
-      this._super();
+      this._super.apply(this, arguments);
     },
     template: function(context, options) {
       options.data.view.appendChild(View);

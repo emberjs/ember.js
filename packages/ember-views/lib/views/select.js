@@ -52,7 +52,7 @@ var SelectOption = View.extend({
     this.labelPathDidChange();
     this.valuePathDidChange();
 
-    this._super();
+    this._super.apply(this, arguments);
   },
 
   selected: computed(function() {
@@ -649,7 +649,7 @@ var Select = View.extend({
   },
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.on("didInsertElement", this, this._setDefaults);
     this.on("change", this, this._change);
   }

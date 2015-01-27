@@ -28,7 +28,7 @@ QUnit.module("Ember.ArrayController - itemController", {
     controllerClass = Controller.extend({
       init: function() {
         ++itemControllerCount;
-        this._super();
+        this._super.apply(this, arguments);
       },
 
       toString: function() {

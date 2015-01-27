@@ -49,7 +49,7 @@ export default CollectionView.extend(_Metamorph, {
       });
     }
 
-    return this._super();
+    return this._super.apply(this, arguments);
   },
 
   _assertArrayLike: function(content) {
@@ -99,7 +99,7 @@ export default CollectionView.extend(_Metamorph, {
   },
 
   destroy: function() {
-    if (!this._super()) { return; }
+    if (!this._super.apply(this, arguments)) { return; }
 
     if (this._arrayController) {
       this._arrayController.destroy();

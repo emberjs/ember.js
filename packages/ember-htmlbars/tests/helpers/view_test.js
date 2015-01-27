@@ -284,7 +284,7 @@ test('"Binding"-suffixed bindings are runloop-synchronized', function() {
   var Subview = EmberView.extend({
     init: function() {
       subview = this;
-      return this._super();
+      return this._super.apply(this, arguments);
     },
     template: compile('<div class="color">{{view.color}}</div>')
   });
@@ -325,7 +325,7 @@ test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
   var Subview = EmberView.extend({
     init: function() {
       subview = this;
-      return this._super();
+      return this._super.apply(this, arguments);
     },
     template: compile('<div class="color">{{view.color}}</div>')
   });

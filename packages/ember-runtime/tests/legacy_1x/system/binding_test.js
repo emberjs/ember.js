@@ -30,7 +30,7 @@ import EmberObject from 'ember-runtime/system/object';
 
   * Changed call calls for obj.bind(...) to bind(obj, ...);
 
-  * Changed all calls to sc_super() to this._super()
+  * Changed all calls to sc_super() to this._super.apply(this, arguments)
 
   * Changed all calls to disconnect() to pass the root object.
 
@@ -255,7 +255,7 @@ test("two bindings to the same value should sync in the order they are initializ
     }),
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'c', this.C.create({ owner: this }));
     }
 

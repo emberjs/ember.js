@@ -571,7 +571,7 @@ test('edge case: child conditional should not render children if parent conditio
     cond2: false,
     viewClass: EmberView.extend({
       init: function() {
-        this._super();
+        this._super.apply(this, arguments);
         childCreated = true;
         child = this;
       }

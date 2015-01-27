@@ -1741,7 +1741,7 @@ var View = CoreView.extend({
       this.elementId = guidFor(this);
     }
 
-    this._super();
+    this._super.apply(this, arguments);
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
@@ -1846,7 +1846,7 @@ var View = CoreView.extend({
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
 
-    if (!this._super()) { return; }
+    if (!this._super.apply(this, arguments)) { return; }
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {

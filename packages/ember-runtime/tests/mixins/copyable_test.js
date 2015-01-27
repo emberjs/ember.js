@@ -10,7 +10,7 @@ var CopyableObject = EmberObject.extend(Copyable, {
   id: null,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     set(this, 'id', generateGuid());
   },
 

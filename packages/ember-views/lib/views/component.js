@@ -112,7 +112,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   }),
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this._keywords.view = this;
     set(this, 'context', this);
     set(this, 'controller', this);

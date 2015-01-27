@@ -231,7 +231,7 @@ test("With ember-data like initializer and constant", function() {
           set(DS, 'defaultStore', this);
         }
 
-        this._super();
+        this._super.apply(this, arguments);
       },
       willDestroy: function() {
         if (get(DS, 'defaultStore') === this) {

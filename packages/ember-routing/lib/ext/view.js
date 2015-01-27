@@ -17,7 +17,7 @@ EmberView.reopen({
    */
   init: function() {
     this._outlets = {};
-    this._super();
+    this._super.apply(this, arguments);
   },
 
   /**

@@ -192,14 +192,14 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     ```javascript
     App.MyLinkView = Ember.LinkView.extend({
       init: function() {
-        this._super();
+        this._super.apply(this, arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
       }
     });
     ```
 
     NOTE: If you do override `init` for a framework class like `Ember.View` or
-    `Ember.ArrayController`, be sure to call `this._super()` in your
+    `Ember.ArrayController`, be sure to call `this._super.apply(this, arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.

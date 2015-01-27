@@ -150,7 +150,7 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    return this._super();
+    return this._super.apply(this, arguments);
   },
 
   isSorted: notEmpty('sortProperties'),
@@ -195,7 +195,7 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    this._super();
+    this._super.apply(this, arguments);
   }),
 
   sortPropertiesWillChange: beforeObserver('sortProperties', function() {
