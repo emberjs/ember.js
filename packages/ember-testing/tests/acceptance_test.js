@@ -40,7 +40,7 @@ QUnit.module("ember-testing Acceptance", {
       App.PostsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'posts';
-          this._super();
+          this._super.apply(this, arguments);
         }
       });
 
@@ -52,7 +52,7 @@ QUnit.module("ember-testing Acceptance", {
       App.CommentsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'comments';
-          this._super();
+          this._super.apply(this, arguments);
         }
       });
 

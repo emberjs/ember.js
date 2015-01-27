@@ -365,7 +365,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy: function() {
-      this._super();
+      this._super.apply(this, arguments);
       destroyed = true;
     }
   });
@@ -401,7 +401,7 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy: function() {
-      this._super();
+      this._super.apply(this, arguments);
       destroyed = true;
     }
   });

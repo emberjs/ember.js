@@ -32,15 +32,15 @@ test('overriding public methods', function() {
   });
 
   MixinB = Mixin.create(MixinA, {
-    publicMethod: function() { return this._super()+'B'; }
+    publicMethod: function() { return this._super.apply(this, arguments)+'B'; }
   });
 
   MixinD = Mixin.create(MixinA, {
-    publicMethod: function() { return this._super()+'D'; }
+    publicMethod: function() { return this._super.apply(this, arguments)+'D'; }
   });
 
   MixinF = Mixin.create({
-    publicMethod: function() { return this._super()+'F'; }
+    publicMethod: function() { return this._super.apply(this, arguments)+'F'; }
   });
 
   obj = {};
@@ -71,7 +71,7 @@ test('overriding inherited objects', function() {
 
   var MixinB = Mixin.create({
     foo: function() {
-      this._super();
+      this._super.apply(this, arguments);
       cnt++;
     }
   });
@@ -98,15 +98,15 @@ test('Including the same mixin more than once will only run once', function() {
   });
 
   var MixinB = Mixin.create(MixinA, {
-    foo: function() { this._super(); }
+    foo: function() { this._super.apply(this, arguments); }
   });
 
   var MixinC = Mixin.create(MixinA, {
-    foo: function() { this._super(); }
+    foo: function() { this._super.apply(this, arguments); }
   });
 
   var MixinD = Mixin.create(MixinB, MixinC, MixinA, {
-    foo: function() { this._super(); }
+    foo: function() { this._super.apply(this, arguments); }
   });
 
   var obj = {};
@@ -122,7 +122,7 @@ test('Including the same mixin more than once will only run once', function() {
 test('_super from a single mixin with no superclass does not error', function() {
   var MixinA = Mixin.create({
     foo: function() {
-      this._super();
+      this._super.apply(this, arguments);
     }
   });
 
@@ -140,13 +140,13 @@ test('_super from a first-of-two mixins with no superclass function does not err
   var MixinA = Mixin.create({
     foo: function() {
       if (remaining-- > 0) {
-        this._super();
+        this._super.apply(this, arguments);
       }
     }
   });
 
   var MixinB = Mixin.create({
-    foo: function() { this._super(); }
+    foo: function() { this._super.apply(this, arguments); }
   });
 
   var obj = {};
@@ -193,14 +193,14 @@ test('applying several mixins at once with sup already defined causes infinite l
 
   var MixinB = Mixin.create({
     foo: function() {
-      this._super();
+      this._super.apply(this, arguments);
       cnt++;
     }
   });
 
   var MixinC = Mixin.create({
     foo: function() {
-      this._super();
+      this._super.apply(this, arguments);
       cnt++;
     }
   });

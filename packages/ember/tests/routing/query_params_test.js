@@ -266,7 +266,7 @@ test("controllers won't be eagerly instantiated by internal query params logic",
     queryParams: ['foo'],
     foo: "123",
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       ok(homeShouldBeCreated, "HomeController should be created at this time");
     }
   });
@@ -282,7 +282,7 @@ test("controllers won't be eagerly instantiated by internal query params logic",
     queryParams: ['lol'],
     lol: "haha",
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       ok(aboutShouldBeCreated, "AboutController should be created at this time");
     }
   });
@@ -305,7 +305,7 @@ test("controllers won't be eagerly instantiated by internal query params logic",
     breed: 'Golden',
     name: null,
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       ok(catsIndexShouldBeCreated, "CatsIndexController should be created at this time");
     }
   });

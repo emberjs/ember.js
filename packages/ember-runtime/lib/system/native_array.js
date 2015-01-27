@@ -128,7 +128,7 @@ if (ignore.length > 0) {
     classNames: ['pagination'],
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       if (!this.get('content')) {
         this.set('content', Ember.A());
       }

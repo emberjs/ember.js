@@ -2857,7 +2857,7 @@ test("`activate` event fires on the route", function() {
 
   App.NorkRoute = Ember.Route.extend({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       this.on("activate", function() {
         equal(++eventFired, 1, "activate event is fired once");
@@ -2886,7 +2886,7 @@ test("`deactivate` event fires on the route", function() {
 
   App.NorkRoute = Ember.Route.extend({
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
 
       this.on("deactivate", function() {
         equal(++eventFired, 1, "deactivate event is fired once");

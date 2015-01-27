@@ -17,7 +17,7 @@ var ObserverClass = EmberObject.extend({
   isEnabled: true,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.reset();
   },
 

@@ -254,7 +254,7 @@ var Application = Namespace.extend(DeferredMixin, {
   customEvents: null,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
 
     // Start off the number of deferrals at 1. This will be
     // decremented by the Application's own `initialize` method.

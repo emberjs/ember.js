@@ -31,7 +31,7 @@ test('Overriding a method several layers deep', function() {
     barCnt: 0,
     bar: function() {
       this.barCnt++;
-      this._super();
+      this._super.apply(this, arguments);
     }
   });
 
@@ -39,7 +39,7 @@ test('Overriding a method several layers deep', function() {
     fooCnt: 0,
     foo: function() {
       this.fooCnt++;
-      this._super();
+      this._super.apply(this, arguments);
     }
   });
 
@@ -53,7 +53,7 @@ test('Overriding a method several layers deep', function() {
   obj = FinalClass.createWithMixins({
     foo: function() {
       this.fooCnt++;
-      this._super();
+      this._super.apply(this, arguments);
     }
   });
 

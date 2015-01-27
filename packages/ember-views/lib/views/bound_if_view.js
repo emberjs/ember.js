@@ -5,7 +5,7 @@ import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
 
     var self = this;
 
