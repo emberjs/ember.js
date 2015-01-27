@@ -226,6 +226,46 @@ export function intersection(array1, array2) {
   return result;
 }
 
+/**
+ * Calculates the union of two arrays. This method returns a new array
+ * made up of the records in the first array combined with the records in the second array
+ * without duplicating the records which are found in both arrays.
+ *
+ * ```javascript
+ * var array1 = [1, 2, 3];
+ * var array2 = [3, 5, 6];
+ *
+ * Ember.EnumerableUtils.union(array1, array2); // [1, 2, 3, 5, 6]
+ *
+ * var array1 = [1, 2, 3];
+ * var array2 = [4, 5, 6];
+ *
+ * Ember.EnumerableUtils.union(array1, array2); // [1, 2, 3, 4, 5, 6]
+ * ```
+ *
+ * @method union
+ * @param {Array} array1 The first array
+ * @param {Array} array2 The second array
+ *
+ * @return {Array} The union of the two passed arrays.
+ */
+export function union(array1, array2) {
+  // Account for undefined/null array parameters
+  array1 = array1 || [];
+  array2 = array2 || [];
+
+  var result = array1;
+
+  forEach(array2, function(element) {
+    if (indexOf(result, element) === -1) {
+      result.push(element);
+    }
+  });
+
+  return result;
+}
+
+
 // TODO: this only exists to maintain the existing api, as we move forward it
 // should only be part of the "global build" via some shim
 export default {
@@ -236,6 +276,7 @@ export default {
   indexOf: indexOf,
   indexesOf: indexesOf,
   intersection: intersection,
+  union: union,
   map: map,
   removeObject: removeObject,
   replace: replace
