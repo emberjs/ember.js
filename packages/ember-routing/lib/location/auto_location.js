@@ -15,7 +15,6 @@ import {
   replacePath
 } from "ember-routing/location/util";
 
-
 /**
 @module ember
 @submodule ember-routing

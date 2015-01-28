@@ -80,25 +80,6 @@ QUnit.module("Ember.AutoLocation", {
   }
 });
 
-QUnit.test("_replacePath cannot be used to redirect to a different origin (website)", function() {
-  expect(1);
-
-  var expectedURL;
-
-  mockBrowserLocation({
-    protocol: 'http:',
-    hostname: 'emberjs.com',
-    port: '1337',
-
-    replace: function (url) {
-      equal(url, expectedURL);
-    }
-  });
-
-  expectedURL = 'http://emberjs.com:1337//google.com';
-  AutoTestLocation._replacePath('//google.com');
-});
-
 QUnit.test("AutoLocation.create() should return a HistoryLocation instance when pushStates are supported", function() {
   expect(2);
 
