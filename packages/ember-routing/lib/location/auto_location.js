@@ -5,8 +5,16 @@ import { computed } from "ember-metal/computed";
 
 import EmberObject from "ember-runtime/system/object";
 import environment from "ember-metal/environment";
-import { supportsHashChange, supportsHistory } from "ember-routing/location/util";
-import { getPath, getOrigin, getHash, getFullPath } from "ember-routing/location/util";
+
+import {
+  supportsHashChange,
+  supportsHistory,
+  getPath,
+  getHash,
+  getFullPath,
+  replacePath
+} from "ember-routing/location/util";
+
 
 /**
 @module ember
@@ -100,7 +108,7 @@ export default EmberObject.extend({
     }
 
     return this.container.lookup('location:' + implementation);
-  }),
+  }).readOnly(),
 
   initState: delegateToConcreteImplementation('initState'),
   getURL: delegateToConcreteImplementation('getURL'),
@@ -256,8 +264,4 @@ function getHashPath(rootURL, location) {
   }
 
   return path;
-}
-
-function replacePath(location, path) {
-  location.replace(getOrigin(location) + path);
 }

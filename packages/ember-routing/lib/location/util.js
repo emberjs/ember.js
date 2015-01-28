@@ -100,3 +100,13 @@ export function supportsHistory(userAgent, history) {
 
   return !!(history && 'pushState' in history);
 }
+
+/**
+  Replaces the current location, making sure we explicitly include the origin
+  to prevent redirecting to a different origin.
+
+  @private
+*/
+export function replacePath(location, path) {
+  location.replace(getOrigin(location) + path);
+}
