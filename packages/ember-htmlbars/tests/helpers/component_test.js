@@ -3,9 +3,11 @@ import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { computed } from "ember-metal/computed";
 
 var set = Ember.set;
 var get = Ember.get;
+var on  = Ember.on;
 var view, registry, container;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
@@ -23,6 +25,49 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       runDestroy(container);
       registry = container = view = null;
     }
+  });
+
+  test("component helper with bound properties are updating correctly in init of component", function() {
+    registry.register('component:foo-bar', Ember.Component.extend({
+      assertOnInit: on('init', function() {
+        equal(get(this, 'location'), 'Caracas', 'location is bound on init');
+      })
+    }));
+    registry.register('component:baz-qux', Ember.Component.extend({
+      assertOnInit: on('init', function() {
+        equal(get(this, 'location'), 'Loisaida', 'location is bound on init');
+      })
+    }));
+    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
+
+    view = EmberView.extend({
+      container: container,
+      dynamicComponent: computed('location', function() {
+        var location = get(this, 'location');
+
+        if (location === 'Caracas') {
+          return 'foo-bar';
+        } else {
+          return 'baz-qux';
+        }
+      }),
+      location: 'Caracas',
+      template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
+    }).create();
+
+    runAppend(view);
+    equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
+
+    Ember.run(function() {
+      set(view, "location", 'Loisaida');
+    });
+    equal(view.$().text(), 'yummy Loisaida arepas!', 'component was updated and re-rendered');
+
+    Ember.run(function() {
+      set(view, "location", 'Caracas');
+    });
+    equal(view.$().text(), 'yippie! Caracas arepas!', 'component was updated up and rendered');
   });
 
   test("component helper with unquoted string is bound", function() {
