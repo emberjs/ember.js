@@ -161,10 +161,6 @@ export default EmberObject.extend({
     var resolveMethodName = parsedName.resolveMethodName;
     var resolved;
 
-    if (!(parsedName.name && parsedName.type)) {
-      throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
-    }
-
     if (this[resolveMethodName]) {
       resolved = this[resolveMethodName](parsedName);
     }
@@ -214,6 +210,10 @@ export default EmberObject.extend({
     }
 
     var resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
+
+    if (!(name && type)) {
+      throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
+    }
 
     return {
       fullName: fullName,
