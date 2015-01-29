@@ -18,22 +18,33 @@ var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
  @class Registry
 */
 function Registry(options) {
+  this.fallback = options && options.fallback ? options.fallback : null;
+
   this.resolver = options && options.resolver ? options.resolver : function() {};
 
   this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
-  this.typeInjections = dictionary(options && options.typeInjections ? options.typeInjections : null);
-  this.injections     = dictionary(null);
-  this.factoryTypeInjections = dictionary(null);
-  this.factoryInjections     = dictionary(null);
 
-  this._normalizeCache = dictionary(null);
-  this._resolveCache   = dictionary(null);
+  this._typeInjections        = dictionary(null);
+  this._injections            = dictionary(null);
+  this._factoryTypeInjections = dictionary(null);
+  this._factoryInjections     = dictionary(null);
 
-  this._options     = dictionary(options && options.options ? options.options : null);
-  this._typeOptions = dictionary(options && options.typeOptions ? options.typeOptions : null);
+  this._normalizeCache        = dictionary(null);
+  this._resolveCache          = dictionary(null);
+
+  this._options               = dictionary(null);
+  this._typeOptions           = dictionary(null);
 }
 
 Registry.prototype = {
+  /**
+   A backup registry for resolving registrations when no matches can be found.
+
+   @property fallback
+   @type Registry
+   */
+  fallback: null,
+
   /**
    @property resolver
    @type function
@@ -47,28 +58,36 @@ Registry.prototype = {
   registrations: null,
 
   /**
-   @property typeInjections
+   @private
+
+   @property _typeInjections
    @type InheritingDict
    */
-  typeInjections: null,
+  _typeInjections: null,
 
   /**
-   @property injections
+   @private
+
+   @property _injections
    @type InheritingDict
    */
-  injections: null,
+  _injections: null,
 
   /**
-   @property factoryTypeInjections
+   @private
+
+   @property _factoryTypeInjections
    @type InheritingDict
    */
-  factoryTypeInjections: null,
+  _factoryTypeInjections: null,
 
   /**
-   @property factoryInjections
+   @private
+
+   @property _factoryInjections
    @type InheritingDict
    */
-  factoryInjections: null,
+  _factoryInjections: null,
 
   /**
    @private
@@ -249,7 +268,11 @@ Registry.prototype = {
    */
   resolve: function(fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
-    return resolve(this, this.normalize(fullName));
+    var factory = resolve(this, this.normalize(fullName));
+    if (factory === undefined && this.fallback) {
+      factory = this.fallback.resolve(fullName);
+    }
+    return factory;
   },
 
   /**
@@ -349,7 +372,11 @@ Registry.prototype = {
   },
 
   getOptionsForType: function(type) {
-    return this._typeOptions[type];
+    var optionsForType = this._typeOptions[type];
+    if (optionsForType === undefined && this.fallback) {
+      optionsForType = this.fallback.getOptionsForType(type);
+    }
+    return optionsForType;
   },
 
   /**
@@ -365,7 +392,11 @@ Registry.prototype = {
 
   getOptions: function(fullName) {
     var normalizedName = this.normalize(fullName);
-    return this._options[normalizedName];
+    var options = this._options[normalizedName];
+    if (options === undefined && this.fallback) {
+      options = this.fallback.getOptions(fullName);
+    }
+    return options;
   },
 
   getOption: function(fullName, optionName) {
@@ -378,8 +409,11 @@ Registry.prototype = {
     var type = fullName.split(':')[0];
     options = this._typeOptions[type];
 
-    if (options) {
+    if (options && options[optionName] !== undefined) {
       return options[optionName];
+
+    } else if (this.fallback) {
+      return this.fallback.getOption(fullName, optionName);
     }
   },
 
@@ -435,8 +469,8 @@ Registry.prototype = {
       '` as a different type and perform the typeInjection.');
     }
 
-    var injections = this.typeInjections[type] ||
-                     (this.typeInjections[type] = []);
+    var injections = this._typeInjections[type] ||
+                     (this._typeInjections[type] = []);
 
     injections.push({
       property: property,
@@ -500,8 +534,8 @@ Registry.prototype = {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
     var normalizedName = this.normalize(fullName);
 
-    var injections = this.injections[normalizedName] ||
-                     (this.injections[normalizedName] = []);
+    var injections = this._injections[normalizedName] ||
+                     (this._injections[normalizedName] = []);
 
     injections.push({
       property: property,
@@ -540,8 +574,8 @@ Registry.prototype = {
    @param {String} fullName
    */
   factoryTypeInjection: function(type, property, fullName) {
-    var injections = this.factoryTypeInjections[type] ||
-                     (this.factoryTypeInjections[type] = []);
+    var injections = this._factoryTypeInjections[type] ||
+                     (this._factoryTypeInjections[type] = []);
 
     injections.push({
       property: property,
@@ -609,7 +643,7 @@ Registry.prototype = {
       return this.factoryTypeInjection(normalizedName, property, normalizedInjectionName);
     }
 
-    var injections = this.factoryInjections[normalizedName] || (this.factoryInjections[normalizedName] = []);
+    var injections = this._factoryInjections[normalizedName] || (this._factoryInjections[normalizedName] = []);
 
     injections.push({
       property: property,
@@ -652,6 +686,38 @@ Registry.prototype = {
       }
     }
 
+    return injections;
+  },
+
+  getInjections: function(fullName) {
+    var injections = this._injections[fullName] || [];
+    if (this.fallback) {
+      injections = injections.concat(this.fallback.getInjections(fullName));
+    }
+    return injections;
+  },
+
+  getTypeInjections: function(type) {
+    var injections = this._typeInjections[type] || [];
+    if (this.fallback) {
+      injections = injections.concat(this.fallback.getTypeInjections(type));
+    }
+    return injections;
+  },
+
+  getFactoryInjections: function(fullName) {
+    var injections = this._factoryInjections[fullName] || [];
+    if (this.fallback) {
+      injections = injections.concat(this.fallback.getFactoryInjections(fullName));
+    }
+    return injections;
+  },
+
+  getFactoryTypeInjections: function(type) {
+    var injections = this._factoryTypeInjections[type] || [];
+    if (this.fallback) {
+      injections = injections.concat(this.fallback.getFactoryTypeInjections(type));
+    }
     return injections;
   }
 };

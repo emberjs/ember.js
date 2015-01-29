@@ -72,7 +72,7 @@ test("The registry can take a hook to resolve factories lazily", function() {
   strictEqual(registry.resolve('controller:post'), PostController, "The correct factory was provided");
 });
 
-test("The registry respect the resolver hook for `has`", function() {
+test("The registry respects the resolver hook for `has`", function() {
   var registry = new Registry();
   var PostController = factory();
 
@@ -274,4 +274,74 @@ test("registry.container creates an associated container", function() {
 
   ok(postController instanceof PostController, "The lookup is an instance of the registered factory");
   strictEqual(registry._defaultContainer, container, "_defaultContainer is set to the first created container and used for Ember 1.x Container compatibility");
+});
+
+test("`resolve` can be handled by a fallback registry", function() {
+  var fallback = new Registry();
+
+  var registry = new Registry({ fallback: fallback });
+  var PostController = factory();
+
+  fallback.register('controller:post', PostController);
+
+  var PostControllerFactory = registry.resolve('controller:post');
+
+  ok(PostControllerFactory, 'factory is returned');
+  ok(PostControllerFactory.create() instanceof  PostController, "The return of factory.create is an instance of PostController");
+});
+
+test("`has` can be handled by a fallback registry", function() {
+  var fallback = new Registry();
+
+  var registry = new Registry({ fallback: fallback });
+  var PostController = factory();
+
+  fallback.register('controller:post', PostController);
+
+  equal(registry.has('controller:post'), true, "Fallback registry is checked for registration");
+});
+
+test("`getInjections` includes injections from a fallback registry", function() {
+  var fallback = new Registry();
+  var registry = new Registry({ fallback: fallback });
+
+  equal(registry.getInjections('model:user').length, 0, "No injections in the primary registry");
+
+  fallback.injection('model:user', 'post', 'model:post');
+
+  equal(registry.getInjections('model:user').length, 1, "Injections from the fallback registry are merged");
+});
+
+test("`getTypeInjections` includes type injections from a fallback registry", function() {
+  var fallback = new Registry();
+  var registry = new Registry({ fallback: fallback });
+
+  equal(registry.getTypeInjections('model').length, 0, "No injections in the primary registry");
+
+  fallback.injection('model', 'source', 'source:main');
+
+  equal(registry.getTypeInjections('model').length, 1, "Injections from the fallback registry are merged");
+});
+
+test("`getFactoryInjections` includes factory injections from a fallback registry", function() {
+  var fallback = new Registry();
+  var registry = new Registry({ fallback: fallback });
+
+  equal(registry.getFactoryInjections('model:user').length, 0, "No factory injections in the primary registry");
+
+  fallback.factoryInjection('model:user', 'store', 'store:main');
+
+  equal(registry.getFactoryInjections('model:user').length, 1, "Factory injections from the fallback registry are merged");
+});
+
+
+test("`getFactoryTypeInjections` includes factory type injections from a fallback registry", function() {
+  var fallback = new Registry();
+  var registry = new Registry({ fallback: fallback });
+
+  equal(registry.getFactoryTypeInjections('model').length, 0, "No factory type injections in the primary registry");
+
+  fallback.factoryInjection('model', 'store', 'store:main');
+
+  equal(registry.getFactoryTypeInjections('model').length, 1, "Factory type injections from the fallback registry are merged");
 });
