@@ -318,7 +318,7 @@ var Application = Namespace.extend(DeferredMixin, {
     return ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
-      registry: this.registry
+      applicationRegistry: this.registry
     });
   },
 
