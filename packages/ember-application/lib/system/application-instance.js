@@ -7,6 +7,7 @@
 import { set } from "ember-metal/property_set";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
+import Registry from 'container/registry';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -44,6 +45,14 @@ export default EmberObject.extend({
 
     @property {Ember.Registry} registry
   */
+  applicationRegistry: null,
+
+  /**
+    The registry for this application instance. It should use the
+    `applicationRegistry` as a fallback.
+
+    @property {Ember.Registry} registry
+  */
   registry: null,
 
   /**
@@ -71,21 +80,27 @@ export default EmberObject.extend({
 
   init: function() {
     this._super.apply(this, arguments);
+
+    // Create a per-instance registry that will use the application's registry
+    // as a fallback for resolving registrations.
+    this.registry = new Registry({
+      fallback: this.applicationRegistry,
+      resolver: this.applicationRegistry.resolver
+    });
+    this.registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
+    this.registry.makeToString = this.applicationRegistry.makeToString;
+
+    // Create a per-instance container from the instance's registry
     this.container = this.registry.container();
 
-    // Currently, we cannot put the application instance into the container
-    // because the registry is "sealed" by this point and we do not yet
-    // support container-specific subregistries. This code puts the instance
-    // directly into the container's cache so that lookups work, but it
-    // would obviously be much better to support registering on the container
-    // directly.
+    // Register this instance in the per-instance registry.
     //
-    // Why do we need to put the instance in the container in the first place?
+    // Why do we need to register the instance in the first place?
     // Because we need a good way for the root route (a.k.a ApplicationRoute)
     // to notify us when it has created the root-most view. That view is then
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
-    this.container.cache['-application-instance:main'] = this;
+    this.registry.register('-application-instance:main', this, { instantiate: false });
   },
 
   /**
