@@ -354,7 +354,7 @@ var Application = Namespace.extend(DeferredMixin, {
     if (!this.$ || this.$.isReady) {
       run.schedule('actions', this, 'domReady', _instance);
     } else {
-      this.$().ready(Ember.run.bind(this, 'domReady', _instance));
+      this.$().ready(run.bind(this, 'domReady', _instance));
     }
   },
 
