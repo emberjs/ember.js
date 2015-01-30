@@ -23,7 +23,7 @@ export default function attribute(env, morph, element, attrName, attrValue) {
     if (isStream(attrValue)) {
       throw new EmberError('Bound attributes are not yet supported in Ember.js');
     } else {
-      var sanitizedValue = sanitizeAttributeValue(element, attrName, attrValue);
+      var sanitizedValue = sanitizeAttributeValue(env.dom, element, attrName, attrValue);
       env.dom.setProperty(element, attrName, sanitizedValue);
     }
   }
