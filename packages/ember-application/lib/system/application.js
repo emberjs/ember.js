@@ -802,6 +802,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
     */
     visit: function(url) {
       var instance = this.buildInstance();
+      this.runInstanceInitializers(instance);
 
       var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
         instance.didCreateRootView = function(view) {

@@ -1,12 +1,20 @@
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
+import ApplicationInstance from "ember-application/system/application-instance";
+import Router from "ember-routing/system/router";
+import compile from "ember-template-compiler/system/compile";
 
 function createApplication() {
-  var app = Application.extend().create({
-    autoboot: false
+  var App = Application.extend().create({
+    autoboot: false,
+    LOG_TRANSITIONS: true,
+    LOG_TRANSITIONS_INTERNAL: true,
+    LOG_ACTIVE_GENERATION: true
   });
 
-  return app;
+  App.Router = Router.extend();
+
+  return App;
 }
 
 if (Ember.FEATURES.isEnabled('ember-application-visit')) {
@@ -40,6 +48,38 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
           assert.ok(false, "instance should not have been created");
         }
       });
+    });
+  });
+
+  QUnit.test("visit() returns a promise that resolves when the view has rendered", function(assert) {
+    QUnit.expect(3);
+    QUnit.stop();
+
+    var app;
+
+    run(function() {
+      app = createApplication();
+      app.instanceInitializer({
+        name: 'register-application-template',
+        initialize: function(app) {
+          app.registry.register('template:application', compile('<h1>Hello world</h1>'));
+        }
+      });
+    });
+
+    assert.equal(Ember.$('#qunit-fixture').children().length, 0, "there are no elements in the fixture element");
+
+    app.visit('/').then(function(instance) {
+      QUnit.start();
+      assert.ok(instance instanceof ApplicationInstance, "promise is resolved with an ApplicationInstance");
+
+      run(instance.view, 'appendTo', '#qunit-fixture');
+      assert.equal(Ember.$("#qunit-fixture > .ember-view h1").text(), "Hello world", "the application was rendered once the promise resolves");
+
+      instance.destroy();
+    }, function(error) {
+      QUnit.start();
+      assert.ok(false, "The visit() promise was rejected: " + error);
     });
   });
 }
