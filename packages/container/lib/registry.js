@@ -143,14 +143,29 @@ Registry.prototype = {
   container: function(options) {
     var container = new Container(this, options);
 
-    // Allow deprecated access to the first child container's `lookup` and
-    // `lookupFactory` methods to avoid breaking compatibility for Ember 1.x
-    // initializers.
+    // 2.0TODO - remove `registerContainer`
+    this.registerContainer(container);
+
+    return container;
+  },
+
+  /**
+   Register the first container created for a registery to allow deprecated
+   access to its `lookup` and `lookupFactory` methods to avoid breaking
+   compatibility for Ember 1.x initializers.
+
+   2.0TODO: Remove this method. The bookkeeping is only needed to support
+            deprecated behavior.
+
+   @param {Container} newly created container
+   */
+  registerContainer: function(container) {
     if (!this._defaultContainer) {
       this._defaultContainer = container;
     }
-
-    return container;
+    if (this.fallback) {
+      this.fallback.registerContainer(container);
+    }
   },
 
   lookup: function(fullName, options) {
