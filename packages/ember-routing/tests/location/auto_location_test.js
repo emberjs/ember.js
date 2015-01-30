@@ -8,40 +8,10 @@ import AutoLocation from "ember-routing/location/auto_location";
 import EmberLocation from "ember-routing/location/api";
 import { supportsHistory, supportsHashChange } from "ember-routing/location/util";
 
-var AutoTestLocation, location;
-
-var FakeHistoryLocation = EmberObject.extend({
-  implementation: 'history'
-});
-
-var FakeHashLocation = EmberObject.extend({
-  implementation: 'hash'
-});
-
-var FakeNoneLocation = EmberObject.extend({
-  implementation: 'none'
-});
-
-function createLocation(options) {
-  if (!options) { options = {}; }
-
-  if ('history' in options) {
-    AutoTestLocation._getSupportsHistory = function() {
-      return options.history;
-    };
-  }
-
-  if ('hashChange' in options) {
-    AutoTestLocation._getSupportsHashChange = function() {
-      return options.hashChange;
-    };
-  }
-
-  location = AutoTestLocation.create(options);
-}
+var autoLocation;
 
 function mockBrowserLocation(overrides) {
-  AutoTestLocation._location = merge({
+  return merge({
     href: 'http://test.com/',
     pathname: '/',
     hash: '',
@@ -53,7 +23,7 @@ function mockBrowserLocation(overrides) {
 }
 
 function mockBrowserHistory(overrides) {
-  AutoTestLocation._history = merge({
+  return merge({
     pushState: function () {
       ok(false, 'history.pushState should not be called during testing');
     },
@@ -65,17 +35,12 @@ function mockBrowserHistory(overrides) {
 
 QUnit.module("Ember.AutoLocation", {
   setup: function() {
-    AutoTestLocation = copy(AutoLocation);
-
-    AutoTestLocation._HistoryLocation = FakeHistoryLocation;
-    AutoTestLocation._HashLocation = FakeHashLocation;
-    AutoTestLocation._NoneLocation = FakeNoneLocation;
+    autoLocation = AutoLocation.create();
   },
 
   teardown: function() {
     run(function() {
-      if (location && location.destroy) { location.destroy(); }
-      location = AutoTestLocation = null;
+      autoLocation.destroy();
     });
   }
 });
