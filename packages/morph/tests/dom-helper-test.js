@@ -372,6 +372,16 @@ test('#parseHTML of number', function(){
   equalHTML(nodes, '5');
 });
 
+test('#protocolForURL', function() {
+  var protocol = dom.protocolForURL("http://www.emberjs.com");
+  equal(protocol, "http:");
+
+  // Inherit protocol from document if unparseable
+  protocol = dom.protocolForURL("   javascript  :lulzhacked()");
+  /*jshint scripturl:true*/
+  equal(protocol, "http:");
+});
+
 test('#cloneNode shallow', function(){
   var divElement = document.createElement('div');
 
