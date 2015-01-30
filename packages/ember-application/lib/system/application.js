@@ -284,11 +284,16 @@ var Application = Namespace.extend(DeferredMixin, {
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
-    if (!Ember.FEATURES.isEnabled('ember-application-visit') || this.autoboot) {
-      // Create subclass of Ember.Router for this Application instance.
-      // This is to ensure that someone reopening `App.Router` does not
-      // tamper with the default `Ember.Router`.
-      // 2.0TODO: Can we move this into a globals-mode-only library?
+    if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+      if (this.autoboot) {
+        // Create subclass of Ember.Router for this Application instance.
+        // This is to ensure that someone reopening `App.Router` does not
+        // tamper with the default `Ember.Router`.
+        // 2.0TODO: Can we move this into a globals-mode-only library?
+        this.Router = Router.extend();
+        this.waitForDOMReady(this.buildDefaultInstance());
+      }
+    } else {
       this.Router = Router.extend();
       this.waitForDOMReady(this.buildDefaultInstance());
     }
