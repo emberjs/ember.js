@@ -284,7 +284,7 @@ var Application = Namespace.extend(DeferredMixin, {
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
-    if (this.autoboot) {
+    if (!Ember.FEATURES.isEnabled('ember-application-visit') || this.autoboot) {
       // Create subclass of Ember.Router for this Application instance.
       // This is to ensure that someone reopening `App.Router` does not
       // tamper with the default `Ember.Router`.
@@ -760,38 +760,6 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Creates a new instance of the application and instructs it to route to the
-    specified initial URL. This method returns a promise that will be resolved
-    once rendering is complete. That promise is resolved with the instance.
-
-    ```js
-    App.visit('/users').then(function(instance) {
-      var view = instance.view;
-      view.appendTo('#qunit-test-fixtures');
-    });
-   ```
-
-    @method visit
-    @private
-  */
-  visit: function(url) {
-    var instance = this.buildInstance();
-
-    var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
-      instance.didCreateRootView = function(view) {
-        instance.view = view;
-        res(instance);
-      };
-    });
-
-    instance.setupRouter({ location: 'none' });
-
-    return instance.handleURL(url).then(function() {
-      return renderPromise;
-    });
-  },
-
-  /**
     @method then
     @private
     @deprecated
@@ -812,6 +780,42 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
   Application.reopenClass({
     instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+  });
+}
+
+if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+  Application.reopen({
+    /**
+      Creates a new instance of the application and instructs it to route to the
+      specified initial URL. This method returns a promise that will be resolved
+      once rendering is complete. That promise is resolved with the instance.
+
+      ```js
+      App.visit('/users').then(function(instance) {
+        var view = instance.view;
+        view.appendTo('#qunit-test-fixtures');
+      });
+     ```
+
+      @method visit
+      @private
+    */
+    visit: function(url) {
+      var instance = this.buildInstance();
+
+      var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
+        instance.didCreateRootView = function(view) {
+          instance.view = view;
+          res(instance);
+        };
+      });
+
+      instance.setupRouter({ location: 'none' });
+
+      return instance.handleURL(url).then(function() {
+        return renderPromise;
+      });
+    }
   });
 }
 
