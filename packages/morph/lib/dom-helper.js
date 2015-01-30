@@ -403,4 +403,16 @@ prototype.parseHTML = function(html, contextualElement) {
   }
 };
 
+var parsingNode;
+
+// Used to determine whether a URL needs to be sanitized.
+prototype.protocolForURL = function(url) {
+  if (!parsingNode) {
+    parsingNode = this.document.createElement('a');
+  }
+
+  parsingNode.href = url;
+  return parsingNode.protocol;
+};
+
 export default DOMHelper;
