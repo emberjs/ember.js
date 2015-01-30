@@ -22,6 +22,8 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-views/system/renderer";
 import { DOMHelper } from "morph";
 import SelectView from "ember-views/views/select";
+import EmberView from "ember-views/views/view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
@@ -35,7 +37,6 @@ import ApplicationInstance from "ember-application/system/application-instance";
 
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
-import { K } from 'ember-metal/core';
 import environment from 'ember-metal/environment';
 
 function props(obj) {
@@ -253,31 +254,49 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   customEvents: null,
 
+  /**
+    Whether the application should automatically start routing and render
+    templates to the `rootElement` on DOM ready. While default by true,
+    other environments such as FastBoot or a testing harness can set this
+    property to `false` and control the precise timing and behavior of the boot
+    process.
+
+    @property autoboot
+    @type Boolean
+    @default true
+    @private
+  */
+  autoboot: true,
+
   init: function() {
     this._super.apply(this, arguments);
-
-    // Start off the number of deferrals at 1. This will be
-    // decremented by the Application's own `initialize` method.
-    this._readinessDeferrals = 1;
 
     if (!this.$) {
       this.$ = jQuery;
     }
 
-    // Create subclass of Ember.Router for this Application instance.
-    // This is to ensure that someone reopening `App.Router` does not
-    // tamper with the default `Ember.Router`.
-    // 2.0TODO: Can we move this into a globals-mode-only library?
-    this.Router = Router.extend();
     this.buildRegistry();
-
-    // TODO:(tomdale+wycats) Move to session creation phase
-    this.buildInstance();
 
     registerLibraries();
     logLibraryVersions();
 
-    this.scheduleInitialize();
+    // Start off the number of deferrals at 1. This will be
+    // decremented by the Application's own `initialize` method.
+    this._readinessDeferrals = 1;
+
+    if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+      if (this.autoboot) {
+        // Create subclass of Ember.Router for this Application instance.
+        // This is to ensure that someone reopening `App.Router` does not
+        // tamper with the default `Ember.Router`.
+        // 2.0TODO: Can we move this into a globals-mode-only library?
+        this.Router = Router.extend();
+        this.waitForDOMReady(this.buildDefaultInstance());
+      }
+    } else {
+      this.Router = Router.extend();
+      this.waitForDOMReady(this.buildDefaultInstance());
+    }
   },
 
   /**
@@ -288,7 +307,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry: function() {
-    var registry = this.__registry__ = Application.buildRegistry(this);
+    var registry = this.registry = Application.buildRegistry(this);
 
     return registry;
   },
@@ -301,13 +320,20 @@ var Application = Namespace.extend(DeferredMixin, {
     @return {Ember.Container} the configured container
   */
   buildInstance: function() {
-    var instance = this.__instance__ = ApplicationInstance.create({
+    return ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
-      registry: this.__registry__
+      applicationRegistry: this.registry
     });
+  },
+
+  buildDefaultInstance: function() {
+    var instance = this.buildInstance();
 
     // TODO2.0: Legacy support for App.__container__
+    // and global methods on App that rely on a single,
+    // default instance.
+    this.__deprecatedInstance__ = instance;
     this.__container__ = instance.container;
 
     return instance;
@@ -329,11 +355,11 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method scheduleInitialize
   */
-  scheduleInitialize: function() {
+  waitForDOMReady: function(_instance) {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, '_initialize');
+      run.schedule('actions', this, 'domReady', _instance);
     } else {
-      this.$().ready(Ember.run.bind(this, '_initialize'));
+      this.$().ready(run.bind(this, 'domReady', _instance));
     }
   },
 
@@ -443,8 +469,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  options {Object} (optional) disable instantiation or singleton usage
   **/
   register: function() {
-    var registry = this.__registry__;
-    registry.register.apply(registry, arguments);
+    this.registry.register.apply(this.registry, arguments);
   },
 
   /**
@@ -497,8 +522,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  injectionName {String}
   **/
   inject: function() {
-    var registry = this.__registry__;
-    registry.injection.apply(registry, arguments);
+    this.registry.injection.apply(this.registry, arguments);
   },
 
   /**
@@ -525,20 +549,31 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method _initialize
   */
-  _initialize: function() {
+  domReady: function(_instance) {
     if (this.isDestroyed) { return; }
 
-    this.runInitializers(this.__registry__);
-    this.runInstanceInitializers(this.__instance__);
+    var app = this;
 
-    runLoadHooks('application', this);
-
-    // At this point, any initializers or load hooks that would have wanted
-    // to defer readiness have fired. In general, advancing readiness here
-    // will proceed to didBecomeReady.
-    this.advanceReadiness();
+    this.boot().then(function() {
+      app.runInstanceInitializers(_instance);
+    });
 
     return this;
+  },
+
+  boot: function() {
+    if (this._bootPromise) { return this._bootPromise; }
+
+    var defer = new Ember.RSVP.defer();
+    this._bootPromise = defer.promise;
+    this._bootResolver = defer;
+
+    this.runInitializers(this.registry);
+    runLoadHooks('application', this);
+
+    this.advanceReadiness();
+
+    return this._bootPromise;
   },
 
   /**
@@ -610,16 +645,18 @@ var Application = Namespace.extend(DeferredMixin, {
     @method reset
   **/
   reset: function() {
-    var instance = this.__instance__;
+    var instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
+    this._bootPromise = null;
+    this._bootResolver = null;
 
     function handleReset() {
       run(instance, 'destroy');
 
-      this.buildInstance();
+      this.buildDefaultInstance();
 
-      run.schedule('actions', this, '_initialize');
+      run.schedule('actions', this, 'domReady');
     }
 
     run.join(this, handleReset);
@@ -671,37 +708,24 @@ var Application = Namespace.extend(DeferredMixin, {
     @method didBecomeReady
   */
   didBecomeReady: function() {
-    if (environment.hasDOM) {
-      this.__instance__.setupEventDispatcher();
+    if (this.autoboot) {
+      if (environment.hasDOM) {
+        this.__deprecatedInstance__.setupEventDispatcher();
+      }
+
+      this.ready(); // user hook
+      this.__deprecatedInstance__.startRouting();
+
+      if (!Ember.testing) {
+        // Eagerly name all classes that are already loaded
+        Ember.Namespace.processAll();
+        Ember.BOOTED = true;
+      }
+
+      this.resolve(this);
     }
 
-    this.ready(); // user hook
-    this.startRouting();
-
-    if (!Ember.testing) {
-      // Eagerly name all classes that are already loaded
-      Ember.Namespace.processAll();
-      Ember.BOOTED = true;
-    }
-
-    this.resolve(this);
-  },
-
-  /**
-    If the application has a router, use it to route to the current URL, and
-    trigger a new call to `route` whenever the URL changes.
-
-    @private
-    @method startRouting
-    @property router {Ember.Router}
-  */
-  startRouting: function() {
-    var isModuleBasedResolver = this.Resolver && this.Resolver.moduleBasedResolver;
-    this.__instance__.startRouting(isModuleBasedResolver);
-  },
-
-  handleURL: function(url) {
-    return this.__instance__.handleURL(url);
+    this._bootResolver.resolve();
   },
 
   /**
@@ -710,7 +734,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @event ready
   */
-  ready: K,
+  ready: function() { return this; },
 
   /**
     @deprecated Use 'Resolver' instead
@@ -731,7 +755,9 @@ var Application = Namespace.extend(DeferredMixin, {
   // This method must be moved to the application instance object
   willDestroy: function() {
     Ember.BOOTED = false;
-    this.__instance__.destroy();
+    this._bootPromise = null;
+    this._bootResolver = null;
+    this.__deprecatedInstance__.destroy();
   },
 
   initializer: function(options) {
@@ -759,6 +785,43 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
   Application.reopenClass({
     instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+  });
+}
+
+if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+  Application.reopen({
+    /**
+      Creates a new instance of the application and instructs it to route to the
+      specified initial URL. This method returns a promise that will be resolved
+      once rendering is complete. That promise is resolved with the instance.
+
+      ```js
+      App.visit('/users').then(function(instance) {
+        var view = instance.view;
+        view.appendTo('#qunit-test-fixtures');
+      });
+     ```
+
+      @method visit
+      @private
+    */
+    visit: function(url) {
+      var instance = this.buildInstance();
+      this.runInstanceInitializers(instance);
+
+      var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
+        instance.didCreateRootView = function(view) {
+          instance.view = view;
+          res(instance);
+        };
+      });
+
+      instance.setupRouter({ location: 'none' });
+
+      return instance.handleURL(url).then(function() {
+        return renderPromise;
+      });
+    }
   });
 }
 
@@ -940,6 +1003,9 @@ Application.reopenClass({
 
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
+
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
 
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);

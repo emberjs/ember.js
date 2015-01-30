@@ -270,8 +270,8 @@ function injectionsFor(container, fullName) {
   var type = splitName[0];
 
   var injections = buildInjections(container,
-                                   registry.typeInjections[type],
-                                   registry.injections[fullName]);
+                                   registry.getTypeInjections(type),
+                                   registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
   injections.container = container;
 
@@ -284,8 +284,8 @@ function factoryInjectionsFor(container, fullName) {
   var type = splitName[0];
 
   var factoryInjections = buildInjections(container,
-                                          registry.factoryTypeInjections[type],
-                                          registry.factoryInjections[fullName]);
+                                          registry.getFactoryTypeInjections(type),
+                                          registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
 
   return factoryInjections;

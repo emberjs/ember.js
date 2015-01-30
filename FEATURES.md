@@ -5,6 +5,14 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-application-visit`
+
+  Provides an API for creating an application instance and specifying
+  an initial URL that it should route to. This is useful for testing
+  (you can have multiple instances of an app without having to run
+  serially and call `reset()` each time), as well as being critical to
+  for FastBoot.
+
 * `ember-application-instance-initializers`
 
   Splits apart initializers into two phases:

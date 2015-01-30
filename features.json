@@ -17,7 +17,8 @@
     "ember-htmlbars-each-with-index": true,
     "ember-application-instance-initializers": null,
     "ember-application-initializer-context": null,
-    "ember-router-willtransition": true
+    "ember-router-willtransition": true,
+    "ember-application-visit": null
   },
   "debugStatements": [
     "Ember.warn",

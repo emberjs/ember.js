@@ -11,12 +11,12 @@ import {
 
 var registry, locator, application, originalLookup, originalLoggerInfo;
 
-QUnit.module("Ember.Application Depedency Injection", {
+QUnit.module("Ember.Application Dependency Injection - default resolver", {
   setup: function() {
     originalLookup = Ember.lookup;
     application = run(Application, 'create');
 
-    registry = application.__registry__;
+    registry = application.registry;
     locator = application.__container__;
     originalLoggerInfo = Logger.info;
   },
