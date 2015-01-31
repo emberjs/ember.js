@@ -1,5 +1,5 @@
-import Morph from "../morph/morph";
-import AttrMorph from "../morph/attr-morph";
+import Morph from "./morph-range";
+import AttrMorph from "./morph-attr";
 import {
   buildHTMLDOM,
   svgNamespace,

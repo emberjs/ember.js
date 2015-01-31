@@ -1,8 +1,8 @@
-import {DOMHelper} from "../morph";
+import DOMHelper from "../dom-helper";
 
 var dom;
 
-QUnit.module('morph: DOM Helper', {
+QUnit.module('DOM Helper (Node)', {
   afterEach: function() {
     dom = null;
   }
