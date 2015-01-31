@@ -377,9 +377,9 @@ test('#protocolForURL', function() {
   equal(protocol, "http:");
 
   // Inherit protocol from document if unparseable
-  protocol = dom.protocolForURL("   javascript  :lulzhacked()");
+  protocol = dom.protocolForURL("   javascript:lulzhacked()");
   /*jshint scripturl:true*/
-  equal(protocol, "http:");
+  equal(protocol, "javascript:");
 });
 
 test('#cloneNode shallow', function(){
