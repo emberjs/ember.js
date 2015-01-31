@@ -80,7 +80,7 @@ QUnit.module("Ember.TextField", {
   }
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should become disabled if the disabled attribute is true before append", function() {
   textField.set('disabled', true);
   append();
 
