@@ -3,7 +3,6 @@ import Renderer from 'ember-metal-views/renderer';
 import create from 'ember-metal/platform/create';
 import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
-import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import {
   _instrumentStart,
@@ -136,7 +135,7 @@ Renderer.prototype.willDestroyElement = function (view) {
 };
 
 Renderer.prototype.didDestroyElement = function (view) {
-  set(view, 'element', null);
+  view.element = null;
   if (view._transitionTo) {
     view._transitionTo('preRender');
   }
