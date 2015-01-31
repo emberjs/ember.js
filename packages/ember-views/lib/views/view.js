@@ -112,6 +112,348 @@ Ember.TEMPLATES = {};
 
 var EMPTY_ARRAY = [];
 
+var ViewStreamSupport = Mixin.create({
+  init: function() {
+    this._baseContext = undefined;
+    this._contextStream = undefined;
+    this._streamBindings = undefined;
+    this._super.apply(this, arguments);
+  },
+
+  getStream: function(path) {
+    var stream = this._getContextStream().get(path);
+
+    stream._label = path;
+
+    return stream;
+  },
+
+  _getBindingForStream: function(pathOrStream) {
+    if (this._streamBindings === undefined) {
+      this._streamBindings = create(null);
+      this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    var path = pathOrStream;
+    if (isStream(pathOrStream)) {
+      path = pathOrStream._label;
+
+      if (!path) {
+        // if no _label is present on the provided stream
+        // it is likely a subexpr and cannot be set (so it
+        // does not need a StreamBinding)
+        return pathOrStream;
+      }
+    }
+
+    if (this._streamBindings[path] !== undefined) {
+      return this._streamBindings[path];
+    } else {
+      var stream = this._getContextStream().get(path);
+      var streamBinding = new StreamBinding(stream);
+
+      streamBinding._label = path;
+
+      return this._streamBindings[path] = streamBinding;
+    }
+  },
+
+  _destroyStreamBindings: function() {
+    var streamBindings = this._streamBindings;
+    for (var path in streamBindings) {
+      streamBindings[path].destroy();
+    }
+    this._streamBindings = undefined;
+  },
+
+  _getContextStream: function() {
+    if (this._contextStream === undefined) {
+      this._baseContext = new KeyStream(this, 'context');
+      this._contextStream = new ContextStream(this);
+      this.one('willDestroyElement', this, this._destroyContextStream);
+    }
+
+    return this._contextStream;
+  },
+
+  _destroyContextStream: function() {
+    this._baseContext.destroy();
+    this._baseContext = undefined;
+    this._contextStream.destroy();
+    this._contextStream = undefined;
+  },
+
+  _unsubscribeFromStreamBindings: function() {
+    for (var key in this._streamBindingSubscriptions) {
+      var streamBinding = this[key + 'Binding'];
+      var callback = this._streamBindingSubscriptions[key];
+      streamBinding.unsubscribe(callback);
+    }
+  }
+});
+
+var ViewKeywordSupport = Mixin.create({
+  init: function() {
+    this._super.apply(this, arguments);
+
+    if (!this._keywords) {
+      this._keywords = create(null);
+    }
+    this._keywords._view = this;
+    this._keywords.view = undefined;
+    this._keywords.controller = new KeyStream(this, 'controller');
+    this._setupKeywords();
+  },
+
+  _setupKeywords: function() {
+    var keywords = this._keywords;
+    var contextView = this._contextView || this._parentView;
+
+    if (contextView) {
+      var parentKeywords = contextView._keywords;
+
+      keywords.view = this.isVirtual ? parentKeywords.view : this;
+
+      for (var name in parentKeywords) {
+        if (keywords[name]) {
+          continue;
+        }
+
+        keywords[name] = parentKeywords[name];
+      }
+    } else {
+      keywords.view = this.isVirtual ? null : this;
+    }
+  }
+});
+
+var ViewContextSupport = Mixin.create({
+  /**
+    The object from which templates should access properties.
+
+    This object will be passed to the template function each time the render
+    method is called, but it is up to the individual function to decide what
+    to do with it.
+
+    By default, this will be the view's controller.
+
+    @property context
+    @type Object
+  */
+  context: computed(function(key, value) {
+    if (arguments.length === 2) {
+      set(this, '_context', value);
+      return value;
+    } else {
+      return get(this, '_context');
+    }
+  }).volatile(),
+
+  /**
+    Private copy of the view's template context. This can be set directly
+    by Handlebars without triggering the observer that causes the view
+    to be re-rendered.
+
+    The context of a view is looked up as follows:
+
+    1. Supplied context (usually by Handlebars)
+    2. Specified controller
+    3. `parentView`'s context (for a child of a ContainerView)
+
+    The code in Handlebars that overrides the `_context` property first
+    checks to see whether the view has a specified controller. This is
+    something of a hack and should be revisited.
+
+    @property _context
+    @private
+  */
+  _context: computed(function(key, value) {
+    if (arguments.length === 2) {
+      return value;
+    }
+
+    var parentView, controller;
+
+    if (controller = get(this, 'controller')) {
+      return controller;
+    }
+
+    parentView = this._parentView;
+    if (parentView) {
+      return get(parentView, '_context');
+    }
+
+    return null;
+  }),
+
+  _controller: null,
+
+  /**
+    The controller managing this view. If this property is set, it will be
+    made available for use by the template.
+
+    @property controller
+    @type Object
+  */
+  controller: computed(function(key, value) {
+    if (arguments.length === 2) {
+      this._controller = value;
+      return value;
+    }
+
+    if (this._controller) {
+      return this._controller;
+    }
+
+    var parentView = this._parentView;
+    return parentView ? get(parentView, 'controller') : null;
+  })
+});
+
+var ViewChildViewsSupport = Mixin.create({
+  /**
+    Array of child views. You should never edit this array directly.
+    Instead, use `appendChild` and `removeFromParent`.
+
+    @property childViews
+    @type Array
+    @default []
+    @private
+  */
+  childViews: childViewsProperty,
+
+  _childViews: EMPTY_ARRAY,
+
+  init: function() {
+    // setup child views. be sure to clone the child views array first
+    this._childViews = this._childViews.slice();
+
+    this._super.apply(this, arguments);
+  },
+
+  appendChild: function(view, options) {
+    return this.currentState.appendChild(this, view, options);
+  },
+
+  /**
+    Removes the child view from the parent view.
+
+    @method removeChild
+    @param {Ember.View} view
+    @return {Ember.View} receiver
+  */
+  removeChild: function(view) {
+    // If we're destroying, the entire subtree will be
+    // freed, and the DOM will be handled separately,
+    // so no need to mess with childViews.
+    if (this.isDestroying) { return; }
+
+    // update parent node
+    set(view, '_parentView', null);
+
+    // remove view from childViews array.
+    var childViews = this._childViews;
+
+    removeObject(childViews, view);
+
+    this.propertyDidChange('childViews'); // HUH?! what happened to will change?
+
+    return this;
+  },
+
+  /**
+    Instantiates a view to be added to the childViews array during view
+    initialization. You generally will not call this method directly unless
+    you are overriding `createChildViews()`. Note that this method will
+    automatically configure the correct settings on the new view instance to
+    act as a child of the parent.
+
+    @method createChildView
+    @param {Class|String} viewClass
+    @param {Hash} [attrs] Attributes to add
+    @return {Ember.View} new instance
+  */
+  createChildView: function(maybeViewClass, _attrs) {
+    if (!maybeViewClass) {
+      throw new TypeError("createChildViews first argument must exist");
+    }
+
+    if (maybeViewClass.isView && maybeViewClass._parentView === this && maybeViewClass.container === this.container) {
+      return maybeViewClass;
+    }
+
+    var attrs = _attrs || {};
+    var view;
+    attrs._parentView = this;
+    attrs.renderer = this.renderer;
+
+    if (CoreView.detect(maybeViewClass)) {
+      attrs.container = this.container;
+
+      view = maybeViewClass.create(attrs);
+
+      // don't set the property on a virtual view, as they are invisible to
+      // consumers of the view API
+      if (view.viewName) {
+        set(get(this, 'concreteView'), view.viewName, view);
+      }
+    } else if ('string' === typeof maybeViewClass) {
+      var fullName = 'view:' + maybeViewClass;
+      var ViewKlass = this.container.lookupFactory(fullName);
+
+      Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
+
+      view = ViewKlass.create(attrs);
+    } else {
+      view = maybeViewClass;
+      Ember.assert('You must pass instance or subclass of View', view.isView);
+
+      attrs.container = this.container;
+      setProperties(view, attrs);
+    }
+
+    return view;
+  }
+});
+
+var ViewStateSupport = Mixin.create({
+  transitionTo: function(state, children) {
+    Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
+    this._transitionTo(state, children);
+  },
+
+  _transitionTo: function(state, children) {
+    var priorState = this.currentState;
+    var currentState = this.currentState = this._states[state];
+    this._state = state;
+
+    if (priorState && priorState.exit) { priorState.exit(this); }
+    if (currentState.enter) { currentState.enter(this); }
+  }
+});
+
+var TemplateRenderingSupport = Mixin.create({
+  /**
+    Called on your view when it should push strings of HTML into a
+    `Ember.RenderBuffer`. Most users will want to override the `template`
+    or `templateName` properties instead of this method.
+
+    By default, `Ember.View` will look for a function in the `template`
+    property and invoke it with the value of `context`. The value of
+    `context` will be the view's controller unless you override it.
+
+    @method render
+    @param {Ember.RenderBuffer} buffer The render buffer
+  */
+  render: function(buffer) {
+    // If this view has a layout, it is the responsibility of the
+    // the layout to render the view's template. Otherwise, render the template
+    // directly.
+    var template = get(this, 'layout') || get(this, 'template');
+    renderView(this, buffer, template);
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -699,7 +1041,7 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend({
+var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -773,29 +1115,6 @@ var View = CoreView.extend({
     return template || get(this, 'defaultTemplate');
   }),
 
-  _controller: null,
-
-  /**
-    The controller managing this view. If this property is set, it will be
-    made available for use by the template.
-
-    @property controller
-    @type Object
-  */
-  controller: computed(function(key, value) {
-    if (arguments.length === 2) {
-      this._controller = value;
-      return value;
-    }
-
-    if (this._controller) {
-      return this._controller;
-    }
-
-    var parentView = this._parentView;
-    return parentView ? get(parentView, 'controller') : null;
-  }),
-
   /**
     A view may contain a layout. A layout is a regular template but
     supersedes the `template` property during rendering. It is the
@@ -852,64 +1171,6 @@ var View = CoreView.extend({
   },
 
   /**
-    The object from which templates should access properties.
-
-    This object will be passed to the template function each time the render
-    method is called, but it is up to the individual function to decide what
-    to do with it.
-
-    By default, this will be the view's controller.
-
-    @property context
-    @type Object
-  */
-  context: computed(function(key, value) {
-    if (arguments.length === 2) {
-      set(this, '_context', value);
-      return value;
-    } else {
-      return get(this, '_context');
-    }
-  }).volatile(),
-
-  /**
-    Private copy of the view's template context. This can be set directly
-    by Handlebars without triggering the observer that causes the view
-    to be re-rendered.
-
-    The context of a view is looked up as follows:
-
-    1. Supplied context (usually by Handlebars)
-    2. Specified controller
-    3. `parentView`'s context (for a child of a ContainerView)
-
-    The code in Handlebars that overrides the `_context` property first
-    checks to see whether the view has a specified controller. This is
-    something of a hack and should be revisited.
-
-    @property _context
-    @private
-  */
-  _context: computed(function(key, value) {
-    if (arguments.length === 2) {
-      return value;
-    }
-
-    var parentView, controller;
-
-    if (controller = get(this, 'controller')) {
-      return controller;
-    }
-
-    parentView = this._parentView;
-    if (parentView) {
-      return get(parentView, '_context');
-    }
-
-    return null;
-  }),
-
-  /**
     If a value that affects template rendering changes, the view should be
     re-rendered to reflect the new value.
 
@@ -929,18 +1190,6 @@ var View = CoreView.extend({
   */
   isVisible: true,
 
-  /**
-    Array of child views. You should never edit this array directly.
-    Instead, use `appendChild` and `removeFromParent`.
-
-    @property childViews
-    @type Array
-    @default []
-    @private
-  */
-  childViews: childViewsProperty,
-
-  _childViews: EMPTY_ARRAY,
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews will change.
@@ -1062,47 +1311,6 @@ var View = CoreView.extend({
       view.propertyDidChange('controller');
     });
   }),
-
-  _setupKeywords: function() {
-    var keywords = this._keywords;
-    var contextView = this._contextView || this._parentView;
-
-    if (contextView) {
-      var parentKeywords = contextView._keywords;
-
-      keywords.view = this.isVirtual ? parentKeywords.view : this;
-
-      for (var name in parentKeywords) {
-        if (keywords[name]) {
-          continue;
-        }
-
-        keywords[name] = parentKeywords[name];
-      }
-    } else {
-      keywords.view = this.isVirtual ? null : this;
-    }
-  },
-
-  /**
-    Called on your view when it should push strings of HTML into a
-    `Ember.RenderBuffer`. Most users will want to override the `template`
-    or `templateName` properties instead of this method.
-
-    By default, `Ember.View` will look for a function in the `template`
-    property and invoke it with the value of `context`. The value of
-    `context` will be the view's controller unless you override it.
-
-    @method render
-    @param {Ember.RenderBuffer} buffer The render buffer
-  */
-  render: function(buffer) {
-    // If this view has a layout, it is the responsibility of the
-    // the layout to render the view's template. Otherwise, render the template
-    // directly.
-    var template = get(this, 'layout') || get(this, 'template');
-    renderView(this, buffer, template);
-  },
 
   /**
     Renders the view again. This will work regardless of whether the
@@ -1745,20 +1953,6 @@ var View = CoreView.extend({
 
     this._super.apply(this, arguments);
 
-    // setup child views. be sure to clone the child views array first
-    this._childViews = this._childViews.slice();
-    this._baseContext = undefined;
-    this._contextStream = undefined;
-    this._streamBindings = undefined;
-
-    if (!this._keywords) {
-      this._keywords = create(null);
-    }
-    this._keywords._view = this;
-    this._keywords.view = undefined;
-    this._keywords.controller = new KeyStream(this, 'controller');
-    this._setupKeywords();
-
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
 
@@ -1768,36 +1962,6 @@ var View = CoreView.extend({
 
   __defineNonEnumerable: function(property) {
     this[property.name] = property.descriptor.value;
-  },
-
-  appendChild: function(view, options) {
-    return this.currentState.appendChild(this, view, options);
-  },
-
-  /**
-    Removes the child view from the parent view.
-
-    @method removeChild
-    @param {Ember.View} view
-    @return {Ember.View} receiver
-  */
-  removeChild: function(view) {
-    // If we're destroying, the entire subtree will be
-    // freed, and the DOM will be handled separately,
-    // so no need to mess with childViews.
-    if (this.isDestroying) { return; }
-
-    // update parent node
-    set(view, '_parentView', null);
-
-    // remove view from childViews array.
-    var childViews = this._childViews;
-
-    removeObject(childViews, view);
-
-    this.propertyDidChange('childViews'); // HUH?! what happened to will change?
-
-    return this;
   },
 
   /**
@@ -1856,60 +2020,6 @@ var View = CoreView.extend({
     }
 
     return this;
-  },
-
-  /**
-    Instantiates a view to be added to the childViews array during view
-    initialization. You generally will not call this method directly unless
-    you are overriding `createChildViews()`. Note that this method will
-    automatically configure the correct settings on the new view instance to
-    act as a child of the parent.
-
-    @method createChildView
-    @param {Class|String} viewClass
-    @param {Hash} [attrs] Attributes to add
-    @return {Ember.View} new instance
-  */
-  createChildView: function(maybeViewClass, _attrs) {
-    if (!maybeViewClass) {
-      throw new TypeError("createChildViews first argument must exist");
-    }
-
-    if (maybeViewClass.isView && maybeViewClass._parentView === this && maybeViewClass.container === this.container) {
-      return maybeViewClass;
-    }
-
-    var attrs = _attrs || {};
-    var view;
-    attrs._parentView = this;
-    attrs.renderer = this.renderer;
-
-    if (CoreView.detect(maybeViewClass)) {
-      attrs.container = this.container;
-
-      view = maybeViewClass.create(attrs);
-
-      // don't set the property on a virtual view, as they are invisible to
-      // consumers of the view API
-      if (view.viewName) {
-        set(get(this, 'concreteView'), view.viewName, view);
-      }
-    } else if ('string' === typeof maybeViewClass) {
-      var fullName = 'view:' + maybeViewClass;
-      var ViewKlass = this.container.lookupFactory(fullName);
-
-      Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
-
-      view = ViewKlass.create(attrs);
-    } else {
-      view = maybeViewClass;
-      Ember.assert('You must pass instance or subclass of View', view.isView);
-
-      attrs.container = this.container;
-      setProperties(view, attrs);
-    }
-
-    return view;
   },
 
   becameVisible: K,
@@ -1985,20 +2095,6 @@ var View = CoreView.extend({
     return false;
   },
 
-  transitionTo: function(state, children) {
-    Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
-    this._transitionTo(state, children);
-  },
-
-  _transitionTo: function(state, children) {
-    var priorState = this.currentState;
-    var currentState = this.currentState = this._states[state];
-    this._state = state;
-
-    if (priorState && priorState.exit) { priorState.exit(this); }
-    if (currentState.enter) { currentState.enter(this); }
-  },
-
   // .......................................................
   // EVENT HANDLING
   //
@@ -2043,77 +2139,6 @@ var View = CoreView.extend({
       run.scheduleOnce('render', this, stateCheckedFn);
     };
     return scheduledFn;
-  },
-
-  getStream: function(path) {
-    var stream = this._getContextStream().get(path);
-
-    stream._label = path;
-
-    return stream;
-  },
-
-  _getBindingForStream: function(pathOrStream) {
-    if (this._streamBindings === undefined) {
-      this._streamBindings = create(null);
-      this.one('willDestroyElement', this, this._destroyStreamBindings);
-    }
-
-    var path = pathOrStream;
-    if (isStream(pathOrStream)) {
-      path = pathOrStream._label;
-
-      if (!path) {
-        // if no _label is present on the provided stream
-        // it is likely a subexpr and cannot be set (so it
-        // does not need a StreamBinding)
-        return pathOrStream;
-      }
-    }
-
-    if (this._streamBindings[path] !== undefined) {
-      return this._streamBindings[path];
-    } else {
-      var stream = this._getContextStream().get(path);
-      var streamBinding = new StreamBinding(stream);
-
-      streamBinding._label = path;
-
-      return this._streamBindings[path] = streamBinding;
-    }
-  },
-
-  _destroyStreamBindings: function() {
-    var streamBindings = this._streamBindings;
-    for (var path in streamBindings) {
-      streamBindings[path].destroy();
-    }
-    this._streamBindings = undefined;
-  },
-
-  _getContextStream: function() {
-    if (this._contextStream === undefined) {
-      this._baseContext = new KeyStream(this, 'context');
-      this._contextStream = new ContextStream(this);
-      this.one('willDestroyElement', this, this._destroyContextStream);
-    }
-
-    return this._contextStream;
-  },
-
-  _destroyContextStream: function() {
-    this._baseContext.destroy();
-    this._baseContext = undefined;
-    this._contextStream.destroy();
-    this._contextStream = undefined;
-  },
-
-  _unsubscribeFromStreamBindings: function() {
-    for (var key in this._streamBindingSubscriptions) {
-      var streamBinding = this[key + 'Binding'];
-      var callback = this._streamBindingSubscriptions[key];
-      streamBinding.unsubscribe(callback);
-    }
   }
 });
 
@@ -2207,3 +2232,5 @@ View.applyAttributeBindings = function(dom, elem, name, initialValue) {
 };
 
 export default View;
+
+export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport };
