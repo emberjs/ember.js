@@ -1,6 +1,5 @@
 /* jshint scripturl:true */
 
-var parsingNode;
 var badProtocols = {
   'javascript:': true,
   'vbscript:': true
