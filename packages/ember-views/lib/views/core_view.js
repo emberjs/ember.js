@@ -149,4 +149,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   destroyElement: K
 });
 
+CoreView.reopenClass({
+  isViewClass: true
+});
+
 export default CoreView;

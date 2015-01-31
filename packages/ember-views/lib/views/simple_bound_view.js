@@ -12,15 +12,16 @@ import {
 
 function K() { return this; }
 
-function SimpleBoundView(stream) {
+function SimpleBoundView(parentView, renderer, morph, stream) {
   this.stream = stream;
   this[GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
   this.state = 'preRender';
   this.updateId = null;
-  this._parentView = null;
+  this._parentView = parentView;
   this.buffer = null;
-  this._morph = null;
+  this._morph = morph;
+  this.renderer = renderer;
 }
 
 SimpleBoundView.prototype = {
@@ -90,15 +91,18 @@ SimpleBoundView.prototype = {
   }
 };
 
+SimpleBoundView.create = function(attrs) {
+  return new SimpleBoundView(attrs._parentView, attrs.renderer, attrs._morph, attrs.stream);
+};
+
+SimpleBoundView.isViewClass = true;
+
 export function appendSimpleBoundView(parentView, morph, stream) {
-  var view = new SimpleBoundView(stream);
-  view._morph = morph;
+  var view = parentView.appendChild(SimpleBoundView, { _morph: morph, stream: stream });
 
   stream.subscribe(parentView._wrapAsScheduled(function() {
     run.scheduleOnce('render', view, 'rerender');
   }));
-
-  parentView.appendChild(view);
 }
 
 export default SimpleBoundView;
