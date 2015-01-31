@@ -561,7 +561,7 @@ RenderBuffer.prototype = {
   },
 
   outerContextualElement: function() {
-    if (!this._outerContextualElement) {
+    if (this._outerContextualElement === undefined) {
       Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
                       " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
                       " Defaulting to document.body, but this will be removed in the future");

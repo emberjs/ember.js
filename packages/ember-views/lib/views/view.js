@@ -1232,7 +1232,7 @@ var View = CoreView.extend({
         // Determine the current value and add it to the render buffer
         // if necessary.
         attributeValue = get(this, property);
-        View.applyAttributeBindings(buffer, attributeName, attributeValue);
+        View.applyAttributeBindings(this.renderer._dom, buffer, attributeName, attributeValue);
       } else {
         unspecifiedAttributeBindings[property] = attributeName;
       }
@@ -1252,7 +1252,7 @@ var View = CoreView.extend({
 
       attributeValue = get(this, property);
 
-      View.applyAttributeBindings(elem, attributeName, attributeValue);
+      View.applyAttributeBindings(this.renderer._dom, elem, attributeName, attributeValue);
     };
 
     this.registerObserver(this, property, observer);
@@ -2176,8 +2176,8 @@ View.views = {};
 View.childViewsProperty = childViewsProperty;
 
 // Used by Handlebars helpers, view element attributes
-View.applyAttributeBindings = function(elem, name, initialValue) {
-  var value = sanitizeAttributeValue(elem[0], name, initialValue);
+View.applyAttributeBindings = function(dom, elem, name, initialValue) {
+  var value = sanitizeAttributeValue(dom, elem[0], name, initialValue);
   var type = typeOf(value);
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js

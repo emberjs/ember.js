@@ -10,8 +10,8 @@ import {
   subscribers
 } from "ember-metal/instrumentation";
 
-function EmberRenderer(domHelper) {
-  this._super$constructor(domHelper);
+function EmberRenderer(domHelper, _destinedForDOM) {
+  this._super$constructor(domHelper, _destinedForDOM);
   this.buffer = new RenderBuffer(domHelper);
 }
 
@@ -110,21 +110,28 @@ Renderer.prototype.didCreateElement = function (view) {
   }
 }; // hasElement
 Renderer.prototype.willInsertElement = function (view) {
-  if (view.trigger) { view.trigger('willInsertElement'); }
+  if (this._destinedForDOM) {
+    if (view.trigger) { view.trigger('willInsertElement'); }
+  }
 }; // will place into DOM
 Renderer.prototype.didInsertElement = function (view) {
   if (view._transitionTo) {
     view._transitionTo('inDOM');
   }
-  if (view.trigger) { view.trigger('didInsertElement'); }
+
+  if (this._destinedForDOM) {
+    if (view.trigger) { view.trigger('didInsertElement'); }
+  }
 }; // inDOM // placed into DOM
 
 Renderer.prototype.willRemoveElement = function (view) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
-  if (view.trigger) {
-    view.trigger('willDestroyElement');
-    view.trigger('willClearRender');
+  if (this._destinedForDOM) {
+    if (view.trigger) {
+      view.trigger('willDestroyElement');
+      view.trigger('willClearRender');
+    }
   }
 };
 
