@@ -5,6 +5,7 @@ import compile from "ember-template-compiler/system/compile";
 import run from "ember-metal/run_loop";
 import { SafeString } from "ember-htmlbars/utils/string";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import environment from "ember-metal/environment";
 
 var view;
 
@@ -18,6 +19,9 @@ var badTags = [
   { tag: 'a', attr: 'href',
     template: compile('<a {{bind-attr href=view.badValue}}></a>') },
   { tag: 'body', attr: 'background',
+    // IE8 crashes when setting background with
+    // a javascript: protocol
+    skip: (environment.hasDOM && document.documentMode && document.documentMode <= 8),
     template: compile('<body {{bind-attr background=view.badValue}}></body>') },
   { tag: 'link', attr: 'href',
     template: compile('<link {{bind-attr href=view.badValue}}>') },
@@ -30,6 +34,10 @@ for (var i=0, l=badTags.length; i<l; i++) {
     var tagName = badTags[i].tag;
     var attr = badTags[i].attr;
     var template = badTags[i].template;
+
+    if (badTags[i].skip) {
+      return;
+    }
 
     test("XSS - should not bind unsafe "+tagName+" "+attr+" values", function() {
       view = EmberView.create({
