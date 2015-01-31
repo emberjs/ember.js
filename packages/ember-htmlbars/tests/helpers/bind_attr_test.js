@@ -336,7 +336,7 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
     set(view, 'isNumber', 0);
   });
 
-  equalInnerHTML(view.element.firstChild.className, undefined, 'removes class');
+  ok(view.element.firstChild.className !== 'is-truthy', 'removes class');
 });
 
 test("should be able to bind class to view attribute with {{bind-attr}}", function() {

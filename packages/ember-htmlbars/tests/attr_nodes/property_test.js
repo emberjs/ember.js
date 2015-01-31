@@ -1,7 +1,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import compile from "ember-template-compiler/system/compile";
-import { equalInnerHTML } from "htmlbars-test-helpers";
 
 var view;
 
@@ -19,7 +18,7 @@ function canSetFalsyMaxLength() {
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
 
-QUnit.module("ember-htmlbars: nonmatching reflection", {
+QUnit.module("ember-htmlbars: property", {
   teardown: function() {
     if (view) {
       run(view, view.destroy);
@@ -32,13 +31,11 @@ test("maxlength sets the property and attribute", function() {
     context: { length: 5 },
     template: compile("<input maxlength={{length}}>")
   });
-  appendView(view);
 
-  equalInnerHTML(view.element, '<input maxlength="5">', "attribute is output");
+  appendView(view);
   equal(view.element.firstChild.maxLength, 5);
 
   Ember.run(view, view.set, 'context.length', 1);
-  equalInnerHTML(view.element, '<input maxlength="1">', "attribute is modified by property setting");
   equal(view.element.firstChild.maxLength, 1);
 });
 
@@ -47,20 +44,15 @@ test("quoted maxlength sets the property and attribute", function() {
     context: { length: 5 },
     template: compile("<input maxlength='{{length}}'>")
   });
-  appendView(view);
 
-  equalInnerHTML(view.element, '<input maxlength="5">', "attribute is output");
+  appendView(view);
   equal(view.element.firstChild.maxLength, '5');
 
   if (canSetFalsyMaxLength()) {
     Ember.run(view, view.set, 'context.length', null);
-
-    equalInnerHTML(view.element, '<input maxlength="0">', "attribute is output");
     equal(view.element.firstChild.maxLength, 0);
   } else {
     Ember.run(view, view.set, 'context.length', 1);
-
-    equalInnerHTML(view.element, '<input maxlength="1">', "attribute is output");
     equal(view.element.firstChild.maxLength, 1);
   }
 });

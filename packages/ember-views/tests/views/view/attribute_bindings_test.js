@@ -59,17 +59,17 @@ test("should render attribute bindings", function() {
 
 test("should normalize case for attribute bindings", function() {
   view = EmberView.create({
-    tagName: 'form',
-    attributeBindings: ['novalidate'],
+    tagName: 'input',
+    attributeBindings: ['disAbled'],
 
-    novalidate: true // intentionally lowercase
+    disAbled: true
   });
 
   run(function() {
     view.createElement();
   });
 
-  ok(view.$().prop('noValidate'), "sets property with correct case");
+  ok(view.$().prop('disabled'), "sets property with correct case");
 });
 
 test("should update attribute bindings", function() {
