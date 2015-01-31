@@ -1,4 +1,4 @@
-import {DOMHelper} from "../morph";
+import DOMHelper from "../dom-helper";
 import {
   equalHTML,
   isCheckedInputHTML
@@ -19,7 +19,7 @@ var disabledAbsentValue = (function (){
   return div.getAttribute("disabled");
 })();
 
-QUnit.module('morph: DOM Helper', {
+QUnit.module('DOM Helper', {
   beforeEach: function() {
     dom = new DOMHelper();
   },
@@ -457,7 +457,7 @@ test('dom node checked after cloning and ensuringChecked', function(){
 
 if ('namespaceURI' in document.createElement('div')) {
 
-QUnit.module('morph: DOM Helper namespaces', {
+QUnit.module('DOM Helper namespaces', {
   beforeEach: function() {
     dom = new DOMHelper();
   },

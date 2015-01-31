@@ -2,7 +2,7 @@ import FragmentOpcodeCompiler from "../htmlbars-compiler/fragment-opcode-compile
 import FragmentJavaScriptCompiler from "../htmlbars-compiler/fragment-javascript-compiler";
 import HydrationOpcodeCompiler from "../htmlbars-compiler/hydration-opcode-compiler";
 import HydrationJavaScriptCompiler from "../htmlbars-compiler/hydration-javascript-compiler";
-import { DOMHelper } from "../morph";
+import DOMHelper from "../dom-helper";
 import { preprocess } from "../htmlbars-syntax/parser";
 import { get } from "../htmlbars-runtime/hooks";
 import { equalHTML, getTextContent } from "../htmlbars-test-helpers";

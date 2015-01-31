@@ -1,6 +1,6 @@
 import { equalHTML, equalInnerHTML } from "../htmlbars-test-helpers";
 import SafeString from '../htmlbars-util/safe-string';
-import DOMHelper from "../morph/dom-helper";
+import DOMHelper from "../dom-helper";
 
 var domHelper = new DOMHelper();
 
@@ -433,8 +433,8 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
   }
 }
 
-QUnit.module('morph: Morph');
+QUnit.module('Morph');
 iterateCombinations(parents, starts, ends, contents, morphTests);
 
-QUnit.module('morph: MorphList');
+QUnit.module('MorphList');
 iterateCombinations(parents, starts, ends, [{name:'', create: function(){},HTML:''}], morphListTests);

@@ -1,13 +1,13 @@
 /* jshint scripturl:true */
 
-import DOMHelper from "../morph/dom-helper";
+import DOMHelper from "../dom-helper";
 import SafeString from "htmlbars-util/safe-string";
 
 var svgNamespace = "http://www.w3.org/2000/svg",
     xlinkNamespace = "http://www.w3.org/1999/xlink";
 var domHelper = new DOMHelper();
 
-QUnit.module('morph: AttrMorph');
+QUnit.module('AttrMorph');
 
 test("can update a dom node", function(){
   var element = domHelper.createElement('div');
