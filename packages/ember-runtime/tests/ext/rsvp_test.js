@@ -153,7 +153,6 @@ test('rejections where the errorThrown is a string should wrap the sting in an e
   try {
     Ember.testing = false;
     Ember.onerror = function(error) {
-      console.log('error', error);
       equal(error.message, actualError, 'expected the real error on the jqXHR');
       equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
     };

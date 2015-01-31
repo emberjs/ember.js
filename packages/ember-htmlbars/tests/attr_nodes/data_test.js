@@ -125,7 +125,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     });
     runAppend(view);
 
-    equalInnerHTML(view.element, '<div data-name="&quot;&quot; data-foo=&quot;blah&quot;">Hi!</div>', "attribute is output");
+    equal(view.element.firstChild.getAttribute('data-name'), '"" data-foo="blah"', "attribute is output");
   });
 
   test("path is output", function() {

@@ -51,23 +51,26 @@ test("should begin disabled if the disabled attribute is true", function() {
   ok(select.$().is(":disabled"));
 });
 
-test("should begin required if the required attribute is true", function() {
-  select.set('required', true);
-  append();
+// Browsers before IE10 do not support the required property.
+if (document && ('required' in document.createElement('input'))) {
+  test("should begin required if the required attribute is true", function() {
+    select.set('required', true);
+    append();
 
-  ok(select.element.required, 'required property is truthy');
-});
+    ok(select.element.required, 'required property is truthy');
+  });
 
-test("should become required if the required attribute is changed", function() {
-  append();
-  ok(!select.element.required, 'required property is falsy');
+  test("should become required if the required attribute is changed", function() {
+    append();
+    ok(!select.element.required, 'required property is falsy');
 
-  run(function() { select.set('required', true); });
-  ok(select.element.required, 'required property is truthy');
+    run(function() { select.set('required', true); });
+    ok(select.element.required, 'required property is truthy');
 
-  run(function() { select.set('required', false); });
-  ok(!select.element.required, 'required property is falsy');
-});
+    run(function() { select.set('required', false); });
+    ok(!select.element.required, 'required property is falsy');
+  });
+}
 
 test("should become disabled if the disabled attribute is changed", function() {
   append();

@@ -30,7 +30,7 @@ test("unquoted viewBox property is output", function() {
   equalInnerHTML(view.element, '<svg viewBox="'+viewBoxString+'"></svg>', "attribute is output");
 
   Ember.run(view, view.set, 'context.viewBoxString', null);
-  equalInnerHTML(view.element, '<svg></svg>', "attribute is removed");
+  equal(view.element.getAttribute('svg'), null, "attribute is removed");
 });
 
 test("quoted viewBox property is output", function() {
