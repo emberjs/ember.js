@@ -35,12 +35,11 @@ export default ContainerView.extend(_Metamorph, {
       throw new EmberError('HTMLBars error: Could not find component named "' + read(this._boundComponentOptions.componentNameStream) + '".');
     }
     var hash    = this._boundComponentOptions;
-    var ignore  = ["_boundComponentOptions", "componentClassStream"];
     var hashForComponent = {};
 
     var prop;
     for (prop in hash) {
-      if (ignore.indexOf(prop) !== -1) { continue; }
+      if (prop === '_boundComponentOptions' || prop === 'componentClassStream') { continue; }
       hashForComponent[prop] = hash[prop];
     }
 
