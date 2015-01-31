@@ -58,6 +58,7 @@ import {
   isStream
 } from "ember-metal/streams/utils";
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
+import { normalizeProperty } from "morph/dom-helper/prop";
 
 function K() { return this; }
 
@@ -1252,7 +1253,8 @@ var View = CoreView.extend({
 
       attributeValue = get(this, property);
 
-      View.applyAttributeBindings(this.renderer._dom, elem, attributeName, attributeValue);
+      var normalizedName = normalizeProperty(elem, attributeName.toLowerCase()) || attributeName;
+      View.applyAttributeBindings(this.renderer._dom, elem, normalizedName, attributeValue);
     };
 
     this.registerObserver(this, property, observer);
