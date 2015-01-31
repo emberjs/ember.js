@@ -30,24 +30,26 @@ testBoth("should schedule objects to be destroyed at the end of the run loop", f
   ok(get(obj, 'isDestroyed'), "object is destroyed after run loop finishes");
 });
 
-if (hasPropertyAccessors) {
-  // MANDATORY_SETTER moves value to meta.values
-  // a destroyed object removes meta but leaves the accessor
-  // that looks it up
-  test("should raise an exception when modifying watched properties on a destroyed object", function() {
-    var obj = EmberObject.createWithMixins({
-      foo: "bar",
-      fooDidChange: observer('foo', function() { })
-    });
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+  if (hasPropertyAccessors) {
+    // MANDATORY_SETTER moves value to meta.values
+    // a destroyed object removes meta but leaves the accessor
+    // that looks it up
+    test("should raise an exception when modifying watched properties on a destroyed object", function() {
+      var obj = EmberObject.createWithMixins({
+        foo: "bar",
+        fooDidChange: observer('foo', function() { })
+      });
 
-    run(function() {
-      obj.destroy();
-    });
+      run(function() {
+        obj.destroy();
+      });
 
-    raises(function() {
-      set(obj, 'foo', 'baz');
-    }, Error, "raises an exception");
-  });
+      raises(function() {
+        set(obj, 'foo', 'baz');
+      }, Error, "raises an exception");
+    });
+  }
 }
 
 test("observers should not fire after an object has been destroyed", function() {
