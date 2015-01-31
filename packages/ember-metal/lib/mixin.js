@@ -128,7 +128,7 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
   return concats;
 }
 
-function giveDescriptorSuper(meta, key, property, values, descs) {
+function giveDescriptorSuper(meta, key, property, values, descs, base) {
   var superProperty;
 
   // Computed properties override methods, and do not call super to them
@@ -139,7 +139,12 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
 
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
-  superProperty = superProperty || meta.descs[key];
+  if (!superProperty) {
+    var possibleDesc = base[key];
+    var superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+
+    superProperty = superDesc;
+  }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
     return property;
@@ -256,7 +261,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     // Wrap descriptor function to implement
     // __nextSuper() if needed
     if (value._getter) {
-      value = giveDescriptorSuper(meta, key, value, values, descs);
+      value = giveDescriptorSuper(meta, key, value, values, descs, base);
     }
 
     descs[key]  = value;
@@ -388,11 +393,12 @@ function finishPartial(obj, m) {
 function followAlias(obj, desc, m, descs, values) {
   var altKey = desc.methodName;
   var value;
+  var possibleDesc;
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
-  } else if (m.descs[altKey]) {
-    desc  = m.descs[altKey];
+  } else if ((possibleDesc = obj[altKey]) && possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
+    desc  = possibleDesc;
     value = undefined;
   } else {
     desc = undefined;
@@ -743,6 +749,7 @@ export function required() {
 }
 
 function Alias(methodName) {
+  this.isDescriptor = true;
   this.methodName = methodName;
 }
 

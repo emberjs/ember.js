@@ -35,7 +35,6 @@ import {
 } from "ember-metal/properties";
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/utils';
 import { isWatching } from "ember-metal/watching";
 import {
   addObserver,
@@ -861,7 +860,7 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
   set(obj, 'foo', 'bar');
 
   equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
-  ok(!meta(obj).descs.foo, 'The computed property was removed');
+  ok(typeof obj.foo === 'string', 'The computed property was removed');
   ok(observerFired, 'The observer was still notified');
 });
 

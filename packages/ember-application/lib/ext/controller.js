@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
-import { inspect, meta } from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import ControllerMixin from "ember-runtime/mixins/controller";
 import controllerFor from "ember-routing/system/controller_for";
@@ -131,7 +131,7 @@ ControllerMixin.reopen({
       Ember.assert(' `' + inspect(this) + ' specifies `needs`, but does ' +
                    "not have a container. Please ensure this controller was " +
                    "instantiated with a container.",
-                   this.container || meta(this, false).descs.controllers !== defaultControllersComputedProperty);
+                   this.container || this.controllers !== defaultControllersComputedProperty);
 
       if (this.container) {
         verifyNeedsDependencies(this, this.container, needs);

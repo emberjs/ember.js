@@ -3,7 +3,6 @@ import { ComputedProperty } from "ember-metal/computed";
 import { AliasedProperty } from "ember-metal/alias";
 import { Descriptor } from "ember-metal/properties";
 import create from "ember-metal/platform/create";
-import { meta } from "ember-metal/utils";
 
 /**
   Read-only property that returns the result of a container lookup.
@@ -25,7 +24,8 @@ function InjectedProperty(type, name) {
 }
 
 function injectedPropertyGet(keyName) {
-  var desc = meta(this).descs[keyName];
+  var possibleDesc = this[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   Ember.assert("Attempting to lookup an injected property on an object " +
                "without a container, ensure that the object was " +

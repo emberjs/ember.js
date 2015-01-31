@@ -1,6 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { indexOf } from "ember-metal/enumerable_utils";
-import { meta } from "ember-metal/utils";
 import InjectedProperty from "ember-metal/injected_property";
 import keys from "ember-metal/keys";
 
@@ -48,12 +47,11 @@ export function createInjectionHelper(type, validator) {
 */
 export function validatePropertyInjections(factory) {
   var proto = factory.proto();
-  var descs = meta(proto).descs;
   var types = [];
   var key, desc, validator, i, l;
 
-  for (key in descs) {
-    desc = descs[key];
+  for (key in proto) {
+    desc = proto[key];
     if (desc instanceof InjectedProperty && indexOf(types, desc.type) === -1) {
       types.push(desc.type);
     }
