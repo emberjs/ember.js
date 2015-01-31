@@ -54,6 +54,8 @@ export default Component.extend(TextSupport, {
     'width'
   ],
 
+  defaultLayout: null,
+
   /**
     The `value` attribute of the input element. As the user inputs text, this
     property is updated live.
