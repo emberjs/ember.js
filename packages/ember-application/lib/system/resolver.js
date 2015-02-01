@@ -235,12 +235,13 @@ export default EmberObject.extend({
   */
   lookupDescription: function(fullName) {
     var parsedName = this.parseName(fullName);
+    var description;
 
     if (parsedName.type === 'template') {
       return 'template at ' + parsedName.fullNameWithoutType.replace(/\./g, '/');
     }
 
-    var description = parsedName.root + '.' + classify(parsedName.name);
+    description = parsedName.root + '.' + classify(parsedName.name).replace(/\./g, '');
 
     if (parsedName.type !== 'model') {
       description += classify(parsedName.type);
