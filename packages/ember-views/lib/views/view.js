@@ -387,7 +387,7 @@ var ViewChildViewsSupport = Mixin.create({
     attrs._parentView = this;
     attrs.renderer = this.renderer;
 
-    if (CoreView.detect(maybeViewClass)) {
+    if (maybeViewClass.isViewClass) {
       attrs.container = this.container;
 
       view = maybeViewClass.create(attrs);

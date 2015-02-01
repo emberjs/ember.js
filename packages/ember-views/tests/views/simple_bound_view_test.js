@@ -9,12 +9,12 @@ test('does not render if update is triggered by normalizedValue is the same as t
   var lazyValue = new Stream(function() {
     return obj.foo;
   });
-  var view = new SimpleBoundView(lazyValue);
-  view._morph = {
+  var morph = {
     setContent: function(newValue) {
       value = newValue;
     }
   };
+  var view = new SimpleBoundView(null, null, morph, lazyValue);
 
   equal(value, null);
 
