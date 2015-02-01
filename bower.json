@@ -10,6 +10,6 @@
     "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.14",
     "router.js": "https://github.com/tildeio/router.js.git#72eb0d336c1c3b7ad3965198b330fe148d935efe",
     "dag-map": "https://github.com/krisselden/dag-map.git#e307363256fe918f426e5a646cb5f5062d3245be",
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#1c30a1666273ab2a9b134a42bad28c774f9ecdfc"
+    "ember-dev": "https://github.com/emberjs/ember-dev.git#1a1ef3e1806be21dd554d285521abc0b13cdfe20"
   }
 }
