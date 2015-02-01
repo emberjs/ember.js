@@ -171,3 +171,12 @@ test("doesn't log without LOG_RESOLVER", function() {
   registry.resolve('doo:scrappy');
   equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
 });
+
+test("lookup description", function() {
+  application.toString = function() { return 'App'; };
+
+  equal(registry.describe('controller:foo'), 'App.FooController', 'Type gets appended at the end');
+  equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
+  equal(registry.describe('model:foo'), 'App.Foo', "models don't get appended at the end");
+
+});
