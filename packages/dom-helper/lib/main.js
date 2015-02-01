@@ -37,6 +37,14 @@ var canRemoveSvgViewBoxAttribute = doc && (doc.createElementNS ? (function(docum
   return !element.getAttribute('viewBox');
 })(doc) : true);
 
+var canClone = doc && (function(document){
+  var element = document.createElement('div');
+  element.appendChild( document.createTextNode(' '));
+  element.appendChild( document.createTextNode(' '));
+  var clonedElement = element.cloneNode(true);
+  return clonedElement.childNodes[0].nodeValue === ' ';
+})(doc);
+
 // This is not the namespace of the element, but of
 // the elements inside that elements.
 function interiorNamespace(element){
@@ -119,6 +127,7 @@ function DOMHelper(_document){
   if (!this.document) {
     throw new Error("A document object must be passed to the DOMHelper, or available on the global scope");
   }
+  this.canClone = canClone;
   this.namespace = null;
 }
 
