@@ -73,11 +73,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     });
     runAppend(view);
 
-    equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
+    equal(view.element.firstChild.getAttribute('data-name'), 'max', "precond - attribute is output");
 
     run(view, view.set, 'context.firstName', null);
 
-    equalInnerHTML(view.element, '<div data-name="">Hi!</div>', "attribute is output");
+    equal(view.element.firstChild.getAttribute('data-name'), '', "attribute is output");
   });
 
   test("unquoted attributes are removed when value is null", function() {
@@ -87,11 +87,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     });
     runAppend(view);
 
-    equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
+    equal(view.element.firstChild.getAttribute('data-name'), 'max', "precond - attribute is output");
 
     run(view, view.set, 'context.firstName', null);
 
-    equalInnerHTML(view.element, '<div>Hi!</div>', "attribute is output");
+    ok(!view.element.firstChild.hasAttribute('data-name'), "attribute is removed output");
   });
 
   test("unquoted attributes that are null are not added", function() {
