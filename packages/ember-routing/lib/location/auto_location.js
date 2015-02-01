@@ -257,15 +257,13 @@ export function getHistoryPath(rootURL, location) {
     }
 
     // This is the "expected" final order
-    path += routeHash;
-    path += query;
+    path = path + routeHash + query;
 
     if (hashParts.length) {
       path += '#' + hashParts.join('#');
     }
   } else {
-    path += query;
-    path += hash;
+    path = path + query + hash;
   }
 
   return path;
