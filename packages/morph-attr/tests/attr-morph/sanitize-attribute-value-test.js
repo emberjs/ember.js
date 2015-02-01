@@ -1,6 +1,10 @@
 import { sanitizeAttributeValue } from "morph-attr/sanitize-attribute-value";
 import SafeString from "htmlbars-util/safe-string";
 
+import DOMHelper from "../../dom-helper";
+
+var domHelper = new DOMHelper();
+
 QUnit.module('sanitizeAttributeValue(null, "href")');
 
 var goodProtocols = [ 'https', 'http', 'ftp', 'tel', 'file'];
@@ -14,7 +18,7 @@ function buildProtocolTest(protocol) {
     expect(1);
 
     var expected = protocol + '://foo.com';
-    var actual = sanitizeAttributeValue(null, 'href', expected);
+    var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
 
     equal(actual, expected, 'protocol not escaped');
   });
@@ -26,7 +30,7 @@ test('blocks javascript: protocol', function() {
   expect(1);
 
   var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(null, 'href', expected);
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
 
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
 });
@@ -37,7 +41,7 @@ test('blocks blacklisted protocols', function() {
   expect(1);
 
   var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(null, 'href', expected);
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
 
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
 });
@@ -48,7 +52,7 @@ test('does not block SafeStrings', function() {
   expect(1);
 
   var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(null, 'href', new SafeString(expected));
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', new SafeString(expected));
 
   equal(actual, expected, 'protocol unescaped');
 });
