@@ -4,7 +4,7 @@ import { tokenize } from "../simple-html-tokenizer";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
-import { DOMHelper } from "../morph";
+import DOMHelper from "../dom-helper";
 import { createObject, normalizeInnerHTML, getTextContent } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",

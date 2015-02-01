@@ -1,4 +1,4 @@
-import { sanitizeAttributeValue } from "morph/attr-morph/sanitize-attribute-value";
+import { sanitizeAttributeValue } from "morph-attr/sanitize-attribute-value";
 import SafeString from "htmlbars-util/safe-string";
 
 QUnit.module('sanitizeAttributeValue(null, "href")');

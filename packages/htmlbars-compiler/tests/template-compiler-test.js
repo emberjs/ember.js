@@ -4,7 +4,7 @@ import { equalHTML } from "../htmlbars-test-helpers";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
-import { DOMHelper } from "../morph";
+import DOMHelper from "../dom-helper";
 
 QUnit.module("TemplateCompiler");
 

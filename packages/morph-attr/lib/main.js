@@ -1,7 +1,7 @@
-import { sanitizeAttributeValue } from "./attr-morph/sanitize-attribute-value";
+import { sanitizeAttributeValue } from "./morph-attr/sanitize-attribute-value";
 import { isAttrRemovalValue, normalizeProperty } from "./dom-helper/prop";
 import { svgNamespace } from "./dom-helper/build-html-dom";
-import { getAttrNamespace } from "../htmlbars-util";
+import { getAttrNamespace } from "./htmlbars-util";
 
 function updateProperty(value) {
   this.domHelper.setPropertyStrict(this.element, this.attrName, value);
