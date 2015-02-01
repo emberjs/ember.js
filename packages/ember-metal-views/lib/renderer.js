@@ -1,4 +1,4 @@
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
 import environment from "ember-metal/environment";
 
 var domHelper = environment.hasDOM ? new DOMHelper() : null;

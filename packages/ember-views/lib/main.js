@@ -17,7 +17,7 @@ import {
 } from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
 import Renderer from "ember-views/system/renderer";
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
