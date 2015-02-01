@@ -1,5 +1,5 @@
 import Renderer from "ember-views/system/renderer";
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
 
 import {
   cloneStates,

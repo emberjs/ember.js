@@ -58,7 +58,7 @@ import {
   isStream
 } from "ember-metal/streams/utils";
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
-import { normalizeProperty } from "morph/dom-helper/prop";
+import { normalizeProperty } from "dom-helper/prop";
 
 function K() { return this; }
 

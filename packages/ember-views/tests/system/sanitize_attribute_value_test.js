@@ -1,6 +1,6 @@
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
 import { SafeString } from "ember-htmlbars/utils/string";
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
 
 QUnit.module('ember-views: sanitizeAttributeValue(null, "href")');
 

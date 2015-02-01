@@ -20,7 +20,7 @@ import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-views/system/renderer";
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
 import SelectView from "ember-views/views/select";
 import EmberView from "ember-views/views/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
