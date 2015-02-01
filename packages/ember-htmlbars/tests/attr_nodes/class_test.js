@@ -35,7 +35,7 @@ test("class renders before didInsertElement", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<div class="blue">Hi!</div>', "attribute is output");
+  equal(view.element.firstChild.className, 'blue', "attribute is output");
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
 
@@ -59,13 +59,11 @@ test("class property is removed when updated with a null value", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<div class="large"></div>',
-                 "attribute is output");
+  equal(view.element.firstChild.className, 'large', "attribute is output");
 
   run(view, view.set, 'context.class', null);
 
-  equalInnerHTML(view.element, '<div></div>',
-                 "attribute is removed");
+  equal(view.element.firstChild.className, '', "attribute is removed");
 });
 
 test("class attribute concats bound values", function() {

@@ -11,7 +11,6 @@ import { observersFor } from "ember-metal/observer";
 import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import { equalInnerHTML } from "htmlbars-test-helpers";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
@@ -291,13 +290,13 @@ test("should be able to bind class attribute with {{bind-attr}}", function() {
 
   runAppend(view);
 
-  equalInnerHTML(view.element, '<img class="bar">', 'renders class');
+  equal(view.element.firstChild.className, 'bar', 'renders class');
 
   run(function() {
     set(view, 'foo', 'baz');
   });
 
-  equalInnerHTML(view.element, '<img class="baz">', 'updates rendered class');
+  equal(view.element.firstChild.className, 'baz', 'updates rendered class');
 });
 
 test("should be able to bind unquoted class attribute with {{bind-attr}}", function() {
@@ -329,7 +328,7 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
 
   runAppend(view);
 
-  equalInnerHTML(view.element, '<img class="is-truthy">', 'renders class');
+  equal(view.element.firstChild.className, 'is-truthy', 'renders class');
 
   run(function() {
     set(view, 'isNumber', 0);
