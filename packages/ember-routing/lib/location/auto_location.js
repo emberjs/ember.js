@@ -175,12 +175,12 @@ function delegateToConcreteImplementation(methodName) {
 */
 
 function detectImplementation(options) {
-  var location = options.location,
-      userAgent = options.userAgent,
-      history = options.history,
-      documentMode = options.documentMode,
-      global = options.global,
-      rootURL = options.rootURL;
+  var location = options.location;
+  var userAgent = options.userAgent;
+  var history = options.history;
+  var documentMode = options.documentMode;
+  var global = options.global;
+  var rootURL = options.rootURL;
 
   var implementation = 'none';
   var cancelRouterSetup = false;

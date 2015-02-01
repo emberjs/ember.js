@@ -153,7 +153,7 @@ QUnit.test("AutoLocation should replace the url when it's not in the preferred f
     search: '',
     replace: function(url) {
       equal(url, 'http://test.com/rootdir/#/welcome');
-    },
+    }
   };
   location.history = null;
   location.global = {

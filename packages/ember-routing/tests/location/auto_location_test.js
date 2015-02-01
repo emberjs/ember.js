@@ -226,7 +226,8 @@ QUnit.test("getHistoryPath() should return a normalized, HistoryLocation-support
   equal(getHistoryPath('/app', browserLocation), '/app/#about?foo=bar#foo', 'URLs with a hash not following #/ convention shouldn\'t be normalized as a route');
 });
 
-QUnit.test("getHashPath() should return a normalized, HashLocation-supported path", function() { expect(3);
+QUnit.test("getHashPath() should return a normalized, HashLocation-supported path", function() {
+  expect(3);
 
   var browserLocation = mockBrowserLocation({
     href: 'http://test.com/app/#/about?foo=bar#foo',
