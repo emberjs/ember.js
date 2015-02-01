@@ -1,7 +1,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import compile from "ember-template-compiler/system/compile";
-import { equalInnerHTML } from "htmlbars-test-helpers";
 
 var view;
 
@@ -27,8 +26,7 @@ test("property is output", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input>',
-                 "attribute is not output");
+  equal(view.element.firstChild.tagName, 'INPUT', "input element is created");
   equal(view.element.firstChild.value, "rick",
         'property is set true');
 });
@@ -40,8 +38,7 @@ test("string property is output", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input>',
-                 "attribute is not output");
+  equal(view.element.firstChild.tagName, 'INPUT', "input element is created");
   equal(view.element.firstChild.value, "rick",
         'property is set true');
 });
