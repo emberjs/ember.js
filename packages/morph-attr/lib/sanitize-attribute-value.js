@@ -1,6 +1,5 @@
 /* jshint scripturl:true */
 
-var parsingNode;
 var badProtocols = {
   'javascript:': true,
   'vbscript:': true
@@ -20,12 +19,8 @@ export var badAttributes = {
   'background': true
 };
 
-export function sanitizeAttributeValue(element, attribute, value) {
+export function sanitizeAttributeValue(dom, element, attribute, value) {
   var tagName;
-
-  if (!parsingNode) {
-    parsingNode = document.createElement('a');
-  }
 
   if (!element) {
     tagName = null;
@@ -38,9 +33,8 @@ export function sanitizeAttributeValue(element, attribute, value) {
   }
 
   if ((tagName === null || badTags[tagName]) && badAttributes[attribute]) {
-    parsingNode.href = value;
-
-    if (badProtocols[parsingNode.protocol] === true) {
+    var protocol = dom.protocolForURL(value);
+    if (badProtocols[protocol] === true) {
       return 'unsafe:' + value;
     }
   }

@@ -46,7 +46,7 @@ function AttrMorph(element, attrName, domHelper, namespace) {
 
 AttrMorph.prototype.setContent = function (value) {
   if (this.escaped) {
-    var sanitized = sanitizeAttributeValue(this.element, this.attrName, value);
+    var sanitized = sanitizeAttributeValue(this.domHelper, this.element, this.attrName, value);
     this._update(sanitized, this.namespace);
   } else {
     this._update(value, this.namespace);
@@ -54,3 +54,5 @@ AttrMorph.prototype.setContent = function (value) {
 };
 
 export default AttrMorph;
+
+export { sanitizeAttributeValue };
