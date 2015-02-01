@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // FEATURES
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { computed } from "ember-metal/computed";
+import { tryInvoke } from "ember-metal/utils";
 
 import EmberObject from "ember-runtime/system/object";
 import environment from "ember-metal/environment";
@@ -11,6 +11,7 @@ import {
   supportsHistory,
   getPath,
   getHash,
+  getQuery,
   getFullPath,
   replacePath
 } from "ember-routing/location/util";
@@ -53,10 +54,21 @@ export default EmberObject.extend({
     `window.history`, but may be overridden for testing.
 
     @since 1.5.1
-    @property _history
+    @property history
     @default environment.history
   */
   history: environment.history,
+
+  /**
+   @private
+
+   The user agent's global variable. In browsers, this will be `window`.
+
+   @since 1.11
+   @property global
+   @default environment.global
+  */
+  global: environment.global,
 
   /**
     @private
@@ -93,12 +105,24 @@ export default EmberObject.extend({
   */
   rootURL: '/',
 
-  concreteImplementation: computed(function() {
+  /**
+   Called by the router to instruct the location to do any feature detection
+   necessary. In the case of AutoLocation, we detect whether to use history
+   or hash concrete implementations.
+  */
+  detect: function() {
+    var rootURL = this.rootURL;
+
+    Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
+                 rootURL.charAt(rootURL.length-1) === '/');
+
     var implementation = detectImplementation({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: this.rootURL
+      rootURL: rootURL,
+      documentMode: this.documentMode,
+      global: this.global
     });
 
     if (implementation === false) {
@@ -106,8 +130,11 @@ export default EmberObject.extend({
       implementation = 'none';
     }
 
-    return this.container.lookup('location:' + implementation);
-  }).readOnly(),
+    var concrete = this.container.lookup('location:' + implementation);
+    Ember.assert("Could not find location '" + implementation + "'.", !!concrete);
+
+    set(this, 'concreteImplementation', concrete);
+  },
 
   initState: delegateToConcreteImplementation('initState'),
   getURL: delegateToConcreteImplementation('getURL'),
@@ -128,7 +155,8 @@ export default EmberObject.extend({
 function delegateToConcreteImplementation(methodName) {
   return function() {
     var concreteImplementation = get(this, 'concreteImplementation');
-    concreteImplementation[methodName].apply(concreteImplementation, arguments);
+    Ember.assert("AutoLocation's detect() method should be called before calling any other hooks.", !!concreteImplementation);
+    tryInvoke(concreteImplementation, methodName, arguments);
   };
 }
 
@@ -150,6 +178,8 @@ function detectImplementation(options) {
   var location = options.location,
       userAgent = options.userAgent,
       history = options.history,
+      documentMode = options.documentMode,
+      global = options.global,
       rootURL = options.rootURL;
 
   var implementation = 'none';
@@ -172,8 +202,8 @@ function detectImplementation(options) {
         replacePath(location, historyPath);
       }
     }
-  } else if (supportsHashChange(document.documentMode, window)) {
-    var hashPath = getHashPath(location);
+  } else if (supportsHashChange(documentMode, global)) {
+    var hashPath = getHashPath(rootURL, location);
 
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
@@ -202,10 +232,10 @@ function detectImplementation(options) {
   browsers. This may very well differ from the real current path (e.g. if it
   starts off as a hashed URL)
 */
-function getHistoryPath(rootURL, location) {
+export function getHistoryPath(rootURL, location) {
   var path = getPath(location);
   var hash = getHash(location);
-  var query = this._getQuery();
+  var query = getQuery(location);
   var rootURLIndex = path.indexOf(rootURL);
   var routeHash, hashParts;
 
@@ -249,7 +279,7 @@ function getHistoryPath(rootURL, location) {
 
   @method _getHashPath
 */
-function getHashPath(rootURL, location) {
+export function getHashPath(rootURL, location) {
   var path = rootURL;
   var historyPath = getHistoryPath(rootURL, location);
   var routePath = historyPath.substr(rootURL.length);

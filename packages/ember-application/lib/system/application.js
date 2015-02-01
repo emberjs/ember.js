@@ -1029,7 +1029,6 @@ Application.reopenClass({
     registry.injection('controller', '_bucketCache', '-bucket-cache:main');
 
     registry.injection('route', 'router', 'router:main');
-    registry.injection('location', 'rootURL', '-location-setting:root-url');
 
     // DEBUGGING
     registry.register('resolver-for-debugging:main', registry.resolver.__resolver__, { instantiate: false });

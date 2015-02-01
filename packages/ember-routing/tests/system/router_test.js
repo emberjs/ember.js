@@ -1,9 +1,10 @@
-import copy from "ember-runtime/copy";
 import merge from "ember-metal/merge";
 import { map } from "ember-metal/enumerable_utils";
 import Registry from "container/registry";
 import HashLocation from "ember-routing/location/hash_location";
+import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
+import NoneLocation from "ember-routing/location/none_location";
 import Router from "ember-routing/system/router";
 import { runDestroy } from "ember-runtime/tests/utils";
 
@@ -23,9 +24,9 @@ QUnit.module("Ember Router", {
 
     //register the HashLocation (the default)
     registry.register('location:hash', HashLocation);
-
-    // ensure rootURL is injected into any locations
-    registry.injection('location', 'rootURL', '-location-setting:root-url');
+    registry.register('location:history', HistoryLocation);
+    registry.register('location:auto', AutoLocation);
+    registry.register('location:none', NoneLocation);
   },
   teardown: function() {
     runDestroy(container);
@@ -63,12 +64,12 @@ QUnit.test("should instantiate its location with its `rootURL`", function() {
   equal(location.get('rootURL'), '/rootdir/');
 });
 
-QUnit.test("Ember.AutoLocation._replacePath should be called with the right path", function() {
+QUnit.test("replacePath should be called with the right path", function() {
   expect(1);
 
-  var AutoTestLocation = copy(AutoLocation);
+  var location = container.lookup('location:auto');
 
-  AutoTestLocation._location = {
+  var browserLocation = {
     href: 'http://test.com/rootdir/welcome',
     origin: 'http://test.com',
     pathname: '/rootdir/welcome',
@@ -78,9 +79,10 @@ QUnit.test("Ember.AutoLocation._replacePath should be called with the right path
       equal(url, 'http://test.com/rootdir/#/welcome');
     }
   };
-  AutoTestLocation._getSupportsHistory = function() { return false; };
 
-  registry.register('location:auto', AutoTestLocation);
+  location.location = browserLocation;
+  location.global = { onhashchange: function() { } };
+  location.history = null;
 
   createRouter({
     location: 'auto',
@@ -141,9 +143,9 @@ QUnit.test("Router should cancel routing setup when the Location class says so v
 QUnit.test("AutoLocation should replace the url when it's not in the preferred format", function() {
   expect(1);
 
-  var AutoTestLocation = copy(AutoLocation);
+  var location = container.lookup('location:auto');
 
-  AutoTestLocation._location = {
+  location.location = {
     href: 'http://test.com/rootdir/welcome',
     origin: 'http://test.com',
     pathname: '/rootdir/welcome',
@@ -151,12 +153,12 @@ QUnit.test("AutoLocation should replace the url when it's not in the preferred f
     search: '',
     replace: function(url) {
       equal(url, 'http://test.com/rootdir/#/welcome');
-    }
+    },
   };
-
-  AutoTestLocation._getSupportsHistory = function() { return false; };
-
-  registry.register('location:auto', AutoTestLocation);
+  location.history = null;
+  location.global = {
+    onhashchange: function() { }
+  };
 
   createRouter({
     location: 'auto',
