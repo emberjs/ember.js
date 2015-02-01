@@ -197,6 +197,6 @@ export default {
     @since 1.4.0
   */
   _getHash: function () {
-    return getHash(this._location || this.location);
+    return getHash(this.location);
   }
 };
