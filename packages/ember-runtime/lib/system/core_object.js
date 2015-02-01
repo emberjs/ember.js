@@ -118,7 +118,8 @@ function makeCtor() {
             bindings[keyName] = value;
           }
 
-          var desc = m.descs[keyName];
+          var possibleDesc = this[keyName];
+          var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().", !(value instanceof ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
@@ -803,8 +804,9 @@ var ClassMixinProps = {
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()['__ember_meta__'];
-    var desc = meta && meta.descs[key];
+    var proto = this.proto();
+    var possibleDesc = proto[key];
+    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
@@ -813,12 +815,11 @@ var ClassMixinProps = {
   _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
     var proto = this.proto();
-    var descs = meta(proto).descs;
     var property;
     var properties = [];
 
-    for (var name in descs) {
-      property = descs[name];
+    for (var name in proto) {
+      property = proto[name];
 
       if (property instanceof ComputedProperty) {
         properties.push({
@@ -882,11 +883,10 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   ClassMixinProps._lazyInjections = function() {
     var injections = {};
     var proto = this.proto();
-    var descs = meta(proto).descs;
     var key, desc;
 
-    for (key in descs) {
-      desc = descs[key];
+    for (key in proto) {
+      desc = proto[key];
       if (desc instanceof InjectedProperty) {
         injections[key] = desc.type + ':' + (desc.name || key);
       }

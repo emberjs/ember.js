@@ -35,7 +35,7 @@ EmberRenderer.prototype.createElement =
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     var tagName = view.tagName;
-    if (tagName === undefined) {
+    if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
       tagName = get(view, 'tagName');
       Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
     }

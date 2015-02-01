@@ -22,6 +22,7 @@ export default function alias(altKey) {
 }
 
 export function AliasedProperty(altKey) {
+  this.isDescriptor = true;
   this.altKey = altKey;
   this._dependentKeys = [altKey];
 }

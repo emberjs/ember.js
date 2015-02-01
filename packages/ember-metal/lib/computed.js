@@ -113,6 +113,7 @@ function UNDEFINED() { }
   @constructor
 */
 function ComputedProperty(config, opts) {
+  this.isDescriptor = true;
   if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
     if (typeof config === "function") {
       config.__ember_arity = config.length;

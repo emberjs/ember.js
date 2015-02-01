@@ -288,7 +288,6 @@ export function guidFor(obj) {
 // META
 //
 function Meta(obj) {
-  this.descs = {};
   this.watching = {};
   this.cache = {};
   this.cacheMeta = {};
@@ -303,7 +302,7 @@ function Meta(obj) {
 }
 
 Meta.prototype = {
-  chainWatchers: null
+  chainWatchers: null // FIXME
 };
 
 if (!canDefineNonEnumerableProperties) {
@@ -346,7 +345,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-  var ret = obj['__ember_meta__'];
+  var ret = obj.__ember_meta__;
   if (writable===false) {
     return ret || EMPTY_META;
   }
@@ -368,11 +367,7 @@ function meta(obj, writable) {
       }
     }
 
-    obj['__ember_meta__'] = ret;
-
-    // make sure we don't accidentally try to create constructor like desc
-    ret.descs.constructor = null;
-
+    obj.__ember_meta__ = ret;
   } else if (ret.source !== obj) {
     if (obj.__defineNonEnumerable) {
       obj.__defineNonEnumerable(EMBER_META_PROPERTY);
@@ -381,7 +376,6 @@ function meta(obj, writable) {
     }
 
     ret = o_create(ret);
-    ret.descs     = o_create(ret.descs);
     ret.watching  = o_create(ret.watching);
     ret.cache     = {};
     ret.cacheMeta = {};

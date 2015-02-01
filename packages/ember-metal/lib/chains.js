@@ -119,7 +119,8 @@ function lazyGet(obj, key) {
   }
 
   // if a CP only return cached value
-  var desc = meta && meta.descs[key];
+  var possibleDesc = obj[key];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   if (desc && desc._cacheable) {
     if (key in meta.cache) {
       return meta.cache[key];

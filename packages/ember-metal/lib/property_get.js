@@ -68,7 +68,8 @@ export function get(obj, keyName) {
   }
 
   var meta = obj['__ember_meta__'];
-  var desc = meta && meta.descs[keyName];
+  var possibleDesc = obj[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   var ret;
 
   if (desc === undefined && isPath(keyName)) {

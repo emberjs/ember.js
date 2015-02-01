@@ -24,7 +24,9 @@ import { overrideChains } from "ember-metal/property_events";
   @private
   @constructor
 */
-export function Descriptor() {}
+export function Descriptor() {
+  this.isDescriptor = true;
+}
 
 // ..........................................................
 // DEFINING PROPERTIES API
@@ -89,42 +91,40 @@ export function DEFAULT_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  var descs, existingDesc, watching, value;
+  var possibleDesc, existingDesc, watching, value;
 
   if (!meta) {
     meta = metaFor(obj);
   }
-  descs = meta.descs;
-  existingDesc = meta.descs[keyName];
   var watchEntry = meta.watching[keyName];
+  possibleDesc = obj[keyName];
+  existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   watching = watchEntry !== undefined && watchEntry > 0;
 
-  if (existingDesc instanceof Descriptor) {
+  if (existingDesc) {
     existingDesc.teardown(obj, keyName);
   }
 
   if (desc instanceof Descriptor) {
     value = desc;
 
-    descs[keyName] = desc;
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       if (watching && hasPropertyAccessors) {
         objectDefineProperty(obj, keyName, {
           configurable: true,
           enumerable: true,
           writable: true,
-          value: undefined // make enumerable
+          value: value
         });
       } else {
-        obj[keyName] = undefined; // make enumerable
+        obj[keyName] = value;
       }
     } else {
-      obj[keyName] = undefined; // make enumerable
+      obj[keyName] = value;
     }
     if (desc.setup) { desc.setup(obj, keyName); }
   } else {
-    descs[keyName] = undefined; // shadow descriptor in proto
     if (desc == null) {
       value = data;
 
