@@ -4,7 +4,6 @@ import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import environment from "ember-metal/environment";
 
 var view;
 
@@ -36,7 +35,7 @@ var badTags = [
   { tag: 'iframe', attr: 'src',
     // Setting an iframe with a bad protocol results in the browser
     // being redirected. in IE8. Skip the iframe tests on that platform.
-    skip: (environment.hasDOM && document.documentMode && document.documentMode <= 8),
+    skip: (document.documentMode && document.documentMode <= 8),
     unquotedTemplate: compile("<iframe src={{url}}></iframe>"),
     quotedTemplate: compile("<iframe src='{{url}}'></iframe>"),
     multipartTemplate: compile("<iframe src='{{protocol}}{{path}}'></iframe>") }
