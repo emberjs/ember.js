@@ -98,7 +98,8 @@ function commonSetup() {
     dom: new DOMHelper(),
     hooks: hooks,
     helpers: helpers,
-    partials: partials
+    partials: partials,
+    useFragmentCache: true
   };
 }
 
@@ -435,6 +436,15 @@ test("Simple data binding on fragments", function() {
   callback();
 
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div>');
+});
+
+test("second render respects whitespace", function () {
+  var template = compile('Hello {{ foo }} ');
+  template.render({}, env, document.createElement('div'));
+  var fragment = template.render({}, env, document.createElement('div'));
+  equal(fragment.childNodes.length, 3, 'fragment contains 3 text nodes');
+  equal(getTextContent(fragment.childNodes[0]), 'Hello ', 'first text node ends with one space character');
+  equal(getTextContent(fragment.childNodes[2]), ' ', 'last text node contains one space character');
 });
 
 test("morph receives escaping information", function() {
