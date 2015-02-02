@@ -29,7 +29,9 @@ export default {
     concat: concat
   },
 
-  helpers: helpers
+  helpers: helpers,
+
+  useFragmentCache: true
 };
 
 var domHelper = environment.hasDOM ? new DOMHelper() : null;
