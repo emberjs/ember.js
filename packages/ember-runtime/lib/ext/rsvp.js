@@ -3,11 +3,6 @@
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import run from "ember-metal/run_loop";
-
-// this is technically incorrect (per @wycats)
-// it should be `import * as RSVP from 'rsvp';` but
-// Esprima does not support this syntax yet (and neither does
-// es6-module-transpiler 0.4.0 - 0.6.2).
 import * as RSVP from 'rsvp';
 
 var testModuleName = 'ember-testing/test';
