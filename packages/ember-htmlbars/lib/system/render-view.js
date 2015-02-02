@@ -30,6 +30,7 @@ function renderHTMLBarsTemplate(view, buffer, template) {
     dom: view.renderer._dom,
     hooks: defaultEnv.hooks,
     helpers: defaultEnv.helpers,
+    useFragmentCache: defaultEnv.useFragmentCache,
     data: {
       view: view,
       buffer: buffer
