@@ -150,17 +150,8 @@ Morph.prototype._updateText = function (parent, text) {
 };
 
 Morph.prototype._updateHTML = function (parent, html) {
-  var start = this.start, end = this.end;
-  clear(parent, start, end);
-  this.text = null;
-  var childNodes = this.domHelper.parseHTML(html, this.contextualElement);
-  appendChildren(parent, end, childNodes);
-  if (this.before !== null) {
-    this.before.end = start.nextSibling;
-  }
-  if (this.after !== null) {
-    this.after.start = end.previousSibling;
-  }
+  var fragment = this.domHelper.parseHTML(html, this.contextualElement);
+  this._updateNode(parent, fragment);
 };
 
 Morph.prototype.append = function (node) {
@@ -258,18 +249,6 @@ Morph.prototype.replace = function (index, removedLength, addedNodes) {
 
   splice.apply(morphs, args);
 };
-
-function appendChildren(parent, end, nodeList) {
-  var ref = end;
-  var i = nodeList.length;
-  var node;
-
-  while (i--) {
-    node = nodeList[i];
-    parent.insertBefore(node, ref);
-    ref = node;
-  }
-}
 
 function clear(parent, start, end) {
   var current, previous;
