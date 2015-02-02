@@ -17,7 +17,7 @@
 * Enable `Ember.run.join` to return a value even if within an existing run loop.
 * Update `Ember.EventDispatcher` to use `Ember.run.join`. This is required so that synchronous
   events (like focus) do not spawn a nested run loop.
-* Deprecate context switching for of {{each}}.
+* Deprecate context switching form of {{each}}.
 * Deprecate context switching form of {{with}}.
 * Add improved error message when a component lookup fails.
 * Ensure that component actions that are subscribed to, trigger an assertion when unhandled. Consider the following example:
