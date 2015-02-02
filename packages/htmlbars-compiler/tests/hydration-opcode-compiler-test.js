@@ -15,8 +15,8 @@ test("simple example", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], -1, 0, true ] ],
-    [ "createMorph", [ 1, [ 0 ], 0, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
+    [ "createMorph", [ 1, [ 0 ], 2, 2, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
@@ -29,7 +29,7 @@ test("simple block", function() {
   var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
@@ -42,7 +42,7 @@ test("simple block with block params", function() {
   var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
@@ -55,7 +55,7 @@ test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ]
@@ -66,7 +66,7 @@ test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], 0, 1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 1, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ]
@@ -78,7 +78,7 @@ test("mustache two elements deep", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0, 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0, 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ],
@@ -90,12 +90,12 @@ test("two sibling elements with mustaches", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div><div>{{bar}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
-    [ "createMorph", [ 1, [ 1 ], -1, -1, true ] ],
+    [ "createMorph", [ 1, [ 1 ], 0, 0, true ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "printContentHook", [ 1 ] ],
     [ "popParent", [] ]
@@ -105,9 +105,8 @@ test("two sibling elements with mustaches", function() {
 test("mustaches at the root", function() {
   var opcodes = opcodesFor("{{foo}} {{bar}}");
   deepEqual(opcodes, [
-    [ "createMorph", [ 0, [ ], 0, 1, true ] ],
-    [ "createMorph", [ 1, [ ], 1, 2, true ] ],
-    [ "repairClonedNode", [ [ 0, 2 ] ] ],
+    [ "createMorph", [ 0, [ ], 0, 0, true ] ],
+    [ "createMorph", [ 1, [ ], 2, 2, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
@@ -120,11 +119,10 @@ test("back to back mustaches should have a text node inserted between them", fun
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createMorph", [ 0, [0], -1, 0, true ] ],
-    [ "createMorph", [ 1, [0], 0, 1, true ] ],
-    [ "createMorph", [ 2, [0], 1, 2, true ] ],
-    [ "createMorph", [ 3, [0], 2, -1, true] ],
-    [ "repairClonedNode", [ [ 0, 1 ], false ] ],
+    [ "createMorph", [ 0, [0], 0, 0, true ] ],
+    [ "createMorph", [ 1, [0], 1, 1, true ] ],
+    [ "createMorph", [ 2, [0], 2, 2, true ] ],
+    [ "createMorph", [ 3, [0], 4, 4, true] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
@@ -141,7 +139,7 @@ test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar' baz.bat true 3.14}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "createMorph", [ 0, [0], -1, -1, true ] ],
+    [ "createMorph", [ 0, [0], 0, 0, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ 3.14 ] ],
     [ "pushLiteral", [ true ] ],
@@ -282,10 +280,10 @@ test("attribute helpers", function() {
     [ "createAttrMorph", [ 1, 0, 'id', true, null ] ],
     [ "printAttributeHook", [ 1, 0 ] ],
     [ "popParent", [] ],
-    [ "createMorph", [ 0, [], 0, 1, true ] ],
+    [ "createMorph", [ 0, [], 1, 1, true ] ],
     [ "pushLiteral", [ 'morphThing' ] ],
     [ "printContentHook", [ 0 ] ],
-    [ "consumeParent", [ 1 ] ],
+    [ "consumeParent", [ 2 ] ],
     [ "pushGetHook", [ 'ohMy' ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [] ],

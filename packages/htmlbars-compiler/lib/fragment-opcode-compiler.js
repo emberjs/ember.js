@@ -50,18 +50,20 @@ FragmentOpcodeCompiler.prototype.endProgram = function() {
   this.opcode('returnNode');
 };
 
-FragmentOpcodeCompiler.prototype.mustache = function () {
-  this.opcode('createComment', ['']);
-  this.opcode('appendChild');
+FragmentOpcodeCompiler.prototype.mustache = function() {
+  this.pushMorphPlaceholderNode();
 };
 
-FragmentOpcodeCompiler.prototype.component = function () {
-  this.opcode('createComment', ['']);
-  this.opcode('appendChild');
+FragmentOpcodeCompiler.prototype.component = function() {
+  this.pushMorphPlaceholderNode();
 };
 
-FragmentOpcodeCompiler.prototype.block = function () {
-  this.opcode('createComment', ['']);
+FragmentOpcodeCompiler.prototype.block = function() {
+  this.pushMorphPlaceholderNode();
+};
+
+FragmentOpcodeCompiler.prototype.pushMorphPlaceholderNode = function() {
+  this.opcode('createComment', [""]);
   this.opcode('appendChild');
 };
 

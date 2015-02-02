@@ -80,8 +80,7 @@ test("allow an AST with mustaches to be passed", function() {
       b.text("some")
     ]),
     b.text(" ast "),
-    b.mustache(b.sexpr(b.path('foo'))),
-    b.text('')
+    b.mustache(b.sexpr(b.path('foo')))
   ]));
 });
 
@@ -226,7 +225,6 @@ test("A more complete embedding example", function() {
           "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
           " {{more 'embed'}}";
   astEqual(t, b.program([
-    b.text(''),
     b.mustache(b.sexpr(b.path('embed'))),
     b.text(' '),
     b.mustache(b.sexpr(b.path('some'), [b.string('content')])),
@@ -241,21 +239,18 @@ test("A more complete embedding example", function() {
       b.mustache(b.sexpr(b.path('content')))
     ]),
     b.text(' '),
-    b.mustache(b.sexpr(b.path('more'), [b.string('embed')])),
-    b.text('')
+    b.mustache(b.sexpr(b.path('more'), [b.string('embed')]))
   ]));
 });
 
 test("Simple embedded block helpers", function() {
   var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('if'), [b.path('foo')]), b.program([
       b.element('div', [], [], [
         b.mustache(b.sexpr(b.path('content')))
       ])
-    ])),
-    b.text('')
+    ]))
   ]));
 });
 
@@ -330,23 +325,6 @@ test("Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted stat
   ]));
 });
 
-test('Auto insertion of text nodes between blocks and mustaches', function () {
-  var t = "{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}";
-  astEqual(t, b.program([
-    b.text(''),
-    b.mustache(b.sexpr(b.path('one'))),
-    b.text(''),
-    b.mustache(b.sexpr(b.path('two'))),
-    b.text(''),
-    b.block(b.sexpr(b.path('three')), b.program()),
-    b.text(''),
-    b.block(b.sexpr(b.path('four')), b.program()),
-    b.text(''),
-    b.mustache(b.sexpr(b.path('five'))),
-    b.text('')
-  ]));
-});
-
 test("Stripping - mustaches", function() {
   var t = "foo {{~content}} bar";
   astEqual(t, b.program([
@@ -383,49 +361,39 @@ test("Stripping - blocks", function() {
 test("Stripping - programs", function() {
   var t = "{{#wat~}} foo {{else}}{{/wat}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('wat')), b.program([
       b.text('foo ')
-    ]), b.program()),
-    b.text('')
+    ]), b.program())
   ]));
 
   t = "{{#wat}} foo {{~else}}{{/wat}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('wat')), b.program([
       b.text(' foo')
-    ]), b.program()),
-    b.text('')
+    ]), b.program())
   ]));
 
   t = "{{#wat}}{{else~}} foo {{/wat}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('wat')), b.program(), b.program([
       b.text('foo ')
-    ])),
-    b.text('')
+    ]))
   ]));
 
   t = "{{#wat}}{{else}} foo {{~/wat}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('wat')), b.program(), b.program([
       b.text(' foo')
-    ])),
-    b.text('')
+    ]))
   ]));
 });
 
 test("Stripping - removes unnecessary text nodes", function() {
   var t = "{{#each~}}\n  <li> foo </li>\n{{~/each}}";
   astEqual(t, b.program([
-    b.text(''),
     b.block(b.sexpr(b.path('each')), b.program([
       b.element('li', [], [], [b.text(' foo ')])
-    ])),
-    b.text('')
+    ]))
   ]));
 });
 
@@ -450,7 +418,6 @@ test("Stripping - removes unnecessary text nodes", function() {
 test("Components", function() {
   var t = "<x-foo a=b c='d' e={{f}} id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
   astEqual(t, b.program([
-    b.text(''),
     b.component('x-foo', [
       b.attr('a', b.text('b')),
       b.attr('c', b.text('d')),
@@ -458,17 +425,12 @@ test("Components", function() {
       b.attr('id', b.concat([ b.path('bar') ])),
       b.attr('class', b.concat([ b.string('foo-'), b.path('bar') ]))
     ], b.program([
-      b.text(''),
       b.mustache(b.sexpr(b.path('a'))),
-      b.text(''),
       b.mustache(b.sexpr(b.path('b'))),
       b.text('c'),
-      b.mustache(b.sexpr(b.path('d'))),
-      b.text('')
+      b.mustache(b.sexpr(b.path('d')))
     ])),
-    b.text(''),
-    b.mustache(b.sexpr(b.path('e'))),
-    b.text('')
+    b.mustache(b.sexpr(b.path('e')))
   ]));
 });
 

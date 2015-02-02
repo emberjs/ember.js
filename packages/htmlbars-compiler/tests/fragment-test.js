@@ -1,10 +1,7 @@
 import FragmentOpcodeCompiler from "../htmlbars-compiler/fragment-opcode-compiler";
 import FragmentJavaScriptCompiler from "../htmlbars-compiler/fragment-javascript-compiler";
-import HydrationOpcodeCompiler from "../htmlbars-compiler/hydration-opcode-compiler";
-import HydrationJavaScriptCompiler from "../htmlbars-compiler/hydration-javascript-compiler";
 import DOMHelper from "../dom-helper";
 import { preprocess } from "../htmlbars-syntax/parser";
-import { get } from "../htmlbars-runtime/hooks";
 import { equalHTML, getTextContent } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
@@ -23,29 +20,13 @@ function fragmentFor(ast) {
   return fn(new DOMHelper());
 }
 
-function hydratorFor(ast, cachedFragment) {
-  /* jshint evil: true */
-  var hydrate = new HydrationOpcodeCompiler();
-  var opcodes = hydrate.compile(ast);
-  var hydrate2 = new HydrationJavaScriptCompiler();
-  var program = hydrate2.compile(opcodes, []);
-
-  var hookVars = [];
-  for (var hook in hydrate2.hooks) {
-    hookVars.push(hook + ' = hooks.' + hook);
-  }
-  program =  'var ' + hookVars.join(', ') + ';\n' +
-             'this.cachedFragment = ' + !!cachedFragment + ';\n' + program;
-  return new Function("fragment", "context", "dom", "hooks", "env", "contextualElement", program);
-}
-
 QUnit.module('fragment');
 
 test('compiles a fragment', function () {
   var ast = preprocess("<div>{{foo}} bar {{baz}}</div>");
   var divNode = fragmentFor(ast).firstChild;
 
-  equalHTML(divNode, "<div> bar </div>");
+  equalHTML(divNode, "<div><!----> bar <!----></div>");
 });
 
 if (document && document.createElementNS) {
@@ -91,109 +72,4 @@ test('converts entities to their char/string equivalent', function () {
 
   equal(divNode.getAttribute('title'), '"Foo & Bar"');
   equal(getTextContent(divNode), "lol < << < < ≧̸ &Borksnorlax;");
-});
-
-test('hydrates a fragment with morph mustaches', function () {
-  var ast = preprocess("<div>{{foo \"bar\" 3 blah true bar=baz ack=\"syn\"}} bar {{baz}}</div>");
-  var fragment = fragmentFor(ast).cloneNode(true);
-  var hydrate = hydratorFor(ast);
-
-  var contentResolves = [];
-  function pushArgs(env, morph, context, path, params, hash) {
-    contentResolves.push({
-      morph: morph,
-      context: context,
-      path: path,
-      params: params,
-      hash: hash
-    });
-  }
-  var context = { blah: "BLAH", baz: "BAZ" };
-  var env = {
-    dom: new DOMHelper(),
-    hooks: {
-      get: get,
-      inline: pushArgs,
-      content: pushArgs
-    }
-  };
-
-  hydrate(fragment, context, env.dom, env.hooks, env);
-
-  equal(contentResolves.length, 2);
-
-  var foo = contentResolves[0];
-  equal(foo.morph.escaped, true, 'morph escaped');
-  equal(foo.morph.parent(), fragment.firstChild, 'morph parent');
-  equal(foo.context, context, 'context');
-  equal(foo.path, 'foo', 'path');
-  deepEqual(foo.params, ["bar",3,"BLAH", true], 'params');
-  deepEqual(foo.hash, {ack:"syn",bar:"BAZ"}, 'hash');
-
-  var baz = contentResolves[1];
-  equal(baz.morph.escaped, true, 'morph escaped');
-  equal(baz.morph.parent(), fragment.firstChild, 'morph parent');
-  equal(baz.context, context, 'context');
-  equal(baz.path, 'baz', 'path');
-
-  foo.morph.setContent('A');
-  baz.morph.setContent('B');
-
-  equalHTML(fragment, "<div>A bar B</div>");
-});
-
-test('test auto insertion of text nodes for needed edges a fragment with morph mustaches', function () {
-  var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
-  var dom = new DOMHelper();
-  var fragment = dom.cloneNode(fragmentFor(ast), true);
-  var hydrate = hydratorFor(ast, true);
-
-  var morphs = [];
-  var fakeMorphDOM = new DOMHelper();
-  fakeMorphDOM.createMorphAt = function(){
-    var morph = dom.createMorphAt.apply(this, arguments);
-    morphs.push(morph);
-    return morph;
-  };
-
-  var contentResolves = [];
-  function pushArgs(env, morph, context, path, params, hash) {
-    contentResolves.push({
-      morph: morph,
-      context: context,
-      path: path,
-      params: params,
-      hash: hash
-    });
-  }
-
-  var context = {};
-  var env = {
-    dom: fakeMorphDOM,
-    hooks: {
-      get: get,
-      inline: pushArgs,
-      content: pushArgs
-    }
-  };
-
-  hydrate(fragment, context, env.dom, env.hooks, env, document.body);
-
-  equal(morphs.length, 3);
-
-  var t = morphs[0].start;
-  equal(t.nodeType, 3);
-  equal(getTextContent(t) , '');
-  equal(morphs[1].start, null);
-  equal(morphs[1].end, null);
-
-  equal(morphs[2].start, morphs[1].parent());
-  equal(morphs[2].end.nodeType, 3);
-  equal(getTextContent(morphs[2].end), '');
-
-  morphs[0].setContent('A');
-  morphs[1].setContent('B');
-  morphs[2].setContent('C');
-
-  equalHTML(fragment, "A<p>B</p>C");
 });

@@ -80,10 +80,8 @@ test("empty block", function() {
   actionsEqual(input, [
     ['startProgram', [0, []]],
     ['endProgram', [1]],
-    ['startProgram', [1, [0, 1]]],
-    ['text', [0, 3]],
-    ['block', [1, 3]],
-    ['text', [2, 3]],
+    ['startProgram', [1, []]],
+    ['block', [0, 1]],
     ['endProgram', [0]]
   ]);
 });
@@ -96,10 +94,8 @@ test("block with inverse", function() {
     ['startProgram', [0, []]],
     ['text', [0, 1]],
     ['endProgram', [1]],
-    ['startProgram', [2, [0, 1]]],
-    ['text', [0, 3]],
-    ['block', [1, 3]],
-    ['text', [2, 3]],
+    ['startProgram', [2, []]],
+    ['block', [0, 1]],
     ['endProgram', [0]]
   ]);
 });
@@ -110,28 +106,20 @@ test("nested blocks", function() {
     ['startProgram', [0, []]],
     ['text', [0, 1]],
     ['endProgram', [1]],
-    ['startProgram', [0, [0, 1]]],
-    ['text', [0, 3]],
-    ['mustache', [1, 3]],
-    ['text', [2, 3]],
+    ['startProgram', [0, []]],
+    ['mustache', [0, 1]],
     ['endProgram', [2]],
     ['startProgram', [0, []]],
     ['openElement', [0, 1, 0, []]],
     ['closeElement', [0, 1]],
     ['endProgram', [2]],
-    ['startProgram', [2, [0, 1, 2]]],
-    ['text', [0, 5]],
-    ['block', [1, 5]],
-    ['text', [2, 5]],
-    ['block', [3, 5]],
-    ['text', [4, 5]],
+    ['startProgram', [2, []]],
+    ['block', [0, 2]],
+    ['block', [1, 2]],
     ['endProgram', [1]],
-    ['startProgram', [2, [0, 1, 2]]],
-    ['text', [0, 5]],
-    ['block', [1, 5]],
-    ['text', [2, 5]],
-    ['block', [3, 5]],
-    ['text', [4, 5]],
+    ['startProgram', [2, []]],
+    ['block', [0, 2]],
+    ['block', [1, 2]],
     ['endProgram', [0]]
   ]);
 });
@@ -142,10 +130,8 @@ test("component", function() {
     ['startProgram', [0, []]],
     ['text', [0, 1]],
     ['endProgram', [1]],
-    ['startProgram', [1, [0, 1]]],
-    ['text', [0, 3]],
-    ['component', [1, 3]],
-    ['text', [2, 3]],
+    ['startProgram', [1, []]],
+    ['component', [0, 1]],
     ['endProgram', [0]]
   ]);
 });

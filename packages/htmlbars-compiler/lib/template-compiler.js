@@ -136,14 +136,14 @@ TemplateCompiler.prototype.closeElement = function(element, i, l, r) {
   this.hydrationOpcodeCompiler.closeElement(element, i, l, r);
 };
 
-TemplateCompiler.prototype.component = function(component, i, l) {
-  this.fragmentOpcodeCompiler.component(component, i, l);
-  this.hydrationOpcodeCompiler.component(component, i, l);
+TemplateCompiler.prototype.component = function(component, i, l, s) {
+  this.fragmentOpcodeCompiler.component(component, i, l, s);
+  this.hydrationOpcodeCompiler.component(component, i, l, s);
 };
 
-TemplateCompiler.prototype.block = function(block, i, l) {
-  this.fragmentOpcodeCompiler.block(block, i, l);
-  this.hydrationOpcodeCompiler.block(block, i, l);
+TemplateCompiler.prototype.block = function(block, i, l, s) {
+  this.fragmentOpcodeCompiler.block(block, i, l, s);
+  this.hydrationOpcodeCompiler.block(block, i, l, s);
 };
 
 TemplateCompiler.prototype.text = function(string, i, l, r) {
@@ -156,9 +156,9 @@ TemplateCompiler.prototype.comment = function(string, i, l, r) {
   this.hydrationOpcodeCompiler.comment(string, i, l, r);
 };
 
-TemplateCompiler.prototype.mustache = function (mustache, i, l) {
-  this.fragmentOpcodeCompiler.mustache(mustache, i, l);
-  this.hydrationOpcodeCompiler.mustache(mustache, i, l);
+TemplateCompiler.prototype.mustache = function (mustache, i, l, s) {
+  this.fragmentOpcodeCompiler.mustache(mustache, i, l, s);
+  this.hydrationOpcodeCompiler.mustache(mustache, i, l, s);
 };
 
 TemplateCompiler.prototype.setNamespace = function(namespace) {

@@ -26,21 +26,17 @@ test('walks elements', function() {
 test('walks blocks', function() {
   compareWalkedNodes('{{#foo}}<li></li>{{/foo}}', [
     'Program',
-    'TextNode',
     'BlockStatement',
     'Program',
-    'ElementNode',
-    'TextNode'
+    'ElementNode'
   ]);
 });
 
 test('walks components', function() {
   compareWalkedNodes('<my-foo><li></li></my-foo>', [
     'Program',
-    'TextNode',
     'ComponentNode',
     'Program',
-    'ElementNode',
-    'TextNode'
+    'ElementNode'
   ]);
 });
