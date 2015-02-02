@@ -43,54 +43,54 @@ QUnit.module('fragment');
 
 test('compiles a fragment', function () {
   var ast = preprocess("<div>{{foo}} bar {{baz}}</div>");
-  var fragment = fragmentFor(ast);
+  var divNode = fragmentFor(ast).firstChild;
 
-  equalHTML(fragment, "<div> bar </div>");
+  equalHTML(divNode, "<div> bar </div>");
 });
 
 if (document && document.createElementNS) {
   test('compiles an svg fragment', function () {
     var ast = preprocess("<div><svg><circle/><foreignObject><span></span></foreignObject></svg></div>");
-    var fragment = fragmentFor(ast);
+    var divNode = fragmentFor(ast).firstChild;
 
-    equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+    equal( divNode.childNodes[0].namespaceURI, svgNamespace,
            'svg has the right namespace' );
-    equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+    equal( divNode.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
            'circle has the right namespace' );
-    equal( fragment.childNodes[0].childNodes[1].namespaceURI, svgNamespace,
+    equal( divNode.childNodes[0].childNodes[1].namespaceURI, svgNamespace,
            'foreignObject has the right namespace' );
-    equal( fragment.childNodes[0].childNodes[1].childNodes[0].namespaceURI, xhtmlNamespace,
+    equal( divNode.childNodes[0].childNodes[1].childNodes[0].namespaceURI, xhtmlNamespace,
            'span has the right namespace' );
   });
 }
   
 test('compiles an svg element with classes', function () {
   var ast = preprocess('<svg class="red right hand"></svg>');
-  var fragment = fragmentFor(ast);
+  var svgNode = fragmentFor(ast).firstChild;
 
-  equal(fragment.getAttribute('class'), 'red right hand');
+  equal(svgNode.getAttribute('class'), 'red right hand');
 });
 
 if (document && document.createElementNS) {
   test('compiles an svg element with proper namespace', function () {
     var ast = preprocess('<svg><use xlink:title="nice-title"></use></svg>');
-    var fragment = fragmentFor(ast);
+    var svgNode = fragmentFor(ast).firstChild;
 
-    equal(fragment.childNodes[0].getAttributeNS('http://www.w3.org/1999/xlink', 'title'), 'nice-title');
-    equal(fragment.childNodes[0].attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
-    equal(fragment.childNodes[0].attributes[0].name, 'xlink:title');
-    equal(fragment.childNodes[0].attributes[0].localName, 'title');
-    equal(fragment.childNodes[0].attributes[0].value, 'nice-title');
+    equal(svgNode.childNodes[0].getAttributeNS('http://www.w3.org/1999/xlink', 'title'), 'nice-title');
+    equal(svgNode.childNodes[0].attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+    equal(svgNode.childNodes[0].attributes[0].name, 'xlink:title');
+    equal(svgNode.childNodes[0].attributes[0].localName, 'title');
+    equal(svgNode.childNodes[0].attributes[0].value, 'nice-title');
   });
 
 }
   
 test('converts entities to their char/string equivalent', function () {
   var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
-  var fragment = fragmentFor(ast);
+  var divNode = fragmentFor(ast).firstChild;
 
-  equal(fragment.getAttribute('title'), '"Foo & Bar"');
-  equal(getTextContent(fragment), "lol < << < < ≧̸ &Borksnorlax;");
+  equal(divNode.getAttribute('title'), '"Foo & Bar"');
+  equal(getTextContent(divNode), "lol < << < < ≧̸ &Borksnorlax;");
 });
 
 test('hydrates a fragment with morph mustaches', function () {
@@ -124,7 +124,7 @@ test('hydrates a fragment with morph mustaches', function () {
 
   var foo = contentResolves[0];
   equal(foo.morph.escaped, true, 'morph escaped');
-  equal(foo.morph.parent(), fragment, 'morph parent');
+  equal(foo.morph.parent(), fragment.firstChild, 'morph parent');
   equal(foo.context, context, 'context');
   equal(foo.path, 'foo', 'path');
   deepEqual(foo.params, ["bar",3,"BLAH", true], 'params');
@@ -132,7 +132,7 @@ test('hydrates a fragment with morph mustaches', function () {
 
   var baz = contentResolves[1];
   equal(baz.morph.escaped, true, 'morph escaped');
-  equal(baz.morph.parent(), fragment, 'morph parent');
+  equal(baz.morph.parent(), fragment.firstChild, 'morph parent');
   equal(baz.context, context, 'context');
   equal(baz.path, 'baz', 'path');
 

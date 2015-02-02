@@ -73,33 +73,32 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   }
 };
 
-HydrationOpcodeCompiler.prototype.endProgram = function(/* program */) {
+HydrationOpcodeCompiler.prototype.endProgram = function() {
   distributeMorphs(this.morphs, this.opcodes);
 };
 
-HydrationOpcodeCompiler.prototype.text = function(/* string, pos, len */) {
+HydrationOpcodeCompiler.prototype.text = function() {
   ++this.currentDOMChildIndex;
 };
 
-HydrationOpcodeCompiler.prototype.comment = function(/* string, pos, len */) {
+HydrationOpcodeCompiler.prototype.comment = function() {
   ++this.currentDOMChildIndex;
 };
 
-HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSingleRoot, mustacheCount, blankChildTextNodes) {
+HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, mustacheCount, blankChildTextNodes) {
   distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;
 
   this.element = this.currentDOMChildIndex;
 
-  if (!isSingleRoot) {
-    this.opcode('consumeParent', this.currentDOMChildIndex);
+  this.opcode('consumeParent', this.currentDOMChildIndex);
 
-    // If our parent reference will be used more than once, cache its reference.
-    if (mustacheCount > 1) {
-      this.opcode('shareElement', ++this.elementNum);
-      this.element = null; // Set element to null so we don't cache it twice
-    }
+  // If our parent reference will be used more than once, cache its reference.
+  if (mustacheCount > 1) {
+    this.opcode('shareElement', ++this.elementNum);
+    this.element = null; // Set element to null so we don't cache it twice
   }
+
   var isElementChecked = detectIsElementChecked(element);
   if (blankChildTextNodes.length > 0 || isElementChecked) {
     this.opcode( 'repairClonedNode',
@@ -114,9 +113,9 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSi
   forEach(element.helpers, this.elementHelper, this);
 };
 
-HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isSingleRoot) {
+HydrationOpcodeCompiler.prototype.closeElement = function() {
   distributeMorphs(this.morphs, this.opcodes);
-  if (!isSingleRoot) { this.opcode('popParent'); }
+  this.opcode('popParent');
   this.currentDOMChildIndex = this.paths.pop();
 };
 
