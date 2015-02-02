@@ -108,9 +108,7 @@ forEach(NativeArray.keys(), function(methodName) {
   }
 });
 
-if (ignore.length > 0) {
-  NativeArray = NativeArray.without.apply(NativeArray, ignore);
-}
+NativeArray = NativeArray.without.apply(NativeArray, ignore);
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
