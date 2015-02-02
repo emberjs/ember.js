@@ -270,7 +270,7 @@ test('#parseHTML combinations', function(){
     expectedTagName = parsingCombinations[p][2];
 
     contextElement = document.createElement(contextTag);
-    nodes = dom.parseHTML(content, contextElement);
+    nodes = dom.parseHTML(content, contextElement).childNodes;
     equal(
       nodes[0].tagName, expectedTagName,
       '#parseHTML of '+content+' returns a '+expectedTagName+' inside a '+contextTag+' context' );
@@ -279,7 +279,7 @@ test('#parseHTML combinations', function(){
 
 test('#parseHTML of script then tr inside table context wraps the tr in a tbody', function(){
   var tableElement = document.createElement('table'),
-      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tableElement);
+      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tableElement).childNodes;
   // The HTML spec suggests the first item must be the child of
   // the omittable start tag. Here script is the first child, so no-go.
   equal(nodes.length, 2, 'Leading script tag corrupts');
@@ -289,7 +289,7 @@ test('#parseHTML of script then tr inside table context wraps the tr in a tbody'
 
 test('#parseHTML of select allows the initial implicit option selection to remain', function(){
   var div = document.createElement('div');
-  var select = dom.parseHTML('<select><option></option></select>', div)[0];
+  var select = dom.parseHTML('<select><option></option></select>', div).childNodes[0];
 
   ok(select.childNodes[0].selected, 'first element is selected');
 });
@@ -299,7 +299,7 @@ test('#parseHTML of options removes an implicit selection', function(){
   var options = dom.parseHTML(
     '<option value="1"></option><option value="2"></option>',
     select
-  );
+  ).childNodes;
 
   ok(!options[0].selected, 'first element is not selected');
   ok(!options[1].selected, 'second element is not selected');
@@ -310,7 +310,7 @@ test('#parseHTML of options leaves an explicit first selection', function(){
   var options = dom.parseHTML(
     '<option value="1" selected></option><option value="2"></option>',
     select
-  );
+  ).childNodes;
 
   ok(options[0].selected, 'first element is selected');
   ok(!options[1].selected, 'second element is not selected');
@@ -321,7 +321,7 @@ test('#parseHTML of options leaves an explicit second selection', function(){
   var options = dom.parseHTML(
     '<option value="1"></option><option value="2" selected="selected"></option>',
     select
-  );
+  ).childNodes;
 
   ok(!options[0].selected, 'first element is not selected');
   ok(options[1].selected, 'second element is selected');
@@ -329,7 +329,7 @@ test('#parseHTML of options leaves an explicit second selection', function(){
 
 test('#parseHTML of script then tr inside tbody context', function(){
   var tbodyElement = document.createElement('tbody'),
-      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tbodyElement);
+      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tbodyElement).childNodes;
   equal(nodes.length, 2, 'Leading script tag corrupts');
   equal(nodes[0].tagName, 'SCRIPT');
   equal(nodes[1].tagName, 'TR');
@@ -337,7 +337,7 @@ test('#parseHTML of script then tr inside tbody context', function(){
 
 test('#parseHTML with retains whitespace', function(){
   var div = document.createElement('div');
-  var nodes = dom.parseHTML('leading<script id="first"></script> <script id="second"></script><div><script></script> <script></script>, indeed.</div>', div);
+  var nodes = dom.parseHTML('leading<script id="first"></script> <script id="second"></script><div><script></script> <script></script>, indeed.</div>', div).childNodes;
   equal(nodes[0].data, 'leading');
   equal(nodes[1].tagName, 'SCRIPT');
   equal(nodes[2].data, ' ');
@@ -351,14 +351,14 @@ test('#parseHTML with retains whitespace', function(){
 
 test('#parseHTML with retains whitespace of top element', function(){
   var div = document.createElement('div');
-  var nodes = dom.parseHTML('<span>hello <script id="first"></script> yeah</span>', div);
+  var nodes = dom.parseHTML('<span>hello <script id="first"></script> yeah</span>', div).childNodes;
   equal(nodes[0].tagName, 'SPAN');
   equalHTML(nodes, '<span>hello <script id="first"></script> yeah</span>');
 });
 
 test('#parseHTML with retains whitespace after script', function(){
   var div = document.createElement('div');
-  var nodes = dom.parseHTML('<span>hello</span><script id="first"></script><span><script></script> kwoop</span>', div);
+  var nodes = dom.parseHTML('<span>hello</span><script id="first"></script><span><script></script> kwoop</span>', div).childNodes;
   equal(nodes[0].tagName, 'SPAN');
   equal(nodes[1].tagName, 'SCRIPT');
   equal(nodes[2].tagName, 'SPAN');
@@ -367,7 +367,7 @@ test('#parseHTML with retains whitespace after script', function(){
 
 test('#parseHTML of number', function(){
   var div = document.createElement('div');
-  var nodes = dom.parseHTML(5, div);
+  var nodes = dom.parseHTML(5, div).childNodes;
   equal(nodes[0].data, '5');
   equalHTML(nodes, '5');
 });
@@ -552,7 +552,7 @@ for (i=0;i<foreignNamespaces.length;i++) {
   test('#parseHTML of div with '+foreignNamespace, function(){
     dom.setNamespace(xhtmlNamespace);
     var foreignObject = document.createElementNS(svgNamespace, foreignNamespace),
-        nodes = dom.parseHTML('<div></div>', foreignObject);
+        nodes = dom.parseHTML('<div></div>', foreignObject).childNodes;
     equal(nodes[0].tagName, 'DIV');
     equal(nodes[0].namespaceURI, xhtmlNamespace);
   }); // jshint ignore:line
@@ -561,7 +561,7 @@ for (i=0;i<foreignNamespaces.length;i++) {
 test('#parseHTML of path with svg contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'svg'),
-      nodes = dom.parseHTML('<path></path>', svgElement);
+      nodes = dom.parseHTML('<path></path>', svgElement).childNodes;
   equal(nodes[0].tagName, 'path');
   equal(nodes[0].namespaceURI, svgNamespace);
 });
@@ -569,7 +569,7 @@ test('#parseHTML of path with svg contextual element', function(){
 test('#parseHTML of stop with linearGradient contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
-      nodes = dom.parseHTML('<stop />', svgElement);
+      nodes = dom.parseHTML('<stop />', svgElement).childNodes;
   equal(nodes[0].tagName, 'stop');
   equal(nodes[0].namespaceURI, svgNamespace);
 });

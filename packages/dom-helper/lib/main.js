@@ -396,8 +396,10 @@ prototype.appendMorph = function(element, contextualElement) {
 };
 
 prototype.parseHTML = function(html, contextualElement) {
+  var childNodes;
+
   if (interiorNamespace(contextualElement) === svgNamespace) {
-    return buildSVGDOM(html, this);
+    childNodes = buildSVGDOM(html, this);
   } else {
     var nodes = buildHTMLDOM(html, contextualElement, this);
     if (detectOmittedStartTag(html, contextualElement)) {
@@ -405,11 +407,26 @@ prototype.parseHTML = function(html, contextualElement) {
       while (node && node.nodeType !== 1) {
         node = node.nextSibling;
       }
-      return node.childNodes;
+      childNodes = node.childNodes;
     } else {
-      return nodes;
+      childNodes = nodes;
     }
   }
+
+  // Copy node list to a fragment.
+  var fragment = this.document.createDocumentFragment();
+
+  if (childNodes && childNodes.length > 0) {
+    var currentNode = childNodes[0];
+
+    while (currentNode) {
+      var tempNode = currentNode;
+      currentNode = currentNode.nextSibling;
+      fragment.appendChild(tempNode);
+    }
+  }
+
+  return fragment;
 };
 
 var parsingNode;
