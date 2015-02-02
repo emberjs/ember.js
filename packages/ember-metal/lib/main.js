@@ -140,7 +140,7 @@ import {
   gte,
   lt,
   lte,
-  oneWay,
+  oneWay as computedOneWay,
   readOnly,
   defaultTo,
   deprecatingAlias,
@@ -162,8 +162,8 @@ computed.gte = gte;
 computed.lt = lt;
 computed.lte = lte;
 computed.alias = alias;
-computed.oneWay = oneWay;
-computed.reads = oneWay;
+computed.oneWay = computedOneWay;
+computed.reads = computedOneWay;
 computed.readOnly = readOnly;
 computed.defaultTo = defaultTo;
 computed.deprecatingAlias = deprecatingAlias;
