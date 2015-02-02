@@ -312,7 +312,7 @@ test("The compiler can handle top-level unescaped tr", function() {
   var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
-    fragment.childNodes[1].tagName, 'TR',
+    fragment.firstChild.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -322,7 +322,7 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
   var fragment = template.render(context, env, document.createElement('tr'));
 
   equal(
-    fragment.childNodes[1].tagName, 'TD',
+    fragment.firstChild.tagName, 'TD',
     "root td is returned" );
 });
 
@@ -336,7 +336,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
   var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
-    fragment.childNodes[2].tagName, 'TR',
+    fragment.firstChild.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -351,7 +351,7 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
   var tableNode = fragment.firstChild;
 
   equal(
-    tableNode.childNodes[1].tagName, 'TR',
+    tableNode.firstChild.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -415,7 +415,7 @@ test("Simple data binding on fragments", function() {
   var callback;
 
   hooks.content = function(env, morph, context, path) {
-    morph.escaped = false;
+    morph.parseTextAsHTML = true;
     callback = function() {
       morph.setContent(context[path]);
     };
@@ -450,9 +450,9 @@ test("morph receives escaping information", function() {
 
   hooks.content = function(env, morph, context, path) {
     if (path === 'escaped') {
-      equal(morph.escaped, true);
+      equal(morph.parseTextAsHTML, false);
     } else if (path === 'unescaped') {
-      equal(morph.escaped, false);
+      equal(morph.parseTextAsHTML, true);
     }
 
     morph.setContent(path);
@@ -468,13 +468,13 @@ test("Morphs are escaped correctly", function() {
   expect(10);
 
   registerHelper('testing-unescaped', function(params, hash, options) {
-    equal(options.morph.escaped, false);
+    equal(options.morph.parseTextAsHTML, true);
 
     return params[0];
   });
 
   registerHelper('testing-escaped', function(params, hash, options, env) {
-    equal(options.morph.escaped, true);
+    equal(options.morph.parseTextAsHTML, false);
 
     if (options.template) {
       return options.template.render({}, env, options.morph.contextualElement);
@@ -483,8 +483,8 @@ test("Morphs are escaped correctly", function() {
     return params[0];
   });
 
-  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped "a"}}}</div>', '<div>-a</div>');
-  compilesTo('<div>{{testing-escaped}}-{{testing-escaped "b"}}</div>', '<div>-b</div>');
+  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped "a"}}}</div>', '<div><!---->-a</div>');
+  compilesTo('<div>{{testing-escaped}}-{{testing-escaped "b"}}</div>', '<div><!---->-b</div>');
   compilesTo('<div>{{#testing-escaped}}c{{/testing-escaped}}</div>', '<div>c</div>');
   compilesTo('<div><testing-escaped>c</testing-escaped></div>', '<div>c</div>');
 });
@@ -716,7 +716,7 @@ test("Block helpers receive hash arguments", function() {
     }
   });
 
-  compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p>');
+  compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p><!---->');
 });
 
 test("Node helpers can modify the node", function() {
@@ -1221,16 +1221,16 @@ test("Block helper allows interior namespace", function() {
 
   var fragment = template.render({ isTrue: true }, env, document.body);
   equal(
-    fragment.childNodes[1].namespaceURI, svgNamespace,
+    fragment.firstChild.namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
 
   isTrue = false;
   fragment = template.render({ isTrue: false }, env, document.body);
   equal(
-    fragment.childNodes[1].namespaceURI, xhtmlNamespace,
+    fragment.firstChild.namespaceURI, xhtmlNamespace,
     "inverse block path has a normal namespace");
   equal(
-    fragment.childNodes[1].childNodes[0].namespaceURI, svgNamespace,
+    fragment.firstChild.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside an element inside a block is present" );
 });
 

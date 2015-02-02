@@ -356,26 +356,30 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   if (!contextualElement && parent.nodeType === 1) {
     contextualElement = parent;
   }
-  return new Morph(parent, start, end, this, contextualElement);
+  var morph = new Morph(this, contextualElement);
+  morph.firstNode = start;
+  morph.lastNode = end;
+  return morph;
 };
 
 prototype.createUnsafeMorph = function(parent, start, end, contextualElement){
   var morph = this.createMorph(parent, start, end, contextualElement);
-  morph.escaped = false;
+  morph.parseTextAsHTML = true;
   return morph;
 };
 
 // This helper is just to keep the templates good looking,
 // passing integers instead of element references.
 prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
-  var start = startIndex === -1 ? null : this.childAtIndex(parent, startIndex),
-      end = endIndex === -1 ? null : this.childAtIndex(parent, endIndex);
+  var single = startIndex === endIndex;
+  var start = this.childAtIndex(parent, startIndex);
+  var end = single ? start : this.childAtIndex(parent, endIndex);
   return this.createMorph(parent, start, end, contextualElement);
 };
 
 prototype.createUnsafeMorphAt = function(parent, startIndex, endIndex, contextualElement) {
   var morph = this.createMorphAt(parent, startIndex, endIndex, contextualElement);
-  morph.escaped = false;
+  morph.parseTextAsHTML = true;
   return morph;
 };
 

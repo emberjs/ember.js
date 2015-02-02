@@ -1,268 +1,186 @@
-var splice = Array.prototype.splice;
+import { clear, insertBefore } from './morph-range/utils';
 
-function ensureStartEnd(start, end) {
-  if (start === null || end === null) {
-    throw new Error('a fragment parent must have boundary nodes in order to detect insertion');
-  }
-}
-
-function ensureContext(contextualElement) {
-  if (!contextualElement || contextualElement.nodeType !== 1) {
-    throw new Error('An element node must be provided for a contextualElement, you provided ' +
-                    (contextualElement ? 'nodeType ' + contextualElement.nodeType : 'nothing'));
-  }
-}
-
-// TODO: this is an internal API, this should be an assert
-function Morph(parent, start, end, domHelper, contextualElement) {
-  if (parent.nodeType === 11) {
-    ensureStartEnd(start, end);
-    this.element = null;
-  } else {
-    this.element = parent;
-  }
-  this._parent = parent;
-  this.start = start;
-  this.end = end;
+function Morph(domHelper, contextualElement) {
   this.domHelper = domHelper;
-  ensureContext(contextualElement);
+  // context if content if current content is detached
   this.contextualElement = contextualElement;
-  this.escaped = true;
-  this.reset();
+
+  // flag to force text to setContent to be treated as html
+  this.parseTextAsHTML = false;
+
+  this.firstNode = null;
+  this.lastNode  = null;
+
+  // morph graph
+  this.parentMorph     = null;
+  this.firstChildMorph = null;
+  this.lastChildMorph  = null;
+
+  this.previousMorph = null;
+  this.nextMorph = null;
 }
 
-Morph.prototype.reset = function() {
-  this.text = null;
-  this.owner = null;
-  this.morphs = null;
-  this.before = null;
-  this.after = null;
-};
-
-Morph.prototype.parent = function () {
-  if (!this.element) {
-    var parent = this.start.parentNode;
-    if (this._parent !== parent) {
-      this._parent = parent;
-    }
-    if (parent.nodeType === 1) {
-      this.element = parent;
-    }
-  }
-  return this._parent;
-};
-
-Morph.prototype.destroy = function () {
-  if (this.owner) {
-    this.owner.removeMorph(this);
-  } else {
-    clear(this.element || this.parent(), this.start, this.end);
-  }
-};
-
-Morph.prototype.removeMorph = function (morph) {
-  var morphs = this.morphs;
-  for (var i=0, l=morphs.length; i<l; i++) {
-    if (morphs[i] === morph) {
-      this.replace(i, 1);
-      break;
-    }
-  }
-};
-
-Morph.prototype.setContent = function (nodeOrString) {
-  this._update(this.element || this.parent(), nodeOrString);
-};
-
-Morph.prototype.updateNode = function (node) {
-  var parent = this.element || this.parent();
-  if (!node) {
-    return this._updateText(parent, '');
-  }
-  this._updateNode(parent, node);
-};
-
-Morph.prototype.updateText = function (text) {
-  this._updateText(this.element || this.parent(), text);
-};
-
-Morph.prototype.updateHTML = function (html) {
-  var parent = this.element || this.parent();
-  if (!html) {
-    return this._updateText(parent, '');
-  }
-  this._updateHTML(parent, html);
-};
-
-Morph.prototype._update = function (parent, nodeOrString) {
-  if (nodeOrString === null || nodeOrString === undefined) {
-    this._updateText(parent, '');
-  } else if (typeof nodeOrString === 'string') {
-    if (this.escaped) {
-      this._updateText(parent, nodeOrString);
-    } else {
-      this._updateHTML(parent, nodeOrString);
-    }
-  } else if (nodeOrString.nodeType) {
-    this._updateNode(parent, nodeOrString);
-  } else if (nodeOrString.string) { // duck typed SafeString
-    this._updateHTML(parent, nodeOrString.string);
-  } else {
-    this._updateText(parent, nodeOrString.toString());
-  }
-};
-
-Morph.prototype._updateNode = function (parent, node) {
-  if (this.text) {
-    if (node.nodeType === 3) {
-      this.text.nodeValue = node.nodeValue;
-      return;
-    } else {
-      this.text = null;
-    }
-  }
-  var start = this.start, end = this.end;
-  clear(parent, start, end);
-  parent.insertBefore(node, end);
-  if (this.before !== null) {
-    this.before.end = start.nextSibling;
-  }
-  if (this.after !== null) {
-    this.after.start = end.previousSibling;
-  }
-};
-
-Morph.prototype._updateText = function (parent, text) {
-  if (this.text) {
-    this.text.nodeValue = text;
-    return;
-  }
-  var node = this.domHelper.createTextNode(text);
-  this.text = node;
-  clear(parent, this.start, this.end);
-  parent.insertBefore(node, this.end);
-  if (this.before !== null) {
-    this.before.end = node;
-  }
-  if (this.after !== null) {
-    this.after.start = node;
-  }
-};
-
-Morph.prototype._updateHTML = function (parent, html) {
-  var fragment = this.domHelper.parseHTML(html, this.contextualElement);
-  this._updateNode(parent, fragment);
-};
-
-Morph.prototype.append = function (node) {
-  if (this.morphs === null) {
-    this.morphs = [];
-  }
-  var index = this.morphs.length;
-  return this.insert(index, node);
-};
-
-Morph.prototype.insert = function (index, node) {
-  if (this.morphs === null) {
-    this.morphs = [];
-  }
-  var parent = this.element || this.parent();
-  var morphs = this.morphs;
-  var before = index > 0 ? morphs[index-1] : null;
-  var after  = index < morphs.length ? morphs[index] : null;
-  var start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling);
-  var end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling);
-  var morph  = new Morph(parent, start, end, this.domHelper, this.contextualElement);
-
-  morph.owner = this;
-  morph._update(parent, node);
-
-  if (before !== null) {
-    morph.before = before;
-    before.end = start.nextSibling;
-    before.after = morph;
+Morph.prototype.setContent = function Morph$setContent(content) {
+  if (content === null || content === undefined) {
+    return this.clear();
   }
 
-  if (after !== null) {
-    morph.after = after;
-    after.before = morph;
-    after.start = end.previousSibling;
-  }
-
-  this.morphs.splice(index, 0, morph);
-  return morph;
-};
-
-Morph.prototype.replace = function (index, removedLength, addedNodes) {
-  if (this.morphs === null) {
-    this.morphs = [];
-  }
-  var parent = this.element || this.parent();
-  var morphs = this.morphs;
-  var before = index > 0 ? morphs[index-1] : null;
-  var after = index+removedLength < morphs.length ? morphs[index+removedLength] : null;
-  var start = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling);
-  var end   = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling);
-  var addedLength = addedNodes === undefined ? 0 : addedNodes.length;
-  var args, i, current;
-
-  if (removedLength > 0) {
-    clear(parent, start, end);
-  }
-
-  if (addedLength === 0) {
-    if (before !== null) {
-      before.after = after;
-      before.end = end;
-    }
-    if (after !== null) {
-      after.before = before;
-      after.start = start;
-    }
-    morphs.splice(index, removedLength);
-    return;
-  }
-
-  args = new Array(addedLength+2);
-  if (addedLength > 0) {
-    for (i=0; i<addedLength; i++) {
-      args[i+2] = current = new Morph(parent, start, end, this.domHelper, this.contextualElement);
-      current._update(parent, addedNodes[i]);
-      current.owner = this;
-      if (before !== null) {
-        current.before = before;
-        before.end = start.nextSibling;
-        before.after = current;
+  var type = typeof content;
+  switch (type) {
+    case 'string':
+      if (this.parseTextAsHTML) {
+        return this.setHTML(content);
       }
-      before = current;
-      start = end === null ? parent.lastChild : end.previousSibling;
-    }
-    if (after !== null) {
-      current.after = after;
-      after.before = current;
-      after.start = end.previousSibling;
-    }
+      return this.setText(content);
+    case 'object':
+      if (typeof content.nodeType === 'number') {
+        return this.setNode(content);
+      }
+      /* Handlebars.SafeString */
+      if (typeof content.string === 'string') {
+        return this.setHTML(content.string);
+      }
+      if (this.parseTextAsHTML) {
+        return this.setHTML(content.toString());
+      }
+      /* falls through */
+    case 'boolean':
+    case 'number':
+      return this.setText(content.toString());
+    default:
+      throw new TypeError('unsupported content');
   }
-
-  args[0] = index;
-  args[1] = removedLength;
-
-  splice.apply(morphs, args);
 };
 
-function clear(parent, start, end) {
-  var current, previous;
-  if (end === null) {
-    current = parent.lastChild;
-  } else {
-    current = end.previousSibling;
+Morph.prototype.clear = function Morph$clear() {
+  return this.setNode(this.domHelper.createComment(''));
+};
+
+Morph.prototype.setText = function Morph$setText(text) {
+  var firstNode = this.firstNode;
+  var lastNode = this.lastNode;
+
+  if (lastNode === firstNode && firstNode.nodeType === 3) {
+    firstNode.nodeValue = text;
+    return firstNode;
   }
 
-  while (current !== null && current !== start) {
-    previous = current.previousSibling;
-    parent.removeChild(current);
-    current = previous;
+  return this.setNode(
+    text ? this.domHelper.createTextNode(text) : this.domHelper.createComment('')
+  );
+};
+
+Morph.prototype.setNode = function Morph$setNode(newNode) {
+  var firstNode, lastNode;
+  switch (newNode.nodeType) {
+    case 3:
+      firstNode = newNode;
+      lastNode = newNode;
+      break;
+    case 11:
+      firstNode = newNode.firstChild;
+      lastNode = newNode.lastChild;
+      if (firstNode === null) {
+        firstNode = this.domHelper.createComment('');
+        newNode.appendChild(firstNode);
+        lastNode = firstNode;
+      }
+      break;
+    default:
+      firstNode = newNode;
+      lastNode = newNode;
+      break;
   }
-}
+
+  var previousFirstNode = this.firstNode;
+  if (previousFirstNode !== null) {
+
+    var parentNode = previousFirstNode.parentNode;
+    insertBefore(parentNode, firstNode, lastNode, previousFirstNode);
+    clear(parentNode, previousFirstNode, this.lastNode);
+  }
+
+  // TODO recursively set parentMorph.firstNode if we are its firstChildMorph
+  this.firstNode = firstNode;
+
+  // TODO recursively set parentMorph.lastNode if we are its lastChildMorph
+  this.lastNode  = lastNode;
+
+  return newNode;
+};
+
+// return morph content to an undifferentiated state
+// drops knowledge that the node has content.
+// this is for rerender, I need to test, but basically
+// the idea is to leave the content, but allow render again
+// without appending, so n
+Morph.prototype.reset = function Morph$reset() {
+  this.firstChildMorph = undefined;
+  this.lastChildMorph = undefined;
+};
+
+Morph.prototype.destroy = function Morph$destroy() {
+  var parentMorph = this.parentMorph;
+  var previousMorph = this.previousMorph;
+  var nextMorph = this.nextMorph;
+  var firstNode = this.firstNode;
+  var lastNode = this.lastNode;
+  var parentNode = firstNode.parentNode;
+
+  if (previousMorph) {
+    if (nextMorph) {
+      previousMorph.nextMorph = nextMorph;
+      nextMorph.previousMorph = previousMorph;
+    } else {
+      previousMorph.nextMorph = null;
+      parentMorph.lastChildMorph = previousMorph;
+    }
+  } else {
+    if (nextMorph) {
+      nextMorph.previousMorph = null;
+      parentMorph.firstChildMorph = nextMorph;
+    } else {
+      parentMorph.lastChildMorph = parentMorph.firstChildMorph = null;
+    }
+  }
+
+  clear(parentNode, firstNode, lastNode);
+
+  // TODO recursively set parentMorph.firstNode if we are its firstChildMorph
+  this.firstNode = null;
+  // TODO recursively set parentMorph.lastNode if we are its lastChildMorph
+  this.lastNode = null;
+};
+
+Morph.prototype.setHTML = function(text) {
+  var fragment = this.domHelper.parseHTML(text, this.contextualElement);
+  return this.setNode(fragment);
+};
+
+Morph.prototype.appendMorph = function(morph) {
+  this.insertMorphBefore(morph, null);
+};
+
+Morph.prototype.insertBeforeMorph = function(morph, _referenceMorph) {
+  var referenceMorph = _referenceMorph ? _referenceMorph : this.lastChildMorph;
+  var refNode = referenceMorph ? referenceMorph.firstNode : this.firstNode;
+  var parentNode = refNode.parentNode;
+  insertBefore(parentNode, morph.firstNode, morph.lastNode, refNode);
+  if (!referenceMorph) {
+    clear(parentNode, this.firstNode, this.lastNode);
+    this.firstNode = morph.firstNode;
+    this.lastNode = morph.lastNode;
+    return;
+  }
+
+  var previousMorph = referenceMorph.previousMorph;
+  if (previousMorph) {
+    previousMorph.nextMorph = morph;
+  } else {
+    this.firstNode = morph.firstNode;
+  }
+
+  referenceMorph.previousMorph = morph;
+};
 
 export default Morph;
