@@ -137,49 +137,46 @@ test("Simple elements can have an empty attribute", function() {
 
 test("presence of `disabled` attribute without value marks as disabled", function() {
   var template = compile('<input disabled>');
-  var fragment = template.render({}, env);
+  var inputNode = template.render({}, env).firstChild;
 
-  ok(fragment.disabled, 'disabled without value set as property is true');
+  ok(inputNode.disabled, 'disabled without value set as property is true');
 });
 
 test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
-  var fragment = template.render({isDisabled: null}, env);
+  var inputNode = template.render({isDisabled: null}, env).firstChild;
 
-  ok(fragment.disabled, 'string of "null" set as property is true');
+  ok(inputNode.disabled, 'string of "null" set as property is true');
 });
 
 test("Null unquoted attribute value removes that attribute", function() {
-
   var template = compile('<input disabled={{isDisabled}}>');
-  var fragment = template.render({isDisabled: null}, env);
+  var inputNode = template.render({isDisabled: null}, env).firstChild;
 
-  equalTokens(fragment, '<input>');
+  equalTokens(inputNode, '<input>');
 });
 
 test("unquoted attribute string is just that", function() {
-
   var template = compile('<input value=funstuff>');
-  var fragment = template.render({}, env);
+  var inputNode = template.render({}, env).firstChild;
 
-  equal(fragment.tagName, 'INPUT', 'input tag');
-  equal(fragment.value, 'funstuff', 'value is set as property');
+  equal(inputNode.tagName, 'INPUT', 'input tag');
+  equal(inputNode.value, 'funstuff', 'value is set as property');
 });
 
 test("unquoted attribute expression is string", function() {
-
   var template = compile('<input value={{funstuff}}>');
-  var fragment = template.render({funstuff: "oh my"}, env);
+  var inputNode = template.render({funstuff: "oh my"}, env).firstChild;
 
-  equal(fragment.tagName, 'INPUT', 'input tag');
-  equal(fragment.value, 'oh my', 'string is set to property');
+  equal(inputNode.tagName, 'INPUT', 'input tag');
+  equal(inputNode.value, 'oh my', 'string is set to property');
 });
 
 test("unquoted attribute expression works when followed by another attribute", function() {
   var template = compile('<div foo={{funstuff}} name="Alice"></div>');
-  var fragment = template.render({funstuff: "oh my"}, env);
+  var divNode = template.render({funstuff: "oh my"}, env).firstChild;
 
-  equalTokens(fragment, '<div foo="oh my" name="Alice"></div>');
+  equalTokens(divNode, '<div foo="oh my" name="Alice"></div>');
 });
 
 test("Unquoted attribute value with multiple nodes throws an exception", function () {
@@ -197,15 +194,15 @@ test("Unquoted attribute value with multiple nodes throws an exception", functio
 
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo'>content</div>");
-  var fragment = template.render({}, env);
-  equalTokens(fragment, '<div data-some-data="foo">content</div>');
+  var divNode = template.render({}, env).firstChild;
+  equalTokens(divNode, '<div data-some-data="foo">content</div>');
 });
 
 test("checked attribute and checked property are present after clone and hydrate", function() {
   var template = compile("<input checked=\"checked\">");
-  var fragment = template.render({}, env);
-  equal(fragment.tagName, 'INPUT', 'input tag');
-  equal(fragment.checked, true, 'input tag is checked');
+  var inputNode = template.render({}, env).firstChild;
+  equal(inputNode.tagName, 'INPUT', 'input tag');
+  equal(inputNode.checked, true, 'input tag is checked');
 });
 
 
@@ -351,9 +348,10 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
   var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
   var context = { html: '<tr><td>Yo</td></tr>' };
   var fragment = template.render(context, env, document.createElement('div'));
+  var tableNode = fragment.firstChild;
 
   equal(
-    fragment.childNodes[1].tagName, 'TR',
+    tableNode.childNodes[1].tagName, 'TR',
     "root tr is present" );
 });
 
@@ -1068,65 +1066,65 @@ QUnit.module("HTML-based compiler (output, svg)", {
 
 test("Simple elements can have namespaced attributes", function() {
   var template = compile("<svg xlink:title='svg-title'>content</svg>");
-  var fragment = template.render({}, env);
+  var svgNode = template.render({}, env).firstChild;
 
-  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
-  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+  equalTokens(svgNode, '<svg xlink:title="svg-title">content</svg>');
+  equal(svgNode.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
 
 test("Simple elements can have bound namespaced attributes", function() {
   var template = compile("<svg xlink:title={{title}}>content</svg>");
-  var fragment = template.render({title: 'svg-title'}, env);
+  var svgNode = template.render({title: 'svg-title'}, env).firstChild;
 
-  equalTokens(fragment, '<svg xlink:title="svg-title">content</svg>');
-  equal(fragment.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
+  equalTokens(svgNode, '<svg xlink:title="svg-title">content</svg>');
+  equal(svgNode.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
 
 test("SVG element can have capitalized attributes", function() {
   var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
-  var fragment = template.render({}, env);
-  equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
+  var svgNode = template.render({}, env).firstChild;
+  equalTokens(svgNode, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
 test("The compiler can handle namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
-  var fragment = template.render({}, env);
+  var svgNode = template.render({}, env).firstChild;
 
-  equal(fragment.namespaceURI, svgNamespace, "creates the svg element with a namespace");
-  equalTokens(fragment, html);
+  equal(svgNode.namespaceURI, svgNamespace, "creates the svg element with a namespace");
+  equalTokens(svgNode, html);
 });
 
 test("The compiler sets namespaces on nested namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
-  var fragment = template.render({}, env);
+  var svgNode = template.render({}, env).firstChild;
 
-  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+  equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
          "creates the path element with a namespace" );
-  equalTokens(fragment, html);
+  equalTokens(svgNode, html);
 });
 
 test("The compiler sets a namespace on an HTML integration point", function() {
   var html = '<svg><foreignObject>Hi</foreignObject></svg>';
   var template = compile(html);
-  var fragment = template.render({}, env);
+  var svgNode = template.render({}, env).firstChild;
 
-  equal( fragment.namespaceURI, svgNamespace,
+  equal( svgNode.namespaceURI, svgNamespace,
          "creates the svg element with a namespace" );
-  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+  equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
          "creates the foreignObject element with a namespace" );
-  equalTokens(fragment, html);
+  equalTokens(svgNode, html);
 });
 
 test("The compiler does not set a namespace on an element inside an HTML integration point", function() {
   var html = '<svg><foreignObject><div></div></foreignObject></svg>';
   var template = compile(html);
-  var fragment = template.render({}, env);
+  var svgNode = template.render({}, env).firstChild;
 
-  equal( fragment.childNodes[0].childNodes[0].namespaceURI, xhtmlNamespace,
+  equal( svgNode.childNodes[0].childNodes[0].namespaceURI, xhtmlNamespace,
          "creates the div inside the foreignObject without a namespace" );
-  equalTokens(fragment, html);
+  equalTokens(svgNode, html);
 });
 
 test("The compiler pops back to the correct namespace", function() {
@@ -1190,19 +1188,20 @@ test("svg can take some hydration", function() {
 
   var fragment = template.render({ name: 'Milly' }, env);
   equal(
-    fragment.childNodes[0].namespaceURI, svgNamespace,
+    fragment.firstChild.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
-  equalTokens( fragment, '<div><svg>Milly</svg></div>',
+  equalTokens( fragment.firstChild, '<div><svg>Milly</svg></div>',
              "html is valid" );
 });
 
 test("root svg can take some hydration", function() {
   var template = compile('<svg>{{name}}</svg>');
   var fragment = template.render({ name: 'Milly' }, env);
+  var svgNode = fragment.firstChild;
   equal(
-    fragment.namespaceURI, svgNamespace,
+    svgNode.namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
-  equalTokens( fragment, '<svg>Milly</svg>',
+  equalTokens( svgNode, '<svg>Milly</svg>',
              "html is valid" );
 });
 
@@ -1244,9 +1243,10 @@ test("Block helper allows namespace to bleed through", function() {
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
 
   var fragment = template.render({ isTrue: true }, env);
-  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+  var svgNode = fragment.firstChild.firstChild;
+  equal( svgNode.namespaceURI, svgNamespace,
          "svg tag has an svg namespace" );
-  equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+  equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
          "circle tag inside block inside svg has an svg namespace" );
 });
 
@@ -1259,9 +1259,10 @@ test("Block helper with root svg allows namespace to bleed through", function() 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
 
   var fragment = template.render({ isTrue: true }, env);
-  equal( fragment.namespaceURI, svgNamespace,
+  var svgNode = fragment.firstChild;
+  equal( svgNode.namespaceURI, svgNamespace,
          "svg tag has an svg namespace" );
-  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+  equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
          "circle tag inside block inside svg has an svg namespace" );
 });
 
@@ -1274,9 +1275,10 @@ test("Block helper with root foreignObject allows namespace to bleed through", f
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
 
   var fragment = template.render({ isTrue: true }, env, document.createElementNS(svgNamespace, 'svg'));
-  equal( fragment.namespaceURI, svgNamespace,
+  var svgNode = fragment.firstChild;
+  equal( svgNode.namespaceURI, svgNamespace,
          "foreignObject tag has an svg namespace" );
-  equal( fragment.childNodes[0].namespaceURI, xhtmlNamespace,
+  equal( svgNode.childNodes[0].namespaceURI, xhtmlNamespace,
          "div inside morph and foreignObject has xhtml namespace" );
 });
 

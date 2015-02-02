@@ -22,14 +22,14 @@ FragmentOpcodeCompiler.prototype.opcode = function(type, params) {
   this.opcodes.push([type, params]);
 };
 
-FragmentOpcodeCompiler.prototype.text = function(text, childIndex, childCount, isSingleRoot) {
+FragmentOpcodeCompiler.prototype.text = function(text) {
   this.opcode('createText', [text.chars]);
-  if (!isSingleRoot) { this.opcode('appendChild'); }
+  this.opcode('appendChild');
 };
 
-FragmentOpcodeCompiler.prototype.comment = function(comment, childIndex, childCount, isSingleRoot) {
+FragmentOpcodeCompiler.prototype.comment = function(comment) {
   this.opcode('createComment', [comment.value]);
-  if (!isSingleRoot) { this.opcode('appendChild'); }
+  this.opcode('appendChild');
 };
 
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
@@ -37,18 +37,16 @@ FragmentOpcodeCompiler.prototype.openElement = function(element) {
   forEach(element.attributes, this.attribute, this);
 };
 
-FragmentOpcodeCompiler.prototype.closeElement = function(element, childIndex, childCount, isSingleRoot) {
-  if (!isSingleRoot) { this.opcode('appendChild'); }
+FragmentOpcodeCompiler.prototype.closeElement = function() {
+  this.opcode('appendChild');
 };
 
-FragmentOpcodeCompiler.prototype.startProgram = function(program) {
+FragmentOpcodeCompiler.prototype.startProgram = function() {
   this.opcodes.length = 0;
-  if (program.body.length !== 1) {
-    this.opcode('createFragment');
-  }
+  this.opcode('createFragment');
 };
 
-FragmentOpcodeCompiler.prototype.endProgram = function(/* program */) {
+FragmentOpcodeCompiler.prototype.endProgram = function() {
   this.opcode('returnNode');
 };
 
@@ -60,9 +58,7 @@ FragmentOpcodeCompiler.prototype.block = function () {};
 
 FragmentOpcodeCompiler.prototype.attribute = function(attr) {
   if (attr.value.type === 'TextNode') {
-
     var namespace = getAttrNamespace(attr.name);
-
     this.opcode('setAttribute', [attr.name, attr.value.chars, namespace]);
   }
 };

@@ -105,7 +105,6 @@ TemplateVisitor.prototype.Program = function(program) {
 TemplateVisitor.prototype.ElementNode = function(element) {
   var parentFrame = this.getCurrentFrame();
   var elementFrame = this.pushFrame();
-  var parentNode = parentFrame.parentNode;
 
   elementFrame.parentNode = element;
   elementFrame.children = element.children;
@@ -116,8 +115,7 @@ TemplateVisitor.prototype.ElementNode = function(element) {
   var actionArgs = [
     element,
     parentFrame.childIndex,
-    parentFrame.childCount,
-    parentNode.type === 'Program' && parentFrame.childCount === 1
+    parentFrame.childCount
   ];
 
   elementFrame.actions.push(['closeElement', actionArgs]);
@@ -149,11 +147,10 @@ TemplateVisitor.prototype.AttrNode = function(attr) {
 
 TemplateVisitor.prototype.TextNode = function(text) {
   var frame = this.getCurrentFrame();
-  var isSingleRoot = frame.parentNode.type === 'Program' && frame.childCount === 1;
   if (text.chars === '') {
     frame.blankChildTextNodes.push(domIndexOf(frame.children, text));
   }
-  frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
+  frame.actions.push(['text', [text, frame.childIndex, frame.childCount]]);
 };
 
 TemplateVisitor.prototype.BlockStatement = function(node) {
@@ -184,9 +181,7 @@ TemplateVisitor.prototype.PartialStatement = function(node) {
 
 TemplateVisitor.prototype.CommentStatement = function(text) {
   var frame = this.getCurrentFrame();
-  var isSingleRoot = frame.parentNode.type === 'Program' && frame.childCount === 1;
-
-  frame.actions.push(['comment', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
+  frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]]);
 };
 
 TemplateVisitor.prototype.MustacheStatement = function(mustache) {

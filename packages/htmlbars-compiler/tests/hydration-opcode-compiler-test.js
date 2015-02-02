@@ -13,52 +13,63 @@ QUnit.module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
+    [ "shareElement", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], -1, 0, true ] ],
     [ "createMorph", [ 1, [ 0 ], 0, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 1 ] ]
+    [ "printContentHook", [ 1 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("simple block", function() {
   var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printBlockHook", [ 0, 0, null ] ]
+    [ "printBlockHook", [ 0, 0, null ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("simple block with block params", function() {
   var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printBlockHook", [ 0, 0, null ] ]
+    [ "printBlockHook", [ 0, 0, null ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ]
+    [ "printContentHook", [ 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], 0, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ]
+    [ "printContentHook", [ 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
@@ -66,9 +77,11 @@ test("mustache two elements deep", function() {
   var opcodes = opcodesFor("<div><div>{{foo}}</div></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0, 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
+    [ "popParent", [] ],
     [ "popParent", [] ]
   ]);
 });
@@ -105,6 +118,8 @@ test("mustaches at the root", function() {
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
+    [ "shareElement", [ 0 ] ],
     [ "createMorph", [ 0, [0], -1, 0, true ] ],
     [ "createMorph", [ 1, [0], 0, 1, true ] ],
     [ "createMorph", [ 2, [0], 1, 2, true ] ],
@@ -117,13 +132,15 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "pushLiteral", [ "baz" ] ],
     [ "printContentHook", [ 2 ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printContentHook", [ 3 ] ]
+    [ "printContentHook", [ 3 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar' baz.bat true 3.14}}</div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [0], -1, -1, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ 3.14 ] ],
@@ -132,36 +149,42 @@ test("helper usage", function() {
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 4 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printInlineHook", [ 0 ] ]
+    [ "printInlineHook", [ 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printElementHook", [ 0 ] ]
+    [ "printElementHook", [ 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printElementHook", [ 0 ] ]
+    [ "printElementHook", [ 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "pushLiteral", [ " after" ] ],
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "before " ] ],
@@ -170,48 +193,56 @@ test("attribute mustache", function() {
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0, 0 ] ]
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("quoted attribute mustache", function() {
   var opcodes = opcodesFor("<div class='{{foo}}'></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "pushGetHook", [ "foo" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0, 0 ] ]
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("safe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{foo}}></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0, 0 ] ]
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("unsafe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{{foo}}}></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", false, null ] ],
-    [ "printAttributeHook", [ 0, 0 ] ]
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
+    [ "consumeParent", [ 0 ] ],
     [ "pushLiteral", [ " after" ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
@@ -224,7 +255,8 @@ test("attribute helper", function() {
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0, 0 ] ]
+    [ "printAttributeHook", [ 0, 0 ] ],
+    [ "popParent", [] ]
   ]);
 });
 
