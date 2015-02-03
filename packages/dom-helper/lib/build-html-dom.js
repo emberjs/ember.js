@@ -36,33 +36,6 @@ var movesWhitespace = doc && (function(document) {
           testEl.childNodes[2].nodeValue === ' Value';
 })(doc);
 
-// IE8 create a selected attribute where they should only
-// create a property
-var createsSelectedAttribute = doc && (function(document) {
-  var testEl = document.createElement('div');
-  testEl.innerHTML = "<select><option></option></select>";
-  return testEl.childNodes[0].childNodes[0].getAttribute('selected') === 'selected';
-})(doc);
-
-var detectAutoSelectedOption;
-if (createsSelectedAttribute) {
-  detectAutoSelectedOption = (function(){
-    var detectAutoSelectedOptionRegex = /<option[^>]*selected/;
-    return function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
-      return select.selectedIndex === 0 &&
-             !detectAutoSelectedOptionRegex.test(html);
-    };
-  })();
-} else {
-  detectAutoSelectedOption = function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
-    var selectedAttribute = option.getAttribute('selected');
-    return select.selectedIndex === 0 && (
-             selectedAttribute === null ||
-             ( selectedAttribute !== '' && selectedAttribute.toLowerCase() !== 'selected' )
-            );
-  };
-}
-
 var tagNamesRequiringInnerHTMLFix = doc && (function(document) {
   var tagNamesRequiringInnerHTMLFix;
   // IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
