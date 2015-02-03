@@ -3,7 +3,7 @@ import EmberObject from "ember-runtime/system/object";
 
 QUnit.module("Ember Type Checking");
 
-test("Ember.typeOf", function() {
+QUnit.test("Ember.typeOf", function() {
   var a = null;
   var arr = [1,2,3];
   var obj = {};

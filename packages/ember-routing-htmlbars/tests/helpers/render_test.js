@@ -66,7 +66,7 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
   }
 });
 
-test("{{render}} helper should render given template", function() {
+QUnit.test("{{render}} helper should render given template", function() {
   var template = "<h1>HI</h1>{{render 'home'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -82,7 +82,7 @@ test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
-test("{{render}} helper should have assertion if neither template nor view exists", function() {
+QUnit.test("{{render}} helper should have assertion if neither template nor view exists", function() {
   var template = "<h1>HI</h1>{{render 'oops'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -95,7 +95,7 @@ test("{{render}} helper should have assertion if neither template nor view exist
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
 });
 
-test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
+QUnit.test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
   var template = "<h1>HI</h1>{{#render 'good'}} {{name}}{{/render}}";
   var controller = EmberController.extend({ container: container });
   container._registry.register('controller:good', EmberController.extend({ name: 'Rob' }));
@@ -109,7 +109,7 @@ test("{{render}} helper should not have assertion if template is supplied in blo
   equal(view.$().text(), 'HI Rob');
 });
 
-test("{{render}} helper should not have assertion if view exists without a template", function() {
+QUnit.test("{{render}} helper should not have assertion if view exists without a template", function() {
   var template = "<h1>HI</h1>{{render 'oops'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -124,7 +124,7 @@ test("{{render}} helper should not have assertion if view exists without a templ
   equal(view.$().text(), 'HI');
 });
 
-test("{{render}} helper should render given template with a supplied model", function() {
+QUnit.test("{{render}} helper should render given template with a supplied model", function() {
   var template = "<h1>HI</h1>{{render 'post' post}}";
   var post = {
     title: "Rails is omakase"
@@ -165,7 +165,7 @@ test("{{render}} helper should render given template with a supplied model", fun
   }
 });
 
-test("{{render}} helper with a supplied model should not fire observers on the controller", function () {
+QUnit.test("{{render}} helper with a supplied model should not fire observers on the controller", function () {
   var template = "<h1>HI</h1>{{render 'post' post}}";
   var post = {
     title: "Rails is omakase"
@@ -195,7 +195,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
 
 });
 
-test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
+QUnit.test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
   var template = '<h1>HI</h1>{{render "home" controller="postss"}}';
   var controller = EmberController.extend({ container: container });
   container._registry.register('controller:posts', EmberArrayController.extend());
@@ -211,7 +211,7 @@ test("{{render}} helper should raise an error when a given controller name does 
   }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });
 
-test("{{render}} helper should render with given controller", function() {
+QUnit.test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
   container._registry.register('controller:posts', EmberArrayController.extend());
@@ -228,7 +228,7 @@ test("{{render}} helper should render with given controller", function() {
   equal(container.lookup('controller:posts'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-test("{{render}} helper should render a template without a model only once", function() {
+QUnit.test("{{render}} helper should render a template without a model only once", function() {
   var template = "<h1>HI</h1>{{render 'home'}}<hr/>{{render 'home'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -243,7 +243,7 @@ test("{{render}} helper should render a template without a model only once", fun
   }, /\{\{render\}\} helper once/i);
 });
 
-test("{{render}} helper should render templates with models multiple times", function() {
+QUnit.test("{{render}} helper should render templates with models multiple times", function() {
   var template = "<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}";
   var post1 = {
     title: "Me first"
@@ -289,7 +289,7 @@ test("{{render}} helper should render templates with models multiple times", fun
   }
 });
 
-test("{{render}} helper should not leak controllers", function() {
+QUnit.test("{{render}} helper should not leak controllers", function() {
   var template = "<h1>HI</h1> {{render 'post' post1}}";
   var post1 = {
     title: "Me first"
@@ -321,7 +321,7 @@ test("{{render}} helper should not leak controllers", function() {
   ok(postController1.isDestroyed, 'expected postController to be destroyed');
 });
 
-test("{{render}} helper should not treat invocations with falsy contexts as context-less", function() {
+QUnit.test("{{render}} helper should not treat invocations with falsy contexts as context-less", function() {
   var template = "<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}";
 
   view = EmberView.create({
@@ -347,7 +347,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
   equal(postController2.get('model'), undefined);
 });
 
-test("{{render}} helper should render templates both with and without models", function() {
+QUnit.test("{{render}} helper should render templates both with and without models", function() {
   var template = "<h1>HI</h1> {{render 'post'}} {{render 'post' post}}";
   var post = {
     title: "Rails is omakase"
@@ -389,7 +389,7 @@ test("{{render}} helper should render templates both with and without models", f
   }
 });
 
-test("{{render}} helper should link child controllers to the parent controller", function() {
+QUnit.test("{{render}} helper should link child controllers to the parent controller", function() {
   var parentTriggered = 0;
 
   var template = '<h1>HI</h1>{{render "posts"}}';
@@ -426,7 +426,7 @@ test("{{render}} helper should link child controllers to the parent controller",
   equal(parentTriggered, 1, "The event bubbled to the parent");
 });
 
-test("{{render}} helper should be able to render a template again when it was removed", function() {
+QUnit.test("{{render}} helper should be able to render a template again when it was removed", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -456,7 +456,7 @@ test("{{render}} helper should be able to render a template again when it was re
   equal(view.$().text(), 'HI2BYE');
 });
 
-test("{{render}} works with dot notation", function() {
+QUnit.test("{{render}} works with dot notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog.post"}}';
 
   var controller = EmberController.extend({ container: container });
@@ -476,7 +476,7 @@ test("{{render}} works with dot notation", function() {
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-test("{{render}} works with slash notation", function() {
+QUnit.test("{{render}} works with slash notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog/post"}}';
 
   var controller = EmberController.extend({ container: container });
@@ -499,7 +499,7 @@ test("{{render}} works with slash notation", function() {
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
 
-test("throws an assertion if {{render}} is called with an unquoted template name", function() {
+QUnit.test("throws an assertion if {{render}} is called with an unquoted template name", function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -514,7 +514,7 @@ test("throws an assertion if {{render}} is called with an unquoted template name
   }, "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.");
 });
 
-test("throws an assertion if {{render}} is called with a literal for a model", function() {
+QUnit.test("throws an assertion if {{render}} is called with a literal for a model", function() {
   var template = '<h1>HI</h1>{{render "home" "model"}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -533,7 +533,7 @@ test("throws an assertion if {{render}} is called with a literal for a model", f
 } else {
 // jscs:disable validateIndentation
 
-test("Using quoteless templateName works properly (DEPRECATED)", function() {
+QUnit.test("Using quoteless templateName works properly (DEPRECATED)", function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({

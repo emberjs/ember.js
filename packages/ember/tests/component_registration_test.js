@@ -65,12 +65,12 @@ function boot(callback) {
   });
 }
 
-test("The helper becomes the body of the component", function() {
+QUnit.test("The helper becomes the body of the component", function() {
   boot();
   equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), "hello world", "The component is composed correctly");
 });
 
-test("If a component is registered, it is used", function() {
+QUnit.test("If a component is registered, it is used", function() {
   boot(function() {
     registry.register('component:expand-it', Ember.Component.extend({
       classNames: 'testing123'
@@ -81,7 +81,7 @@ test("If a component is registered, it is used", function() {
 });
 
 
-test("Late-registered components can be rendered with custom `template` property (DEPRECATED)", function() {
+QUnit.test("Late-registered components can be rendered with custom `template` property (DEPRECATED)", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>there goes {{my-hero}}</div>");
 
@@ -98,7 +98,7 @@ test("Late-registered components can be rendered with custom `template` property
   ok(!helpers['my-hero'], "Component wasn't saved to global helpers hash");
 });
 
-test("Late-registered components can be rendered with template registered on the container", function() {
+QUnit.test("Late-registered components can be rendered with template registered on the container", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>");
 
@@ -111,7 +111,7 @@ test("Late-registered components can be rendered with template registered on the
   ok(!helpers['sally-rutherford'], "Component wasn't saved to global helpers hash");
 });
 
-test("Late-registered components can be rendered with ONLY the template registered on the container", function() {
+QUnit.test("Late-registered components can be rendered with ONLY the template registered on the container", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>");
 
@@ -123,7 +123,7 @@ test("Late-registered components can be rendered with ONLY the template register
   ok(!helpers['borf-snorlax'], "Component wasn't saved to global helpers hash");
 });
 
-test("Component-like invocations are treated as bound paths if neither template nor component are registered on the container", function() {
+QUnit.test("Component-like invocations are treated as bound paths if neither template nor component are registered on the container", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{user-name}} hello {{api-key}} world</div>");
 
@@ -136,7 +136,7 @@ test("Component-like invocations are treated as bound paths if neither template 
   equal(Ember.$('#wrapper').text(), "machty hello  world", "The component is composed correctly");
 });
 
-test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function() {
+QUnit.test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function() {
   expect(2);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
@@ -158,7 +158,7 @@ test("Assigning templateName to a component should setup the template as a layou
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-test("Assigning templateName and layoutName should use the templates specified", function() {
+QUnit.test("Assigning templateName and layoutName should use the templates specified", function() {
   expect(1);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
@@ -184,7 +184,7 @@ if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
   // ember-htmlbars doesn't throw an exception when a helper is not found
 
-test('Using name of component that does not exist', function () {
+QUnit.test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#no-good}} {{/no-good}}</div>");
 
   throws(function () {
@@ -200,7 +200,7 @@ QUnit.module("Application Lifecycle - Component Context", {
   teardown: cleanup
 });
 
-test("Components with a block should have the proper content when a template is provided", function() {
+QUnit.test("Components with a block should have the proper content when a template is provided", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}-{{yield}}");
 
@@ -217,7 +217,7 @@ test("Components with a block should have the proper content when a template is 
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-test("Components with a block should yield the proper content without a template provided", function() {
+QUnit.test("Components with a block should yield the proper content without a template provided", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
 
   boot(function() {
@@ -233,7 +233,7 @@ test("Components with a block should yield the proper content without a template
   equal(Ember.$('#wrapper').text(), "outer", "The component is composed correctly");
 });
 
-test("Components without a block should have the proper content when a template is provided", function() {
+QUnit.test("Components without a block should have the proper content when a template is provided", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}");
 
@@ -250,7 +250,7 @@ test("Components without a block should have the proper content when a template 
   equal(Ember.$('#wrapper').text(), "inner", "The component is composed correctly");
 });
 
-test("Components without a block should have the proper content", function() {
+QUnit.test("Components without a block should have the proper content", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
 
   boot(function() {
@@ -268,7 +268,7 @@ test("Components without a block should have the proper content", function() {
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-test("properties of a component  without a template should not collide with internal structures", function() {
+QUnit.test("properties of a component  without a template should not collide with internal structures", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
 
   boot(function() {
@@ -287,7 +287,7 @@ test("properties of a component  without a template should not collide with inte
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-test("Components trigger actions in the parents context when called from within a block", function() {
+QUnit.test("Components trigger actions in the parents context when called from within a block", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
 
   boot(function() {
@@ -307,7 +307,7 @@ test("Components trigger actions in the parents context when called from within 
   });
 });
 
-test("Components trigger actions in the components context when called from within its template", function() {
+QUnit.test("Components trigger actions in the components context when called from within its template", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
   Ember.TEMPLATES['components/my-component'] = compile("<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>");
 

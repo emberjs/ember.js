@@ -25,15 +25,15 @@ QUnit.module("Ember.Component", {
   }
 });
 
-test("The context of an Ember.Component is itself", function() {
+QUnit.test("The context of an Ember.Component is itself", function() {
   strictEqual(component, component.get('context'), "A component's context is itself");
 });
 
-test("The controller (target of `action`) of an Ember.Component is itself", function() {
+QUnit.test("The controller (target of `action`) of an Ember.Component is itself", function() {
   strictEqual(component, component.get('controller'), "A component's controller is itself");
 });
 
-test("A templateName specified to a component is moved to the layoutName", function() {
+QUnit.test("A templateName specified to a component is moved to the layoutName", function() {
   expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
   component = Component.extend({
     templateName: 'blah-blah'
@@ -42,7 +42,7 @@ test("A templateName specified to a component is moved to the layoutName", funct
   equal(component.get('layoutName'), 'blah-blah', "The layoutName now contains the templateName specified.");
 });
 
-test("A template specified to a component is moved to the layout", function() {
+QUnit.test("A template specified to a component is moved to the layout", function() {
   expectDeprecation(/Do not specify template on a Component, use layout instead/);
   component = Component.extend({
     template: 'blah-blah'
@@ -51,7 +51,7 @@ test("A template specified to a component is moved to the layout", function() {
   equal(component.get('layout'), 'blah-blah', "The layoutName now contains the templateName specified.");
 });
 
-test("A template specified to a component is deprecated", function() {
+QUnit.test("A template specified to a component is deprecated", function() {
   expectDeprecation(function() {
     component = Component.extend({
       template: 'blah-blah'
@@ -59,7 +59,7 @@ test("A template specified to a component is deprecated", function() {
   }, 'Do not specify template on a Component, use layout instead.');
 });
 
-test("A templateName specified to a component is deprecated", function() {
+QUnit.test("A templateName specified to a component is deprecated", function() {
   expectDeprecation(function() {
     component = Component.extend({
       templateName: 'blah-blah'
@@ -67,7 +67,7 @@ test("A templateName specified to a component is deprecated", function() {
   }, 'Do not specify templateName on a Component, use layoutName instead.');
 });
 
-test("Specifying both templateName and layoutName to a component is NOT deprecated", function() {
+QUnit.test("Specifying both templateName and layoutName to a component is NOT deprecated", function() {
   expectNoDeprecation();
   component = Component.extend({
     templateName: 'blah-blah',
@@ -78,7 +78,7 @@ test("Specifying both templateName and layoutName to a component is NOT deprecat
   equal(get(component, 'layoutName'), 'hum-drum');
 });
 
-test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function() {
+QUnit.test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function() {
   expectNoDeprecation();
   var Parent = Component.extend({
     layoutName: 'hum-drum'
@@ -122,12 +122,12 @@ QUnit.module("Ember.Component - Actions", {
   }
 });
 
-test("Calling sendAction on a component without an action defined does nothing", function() {
+QUnit.test("Calling sendAction on a component without an action defined does nothing", function() {
   component.sendAction();
   equal(sendCount, 0, "addItem action was not invoked");
 });
 
-test("Calling sendAction on a component with an action defined calls send on the controller", function() {
+QUnit.test("Calling sendAction on a component with an action defined calls send on the controller", function() {
   set(component, 'action', "addItem");
 
   component.sendAction();
@@ -136,7 +136,7 @@ test("Calling sendAction on a component with an action defined calls send on the
   equal(actionCounts['addItem'], 1, "addItem event was sent once");
 });
 
-test("Calling sendAction with a named action uses the component's property as the action name", function() {
+QUnit.test("Calling sendAction with a named action uses the component's property as the action name", function() {
   set(component, 'playing', "didStartPlaying");
   set(component, 'action', "didDoSomeBusiness");
 
@@ -156,7 +156,7 @@ test("Calling sendAction with a named action uses the component's property as th
   equal(actionCounts['didDoSomeBusiness'], 1, "default action was sent");
 });
 
-test("Calling sendAction when the action name is not a string raises an exception", function() {
+QUnit.test("Calling sendAction when the action name is not a string raises an exception", function() {
   set(component, 'action', {});
   set(component, 'playing', {});
 
@@ -169,7 +169,7 @@ test("Calling sendAction when the action name is not a string raises an exceptio
   });
 });
 
-test("Calling sendAction on a component with a context", function() {
+QUnit.test("Calling sendAction on a component with a context", function() {
   set(component, 'playing', "didStartPlaying");
 
   var testContext = { song: 'She Broke My Ember' };
@@ -179,7 +179,7 @@ test("Calling sendAction on a component with a context", function() {
   deepEqual(actionArguments, [testContext], "context was sent with the action");
 });
 
-test("Calling sendAction on a component with multiple parameters", function() {
+QUnit.test("Calling sendAction on a component with multiple parameters", function() {
   set(component, 'playing', "didStartPlaying");
 
   var firstContext  = { song: 'She Broke My Ember' };
@@ -193,7 +193,7 @@ test("Calling sendAction on a component with multiple parameters", function() {
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('Ember.Component - injected properties');
 
-  test("services can be injected into components", function() {
+  QUnit.test("services can be injected into components", function() {
     var registry = new Registry();
     var container = registry.container();
 
@@ -213,7 +213,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
 QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
 
-test('something', function() {
+QUnit.test('something', function() {
   expect(2);
 
   var appComponent = Component.extend({
@@ -231,7 +231,7 @@ test('something', function() {
   }, /had no action handler for: baz/, 'asdf');
 });
 
-test('component with target', function() {
+QUnit.test('component with target', function() {
   expect(2);
 
   var target = {

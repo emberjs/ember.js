@@ -24,7 +24,7 @@ QUnit.module('ember-htmlbars: {{#loc}} helper', {
   }
 });
 
-test('let the original value through by default', function() {
+QUnit.test('let the original value through by default', function() {
   var view = buildView('{{loc "Hiya buddy!"}}');
   runAppend(view);
 
@@ -33,7 +33,7 @@ test('let the original value through by default', function() {
   runDestroy(view);
 });
 
-test('localize a simple string', function() {
+QUnit.test('localize a simple string', function() {
   var view = buildView('{{loc "_Howdy Friend"}}');
   runAppend(view);
 
@@ -42,7 +42,7 @@ test('localize a simple string', function() {
   runDestroy(view);
 });
 
-test('localize takes passed formats into an account', function() {
+QUnit.test('localize takes passed formats into an account', function() {
   var view = buildView('{{loc "%@, %@" "Hello" "Mr. Pitkin"}}');
   runAppend(view);
 
@@ -53,7 +53,7 @@ test('localize takes passed formats into an account', function() {
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
-test('localize throws an assertion if the second parameter is a binding', function() {
+QUnit.test('localize throws an assertion if the second parameter is a binding', function() {
   var view = buildView('{{loc "Hello %@" name}}', {
     name: 'Bob Foster'
   });
@@ -65,7 +65,7 @@ test('localize throws an assertion if the second parameter is a binding', functi
   runDestroy(view);
 });
 
-test('localize a binding throws an assertion', function() {
+QUnit.test('localize a binding throws an assertion', function() {
   var view = buildView('{{loc localizationKey}}', {
     localizationKey: 'villain'
   });

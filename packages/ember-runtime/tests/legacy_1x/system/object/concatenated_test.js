@@ -28,7 +28,7 @@ QUnit.module("EmberObject Concatenated Properties", {
   }
 });
 
-test("concatenates instances", function() {
+QUnit.test("concatenates instances", function() {
   var obj = klass.create({
     values: ['d', 'e', 'f']
   });
@@ -39,7 +39,7 @@ test("concatenates instances", function() {
   deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
 });
 
-test("concatenates subclasses", function() {
+QUnit.test("concatenates subclasses", function() {
   var subKlass = klass.extend({
     values: ['d', 'e', 'f']
   });
@@ -51,7 +51,7 @@ test("concatenates subclasses", function() {
   deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
 });
 
-test("concatenates reopen", function() {
+QUnit.test("concatenates reopen", function() {
   klass.reopen({
     values: ['d', 'e', 'f']
   });
@@ -63,7 +63,7 @@ test("concatenates reopen", function() {
   deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
 });
 
-test("concatenates mixin", function() {
+QUnit.test("concatenates mixin", function() {
   var mixin = {
     values: ['d', 'e']
   };
@@ -78,7 +78,7 @@ test("concatenates mixin", function() {
   deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
 });
 
-test("concatenates reopen, subclass, and instance", function() {
+QUnit.test("concatenates reopen, subclass, and instance", function() {
   klass.reopen({ values: ['d'] });
   var subKlass = klass.extend({ values: ['e'] });
   var obj = subKlass.create({ values: ['f'] });
@@ -89,7 +89,7 @@ test("concatenates reopen, subclass, and instance", function() {
   deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
 });
 
-test("concatenates subclasses when the values are functions", function() {
+QUnit.test("concatenates subclasses when the values are functions", function() {
   var subKlass = klass.extend({
     functions: K
   });

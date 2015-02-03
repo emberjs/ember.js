@@ -51,7 +51,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
       return;
     }
 
-    test(subject.tag +" "+subject.attr+" is sanitized when using blacklisted protocol", function() {
+    QUnit.test(subject.tag +" "+subject.attr+" is sanitized when using blacklisted protocol", function() {
       view = EmberView.create({
         context: { url: 'javascript://example.com' },
         template: subject.unquotedTemplate
@@ -63,7 +63,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
              "attribute is output");
     });
 
-    test(subject.tag +" "+subject.attr+" is sanitized when using quoted non-whitelisted protocol", function() {
+    QUnit.test(subject.tag +" "+subject.attr+" is sanitized when using quoted non-whitelisted protocol", function() {
       view = EmberView.create({
         context: { url: 'javascript://example.com' },
         template: subject.quotedTemplate
@@ -75,7 +75,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
              "attribute is output");
     });
 
-    test(subject.tag +" "+subject.attr+" is not sanitized when using non-whitelisted protocol with a SafeString", function() {
+    QUnit.test(subject.tag +" "+subject.attr+" is not sanitized when using non-whitelisted protocol with a SafeString", function() {
       view = EmberView.create({
         context: { url: new SafeString('javascript://example.com') },
         template: subject.unquotedTemplate
@@ -93,7 +93,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
       }
     });
 
-    test(subject.tag+" "+subject.attr+" is sanitized when using quoted+concat non-whitelisted protocol", function() {
+    QUnit.test(subject.tag+" "+subject.attr+" is sanitized when using quoted+concat non-whitelisted protocol", function() {
       view = EmberView.create({
         context: { protocol: 'javascript:', path: '//example.com' },
         template: subject.multipartTemplate

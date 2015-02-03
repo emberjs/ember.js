@@ -74,7 +74,7 @@ QUnit.module("ember-testing Integration", {
   }
 });
 
-test("template is bound to empty array of people", function() {
+QUnit.test("template is bound to empty array of people", function() {
   App.Person.find = function() {
     return Ember.A();
   };
@@ -85,7 +85,7 @@ test("template is bound to empty array of people", function() {
   });
 });
 
-test("template is bound to array of 2 people", function() {
+QUnit.test("template is bound to array of 2 people", function() {
   App.Person.find = function() {
     var people = Ember.A();
     var first = App.Person.create({ firstName: "x" });
@@ -101,7 +101,7 @@ test("template is bound to array of 2 people", function() {
   });
 });
 
-test("template is again bound to empty array of people", function() {
+QUnit.test("template is again bound to empty array of people", function() {
   App.Person.find = function() {
     return Ember.A();
   };
@@ -112,7 +112,7 @@ test("template is again bound to empty array of people", function() {
   });
 });
 
-test("`visit` can be called without advancedReadiness.", function() {
+QUnit.test("`visit` can be called without advancedReadiness.", function() {
   App.Person.find = function() {
     return Ember.A();
   };

@@ -46,7 +46,7 @@ QUnit.module('Basic introspection', {
   }
 });
 
-test('Ember.mixins()', function() {
+QUnit.test('Ember.mixins()', function() {
 
   function mapGuids(ary) {
     return EnumerableUtils.map(ary, function(x) { return guidFor(x); });

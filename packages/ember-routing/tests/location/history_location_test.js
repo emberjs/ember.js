@@ -57,7 +57,7 @@ QUnit.module("Ember.HistoryLocation", {
   }
 });
 
-test("HistoryLocation initState does not get fired on init", function() {
+QUnit.test("HistoryLocation initState does not get fired on init", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -73,7 +73,7 @@ test("HistoryLocation initState does not get fired on init", function() {
   createLocation();
 });
 
-test("webkit doesn't fire popstate on page load", function() {
+QUnit.test("webkit doesn't fire popstate on page load", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -89,7 +89,7 @@ test("webkit doesn't fire popstate on page load", function() {
   location.initState();
 });
 
-test("base URL is removed when retrieving the current pathname", function() {
+QUnit.test("base URL is removed when retrieving the current pathname", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -111,7 +111,7 @@ test("base URL is removed when retrieving the current pathname", function() {
   location.initState();
 });
 
-test("base URL is preserved when moving around", function() {
+QUnit.test("base URL is preserved when moving around", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -130,7 +130,7 @@ test("base URL is preserved when moving around", function() {
   equal(location._historyState.path, '/base/one/two');
 });
 
-test("setURL continues to set even with a null state (iframes may set this)", function() {
+QUnit.test("setURL continues to set even with a null state (iframes may set this)", function() {
   expect(1);
 
   createLocation();
@@ -142,7 +142,7 @@ test("setURL continues to set even with a null state (iframes may set this)", fu
   equal(location._historyState.path, '/three/four');
 });
 
-test("replaceURL continues to set even with a null state (iframes may set this)", function() {
+QUnit.test("replaceURL continues to set even with a null state (iframes may set this)", function() {
   expect(1);
 
   createLocation();
@@ -154,7 +154,7 @@ test("replaceURL continues to set even with a null state (iframes may set this)"
   equal(location._historyState.path, '/three/four');
 });
 
-test("HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL", function() {
+QUnit.test("HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -172,7 +172,7 @@ test("HistoryLocation.getURL() returns the current url, excluding both rootURL a
   equal(location.getURL(), '/foo/bar');
 });
 
-test("HistoryLocation.getURL() includes location.search", function() {
+QUnit.test("HistoryLocation.getURL() includes location.search", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -187,7 +187,7 @@ test("HistoryLocation.getURL() includes location.search", function() {
   equal(location.getURL(), '/foo/bar?time=morphin');
 });
 
-test("HistoryLocation.getURL() includes location.hash", function() {
+QUnit.test("HistoryLocation.getURL() includes location.hash", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -202,7 +202,7 @@ test("HistoryLocation.getURL() includes location.hash", function() {
   equal(location.getURL(), '/foo/bar#pink-power-ranger');
 });
 
-test("HistoryLocation.getURL() includes location.hash and location.search", function() {
+QUnit.test("HistoryLocation.getURL() includes location.hash and location.search", function() {
   expect(1);
 
   HistoryTestLocation.reopen({

@@ -2,7 +2,7 @@
   "name": "ember",
   "dependencies": {
     "jquery": "~1.11.1",
-    "qunit": "~1.12.0",
+    "qunit": "~1.17.1",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
   "devDependencies": {

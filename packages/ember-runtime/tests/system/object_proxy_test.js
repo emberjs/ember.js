@@ -115,7 +115,7 @@ testBoth("should work with watched properties", function(get, set) {
   equal(get(content2, 'lastName'), 'Katzdale');
 });
 
-test("set and get should work with paths", function () {
+QUnit.test("set and get should work with paths", function () {
   var content = { foo: { bar: 'baz' } };
   var proxy = ObjectProxy.create({ content: content });
   var count = 0;

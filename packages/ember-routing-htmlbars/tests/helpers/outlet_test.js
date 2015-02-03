@@ -40,7 +40,7 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
   }
 });
 
-test("view should support connectOutlet for the main outlet", function() {
+QUnit.test("view should support connectOutlet for the main outlet", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
     template: compile(template)
@@ -60,7 +60,7 @@ test("view should support connectOutlet for the main outlet", function() {
   equal(trim(view.$().text()), 'HIBYE');
 });
 
-test("outlet should support connectOutlet in slots in prerender state", function() {
+QUnit.test("outlet should support connectOutlet in slots in prerender state", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
     template: compile(template)
@@ -75,7 +75,7 @@ test("outlet should support connectOutlet in slots in prerender state", function
   equal(view.$().text(), 'HIBYE');
 });
 
-test("outlet should support an optional name", function() {
+QUnit.test("outlet should support an optional name", function() {
   var template = "<h1>HI</h1>{{outlet 'mainView'}}";
   view = EmberView.create({
     template: compile(template)
@@ -96,7 +96,7 @@ test("outlet should support an optional name", function() {
 });
 
 
-test("outlet should correctly lookup a view", function() {
+QUnit.test("outlet should correctly lookup a view", function() {
 
   var template,
       ContainerView,
@@ -132,7 +132,7 @@ test("outlet should correctly lookup a view", function() {
 
 });
 
-test("outlet should assert view is specified as a string", function() {
+QUnit.test("outlet should assert view is specified as a string", function() {
 
   var template = "<h1>HI</h1>{{outlet view=containerView}}";
 
@@ -149,7 +149,7 @@ test("outlet should assert view is specified as a string", function() {
 
 });
 
-test("outlet should assert view path is successfully resolved", function() {
+QUnit.test("outlet should assert view path is successfully resolved", function() {
 
   var template = "<h1>HI</h1>{{outlet view='someViewNameHere'}}";
 
@@ -166,7 +166,7 @@ test("outlet should assert view path is successfully resolved", function() {
 
 });
 
-test("outlet should support an optional view class", function() {
+QUnit.test("outlet should support an optional view class", function() {
   var template = "<h1>HI</h1>{{outlet viewClass=view.outletView}}";
   view = EmberView.create({
     template: compile(template),
@@ -192,7 +192,7 @@ test("outlet should support an optional view class", function() {
 });
 
 
-test("Outlets bind to the current view, not the current concrete view", function() {
+QUnit.test("Outlets bind to the current view, not the current concrete view", function() {
   var parentTemplate = "<h1>HI</h1>{{outlet}}";
   var middleTemplate = "<h2>MIDDLE</h2>{{outlet}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
@@ -223,7 +223,7 @@ test("Outlets bind to the current view, not the current concrete view", function
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-test("view should support disconnectOutlet for the main outlet", function() {
+QUnit.test("view should support disconnectOutlet for the main outlet", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
     template: compile(template)
@@ -254,7 +254,7 @@ test("view should support disconnectOutlet for the main outlet", function() {
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
 
-test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
+QUnit.test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
   var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
 
@@ -282,7 +282,7 @@ test("Outlets bind to the current template's view, not inner contexts [DEPRECATE
 // jscs:enable validateIndentation
 }
 
-test("should support layouts", function() {
+QUnit.test("should support layouts", function() {
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
 
@@ -304,7 +304,7 @@ test("should support layouts", function() {
   equal(trim(view.$().text()), 'HIBYE');
 });
 
-test("should not throw deprecations if {{outlet}} is used without a name", function() {
+QUnit.test("should not throw deprecations if {{outlet}} is used without a name", function() {
   expectNoDeprecation();
   view = EmberView.create({
     template: compile("{{outlet}}")
@@ -312,7 +312,7 @@ test("should not throw deprecations if {{outlet}} is used without a name", funct
   runAppend(view);
 });
 
-test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
+QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
   expectNoDeprecation();
   view = EmberView.create({
     template: compile("{{outlet \"foo\"}}")
@@ -321,7 +321,7 @@ test("should not throw deprecations if {{outlet}} is used with a quoted name", f
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+  QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
     view = EmberView.create({
       template: compile("{{outlet foo}}")
     });
@@ -330,7 +330,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     }, "Using {{outlet}} with an unquoted name is not supported.");
   });
 } else {
-  test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
+  QUnit.test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
     view = EmberView.create({
       template: compile("{{outlet foo}}")
     });

@@ -33,14 +33,14 @@ QUnit.module("creating Set instances", {
 
 });
 
-test("new Set() should create empty set", function() {
+QUnit.test("new Set() should create empty set", function() {
   ignoreDeprecation(function() {
     var set = new Set();
     equal(set.length, 0);
   });
 });
 
-test("new Set([1,2,3]) should create set with three items in them", function() {
+QUnit.test("new Set([1,2,3]) should create set with three items in them", function() {
   ignoreDeprecation(function() {
     var set = new Set(Ember.A([a,b,c]));
     equal(set.length, 3);
@@ -50,7 +50,7 @@ test("new Set([1,2,3]) should create set with three items in them", function() {
   });
 });
 
-test("new Set() should accept anything that implements EmberArray", function() {
+QUnit.test("new Set() should accept anything that implements EmberArray", function() {
   var arrayLikeObject = EmberObject.createWithMixins(EmberArray, {
     _content: [a,b,c],
     length: 3,
@@ -84,7 +84,7 @@ QUnit.module("Set.add + Set.contains", {
 
 });
 
-test("should add an EmberObject", function() {
+QUnit.test("should add an EmberObject", function() {
   var obj = EmberObject.create();
 
   var oldLength = set.length;
@@ -93,7 +93,7 @@ test("should add an EmberObject", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should add a regular hash", function() {
+QUnit.test("should add a regular hash", function() {
   var obj = {};
 
   var oldLength = set.length;
@@ -102,7 +102,7 @@ test("should add a regular hash", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should add a string", function() {
+QUnit.test("should add a string", function() {
   var obj = "String!";
 
   var oldLength = set.length;
@@ -111,7 +111,7 @@ test("should add a string", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should add a number", function() {
+QUnit.test("should add a number", function() {
   var obj = 23;
 
   var oldLength = set.length;
@@ -120,7 +120,7 @@ test("should add a number", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should add bools", function() {
+QUnit.test("should add bools", function() {
   var oldLength = set.length;
 
   set.add(true);
@@ -132,7 +132,7 @@ test("should add bools", function() {
   equal(set.length, oldLength+2, "new set length");
 });
 
-test("should add 0", function() {
+QUnit.test("should add 0", function() {
   var oldLength = set.length;
 
   set.add(0);
@@ -140,7 +140,7 @@ test("should add 0", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should add a function", function() {
+QUnit.test("should add a function", function() {
   var obj = function() { return "Test function"; };
 
   var oldLength = set.length;
@@ -149,19 +149,19 @@ test("should add a function", function() {
   equal(set.length, oldLength+1, "new set length");
 });
 
-test("should NOT add a null", function() {
+QUnit.test("should NOT add a null", function() {
   set.add(null);
   equal(set.length, 0);
   equal(set.contains(null), false);
 });
 
-test("should NOT add an undefined", function() {
+QUnit.test("should NOT add an undefined", function() {
   set.add(undefined);
   equal(set.length, 0);
   equal(set.contains(undefined), false);
 });
 
-test("adding an item, removing it, adding another item", function() {
+QUnit.test("adding an item, removing it, adding another item", function() {
   var item1 = "item1";
   var item2 = "item2";
 
@@ -195,7 +195,7 @@ QUnit.module("Set.remove + Set.contains", {
 
 });
 
-test("should remove an EmberObject and reduce length", function() {
+QUnit.test("should remove an EmberObject and reduce length", function() {
   var obj = EmberObject.create();
   set.add(obj);
   equal(set.contains(obj), true);
@@ -206,7 +206,7 @@ test("should remove an EmberObject and reduce length", function() {
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should remove a regular hash and reduce length", function() {
+QUnit.test("should remove a regular hash and reduce length", function() {
   var obj = {};
   set.add(obj);
   equal(set.contains(obj), true);
@@ -217,7 +217,7 @@ test("should remove a regular hash and reduce length", function() {
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should remove a string and reduce length", function() {
+QUnit.test("should remove a string and reduce length", function() {
   var obj = "String!";
   set.add(obj);
   equal(set.contains(obj), true);
@@ -228,7 +228,7 @@ test("should remove a string and reduce length", function() {
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should remove a number and reduce length", function() {
+QUnit.test("should remove a number and reduce length", function() {
   var obj = 23;
   set.add(obj);
   equal(set.contains(obj), true);
@@ -239,7 +239,7 @@ test("should remove a number and reduce length", function() {
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should remove a bools and reduce length", function() {
+QUnit.test("should remove a bools and reduce length", function() {
   var oldLength = set.length;
   set.remove(true);
   equal(set.contains(true), false, "should be removed");
@@ -250,14 +250,14 @@ test("should remove a bools and reduce length", function() {
   equal(set.length, oldLength-2, "should be 2 shorter");
 });
 
-test("should remove 0 and reduce length", function() {
+QUnit.test("should remove 0 and reduce length", function() {
   var oldLength = set.length;
   set.remove(0);
   equal(set.contains(0), false, "should be removed");
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should remove a function and reduce length", function() {
+QUnit.test("should remove a function and reduce length", function() {
   var obj = function() { return "Test function"; };
   set.add(obj);
   equal(set.contains(obj), true);
@@ -268,19 +268,19 @@ test("should remove a function and reduce length", function() {
   equal(set.length, oldLength-1, "should be 1 shorter");
 });
 
-test("should NOT remove a null", function() {
+QUnit.test("should NOT remove a null", function() {
   var oldLength = set.length;
   set.remove(null);
   equal(set.length, oldLength);
 });
 
-test("should NOT remove an undefined", function() {
+QUnit.test("should NOT remove an undefined", function() {
   var oldLength = set.length;
   set.remove(undefined);
   equal(set.length, oldLength);
 });
 
-test("should ignore removing an object not in the set", function() {
+QUnit.test("should ignore removing an object not in the set", function() {
   var obj = EmberObject.create();
   var oldLength = set.length;
   set.remove(obj);
@@ -305,14 +305,14 @@ QUnit.module("Set.pop + Set.copy", {
   }
 });
 
-test("the pop() should remove an arbitrary object from the set", function() {
+QUnit.test("the pop() should remove an arbitrary object from the set", function() {
   var oldLength = set.length;
   var obj = set.pop();
   ok(!isNone(obj), 'pops up an item');
   equal(set.length, oldLength-1, 'length shorter by 1');
 });
 
-test("should pop false and 0", function() {
+QUnit.test("should pop false and 0", function() {
   ignoreDeprecation(function() {
     set = new Set(Ember.A([false]));
     ok(set.pop() === false, "should pop false");
@@ -322,7 +322,7 @@ test("should pop false and 0", function() {
   });
 });
 
-test("the copy() should return an identical set", function() {
+QUnit.test("the copy() should return an identical set", function() {
   var oldLength = set.length;
   var obj;
 

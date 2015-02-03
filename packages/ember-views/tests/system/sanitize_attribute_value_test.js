@@ -12,7 +12,7 @@ for (var i = 0, l = goodProtocols.length; i < l; i++) {
 }
 
 function buildProtocolTest(protocol) {
-  test('allows ' + protocol + ' protocol when element is not provided', function() {
+  QUnit.test('allows ' + protocol + ' protocol when element is not provided', function() {
     expect(1);
 
     var expected = protocol + '://foo.com';
@@ -22,7 +22,7 @@ function buildProtocolTest(protocol) {
   });
 }
 
-test('blocks javascript: protocol', function() {
+QUnit.test('blocks javascript: protocol', function() {
   /* jshint scripturl:true */
 
   expect(1);
@@ -33,7 +33,7 @@ test('blocks javascript: protocol', function() {
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
 });
 
-test('blocks blacklisted protocols', function() {
+QUnit.test('blocks blacklisted protocols', function() {
   /* jshint scripturl:true */
 
   expect(1);
@@ -44,7 +44,7 @@ test('blocks blacklisted protocols', function() {
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
 });
 
-test('does not block SafeStrings', function() {
+QUnit.test('does not block SafeStrings', function() {
   /* jshint scripturl:true */
 
   expect(1);

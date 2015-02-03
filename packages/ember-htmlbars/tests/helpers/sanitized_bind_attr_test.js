@@ -39,7 +39,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
       return;
     }
 
-    test("XSS - should not bind unsafe "+tagName+" "+attr+" values", function() {
+    QUnit.test("XSS - should not bind unsafe "+tagName+" "+attr+" values", function() {
       view = EmberView.create({
         template: template,
         badValue: "javascript:alert('XSS')"
@@ -52,7 +52,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
              "attribute is output");
     });
 
-    test("XSS - should not bind unsafe "+tagName+" "+attr+" values on rerender", function() {
+    QUnit.test("XSS - should not bind unsafe "+tagName+" "+attr+" values on rerender", function() {
       view = EmberView.create({
         template: template,
         badValue: "/sunshine/and/rainbows"
@@ -71,7 +71,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
              "attribute is output");
     });
 
-    test("should bind unsafe "+tagName+" "+attr+" values if they are SafeString", function() {
+    QUnit.test("should bind unsafe "+tagName+" "+attr+" values if they are SafeString", function() {
       view = EmberView.create({
         template: template,
         badValue: new SafeString("javascript:alert('XSS')")

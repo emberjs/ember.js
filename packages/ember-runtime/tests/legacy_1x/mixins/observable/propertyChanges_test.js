@@ -58,7 +58,7 @@ QUnit.module("object.propertyChanges", {
   }
 });
 
-test("should observe the changes within the nested begin / end property changes", function() {
+QUnit.test("should observe the changes within the nested begin / end property changes", function() {
 
   //start the outer nest
   ObjectA.beginPropertyChanges();
@@ -81,7 +81,7 @@ test("should observe the changes within the nested begin / end property changes"
   equal(ObjectA.newFoo, "changedNewFooValue");
 });
 
-test("should observe the changes within the begin and end property changes", function() {
+QUnit.test("should observe the changes within the begin and end property changes", function() {
 
   ObjectA.beginPropertyChanges();
   ObjectA.set('foo', 'changeFooValue');
@@ -92,7 +92,7 @@ test("should observe the changes within the begin and end property changes", fun
   equal(ObjectA.prop, "changedPropValue");
 });
 
-test("should indicate that the property of an object has just changed", function() {
+QUnit.test("should indicate that the property of an object has just changed", function() {
   // indicate that property of foo will change to its subscribers
   ObjectA.propertyWillChange('foo');
 
@@ -109,7 +109,7 @@ test("should indicate that the property of an object has just changed", function
   equal(ObjectA.prop, 'changedPropValue');
 });
 
-test("should notify that the property of an object has changed", function() {
+QUnit.test("should notify that the property of an object has changed", function() {
   // Notify to its subscriber that the values of 'newFoo' will be changed. In this
   // case the observer is "newProp". Therefore this will call the notifyAction function
   // and value of "newProp" will be changed.
@@ -119,7 +119,7 @@ test("should notify that the property of an object has changed", function() {
   equal(ObjectA.newProp, 'changedNewPropValue');
 });
 
-test("should invalidate function property cache when notifyPropertyChange is called", function() {
+QUnit.test("should invalidate function property cache when notifyPropertyChange is called", function() {
 
   var a = ObservableObject.createWithMixins({
     _b: null,

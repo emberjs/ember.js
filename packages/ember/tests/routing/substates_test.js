@@ -72,7 +72,7 @@ QUnit.module("Loading/Error Substates", {
   }
 });
 
-test("Slow promise from a child route of application enters nested loading state", function() {
+QUnit.test("Slow promise from a child route of application enters nested loading state", function() {
 
   var broModel = {};
   var broDeferred = Ember.RSVP.defer();
@@ -103,7 +103,7 @@ test("Slow promise from a child route of application enters nested loading state
   equal(Ember.$('#app', '#qunit-fixture').text(), "BRO", "bro template has loaded and replaced loading template");
 });
 
-test("Slow promises waterfall on startup", function() {
+QUnit.test("Slow promises waterfall on startup", function() {
 
   expect(7);
 
@@ -158,7 +158,7 @@ test("Slow promises waterfall on startup", function() {
   equal(Ember.$('#app', '#qunit-fixture').text(), "GRANDMA MOM SALLY", "Sally template displayed");
 });
 
-test("ApplicationRoute#currentPath reflects loading state path", function() {
+QUnit.test("ApplicationRoute#currentPath reflects loading state path", function() {
 
   expect(4);
 
@@ -192,7 +192,7 @@ test("ApplicationRoute#currentPath reflects loading state path", function() {
   equal(appController.get('currentPath'), "grandma.mom", "currentPath reflects final state");
 });
 
-test("Slow promises returned from ApplicationRoute#model don't enter LoadingRoute", function() {
+QUnit.test("Slow promises returned from ApplicationRoute#model don't enter LoadingRoute", function() {
 
   expect(2);
 
@@ -218,7 +218,7 @@ test("Slow promises returned from ApplicationRoute#model don't enter LoadingRout
   equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
 });
 
-test("Don't enter loading route unless either route or template defined", function() {
+QUnit.test("Don't enter loading route unless either route or template defined", function() {
 
   delete templates.loading;
 
@@ -243,7 +243,7 @@ test("Don't enter loading route unless either route or template defined", functi
   equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
 });
 
-test("Enter loading route if only LoadingRoute defined", function() {
+QUnit.test("Enter loading route if only LoadingRoute defined", function() {
 
   delete templates.loading;
 
@@ -273,7 +273,7 @@ test("Enter loading route if only LoadingRoute defined", function() {
   equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
 });
 
-test("Enter child loading state of pivot route", function() {
+QUnit.test("Enter child loading state of pivot route", function() {
 
   expect(4);
 
@@ -317,7 +317,7 @@ test("Enter child loading state of pivot route", function() {
   equal(appController.get('currentPath'), "grandma.smells", "Finished transition");
 });
 
-test("Loading actions bubble to root, but don't enter substates above pivot", function() {
+QUnit.test("Loading actions bubble to root, but don't enter substates above pivot", function() {
 
   expect(6);
 
@@ -373,7 +373,7 @@ test("Loading actions bubble to root, but don't enter substates above pivot", fu
   equal(appController.get('currentPath'), "grandma.smells", "Finished transition");
 });
 
-test("Default error event moves into nested route", function() {
+QUnit.test("Default error event moves into nested route", function() {
 
   expect(5);
 
@@ -418,7 +418,7 @@ test("Default error event moves into nested route", function() {
 
 if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
-  test("Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present", function() {
+  QUnit.test("Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present", function() {
 
     expect(2);
 
@@ -448,7 +448,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
   });
 
-  test("Slow promises returned from ApplicationRoute#model enter application_loading if template present", function() {
+  QUnit.test("Slow promises returned from ApplicationRoute#model enter application_loading if template present", function() {
 
     expect(3);
 
@@ -485,7 +485,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
   });
 
-  test("Default error event moves into nested route, prioritizing more specifically named error route", function() {
+  QUnit.test("Default error event moves into nested route, prioritizing more specifically named error route", function() {
 
     expect(5);
 
@@ -533,7 +533,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(appController.get('currentPath'), 'grandma.mom_error', "Initial route fully loaded");
   });
 
-  test("Prioritized substate entry works with preserved-namespace nested resources", function() {
+  QUnit.test("Prioritized substate entry works with preserved-namespace nested resources", function() {
 
     expect(2);
 
@@ -568,7 +568,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
 
-  test("Prioritized loading substate entry works with preserved-namespace nested routes", function() {
+  QUnit.test("Prioritized loading substate entry works with preserved-namespace nested routes", function() {
 
     expect(2);
 
@@ -602,7 +602,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
 
-  test("Prioritized error substate entry works with preserved-namespace nested routes", function() {
+  QUnit.test("Prioritized error substate entry works with preserved-namespace nested routes", function() {
 
     expect(1);
 
@@ -633,7 +633,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "FOOBAR ERROR: did it broke?", "foo.bar_error was entered (as opposed to something like foo/foo/bar_error)");
   });
 
-  test("Prioritized loading substate entry works with auto-generated index routes", function() {
+  QUnit.test("Prioritized loading substate entry works with auto-generated index routes", function() {
 
     expect(2);
 
@@ -673,7 +673,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
 
-  test("Prioritized error substate entry works with auto-generated index routes", function() {
+  QUnit.test("Prioritized error substate entry works with auto-generated index routes", function() {
 
     expect(1);
 
@@ -710,7 +710,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "FOO ERROR: did it broke?", "foo.index_error was entered");
   });
 
-  test("Rejected promises returned from ApplicationRoute transition into top-level application_error", function() {
+  QUnit.test("Rejected promises returned from ApplicationRoute transition into top-level application_error", function() {
 
     expect(2);
 

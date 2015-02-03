@@ -28,7 +28,7 @@ function tmpl(str) {
   };
 }
 
-test("should create and append a DOM element after bindings have synced", function() {
+QUnit.test("should create and append a DOM element after bindings have synced", function() {
   var ViewTest;
 
   lookup.ViewTest = ViewTest = {};
@@ -54,17 +54,17 @@ test("should create and append a DOM element after bindings have synced", functi
   equal(view.$().text(), 'controllerPropertyValue', "renders and appends after bindings have synced");
 });
 
-test("should throw an exception if trying to append a child before rendering has begun", function() {
+QUnit.test("should throw an exception if trying to append a child before rendering has begun", function() {
   run(function() {
     view = EmberView.create();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {});
   }, null, "throws an error when calling appendChild()");
 });
 
-test("should not affect rendering if rerender is called before initial render happens", function() {
+QUnit.test("should not affect rendering if rerender is called before initial render happens", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("Rerender me!")
@@ -77,7 +77,7 @@ test("should not affect rendering if rerender is called before initial render ha
   equal(view.$().text(), "Rerender me!", "renders correctly if rerender is called first");
 });
 
-test("should not affect rendering if destroyElement is called before initial render happens", function() {
+QUnit.test("should not affect rendering if destroyElement is called before initial render happens", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("Don't destroy me!")
@@ -104,7 +104,7 @@ QUnit.module("views/view/view_lifecycle_test - in render", {
   }
 });
 
-test("appendChild should work inside a template", function() {
+QUnit.test("appendChild should work inside a template", function() {
   run(function() {
     view = EmberView.create({
       template: function(context, options) {
@@ -127,8 +127,8 @@ test("appendChild should work inside a template", function() {
      "The appended child is visible");
 });
 
-test("rerender should throw inside a template", function() {
-  raises(function() {
+QUnit.test("rerender should throw inside a template", function() {
+  throws(function() {
     run(function() {
       var renderCount = 0;
       view = EmberView.create({
@@ -166,7 +166,7 @@ QUnit.module("views/view/view_lifecycle_test - hasElement", {
   }
 });
 
-test("createElement puts the view into the hasElement state", function() {
+QUnit.test("createElement puts the view into the hasElement state", function() {
   view = EmberView.create({
     render: function(buffer) { buffer.push('hello'); }
   });
@@ -178,7 +178,7 @@ test("createElement puts the view into the hasElement state", function() {
   equal(view.currentState, view._states.hasElement, "the view is in the hasElement state");
 });
 
-test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
+QUnit.test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
   view = EmberView.create({
     render: function(buffer) { buffer.push('hello'); }
   });
@@ -202,7 +202,7 @@ QUnit.module("views/view/view_lifecycle_test - in DOM", {
   }
 });
 
-test("should throw an exception when calling appendChild when DOM element exists", function() {
+QUnit.test("should throw an exception when calling appendChild when DOM element exists", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("Wait for the kick")
@@ -211,14 +211,14 @@ test("should throw an exception when calling appendChild when DOM element exists
     view.append();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
   }, null, "throws an exception when calling appendChild after element is created");
 });
 
-test("should replace DOM representation if rerender() is called after element is created", function() {
+QUnit.test("should replace DOM representation if rerender() is called after element is created", function() {
   run(function() {
     view = EmberView.create({
       template: function(context, options) {
@@ -246,7 +246,7 @@ test("should replace DOM representation if rerender() is called after element is
   equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 
-test("should destroy DOM representation when destroyElement is called", function() {
+QUnit.test("should destroy DOM representation when destroyElement is called", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("Don't fear the reaper")
@@ -264,7 +264,7 @@ test("should destroy DOM representation when destroyElement is called", function
   ok(!view.get('element'), "destroys view when destroyElement() is called");
 });
 
-test("should destroy DOM representation when destroy is called", function() {
+QUnit.test("should destroy DOM representation when destroy is called", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("<div id='warning'>Don't fear the reaper</div>")
@@ -282,7 +282,7 @@ test("should destroy DOM representation when destroy is called", function() {
   ok(jQuery('#warning').length === 0, "destroys element when destroy() is called");
 });
 
-test("should throw an exception if trying to append an element that is already in DOM", function() {
+QUnit.test("should throw an exception if trying to append an element that is already in DOM", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl('Broseidon, King of the Brocean')
@@ -293,7 +293,7 @@ test("should throw an exception if trying to append an element that is already i
 
   ok(view.get('element'), "precond - creates DOM element");
 
-  raises(function() {
+  throws(function() {
     run(function() {
       view.append();
     });
@@ -302,7 +302,7 @@ test("should throw an exception if trying to append an element that is already i
 
 QUnit.module("views/view/view_lifecycle_test - destroyed");
 
-test("should throw an exception when calling appendChild after view is destroyed", function() {
+QUnit.test("should throw an exception when calling appendChild after view is destroyed", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl("Wait for the kick")
@@ -315,14 +315,14 @@ test("should throw an exception when calling appendChild after view is destroyed
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
   }, null, "throws an exception when calling appendChild");
 });
 
-test("should throw an exception when rerender is called after view is destroyed", function() {
+QUnit.test("should throw an exception when rerender is called after view is destroyed", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl('foo')
@@ -335,12 +335,12 @@ test("should throw an exception when rerender is called after view is destroyed"
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.rerender();
   }, null, "throws an exception when calling rerender");
 });
 
-test("should throw an exception when destroyElement is called after view is destroyed", function() {
+QUnit.test("should throw an exception when destroyElement is called after view is destroyed", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl('foo')
@@ -353,12 +353,12 @@ test("should throw an exception when destroyElement is called after view is dest
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.destroyElement();
   }, null, "throws an exception when calling destroyElement");
 });
 
-test("trigger rerender on a view in the inDOM state keeps its state as inDOM", function() {
+QUnit.test("trigger rerender on a view in the inDOM state keeps its state as inDOM", function() {
   run(function() {
     view = EmberView.create({
       template: tmpl('foo')

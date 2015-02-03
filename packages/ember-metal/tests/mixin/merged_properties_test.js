@@ -6,7 +6,7 @@ import {
 
 QUnit.module('Mixin mergedProperties');
 
-test('defining mergedProperties should merge future version', function() {
+QUnit.test('defining mergedProperties should merge future version', function() {
 
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
@@ -22,7 +22,7 @@ test('defining mergedProperties should merge future version', function() {
     { a: true, b: true, c: true, d: true, e: true, f: true });
 });
 
-test('defining mergedProperties on future mixin should merged into past', function() {
+QUnit.test('defining mergedProperties on future mixin should merged into past', function() {
 
   var MixinA = Mixin.create({
     foo: { a: true, b: true, c: true }
@@ -38,7 +38,7 @@ test('defining mergedProperties on future mixin should merged into past', functi
     { a: true, b: true, c: true, d: true, e: true, f: true });
 });
 
-test('defining mergedProperties with null properties should keep properties null', function() {
+QUnit.test('defining mergedProperties with null properties should keep properties null', function() {
 
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
@@ -53,7 +53,7 @@ test('defining mergedProperties with null properties should keep properties null
   equal(get(obj, 'foo'), null);
 });
 
-test("mergedProperties' properties can get overwritten", function() {
+QUnit.test("mergedProperties' properties can get overwritten", function() {
 
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
@@ -68,7 +68,7 @@ test("mergedProperties' properties can get overwritten", function() {
   deepEqual(get(obj, 'foo'), { a: 2 });
 });
 
-test('mergedProperties should be concatenated', function() {
+QUnit.test('mergedProperties should be concatenated', function() {
 
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
@@ -91,7 +91,7 @@ test('mergedProperties should be concatenated', function() {
   deepEqual(get(obj, 'bar'), { a: true, l: true, e: true, x: true }, "get bar");
 });
 
-test("mergedProperties should exist even if not explicitly set on create", function() {
+QUnit.test("mergedProperties should exist even if not explicitly set on create", function() {
 
   var AnObj = Ember.Object.extend({
     mergedProperties: ['options'],
@@ -113,7 +113,7 @@ test("mergedProperties should exist even if not explicitly set on create", funct
   equal(get(obj, "options").b.c, 'ccc');
 });
 
-test("mergedProperties' overwriting methods can call _super", function() {
+QUnit.test("mergedProperties' overwriting methods can call _super", function() {
 
   expect(4);
 
@@ -149,7 +149,7 @@ test("mergedProperties' overwriting methods can call _super", function() {
   equal(obj.foo.meth("WOOT"), "WAT");
 });
 
-test('Merging an Array should raise an error', function() {
+QUnit.test('Merging an Array should raise an error', function() {
 
   expect(1);
 

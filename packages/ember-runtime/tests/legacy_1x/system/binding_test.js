@@ -58,11 +58,11 @@ QUnit.module("basic object binding", {
   }
 });
 
-test("binding should have synced on connect", function() {
+QUnit.test("binding should have synced on connect", function() {
   equal(get(toObject, "value"), "start", "toObject.value should match fromObject.value");
 });
 
-test("fromObject change should propagate to toObject only after flush", function() {
+QUnit.test("fromObject change should propagate to toObject only after flush", function() {
   run(function () {
     set(fromObject, "value", "change");
     equal(get(toObject, "value"), "start");
@@ -70,7 +70,7 @@ test("fromObject change should propagate to toObject only after flush", function
   equal(get(toObject, "value"), "change");
 });
 
-test("toObject change should propagate to fromObject only after flush", function() {
+QUnit.test("toObject change should propagate to fromObject only after flush", function() {
   run(function () {
     set(toObject, "value", "change");
     equal(get(fromObject, "value"), "start");
@@ -78,7 +78,7 @@ test("toObject change should propagate to fromObject only after flush", function
   equal(get(fromObject, "value"), "change");
 });
 
-test("deferred observing during bindings", function() {
+QUnit.test("deferred observing during bindings", function() {
 
   // setup special binding
   fromObject = EmberObject.create({
@@ -113,7 +113,7 @@ test("deferred observing during bindings", function() {
   equal(toObject.callCount, 2, 'should call observer twice');
 });
 
-test("binding disconnection actually works", function() {
+QUnit.test("binding disconnection actually works", function() {
   binding.disconnect(root);
   run(function () {
     set(fromObject, 'value', 'change');
@@ -140,7 +140,7 @@ QUnit.module("one way binding", {
   }
 });
 
-test("fromObject change should propagate after flush", function() {
+QUnit.test("fromObject change should propagate after flush", function() {
   run(function() {
     set(fromObject, "value", "change");
     equal(get(toObject, "value"), "start");
@@ -148,7 +148,7 @@ test("fromObject change should propagate after flush", function() {
   equal(get(toObject, "value"), "change");
 });
 
-test("toObject change should NOT propagate", function() {
+QUnit.test("toObject change should NOT propagate", function() {
   run(function() {
     set(toObject, "value", "change");
     equal(get(fromObject, "value"), "start");
@@ -189,7 +189,7 @@ QUnit.module("chained binding", {
   }
 });
 
-test("changing first output should propagate to third after flush", function() {
+QUnit.test("changing first output should propagate to third after flush", function() {
   run(function() {
     set(first, "output", "change");
     equal("change", get(first, "output"), "first.output");
@@ -235,7 +235,7 @@ QUnit.module("Custom Binding", {
   }
 });
 
-test("two bindings to the same value should sync in the order they are initialized", function() {
+QUnit.test("two bindings to the same value should sync in the order they are initialized", function() {
 
   run.begin();
 
@@ -296,7 +296,7 @@ QUnit.module("propertyNameBinding with longhand", {
   }
 });
 
-test("works with full path", function() {
+QUnit.test("works with full path", function() {
   run(function () {
     set(TestNamespace.fromObject, 'value', "updatedValue");
   });
@@ -310,7 +310,7 @@ test("works with full path", function() {
   equal(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
-test("works with local path", function() {
+QUnit.test("works with local path", function() {
   run(function () {
     set(TestNamespace.toObject, 'localValue', "updatedValue");
   });

@@ -10,7 +10,7 @@ QUnit.module('ember-htmlbars: renderView', {
   }
 });
 
-test('default environment values are passed through', function() {
+QUnit.test('default environment values are passed through', function() {
   var keyNames = keys(defaultEnv);
   expect(keyNames.length);
 

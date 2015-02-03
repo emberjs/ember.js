@@ -18,7 +18,7 @@ QUnit.module('system/mixin/binding/oneWay_test', {
   }
 });
 
-test('oneWay(true) should only sync one way', function() {
+QUnit.test('oneWay(true) should only sync one way', function() {
   var binding;
   run(function() {
     binding = oneWay(MyApp, 'bar.value', 'foo.value');

@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 
 QUnit.module('system/run_loop/sync_test');
 
-test('sync() will immediately flush the sync queue only', function() {
+QUnit.test('sync() will immediately flush the sync queue only', function() {
   var cnt = 0;
 
   run(function() {
@@ -28,7 +28,7 @@ test('sync() will immediately flush the sync queue only', function() {
 
 });
 
-test('calling sync() outside a run loop does not cause an error', function() {
+QUnit.test('calling sync() outside a run loop does not cause an error', function() {
   expect(0);
 
   run.sync();

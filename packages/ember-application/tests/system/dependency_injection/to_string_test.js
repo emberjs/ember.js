@@ -32,19 +32,19 @@ QUnit.module("Ember.Application Dependency Injection – toString", {
   }
 });
 
-test("factories", function() {
+QUnit.test("factories", function() {
   var PostFactory = App.__container__.lookupFactory('model:post');
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 
-test("instances", function() {
+QUnit.test("instances", function() {
   var post = App.__container__.lookup('model:post');
   var guid = guidFor(post);
 
   equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
 });
 
-test("with a custom resolver", function() {
+QUnit.test("with a custom resolver", function() {
   run(App, 'destroy');
 
   run(function() {

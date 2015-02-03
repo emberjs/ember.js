@@ -33,7 +33,7 @@ QUnit.module("Ember.Sortable with content", {
   }
 });
 
-test("if you do not specify `sortProperties` sortable have no effect", function() {
+QUnit.test("if you do not specify `sortProperties` sortable have no effect", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is in it natural order');
 
@@ -49,7 +49,7 @@ test("if you do not specify `sortProperties` sortable have no effect", function(
   equal(sortedArrayController.objectAt(4).name, 'Scumbag Jackson', 'a new object was inserted in the natural order with empty array as sortProperties');
 });
 
-test("you can change sorted properties", function() {
+QUnit.test("you can change sorted properties", function() {
   sortedArrayController.set('sortProperties', ['id']);
 
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is sorted by id');
@@ -67,7 +67,7 @@ test("you can change sorted properties", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 });
 
-test("changing sort order triggers observers", function() {
+QUnit.test("changing sort order triggers observers", function() {
   var observer;
   var changeCount = 0;
   observer = EmberObject.createWithMixins({
@@ -94,7 +94,7 @@ test("changing sort order triggers observers", function() {
   run(function() { observer.destroy(); });
 });
 
-test("changing sortProperties and sortAscending with setProperties, sortProperties appearing first", function() {
+QUnit.test("changing sortProperties and sortAscending with setProperties, sortProperties appearing first", function() {
   sortedArrayController.set('sortProperties', ['name']);
   sortedArrayController.set('sortAscending', false);
 
@@ -123,7 +123,7 @@ test("changing sortProperties and sortAscending with setProperties, sortProperti
 
 });
 
-test("changing sortProperties and sortAscending with setProperties, sortAscending appearing first", function() {
+QUnit.test("changing sortProperties and sortAscending with setProperties, sortAscending appearing first", function() {
   sortedArrayController.set('sortProperties', ['name']);
   sortedArrayController.set('sortAscending', false);
 
@@ -173,12 +173,12 @@ QUnit.module("Ember.Sortable with content and sortProperties", {
   }
 });
 
-test("sortable object will expose associated content in the right order", function() {
+QUnit.test("sortable object will expose associated content in the right order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
 
-test("you can add objects in sorted order", function() {
+QUnit.test("you can add objects in sorted order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   unsortedArray.pushObject({ id: 4, name: 'Scumbag Chavard' });
@@ -192,7 +192,7 @@ test("you can add objects in sorted order", function() {
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
 });
 
-test("you can push objects in sorted order", function() {
+QUnit.test("you can push objects in sorted order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   unsortedArray.pushObject({ id: 4, name: 'Scumbag Chavard' });
@@ -206,7 +206,7 @@ test("you can push objects in sorted order", function() {
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
 });
 
-test("you can unshift objects in sorted order", function() {
+QUnit.test("you can unshift objects in sorted order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   unsortedArray.unshiftObject({ id: 4, name: 'Scumbag Chavard' });
@@ -220,7 +220,7 @@ test("you can unshift objects in sorted order", function() {
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
 });
 
-test("addObject does not insert duplicates", function() {
+QUnit.test("addObject does not insert duplicates", function() {
   var sortedArrayProxy;
   var obj = {};
   sortedArrayProxy = ArrayProxy.createWithMixins(SortableMixin, {
@@ -234,7 +234,7 @@ test("addObject does not insert duplicates", function() {
   equal(sortedArrayProxy.get('length'), 1, 'array still has 1 item');
 });
 
-test("you can change a sort property and the content will rearrange", function() {
+QUnit.test("you can change a sort property and the content will rearrange", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'bryn is first');
 
@@ -243,7 +243,7 @@ test("you can change a sort property and the content will rearrange", function()
   equal(sortedArrayController.objectAt(1).name, 'Scumbag Fucs', 'foucs is second');
 });
 
-test("you can change the position of the middle item", function() {
+QUnit.test("you can change the position of the middle item", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   equal(sortedArrayController.objectAt(1).name, 'Scumbag Dale', 'Dale is second');
@@ -252,7 +252,7 @@ test("you can change the position of the middle item", function() {
   equal(sortedArrayController.objectAt(0).name, 'Alice', 'Alice (previously Dale) is first now');
 });
 
-test("don't remove and insert if position didn't change", function() {
+QUnit.test("don't remove and insert if position didn't change", function() {
   var insertItemSortedCalled = false;
 
   sortedArrayController.reopen({
@@ -269,7 +269,7 @@ test("don't remove and insert if position didn't change", function() {
   ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
 });
 
-test("sortProperties observers removed on content removal", function() {
+QUnit.test("sortProperties observers removed on content removal", function() {
   var removedObject = unsortedArray.objectAt(2);
   equal(listenersFor(removedObject, 'name:change').length, 1,
     "Before removal, there should be one listener for sortProperty change.");
@@ -296,7 +296,7 @@ QUnit.module("Ember.Sortable with sortProperties", {
   }
 });
 
-test("you can set content later and it will be sorted", function() {
+QUnit.test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.get('length'), 0, 'array has 0 items');
 
   run(function() {
@@ -339,7 +339,7 @@ QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
   }
 });
 
-test("you can sort with custom sorting function", function() {
+QUnit.test("you can sort with custom sorting function", function() {
   equal(sortedArrayController.get('length'), 0, 'array has 0 items');
 
   run(function() {
@@ -350,7 +350,7 @@ test("you can sort with custom sorting function", function() {
   equal(sortedArrayController.objectAt(0).name, 'Scumbag bryn', 'array is sorted by custom sort');
 });
 
-test("Ember.Sortable with sortFunction on ArrayProxy should work like ArrayController", function() {
+QUnit.test("Ember.Sortable with sortFunction on ArrayProxy should work like ArrayController", function() {
   run(function() {
     sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
       sortProperties: ['name'],

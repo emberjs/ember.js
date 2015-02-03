@@ -33,7 +33,7 @@ QUnit.module('Ember.compare()', {
   }
 });
 
-test('ordering should work', function() {
+QUnit.test('ordering should work', function() {
   var suspect, comparable, failureMessage,
       suspectIndex, comparableIndex;
 
@@ -54,7 +54,7 @@ test('ordering should work', function() {
   }
 });
 
-test('comparables should return values in the range of -1, 0, 1', function() {
+QUnit.test('comparables should return values in the range of -1, 0, 1', function() {
   var negOne = Comp.create({
     val: -1
   });

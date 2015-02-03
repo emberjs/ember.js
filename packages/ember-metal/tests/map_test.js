@@ -52,7 +52,7 @@ function testMap(nameAndFunc) {
     unboundThis = this;
   }());
 
-  test("set", function() {
+  QUnit.test("set", function() {
     map.set(object, "winning");
     map.set(number, "winning");
     map.set(string, "winning");
@@ -77,7 +77,7 @@ function testMap(nameAndFunc) {
     equal(map.has({}), false, "expected they key `{}` to not be present");
   });
 
-  test("set chaining", function() {
+  QUnit.test("set chaining", function() {
     map.set(object, "winning").
         set(number, "winning").
         set(string, "winning");
@@ -102,7 +102,7 @@ function testMap(nameAndFunc) {
     equal(map.has({}), false, "expected they key `{}` to not be present");
   });
 
-  test("with key with undefined value", function() {
+  QUnit.test("with key with undefined value", function() {
     map.set("foo", undefined);
 
     map.forEach(function(value, key) {
@@ -115,16 +115,16 @@ function testMap(nameAndFunc) {
     equal(map.size, 1);
   });
 
-  test("arity of forEach is 1 – es6 23.1.3.5", function() {
+  QUnit.test("arity of forEach is 1 – es6 23.1.3.5", function() {
     equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
   });
 
-  test("forEach throws without a callback as the first argument", function() {
+  QUnit.test("forEach throws without a callback as the first argument", function() {
 
     equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
   });
 
-  test("remove", function() {
+  QUnit.test("remove", function() {
     map.set(object, "winning");
     map.set(number, "winning");
     map.set(string, "winning");
@@ -141,12 +141,12 @@ function testMap(nameAndFunc) {
     mapHasEntries([]);
   });
 
-  test("has empty collection", function() {
+  QUnit.test("has empty collection", function() {
     equal(map.has('foo'), false);
     equal(map.has(), false);
   });
 
-  test("delete", function() {
+  QUnit.test("delete", function() {
     expectNoDeprecation();
 
     map.set(object, "winning");
@@ -163,7 +163,7 @@ function testMap(nameAndFunc) {
     mapHasEntries([]);
   });
 
-  test("copy and then update", function() {
+  QUnit.test("copy and then update", function() {
     map.set(object, "winning");
     map.set(number, "winning");
     map.set(string, "winning");
@@ -187,7 +187,7 @@ function testMap(nameAndFunc) {
     ], map2);
   });
 
-  test("copy and then delete", function() {
+  QUnit.test("copy and then delete", function() {
     map.set(object, "winning");
     map.set(number, "winning");
     map.set(string, "winning");
@@ -208,7 +208,7 @@ function testMap(nameAndFunc) {
   });
 
   if (hasPropertyAccessors) {
-    test("length", function() {
+    QUnit.test("length", function() {
       expectDeprecation('Usage of `length` is deprecated, use `size` instead.');
 
       //Add a key twice
@@ -244,7 +244,7 @@ function testMap(nameAndFunc) {
     });
   }
 
-  test("size", function() {
+  QUnit.test("size", function() {
     //Add a key twice
     equal(map.size, 0);
     map.set(string, "a string");
@@ -277,7 +277,7 @@ function testMap(nameAndFunc) {
     equal(map.size, 0);
   });
 
-  test("forEach without proper callback", function() {
+  QUnit.test("forEach without proper callback", function() {
     QUnit.throws(function() {
       map.forEach();
     }, '[object Undefined] is not a function');
@@ -304,7 +304,7 @@ function testMap(nameAndFunc) {
     }, '[object Object] is not a function');
   });
 
-  test("forEach basic", function() {
+  QUnit.test("forEach basic", function() {
     map.set("a", 1);
     map.set("b", 2);
     map.set("c", 3);
@@ -332,7 +332,7 @@ function testMap(nameAndFunc) {
 
   });
 
-  test("forEach basic /w context", function() {
+  QUnit.test("forEach basic /w context", function() {
     map.set("a", 1);
     map.set("b", 2);
     map.set("c", 3);
@@ -360,7 +360,7 @@ function testMap(nameAndFunc) {
     equal(iteration, 3, 'expected 3 iterations');
   });
 
-  test("forEach basic /w deletion while enumerating", function() {
+  QUnit.test("forEach basic /w deletion while enumerating", function() {
     map.set("a", 1);
     map.set("b", 2);
     map.set("c", 3);
@@ -390,7 +390,7 @@ function testMap(nameAndFunc) {
     equal(iteration, 2, 'expected 3 iterations');
   });
 
-  test("forEach basic /w addition while enumerating", function() {
+  QUnit.test("forEach basic /w addition while enumerating", function() {
     map.set("a", 1);
     map.set("b", 2);
     map.set("c", 3);
@@ -422,7 +422,7 @@ function testMap(nameAndFunc) {
     equal(iteration, 4, 'expected 3 iterations');
   });
 
-  test("clear", function() {
+  QUnit.test("clear", function() {
     var iterations = 0;
 
     map.set("a", 1);
@@ -446,7 +446,7 @@ function testMap(nameAndFunc) {
     equal(iterations, 0);
   });
 
-  test("-0", function() {
+  QUnit.test("-0", function() {
     equal(map.has(-0), false);
     equal(map.has(0), false);
 
@@ -463,7 +463,7 @@ function testMap(nameAndFunc) {
     });
   });
 
-  test("NaN", function() {
+  QUnit.test("NaN", function() {
     equal(map.has(NaN), false);
 
     map.set(NaN, 'not-a-number');
@@ -474,7 +474,7 @@ function testMap(nameAndFunc) {
 
   });
 
-  test("NaN Boxed", function() {
+  QUnit.test("NaN Boxed", function() {
     //jshint -W053
     var boxed = new Number(NaN);
     equal(map.has(boxed), false);
@@ -488,7 +488,7 @@ function testMap(nameAndFunc) {
     equal(map.get(boxed), 'not-a-number');
   });
 
-  test("0 value", function() {
+  QUnit.test("0 value", function() {
     var obj = {};
     equal(map.has(obj), false);
 
@@ -512,7 +512,7 @@ for (var i = 0;  i < varieties.length;  i++) {
 
 QUnit.module("MapWithDefault - default values");
 
-test("Retrieving a value that has not been set returns and sets a default value", function() {
+QUnit.test("Retrieving a value that has not been set returns and sets a default value", function() {
   var map = MapWithDefault.create({
     defaultValue: function(key) {
       return [key];
@@ -525,19 +525,19 @@ test("Retrieving a value that has not been set returns and sets a default value"
   strictEqual(value, map.get('ohai'));
 });
 
-test("Map.prototype.constructor", function() {
+QUnit.test("Map.prototype.constructor", function() {
   var map = new Map();
   equal(map.constructor, Map);
 });
 
-test("MapWithDefault.prototype.constructor", function() {
+QUnit.test("MapWithDefault.prototype.constructor", function() {
   var map = new MapWithDefault({
     defaultValue: function(key) { return key; }
   });
   equal(map.constructor, MapWithDefault);
 });
 
-test("Copying a MapWithDefault copies the default value", function() {
+QUnit.test("Copying a MapWithDefault copies the default value", function() {
   var map = MapWithDefault.create({
     defaultValue: function(key) {
       return [key];
@@ -576,7 +576,7 @@ QUnit.module("OrderedSet", {
   }
 });
 
-test("add returns the set", function() {
+QUnit.test("add returns the set", function() {
   var obj = {};
   equal(map.add(obj), map);
   equal(map.add(obj), map, 'when it is already in the set');

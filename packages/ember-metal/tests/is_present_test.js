@@ -2,7 +2,7 @@ import isPresent from 'ember-metal/is_present';
 
 QUnit.module("Ember.isPresent");
 
-test("Ember.isPresent", function() {
+QUnit.test("Ember.isPresent", function() {
   var string = "string";
   var fn = function() {};
   var object = { length: 0 };

@@ -36,7 +36,7 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
   }
 });
 
-test("should update bound helpers in a subexpression when properties change", function() {
+QUnit.test("should update bound helpers in a subexpression when properties change", function() {
   registry.register('helper:x-dasherize', makeBoundHelper(function(params, hash, options, env) {
     return dasherize(params[0]);
   }));
@@ -56,7 +56,7 @@ test("should update bound helpers in a subexpression when properties change", fu
   equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
-test("should update bound helpers when properties change", function() {
+QUnit.test("should update bound helpers when properties change", function() {
   registry.register('helper:x-capitalize', makeBoundHelper(function(params, hash, options, env) {
     return params[0].toUpperCase();
   }));
@@ -76,7 +76,7 @@ test("should update bound helpers when properties change", function() {
   equal(view.$().text(), 'WES', "helper output updated");
 });
 
-test("should update bound helpers when hash properties change", function() {
+QUnit.test("should update bound helpers when hash properties change", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
@@ -97,7 +97,7 @@ test("should update bound helpers when hash properties change", function() {
   equal(view.$().text(), 'YoYoYoYoYo', "helper output updated");
 });
 
-test("bound helpers should support keywords", function() {
+QUnit.test("bound helpers should support keywords", function() {
   registry.register('helper:x-capitalize', makeBoundHelper(function(params, hash, options, env) {
     return params[0].toUpperCase();
   }));
@@ -113,7 +113,7 @@ test("bound helpers should support keywords", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-test("bound helpers should not process `fooBinding` style hash properties", function() {
+QUnit.test("bound helpers should not process `fooBinding` style hash properties", function() {
   registry.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
     equal(hash.timesBinding, "numRepeats");
   }));
@@ -130,7 +130,7 @@ test("bound helpers should not process `fooBinding` style hash properties", func
   runAppend(view);
 });
 
-test("bound helpers should support multiple bound properties", function() {
+QUnit.test("bound helpers should support multiple bound properties", function() {
 
   registry.register('helper:x-combine', makeBoundHelper(function(params, hash, options, env) {
     return params.join('');
@@ -161,7 +161,7 @@ test("bound helpers should support multiple bound properties", function() {
   equal(view.$().text(), 'WOOTYEAH', "helper correctly re-rendered after both bound helper properties changed");
 });
 
-test("bound helpers can be invoked with zero args", function() {
+QUnit.test("bound helpers can be invoked with zero args", function() {
   registry.register('helper:x-troll', makeBoundHelper(function(params, hash) {
     return hash.text || "TROLOLOL";
   }));
@@ -179,7 +179,7 @@ test("bound helpers can be invoked with zero args", function() {
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
 
-test("bound helpers should not be invoked with blocks", function() {
+QUnit.test("bound helpers should not be invoked with blocks", function() {
   registerRepeatHelper();
   view = EmberView.create({
     container: container,
@@ -192,7 +192,7 @@ test("bound helpers should not be invoked with blocks", function() {
   }, /makeBoundHelper generated helpers do not support use with blocks/i);
 });
 
-test("shouldn't treat raw numbers as bound paths", function() {
+QUnit.test("shouldn't treat raw numbers as bound paths", function() {
   registry.register('helper:x-sum', makeBoundHelper(function(params) {
     return params[0] + params[1];
   }));
@@ -212,7 +212,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
   equal(view.$().text(), '6 5 11', "helper still updates as expected");
 });
 
-test("should have correct argument types", function() {
+QUnit.test("should have correct argument types", function() {
   registry.register('helper:get-type', makeBoundHelper(function(params) {
     return typeof params[0];
   }));
@@ -228,7 +228,7 @@ test("should have correct argument types", function() {
   equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
 });
 
-test("when no parameters are bound, no new views are created", function() {
+QUnit.test("when no parameters are bound, no new views are created", function() {
   registerRepeatHelper();
   var originalRender = SimpleBoundView.prototype.render;
   var renderWasCalled = false;
@@ -253,7 +253,7 @@ test("when no parameters are bound, no new views are created", function() {
 });
 
 
-test('when no hash parameters are bound, no new views are created', function() {
+QUnit.test('when no hash parameters are bound, no new views are created', function() {
   registerRepeatHelper();
   var originalRender = SimpleBoundView.prototype.render;
   var renderWasCalled = false;

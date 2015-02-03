@@ -20,7 +20,7 @@ QUnit.module("Ember.Route", {
   teardown: teardown
 });
 
-test("default store utilizes the container to acquire the model factory", function() {
+QUnit.test("default store utilizes the container to acquire the model factory", function() {
   expect(4);
 
   var Post = EmberObject.extend();
@@ -50,7 +50,7 @@ test("default store utilizes the container to acquire the model factory", functi
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 });
 
-test("'store' can be injected by data persistence frameworks", function() {
+QUnit.test("'store' can be injected by data persistence frameworks", function() {
   expect(8);
   runDestroy(route);
 
@@ -80,7 +80,7 @@ test("'store' can be injected by data persistence frameworks", function() {
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 });
 
-test("assert if 'store.find' method is not found", function() {
+QUnit.test("assert if 'store.find' method is not found", function() {
   expect(1);
   runDestroy(route);
 
@@ -98,7 +98,7 @@ test("assert if 'store.find' method is not found", function() {
   }, 'Post has no method `find`.');
 });
 
-test("asserts if model class is not found", function() {
+QUnit.test("asserts if model class is not found", function() {
   expect(1);
   runDestroy(route);
 
@@ -113,7 +113,7 @@ test("asserts if model class is not found", function() {
   }, "You used the dynamic segment post_id in your route undefined, but undefined.Post did not exist and you did not override your route's `model` hook.");
 });
 
-test("'store' does not need to be injected", function() {
+QUnit.test("'store' does not need to be injected", function() {
   expect(1);
 
   runDestroy(route);
@@ -132,7 +132,7 @@ test("'store' does not need to be injected", function() {
   ok(true, 'no error was raised');
 });
 
-test("modelFor doesn't require the router", function() {
+QUnit.test("modelFor doesn't require the router", function() {
   var registry = new Registry();
   var container = registry.container();
   route.container = container;
@@ -150,7 +150,7 @@ test("modelFor doesn't require the router", function() {
 });
 
 
-test(".send just calls an action if the router is absent", function() {
+QUnit.test(".send just calls an action if the router is absent", function() {
   expect(7);
   var route = EmberRoute.createWithMixins({
     actions: {
@@ -179,25 +179,25 @@ QUnit.module("Ember.Route serialize", {
   teardown: teardown
 });
 
-test("returns the models properties if params does not include *_id", function() {
+QUnit.test("returns the models properties if params does not include *_id", function() {
   var model = { id: 2, firstName: 'Ned', lastName: 'Ryerson' };
 
   deepEqual(route.serialize(model, ['firstName', 'lastName']), { firstName: 'Ned', lastName: 'Ryerson' }, "serialized correctly");
 });
 
-test("returns model.id if params include *_id", function() {
+QUnit.test("returns model.id if params include *_id", function() {
   var model = { id: 2 };
 
   deepEqual(route.serialize(model, ['post_id']), { post_id: 2 }, "serialized correctly");
 });
 
-test("returns checks for existence of model.post_id before trying model.id", function() {
+QUnit.test("returns checks for existence of model.post_id before trying model.id", function() {
   var model = { post_id: 3 };
 
   deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, "serialized correctly");
 });
 
-test("returns undefined if model is not set", function() {
+QUnit.test("returns undefined if model is not set", function() {
   equal(route.serialize(undefined, ['post_id']), undefined, "serialized correctly");
 });
 
@@ -224,7 +224,7 @@ QUnit.module("Ember.Route interaction", {
   }
 });
 
-test("controllerFor uses route's controllerName if specified", function() {
+QUnit.test("controllerFor uses route's controllerName if specified", function() {
   var testController = {};
   lookupHash['controller:test'] = testController;
 
@@ -236,7 +236,7 @@ test("controllerFor uses route's controllerName if specified", function() {
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('Route injected properties');
 
-  test("services can be injected into routes", function() {
+  QUnit.test("services can be injected into routes", function() {
     var registry = new Registry();
     var container = registry.container();
 

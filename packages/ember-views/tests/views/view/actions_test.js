@@ -14,7 +14,7 @@ QUnit.module("View action handling", {
   }
 });
 
-test("Action can be handled by a function on actions object", function() {
+QUnit.test("Action can be handled by a function on actions object", function() {
   expect(1);
   view = View.extend({
     actions: {
@@ -26,7 +26,7 @@ test("Action can be handled by a function on actions object", function() {
   view.send("poke");
 });
 
-test("A handled action can be bubbled to the target for continued processing", function() {
+QUnit.test("A handled action can be bubbled to the target for continued processing", function() {
   expect(2);
   view = View.extend({
     actions: {
@@ -46,7 +46,7 @@ test("A handled action can be bubbled to the target for continued processing", f
   view.send("poke");
 });
 
-test("Action can be handled by a superclass' actions object", function() {
+QUnit.test("Action can be handled by a superclass' actions object", function() {
   expect(4);
 
   var SuperView = View.extend({
@@ -83,7 +83,7 @@ test("Action can be handled by a superclass' actions object", function() {
   view.send("baz");
 });
 
-test("Actions cannot be provided at create time", function() {
+QUnit.test("Actions cannot be provided at create time", function() {
   expectAssertion(function() {
     view = View.create({
       actions: {

@@ -17,7 +17,7 @@ QUnit.module("Ember.FEATURES.isEnabled", {
   }
 });
 
-test("ENV.ENABLE_ALL_FEATURES", function() {
+QUnit.test("ENV.ENABLE_ALL_FEATURES", function() {
   Ember.ENV.ENABLE_ALL_FEATURES = true;
   Ember.FEATURES['fred'] = false;
   Ember.FEATURES['wilma'] = null;
@@ -27,7 +27,7 @@ test("ENV.ENABLE_ALL_FEATURES", function() {
   equal(isEnabled('betty'), true, "enables non-specified features");
 });
 
-test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
+QUnit.test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = true;
   Ember.FEATURES['fred'] = false;
   Ember.FEATURES['barney'] = true;
@@ -39,7 +39,7 @@ test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
   equal(isEnabled('betty'),  undefined, "returns flag value if undefined");
 });
 
-test("isEnabled without ENV options", function() {
+QUnit.test("isEnabled without ENV options", function() {
   Ember.ENV.ENABLE_ALL_FEATURES = false;
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
 

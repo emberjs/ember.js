@@ -6,7 +6,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 
 QUnit.module("ArrayProxy - content change");
 
-test("should update length for null content", function() {
+QUnit.test("should update length for null content", function() {
   var proxy = ArrayProxy.create({
         content: Ember.A([1,2,3])
       });
@@ -18,7 +18,7 @@ test("should update length for null content", function() {
   equal(proxy.get('length'), 0, "length updates");
 });
 
-test("The `arrangedContentWillChange` method is invoked before `content` is changed.", function() {
+QUnit.test("The `arrangedContentWillChange` method is invoked before `content` is changed.", function() {
   var callCount = 0;
   var expectedLength;
 
@@ -42,7 +42,7 @@ test("The `arrangedContentWillChange` method is invoked before `content` is chan
   equal(callCount, 1, "replacing the content array triggers the hook");
 });
 
-test("The `arrangedContentDidChange` method is invoked after `content` is changed.", function() {
+QUnit.test("The `arrangedContentDidChange` method is invoked after `content` is changed.", function() {
   var callCount = 0;
   var expectedLength;
 
@@ -68,7 +68,7 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
   equal(callCount, 1, "replacing the content array triggers the hook");
 });
 
-test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
+QUnit.test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
   var arrayController = ArrayController.create();
   var proxy = ArrayProxy.create();
 

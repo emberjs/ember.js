@@ -67,7 +67,7 @@ QUnit.module("Ember.controllerFor", {
   }
 });
 
-test("controllerFor should lookup for registered controllers", function() {
+QUnit.test("controllerFor should lookup for registered controllers", function() {
   var controller = controllerFor(container, 'app');
 
   equal(appController, controller, 'should find app controller');
@@ -86,32 +86,32 @@ QUnit.module("Ember.generateController", {
   }
 });
 
-test("generateController and generateControllerFactory are properties on the root namespace", function() {
+QUnit.test("generateController and generateControllerFactory are properties on the root namespace", function() {
   equal(Ember.generateController, generateController, 'should export generateController');
   equal(Ember.generateControllerFactory, generateControllerFactory, 'should export generateControllerFactory');
 });
 
-test("generateController should create Ember.Controller", function() {
+QUnit.test("generateController should create Ember.Controller", function() {
   var controller = generateController(container, 'home');
 
   ok(controller instanceof Controller, 'should create controller');
 });
 
-test("generateController should create Ember.ObjectController [DEPRECATED]", function() {
+QUnit.test("generateController should create Ember.ObjectController [DEPRECATED]", function() {
   var context = {};
   var controller = generateController(container, 'home', context);
 
   ok(controller instanceof ObjectController, 'should create controller');
 });
 
-test("generateController should create Ember.ArrayController", function() {
+QUnit.test("generateController should create Ember.ArrayController", function() {
   var context = Ember.A();
   var controller = generateController(container, 'home', context);
 
   ok(controller instanceof ArrayController, 'should create controller');
 });
 
-test("generateController should create App.Controller if provided", function() {
+QUnit.test("generateController should create App.Controller if provided", function() {
   var controller;
   namespace.Controller = Controller.extend();
 
@@ -120,7 +120,7 @@ test("generateController should create App.Controller if provided", function() {
   ok(controller instanceof namespace.Controller, 'should create controller');
 });
 
-test("generateController should create App.ObjectController if provided", function() {
+QUnit.test("generateController should create App.ObjectController if provided", function() {
   var context = {};
   var controller;
   namespace.ObjectController = ObjectController.extend();
@@ -131,7 +131,7 @@ test("generateController should create App.ObjectController if provided", functi
 
 });
 
-test("generateController should create App.ArrayController if provided", function() {
+QUnit.test("generateController should create App.ArrayController if provided", function() {
   var context = Ember.A();
   var controller;
   namespace.ArrayController = ArrayController.extend();

@@ -35,7 +35,7 @@ QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
   }
 });
 
-test("a view with a layout set renders its template where the {{yield}} helper appears", function() {
+QUnit.test("a view with a layout set renders its template where the {{yield}} helper appears", function() {
   var ViewWithLayout = EmberView.extend({
     layout: compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
   });
@@ -50,7 +50,7 @@ test("a view with a layout set renders its template where the {{yield}} helper a
   equal(view.$('div.wrapper div.page-body').length, 1, 'page-body is embedded within wrapping my-page');
 });
 
-test("block should work properly even when templates are not hard-coded", function() {
+QUnit.test("block should work properly even when templates are not hard-coded", function() {
   registry.register('template:nester', compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
   registry.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
@@ -70,7 +70,7 @@ test("block should work properly even when templates are not hard-coded", functi
 
 });
 
-test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
+QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
     layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
     n: null,
@@ -94,7 +94,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
   equal(view.$('div#container div.times-item').length, 5, 'times-item is embedded within wrapping container 5 times, as expected');
 });
 
-test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
+QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
   var NestingView = EmberView.extend({
     layout: compile('{{#view tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
   });
@@ -109,7 +109,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
   equal(view.$('div#container div.nesting div#block').length, 1, 'nesting view yields correctly even within a view hierarchy in the nesting view');
 });
 
-test("block should not be required", function() {
+QUnit.test("block should not be required", function() {
   var YieldingView = EmberView.extend({
     layout: compile('{{#view tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
   });
@@ -124,7 +124,7 @@ test("block should not be required", function() {
   equal(view.$('div#container div.yielding').length, 1, 'yielding view is rendered as expected');
 });
 
-test("yield uses the outer context", function() {
+QUnit.test("yield uses the outer context", function() {
   var component = Component.extend({
     boundText: "inner",
     layout: compile("<p>{{boundText}}</p><p>{{yield}}</p>")
@@ -141,7 +141,7 @@ test("yield uses the outer context", function() {
 });
 
 
-test("yield inside a conditional uses the outer context [DEPRECATED]", function() {
+QUnit.test("yield inside a conditional uses the outer context [DEPRECATED]", function() {
   var component = Component.extend({
     boundText: "inner",
     truthy: true,
@@ -161,7 +161,7 @@ test("yield inside a conditional uses the outer context [DEPRECATED]", function(
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
 
-test("outer keyword doesn't mask inner component property", function () {
+QUnit.test("outer keyword doesn't mask inner component property", function () {
   var component = Component.extend({
     item: "inner",
     layout: compile("<p>{{item}}</p><p>{{yield}}</p>")
@@ -177,7 +177,7 @@ test("outer keyword doesn't mask inner component property", function () {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "inner component property isn't masked by outer keyword");
 });
 
-test("inner keyword doesn't mask yield property", function() {
+QUnit.test("inner keyword doesn't mask yield property", function() {
   var component = Component.extend({
     boundText: "inner",
     layout: compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
@@ -193,7 +193,7 @@ test("inner keyword doesn't mask yield property", function() {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "outer property isn't masked by inner keyword");
 });
 
-test("can bind a keyword to a component and use it in yield", function() {
+QUnit.test("can bind a keyword to a component and use it in yield", function() {
   var component = Component.extend({
     content: null,
     layout: compile("<p>{{content}}</p><p>{{yield}}</p>")
@@ -218,7 +218,7 @@ test("can bind a keyword to a component and use it in yield", function() {
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
 // jscs:disable validateIndentation
 
-test("yield uses the layout context for non component [DEPRECATED]", function() {
+QUnit.test("yield uses the layout context for non component [DEPRECATED]", function() {
   view = EmberView.create({
     controller: {
       boundText: "outer",
@@ -240,7 +240,7 @@ test("yield uses the layout context for non component [DEPRECATED]", function() 
 // jscs:enable validateIndentation
 }
 
-test("yield view should be a virtual view", function() {
+QUnit.test("yield view should be a virtual view", function() {
   var component = Component.extend({
     isParentComponent: true,
 
@@ -265,7 +265,7 @@ test("yield view should be a virtual view", function() {
 });
 
 
-test("adding a layout should not affect the context of normal views", function() {
+QUnit.test("adding a layout should not affect the context of normal views", function() {
   var parentView = EmberView.create({
     context: "ParentContext"
   });
@@ -295,7 +295,7 @@ test("adding a layout should not affect the context of normal views", function()
   runDestroy(parentView);
 });
 
-test("yield should work for views even if _parentView is null", function() {
+QUnit.test("yield should work for views even if _parentView is null", function() {
   view = EmberView.create({
     layout:   compile('Layout: {{yield}}'),
     template: compile("View Content")
@@ -318,7 +318,7 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
   }
 });
 
-test("yield with nested components (#3220)", function() {
+QUnit.test("yield with nested components (#3220)", function() {
   var count = 0;
   var InnerComponent = Component.extend({
     layout: compile("{{yield}}"),
@@ -351,7 +351,7 @@ test("yield with nested components (#3220)", function() {
   equal(view.$('div > span').text(), "Hello world");
 });
 
-test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
+QUnit.test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
   var component = Component.extend(Ember._Metamorph, {
     item: "inner",
     layout: compile("<p>{{item}}</p>{{#if item}}<p>{{yield}}</p>{{/if}}")
@@ -367,7 +367,7 @@ test("yield works inside a conditional in a component that has Ember._Metamorph 
   equal(view.$().text(), 'innerouter', "{{yield}} renders yielded content inside metamorph component");
 });
 
-test("view keyword works inside component yield", function () {
+QUnit.test("view keyword works inside component yield", function () {
   var component = Component.extend({
     layout: compile("<p>{{yield}}</p>")
   });

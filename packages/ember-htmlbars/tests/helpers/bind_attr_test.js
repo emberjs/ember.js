@@ -47,7 +47,7 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
   }
 });
 
-test("should be able to bind element attributes using {{bind-attr}}", function() {
+QUnit.test("should be able to bind element attributes using {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr src=view.content.url alt=view.content.title}}>');
 
   view = EmberView.create({
@@ -99,7 +99,7 @@ test("should be able to bind element attributes using {{bind-attr}}", function()
   equal(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
 });
 
-test("should be able to bind to view attributes with {{bind-attr}}", function() {
+QUnit.test("should be able to bind to view attributes with {{bind-attr}}", function() {
   view = EmberView.create({
     value: 'Test',
     template: compile('<img src="test.jpg" {{bind-attr alt=view.value}}>')
@@ -116,7 +116,7 @@ test("should be able to bind to view attributes with {{bind-attr}}", function() 
   equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
-test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", function() {
+QUnit.test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", function() {
   TemplateTests.set('value', 'Test');
 
   view = EmberView.create({
@@ -130,7 +130,7 @@ test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", functi
   equal(view.$('img').attr('alt'), "Test", "renders initial value");
 });
 
-test("should not allow XSS injection via {{bind-attr}}", function() {
+QUnit.test("should not allow XSS injection via {{bind-attr}}", function() {
   view = EmberView.create({
     template: compile('<img src="test.jpg" {{bind-attr alt=view.content.value}}>'),
     content: {
@@ -145,7 +145,7 @@ test("should not allow XSS injection via {{bind-attr}}", function() {
   equal(view.$('img').attr('alt'), 'Trololol" onmouseover="alert(\'HAX!\');');
 });
 
-test("should be able to bind use {{bind-attr}} more than once on an element", function() {
+QUnit.test("should be able to bind use {{bind-attr}} more than once on an element", function() {
   var template = compile('<img {{bind-attr src=view.content.url}} {{bind-attr alt=view.content.title}}>');
 
   view = EmberView.create({
@@ -198,7 +198,7 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 
 });
 
-test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
+QUnit.test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   expect(4);
 
   var originalBindAttr = helpers['bind-attr'];
@@ -237,7 +237,7 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   }
 });
 
-test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function() {
+QUnit.test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function() {
   expect(3);
 
   view = EmberView.create({
@@ -258,7 +258,7 @@ test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function() {
   equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
-test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
+QUnit.test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
   var template = compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
 
   view = EmberView.create({
@@ -281,7 +281,7 @@ test("should be able to bind element attributes using {{bind-attr}} inside a blo
   equal(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
 });
 
-test("should be able to bind class attribute with {{bind-attr}}", function() {
+QUnit.test("should be able to bind class attribute with {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr class="view.foo"}}>');
 
   view = EmberView.create({
@@ -300,7 +300,7 @@ test("should be able to bind class attribute with {{bind-attr}}", function() {
   equal(view.element.firstChild.className, 'baz', 'updates rendered class');
 });
 
-test("should be able to bind unquoted class attribute with {{bind-attr}}", function() {
+QUnit.test("should be able to bind unquoted class attribute with {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr class=view.foo}}>');
 
   view = EmberView.create({
@@ -319,7 +319,7 @@ test("should be able to bind unquoted class attribute with {{bind-attr}}", funct
   equal(view.$('img').attr('class'), 'baz', "updates class");
 });
 
-test("should be able to bind class attribute via a truthy property with {{bind-attr}}", function() {
+QUnit.test("should be able to bind class attribute via a truthy property with {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr class="view.isNumber:is-truthy"}}>');
 
   view = EmberView.create({
@@ -338,7 +338,7 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
   ok(view.element.firstChild.className !== 'is-truthy', 'removes class');
 });
 
-test("should be able to bind class to view attribute with {{bind-attr}}", function() {
+QUnit.test("should be able to bind class to view attribute with {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr class="view.foo"}}>');
 
   view = EmberView.create({
@@ -357,7 +357,7 @@ test("should be able to bind class to view attribute with {{bind-attr}}", functi
   equal(view.$('img').attr('class'), 'baz', "updates class");
 });
 
-test("should not allow XSS injection via {{bind-attr}} with class", function() {
+QUnit.test("should not allow XSS injection via {{bind-attr}} with class", function() {
   view = EmberView.create({
     template: compile('<img {{bind-attr class="view.foo"}}>'),
     foo: '" onmouseover="alert(\'I am in your classes hacking your app\');'
@@ -371,7 +371,7 @@ test("should not allow XSS injection via {{bind-attr}} with class", function() {
   equal(view.$('img').attr('onmouseover'), undefined);
 });
 
-test("should be able to bind class attribute using ternary operator in {{bind-attr}}", function() {
+QUnit.test("should be able to bind class attribute using ternary operator in {{bind-attr}}", function() {
   var template = compile('<img {{bind-attr class="view.content.isDisabled:disabled:enabled"}} />');
   var content = EmberObject.create({
     isDisabled: true
@@ -395,7 +395,7 @@ test("should be able to bind class attribute using ternary operator in {{bind-at
   ok(view.$('img').hasClass('enabled'), 'enabled class is rendered');
 });
 
-test("should be able to add multiple classes using {{bind-attr class}}", function() {
+QUnit.test("should be able to add multiple classes using {{bind-attr class}}", function() {
   var template = compile('<div {{bind-attr class="view.content.isAwesomeSauce view.content.isAlsoCool view.content.isAmazing:amazing :is-super-duper view.content.isEnabled:enabled:disabled"}}></div>');
   var content = EmberObject.create({
     isAwesomeSauce: true,
@@ -431,7 +431,7 @@ test("should be able to add multiple classes using {{bind-attr class}}", functio
   ok(view.$('div').hasClass('disabled'), "falsy class in ternary classname definition is rendered");
 });
 
-test("should be able to bind classes to globals with {{bind-attr class}} (DEPRECATED)", function() {
+QUnit.test("should be able to bind classes to globals with {{bind-attr class}} (DEPRECATED)", function() {
   TemplateTests.set('isOpen', true);
 
   view = EmberView.create({
@@ -445,7 +445,7 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
 });
 
-test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
+QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   view = EmberView.create({
@@ -461,7 +461,7 @@ test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]",
   ok(/three\.gif$/.test(images[2].src));
 });
 
-test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}} [DEPRECATED]", function() {
+QUnit.test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}} [DEPRECATED]", function() {
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   view = EmberView.create({
@@ -476,7 +476,7 @@ test("should be able to bind classes to 'this' in an {{#each}} block with {{bind
   ok(view.$('li').eq(2).hasClass('c'), "sets classname to the value of the third item");
 });
 
-test("should be able to bind-attr to var in {{#each var in list}} block", function() {
+QUnit.test("should be able to bind-attr to var in {{#each var in list}} block", function() {
   view = EmberView.create({
     template: compile('{{#each image in view.images}}<img {{bind-attr src=image}}>{{/each}}'),
     images: A(['one.png', 'two.jpg', 'three.gif'])
@@ -500,7 +500,7 @@ test("should be able to bind-attr to var in {{#each var in list}} block", functi
   ok(/three\.gif$/.test(images[1].src));
 });
 
-test("should teardown observers from bind-attr on rerender", function() {
+QUnit.test("should teardown observers from bind-attr on rerender", function() {
   view = EmberView.create({
     template: compile('<span {{bind-attr class="view.foo" name=view.foo}}>wat</span>'),
     foo: 'bar'
@@ -517,7 +517,7 @@ test("should teardown observers from bind-attr on rerender", function() {
   equal(observersFor(view, 'foo').length, 1);
 });
 
-test("should keep class in the order it appears in", function() {
+QUnit.test("should keep class in the order it appears in", function() {
   view = EmberView.create({
     template: compile('<span {{bind-attr class=":foo :baz"}}></span>')
   });
@@ -527,7 +527,7 @@ test("should keep class in the order it appears in", function() {
   equal(view.element.firstChild.className, 'foo baz', 'classes are in expected order');
 });
 
-test('should allow either quoted or unquoted values', function() {
+QUnit.test('should allow either quoted or unquoted values', function() {
   view = EmberView.create({
     value: 'Test',
     source: 'test.jpg',
@@ -548,7 +548,7 @@ test('should allow either quoted or unquoted values', function() {
   equal(view.$('img').attr('src'), "test2.jpg", "updates value");
 });
 
-test("property before didInsertElement", function() {
+QUnit.test("property before didInsertElement", function() {
   var matchingElement;
   view = EmberView.create({
     name: 'bob',
@@ -561,7 +561,7 @@ test("property before didInsertElement", function() {
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
 
-test("asserts for <div class='foo' {{bind-attr class='bar'}}></div>", function() {
+QUnit.test("asserts for <div class='foo' {{bind-attr class='bar'}}></div>", function() {
   var template = compile('<div class="foo" {{bind-attr class=view.foo}}></div>');
 
   view = EmberView.create({
@@ -574,7 +574,7 @@ test("asserts for <div class='foo' {{bind-attr class='bar'}}></div>", function()
   }, /You cannot set `class` manually and via `{{bind-attr}}` helper on the same element/);
 });
 
-test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>", function() {
+QUnit.test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>", function() {
   var template = compile('<div data-bar="foo" {{bind-attr data-bar=view.blah}}></div>');
 
   view = EmberView.create({

@@ -4,7 +4,7 @@ import ViewTargetActionSupport from "ember-views/mixins/view_target_action_suppo
 
 QUnit.module("ViewTargetActionSupport");
 
-test("it should return false if no action is specified", function() {
+QUnit.test("it should return false if no action is specified", function() {
   expect(1);
 
   var view = View.createWithMixins(ViewTargetActionSupport, {
@@ -14,7 +14,7 @@ test("it should return false if no action is specified", function() {
   ok(false === view.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should support actions specified as strings", function() {
+QUnit.test("it should support actions specified as strings", function() {
   expect(2);
 
   var view = View.createWithMixins(ViewTargetActionSupport, {
@@ -29,7 +29,7 @@ test("it should support actions specified as strings", function() {
   ok(true === view.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should invoke the send() method on the controller with the view's context", function() {
+QUnit.test("it should invoke the send() method on the controller with the view's context", function() {
   expect(3);
 
   var view = View.createWithMixins(ViewTargetActionSupport, {

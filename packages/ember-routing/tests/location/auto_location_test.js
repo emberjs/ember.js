@@ -80,7 +80,7 @@ QUnit.module("Ember.AutoLocation", {
   }
 });
 
-test("_replacePath cannot be used to redirect to a different origin (website)", function() {
+QUnit.test("_replacePath cannot be used to redirect to a different origin (website)", function() {
   expect(1);
 
   var expectedURL;
@@ -99,7 +99,7 @@ test("_replacePath cannot be used to redirect to a different origin (website)", 
   AutoTestLocation._replacePath('//google.com');
 });
 
-test("AutoLocation.create() should return a HistoryLocation instance when pushStates are supported", function() {
+QUnit.test("AutoLocation.create() should return a HistoryLocation instance when pushStates are supported", function() {
   expect(2);
 
   mockBrowserLocation();
@@ -113,7 +113,7 @@ test("AutoLocation.create() should return a HistoryLocation instance when pushSt
   equal(location instanceof FakeHistoryLocation, true);
 });
 
-test("AutoLocation.create() should return a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format", function() {
+QUnit.test("AutoLocation.create() should return a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format", function() {
   expect(2);
 
   mockBrowserLocation({
@@ -129,7 +129,7 @@ test("AutoLocation.create() should return a HashLocation instance when pushState
   equal(location instanceof FakeHashLocation, true);
 });
 
-test("AutoLocation.create() should return a NoneLocation instance when neither history nor hashchange is supported.", function() {
+QUnit.test("AutoLocation.create() should return a NoneLocation instance when neither history nor hashchange is supported.", function() {
   expect(2);
 
   mockBrowserLocation({
@@ -145,7 +145,7 @@ test("AutoLocation.create() should return a NoneLocation instance when neither h
   equal(location instanceof FakeNoneLocation, true);
 });
 
-test("AutoLocation.create() should consider an index path (i.e. '/\') without any location.hash as OK for HashLocation", function() {
+QUnit.test("AutoLocation.create() should consider an index path (i.e. '/\') without any location.hash as OK for HashLocation", function() {
   expect(2);
 
   mockBrowserLocation({
@@ -167,7 +167,7 @@ test("AutoLocation.create() should consider an index path (i.e. '/\') without an
   equal(location instanceof FakeHashLocation, true);
 });
 
-test("Feature-detecting the history API", function() {
+QUnit.test("Feature-detecting the history API", function() {
   equal(supportsHistory("", { pushState: true }), true, "returns true if not Android Gingerbread and history.pushState exists");
   equal(supportsHistory("", {}), false, "returns false if history.pushState doesn't exist");
   equal(supportsHistory("", undefined), false, "returns false if history doesn't exist");
@@ -175,7 +175,7 @@ test("Feature-detecting the history API", function() {
                         false, "returns false if Android Gingerbread stock browser claiming to support pushState");
 });
 
-test("AutoLocation.create() should transform the URL for hashchange-only browsers viewing a HistoryLocation-formatted path", function() {
+QUnit.test("AutoLocation.create() should transform the URL for hashchange-only browsers viewing a HistoryLocation-formatted path", function() {
   expect(4);
 
   mockBrowserLocation({
@@ -202,7 +202,7 @@ test("AutoLocation.create() should transform the URL for hashchange-only browser
   equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
 });
 
-test("AutoLocation.create() should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
+QUnit.test("AutoLocation.create() should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
   expect(2);
 
   mockBrowserLocation({
@@ -229,7 +229,7 @@ test("AutoLocation.create() should replace the URL for pushState-supported brows
   equal(get(location, 'implementation'), 'history');
 });
 
-test("Feature-Detecting onhashchange", function() {
+QUnit.test("Feature-Detecting onhashchange", function() {
   mockBrowserLocation();
 
   equal(supportsHashChange(undefined, { onhashchange: function() {} }), true, "When not in IE, use onhashchange existence as evidence of the feature");
@@ -238,7 +238,7 @@ test("Feature-Detecting onhashchange", function() {
   equal(supportsHashChange(8, { onhashchange: function() {} }), true, "When in IE8+, use onhashchange existence as evidence of the feature");
 });
 
-test("AutoLocation._getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
+QUnit.test("AutoLocation._getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
   expect(2);
 
   mockBrowserLocation({ pathname: 'test' });
@@ -248,20 +248,20 @@ test("AutoLocation._getPath() should normalize location.pathname, making sure it
   equal(AutoTestLocation._getPath(), '/test', 'When a leading slash is already there, it isn\'t added again');
 });
 
-test("AutoLocation._getHash() should be an alias to Ember.Location._getHash, otherwise it needs its own test!", function() {
+QUnit.test("AutoLocation._getHash() should be an alias to Ember.Location._getHash, otherwise it needs its own test!", function() {
   expect(1);
 
   equal(AutoTestLocation._getHash, EmberLocation._getHash);
 });
 
-test("AutoLocation._getQuery() should return location.search as-is", function() {
+QUnit.test("AutoLocation._getQuery() should return location.search as-is", function() {
   expect(1);
 
   mockBrowserLocation({ search: '?foo=bar' });
   equal(AutoTestLocation._getQuery(), '?foo=bar');
 });
 
-test("AutoLocation._getFullPath() should return full pathname including query and hash", function() {
+QUnit.test("AutoLocation._getFullPath() should return full pathname including query and hash", function() {
   expect(1);
 
   mockBrowserLocation({
@@ -274,7 +274,7 @@ test("AutoLocation._getFullPath() should return full pathname including query an
   equal(AutoTestLocation._getFullPath(), '/about?foo=bar#foo');
 });
 
-test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
+QUnit.test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
   expect(3);
 
   AutoTestLocation.rootURL = '/app/';
@@ -304,7 +304,7 @@ test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation
   equal(AutoTestLocation._getHistoryPath(), '/app/#about?foo=bar#foo', 'URLs with a hash not following #/ convention shouldn\'t be normalized as a route');
 });
 
-test("AutoLocation._getHashPath() should return a normalized, HashLocation-supported path", function() {
+QUnit.test("AutoLocation._getHashPath() should return a normalized, HashLocation-supported path", function() {
   expect(3);
 
   AutoTestLocation.rootURL = '/app/';
@@ -335,7 +335,7 @@ test("AutoLocation._getHashPath() should return a normalized, HashLocation-suppo
   equal(AutoTestLocation._getHashPath(), '/app/#/#about?foo=bar#foo', 'URLs with a hash not following #/ convention shouldn\'t be normalized as a route');
 });
 
-test("AutoLocation.create requires any rootURL given to end in a trailing forward slash", function() {
+QUnit.test("AutoLocation.create requires any rootURL given to end in a trailing forward slash", function() {
   expect(3);
   mockBrowserLocation();
 
@@ -360,7 +360,7 @@ test("AutoLocation.create requires any rootURL given to end in a trailing forwar
  are always kept, since we can't actually test them directly and we mock them
  both in all the tests above. Without these two, #9958 could happen again.
  */
-test("AutoLocation has valid references to window.location and window.history via environment", function() {
+QUnit.test("AutoLocation has valid references to window.location and window.history via environment", function() {
   expect(2);
 
   equal(AutoTestLocation._location, environment.location, 'AutoLocation._location === environment.location');

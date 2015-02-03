@@ -3,7 +3,7 @@ import Controller from "ember-runtime/controllers/controller";
 
 QUnit.module("ActionHandler");
 
-test("passing a function for the actions hash triggers an assertion", function() {
+QUnit.test("passing a function for the actions hash triggers an assertion", function() {
   expect(1);
 
   var controller = Controller.extend({

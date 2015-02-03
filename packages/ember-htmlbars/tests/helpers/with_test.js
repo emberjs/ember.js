@@ -39,11 +39,11 @@ function testWithAs(moduleName, templateString) {
     }
   });
 
-  test("it should support #with-as syntax", function() {
+  QUnit.test("it should support #with-as syntax", function() {
     equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
   });
 
-  test("updating the context should update the alias", function() {
+  QUnit.test("updating the context should update the alias", function() {
     run(function() {
       view.set('context.person', {
         name: "Yehuda Katz"
@@ -53,7 +53,7 @@ function testWithAs(moduleName, templateString) {
     equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
   });
 
-  test("updating a property on the context should update the HTML", function() {
+  QUnit.test("updating a property on the context should update the HTML", function() {
     equal(view.$().text(), "Señor Engineer: Tom Dale", "precond - should be properly scoped after updating");
 
     run(function() {
@@ -63,7 +63,7 @@ function testWithAs(moduleName, templateString) {
     equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
   });
 
-  test("updating a property on the view should update the HTML", function() {
+  QUnit.test("updating a property on the view should update the HTML", function() {
     run(function() {
       view.set('context.title', "Señorette Engineer");
     });
@@ -96,11 +96,11 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
   }
 });
 
-test("re-using the same variable with different #with blocks does not override each other", function() {
+QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
   equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
 });
 
-test("the scoped variable is not available outside the {{with}} block.", function() {
+QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
   run(function() {
     view.set('template', compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
@@ -112,7 +112,7 @@ test("the scoped variable is not available outside the {{with}} block.", functio
   equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
 });
 
-test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   run(function() {
     view.set('template', compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {
@@ -141,7 +141,7 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   }
 });
 
-test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
+QUnit.test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
@@ -157,7 +157,7 @@ test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
 
 QUnit.module("Handlebars {{#with keyword as foo}}");
 
-test("it should support #with view as foo", function() {
+QUnit.test("it should support #with view as foo", function() {
   var view = EmberView.create({
     template: compile("{{#with view as myView}}{{myView.name}}{{/with}}"),
     name: "Sonics"
@@ -175,7 +175,7 @@ test("it should support #with view as foo", function() {
   runDestroy(view);
 });
 
-test("it should support #with name as food, then #with foo as bar", function() {
+QUnit.test("it should support #with name as food, then #with foo as bar", function() {
   var view = EmberView.create({
     template: compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
     context: { name: "caterpillar" }
@@ -195,7 +195,7 @@ test("it should support #with name as food, then #with foo as bar", function() {
 
 QUnit.module("Handlebars {{#with this as foo}}");
 
-test("it should support #with this as qux", function() {
+QUnit.test("it should support #with this as qux", function() {
   var view = EmberView.create({
     template: compile("{{#with this as person}}{{person.name}}{{/with}}"),
     controller: EmberObject.create({ name: "Los Pivots" })
@@ -215,7 +215,7 @@ test("it should support #with this as qux", function() {
 
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
-test("it should wrap context with object controller [DEPRECATED]", function() {
+QUnit.test("it should wrap context with object controller [DEPRECATED]", function() {
   expectDeprecation(objectControllerDeprecation);
 
   var Controller = ObjectController.extend({
@@ -274,7 +274,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 });
 
 /* requires each
-test("it should still have access to original parentController within an {{#each}}", function() {
+QUnit.test("it should still have access to original parentController within an {{#each}}", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
@@ -307,7 +307,7 @@ test("it should still have access to original parentController within an {{#each
 });
 */
 
-test("it should wrap keyword with object controller [DEPRECATED]", function() {
+QUnit.test("it should wrap keyword with object controller [DEPRECATED]", function() {
   expectDeprecation(objectControllerDeprecation);
 
   var PersonController = ObjectController.extend({
@@ -361,7 +361,7 @@ test("it should wrap keyword with object controller [DEPRECATED]", function() {
   runDestroy(view);
 });
 
-test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
+QUnit.test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy: function() {
@@ -397,7 +397,7 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
   ok(destroyed, 'controller was destroyed properly');
 });
 
-test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
+QUnit.test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy: function() {
@@ -452,7 +452,7 @@ QUnit.module("{{#with}} helper binding to view keyword", {
   }
 });
 
-test("{{with}} helper can bind to keywords with 'as'", function() {
+QUnit.test("{{with}} helper can bind to keywords with 'as'", function() {
   equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
 });
 
@@ -482,11 +482,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     }
   });
 
-  test("re-using the same variable with different #with blocks does not override each other", function() {
+  QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
     equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
   });
 
-  test("the scoped variable is not available outside the {{with}} block.", function() {
+  QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
     run(function() {
       view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
       view.set('context', {
@@ -498,7 +498,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
   });
 
-  test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+  QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
     run(function() {
       view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
       view.set('context', {

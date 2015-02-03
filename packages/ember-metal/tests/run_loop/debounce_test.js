@@ -11,7 +11,7 @@ QUnit.module('Ember.run.debounce', {
   }
 });
 
-test('Ember.run.debounce uses Backburner.debounce', function() {
+QUnit.test('Ember.run.debounce uses Backburner.debounce', function() {
   run.debounce(function() {});
   ok(wasCalled, 'Ember.run.debounce used');
 });

@@ -6,7 +6,7 @@ import {
 
 testsFor("ember-metal-views - attributes");
 
-test('aliased attributeBindings', function() {
+QUnit.test('aliased attributeBindings', function() {
   var view = {
     isView: true,
     attributeBindings: ['isDisabled:disabled'],

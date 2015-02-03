@@ -20,7 +20,7 @@ QUnit.module("ember-htmlbars: href attribute", {
   }
 });
 
-test("href is set", function() {
+QUnit.test("href is set", function() {
   view = EmberView.create({
     context: { url: 'http://example.com' },
     template: compile("<a href={{url}}></a>")

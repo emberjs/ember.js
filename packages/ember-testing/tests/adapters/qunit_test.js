@@ -12,7 +12,7 @@ QUnit.module("ember-testing QUnitAdapter", {
   }
 });
 
-test("asyncStart calls stop", function() {
+QUnit.test("asyncStart calls stop", function() {
   var originalStop = QUnit.stop;
   try {
     QUnit.stop = function() {
@@ -24,7 +24,7 @@ test("asyncStart calls stop", function() {
   }
 });
 
-test("asyncEnd calls start", function() {
+QUnit.test("asyncEnd calls start", function() {
   var originalStart = QUnit.start;
   try {
     QUnit.start = function() {
@@ -36,7 +36,7 @@ test("asyncEnd calls start", function() {
   }
 });
 
-test("exception causes a failing assertion", function() {
+QUnit.test("exception causes a failing assertion", function() {
   var error = { err: 'hai' };
   var originalOk = window.ok;
   try {

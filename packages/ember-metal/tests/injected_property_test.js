@@ -9,11 +9,11 @@ import InjectedProperty from "ember-metal/injected_property";
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('InjectedProperty');
 
-  test('injected properties should be descriptors', function() {
+  QUnit.test('injected properties should be descriptors', function() {
     ok(new InjectedProperty() instanceof Descriptor);
   });
 
-  test('injected properties should be overridable', function() {
+  QUnit.test('injected properties should be overridable', function() {
     var obj = {};
     defineProperty(obj, 'foo', new InjectedProperty());
 
@@ -22,7 +22,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     equal(get(obj, 'foo'), 'bar', 'should return the overriden value');
   });
 
-  test("getting on an object without a container should fail assertion", function() {
+  QUnit.test("getting on an object without a container should fail assertion", function() {
     var obj = {};
     defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
@@ -31,7 +31,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     }, /Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container./);
   });
 
-  test("getting should return a lookup on the container", function() {
+  QUnit.test("getting should return a lookup on the container", function() {
     expect(2);
 
     var obj = {
@@ -47,7 +47,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
   });
 
-  test("omitting the lookup name should default to the property name", function() {
+  QUnit.test("omitting the lookup name should default to the property name", function() {
     var obj = {
       container: {
         lookup: function(key) {

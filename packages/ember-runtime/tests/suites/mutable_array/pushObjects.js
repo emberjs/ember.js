@@ -7,7 +7,7 @@ suite.module('pushObjects');
 suite.test("should raise exception if not Ember.Enumerable is passed to pushObjects", function() {
   var obj = this.newObject([]);
 
-  raises(function() {
+  throws(function() {
     obj.pushObjects("string");
   });
 });

@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 
 QUnit.module('set');
 
-test('should set arbitrary properties on an object', function() {
+QUnit.test('should set arbitrary properties on an object', function() {
   var obj = {
     string: 'string',
     number: 23,
@@ -27,7 +27,7 @@ test('should set arbitrary properties on an object', function() {
   }
 });
 
-test('should call setUnknownProperty if defined and value is undefined', function() {
+QUnit.test('should call setUnknownProperty if defined and value is undefined', function() {
 
   var obj = {
     count: 0,

@@ -51,7 +51,7 @@ var boot = function(callback) {
   });
 };
 
-test("Unbound dashed helpers registered on the container can be late-invoked", function() {
+QUnit.test("Unbound dashed helpers registered on the container can be late-invoked", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf YES}}</div>");
 
@@ -66,7 +66,7 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
 });
 
   // need to make `makeBoundHelper` for HTMLBars
-test("Bound helpers registered on the container can be late-invoked", function() {
+QUnit.test("Bound helpers registered on the container can be late-invoked", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
 
   boot(function() {
@@ -85,7 +85,7 @@ if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
   // and we are not going to recreate the handlebars helperMissing concept
-test("Undashed helpers registered on the container can not (presently) be invoked", function() {
+QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
 
   var realHelperMissing = helpers.helperMissing;
   helpers.helperMissing = function() {

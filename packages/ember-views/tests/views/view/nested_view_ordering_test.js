@@ -20,7 +20,7 @@ QUnit.module("EmberView - Nested View Ordering", {
   }
 });
 
-test("should call didInsertElement on child views before parent", function() {
+QUnit.test("should call didInsertElement on child views before parent", function() {
   var insertedLast;
 
   view = EmberView.create({

@@ -33,7 +33,7 @@ QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
   }
 });
 
-test('it can lookup a path from the current context', function() {
+QUnit.test('it can lookup a path from the current context', function() {
   expect(1);
 
   registry.register('helper:handlebars-get', function(path, options) {
@@ -55,7 +55,7 @@ test('it can lookup a path from the current context', function() {
   runAppend(view);
 });
 
-test('it can lookup a path from the current keywords', function() {
+QUnit.test('it can lookup a path from the current keywords', function() {
   expect(1);
 
   registry.register('helper:handlebars-get', function(path, options) {
@@ -77,7 +77,7 @@ test('it can lookup a path from the current keywords', function() {
   runAppend(view);
 });
 
-test('it can lookup a path from globals', function() {
+QUnit.test('it can lookup a path from globals', function() {
   expect(1);
 
   lookup.Blammo = { foo: 'blah' };
@@ -99,7 +99,7 @@ test('it can lookup a path from globals', function() {
   runAppend(view);
 });
 
-test('it raises a deprecation warning on use', function() {
+QUnit.test('it raises a deprecation warning on use', function() {
   expect(1);
 
   registry.register('helper:handlebars-get', function(path, options) {

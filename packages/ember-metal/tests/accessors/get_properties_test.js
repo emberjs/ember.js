@@ -2,7 +2,7 @@ import getProperties from "ember-metal/get_properties";
 
 QUnit.module('Ember.getProperties');
 
-test('can retrieve a hash of properties from an object via an argument list or array of property names', function() {
+QUnit.test('can retrieve a hash of properties from an object via an argument list or array of property names', function() {
   var obj = {
     firstName: "Steve",
     lastName: "Jobs",
