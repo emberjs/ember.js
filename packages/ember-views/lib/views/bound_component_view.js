@@ -9,6 +9,7 @@ import { readComponentFactory } from "ember-views/streams/utils";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 import EmberError from "ember-metal/error";
 import ContainerView from "ember-views/views/container_view";
+import run from "ember-metal/run_loop";
 
 export default ContainerView.extend(_Metamorph, {
   init: function() {
@@ -19,12 +20,15 @@ export default ContainerView.extend(_Metamorph, {
       return readComponentFactory(componentNameStream, container);
     });
 
-    subscribe(this.componentClassStream, this._updateBoundChildComponent, this);
+    subscribe(this.componentClassStream, this._scheduleBoundChildComponentUpdate, this);
     this._updateBoundChildComponent();
   },
   willDestroy: function() {
-    unsubscribe(this.componentClassStream, this._updateBoundChildComponent, this);
+    unsubscribe(this.componentClassStream, this._scheduleBoundChildComponentUpdate, this);
     this._super.apply(this, arguments);
+  },
+  _scheduleBoundChildComponentUpdate: function() {
+    run.schedule('actions', this, '_updateBoundChildComponent');
   },
   _updateBoundChildComponent: function() {
     this.replace(0, 1, [this._createNewComponent()]);
