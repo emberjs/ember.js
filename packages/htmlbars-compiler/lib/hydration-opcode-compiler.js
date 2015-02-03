@@ -28,7 +28,6 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
-  this.attrMorphNum = 0;
   this.element = null;
   this.elementNum = -1;
 }
@@ -60,7 +59,6 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
-  this.attrMorphNum = 0;
 
   var blockParams = program.blockParams || [];
 
@@ -212,7 +210,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.element = null;
   }
 
-  var attrMorphNum = this.attrMorphNum++;
+  var attrMorphNum = this.morphNum++;
   this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped, namespace);
   this.opcode('printAttributeHook', attrMorphNum, this.elementNum);
 };
