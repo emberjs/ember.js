@@ -105,6 +105,52 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
+if (Ember.FEATURES.isEnabled("default-template-name")) {
+  test("should fall back to defaultTemplate if defaultTemplateName is provided when neither template nor templateName are provided", function() {
+    var View;
+
+    registry.register("template:testTemplate", function(dataSource) {
+      return "<h1 id='twas-called'>defaultTemplate was called for " + get(dataSource, 'personName') + "</h1>";
+    });
+
+    View = EmberView.extend({
+      container: container,
+      defaultTemplateName: "testTemplate"
+    });
+
+    view = View.create({
+      context: {
+        personName: "Tom DAAAALE"
+      }
+    });
+
+    run(function() {
+      view.createElement();
+    });
+
+    equal("defaultTemplate was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
+  });
+
+  test("should not use defaultTemplateName if template is provided", function() {
+    var View;
+
+    registry.register("template:bar", function() { return "bar"; });
+
+    View = EmberView.extend({
+      container: container,
+      defaultTemplateName: "bar",
+      template:  function() { return "foo"; }
+    });
+
+    view = View.create();
+    run(function() {
+      view.createElement();
+    });
+
+    equal("foo", view.$().text(), "default template was not printed");
+  });
+}
+
 test("should not use defaultTemplate if template is provided", function() {
   var View;
 
