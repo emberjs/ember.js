@@ -40,13 +40,14 @@ prototype.compile = function(opcodes, options) {
     this.source.unshift(this.indent+"  dom.insertBoundary(fragment, null);\n");
   }
 
-  var i, l, morphs;
+  var i, l;
 
   var indent = this.indent + '  ';
 
+  var morphs = indent+'var morphs;\n';
+
   if (this.morphs.length) {
-    morphs =
-      indent+'var morphs = env.morphs;\n' +
+    morphs +=
       indent+'if (!morphs) {\n' +
       indent+'  morphs = new Array(' + this.morphs.length + ');\n';
 
@@ -56,8 +57,6 @@ prototype.compile = function(opcodes, options) {
       }
 
       morphs += indent+'}\n';
-  } else {
-    morphs = indent+'var morphs;\n';
   }
 
   this.source.unshift(morphs);
