@@ -22,10 +22,16 @@
   },
   "debugStatements": [
     "Ember.warn",
+    "Ember.default.warn",
     "Ember.assert",
+    "Ember.default.assert",
     "Ember.deprecate",
+    "Ember.default.deprecate",
     "Ember.debug",
+    "Ember.default.debug",
     "Ember.Logger.info",
-    "Ember.runInDebug"
+    "Ember.default.Logger.info",
+    "Ember.runInDebug",
+    "Ember.default.runInDebug"
   ]
 }
