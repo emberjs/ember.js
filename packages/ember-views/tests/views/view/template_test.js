@@ -248,7 +248,7 @@ test("should throw an assertion if no container has been set", function() {
     templateName: 'foobar'
   });
 
-  raises(function() {
+  throws(function() {
     view = View.create();
     run(function() {
       view.createElement();

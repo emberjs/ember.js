@@ -104,7 +104,7 @@ if (hasPropertyAccessors) {
 
   test('defining getter/setter along with writable', function() {
     var obj  ={};
-    raises(function() {
+    throws(function() {
       defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},
@@ -116,7 +116,7 @@ if (hasPropertyAccessors) {
 
   test('defining getter/setter along with value', function() {
     var obj  ={};
-    raises(function() {
+    throws(function() {
       defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},

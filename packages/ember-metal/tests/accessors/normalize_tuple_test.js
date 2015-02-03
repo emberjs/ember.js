@@ -93,7 +93,7 @@ test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
 //
 
 test('[null, Foo] -> EXCEPTION', function() {
-  raises(function() {
+  throws(function() {
     normalizeTuple(null, 'Foo');
   }, Error);
 });

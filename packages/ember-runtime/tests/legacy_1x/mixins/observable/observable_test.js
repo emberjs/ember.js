@@ -157,7 +157,7 @@ test("should return null when property is null on standard objects", function() 
 
 /*
 test("raise if the provided object is null", function() {
-  raises(function() {
+  throws(function() {
     get(null, 'key');
   });
 });

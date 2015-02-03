@@ -53,7 +53,7 @@ test("indexOf - returns index of object in arrangedContent", function() {
 });
 
 test("insertAt - raises, indeterminate behavior", function() {
-  raises(function() {
+  throws(function() {
     run(function() { array.insertAt(2, 3); });
   });
 });
@@ -113,7 +113,7 @@ test("removeObjects - removes objects from content", function() {
 });
 
 test("replace - raises, indeterminate behavior", function() {
-  raises(function() {
+  throws(function() {
     run(function() { array.replace(1, 2, [3]); });
   });
 });
@@ -124,7 +124,7 @@ test("replaceContent - does a standard array replace on content", function() {
 });
 
 test("reverseObjects - raises, use Sortable#sortAscending", function() {
-  raises(function() {
+  throws(function() {
     run(function() { array.reverseObjects(); });
   });
 });

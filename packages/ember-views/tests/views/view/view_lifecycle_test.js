@@ -59,7 +59,7 @@ test("should throw an exception if trying to append a child before rendering has
     view = EmberView.create();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {});
   }, null, "throws an error when calling appendChild()");
 });
@@ -128,7 +128,7 @@ test("appendChild should work inside a template", function() {
 });
 
 test("rerender should throw inside a template", function() {
-  raises(function() {
+  throws(function() {
     run(function() {
       var renderCount = 0;
       view = EmberView.create({
@@ -211,7 +211,7 @@ test("should throw an exception when calling appendChild when DOM element exists
     view.append();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
@@ -293,7 +293,7 @@ test("should throw an exception if trying to append an element that is already i
 
   ok(view.get('element'), "precond - creates DOM element");
 
-  raises(function() {
+  throws(function() {
     run(function() {
       view.append();
     });
@@ -315,7 +315,7 @@ test("should throw an exception when calling appendChild after view is destroyed
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.appendChild(EmberView, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
@@ -335,7 +335,7 @@ test("should throw an exception when rerender is called after view is destroyed"
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.rerender();
   }, null, "throws an exception when calling rerender");
 });
@@ -353,7 +353,7 @@ test("should throw an exception when destroyElement is called after view is dest
     view.destroy();
   });
 
-  raises(function() {
+  throws(function() {
     view.destroyElement();
   }, null, "throws an exception when calling destroyElement");
 });

@@ -117,14 +117,14 @@ test("the default resolver resolves container-registered helpers", function() {
 });
 
 test("the default resolver throws an error if the fullName to resolve is invalid", function() {
-  raises(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  raises(function() { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  throws(function() { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
 
 test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {

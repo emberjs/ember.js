@@ -6,7 +6,7 @@ QUnit.module('system/run_loop/unwind_test');
 test('RunLoop unwinds despite unhandled exception', function() {
   var initialRunLoop = run.currentRunLoop;
 
-  raises(function() {
+  throws(function() {
     run(function() {
       run.schedule('actions', function() { throw new EmberError("boom!"); });
     });
@@ -26,7 +26,7 @@ test('RunLoop unwinds despite unhandled exception', function() {
 test('run unwinds despite unhandled exception', function() {
   var initialRunLoop = run.currentRunLoop;
 
-  raises(function() {
+  throws(function() {
     run(function() {
       throw new EmberError("boom!");
     });

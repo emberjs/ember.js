@@ -24,7 +24,7 @@ QUnit.module("Ember.PromiseProxy - ObjectProxy", {
 test("no promise, invoking then should raise", function() {
   var proxy = ObjectPromiseProxy.create();
 
-  raises(function() {
+  throws(function() {
     proxy.then(function() { return this; }, function() { return this; });
   }, new RegExp("PromiseProxy's promise must be set"));
 });

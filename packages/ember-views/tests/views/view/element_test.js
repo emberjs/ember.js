@@ -55,7 +55,7 @@ Ember.runInDebug(function() {
       view.appendTo('#qunit-fixture');
     });
 
-    raises(function() {
+    throws(function() {
       view.set('elementId', 'two');
     }, "raises elementId changed exception");
 

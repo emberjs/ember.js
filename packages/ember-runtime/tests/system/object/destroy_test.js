@@ -45,7 +45,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
         obj.destroy();
       });
 
-      raises(function() {
+      throws(function() {
         set(obj, 'foo', 'baz');
       }, Error, "raises an exception");
     });

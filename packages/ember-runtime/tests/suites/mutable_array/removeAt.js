@@ -28,7 +28,7 @@ suite.test("[X].removeAt(0) => [] + notify", function() {
 
 suite.test("[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception", function() {
   var obj = this.newObject([]);
-  raises(function() {
+  throws(function() {
     obj.removeAt(200);
   }, Error);
 });

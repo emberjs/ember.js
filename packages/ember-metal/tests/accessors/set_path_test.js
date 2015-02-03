@@ -7,38 +7,39 @@ import { get } from 'ember-metal/property_get';
 var originalLookup = Ember.lookup;
 
 var obj;
-var moduleOpts = {
-  setup: function() {
-    obj = {
-      foo: {
-        bar: {
-          baz: { biff: 'BIFF' }
-        }
+function commonSetup() {
+  obj = {
+    foo: {
+      bar: {
+        baz: { biff: 'BIFF' }
       }
-    };
+    }
+  };
 
-    Ember.lookup = {
-      Foo: {
-        bar: {
-          baz: { biff: 'FooBiff' }
-        }
-      },
-
-      $foo: {
-        bar: {
-          baz: { biff: '$FOOBIFF' }
-        }
+  Ember.lookup = {
+    Foo: {
+      bar: {
+        baz: { biff: 'FooBiff' }
       }
-    };
-  },
+    },
 
-  teardown: function() {
-    obj = null;
-    Ember.lookup = originalLookup;
-  }
-};
+    $foo: {
+      bar: {
+        baz: { biff: '$FOOBIFF' }
+      }
+    }
+  };
+}
 
-QUnit.module('set with path', moduleOpts);
+function commonTeardown() {
+  obj = null;
+  Ember.lookup = originalLookup;
+}
+
+QUnit.module('set with path', {
+  setup: commonSetup,
+  teardown: commonTeardown
+});
 
 test('[Foo, bar] -> Foo.bar', function() {
   Ember.lookup.Foo = { toString: function() { return 'Foo'; } }; // Behave like an Ember.Namespace
@@ -85,12 +86,8 @@ test('[null, Foo.bar] -> Foo.bar', function() {
 //
 
 QUnit.module("set with path - deprecated", {
-  setup: function() {
-    moduleOpts.setup();
-  },
-  teardown: function() {
-    moduleOpts.teardown();
-  }
+  setup: commonSetup,
+  teardown: commonTeardown
 });
 
 test('[null, bla] gives a proper exception message', function() {
@@ -112,7 +109,7 @@ test('[obj, bla.bla] gives a proper exception message', function() {
 });
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  raises(function() {
+  throws(function() {
     set(obj, 'foo.baz.bat', "BAM");
   }, Error);
 });
