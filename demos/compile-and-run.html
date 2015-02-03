@@ -15,7 +15,7 @@
     <hr>
 
     <script src="../assets/loader.js"></script>
-    <script src="../amd/morph.amd.js"></script>
+    <script src="../amd/dom-helper.amd.js"></script>
     <script src="../amd/htmlbars-compiler.amd.js"></script>
     <script src="../amd/htmlbars-runtime.amd.js"></script>
     <script>
@@ -28,24 +28,34 @@
       var compiler    = requireModule('htmlbars-compiler/compiler'),
           compile     = compiler.compile,
           compileSpec = compiler.compileSpec,
-          DOMHelper   = requireModule('morph').DOMHelper,
+          DOMHelper   = requireModule('dom-helper').default,
           hooks       = requireModule('htmlbars-runtime').hooks;
           helpers     = requireModule('htmlbars-runtime').helpers;
 
       var templateSource = localStorage.getItem('templateSource');
+      var data = localStorage.getItem('templateData');
+
       if (templateSource) {
         textarea.value = templateSource;
       }
 
+      if (data) {
+        dataarea.value = data;
+      }
+
       button.addEventListener('click', function(){
         var source = textarea.value,
-          data = {}, compileOptions = {} ;
+            data = dataarea.value,
+            compileOptions = {} ;
 
         localStorage.setItem('templateSource', source);
+        localStorage.setItem('templateData', data);
 
         try {
-          data = JSON.parse(dataarea.value);
-        } catch(e) {}
+          data = JSON.parse(data);
+        } catch(e) {
+          data = {};
+        }
 
         try {
           compileOptions = JSON.parse(options.value);
@@ -54,11 +64,13 @@
           var templateSpec = compileSpec(source, compileOptions),
               template     = compile(source, compileOptions),
               env          = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
-              dom          = template.render(data, env, output);
+
           output.innerHTML = '<pre><code>'+JSON.stringify(data)+'</code></pre><hr><pre><code>'+templateSpec+'</code></pre><hr>';
+
+          var dom          = template.render(data, env, output);
           output.appendChild(dom);
         } catch(e) {
-          output.innerHTML = 'Failure to run template: '+e.message;
+          output.innerHTML += 'Failure to run template: '+e.message;
           throw(e);
         }
       });
