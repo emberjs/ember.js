@@ -250,45 +250,17 @@ if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
   buildIESafeDOM = buildDOM;
 }
 
-// When parsing innerHTML, the browser may set up DOM with some things
-// not desired. For example, with a select element context and option
-// innerHTML the first option will be marked selected.
-//
-// This method cleans up some of that, resetting those values back to
-// their defaults.
-//
-function buildSafeDOM(html, contextualElement, dom) {
-  var childNodes = buildIESafeDOM(html, contextualElement, dom);
-
-  if (contextualElement.tagName === 'SELECT') {
-    // Walk child nodes
-    for (var i = 0; childNodes[i]; i++) {
-      // Find and process the first option child node
-      if (childNodes[i].tagName === 'OPTION') {
-        if (detectAutoSelectedOption(childNodes[i].parentNode, childNodes[i], html)) {
-          // If the first node is selected but does not have an attribute,
-          // presume it is not really selected.
-          childNodes[i].parentNode.selectedIndex = -1;
-        }
-        break;
-      }
-    }
-  }
-
-  return childNodes;
-}
-
 var buildHTMLDOM;
 if (needsIntegrationPointFix) {
   buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom){
     if (svgHTMLIntegrationPoints[contextualElement.tagName]) {
-      return buildSafeDOM(html, document.createElement('div'), dom);
+      return buildIESafeDOM(html, document.createElement('div'), dom);
     } else {
-      return buildSafeDOM(html, contextualElement, dom);
+      return buildIESafeDOM(html, contextualElement, dom);
     }
   };
 } else {
-  buildHTMLDOM = buildSafeDOM;
+  buildHTMLDOM = buildIESafeDOM;
 }
 
 export {buildHTMLDOM};
