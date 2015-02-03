@@ -3,6 +3,37 @@ import { preprocess } from "../htmlbars-syntax/parser";
 import TemplateCompiler from "./template-compiler";
 
 /*
+ * Compile a string into a template spec string. The template spec is a string
+ * representation of a template. Usually, you would use compileSpec for
+ * pre-compilation of a template on the server.
+ *
+ * Example usage:
+ *
+ *     var templateSpec = compileSpec("Howdy {{name}}");
+ *     // This next step is basically what plain compile does
+ *     var template = new Function("return " + templateSpec)();
+ *
+ * @method compileSpec
+ * @param {String} string An HTMLBars template string
+ * @return {TemplateSpec} A template spec string
+ */
+export function compileSpec(string, options) {
+  var ast = preprocess(string, options);
+  var compiler = new TemplateCompiler(options);
+  var program = compiler.compile(ast);
+  return program;
+}
+
+/*
+ * @method template
+ * @param {TemplateSpec} templateSpec A precompiled template
+ * @return {Template} A template spec string
+ */
+export function template(templateSpec) {
+  return new Function("return " + templateSpec)();
+}
+
+/*
  * Compile a string into a template rendering function
  *
  * Example usage:
@@ -29,33 +60,10 @@ import TemplateCompiler from "./template-compiler";
  *     var domFragment = template(context, env, contextualElement);
  *
  * @method compile
- * @param {String} string An htmlbars template string
+ * @param {String} string An HTMLBars template string
  * @param {Object} options A set of options to provide to the compiler
- * @return {Function} A function for rendering the template
+ * @return {Template} A function for rendering the template
  */
 export function compile(string, options) {
-  var program = compileSpec(string, options);
-  return new Function("return " + program)();
-}
-
-/*
- * Compile a string into a template spec string. The template spec is a string
- * representation of a template. Usually, you would use compileSpec for
- * pre-compilation of a template on the server.
- *
- * Example usage:
- *
- *     var templateSpec = compileSpec("Howdy {{name}}");
- *     // This next step is basically what plain compile does
- *     var template = new Function("return " + templateSpec)();
- *
- * @method compileSpec
- * @param {String} string An htmlbars template string
- * @return {Function} A template spec string
- */
-export function compileSpec(string, options) {
-  var ast = preprocess(string, options);
-  var compiler = new TemplateCompiler(options);
-  var program = compiler.compile(ast);
-  return program;
+  return template(compileSpec(string, options));
 }
