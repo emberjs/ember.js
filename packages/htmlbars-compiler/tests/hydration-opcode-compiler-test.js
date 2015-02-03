@@ -282,17 +282,17 @@ test("attribute helpers", function() {
     [ "createAttrMorph", [ 1, 0, 'id', true, null ] ],
     [ "printAttributeHook", [ 1, 0 ] ],
     [ "popParent", [] ],
-    [ "createMorph", [ 0, [], 1, 1, true ] ],
+    [ "createMorph", [ 2, [], 0, 1, true ] ],
     [ "pushLiteral", [ 'morphThing' ] ],
-    [ "printContentHook", [ 0 ] ],
-    [ "consumeParent", [ 2 ] ],
+    [ "printContentHook", [ 2 ] ],
+    [ "consumeParent", [ 1 ] ],
     [ "pushGetHook", [ 'ohMy' ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [] ],
     [ "pushLiteral", [ 'class' ] ],
     [ "shareElement", [ 1 ] ],
-    [ "createAttrMorph", [ 2, 1, 'class', true, null ] ],
-    [ "printAttributeHook", [ 2, 1 ] ],
+    [ "createAttrMorph", [ 3, 1, 'class', true, null ] ],
+    [ "printAttributeHook", [ 3, 1 ] ],
     [ "popParent", [] ]
   ]);
 });

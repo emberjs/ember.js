@@ -103,7 +103,7 @@ function componentFallback(env, morph, context, tagName, attrs, template) {
   for (var name in attrs) {
     element.setAttribute(name, attrs[name]);
   }
-  element.appendChild(template.render(context, env, morph.contextualElement));
+  element.appendChild(template.render(context, env, morph.contextualElement).fragment);
   return element;
 }
 
