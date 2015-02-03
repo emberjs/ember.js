@@ -56,4 +56,17 @@ test("quoted maxlength sets the property and attribute", function() {
   }
 });
 
+test("array value can be set as property", function() {
+  view = EmberView.create({
+    context: {},
+    template: compile("<input value={{items}}>")
+  });
+
+  appendView(view);
+
+  Ember.run(view, view.set, 'context.items', [4,5]);
+  ok(true, "no legacy assertion prohibited setting an array");
+});
+
+// jscs:enable validateIndentation
 }
