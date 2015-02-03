@@ -51,7 +51,7 @@ QUnit.module("Router.map", {
   }
 });
 
-test("Router.map returns an Ember Router class", function () {
+QUnit.test("Router.map returns an Ember Router class", function () {
   expect(1);
 
   var ret = App.Router.map(function() {
@@ -61,7 +61,7 @@ test("Router.map returns an Ember Router class", function () {
   ok(Ember.Router.detect(ret));
 });
 
-test("Router.map can be called multiple times", function () {
+QUnit.test("Router.map can be called multiple times", function () {
   expect(4);
 
   Ember.TEMPLATES.hello = compile("Hello!");

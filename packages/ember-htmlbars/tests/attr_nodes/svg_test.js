@@ -20,7 +20,7 @@ QUnit.module("ember-htmlbars: svg attribute", {
   }
 });
 
-test("unquoted viewBox property is output", function() {
+QUnit.test("unquoted viewBox property is output", function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -34,7 +34,7 @@ test("unquoted viewBox property is output", function() {
   equal(view.element.getAttribute('svg'), null, "attribute is removed");
 });
 
-test("quoted viewBox property is output", function() {
+QUnit.test("quoted viewBox property is output", function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -45,7 +45,7 @@ test("quoted viewBox property is output", function() {
   equalInnerHTML(view.element, '<svg viewBox="'+viewBoxString+'"></svg>', "attribute is output");
 });
 
-test("quoted viewBox property is concat", function() {
+QUnit.test("quoted viewBox property is concat", function() {
   var viewBoxString = '100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -61,7 +61,7 @@ test("quoted viewBox property is concat", function() {
   equalInnerHTML(view.element, '<svg viewBox="0 0 '+newViewBoxString+'"></svg>', "attribute is output");
 });
 
-test("class is output", function() {
+QUnit.test("class is output", function() {
   view = EmberView.create({
     context: { color: 'blue' },
     template: compile("<svg class='{{color}} tall'></svg>")

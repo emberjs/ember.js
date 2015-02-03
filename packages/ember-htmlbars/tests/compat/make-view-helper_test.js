@@ -21,7 +21,7 @@ QUnit.module('ember-htmlbars: makeViewHelper compat', {
   }
 });
 
-test('makeViewHelper', function() {
+QUnit.test('makeViewHelper', function() {
   expect(1);
 
   var ViewHelperComponent = Component.extend({

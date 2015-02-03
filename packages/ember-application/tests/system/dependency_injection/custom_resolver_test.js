@@ -30,7 +30,7 @@ QUnit.module("Ember.Application Dependency Injection – customResolver", {
   }
 });
 
-test("a resolver can be supplied to application", function() {
+QUnit.test("a resolver can be supplied to application", function() {
   equal(jQuery("h1", application.rootElement).text(), "Fallback");
 });
 

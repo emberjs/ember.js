@@ -6,7 +6,7 @@ import { observer } from 'ember-metal/mixin';
 
 QUnit.module("Ember.ObjectController");
 
-test("should be able to set the target property of an ObjectController", function() {
+QUnit.test("should be able to set the target property of an ObjectController", function() {
   expectDeprecation(objectControllerDeprecation);
 
   var controller = ObjectController.create();
@@ -17,7 +17,7 @@ test("should be able to set the target property of an ObjectController", functio
 });
 
 // See https://github.com/emberjs/ember.js/issues/5112
-test("can observe a path on an ObjectController", function() {
+QUnit.test("can observe a path on an ObjectController", function() {
   expectDeprecation(objectControllerDeprecation);
 
   var controller = ObjectController.extend({
@@ -27,7 +27,7 @@ test("can observe a path on an ObjectController", function() {
   ok(true, "should not fail");
 });
 
-test('accessing model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {
+QUnit.test('accessing model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {
   var controller;
 
   expectDeprecation(function() {
@@ -44,7 +44,7 @@ test('accessing model properties via proxy behavior results in a deprecation [DE
   }, /object proxying is deprecated\. Please use `model\.bar` instead\./);
 });
 
-test('setting model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {
+QUnit.test('setting model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {
   var controller;
 
   expectDeprecation(function() {
@@ -61,7 +61,7 @@ test('setting model properties via proxy behavior results in a deprecation [DEPR
   }, /object proxying is deprecated\. Please use `model\.bar` instead\./);
 });
 
-test('auto-generated controllers are not deprecated', function() {
+QUnit.test('auto-generated controllers are not deprecated', function() {
   expectNoDeprecation(function() {
     ObjectController.extend({
       isGenerated: true

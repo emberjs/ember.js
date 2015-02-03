@@ -12,7 +12,7 @@ QUnit.module("Ember Router DSL", {
   }
 });
 
-test("should fail when using a reserved route name", function() {
+QUnit.test("should fail when using a reserved route name", function() {
   var reservedNames = ['array', 'basic', 'object'];
 
   expect(reservedNames.length * 2);
@@ -44,7 +44,7 @@ test("should fail when using a reserved route name", function() {
   });
 });
 
-test("should reset namespace if nested with resource", function() {
+QUnit.test("should reset namespace if nested with resource", function() {
   Router = Router.map(function() {
     this.resource('bleep', function() {
       this.resource('bloop', function() {
@@ -61,7 +61,7 @@ test("should reset namespace if nested with resource", function() {
   ok(router.router.recognizer.names['blork'], 'nested resources do not contain parent name');
 });
 
-test("should retain resource namespace if nested with routes", function() {
+QUnit.test("should retain resource namespace if nested with routes", function() {
   Router = Router.map(function() {
     this.route('bleep', function() {
       this.route('bloop', function() {
@@ -81,7 +81,7 @@ test("should retain resource namespace if nested with routes", function() {
 if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 // jscs:disable validateIndentation
 
-test("should add loading and error routes if _isRouterMapResult is true", function() {
+QUnit.test("should add loading and error routes if _isRouterMapResult is true", function() {
   Router.map(function() {
     this.route('blork');
   });
@@ -94,7 +94,7 @@ test("should add loading and error routes if _isRouterMapResult is true", functi
   ok(router.router.recognizer.names['blork_error'], 'error route was added');
 });
 
-test("should not add loading and error routes if _isRouterMapResult is false", function() {
+QUnit.test("should not add loading and error routes if _isRouterMapResult is false", function() {
   Router.map(function() {
     this.route('blork');
   });

@@ -21,7 +21,7 @@ QUnit.module("EmberView - Layout Functionality", {
   }
 });
 
-test("Layout views return throw if their layout cannot be found", function() {
+QUnit.test("Layout views return throw if their layout cannot be found", function() {
   view = EmberView.create({
     layoutName: 'cantBeFound',
     container: { lookup: function() { } }
@@ -32,7 +32,7 @@ test("Layout views return throw if their layout cannot be found", function() {
   }, /cantBeFound/);
 });
 
-test("should call the function of the associated layout", function() {
+QUnit.test("should call the function of the associated layout", function() {
   var templateCalled = 0;
   var layoutCalled = 0;
 
@@ -53,7 +53,7 @@ test("should call the function of the associated layout", function() {
   equal(layoutCalled, 1, "layout is called when layout is present");
 });
 
-test("should call the function of the associated template with itself as the context", function() {
+QUnit.test("should call the function of the associated template with itself as the context", function() {
   registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
@@ -74,7 +74,7 @@ test("should call the function of the associated template with itself as the con
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
+QUnit.test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -94,7 +94,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should not use defaultLayout if layout is provided", function() {
+QUnit.test("should not use defaultLayout if layout is provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -111,7 +111,7 @@ test("should not use defaultLayout if layout is provided", function() {
   equal("foo", view.$().text(), "default layout was not printed");
 });
 
-test("the template property is available to the layout template", function() {
+QUnit.test("the template property is available to the layout template", function() {
   view = EmberView.create({
     template: function(context, options) {
       options.data.buffer.push(" derp");

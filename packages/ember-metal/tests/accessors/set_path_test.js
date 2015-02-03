@@ -41,7 +41,7 @@ QUnit.module('set with path', {
   teardown: commonTeardown
 });
 
-test('[Foo, bar] -> Foo.bar', function() {
+QUnit.test('[Foo, bar] -> Foo.bar', function() {
   Ember.lookup.Foo = { toString: function() { return 'Foo'; } }; // Behave like an Ember.Namespace
 
   set(Ember.lookup.Foo, 'bar', 'baz');
@@ -52,22 +52,22 @@ test('[Foo, bar] -> Foo.bar', function() {
 //
 // LOCAL PATHS
 
-test('[obj, foo] -> obj.foo', function() {
+QUnit.test('[obj, foo] -> obj.foo', function() {
   set(obj, 'foo', "BAM");
   equal(get(obj, 'foo'), "BAM");
 });
 
-test('[obj, foo.bar] -> obj.foo.bar', function() {
+QUnit.test('[obj, foo.bar] -> obj.foo.bar', function() {
   set(obj, 'foo.bar', "BAM");
   equal(get(obj, 'foo.bar'), "BAM");
 });
 
-test('[obj, this.foo] -> obj.foo', function() {
+QUnit.test('[obj, this.foo] -> obj.foo', function() {
   set(obj, 'this.foo', "BAM");
   equal(get(obj, 'foo'), "BAM");
 });
 
-test('[obj, this.foo.bar] -> obj.foo.bar', function() {
+QUnit.test('[obj, this.foo.bar] -> obj.foo.bar', function() {
   set(obj, 'this.foo.bar', "BAM");
   equal(get(obj, 'foo.bar'), "BAM");
 });
@@ -76,7 +76,7 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 // NO TARGET
 //
 
-test('[null, Foo.bar] -> Foo.bar', function() {
+QUnit.test('[null, Foo.bar] -> Foo.bar', function() {
   set(null, 'Foo.bar', "BAM");
   equal(get(Ember.lookup.Foo, 'bar'), "BAM");
 });
@@ -90,7 +90,7 @@ QUnit.module("set with path - deprecated", {
   teardown: commonTeardown
 });
 
-test('[null, bla] gives a proper exception message', function() {
+QUnit.test('[null, bla] gives a proper exception message', function() {
   var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     set(null, 'bla', "BAM");
@@ -99,7 +99,7 @@ test('[null, bla] gives a proper exception message', function() {
   }
 });
 
-test('[obj, bla.bla] gives a proper exception message', function() {
+QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
   var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     set(obj, 'bla.bla', "BAM");
@@ -108,13 +108,13 @@ test('[obj, bla.bla] gives a proper exception message', function() {
   }
 });
 
-test('[obj, foo.baz.bat] -> EXCEPTION', function() {
+QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   throws(function() {
     set(obj, 'foo.baz.bat', "BAM");
   }, Error);
 });
 
-test('[obj, foo.baz.bat] -> EXCEPTION', function() {
+QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   trySet(obj, 'foo.baz.bat', "BAM");
   ok(true, "does not raise");
 });

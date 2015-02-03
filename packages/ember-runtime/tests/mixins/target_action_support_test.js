@@ -13,7 +13,7 @@ QUnit.module("TargetActionSupport", {
   }
 });
 
-test("it should return false if no target or action are specified", function() {
+QUnit.test("it should return false if no target or action are specified", function() {
   expect(1);
 
   var obj = EmberObject.createWithMixins(TargetActionSupport);
@@ -21,7 +21,7 @@ test("it should return false if no target or action are specified", function() {
   ok(false === obj.triggerAction(), "no target or action was specified");
 });
 
-test("it should support actions specified as strings", function() {
+QUnit.test("it should support actions specified as strings", function() {
   expect(2);
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
@@ -37,7 +37,7 @@ test("it should support actions specified as strings", function() {
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should invoke the send() method on objects that implement it", function() {
+QUnit.test("it should invoke the send() method on objects that implement it", function() {
   expect(3);
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
@@ -54,7 +54,7 @@ test("it should invoke the send() method on objects that implement it", function
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should find targets specified using a property path", function() {
+QUnit.test("it should find targets specified using a property path", function() {
   expect(2);
 
   var Test = {};
@@ -74,7 +74,7 @@ test("it should find targets specified using a property path", function() {
   ok(true === myObj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should use an actionContext object specified as a property on the object", function() {
+QUnit.test("it should use an actionContext object specified as a property on the object", function() {
   expect(2);
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
         action: 'anEvent',
@@ -88,7 +88,7 @@ test("it should use an actionContext object specified as a property on the objec
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should find an actionContext specified as a property path", function() {
+QUnit.test("it should find an actionContext specified as a property path", function() {
   expect(2);
 
   var Test = {};
@@ -107,7 +107,7 @@ test("it should find an actionContext specified as a property path", function() 
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should use the target specified in the argument", function() {
+QUnit.test("it should use the target specified in the argument", function() {
   expect(2);
   var targetObj = EmberObject.create({
         anEvent: function() {
@@ -121,7 +121,7 @@ test("it should use the target specified in the argument", function() {
   ok(true === obj.triggerAction({ target: targetObj }), "a valid target and action were specified");
 });
 
-test("it should use the action specified in the argument", function() {
+QUnit.test("it should use the action specified in the argument", function() {
   expect(2);
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
@@ -134,7 +134,7 @@ test("it should use the action specified in the argument", function() {
   ok(true === obj.triggerAction({ action: 'anEvent' }), "a valid target and action were specified");
 });
 
-test("it should use the actionContext specified in the argument", function() {
+QUnit.test("it should use the actionContext specified in the argument", function() {
   expect(2);
   var context = {};
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
@@ -149,7 +149,7 @@ test("it should use the actionContext specified in the argument", function() {
   ok(true === obj.triggerAction({ actionContext: context }), "a valid target and action were specified");
 });
 
-test("it should allow multiple arguments from actionContext", function() {
+QUnit.test("it should allow multiple arguments from actionContext", function() {
   expect(3);
   var param1 = 'someParam';
   var param2 = 'someOtherParam';
@@ -166,7 +166,7 @@ test("it should allow multiple arguments from actionContext", function() {
   ok(true === obj.triggerAction({ actionContext: [param1, param2] }), "a valid target and action were specified");
 });
 
-test("it should use a null value specified in the actionContext argument", function() {
+QUnit.test("it should use a null value specified in the actionContext argument", function() {
   expect(2);
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({

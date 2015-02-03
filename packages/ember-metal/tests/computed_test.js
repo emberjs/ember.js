@@ -47,11 +47,11 @@ var obj, count, Global, lookup;
 
 QUnit.module('computed');
 
-test('computed property should be an instance of descriptor', function() {
+QUnit.test('computed property should be an instance of descriptor', function() {
   ok(computed(function() {}) instanceof Descriptor);
 });
 
-test('defining computed property should invoke property on get', function() {
+QUnit.test('defining computed property should invoke property on get', function() {
 
   var obj = {};
   var count = 0;
@@ -64,7 +64,7 @@ test('defining computed property should invoke property on get', function() {
   equal(count, 1, 'should have invoked computed property');
 });
 
-test('defining computed property should invoke property on set', function() {
+QUnit.test('defining computed property should invoke property on set', function() {
 
   var obj = {};
   var count = 0;
@@ -198,14 +198,14 @@ testBoth('using get() and set()', function(get, set) {
 
 QUnit.module('computed - metadata');
 
-test("can set metadata on a computed property", function() {
+QUnit.test("can set metadata on a computed property", function() {
   var computedProperty = computed(function() { });
   computedProperty.meta({ key: 'keyValue' });
 
   equal(computedProperty.meta().key, 'keyValue', "saves passed meta hash to the _meta property");
 });
 
-test("meta should return an empty hash if no meta is set", function() {
+QUnit.test("meta should return an empty hash if no meta is set", function() {
   var computedProperty = computed(function() { });
   deepEqual(computedProperty.meta(), {}, "returned value is an empty hash");
 });
@@ -244,27 +244,27 @@ testBoth('modifying a cacheable property should update cache', function(get, set
   equal(count, 2, 'should not invoke again');
 });
 
-test('calling cacheable() on a computed property raises a deprecation', function() {
+QUnit.test('calling cacheable() on a computed property raises a deprecation', function() {
   var cp = new ComputedProperty(function() {});
   expectDeprecation(function() {
     cp.cacheable();
   }, 'ComputedProperty.cacheable() is deprecated. All computed properties are cacheable by default.');
 });
 
-test('passing cacheable in a the options to the CP constructor raises a deprecation', function() {
+QUnit.test('passing cacheable in a the options to the CP constructor raises a deprecation', function() {
   expectDeprecation(function() {
     new ComputedProperty(function() {}, { cacheable: true });
   }, "Passing opts.cacheable to the CP constructor is deprecated. Invoke `volatile()` on the CP instead.");
 });
 
-test('calling readOnly() on a computed property with arguments raises a deprecation', function() {
+QUnit.test('calling readOnly() on a computed property with arguments raises a deprecation', function() {
   var cp = new ComputedProperty(function() {});
   expectDeprecation(function() {
     cp.readOnly(true);
   }, 'Passing arguments to ComputedProperty.readOnly() is deprecated.');
 });
 
-test('passing readOnly in a the options to the CP constructor raises a deprecation', function() {
+QUnit.test('passing readOnly in a the options to the CP constructor raises a deprecation', function() {
   expectDeprecation(function() {
     new ComputedProperty(function() {}, { readOnly: false });
   }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.");
@@ -645,7 +645,7 @@ testBoth('chained dependent keys should evaluate computed properties lazily', fu
 if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
   QUnit.module('computed - improved cp syntax');
 
-  test('setter and getters are passed using an object', function() {
+  QUnit.test('setter and getters are passed using an object', function() {
     var testObj = Ember.Object.extend({
       a: '1',
       b: '2',
@@ -670,7 +670,7 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
     ok(testObj.get('aInt') === 123, 'cp has been updated too');
   });
 
-  test('setter can be omited', function() {
+  QUnit.test('setter can be omited', function() {
     var testObj = Ember.Object.extend({
       a: '1',
       b: '2',
@@ -688,7 +688,7 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
     ok(testObj.get('aInt') === '123', 'cp has been updated too');
   });
 
-  test('the return value of the setter gets cached', function() {
+  QUnit.test('the return value of the setter gets cached', function() {
     var testObj = Ember.Object.extend({
       a: '1',
       sampleCP: computed('a', {
@@ -713,7 +713,7 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
 
 QUnit.module('computed edge cases');
 
-test('adding a computed property should show up in key iteration', function() {
+QUnit.test('adding a computed property should show up in key iteration', function() {
 
   var obj = {};
   defineProperty(obj, 'foo', computed(function() {}));
@@ -866,7 +866,7 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
 
 QUnit.module('computed - readOnly');
 
-test('is chainable', function() {
+QUnit.test('is chainable', function() {
   var cp = computed(function() {}).readOnly();
 
   ok(cp instanceof Descriptor);

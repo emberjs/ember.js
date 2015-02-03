@@ -31,7 +31,7 @@ QUnit.module("CollectionView", {
   }
 });
 
-test("should render a view for each item in its content array", function() {
+QUnit.test("should render a view for each item in its content array", function() {
   view = CollectionView.create({
     content: Ember.A([1, 2, 3, 4])
   });
@@ -42,7 +42,7 @@ test("should render a view for each item in its content array", function() {
   equal(view.$('div').length, 4);
 });
 
-test("should render the emptyView if content array is empty (view class)", function() {
+QUnit.test("should render the emptyView if content array is empty (view class)", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(),
@@ -62,7 +62,7 @@ test("should render the emptyView if content array is empty (view class)", funct
   ok(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, "displays empty view");
 });
 
-test("should render the emptyView if content array is empty (view instance)", function() {
+QUnit.test("should render the emptyView if content array is empty (view instance)", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(),
@@ -82,7 +82,7 @@ test("should render the emptyView if content array is empty (view instance)", fu
   ok(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, "displays empty view");
 });
 
-test("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
+QUnit.test("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(['NEWS GUVNAH']),
@@ -102,7 +102,7 @@ test("should be able to override the tag name of itemViewClass even if tag is in
   ok(view.$().find('kbd:contains("NEWS GUVNAH")').length, "displays the item view with proper tag name");
 });
 
-test("should allow custom item views by setting itemViewClass", function() {
+QUnit.test("should allow custom item views by setting itemViewClass", function() {
   var passedContents = [];
   view = CollectionView.create({
     content: Ember.A(['foo', 'bar', 'baz']),
@@ -126,7 +126,7 @@ test("should allow custom item views by setting itemViewClass", function() {
   });
 });
 
-test("should insert a new item in DOM when an item is added to the content array", function() {
+QUnit.test("should insert a new item in DOM when an item is added to the content array", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
@@ -154,7 +154,7 @@ test("should insert a new item in DOM when an item is added to the content array
   equal(trim(view.$(':nth-child(2)').text()), 'quux');
 });
 
-test("should remove an item from DOM when an item is removed from the content array", function() {
+QUnit.test("should remove an item from DOM when an item is removed from the content array", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
@@ -184,7 +184,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 });
 
-test("it updates the view if an item is replaced", function() {
+QUnit.test("it updates the view if an item is replaced", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -214,7 +214,7 @@ test("it updates the view if an item is replaced", function() {
   });
 });
 
-test("can add and replace in the same runloop", function() {
+QUnit.test("can add and replace in the same runloop", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -246,7 +246,7 @@ test("can add and replace in the same runloop", function() {
 
 });
 
-test("can add and replace the object before the add in the same runloop", function() {
+QUnit.test("can add and replace the object before the add in the same runloop", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -277,7 +277,7 @@ test("can add and replace the object before the add in the same runloop", functi
   });
 });
 
-test("can add and replace complicatedly", function() {
+QUnit.test("can add and replace complicatedly", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -310,7 +310,7 @@ test("can add and replace complicatedly", function() {
   });
 });
 
-test("can add and replace complicatedly harder", function() {
+QUnit.test("can add and replace complicatedly harder", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -344,7 +344,7 @@ test("can add and replace complicatedly harder", function() {
   });
 });
 
-test("should allow changes to content object before layer is created", function() {
+QUnit.test("should allow changes to content object before layer is created", function() {
   view = CollectionView.create({
     content: null
   });
@@ -360,7 +360,7 @@ test("should allow changes to content object before layer is created", function(
   ok(view.$().children().length);
 });
 
-test("should fire life cycle events when elements are added and removed", function() {
+QUnit.test("should fire life cycle events when elements are added and removed", function() {
   var view;
   var didInsertElement = 0;
   var willDestroyElement = 0;
@@ -445,7 +445,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(destroy, 8);
 });
 
-test("should allow changing content property to be null", function() {
+QUnit.test("should allow changing content property to be null", function() {
   view = CollectionView.create({
     content: Ember.A([1, 2, 3]),
 
@@ -467,7 +467,7 @@ test("should allow changing content property to be null", function() {
   equal(trim(view.$().children().text()), "(empty)", "should display empty view");
 });
 
-test("should allow items to access to the CollectionView's current index in the content array", function() {
+QUnit.test("should allow items to access to the CollectionView's current index in the content array", function() {
   view = CollectionView.create({
     content: Ember.A(['zero', 'one', 'two']),
     itemViewClass: View.extend({
@@ -486,7 +486,7 @@ test("should allow items to access to the CollectionView's current index in the 
   deepEqual(view.$(':nth-child(3)').text(), "2");
 });
 
-test("should allow declaration of itemViewClass as a string", function() {
+QUnit.test("should allow declaration of itemViewClass as a string", function() {
   var container = {
     lookupFactory: function() {
       return Ember.View.extend();
@@ -506,7 +506,7 @@ test("should allow declaration of itemViewClass as a string", function() {
   equal(view.$('.ember-view').length, 3);
 });
 
-test("should not render the emptyView if content is emptied and refilled in the same run loop", function() {
+QUnit.test("should not render the emptyView if content is emptied and refilled in the same run loop", function() {
   view = CollectionView.create({
     tagName: 'div',
     content: Ember.A(['NEWS GUVNAH']),
@@ -533,7 +533,7 @@ test("should not render the emptyView if content is emptied and refilled in the 
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
 });
 
-test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
+QUnit.test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
 
   var array = Ember.A([{ name: "Other Katz" }]);
   var arrayProxy = ArrayProxy.create({ content: array });
@@ -564,7 +564,7 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
   });
 });
 
-test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
+QUnit.test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
   var assertProperDestruction = Mixin.create({
     destroyElement: function() {
       if (this._state === 'inDOM') {
@@ -604,7 +604,7 @@ test("when a collection view is emptied, deeply nested views elements are not re
   });
 });
 
-test("should render the emptyView if content array is empty and emptyView is given as string", function() {
+QUnit.test("should render the emptyView if content array is empty and emptyView is given as string", function() {
   Ember.lookup = {
     App: {
       EmptyView: View.extend({
@@ -629,7 +629,7 @@ test("should render the emptyView if content array is empty and emptyView is giv
   ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, "displays empty view");
 });
 
-test("should lookup against the container if itemViewClass is given as a string", function() {
+QUnit.test("should lookup against the container if itemViewClass is given as a string", function() {
   var ItemView = View.extend({
     render: function(buf) {
       buf.push(get(this, 'content'));
@@ -659,7 +659,7 @@ test("should lookup against the container if itemViewClass is given as a string"
   }
 });
 
-test("should lookup only global path against the container if itemViewClass is given as a string", function() {
+QUnit.test("should lookup only global path against the container if itemViewClass is given as a string", function() {
   var ItemView = View.extend({
     render: function(buf) {
       buf.push(get(this, 'content'));
@@ -689,7 +689,7 @@ test("should lookup only global path against the container if itemViewClass is g
   }
 });
 
-test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
+QUnit.test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
   var EmptyView = View.extend({
     tagName: 'kbd',
     render: function(buf) {
@@ -721,7 +721,7 @@ test("should lookup against the container and render the emptyView if emptyView 
   }
 });
 
-test("should lookup from only global path against the container if emptyView is given as string and content array is empty ", function() {
+QUnit.test("should lookup from only global path against the container if emptyView is given as string and content array is empty ", function() {
   var EmptyView = View.extend({
     render: function(buf) {
       buf.push("EMPTY");

@@ -7,7 +7,7 @@ import {
 
 testsFor("ember-metal-views - children");
 
-test("a view can have child views", function() {
+QUnit.test("a view can have child views", function() {
   var view = {
     isView: true,
     tagName: 'ul',
@@ -20,7 +20,7 @@ test("a view can have child views", function() {
   equalHTML('qunit-fixture', "<ul><li>ohai</li></ul>");
 });
 
-test("didInsertElement fires after children are rendered", function() {
+QUnit.test("didInsertElement fires after children are rendered", function() {
   expect(2);
 
   var view = {

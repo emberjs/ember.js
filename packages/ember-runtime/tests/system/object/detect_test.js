@@ -2,7 +2,7 @@ import EmberObject from "ember-runtime/system/object";
 
 QUnit.module('system/object/detect');
 
-test('detect detects classes correctly', function() {
+QUnit.test('detect detects classes correctly', function() {
 
   var A = EmberObject.extend();
   var B = A.extend();

@@ -3,7 +3,7 @@ import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
 
 QUnit.module("Lazy Loading");
 
-test("if a load hook is registered, it is executed when runLoadHooks are exected", function() {
+QUnit.test("if a load hook is registered, it is executed when runLoadHooks are exected", function() {
   var count = 0;
 
   run(function() {
@@ -19,7 +19,7 @@ test("if a load hook is registered, it is executed when runLoadHooks are exected
   equal(count, 1, "the object was passed into the load hook");
 });
 
-test("if runLoadHooks was already run, it executes newly added hooks immediately", function() {
+QUnit.test("if runLoadHooks was already run, it executes newly added hooks immediately", function() {
   var count = 0;
   run(function() {
     onLoad("__test_hook__", function(object) {
@@ -41,7 +41,7 @@ test("if runLoadHooks was already run, it executes newly added hooks immediately
   equal(count, 1, "the original object was passed into the load hook");
 });
 
-test("hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed", function() {
+QUnit.test("hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed", function() {
 
   // Note that the necessary code to perform this test is run before
   // the Ember lib is loaded in tests/index.html
@@ -54,7 +54,7 @@ test("hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed", function() {
 });
 
 if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === "function") {
-  test("load hooks trigger a custom event", function() {
+  QUnit.test("load hooks trigger a custom event", function() {
     var eventObject = "super duper awesome events";
 
     window.addEventListener('__test_hook_for_events__', function(e) {

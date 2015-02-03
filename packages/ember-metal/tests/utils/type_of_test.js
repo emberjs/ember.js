@@ -2,7 +2,7 @@ import { typeOf } from 'ember-metal/utils';
 
 QUnit.module("Ember Type Checking");
 
-test("Ember.typeOf", function() {
+QUnit.test("Ember.typeOf", function() {
   var MockedDate = function() { };
   MockedDate.prototype = new Date();
 

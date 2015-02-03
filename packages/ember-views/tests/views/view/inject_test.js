@@ -6,7 +6,7 @@ import View from "ember-views/views/view";
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('EmberView - injected properties');
 
-  test("services can be injected into views", function() {
+  QUnit.test("services can be injected into views", function() {
     var registry = new Registry();
     var container = registry.container();
 

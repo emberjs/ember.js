@@ -59,7 +59,7 @@ QUnit.module('computedMap', {
   }
 });
 
-test("it maps simple properties", function() {
+QUnit.test("it maps simple properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
 
   run(function() {
@@ -75,7 +75,7 @@ test("it maps simple properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
 });
 
-test("it caches properly", function() {
+QUnit.test("it caches properly", function() {
   var array = get(obj, 'array');
   get(obj, 'mapped');
 
@@ -92,7 +92,7 @@ test("it caches properly", function() {
   equal(userFnCalls, 5, "computedMap caches properly");
 });
 
-test("it maps simple unshifted properties", function() {
+QUnit.test("it maps simple unshifted properties", function() {
   var array = Ember.A([]);
 
   run(function() {
@@ -114,7 +114,7 @@ test("it maps simple unshifted properties", function() {
   deepEqual(get(obj, 'mapped'), ['A', 'B'], "properties unshifted in sequence are mapped correctly");
 });
 
-test("it passes the index to the callback", function() {
+QUnit.test("it passes the index to the callback", function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
@@ -128,7 +128,7 @@ test("it passes the index to the callback", function() {
   deepEqual(get(obj, 'mapped'), [0, 1, 2], "index is passed to callback correctly");
 });
 
-test("it maps objects", function() {
+QUnit.test("it maps objects", function() {
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Leanna' }]);
 
   run(function() {
@@ -150,7 +150,7 @@ test("it maps objects", function() {
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Stannis' }, { name: 'Eddard' }]);
 });
 
-test("it maps unshifted objects with property observers", function() {
+QUnit.test("it maps unshifted objects with property observers", function() {
   var array = Ember.A([]);
   var cObj = { v: 'c' };
 
@@ -192,7 +192,7 @@ QUnit.module('computedMapBy', {
   }
 });
 
-test("it maps properties", function() {
+QUnit.test("it maps properties", function() {
   get(obj, 'mapped');
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
@@ -210,7 +210,7 @@ test("it maps properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
 });
 
-test("it is observable", function() {
+QUnit.test("it is observable", function() {
   get(obj, 'mapped');
   var calls = 0;
 
@@ -248,13 +248,13 @@ QUnit.module('computedFilter', {
   }
 });
 
-test("it filters according to the specified filter function", function() {
+QUnit.test("it filters according to the specified filter function", function() {
   var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "computedFilter filters by the specified function");
 });
 
-test("it passes the index to the callback", function() {
+QUnit.test("it passes the index to the callback", function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
@@ -268,7 +268,7 @@ test("it passes the index to the callback", function() {
   deepEqual(get(obj, 'filtered'), ['b'], "index is passed to callback correctly");
 });
 
-test("it passes the array to the callback", function() {
+QUnit.test("it passes the array to the callback", function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
@@ -282,7 +282,7 @@ test("it passes the array to the callback", function() {
   deepEqual(get(obj, 'filtered'), ['b'], "array is passed to callback correctly");
 });
 
-test("it caches properly", function() {
+QUnit.test("it caches properly", function() {
   var array = get(obj, 'array');
   get(obj, 'filtered');
 
@@ -299,7 +299,7 @@ test("it caches properly", function() {
   equal(userFnCalls, 9, "computedFilter caches properly");
 });
 
-test("it updates as the array is modified", function() {
+QUnit.test("it updates as the array is modified", function() {
   var array = get(obj, 'array');
   var filtered = get(obj, 'filtered');
 
@@ -322,7 +322,7 @@ test("it updates as the array is modified", function() {
   deepEqual(filtered, [2,6,8,12], "objects removed from the dependent array are removed from the computed array");
 });
 
-test("the dependent array can be cleared one at a time", function() {
+QUnit.test("the dependent array can be cleared one at a time", function() {
   var array = get(obj, 'array');
   var filtered = get(obj, 'filtered');
 
@@ -343,7 +343,7 @@ test("the dependent array can be cleared one at a time", function() {
   deepEqual(filtered, [], "filtered array cleared correctly");
 });
 
-test("the dependent array can be `clear`ed directly (#3272)", function() {
+QUnit.test("the dependent array can be `clear`ed directly (#3272)", function() {
   var array = get(obj, 'array');
   var filtered = get(obj, 'filtered');
 
@@ -356,7 +356,7 @@ test("the dependent array can be `clear`ed directly (#3272)", function() {
   deepEqual(filtered, [], "filtered array cleared correctly");
 });
 
-test("it updates as the array is replaced", function() {
+QUnit.test("it updates as the array is replaced", function() {
   get(obj, 'array');
   var filtered = get(obj, 'filtered');
 
@@ -389,7 +389,7 @@ QUnit.module('computedFilterBy', {
   }
 });
 
-test("properties can be filtered by truthiness", function() {
+QUnit.test("properties can be filtered by truthiness", function() {
   var array = get(obj, 'array');
   var as = get(obj, 'as');
   var bs = get(obj, 'bs');
@@ -426,7 +426,7 @@ test("properties can be filtered by truthiness", function() {
   deepEqual(bs.mapBy('name'), ['six'], "arrays computed by filtered property respond to array changes");
 });
 
-test("properties can be filtered by values", function() {
+QUnit.test("properties can be filtered by values", function() {
   var array = get(obj, 'array');
   var a1s = get(obj, 'a1s');
 
@@ -449,7 +449,7 @@ test("properties can be filtered by values", function() {
   deepEqual(a1s.mapBy('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
-test("properties values can be replaced", function() {
+QUnit.test("properties values can be replaced", function() {
   obj = EmberObject.createWithMixins({
       array: Ember.A([]),
       a1s: computedFilterBy('array', 'a', 1),
@@ -490,7 +490,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     }
   });
 
-  test("does not include duplicates", function() {
+  QUnit.test("does not include duplicates", function() {
     var array = get(obj, 'array');
     var array2 = get(obj, 'array2');
     get(obj, 'array3');
@@ -523,7 +523,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,2,3,4,5,6,8,9,10,11], alias + " removes items when their last instance is gone");
   });
 
-  test("has set-union semantics", function() {
+  QUnit.test("has set-union semantics", function() {
     var array = get(obj, 'array');
     get(obj, 'array2');
     get(obj, 'array3');
@@ -544,7 +544,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,4,5,6,7,8,9,10], "objects are removed when they are no longer in any dependent array");
   });
 
-  test("does not need to query the accumulated array while building it", function() {
+  QUnit.test("does not need to query the accumulated array while building it", function() {
     var indexOfCalls = [];
     var CountIndexOfCalls = Mixin.create({
       indexOf: function() {
@@ -579,7 +579,7 @@ QUnit.module('computed.intersect', {
   }
 });
 
-test("it has set-intersection semantics", function() {
+QUnit.test("it has set-intersection semantics", function() {
   get(obj, 'array');
   var array2 = get(obj, 'array2');
   var array3 = get(obj, 'array3');
@@ -631,7 +631,7 @@ QUnit.module('computedSetDiff', {
   }
 });
 
-test("it throws an error if given fewer or more than two dependent properties", function() {
+QUnit.test("it throws an error if given fewer or more than two dependent properties", function() {
   throws(function () {
     EmberObject.createWithMixins({
         array: Ember.A([1,2,3,4,5,6,7]),
@@ -651,7 +651,7 @@ test("it throws an error if given fewer or more than two dependent properties", 
 });
 
 
-test("it has set-diff semantics", function() {
+QUnit.test("it has set-diff semantics", function() {
   var array1 = get(obj, 'array');
   var array2 = get(obj, 'array2');
   var diff = get(obj, 'diff');
@@ -686,7 +686,7 @@ test("it has set-diff semantics", function() {
 
 
 function commonSortTests() {
-  test("arrays are initially sorted", function() {
+  QUnit.test("arrays are initially sorted", function() {
     run(function() {
       sorted = get(obj, 'sortedItems');
     });
@@ -694,7 +694,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "array is initially sorted");
   });
 
-  test("changing the dependent array updates the sorted array", function() {
+  QUnit.test("changing the dependent array updates the sorted array", function() {
     run(function() {
       sorted = get(obj, 'sortedItems');
     });
@@ -716,7 +716,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], "changing dependent array updates sorted array");
   });
 
-  test("adding to the dependent array updates the sorted array", function() {
+  QUnit.test("adding to the dependent array updates the sorted array", function() {
     run(function() {
       sorted = get(obj, 'sortedItems');
       items = get(obj, 'items');
@@ -731,7 +731,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
   });
 
-  test("removing from the dependent array updates the sorted array", function() {
+  QUnit.test("removing from the dependent array updates the sorted array", function() {
     run(function() {
       sorted = get(obj, 'sortedItems');
       items = get(obj, 'items');
@@ -746,7 +746,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
   });
 
-  test("distinct items may be sort-equal, although their relative order will not be guaranteed", function() {
+  QUnit.test("distinct items may be sort-equal, although their relative order will not be guaranteed", function() {
     var jaime, jaimeInDisguise;
 
     run(function() {
@@ -784,7 +784,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
   });
 
-  test("guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys", function() {
+  QUnit.test("guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys", function() {
     var tyrion = { fname: "Tyrion", lname: "Lannister" };
     var tyrionInDisguise = ObjectProxy.create({
           fname: "Yollo",
@@ -837,7 +837,7 @@ QUnit.module('computedSort - sortProperties', {
 
 commonSortTests();
 
-test("updating sort properties updates the sorted array", function() {
+QUnit.test("updating sort properties updates the sorted array", function() {
   run(function() {
     sorted = get(obj, 'sortedItems');
   });
@@ -851,7 +851,7 @@ test("updating sort properties updates the sorted array", function() {
   deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
 });
 
-test("updating sort properties in place updates the sorted array", function() {
+QUnit.test("updating sort properties in place updates the sorted array", function() {
   run(function() {
     sorted = get(obj, 'sortedItems');
     sortProps = get(obj, 'itemSorting');
@@ -867,7 +867,7 @@ test("updating sort properties in place updates the sorted array", function() {
   deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
 });
 
-test("updating new sort properties in place updates the sorted array", function() {
+QUnit.test("updating new sort properties in place updates the sorted array", function() {
   run(function() {
     sorted = get(obj, 'sortedItems');
   });
@@ -890,7 +890,7 @@ test("updating new sort properties in place updates the sorted array", function(
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], "after updating sort properties array is updated");
 });
 
-test("sort direction defaults to ascending", function() {
+QUnit.test("sort direction defaults to ascending", function() {
   run(function() {
     sorted = get(obj, 'sortedItems');
   });
@@ -904,7 +904,7 @@ test("sort direction defaults to ascending", function() {
   deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "sort direction defaults to ascending");
 });
 
-test("updating an item's sort properties updates the sorted array", function() {
+QUnit.test("updating an item's sort properties updates the sorted array", function() {
   var tyrionInDisguise;
 
   run(function() {
@@ -923,7 +923,7 @@ test("updating an item's sort properties updates the sorted array", function() {
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
 });
 
-test("updating several of an item's sort properties updated the sorted array", function() {
+QUnit.test("updating several of an item's sort properties updated the sorted array", function() {
   var sansaInDisguise;
 
   run(function() {
@@ -945,7 +945,7 @@ test("updating several of an item's sort properties updated the sorted array", f
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Bran', 'Robb', 'Sansa'], "updating an item's sort properties updates the sorted array");
 });
 
-test("updating an item's sort properties does not error when binary search does a self compare (#3273)", function() {
+QUnit.test("updating an item's sort properties does not error when binary search does a self compare (#3273)", function() {
   var jaime, cersei;
 
   run(function() {
@@ -980,7 +980,7 @@ test("updating an item's sort properties does not error when binary search does 
   deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "array is sorted correctly");
 });
 
-test("property paths in sort properties update the sorted array", function () {
+QUnit.test("property paths in sort properties update the sorted array", function () {
   var jaime, cersei, sansa;
 
   run(function () {
@@ -1076,7 +1076,7 @@ QUnit.module('computedSort - sort function', {
 
 commonSortTests();
 
-test("changing item properties specified via @each triggers a resort of the modified item", function() {
+QUnit.test("changing item properties specified via @each triggers a resort of the modified item", function() {
   var tyrionInDisguise;
 
   run(function() {
@@ -1095,7 +1095,7 @@ test("changing item properties specified via @each triggers a resort of the modi
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating a specified property on an item resorts it");
 });
 
-test("changing item properties not specified via @each does not trigger a resort", function() {
+QUnit.test("changing item properties not specified via @each does not trigger a resort", function() {
   var cersei;
 
   run(function() {
@@ -1145,7 +1145,7 @@ QUnit.module('computedSort - stability', {
   }
 });
 
-test("sorts correctly as only one property changes", function() {
+QUnit.test("sorts correctly as only one property changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('sortedItems');
@@ -1189,7 +1189,7 @@ QUnit.module('computedSort - concurrency', {
   }
 });
 
-test("sorts correctly when there are concurrent changes", function() {
+QUnit.test("sorts correctly when there are concurrent changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('sortedItems');
@@ -1205,7 +1205,7 @@ test("sorts correctly when there are concurrent changes", function() {
   deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
 });
 
-test("sorts correctly with a user-provided comparator when there are concurrent changes", function() {
+QUnit.test("sorts correctly with a user-provided comparator when there are concurrent changes", function() {
   var sorted;
   run(function() {
     sorted = obj.get('customSortedItems');
@@ -1240,7 +1240,7 @@ QUnit.module('computedMax', {
   }
 });
 
-test("max tracks the max number as objects are added", function() {
+QUnit.test("max tracks the max number as objects are added", function() {
   equal(get(obj, 'max'), 3, "precond - max is initially correct");
 
   run(function() {
@@ -1260,7 +1260,7 @@ test("max tracks the max number as objects are added", function() {
   equal(get(obj, 'max'), 5, "max does not update when a smaller number is added");
 });
 
-test("max recomputes when the current max is removed", function() {
+QUnit.test("max recomputes when the current max is removed", function() {
   equal(get(obj, 'max'), 3, "precond - max is initially correct");
 
   run(function() {
@@ -1293,7 +1293,7 @@ QUnit.module('computedMin', {
   }
 });
 
-test("min tracks the min number as objects are added", function() {
+QUnit.test("min tracks the min number as objects are added", function() {
   equal(get(obj, 'min'), 1, "precond - min is initially correct");
 
   run(function() {
@@ -1313,7 +1313,7 @@ test("min tracks the min number as objects are added", function() {
   equal(get(obj, 'min'), -2, "min does not update when a larger number is added");
 });
 
-test("min recomputes when the current min is removed", function() {
+QUnit.test("min recomputes when the current min is removed", function() {
   equal(get(obj, 'min'), 1, "precond - min is initially correct");
 
   run(function() {
@@ -1362,7 +1362,7 @@ QUnit.module('Ember.arrayComputed - mixed sugar', {
   }
 });
 
-test("filtering and sorting can be combined", function() {
+QUnit.test("filtering and sorting can be combined", function() {
   run(function() {
     items = get(obj, 'items');
     sorted = get(obj, 'sortedLannisters');
@@ -1379,7 +1379,7 @@ test("filtering and sorting can be combined", function() {
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
 });
 
-test("filtering, sorting and reduce (max) can be combined", function() {
+QUnit.test("filtering, sorting and reduce (max) can be combined", function() {
   run(function() {
     items = get(obj, 'items');
   });
@@ -1431,7 +1431,7 @@ QUnit.module('Ember.arrayComputed - chains', {
   }
 });
 
-test("it can filter and sort when both depend on the same item property", function() {
+QUnit.test("it can filter and sort when both depend on the same item property", function() {
   run(function() {
     filtered = get(obj, 'filtered');
     sorted = get(obj, 'sorted');
@@ -1482,7 +1482,7 @@ QUnit.module('Chaining array and reduced CPs', {
   }
 });
 
-test("it computes interdependent array computed properties", function() {
+QUnit.test("it computes interdependent array computed properties", function() {
   get(obj, 'mapped');
 
   equal(get(obj, 'max'), 3, 'sanity - it properly computes the maximum value');
@@ -1518,12 +1518,12 @@ QUnit.module('computedSum', {
   }
 });
 
-test('sums the values in the dependentKey', function() {
+QUnit.test('sums the values in the dependentKey', function() {
   var sum = get(obj, 'total');
   equal(sum, 6, 'sums the values');
 });
 
-test('updates when array is modified', function() {
+QUnit.test('updates when array is modified', function() {
   var sum = function() {
     return get(obj, 'total');
   };

@@ -25,7 +25,7 @@ QUnit.module('component - invocation', {
   }
 });
 
-test('non-block without properties', function() {
+QUnit.test('non-block without properties', function() {
   expect(1);
 
   registry.register('template:components/non-block', compile('In layout'));
@@ -40,7 +40,7 @@ test('non-block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout');
 });
 
-test('block without properties', function() {
+QUnit.test('block without properties', function() {
   expect(1);
 
   registry.register('template:components/with-block', compile('In layout - {{yield}}'));
@@ -55,7 +55,7 @@ test('block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - In template');
 });
 
-test('non-block with properties', function() {
+QUnit.test('non-block with properties', function() {
   expect(1);
 
   registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
@@ -70,7 +70,7 @@ test('non-block with properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
-test('block with properties', function() {
+QUnit.test('block with properties', function() {
   expect(1);
 
   registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));

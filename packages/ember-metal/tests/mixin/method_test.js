@@ -6,7 +6,7 @@ import {
 
 QUnit.module('Mixin Methods');
 
-test('defining simple methods', function() {
+QUnit.test('defining simple methods', function() {
 
   var MixinA, obj, props;
 
@@ -24,7 +24,7 @@ test('defining simple methods', function() {
   equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
 });
 
-test('overriding public methods', function() {
+QUnit.test('overriding public methods', function() {
   var MixinA, MixinB, MixinD, MixinF, obj;
 
   MixinA = Mixin.create({
@@ -62,7 +62,7 @@ test('overriding public methods', function() {
 });
 
 
-test('overriding inherited objects', function() {
+QUnit.test('overriding inherited objects', function() {
 
   var cnt = 0;
   var MixinA = Mixin.create({
@@ -91,7 +91,7 @@ test('overriding inherited objects', function() {
   equal(cnt, 1, 'should not screw w/ parent obj');
 });
 
-test('Including the same mixin more than once will only run once', function() {
+QUnit.test('Including the same mixin more than once will only run once', function() {
   var cnt = 0;
   var MixinA = Mixin.create({
     foo: function() { cnt++; }
@@ -119,7 +119,7 @@ test('Including the same mixin more than once will only run once', function() {
   equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
 
-test('_super from a single mixin with no superclass does not error', function() {
+QUnit.test('_super from a single mixin with no superclass does not error', function() {
   var MixinA = Mixin.create({
     foo: function() {
       this._super.apply(this, arguments);
@@ -133,7 +133,7 @@ test('_super from a single mixin with no superclass does not error', function() 
   ok(true);
 });
 
-test('_super from a first-of-two mixins with no superclass function does not error', function() {
+QUnit.test('_super from a first-of-two mixins with no superclass function does not error', function() {
   // _super was previously calling itself in the second assertion.
   // Use remaining count of calls to ensure it doesn't loop indefinitely.
   var remaining = 3;
@@ -164,7 +164,7 @@ test('_super from a first-of-two mixins with no superclass function does not err
 QUnit.module('Method Conflicts');
 
 
-test('overriding toString', function() {
+QUnit.test('overriding toString', function() {
   var MixinA = Mixin.create({
     toString: function() { return 'FOO'; }
   });
@@ -184,7 +184,7 @@ test('overriding toString', function() {
 
 QUnit.module('system/mixin/method_test BUGS');
 
-test('applying several mixins at once with sup already defined causes infinite loop', function() {
+QUnit.test('applying several mixins at once with sup already defined causes infinite loop', function() {
 
   var cnt = 0;
   var MixinA = Mixin.create({

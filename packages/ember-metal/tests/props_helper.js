@@ -10,11 +10,11 @@ var testBoth = function(testname, callback) {
   function aget(x, y) { return x[y]; }
   function aset(x, y, z) { return (x[y] = z); }
 
-  test(testname+' using getFromEmberMetal()/Ember.set()', function() {
+  QUnit.test(testname+' using getFromEmberMetal()/Ember.set()', function() {
     callback(emberget, emberset);
   });
 
-  test(testname+' using accessors', function() {
+  QUnit.test(testname+' using accessors', function() {
     if (Ember.USES_ACCESSORS) {
       callback(aget, aset);
     } else {
@@ -31,23 +31,23 @@ var testWithDefault = function(testname, callback) {
   function aget(x, y) { return x[y]; }
   function aset(x, y, z) { return (x[y] = z); }
 
-  test(testname+' using obj.get()', function() {
+  QUnit.test(testname+' using obj.get()', function() {
     callback(emberget, emberset);
   });
 
-  test(testname+' using obj.getWithDefault()', function() {
+  QUnit.test(testname+' using obj.getWithDefault()', function() {
     callback(getwithdefault, emberset);
   });
 
-  test(testname+' using getFromEmberMetal()', function() {
+  QUnit.test(testname+' using getFromEmberMetal()', function() {
     callback(emberget, emberset);
   });
 
-  test(testname+' using Ember.getWithDefault()', function() {
+  QUnit.test(testname+' using Ember.getWithDefault()', function() {
     callback(embergetwithdefault, emberset);
   });
 
-  test(testname+' using accessors', function() {
+  QUnit.test(testname+' using accessors', function() {
     if (Ember.USES_ACCESSORS) {
       callback(aget, aset);
     } else {

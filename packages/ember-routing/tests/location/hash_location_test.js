@@ -54,7 +54,7 @@ QUnit.module("Ember.HashLocation", {
   }
 });
 
-test("HashLocation.getURL() returns the current url", function() {
+QUnit.test("HashLocation.getURL() returns the current url", function() {
   expect(1);
 
   createLocation({
@@ -64,7 +64,7 @@ test("HashLocation.getURL() returns the current url", function() {
   equal(location.getURL(), '/foo/bar');
 });
 
-test("HashLocation.getURL() includes extra hashes", function() {
+QUnit.test("HashLocation.getURL() includes extra hashes", function() {
   expect(1);
 
   createLocation({
@@ -74,7 +74,7 @@ test("HashLocation.getURL() includes extra hashes", function() {
   equal(location.getURL(), '/foo#bar#car');
 });
 
-test("HashLocation.getURL() assumes location.hash without #/ prefix is not a route path", function() {
+QUnit.test("HashLocation.getURL() assumes location.hash without #/ prefix is not a route path", function() {
   expect(1);
 
   createLocation({
@@ -84,7 +84,7 @@ test("HashLocation.getURL() assumes location.hash without #/ prefix is not a rou
   equal(location.getURL(), '/#foo#bar');
 });
 
-test("HashLocation.getURL() returns a normal forward slash when there is no location.hash", function() {
+QUnit.test("HashLocation.getURL() returns a normal forward slash when there is no location.hash", function() {
   expect(1);
 
   createLocation({
@@ -94,7 +94,7 @@ test("HashLocation.getURL() returns a normal forward slash when there is no loca
   equal(location.getURL(), '/');
 });
 
-test("HashLocation.setURL() correctly sets the url", function() {
+QUnit.test("HashLocation.setURL() correctly sets the url", function() {
   expect(2);
 
   createLocation();
@@ -105,7 +105,7 @@ test("HashLocation.setURL() correctly sets the url", function() {
   equal(get(location, 'lastSetURL'), '/bar');
 });
 
-test("HashLocation.replaceURL() correctly replaces to the path with a page reload", function() {
+QUnit.test("HashLocation.replaceURL() correctly replaces to the path with a page reload", function() {
   expect(2);
 
   createLocation({
@@ -121,7 +121,7 @@ test("HashLocation.replaceURL() correctly replaces to the path with a page reloa
   equal(get(location, 'lastSetURL'), '/foo');
 });
 
-test("HashLocation.onUpdateURL() registers a hashchange callback", function() {
+QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", function() {
   expect(3);
 
   var oldJquery = Ember.$;
@@ -149,7 +149,7 @@ test("HashLocation.onUpdateURL() registers a hashchange callback", function() {
   Ember.$ = oldJquery;
 });
 
-test("HashLocation.formatURL() prepends a # to the provided string", function() {
+QUnit.test("HashLocation.formatURL() prepends a # to the provided string", function() {
   expect(1);
 
   createLocation();
@@ -157,7 +157,7 @@ test("HashLocation.formatURL() prepends a # to the provided string", function() 
   equal(location.formatURL('/foo#bar'), '#/foo#bar');
 });
 
-test("HashLocation.willDestroy() cleans up hashchange event listener", function() {
+QUnit.test("HashLocation.willDestroy() cleans up hashchange event listener", function() {
   expect(2);
 
   var oldJquery = Ember.$;

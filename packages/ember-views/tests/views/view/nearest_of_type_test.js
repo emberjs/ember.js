@@ -21,7 +21,7 @@ QUnit.module("View#nearest*", {
     }
   });
 
-  test("nearestOfType should find the closest view by view class", function() {
+  QUnit.test("nearestOfType should find the closest view by view class", function() {
     var child;
 
     run(function() {
@@ -33,7 +33,7 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Parent), parentView, "finds closest view in the hierarchy by class");
   });
 
-  test("nearestOfType should find the closest view by mixin", function() {
+  QUnit.test("nearestOfType should find the closest view by mixin", function() {
     var child;
 
     run(function() {
@@ -45,7 +45,7 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-  test("nearestWithProperty should search immediate parent", function() {
+  QUnit.test("nearestWithProperty should search immediate parent", function() {
     var childView;
 
     view = View.create({
@@ -65,7 +65,7 @@ QUnit.module("View#nearest*", {
 
   });
 
-  test("nearestChildOf should be deprecated", function() {
+  QUnit.test("nearestChildOf should be deprecated", function() {
     var child;
 
     run(function() {

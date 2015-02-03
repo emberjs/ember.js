@@ -33,19 +33,19 @@ QUnit.module("Ember Router", {
   }
 });
 
-test("can create a router without a container", function() {
+QUnit.test("can create a router without a container", function() {
   createRouter({ container: null });
 
   ok(true, 'no errors were thrown when creating without a container');
 });
 
-test("should not create a router.js instance upon init", function() {
+QUnit.test("should not create a router.js instance upon init", function() {
   var router = createRouter();
 
   ok(!router.router);
 });
 
-test("should destroy its location upon destroying the routers container.", function() {
+QUnit.test("should destroy its location upon destroying the routers container.", function() {
   var router = createRouter();
   var location = router.get('location');
 
@@ -54,7 +54,7 @@ test("should destroy its location upon destroying the routers container.", funct
   ok(location.isDestroyed, "location should be destroyed");
 });
 
-test("should instantiate its location with its `rootURL`", function() {
+QUnit.test("should instantiate its location with its `rootURL`", function() {
   var router = createRouter({
     rootURL: '/rootdir/'
   });
@@ -63,7 +63,7 @@ test("should instantiate its location with its `rootURL`", function() {
   equal(location.get('rootURL'), '/rootdir/');
 });
 
-test("Ember.AutoLocation._replacePath should be called with the right path", function() {
+QUnit.test("Ember.AutoLocation._replacePath should be called with the right path", function() {
   expect(1);
 
   var AutoTestLocation = copy(AutoLocation);
@@ -88,7 +88,7 @@ test("Ember.AutoLocation._replacePath should be called with the right path", fun
   });
 });
 
-test("Ember.Router._routePath should consume identical prefixes", function() {
+QUnit.test("Ember.Router._routePath should consume identical prefixes", function() {
   createRouter();
 
   expect(8);
@@ -115,7 +115,7 @@ test("Ember.Router._routePath should consume identical prefixes", function() {
   equal(routePath('foo.bar.baz', 'foo'), 'foo.bar.baz.foo');
 });
 
-test("Router should cancel routing setup when the Location class says so via cancelRouterSetup", function() {
+QUnit.test("Router should cancel routing setup when the Location class says so via cancelRouterSetup", function() {
   expect(0);
 
   var router;
@@ -138,7 +138,7 @@ test("Router should cancel routing setup when the Location class says so via can
   router.startRouting();
 });
 
-test("AutoLocation should replace the url when it's not in the preferred format", function() {
+QUnit.test("AutoLocation should replace the url when it's not in the preferred format", function() {
   expect(1);
 
   var AutoTestLocation = copy(AutoLocation);
@@ -164,7 +164,7 @@ test("AutoLocation should replace the url when it's not in the preferred format"
   });
 });
 
-test("Router#handleURL should remove any #hashes before doing URL transition", function() {
+QUnit.test("Router#handleURL should remove any #hashes before doing URL transition", function() {
   expect(2);
 
   var router = createRouter({

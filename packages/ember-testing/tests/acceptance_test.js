@@ -90,7 +90,7 @@ QUnit.module("ember-testing Acceptance", {
   }
 });
 
-test("helpers can be chained with then", function() {
+QUnit.test("helpers can be chained with then", function() {
   expect(5);
 
   currentRoute = 'index';
@@ -116,7 +116,7 @@ test("helpers can be chained with then", function() {
 
 // Keep this for backwards compatibility
 
-test("helpers can be chained to each other", function() {
+QUnit.test("helpers can be chained to each other", function() {
   expect(5);
 
   currentRoute = 'index';
@@ -139,7 +139,7 @@ test("helpers can be chained to each other", function() {
   });
 });
 
-test("helpers don't need to be chained", function() {
+QUnit.test("helpers don't need to be chained", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -162,7 +162,7 @@ test("helpers don't need to be chained", function() {
   });
 });
 
-test("Nested async helpers", function() {
+QUnit.test("Nested async helpers", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -187,7 +187,7 @@ test("Nested async helpers", function() {
   });
 });
 
-test("Multiple nested async helpers", function() {
+QUnit.test("Multiple nested async helpers", function() {
   expect(2);
 
   visit('/posts');
@@ -205,7 +205,7 @@ test("Multiple nested async helpers", function() {
   });
 });
 
-test("Helpers nested in thens", function() {
+QUnit.test("Helpers nested in thens", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -230,7 +230,7 @@ test("Helpers nested in thens", function() {
   });
 });
 
-test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
   expect(0);
 
   Test.adapter = QUnitAdapter.create({
@@ -242,7 +242,7 @@ test("Aborted transitions are not logged via Ember.Test.adapter#exception", func
   visit("/abort_transition");
 });
 
-test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
   expect(2);
 
   var asyncHandled;
@@ -262,7 +262,7 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   asyncHandled = click(".does-not-exist");
 });
 
-test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception", function () {
   expect(1);
 
   Test.adapter = QUnitAdapter.create({
@@ -278,7 +278,7 @@ test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#except
   });
 });
 
-test("should not start routing on the root URL when visiting another", function() {
+QUnit.test("should not start routing on the root URL when visiting another", function() {
   visit('/posts');
 
   andThen(function() {
@@ -288,7 +288,7 @@ test("should not start routing on the root URL when visiting another", function(
   });
 });
 
-test("only enters the index route once when visiting /", function() {
+QUnit.test("only enters the index route once when visiting /", function() {
   visit('/');
 
   andThen(function() {

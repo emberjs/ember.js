@@ -82,13 +82,13 @@ function createDynamicArrayController() {
   });
 }
 
-test("when no `itemController` is set, `objectAtContent` returns objects directly", function() {
+QUnit.test("when no `itemController` is set, `objectAtContent` returns objects directly", function() {
   createUnwrappedArrayController();
 
   strictEqual(arrayController.objectAtContent(1), jaime, "No controller is returned when itemController is not set");
 });
 
-test("when `itemController` is set, `objectAtContent` returns an instance of the controller", function() {
+QUnit.test("when `itemController` is set, `objectAtContent` returns an instance of the controller", function() {
   createArrayController();
 
   var jaimeController = arrayController.objectAtContent(1);
@@ -97,7 +97,7 @@ test("when `itemController` is set, `objectAtContent` returns an instance of the
 });
 
 
-test("when `idx` is out of range, `objectAtContent` does not create a controller", function() {
+QUnit.test("when `idx` is out of range, `objectAtContent` does not create a controller", function() {
   controllerClass.reopen({
     init: function() {
       ok(false, "Controllers should not be created when `idx` is out of range");
@@ -108,14 +108,14 @@ test("when `idx` is out of range, `objectAtContent` does not create a controller
   strictEqual(arrayController.objectAtContent(50), undefined, "no controllers are created for out of range indexes");
 });
 
-test("when the underlying object is null, a controller is still returned", function() {
+QUnit.test("when the underlying object is null, a controller is still returned", function() {
   createArrayController();
   arrayController.unshiftObject(null);
   var firstController = arrayController.objectAtContent(0);
   ok(controllerClass.detectInstance(firstController), "A controller is still created for null objects");
 });
 
-test("the target of item controllers is the parent controller", function() {
+QUnit.test("the target of item controllers is the parent controller", function() {
   createArrayController();
 
   var jaimeController = arrayController.objectAtContent(1);
@@ -123,7 +123,7 @@ test("the target of item controllers is the parent controller", function() {
   equal(jaimeController.get('target'), arrayController, "Item controllers' targets are their parent controller");
 });
 
-test("the parentController property of item controllers is set to the parent controller", function() {
+QUnit.test("the parentController property of item controllers is set to the parent controller", function() {
   createArrayController();
 
   var jaimeController = arrayController.objectAtContent(1);
@@ -131,13 +131,13 @@ test("the parentController property of item controllers is set to the parent con
   equal(jaimeController.get('parentController'), arrayController, "Item controllers' targets are their parent controller");
 });
 
-test("when the underlying object has not changed, `objectAtContent` always returns the same instance", function() {
+QUnit.test("when the underlying object has not changed, `objectAtContent` always returns the same instance", function() {
   createArrayController();
 
   strictEqual(arrayController.objectAtContent(1), arrayController.objectAtContent(1), "Controller instances are reused");
 });
 
-test("when the index changes, `objectAtContent` still returns the same instance", function() {
+QUnit.test("when the index changes, `objectAtContent` still returns the same instance", function() {
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1);
   arrayController.unshiftObject(tyrion);
@@ -145,7 +145,7 @@ test("when the index changes, `objectAtContent` still returns the same instance"
   strictEqual(arrayController.objectAtContent(2), jaimeController, "Controller instances are reused");
 });
 
-test("when the underlying array changes, old subcontainers are destroyed", function() {
+QUnit.test("when the underlying array changes, old subcontainers are destroyed", function() {
   createArrayController();
   // cause some controllers to be instantiated
   arrayController.objectAtContent(1);
@@ -168,7 +168,7 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
 });
 
 
-test("item controllers are created lazily", function() {
+QUnit.test("item controllers are created lazily", function() {
   createArrayController();
 
   equal(itemControllerCount, 0, "precond - no item controllers yet");
@@ -178,7 +178,7 @@ test("item controllers are created lazily", function() {
   equal(itemControllerCount, 1, "item controllers are created lazily");
 });
 
-test("when items are removed from the arrayController, their respective subcontainers are destroyed", function() {
+QUnit.test("when items are removed from the arrayController, their respective subcontainers are destroyed", function() {
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1);
   var cerseiController = arrayController.objectAtContent(2);
@@ -195,7 +195,7 @@ test("when items are removed from the arrayController, their respective subconta
   equal(!!jaimeController.isDestroying, false, "Retained objects' containers are not cleaned up");
 });
 
-test("one cannot remove wrapped model directly when specifying `itemController`", function() {
+QUnit.test("one cannot remove wrapped model directly when specifying `itemController`", function() {
   createArrayController();
   var cerseiController = arrayController.objectAtContent(2);
 
@@ -210,7 +210,7 @@ test("one cannot remove wrapped model directly when specifying `itemController`"
   equal(arrayController.get('length'), 2, "can remove wrapper objects");
 });
 
-test("when items are removed from the underlying array, their respective subcontainers are destroyed", function() {
+QUnit.test("when items are removed from the underlying array, their respective subcontainers are destroyed", function() {
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1);
   var cerseiController = arrayController.objectAtContent(2);
@@ -227,7 +227,7 @@ test("when items are removed from the underlying array, their respective subcont
   equal(!!cerseiController.isDestroyed, true, "Removed objects' containers are cleaned up");
 });
 
-test("`itemController` can be dynamic by overwriting `lookupItemController`", function() {
+QUnit.test("`itemController` can be dynamic by overwriting `lookupItemController`", function() {
   createDynamicArrayController();
 
   var tywinController = arrayController.objectAtContent(0);
@@ -237,7 +237,7 @@ test("`itemController` can be dynamic by overwriting `lookupItemController`", fu
   ok(otherControllerClass.detectInstance(jaimeController), "lookupItemController can return different classes for different objects");
 });
 
-test("when `idx` is out of range, `lookupItemController` is not called", function() {
+QUnit.test("when `idx` is out of range, `lookupItemController` is not called", function() {
   arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
@@ -250,7 +250,7 @@ test("when `idx` is out of range, `lookupItemController` is not called", functio
   strictEqual(arrayController.objectAtContent(-1), undefined, "no controllers are created for indexes less than zero");
 });
 
-test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
+QUnit.test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
   arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
@@ -266,7 +266,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
     "`lookupItemController` must return either null or a valid controller name");
 });
 
-test("target and parentController are set to the concrete parentController", function() {
+QUnit.test("target and parentController are set to the concrete parentController", function() {
   var parent = ArrayController.create({
 
   });
@@ -295,7 +295,7 @@ test("target and parentController are set to the concrete parentController", fun
 
 });
 
-test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
+QUnit.test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
   createArrayController();
 
   var tywinController = arrayController.objectAtContent(0);
@@ -321,7 +321,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   equal(tywinController.get('model.name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' model");
 });
 
-test("`itemController`'s life cycle should be entangled with its parent controller", function() {
+QUnit.test("`itemController`'s life cycle should be entangled with its parent controller", function() {
   createDynamicArrayController();
 
   var tywinController = arrayController.objectAtContent(0);
@@ -364,7 +364,7 @@ QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
   }
 });
 
-test("item controllers can be used to provide properties for array computed macros", function() {
+QUnit.test("item controllers can be used to provide properties for array computed macros", function() {
   createArrayController();
 
   ok(compare(guidFor(cersei), guidFor(jaime)) < 0, "precond - guid tiebreaker would fail test");

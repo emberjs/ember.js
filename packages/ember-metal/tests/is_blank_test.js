@@ -2,7 +2,7 @@ import isBlank from 'ember-metal/is_blank';
 
 QUnit.module("Ember.isBlank");
 
-test("Ember.isBlank", function() {
+QUnit.test("Ember.isBlank", function() {
   var string = "string";
   var fn = function() {};
   var object = { length: 0 };

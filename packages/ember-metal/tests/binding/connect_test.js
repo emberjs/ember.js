@@ -104,7 +104,7 @@ testBoth('Calling connect more than once', function(get, set) {
   });
 });
 
-test('inherited bindings should sync on create', function() {
+QUnit.test('inherited bindings should sync on create', function() {
   var a;
   run(function () {
     var A = function() {

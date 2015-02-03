@@ -12,7 +12,7 @@ QUnit.module("ember-htmlbars: tagless views should be able to add/remove child v
   }
 });
 
-test("can insert new child views after initial tagless view rendering", function() {
+QUnit.test("can insert new child views after initial tagless view rendering", function() {
   view = EmberView.create({
     shouldShow: false,
     array: Ember.A([1]),
@@ -38,7 +38,7 @@ test("can insert new child views after initial tagless view rendering", function
   equal(view.$().text(), '12');
 });
 
-test("can remove child views after initial tagless view rendering", function() {
+QUnit.test("can remove child views after initial tagless view rendering", function() {
   view = EmberView.create({
     shouldShow: false,
     array: Ember.A([]),

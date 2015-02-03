@@ -99,9 +99,9 @@ Suite.reopenClass({
         var ctx = this;
 
         if (!func) {
-          test(name); // output warning
+          QUnit.test(name); // output warning
         } else {
-          test(name, function() { func.call(ctx); });
+          QUnit.test(name, function() { func.call(ctx); });
         }
       }
     });

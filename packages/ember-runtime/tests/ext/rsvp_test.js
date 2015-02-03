@@ -5,7 +5,7 @@ import RSVP from "ember-runtime/ext/rsvp";
 
 QUnit.module('Ember.RSVP');
 
-test('Ensure that errors thrown from within a promise are sent to the console', function() {
+QUnit.test('Ensure that errors thrown from within a promise are sent to the console', function() {
   var error = new Error('Error thrown in a promise for testing purposes.');
 
   try {
@@ -54,7 +54,7 @@ QUnit.module("Deferred RSVP's async + Testing", {
   }
 });
 
-test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
+QUnit.test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
   expect(19);
 
   ok(!run.currentRunLoop, 'expect no run-loop');
@@ -109,7 +109,7 @@ test("given `Ember.testing = true`, correctly informs the test suite about async
   });
 });
 
-test('TransitionAborted errors are not re-thrown', function() {
+QUnit.test('TransitionAborted errors are not re-thrown', function() {
   expect(1);
   var fakeTransitionAbort = { name: 'TransitionAborted' };
 
@@ -118,7 +118,7 @@ test('TransitionAborted errors are not re-thrown', function() {
   ok(true, 'did not throw an error when dealing with TransitionAborted');
 });
 
-test('rejections like jqXHR which have errorThrown property work', function() {
+QUnit.test('rejections like jqXHR which have errorThrown property work', function() {
   expect(2);
 
   var wasEmberTesting = Ember.testing;
@@ -144,7 +144,7 @@ test('rejections like jqXHR which have errorThrown property work', function() {
 });
 
 
-test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
+QUnit.test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
   expect(2);
 
   var wasEmberTesting = Ember.testing;

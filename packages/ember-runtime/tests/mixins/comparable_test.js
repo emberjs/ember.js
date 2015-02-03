@@ -31,7 +31,7 @@ QUnit.module("Comparable", {
 
 });
 
-test("should be comparable and return the correct result", function() {
+QUnit.test("should be comparable and return the correct result", function() {
   equal(Comparable.detect(r1), true);
   equal(compare(r1, r1), 0);
   equal(compare(r1, r2), -1);

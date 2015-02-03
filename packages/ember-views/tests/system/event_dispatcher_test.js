@@ -27,7 +27,7 @@ QUnit.module("EventDispatcher", {
   }
 });
 
-test("should dispatch events to views", function() {
+QUnit.test("should dispatch events to views", function() {
   var receivedEvent;
   var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
@@ -84,7 +84,7 @@ test("should dispatch events to views", function() {
   equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
-test("should not dispatch events to views not inDOM", function() {
+QUnit.test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
   view = View.createWithMixins({
@@ -121,7 +121,7 @@ test("should not dispatch events to views not inDOM", function() {
   $element.remove();
 });
 
-test("should send change events up view hierarchy if view contains form elements", function() {
+QUnit.test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = View.create({
     render: function(buffer) {
@@ -142,7 +142,7 @@ test("should send change events up view hierarchy if view contains form elements
   equal(receivedEvent.target, jQuery('#is-done')[0], "target property is the element that was clicked");
 });
 
-test("events should stop propagating if the view is destroyed", function() {
+QUnit.test("events should stop propagating if the view is destroyed", function() {
   var parentViewReceived, receivedEvent;
 
   var parentView = ContainerView.create({
@@ -178,7 +178,7 @@ test("events should stop propagating if the view is destroyed", function() {
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
-test('should not interfere with event propagation of virtualViews', function() {
+QUnit.test('should not interfere with event propagation of virtualViews', function() {
   var receivedEvent;
 
   var view = View.create({
@@ -202,7 +202,7 @@ test('should not interfere with event propagation of virtualViews', function() {
   deepEqual(receivedEvent && receivedEvent.target, jQuery('#propagate-test-div')[0], 'target property is the element that was clicked');
 });
 
-test("should dispatch events to nearest event manager", function() {
+QUnit.test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
   view = ContainerView.create({
     render: function(buffer) {
@@ -226,7 +226,7 @@ test("should dispatch events to nearest event manager", function() {
   equal(receivedEvent, 1, "event should go to manager and not view");
 });
 
-test("event manager should be able to re-dispatch events to view", function() {
+QUnit.test("event manager should be able to re-dispatch events to view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var receivedEvent=0;
@@ -268,7 +268,7 @@ test("event manager should be able to re-dispatch events to view", function() {
   equal(receivedEvent, 2, "event should go to manager and not view");
 });
 
-test("event handlers should be wrapped in a run loop", function() {
+QUnit.test("event handlers should be wrapped in a run loop", function() {
   expect(1);
 
   view = View.createWithMixins({
@@ -303,7 +303,7 @@ QUnit.module("EventDispatcher#setup", {
   }
 });
 
-test("additional events which should be listened on can be passed", function () {
+QUnit.test("additional events which should be listened on can be passed", function () {
   expect(1);
 
   run(function () {
@@ -320,7 +320,7 @@ test("additional events which should be listened on can be passed", function () 
   jQuery("#leView").trigger("myevent");
 });
 
-test("additional events and rootElement can be specified", function () {
+QUnit.test("additional events and rootElement can be specified", function () {
   expect(3);
 
   jQuery("#qunit-fixture").append("<div class='custom-root'></div>");

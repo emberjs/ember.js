@@ -37,7 +37,7 @@ QUnit.module("Data Adapter", {
   }
 });
 
-test("Model types added with DefaultResolver", function() {
+QUnit.test("Model types added with DefaultResolver", function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
@@ -65,7 +65,7 @@ test("Model types added with DefaultResolver", function() {
   adapter.watchModelTypes(modelTypesAdded);
 });
 
-test("Model types added with custom container-debug-adapter", function() {
+QUnit.test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend();
   var StubContainerDebugAdapter = DefaultResolver.extend({
     canCatalogEntriesByType: function(type) {
@@ -103,7 +103,7 @@ test("Model types added with custom container-debug-adapter", function() {
   adapter.watchModelTypes(modelTypesAdded);
 });
 
-test("Model Types Updated", function() {
+QUnit.test("Model Types Updated", function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
@@ -132,7 +132,7 @@ test("Model Types Updated", function() {
 
 });
 
-test("Records Added", function() {
+QUnit.test("Records Added", function() {
   expect(8);
   var countAdded = 1;
 
@@ -171,7 +171,7 @@ test("Records Added", function() {
   recordList.pushObject(post);
 });
 
-test("Observes and releases a record correctly", function() {
+QUnit.test("Observes and releases a record correctly", function() {
   var updatesCalled = 0;
   App.Post = Model.extend();
 

@@ -15,7 +15,7 @@ QUnit.module("ember-routing-htmlbars: link-to helper", {
 });
 
 
-test("should be able to be inserted in DOM when the router is not present", function() {
+QUnit.test("should be able to be inserted in DOM when the router is not present", function() {
   var template = "{{#link-to 'index'}}Go to Index{{/link-to}}";
   view = EmberView.create({
     template: compile(template)
@@ -26,7 +26,7 @@ test("should be able to be inserted in DOM when the router is not present", func
   equal(view.$().text(), 'Go to Index');
 });
 
-test("re-renders when title changes", function() {
+QUnit.test("re-renders when title changes", function() {
   var template = "{{link-to title routeName}}";
   view = EmberView.create({
     controller: {
@@ -47,7 +47,7 @@ test("re-renders when title changes", function() {
   equal(view.$().text(), 'bar');
 });
 
-test("can read bound title", function() {
+QUnit.test("can read bound title", function() {
   var template = "{{link-to title routeName}}";
   view = EmberView.create({
     controller: {
@@ -62,7 +62,7 @@ test("can read bound title", function() {
   equal(view.$().text(), 'foo');
 });
 
-test("escaped inline form (double curlies) escapes link title", function() {
+QUnit.test("escaped inline form (double curlies) escapes link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
     template: compile("{{link-to view.title}}")
@@ -73,7 +73,7 @@ test("escaped inline form (double curlies) escapes link title", function() {
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-test("unescaped inline form (triple curlies) does not escape link title", function() {
+QUnit.test("unescaped inline form (triple curlies) does not escape link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
     template: compile("{{{link-to view.title}}}")
@@ -84,7 +84,7 @@ test("unescaped inline form (triple curlies) does not escape link title", functi
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-test("unwraps controllers", function() {
+QUnit.test("unwraps controllers", function() {
   var template = "{{#link-to 'index' view.otherController}}Text{{/link-to}}";
 
   view = EmberView.create({

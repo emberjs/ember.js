@@ -79,14 +79,14 @@ QUnit.module("Ember.TextField", {
   }
 });
 
-test("should become disabled if the disabled attribute is true before append", function() {
+QUnit.test("should become disabled if the disabled attribute is true before append", function() {
   textField.set('disabled', true);
   append();
 
   ok(textField.$().is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+QUnit.test("should become disabled if the disabled attribute is true", function() {
   append();
   ok(textField.$().is(":not(:disabled)"));
 
@@ -97,7 +97,7 @@ test("should become disabled if the disabled attribute is true", function() {
   ok(textField.$().is(":not(:disabled)"));
 });
 
-test("input value is updated when setting value property of view", function() {
+QUnit.test("input value is updated when setting value property of view", function() {
   run(function() {
     set(textField, 'value', 'foo');
     textField.append();
@@ -110,7 +110,7 @@ test("input value is updated when setting value property of view", function() {
   equal(textField.$().val(), "bar", "updates text field after value changes");
 });
 
-test("input placeholder is updated when setting placeholder property of view", function() {
+QUnit.test("input placeholder is updated when setting placeholder property of view", function() {
   run(function() {
     set(textField, 'placeholder', 'foo');
     textField.append();
@@ -123,7 +123,7 @@ test("input placeholder is updated when setting placeholder property of view", f
   equal(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
-test("input name is updated when setting name property of view", function() {
+QUnit.test("input name is updated when setting name property of view", function() {
   run(function() {
     set(textField, 'name', 'foo');
     textField.append();
@@ -136,7 +136,7 @@ test("input name is updated when setting name property of view", function() {
   equal(textField.$().attr('name'), "bar", "updates text field after name changes");
 });
 
-test("input maxlength is updated when setting maxlength property of view", function() {
+QUnit.test("input maxlength is updated when setting maxlength property of view", function() {
   run(function() {
     set(textField, 'maxlength', '30');
     textField.append();
@@ -149,7 +149,7 @@ test("input maxlength is updated when setting maxlength property of view", funct
   equal(textField.$().attr('maxlength'), "40", "updates text field after maxlength changes");
 });
 
-test("input size is updated when setting size property of view", function() {
+QUnit.test("input size is updated when setting size property of view", function() {
   run(function() {
     set(textField, 'size', '30');
     textField.append();
@@ -162,7 +162,7 @@ test("input size is updated when setting size property of view", function() {
   equal(textField.$().attr('size'), "40", "updates text field after size changes");
 });
 
-test("input tabindex is updated when setting tabindex property of view", function() {
+QUnit.test("input tabindex is updated when setting tabindex property of view", function() {
   run(function() {
     set(textField, 'tabindex', '5');
     textField.append();
@@ -175,7 +175,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textField.$().attr('tabindex'), "3", "updates text field after tabindex changes");
 });
 
-test("input title is updated when setting title property of view", function() {
+QUnit.test("input title is updated when setting title property of view", function() {
   run(function() {
     set(textField, 'title', 'FooTitle');
     textField.append();
@@ -188,7 +188,7 @@ test("input title is updated when setting title property of view", function() {
   equal(textField.$().attr('title'), "BarTitle", "updates text field after title changes");
 });
 
-test("input type is configurable when creating view", function() {
+QUnit.test("input type is configurable when creating view", function() {
   run(function() {
     set(textField, 'type', 'password');
     textField.append();
@@ -197,7 +197,7 @@ test("input type is configurable when creating view", function() {
   equal(textField.$().attr('type'), 'password', "renders text field with type");
 });
 
-test("value binding works properly for inputs that haven't been created", function() {
+QUnit.test("value binding works properly for inputs that haven't been created", function() {
 
   run(function() {
     textField.destroy(); // destroy existing textField
@@ -221,7 +221,7 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
-test("value binding sets value on the element", function() {
+QUnit.test("value binding sets value on the element", function() {
   run(function() {
     textField.destroy(); // destroy existing textField
     textField = TextField.createWithMixins({
@@ -251,7 +251,7 @@ test("value binding sets value on the element", function() {
   equal(textField.$().val(), 'via view', "dom property was properly updated via view");
 });
 
-test("should call the insertNewline method when return key is pressed", function() {
+QUnit.test("should call the insertNewline method when return key is pressed", function() {
   var wasCalled;
   var event = EmberObject.create({
     keyCode: 13
@@ -267,7 +267,7 @@ test("should call the insertNewline method when return key is pressed", function
   ok(wasCalled, "invokes insertNewline method");
 });
 
-test("should call the cancel method when escape key is pressed", function() {
+QUnit.test("should call the cancel method when escape key is pressed", function() {
   var wasCalled;
   var event = EmberObject.create({
     keyCode: 27
@@ -283,7 +283,7 @@ test("should call the cancel method when escape key is pressed", function() {
   ok(wasCalled, "invokes cancel method");
 });
 
-test("should send an action if one is defined when the return key is pressed", function() {
+QUnit.test("should send an action if one is defined when the return key is pressed", function() {
   expect(2);
 
   var StubController = EmberObject.extend({
@@ -307,7 +307,7 @@ test("should send an action if one is defined when the return key is pressed", f
   textField.trigger('keyUp', event);
 });
 
-test("should send an action on keyPress if one is defined with onEvent=keyPress", function() {
+QUnit.test("should send an action on keyPress if one is defined with onEvent=keyPress", function() {
   expect(2);
 
   var StubController = EmberObject.extend({
@@ -333,7 +333,7 @@ test("should send an action on keyPress if one is defined with onEvent=keyPress"
 });
 
 
-test("bubbling of handled actions can be enabled via bubbles property", function() {
+QUnit.test("bubbling of handled actions can be enabled via bubbles property", function() {
   textField.set('bubbles', true);
   textField.set('action', 'didTriggerAction');
 
@@ -390,7 +390,7 @@ QUnit.module("Ember.TextField - Action events", {
   }
 });
 
-test("when the text field is blurred, the `focus-out` action is sent to the controller", function() {
+QUnit.test("when the text field is blurred, the `focus-out` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -406,7 +406,7 @@ test("when the text field is blurred, the `focus-out` action is sent to the cont
 
 });
 
-test("when the text field is focused, the `focus-in` action is sent to the controller", function() {
+QUnit.test("when the text field is focused, the `focus-in` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -423,7 +423,7 @@ test("when the text field is focused, the `focus-in` action is sent to the contr
 
 });
 
-test("when the user presses a key, the `key-press` action is sent to the controller", function() {
+QUnit.test("when the user presses a key, the `key-press` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -441,7 +441,7 @@ test("when the user presses a key, the `key-press` action is sent to the control
 
 });
 
-test("when the user inserts a new line, the `insert-newline` action is sent to the controller", function() {
+QUnit.test("when the user inserts a new line, the `insert-newline` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -460,7 +460,7 @@ test("when the user inserts a new line, the `insert-newline` action is sent to t
 });
 
 
-test("when the user presses the `enter` key, the `enter` action is sent to the controller", function() {
+QUnit.test("when the user presses the `enter` key, the `enter` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -478,7 +478,7 @@ test("when the user presses the `enter` key, the `enter` action is sent to the c
 
 });
 
-test("when the user hits escape, the `escape-press` action is sent to the controller", function() {
+QUnit.test("when the user hits escape, the `escape-press` action is sent to the controller", function() {
   expect(1);
 
   textField = TextField.create({
@@ -496,7 +496,7 @@ test("when the user hits escape, the `escape-press` action is sent to the contro
 
 });
 
-test("when the user presses a key, the `key-down` action is sent to the controller", function() {
+QUnit.test("when the user presses a key, the `key-down` action is sent to the controller", function() {
   expect(3);
   var event;
 
@@ -521,7 +521,7 @@ test("when the user presses a key, the `key-down` action is sent to the controll
   });
 });
 
-test("when the user releases a key, the `key-up` action is sent to the controller", function() {
+QUnit.test("when the user releases a key, the `key-up` action is sent to the controller", function() {
   expect(3);
   var event;
 
@@ -546,7 +546,7 @@ test("when the user releases a key, the `key-up` action is sent to the controlle
   });
 });
 
-test('should not reset cursor position when text field receives keyUp event', function() {
+QUnit.test('should not reset cursor position when text field receives keyUp event', function() {
   view = TextField.create({
     value: 'Broseidon, King of the Brocean'
   });

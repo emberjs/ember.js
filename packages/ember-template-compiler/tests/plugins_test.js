@@ -16,7 +16,7 @@ QUnit.module("ember-htmlbars: Ember.HTMLBars.registerASTPlugin", {
   }
 });
 
-test("registering a plugin adds it to htmlbars-compiler options", function() {
+QUnit.test("registering a plugin adds it to htmlbars-compiler options", function() {
   expect(2);
 
   function TestPlugin() {
@@ -34,7 +34,7 @@ test("registering a plugin adds it to htmlbars-compiler options", function() {
   compile('some random template');
 });
 
-test('registering an unknown type throws an error', function() {
+QUnit.test('registering an unknown type throws an error', function() {
   throws(function() {
     registerPlugin('asdf', "whatever");
   }, /Attempting to register "whatever" as "asdf" which is not a valid HTMLBars plugin type./);

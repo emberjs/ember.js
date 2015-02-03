@@ -20,7 +20,7 @@ QUnit.module('ember-htmlbars: Integration with Globals', {
   }
 });
 
-test('should read from globals (DEPRECATED)', function() {
+QUnit.test('should read from globals (DEPRECATED)', function() {
   Ember.lookup.Global = 'Klarg';
   view = EmberView.create({
     template: compile('{{Global}}')
@@ -33,7 +33,7 @@ test('should read from globals (DEPRECATED)', function() {
   equal(view.$().text(), Ember.lookup.Global);
 });
 
-test('should read from globals with a path (DEPRECATED)', function() {
+QUnit.test('should read from globals with a path (DEPRECATED)', function() {
   Ember.lookup.Global = { Space: 'Klarg' };
   view = EmberView.create({
     template: compile('{{Global.Space}}')
@@ -45,7 +45,7 @@ test('should read from globals with a path (DEPRECATED)', function() {
   equal(view.$().text(), Ember.lookup.Global.Space);
 });
 
-test('with context, should read from globals (DEPRECATED)', function() {
+QUnit.test('with context, should read from globals (DEPRECATED)', function() {
   Ember.lookup.Global = 'Klarg';
   view = EmberView.create({
     context: {},
@@ -58,7 +58,7 @@ test('with context, should read from globals (DEPRECATED)', function() {
   equal(view.$().text(), Ember.lookup.Global);
 });
 
-test('with context, should read from globals with a path (DEPRECATED)', function() {
+QUnit.test('with context, should read from globals with a path (DEPRECATED)', function() {
   Ember.lookup.Global = { Space: 'Klarg' };
   view = EmberView.create({
     context: {},

@@ -29,7 +29,7 @@ CopyableTests.extend({
 
 QUnit.module("NativeArray Copyable");
 
-test("deep copy is respected", function() {
+QUnit.test("deep copy is respected", function() {
   var array = Ember.A([{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var copiedArray = array.copy(true);

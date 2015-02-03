@@ -15,7 +15,7 @@ QUnit.module("Ember.Application Dependency Injection – normalization", {
   }
 });
 
-test('normalization', function() {
+QUnit.test('normalization', function() {
   ok(registry.normalize, 'registry#normalize is present');
 
   equal(registry.normalize('foo:bar'), 'foo:bar');
@@ -35,7 +35,7 @@ test('normalization', function() {
   equal(registry.normalize('template:blog/posts_index'), 'template:blog/posts_index');
 });
 
-test('normalization is indempotent', function() {
+QUnit.test('normalization is indempotent', function() {
   var examples = ['controller:posts', 'controller:posts.post.index', 'controller:blog/posts.post_index', 'template:foo_bar'];
 
   forEach.call(examples, function (example) {

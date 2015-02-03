@@ -11,7 +11,7 @@ import * as RSVP from 'rsvp';
 
 var ObjectPromiseProxy;
 
-test("present on ember namespace", function() {
+QUnit.test("present on ember namespace", function() {
   ok(PromiseProxyMixin, "expected PromiseProxyMixin to exist");
 });
 
@@ -21,7 +21,7 @@ QUnit.module("Ember.PromiseProxy - ObjectProxy", {
   }
 });
 
-test("no promise, invoking then should raise", function() {
+QUnit.test("no promise, invoking then should raise", function() {
   var proxy = ObjectPromiseProxy.create();
 
   throws(function() {
@@ -29,7 +29,7 @@ test("no promise, invoking then should raise", function() {
   }, new RegExp("PromiseProxy's promise must be set"));
 });
 
-test("fulfillment", function() {
+QUnit.test("fulfillment", function() {
   var value = {
     firstName: 'stef',
     lastName: 'penner'
@@ -92,7 +92,7 @@ test("fulfillment", function() {
   // rest of the promise semantics are tested in directly in RSVP
 });
 
-test("rejection", function() {
+QUnit.test("rejection", function() {
   var reason = new Error("failure");
   var deferred = RSVP.defer();
   var proxy = ObjectPromiseProxy.create({
@@ -148,7 +148,7 @@ test("rejection", function() {
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
+QUnit.test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
   expect(1);
 
   RSVP.on('error', onerror);
@@ -181,7 +181,7 @@ test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
   RSVP.off('error', onerror);
 });
 
-test("should work with promise inheritance", function() {
+QUnit.test("should work with promise inheritance", function() {
   function PromiseSubclass() {
     RSVP.Promise.apply(this, arguments);
   }
@@ -197,7 +197,7 @@ test("should work with promise inheritance", function() {
   ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
 });
 
-test("should reset isFulfilled and isRejected when promise is reset", function() {
+QUnit.test("should reset isFulfilled and isRejected when promise is reset", function() {
   var deferred = EmberRSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
@@ -232,7 +232,7 @@ test("should reset isFulfilled and isRejected when promise is reset", function()
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("should have content when isFulfilled is set", function() {
+QUnit.test("should have content when isFulfilled is set", function() {
   var deferred = EmberRSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
@@ -246,7 +246,7 @@ test("should have content when isFulfilled is set", function() {
   run(deferred, 'resolve', true);
 });
 
-test("should have reason when isRejected is set", function() {
+QUnit.test("should have reason when isRejected is set", function() {
   var error = new Error('Y U REJECT?!?');
   var deferred = EmberRSVP.defer();
 

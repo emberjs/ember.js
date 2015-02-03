@@ -45,7 +45,7 @@ function callTryCatchFinallyWithError() {
   equal(errorWasThrown, true,  'error was thrown');
 }
 
-test("no failure", function() {
+QUnit.test("no failure", function() {
   equal(tryCatchFinally(tryable, catchable, finalizer), tryableResult, 'correct return value');
 
   equal(tryCount,      1, 'tryable was called once');
@@ -53,7 +53,7 @@ test("no failure", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("no failure, return from finally", function() {
+QUnit.test("no failure, return from finally", function() {
   finalizerResult = 'finalizer return value';
 
   equal(tryCatchFinally(tryable, catchable, finalizer), finalizerResult, 'correct return value');
@@ -63,7 +63,7 @@ test("no failure, return from finally", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("try failed", function() {
+QUnit.test("try failed", function() {
   tryable = function() {
     tryCount++;
     throw error;
@@ -78,7 +78,7 @@ test("try failed", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("catch failed", function() {
+QUnit.test("catch failed", function() {
   catchable = function() {
     catchCount++;
     throw error;
@@ -91,7 +91,7 @@ test("catch failed", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("try and catch failed", function() {
+QUnit.test("try and catch failed", function() {
   tryable = function() {
     tryCount++;
     throw error;
@@ -108,7 +108,7 @@ test("try and catch failed", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("finally failed", function() {
+QUnit.test("finally failed", function() {
   finalizer = function() {
     finalizeCount++;
     throw error;
@@ -121,7 +121,7 @@ test("finally failed", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("finally and try failed", function() {
+QUnit.test("finally and try failed", function() {
   tryable   = function() {
     tryCount++;
     throw error;
@@ -138,7 +138,7 @@ test("finally and try failed", function() {
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("finally, catch and try failed", function() {
+QUnit.test("finally, catch and try failed", function() {
   tryable   = function() {
     tryCount++;
     throw error;

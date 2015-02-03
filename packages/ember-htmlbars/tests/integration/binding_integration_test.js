@@ -33,7 +33,7 @@ QUnit.module('ember-htmlbars: binding integration', {
   }
 });
 
-test('should call a registered helper for mustache without parameters', function() {
+QUnit.test('should call a registered helper for mustache without parameters', function() {
   registerHelper('foobar', function() {
     return 'foobar';
   });
@@ -47,7 +47,7 @@ test('should call a registered helper for mustache without parameters', function
   ok(view.$().text() === 'foobar', 'Regular helper was invoked correctly');
 });
 
-test('should bind to the property if no registered helper found for a mustache without parameters', function() {
+QUnit.test('should bind to the property if no registered helper found for a mustache without parameters', function() {
   view = EmberView.createWithMixins({
     template: compile('{{view.foobarProperty}}'),
     foobarProperty: computed(function() {
@@ -60,7 +60,7 @@ test('should bind to the property if no registered helper found for a mustache w
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });
 
-test("should be able to update when bound property updates", function() {
+QUnit.test("should be able to update when bound property updates", function() {
   MyApp.set('controller', EmberObject.create({ name: 'first' }));
 
   var View = EmberView.extend({
@@ -87,7 +87,7 @@ test("should be able to update when bound property updates", function() {
   equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
 });
 
-test('should cleanup bound properties on rerender', function() {
+QUnit.test('should cleanup bound properties on rerender', function() {
   view = EmberView.create({
     controller: EmberObject.create({ name: 'wycats' }),
     template: compile('{{name}}')
@@ -102,7 +102,7 @@ test('should cleanup bound properties on rerender', function() {
   equal(view._childViews.length, 1);
 });
 
-test("should update bound values after view's parent is removed and then re-appended", function() {
+QUnit.test("should update bound values after view's parent is removed and then re-appended", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var controller = EmberObject.create();
@@ -153,7 +153,7 @@ test("should update bound values after view's parent is removed and then re-appe
   runDestroy(parentView);
 });
 
-test('should accept bindings as a string or an Ember.Binding', function() {
+QUnit.test('should accept bindings as a string or an Ember.Binding', function() {
   var ViewWithBindings = EmberView.extend({
     oneWayBindingTestBinding: Binding.oneWay('context.direction'),
     twoWayBindingTestBinding: Binding.from('context.direction'),

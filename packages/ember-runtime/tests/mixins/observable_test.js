@@ -5,7 +5,7 @@ import { testBoth } from "ember-metal/tests/props_helper";
 
 QUnit.module('mixins/observable');
 
-test('should be able to use getProperties to get a POJO of provided keys', function() {
+QUnit.test('should be able to use getProperties to get a POJO of provided keys', function() {
   var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
@@ -17,7 +17,7 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
   equal("Jobs", pojo.lastName);
 });
 
-test('should be able to use getProperties with array parameter to get a POJO of provided keys', function() {
+QUnit.test('should be able to use getProperties with array parameter to get a POJO of provided keys', function() {
   var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
@@ -29,7 +29,7 @@ test('should be able to use getProperties with array parameter to get a POJO of 
   equal("Jobs", pojo.lastName);
 });
 
-test('should be able to use setProperties to set multiple properties at once', function() {
+QUnit.test('should be able to use setProperties to set multiple properties at once', function() {
   var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
@@ -91,7 +91,7 @@ testBoth("should be able to retrieve cached values of computed properties withou
   equal(obj.cacheFor('bar'), undefined, "returns undefined if the value is not a computed property");
 });
 
-test('incrementProperty should work even if value is number in string', function() {
+QUnit.test('incrementProperty should work even if value is number in string', function() {
   var obj = EmberObject.create({
     age: "24"
   });

@@ -18,7 +18,7 @@ function hasMandatorySetter(object, property) {
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   if (hasPropertyAccessors) {
-    test('does not assert if property is not being watched', function() {
+    QUnit.test('does not assert if property is not being watched', function() {
       var obj = {
         someProp: null,
         toString: function() {
@@ -30,7 +30,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       equal(get(obj, 'someProp'), 'blastix');
     });
 
-    test('should not setup mandatory-setter if property is not writable', function() {
+    QUnit.test('should not setup mandatory-setter if property is not writable', function() {
       expect(6);
 
       var obj = { };
@@ -57,7 +57,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       ok(!hasMandatorySetter(obj, 'f'), 'mandatory-setter should not be installed');
     });
 
-    test('should not setup mandatory-setter if setter is already setup on property', function() {
+    QUnit.test('should not setup mandatory-setter if setter is already setup on property', function() {
       expect(2);
 
       var obj = { someProp: null };
@@ -74,7 +74,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       obj.someProp = 'foo-bar';
     });
 
-    test('should assert if set without Ember.set when property is being watched', function() {
+    QUnit.test('should assert if set without Ember.set when property is being watched', function() {
       var obj = {
         someProp: null,
         toString: function() {
@@ -89,7 +89,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
     });
 
-    test('should not assert if set with Ember.set when property is being watched', function() {
+    QUnit.test('should not assert if set with Ember.set when property is being watched', function() {
       var obj = {
         someProp: null,
         toString: function() {
@@ -103,7 +103,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       equal(get(obj, 'someProp'), 'foo-bar');
     });
 
-    test('does not setup mandatory-setter if non-configurable', function() {
+    QUnit.test('does not setup mandatory-setter if non-configurable', function() {
       var obj = {
         someProp: null,
         toString: function() {
@@ -123,7 +123,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       ok(!('someProp' in meta.values), 'blastix');
     });
 
-    test('sets up mandatory-setter if property comes from prototype', function() {
+    QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
       expect(2);
 
       var obj = {
@@ -145,7 +145,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     });
   }
 } else {
-  test('does not assert', function() {
+  QUnit.test('does not assert', function() {
     var obj = {
       someProp: null,
       toString: function() {

@@ -13,13 +13,13 @@ QUnit.module('system/run_loop/add_queue_test', {
   }
 });
 
-test('adds a queue after a specified one', function() {
+QUnit.test('adds a queue after a specified one', function() {
   run._addQueue('testeroo', 'blork');
 
   equal(indexOf.call(queues, 'testeroo'), 1, "new queue was added after specified queue");
 });
 
-test('does not add the queue if it already exists', function() {
+QUnit.test('does not add the queue if it already exists', function() {
   run._addQueue('testeroo', 'blork');
   run._addQueue('testeroo', 'blork');
 

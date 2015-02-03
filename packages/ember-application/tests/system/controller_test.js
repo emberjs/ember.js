@@ -10,7 +10,7 @@ import { computed } from "ember-metal/computed";
 
 QUnit.module("Controller dependencies");
 
-test("If a controller specifies a dependency, but does not have a container it should error", function() {
+QUnit.test("If a controller specifies a dependency, but does not have a container it should error", function() {
   var AController = Controller.extend({
     needs: 'posts'
   });
@@ -20,7 +20,7 @@ test("If a controller specifies a dependency, but does not have a container it s
   }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
 });
 
-test("If a controller specifies a dependency, it is accessible", function() {
+QUnit.test("If a controller specifies a dependency, it is accessible", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -36,7 +36,7 @@ test("If a controller specifies a dependency, it is accessible", function() {
   equal(postsController, postController.get('controllers.posts'), "controller.posts must be auto synthesized");
 });
 
-test("If a controller specifies an unavailable dependency, it raises", function() {
+QUnit.test("If a controller specifies an unavailable dependency, it raises", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -57,7 +57,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
   }, /controller:posts, controller:comments/);
 });
 
-test("Mixin sets up controllers if there is needs before calling super", function() {
+QUnit.test("Mixin sets up controllers if there is needs before calling super", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -79,7 +79,7 @@ test("Mixin sets up controllers if there is needs before calling super", functio
   deepEqual(['a','b','c'], container.lookup('controller:another').toArray());
 });
 
-test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
+QUnit.test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -104,7 +104,7 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
   'should throw if no such controller was needed');
 });
 
-test("setting the value of a controller dependency should not be possible", function() {
+QUnit.test("setting the value of a controller dependency should not be possible", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -127,7 +127,7 @@ test("setting the value of a controller dependency should not be possible", func
   equal(postController.get('controllers.posts.title'), "A Troll's Life", "can set the value of controllers.posts.title");
 });
 
-test("raises if a dependency with a period is requested", function() {
+QUnit.test("raises if a dependency with a period is requested", function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -142,7 +142,7 @@ test("raises if a dependency with a period is requested", function() {
   'throws if periods used');
 });
 
-test("can unit test controllers with `needs` dependencies by stubbing their `controllers` properties", function() {
+QUnit.test("can unit test controllers with `needs` dependencies by stubbing their `controllers` properties", function() {
   expect(1);
 
   var BrotherController = Controller.extend({

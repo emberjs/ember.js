@@ -28,7 +28,7 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   }
 });
 
-test('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
+QUnit.test('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
   registry.register('template:foo', compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
   view = EmberView.create({
@@ -56,7 +56,7 @@ test('View should update when the property used with the #with helper changes [D
   equal(view.$('#first').text(), 'bazam', 'view updates when a bound property changes');
 });
 
-test('should expose a view keyword [DEPRECATED]', function() {
+QUnit.test('should expose a view keyword [DEPRECATED]', function() {
   var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
   view = EmberView.create({
     container: container,
@@ -79,7 +79,7 @@ test('should expose a view keyword [DEPRECATED]', function() {
   equal(view.$().text(), 'barbang', 'renders values from view and child view');
 });
 
-test('bindings can be `this`, in which case they *are* the current context [DEPRECATED]', function() {
+QUnit.test('bindings can be `this`, in which case they *are* the current context [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -102,7 +102,7 @@ test('bindings can be `this`, in which case they *are* the current context [DEPR
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
-test('child views can be inserted inside a bind block', function() {
+QUnit.test('child views can be inserted inside a bind block', function() {
   registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
   registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
   registry.register('template:other',  compile('cruel'));
@@ -142,7 +142,7 @@ test('child views can be inserted inside a bind block', function() {
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\!/), 'parent view should appear before the child view');
 });
 
-test('views render their template in the context of the parent view\'s context', function() {
+QUnit.test('views render their template in the context of the parent view\'s context', function() {
   registry.register('template:parent', compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
@@ -162,7 +162,7 @@ test('views render their template in the context of the parent view\'s context',
   equal(view.$('h1').text(), 'Lana del Heeeyyyyyy', 'renders properties from parent context');
 });
 
-test('views make a view keyword available that allows template to reference view context', function() {
+QUnit.test('views make a view keyword available that allows template to reference view context', function() {
   registry.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({

@@ -25,7 +25,7 @@ function testObserver(setup, teardown, key) {
   equal(isWatching(obj, key), false, "isWatching is false after observers are removed");
 }
 
-test("isWatching is true for regular local observers", function() {
+QUnit.test("isWatching is true for regular local observers", function() {
   testObserver(function(obj, key, fn) {
     Mixin.create({
       didChange: observer(key, fn)
@@ -35,7 +35,7 @@ test("isWatching is true for regular local observers", function() {
   });
 });
 
-test("isWatching is true for nonlocal observers", function() {
+QUnit.test("isWatching is true for nonlocal observers", function() {
   testObserver(function(obj, key, fn) {
     addObserver(obj, key, obj, fn);
   }, function(obj, key, fn) {
@@ -43,7 +43,7 @@ test("isWatching is true for nonlocal observers", function() {
   });
 });
 
-test("isWatching is true for chained observers", function() {
+QUnit.test("isWatching is true for chained observers", function() {
   testObserver(function(obj, key, fn) {
     addObserver(obj, key + '.bar', obj, fn);
   }, function(obj, key, fn) {
@@ -51,7 +51,7 @@ test("isWatching is true for chained observers", function() {
   });
 });
 
-test("isWatching is true for computed properties", function() {
+QUnit.test("isWatching is true for computed properties", function() {
   testObserver(function(obj, key, fn) {
     defineProperty(obj, 'computed', computed(fn).property(key));
     get(obj, 'computed');
@@ -60,7 +60,7 @@ test("isWatching is true for computed properties", function() {
   });
 });
 
-test("isWatching is true for chained computed properties", function() {
+QUnit.test("isWatching is true for chained computed properties", function() {
   testObserver(function(obj, key, fn) {
     defineProperty(obj, 'computed', computed(fn).property(key + '.bar'));
     get(obj, 'computed');
@@ -71,7 +71,7 @@ test("isWatching is true for chained computed properties", function() {
 
 // can't watch length on Array - it is special...
 // But you should be able to watch a length property of an object
-test("isWatching is true for 'length' property on object", function() {
+QUnit.test("isWatching is true for 'length' property on object", function() {
   testObserver(function(obj, key, fn) {
     defineProperty(obj, 'length', null, '26.2 miles');
     addObserver(obj, 'length', obj, fn);

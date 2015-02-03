@@ -8,7 +8,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   QUnit.module("ember-htmlbars: main");
 
-  test("HTMLBars is present and can be executed", function() {
+  QUnit.test("HTMLBars is present and can be executed", function() {
     var template = compile("ohai");
 
     var env = merge({ dom: domHelper }, defaultEnv);

@@ -24,7 +24,7 @@ QUnit.module("Support for {{partial}} helper", {
   }
 });
 
-test("should render other templates registered with the container", function() {
+QUnit.test("should render other templates registered with the container", function() {
   registry.register('template:_subTemplateFromContainer', compile('sub-template'));
 
   view = EmberView.create({
@@ -37,7 +37,7 @@ test("should render other templates registered with the container", function() {
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
 
-test("should render other slash-separated templates registered with the container", function() {
+QUnit.test("should render other slash-separated templates registered with the container", function() {
   registry.register('template:child/_subTemplateFromContainer', compile("sub-template"));
 
   view = EmberView.create({
@@ -50,7 +50,7 @@ test("should render other slash-separated templates registered with the containe
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
 
-test("should use the current view's context", function() {
+QUnit.test("should use the current view's context", function() {
   registry.register('template:_person_name', compile("{{firstName}} {{lastName}}"));
 
   view = EmberView.create({
@@ -67,7 +67,7 @@ test("should use the current view's context", function() {
   equal(trim(view.$().text()), "Who is Kris Selden?");
 });
 
-test("Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name", function() {
+QUnit.test("Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name", function() {
   registry.register('template:_subTemplate', compile("sub-template"));
   registry.register('template:_otherTemplate', compile("other-template"));
 

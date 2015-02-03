@@ -43,7 +43,7 @@ QUnit.module("Test - registerHelper/unregisterHelper", {
   }
 });
 
-test("Helper gets registered", function() {
+QUnit.test("Helper gets registered", function() {
   expect(2);
 
   registerHelper();
@@ -53,7 +53,7 @@ test("Helper gets registered", function() {
   ok(helperContainer.boot);
 });
 
-test("Helper is ran when called", function() {
+QUnit.test("Helper is ran when called", function() {
   expect(1);
 
   registerHelper();
@@ -64,7 +64,7 @@ test("Helper is ran when called", function() {
   });
 });
 
-test("Helper can be unregistered", function() {
+QUnit.test("Helper can be unregistered", function() {
   expect(4);
 
   registerHelper();

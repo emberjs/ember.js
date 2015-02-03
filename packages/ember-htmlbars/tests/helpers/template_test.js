@@ -26,7 +26,7 @@ QUnit.module("Support for {{template}} helper", {
   }
 });
 
-test("should render other templates via the container (DEPRECATED)", function() {
+QUnit.test("should render other templates via the container (DEPRECATED)", function() {
   registry.register('template:sub_template_from_container', compile('sub-template'));
 
   view = EmberView.create({
@@ -41,7 +41,7 @@ test("should render other templates via the container (DEPRECATED)", function() 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
 
-test("should use the current view's context (DEPRECATED)", function() {
+QUnit.test("should use the current view's context (DEPRECATED)", function() {
   registry.register('template:person_name', compile("{{firstName}} {{lastName}}"));
 
   view = EmberView.create({

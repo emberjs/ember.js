@@ -17,7 +17,7 @@ var nanGuid = function(obj) {
   ok(isNaN(parseInt(guidFor(obj), 0)), "guids for " + type + "don't parse to numbers");
 };
 
-test("Object", function() {
+QUnit.test("Object", function() {
   var a = {};
   var b = {};
 
@@ -26,7 +26,7 @@ test("Object", function() {
   nanGuid(a);
 });
 
-test("strings", function() {
+QUnit.test("strings", function() {
   var a = "string A";
   var aprime = "string A";
   var b = "String B";
@@ -37,7 +37,7 @@ test("strings", function() {
   nanGuid(a);
 });
 
-test("numbers", function() {
+QUnit.test("numbers", function() {
   var a = 23;
   var aprime = 23;
   var b = 34;
@@ -48,7 +48,7 @@ test("numbers", function() {
   nanGuid(a);
 });
 
-test("numbers", function() {
+QUnit.test("numbers", function() {
   var a = true;
   var aprime = true;
   var b = false;
@@ -60,7 +60,7 @@ test("numbers", function() {
   nanGuid(b);
 });
 
-test("null and undefined", function() {
+QUnit.test("null and undefined", function() {
   var a = null;
   var aprime = null;
   var b;
@@ -73,7 +73,7 @@ test("null and undefined", function() {
   nanGuid(b);
 });
 
-test("arrays", function() {
+QUnit.test("arrays", function() {
   var a = ["a", "b", "c"];
   var aprime = ["a", "b", "c"];
   var b = ["1", "2", "3"];

@@ -28,7 +28,7 @@ QUnit.module("EmberView - Attribute Bindings", {
   }
 });
 
-test("should render attribute bindings", function() {
+QUnit.test("should render attribute bindings", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
@@ -57,7 +57,7 @@ test("should render attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
-test("should normalize case for attribute bindings", function() {
+QUnit.test("should normalize case for attribute bindings", function() {
   view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['disAbled'],
@@ -72,7 +72,7 @@ test("should normalize case for attribute bindings", function() {
   ok(view.$().prop('disabled'), "sets property with correct case");
 });
 
-test("should update attribute bindings", function() {
+QUnit.test("should update attribute bindings", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
@@ -123,7 +123,7 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
-test("should update attribute bindings on svg", function() {
+QUnit.test("should update attribute bindings on svg", function() {
   view = EmberView.create({
     attributeBindings: ['viewBox'],
     viewBox: null
@@ -145,7 +145,7 @@ test("should update attribute bindings on svg", function() {
 // This comes into play when using the {{#each}} helper. If the
 // passed array item is a String, it will be converted into a
 // String object instead of a normal string.
-test("should allow binding to String objects", function() {
+QUnit.test("should allow binding to String objects", function() {
   view = EmberView.create({
     attributeBindings: ['foo'],
     // JSHint doesn't like `new String` so we'll create it the same way it gets created in practice
@@ -166,7 +166,7 @@ test("should allow binding to String objects", function() {
   ok(!view.$().attr('foo'), "removes foo attribute when false");
 });
 
-test("should teardown observers on rerender", function() {
+QUnit.test("should teardown observers on rerender", function() {
   view = EmberView.create({
     attributeBindings: ['foo'],
     classNameBindings: ['foo'],
@@ -184,7 +184,7 @@ test("should teardown observers on rerender", function() {
   equal(observersFor(view, 'foo').length, 2);
 });
 
-test("handles attribute bindings for properties", function() {
+QUnit.test("handles attribute bindings for properties", function() {
   view = EmberView.create({
     attributeBindings: ['checked'],
     checked: null
@@ -207,7 +207,7 @@ test("handles attribute bindings for properties", function() {
   equal(!!view.$().prop('checked'), false, 'changes to unchecked');
 });
 
-test("handles `undefined` value for properties", function() {
+QUnit.test("handles `undefined` value for properties", function() {
   view = EmberView.create({
     attributeBindings: ['value'],
     value: "test"
@@ -224,7 +224,7 @@ test("handles `undefined` value for properties", function() {
   equal(!!view.$().prop('value'), false, "value is not defined");
 });
 
-test("handles null value for attributes on text fields", function() {
+QUnit.test("handles null value for attributes on text fields", function() {
   view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value']
@@ -243,7 +243,7 @@ test("handles null value for attributes on text fields", function() {
   equal(!!view.$().prop('value'), false, "value is not defined");
 });
 
-test("handles a 0 value attribute on text fields", function() {
+QUnit.test("handles a 0 value attribute on text fields", function() {
   view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value']
@@ -260,7 +260,7 @@ test("handles a 0 value attribute on text fields", function() {
   strictEqual(view.$().prop('value'), "0", "value should be 0");
 });
 
-test("attributeBindings should not fail if view has been removed", function() {
+QUnit.test("attributeBindings should not fail if view has been removed", function() {
   run(function() {
     view = EmberView.create({
       attributeBindings: ['checked'],
@@ -284,7 +284,7 @@ test("attributeBindings should not fail if view has been removed", function() {
   ok(!error, error);
 });
 
-test("attributeBindings should not fail if view has been destroyed", function() {
+QUnit.test("attributeBindings should not fail if view has been destroyed", function() {
   run(function() {
     view = EmberView.create({
       attributeBindings: ['checked'],
@@ -308,7 +308,7 @@ test("attributeBindings should not fail if view has been destroyed", function() 
   ok(!error, error);
 });
 
-test("asserts if an attributeBinding is setup on class", function() {
+QUnit.test("asserts if an attributeBinding is setup on class", function() {
   view = EmberView.create({
     attributeBindings: ['class']
   });
@@ -318,7 +318,7 @@ test("asserts if an attributeBinding is setup on class", function() {
   }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
 });
 
-test("blacklists href bindings based on protocol", function() {
+QUnit.test("blacklists href bindings based on protocol", function() {
   /* jshint scripturl:true */
 
   view = EmberView.create({

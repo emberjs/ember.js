@@ -94,7 +94,7 @@ QUnit.module("ember-testing: Helper setup", {
   teardown: function() { cleanup(); }
 });
 
-test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
+QUnit.test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   App = run(EmberApplication, EmberApplication.create);
   assertNoHelpers(App);
 
@@ -105,7 +105,7 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   assertNoHelpers(App);
 });
 
-test("Ember.Application#setupForTesting", function() {
+QUnit.test("Ember.Application#setupForTesting", function() {
   run(function() {
     App = EmberApplication.create();
     App.setupForTesting();
@@ -114,7 +114,7 @@ test("Ember.Application#setupForTesting", function() {
   equal(App.__container__.lookup('router:main').location.implementation, 'none');
 });
 
-test("Ember.Application.setupForTesting sets the application to `testing`.", function() {
+QUnit.test("Ember.Application.setupForTesting sets the application to `testing`.", function() {
   run(function() {
     App = EmberApplication.create();
     App.setupForTesting();
@@ -123,7 +123,7 @@ test("Ember.Application.setupForTesting sets the application to `testing`.", fun
   equal(App.testing, true, "Application instance is set to testing.");
 });
 
-test("Ember.Application.setupForTesting leaves the system in a deferred state.", function() {
+QUnit.test("Ember.Application.setupForTesting leaves the system in a deferred state.", function() {
   run(function() {
     App = EmberApplication.create();
     App.setupForTesting();
@@ -132,7 +132,7 @@ test("Ember.Application.setupForTesting leaves the system in a deferred state.",
   equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
 });
 
-test("App.reset() after Application.setupForTesting leaves the system in a deferred state.", function() {
+QUnit.test("App.reset() after Application.setupForTesting leaves the system in a deferred state.", function() {
   run(function() {
     App = EmberApplication.create();
     App.setupForTesting();
@@ -144,7 +144,7 @@ test("App.reset() after Application.setupForTesting leaves the system in a defer
   equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
 });
 
-test("Ember.Application#setupForTesting attaches ajax listeners", function() {
+QUnit.test("Ember.Application#setupForTesting attaches ajax listeners", function() {
   var documentEvents;
 
   documentEvents = jQuery._data(document, 'events');
@@ -166,7 +166,7 @@ test("Ember.Application#setupForTesting attaches ajax listeners", function() {
   equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
 });
 
-test("Ember.Application#setupForTesting attaches ajax listeners only once", function() {
+QUnit.test("Ember.Application#setupForTesting attaches ajax listeners only once", function() {
   var documentEvents;
 
   documentEvents = jQuery._data(document, 'events');
@@ -191,7 +191,7 @@ test("Ember.Application#setupForTesting attaches ajax listeners only once", func
   equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
 });
 
-test("Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers", function() {
+QUnit.test("Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers", function() {
   var injected = 0;
 
   Test.onInjectHelpers(function() {
@@ -210,7 +210,7 @@ test("Ember.Application#injectTestHelpers calls callbacks registered with onInje
   equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
 });
 
-test("Ember.Application#injectTestHelpers adds helpers to provided object.", function() {
+QUnit.test("Ember.Application#injectTestHelpers adds helpers to provided object.", function() {
   var helpers = {};
 
   run(function() {
@@ -225,7 +225,7 @@ test("Ember.Application#injectTestHelpers adds helpers to provided object.", fun
   assertNoHelpers(App, helpers);
 });
 
-test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function() {
+QUnit.test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function() {
   var helpers = { visit: 'snazzleflabber' };
 
   run(function() {
@@ -250,7 +250,7 @@ QUnit.module("ember-testing: Helper methods", {
   }
 });
 
-test("`wait` respects registerWaiters", function() {
+QUnit.test("`wait` respects registerWaiters", function() {
   expect(3);
 
   var counter=0;
@@ -278,7 +278,7 @@ test("`wait` respects registerWaiters", function() {
   });
 });
 
-test("`visit` advances readiness.", function() {
+QUnit.test("`visit` advances readiness.", function() {
   expect(2);
 
   equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
@@ -288,7 +288,7 @@ test("`visit` advances readiness.", function() {
   });
 });
 
-test("`wait` helper can be passed a resolution value", function() {
+QUnit.test("`wait` helper can be passed a resolution value", function() {
   expect(4);
 
   var promise, wait;
@@ -316,7 +316,7 @@ test("`wait` helper can be passed a resolution value", function() {
 
 });
 
-test("`click` triggers appropriate events in order", function() {
+QUnit.test("`click` triggers appropriate events in order", function() {
   expect(5);
 
   var click, wait, events;
@@ -389,7 +389,7 @@ test("`click` triggers appropriate events in order", function() {
   });
 });
 
-test("`wait` waits for outstanding timers", function() {
+QUnit.test("`wait` waits for outstanding timers", function() {
   expect(1);
 
   var wait_done = false;
@@ -406,7 +406,7 @@ test("`wait` waits for outstanding timers", function() {
 });
 
 
-test("`wait` respects registerWaiters with optional context", function() {
+QUnit.test("`wait` respects registerWaiters with optional context", function() {
   expect(3);
 
   var obj = {
@@ -435,7 +435,7 @@ test("`wait` respects registerWaiters with optional context", function() {
   });
 });
 
-test("`wait` does not error if routing has not begun", function() {
+QUnit.test("`wait` does not error if routing has not begun", function() {
   expect(1);
 
   App.testHelpers.wait().then(function() {
@@ -443,7 +443,7 @@ test("`wait` does not error if routing has not begun", function() {
   });
 });
 
-test("`triggerEvent accepts an optional options hash without context", function() {
+QUnit.test("`triggerEvent accepts an optional options hash without context", function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -472,7 +472,7 @@ test("`triggerEvent accepts an optional options hash without context", function(
   });
 });
 
-test("`triggerEvent can limit searching for a selector to a scope", function() {
+QUnit.test("`triggerEvent can limit searching for a selector to a scope", function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -500,7 +500,7 @@ test("`triggerEvent can limit searching for a selector to a scope", function() {
   });
 });
 
-test("`triggerEvent` can be used to trigger arbitrary events", function() {
+QUnit.test("`triggerEvent` can be used to trigger arbitrary events", function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -528,7 +528,7 @@ test("`triggerEvent` can be used to trigger arbitrary events", function() {
   });
 });
 
-test("`fillIn` takes context into consideration", function() {
+QUnit.test("`fillIn` takes context into consideration", function() {
   expect(2);
   var fillIn, find, visit, andThen;
 
@@ -551,7 +551,7 @@ test("`fillIn` takes context into consideration", function() {
   });
 });
 
-test("`fillIn` focuses on the element", function() {
+QUnit.test("`fillIn` focuses on the element", function() {
   expect(2);
   var fillIn, find, visit, andThen;
 
@@ -582,7 +582,7 @@ test("`fillIn` focuses on the element", function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
-  test("`check` ensures checkboxes are `checked` state for checkboxes", function() {
+  QUnit.test("`check` ensures checkboxes are `checked` state for checkboxes", function() {
     expect(2);
     var check, find, visit, andThen;
 
@@ -606,7 +606,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
     });
   });
 
-  test("`uncheck` ensures checkboxes are not `checked`", function() {
+  QUnit.test("`uncheck` ensures checkboxes are not `checked`", function() {
     expect(2);
     var uncheck, find, visit, andThen;
 
@@ -630,7 +630,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
     });
   });
 
-  test("`check` asserts the selected inputs are checkboxes", function() {
+  QUnit.test("`check` asserts the selected inputs are checkboxes", function() {
     var check, visit;
 
     App.IndexView = EmberView.extend({
@@ -649,7 +649,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
     });
   });
 
-  test("`uncheck` asserts the selected inputs are checkboxes", function() {
+  QUnit.test("`uncheck` asserts the selected inputs are checkboxes", function() {
     var visit, uncheck;
 
     App.IndexView = EmberView.extend({
@@ -669,7 +669,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
   });
 }
 
-test("`triggerEvent accepts an optional options hash and context", function() {
+QUnit.test("`triggerEvent accepts an optional options hash and context", function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -716,7 +716,7 @@ QUnit.module("ember-testing debugging helpers", {
   }
 });
 
-test("pauseTest pauses", function() {
+QUnit.test("pauseTest pauses", function() {
   expect(1);
   function fakeAdapterAsyncStart() {
     ok(true, 'Async start should be called');
@@ -754,7 +754,7 @@ QUnit.module("ember-testing routing helpers", {
   }
 });
 
-test("currentRouteName for '/'", function() {
+QUnit.test("currentRouteName for '/'", function() {
   expect(3);
 
   App.testHelpers.visit('/').then(function() {
@@ -765,7 +765,7 @@ test("currentRouteName for '/'", function() {
 });
 
 
-test("currentRouteName for '/posts'", function() {
+QUnit.test("currentRouteName for '/posts'", function() {
   expect(3);
 
   App.testHelpers.visit('/posts').then(function() {
@@ -775,7 +775,7 @@ test("currentRouteName for '/posts'", function() {
   });
 });
 
-test("currentRouteName for '/posts/new'", function() {
+QUnit.test("currentRouteName for '/posts/new'", function() {
   expect(3);
 
   App.testHelpers.visit('/posts/new').then(function() {
@@ -795,7 +795,7 @@ QUnit.module("ember-testing pendingAjaxRequests", {
   }
 });
 
-test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", function() {
+QUnit.test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", function() {
   equal(Test.pendingAjaxRequests, 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
@@ -804,7 +804,7 @@ test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", f
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
-test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls", function() {
+QUnit.test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls", function() {
   equal(Test.pendingAjaxRequests, 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
@@ -822,7 +822,7 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests is not impressed with your unexpected complete');
 });
 
-test("pendingAjaxRequests is reset by setupForTesting", function() {
+QUnit.test("pendingAjaxRequests is reset by setupForTesting", function() {
   Test.pendingAjaxRequests = 1;
   run(function() {
     setupForTesting();
@@ -894,7 +894,7 @@ QUnit.module("ember-testing async router", {
   }
 });
 
-test("currentRouteName for '/user'", function() {
+QUnit.test("currentRouteName for '/user'", function() {
   expect(4);
 
   App.testHelpers.visit('/user').then(function() {
@@ -905,7 +905,7 @@ test("currentRouteName for '/user'", function() {
   });
 });
 
-test("currentRouteName for '/user/profile'", function() {
+QUnit.test("currentRouteName for '/user/profile'", function() {
   expect(4);
 
   App.testHelpers.visit('/user/profile').then(function() {
@@ -947,7 +947,7 @@ QUnit.module('can override built-in helpers', {
   }
 });
 
-test("can override visit helper", function() {
+QUnit.test("can override visit helper", function() {
   expect(1);
 
   Test.registerHelper('visit', function() {
@@ -958,7 +958,7 @@ test("can override visit helper", function() {
   App.testHelpers.visit();
 });
 
-test("can override find helper", function() {
+QUnit.test("can override find helper", function() {
   expect(1);
 
   Test.registerHelper('find', function() {

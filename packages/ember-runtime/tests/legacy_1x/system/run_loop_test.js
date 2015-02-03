@@ -43,7 +43,7 @@ QUnit.module("System:run_loop() - chained binding", {
   }
 });
 
-test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
+QUnit.test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
   run(function () {
 
     //Binding of output of MyApp.first object to input of MyApp.second object
@@ -75,7 +75,7 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
   equal(MyApp.second.get("output"), "change");
 });
 
-test("Should propagate bindings after the RunLoop completes", function() {
+QUnit.test("Should propagate bindings after the RunLoop completes", function() {
   run(function () {
     //Binding of output of MyApp.first object to input of MyApp.second object
     binding1 = Binding.from("first.output")

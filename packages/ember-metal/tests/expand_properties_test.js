@@ -12,7 +12,7 @@ QUnit.module('Property Brace Expansion Test', {
   }
 });
 
-test('Properties without expansions are unaffected', function() {
+QUnit.test('Properties without expansions are unaffected', function() {
   expect(1);
 
   expandProperties('a', addProperty);
@@ -22,7 +22,7 @@ test('Properties without expansions are unaffected', function() {
   deepEqual(['a', 'a.b', 'a.b.@each'].sort(), foundProperties.sort());
 });
 
-test('A single expansion at the end expands properly', function() {
+QUnit.test('A single expansion at the end expands properly', function() {
   expect(1);
 
   expandProperties('a.b.{c,d}', addProperty);
@@ -30,7 +30,7 @@ test('A single expansion at the end expands properly', function() {
   deepEqual(['a.b.c', 'a.b.d'].sort(), foundProperties.sort());
 });
 
-test('A property with only a brace expansion expands correctly', function() {
+QUnit.test('A property with only a brace expansion expands correctly', function() {
   expect(1);
 
   expandProperties('{a,b,c}', addProperty);
@@ -39,7 +39,7 @@ test('A property with only a brace expansion expands correctly', function() {
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
-test('Expansions with single properties only expand once', function() {
+QUnit.test('Expansions with single properties only expand once', function() {
   expect(1);
 
   expandProperties('a.b.{c}.d.{e}', addProperty);
@@ -47,7 +47,7 @@ test('Expansions with single properties only expand once', function() {
   deepEqual(['a.b.c.d.e'], foundProperties);
 });
 
-test('A single brace expansion expands correctly', function() {
+QUnit.test('A single brace expansion expands correctly', function() {
   expect(1);
 
   expandProperties('a.{b,c,d}.e', addProperty);
@@ -56,7 +56,7 @@ test('A single brace expansion expands correctly', function() {
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
-test('Multiple brace expansions work correctly', function() {
+QUnit.test('Multiple brace expansions work correctly', function() {
   expect(1);
 
   expandProperties('{a,b,c}.d.{e,f}.g', addProperty);
@@ -65,7 +65,7 @@ test('Multiple brace expansions work correctly', function() {
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
-test('A property with only brace expansions expands correctly', function() {
+QUnit.test('A property with only brace expansions expands correctly', function() {
   expect(1);
 
   expandProperties('{a,b,c}.{d}.{e,f}', addProperty);

@@ -77,7 +77,7 @@ function visit(path) {
   };
 }
 
-test("log class generation if logging enabled", function() {
+QUnit.test("log class generation if logging enabled", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -90,7 +90,7 @@ test("log class generation if logging enabled", function() {
   });
 });
 
-test("do NOT log class generation if logging disabled", function() {
+QUnit.test("do NOT log class generation if logging disabled", function() {
   App.reopen({
     LOG_ACTIVE_GENERATION: false
   });
@@ -102,7 +102,7 @@ test("do NOT log class generation if logging disabled", function() {
   });
 });
 
-test("actively generated classes get logged", function() {
+QUnit.test("actively generated classes get logged", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -119,7 +119,7 @@ test("actively generated classes get logged", function() {
   });
 });
 
-test("predefined classes do not get logged", function() {
+QUnit.test("predefined classes do not get logged", function() {
   App.ApplicationController = Controller.extend();
   App.PostsController = Controller.extend();
 
@@ -176,7 +176,7 @@ QUnit.module("Ember.Application – logging of view lookups", {
   }
 });
 
-test("log when template and view are missing when flag is active", function() {
+QUnit.test("log when template and view are missing when flag is active", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -192,7 +192,7 @@ test("log when template and view are missing when flag is active", function() {
   });
 });
 
-test("do not log when template and view are missing when flag is not true", function() {
+QUnit.test("do not log when template and view are missing when flag is not true", function() {
   App.reopen({
     LOG_VIEW_LOOKUPS: false
   });
@@ -204,7 +204,7 @@ test("do not log when template and view are missing when flag is not true", func
   });
 });
 
-test("log which view is used with a template", function() {
+QUnit.test("log which view is used with a template", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -222,7 +222,7 @@ test("log which view is used with a template", function() {
   });
 });
 
-test("do not log which views are used with templates when flag is not true", function() {
+QUnit.test("do not log which views are used with templates when flag is not true", function() {
   App.reopen({
     LOG_VIEW_LOOKUPS: false
   });

@@ -5,7 +5,7 @@ import Set from "ember-runtime/system/set";
 
 QUnit.module('Set.init');
 
-test('passing an array to new Set() should instantiate w/ items', function() {
+QUnit.test('passing an array to new Set() should instantiate w/ items', function() {
   var aSet;
 
   var ary  = [1,2,3];
@@ -25,7 +25,7 @@ test('passing an array to new Set() should instantiate w/ items', function() {
 
 QUnit.module('Set.clear');
 
-test('should clear a set of its content', function() {
+QUnit.test('should clear a set of its content', function() {
   var aSet;
   var count = 0;
 
@@ -56,7 +56,7 @@ test('should clear a set of its content', function() {
 
 QUnit.module('Set.pop');
 
-test('calling pop should return an object and remove it', function() {
+QUnit.test('calling pop should return an object and remove it', function() {
   var aSet, obj;
   var count = 0;
 
@@ -81,7 +81,7 @@ test('calling pop should return an object and remove it', function() {
 
 QUnit.module('Set aliases');
 
-test('method aliases', function() {
+QUnit.test('method aliases', function() {
   var aSet;
 
   ignoreDeprecation(function() {

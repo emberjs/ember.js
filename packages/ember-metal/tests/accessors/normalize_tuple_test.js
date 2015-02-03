@@ -38,35 +38,35 @@ QUnit.module('normalizeTuple', moduleOpts);
 // LOCAL PATHS
 //
 
-test('[obj, foo] -> [obj, foo]', function() {
+QUnit.test('[obj, foo] -> [obj, foo]', function() {
   deepEqual(normalizeTuple(obj, 'foo'), [obj, 'foo']);
 });
 
-test('[obj, *] -> [obj, *]', function() {
+QUnit.test('[obj, *] -> [obj, *]', function() {
   deepEqual(normalizeTuple(obj, '*'), [obj, '*']);
 });
 
-test('[obj, foo.bar] -> [obj, foo.bar]', function() {
+QUnit.test('[obj, foo.bar] -> [obj, foo.bar]', function() {
   deepEqual(normalizeTuple(obj, 'foo.bar'), [obj, 'foo.bar']);
 });
 
-test('[obj, foo.*] -> [obj, foo.*]', function() {
+QUnit.test('[obj, foo.*] -> [obj, foo.*]', function() {
   deepEqual(normalizeTuple(obj, 'foo.*'), [obj, 'foo.*']);
 });
 
-test('[obj, foo.*.baz] -> [obj, foo.*.baz]', function() {
+QUnit.test('[obj, foo.*.baz] -> [obj, foo.*.baz]', function() {
   deepEqual(normalizeTuple(obj, 'foo.*.baz'), [obj, 'foo.*.baz']);
 });
 
-test('[obj, this.foo] -> [obj, foo]', function() {
+QUnit.test('[obj, this.foo] -> [obj, foo]', function() {
   deepEqual(normalizeTuple(obj, 'this.foo'), [obj, 'foo']);
 });
 
-test('[obj, this.foo.bar] -> [obj, foo.bar]', function() {
+QUnit.test('[obj, this.foo.bar] -> [obj, foo.bar]', function() {
   deepEqual(normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
 });
 
-test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
+QUnit.test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
   deepEqual(normalizeTuple(obj, 'this.Foo.bar'), [obj, 'Foo.bar']);
 });
 
@@ -74,17 +74,17 @@ test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
 // GLOBAL PATHS
 //
 
-test('[obj, Foo] -> [obj, Foo]', function() {
+QUnit.test('[obj, Foo] -> [obj, Foo]', function() {
   expectDeprecation(function() {
     deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
   }, "normalizeTuple will return 'Foo' as a non-global. This behavior will change in the future (issue #3852)");
 });
 
-test('[obj, Foo.bar] -> [Foo, bar]', function() {
+QUnit.test('[obj, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(normalizeTuple(obj, 'Foo.bar'), [Foo, 'bar']);
 });
 
-test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
+QUnit.test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
   deepEqual(normalizeTuple(obj, '$foo.bar.baz'), [$foo, 'bar.baz']);
 });
 
@@ -92,12 +92,12 @@ test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
 // NO TARGET
 //
 
-test('[null, Foo] -> EXCEPTION', function() {
+QUnit.test('[null, Foo] -> EXCEPTION', function() {
   throws(function() {
     normalizeTuple(null, 'Foo');
   }, Error);
 });
 
-test('[null, Foo.bar] -> [Foo, bar]', function() {
+QUnit.test('[null, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
 });

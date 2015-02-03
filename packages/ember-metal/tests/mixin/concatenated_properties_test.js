@@ -6,7 +6,7 @@ import {
 
 QUnit.module('Mixin concatenatedProperties');
 
-test('defining concatenated properties should concat future version', function() {
+QUnit.test('defining concatenated properties should concat future version', function() {
 
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
@@ -21,7 +21,7 @@ test('defining concatenated properties should concat future version', function()
   deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
-test('defining concatenated properties should concat future version', function() {
+QUnit.test('defining concatenated properties should concat future version', function() {
 
   var MixinA = Mixin.create({
     concatenatedProperties: null
@@ -37,7 +37,7 @@ test('defining concatenated properties should concat future version', function()
 });
 
 
-test('concatenatedProperties should be concatenated', function() {
+QUnit.test('concatenatedProperties should be concatenated', function() {
 
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
@@ -60,7 +60,7 @@ test('concatenatedProperties should be concatenated', function() {
   deepEqual(get(obj, 'bar'), [1,2,3,4,5,6], 'get bar');
 });
 
-test('adding a prop that is not an array should make array', function() {
+QUnit.test('adding a prop that is not an array should make array', function() {
 
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
@@ -75,7 +75,7 @@ test('adding a prop that is not an array should make array', function() {
   deepEqual(get(obj, 'foo'), [1,2,3,4]);
 });
 
-test('adding a prop that is not an array should make array', function() {
+QUnit.test('adding a prop that is not an array should make array', function() {
 
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
@@ -86,7 +86,7 @@ test('adding a prop that is not an array should make array', function() {
   deepEqual(get(obj, 'foo'), ['bar']);
 });
 
-test('adding a non-concatenable property that already has a defined value should result in an array with both values', function() {
+QUnit.test('adding a non-concatenable property that already has a defined value should result in an array with both values', function() {
 
   var mixinA = Mixin.create({
     foo: 1
@@ -101,7 +101,7 @@ test('adding a non-concatenable property that already has a defined value should
   deepEqual(get(obj, 'foo'), [1, 2]);
 });
 
-test('adding a concatenable property that already has a defined value should result in a concatenated value', function() {
+QUnit.test('adding a concatenable property that already has a defined value should result in a concatenated value', function() {
 
   var mixinA = Mixin.create({
     foobar: 'foo'
