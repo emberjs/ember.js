@@ -5,60 +5,81 @@
   <body>
     <label>Data</label>
     <textarea id="data">{"name": "Bob"}</textarea>
+
     <label>Template</label>
     <textarea id="template">Howdy {{name}}</textarea>
+
     <label>Options</label>
     <textarea id="options">{ "disableComponentGeneration": true }</textarea>
-    <button id="run-template">Render</button>
+
+    <input id="skip-render" type="checkbox">Skip render?</input>
+
+    <button id="run-template">Compile and Render</button>
     <hr>
     <div id="output"></div>
-    <hr>
 
     <script src="../assets/loader.js"></script>
-    <script src="../amd/morph.amd.js"></script>
+    <script src="../amd/dom-helper.amd.js"></script>
     <script src="../amd/htmlbars-compiler.amd.js"></script>
     <script src="../amd/htmlbars-runtime.amd.js"></script>
     <script>
-      var button   = document.getElementById('run-template'),
-          dataarea = document.getElementById('data'),
-          textarea = document.getElementById('template'),
-          output   = document.getElementById('output'),
-          options  = document.getElementById('options');
+      var button     = document.getElementById('run-template'),
+          dataarea   = document.getElementById('data'),
+          textarea   = document.getElementById('template'),
+          output     = document.getElementById('output'),
+          skipRender = document.getElementById('skip-render'),
+          options    = document.getElementById('options');
 
-      var compiler    = requireModule('htmlbars-compiler/compiler'),
-          compile     = compiler.compile,
-          compileSpec = compiler.compileSpec,
-          DOMHelper   = requireModule('morph').DOMHelper,
-          hooks       = requireModule('htmlbars-runtime').hooks;
+      var compiler    = requireModule('htmlbars-compiler'),
+          DOMHelper   = requireModule('dom-helper').default,
+          hooks       = requireModule('htmlbars-runtime').hooks,
           helpers     = requireModule('htmlbars-runtime').helpers;
 
       var templateSource = localStorage.getItem('templateSource');
+      var data = localStorage.getItem('templateData');
+
       if (templateSource) {
         textarea.value = templateSource;
       }
 
-      button.addEventListener('click', function(){
+      if (data) {
+        dataarea.value = data;
+      }
+
+      button.addEventListener('click', function() {
         var source = textarea.value,
-          data = {}, compileOptions = {} ;
+            data = dataarea.value,
+            compileOptions;
 
         localStorage.setItem('templateSource', source);
+        localStorage.setItem('templateData', data);
 
         try {
-          data = JSON.parse(dataarea.value);
-        } catch(e) {}
+          data = JSON.parse(data);
+        } catch(e) {
+          data = {};
+        }
 
         try {
           compileOptions = JSON.parse(options.value);
-        } catch(e) { }
-        try {
-          var templateSpec = compileSpec(source, compileOptions),
-              template     = compile(source, compileOptions),
-              env          = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
-              dom          = template.render(data, env, output);
-          output.innerHTML = '<pre><code>'+JSON.stringify(data)+'</code></pre><hr><pre><code>'+templateSpec+'</code></pre><hr>';
-          output.appendChild(dom);
         } catch(e) {
-          output.innerHTML = 'Failure to run template: '+e.message;
+          compileOptions = {};
+        }
+
+        try {
+          var templateSpec = compiler.compileSpec(source, compileOptions);
+          output.innerHTML = '<pre><code>' + templateSpec + '</code></pre>';
+
+          if (!skipRender.checked) {
+            var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
+            var template = compiler.compile(source, compileOptions);
+            var dom = template.render(data, env, output);
+
+            output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
+            output.appendChild(dom);
+          }
+        } catch(e) {
+          output.innerHTML += 'Failure to run template: '+e.message;
           throw(e);
         }
       });
