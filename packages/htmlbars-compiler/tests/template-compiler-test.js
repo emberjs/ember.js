@@ -37,7 +37,7 @@ test("it works", function testFunction() {
 
   env.helpers['if'] = function(params, hash, options) {
     if (params[0]) {
-      return options.template.render(context, env, options.morph.contextualElement).fragment;
+      return options.template.render(context, env, { contextualElement: options.morph.contextualElement });
     }
   };
 

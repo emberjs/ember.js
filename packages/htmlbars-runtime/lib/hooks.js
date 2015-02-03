@@ -2,13 +2,23 @@ export function block(env, morph, context, path, params, hash, template, inverse
   var options = {
     morph: morph,
     template: template,
-    inverse: inverse
+    inverse: inverse,
+    lastResult: morph.lastResult
   };
 
   var helper = lookupHelper(env, context, path);
-  var value = helper.call(context, params, hash, options, env);
+  var result = helper.call(context, params, hash, options, env);
 
-  morph.setContent(value);
+  setResultOnMorph(morph, result);
+}
+
+function setResultOnMorph(morph, result) {
+  if (typeof result !== 'object') {
+    morph.setContent(result);
+  } else {
+    morph.lastResult = result;
+    morph.setContent(result.fragment);
+  }
 }
 
 export function inline(env, morph, context, path, params, hash) {
@@ -83,11 +93,11 @@ export function component(env, morph, context, tagName, attrs, template) {
     };
 
     value = helper.call(context, [], attrs, options, env);
+    setResultOnMorph(morph, value);
   } else {
     value = componentFallback(env, morph, context, tagName, attrs, template);
+    morph.setContent(value);
   }
-
-  morph.setContent(value);
 }
 
 export function concat(env, params) {
@@ -103,7 +113,7 @@ function componentFallback(env, morph, context, tagName, attrs, template) {
   for (var name in attrs) {
     element.setAttribute(name, attrs[name]);
   }
-  element.appendChild(template.render(context, env, morph.contextualElement).fragment);
+  element.appendChild(template.render(context, env, { contextualElement: morph.contextualElement }).fragment);
   return element;
 }
 
