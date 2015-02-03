@@ -7,12 +7,13 @@ import AttrNode from "./attr_node";
 import { fmt } from "ember-runtime/system/string";
 import { typeOf } from "ember-metal/utils";
 import { read } from "ember-metal/streams/utils";
+import create from 'ember-metal/platform/create';
 
 function LegacyBindAttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
-LegacyBindAttrNode.prototype = AttrNode.prototype;
+LegacyBindAttrNode.prototype = create(AttrNode.prototype);
 
 LegacyBindAttrNode.prototype.render = function render(buffer) {
   this.isDirty = false;
