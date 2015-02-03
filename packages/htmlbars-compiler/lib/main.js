@@ -1,9 +1,9 @@
 import {
   compile,
-  compilerSpec
+  compileSpec
 } from "./htmlbars-compiler/compiler";
 
 export {
   compile,
-  compilerSpec
+  compileSpec
 };
