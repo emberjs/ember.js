@@ -127,6 +127,9 @@ Renderer.prototype.willRemoveElement = function (view) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
   if (this._destinedForDOM) {
+    if (view._willDestroyElement) {
+      view._willDestroyElement();
+    }
     if (view.trigger) {
       view.trigger('willDestroyElement');
       view.trigger('willClearRender');

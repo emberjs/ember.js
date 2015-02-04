@@ -128,10 +128,18 @@ var ViewStreamSupport = Mixin.create({
     return stream;
   },
 
+  _willDestroyElement: function() {
+    if (this._streamBindings) {
+      this._destroyStreamBindings();
+    }
+    if (this._contextStream) {
+      this._destroyContextStream();
+    }
+  },
+
   _getBindingForStream: function(pathOrStream) {
     if (this._streamBindings === undefined) {
       this._streamBindings = create(null);
-      this.one('willDestroyElement', this, this._destroyStreamBindings);
     }
 
     var path = pathOrStream;
@@ -170,7 +178,6 @@ var ViewStreamSupport = Mixin.create({
     if (this._contextStream === undefined) {
       this._baseContext = new KeyStream(this, 'context');
       this._contextStream = new ContextStream(this);
-      this.one('willDestroyElement', this, this._destroyContextStream);
     }
 
     return this._contextStream;
