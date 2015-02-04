@@ -353,6 +353,10 @@ prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
 };
 
 prototype.createMorph = function(parent, start, end, contextualElement){
+  if (contextualElement && contextualElement.nodeType === 11) {
+    throw new Error("Cannot pass a fragment as the contextual element to createMorph");
+  }
+
   if (!contextualElement && parent.nodeType === 1) {
     contextualElement = parent;
   }
