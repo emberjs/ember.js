@@ -419,6 +419,8 @@ prototype.parseHTML = function(html, contextualElement) {
   if (childNodes && childNodes.length > 0) {
     var currentNode = childNodes[0];
 
+    // We prepend an <option> to <select> boxes to absorb any browser bugs
+    // related to auto-select behavior. Skip past it.
     if (contextualElement.tagName === 'SELECT') {
       currentNode = currentNode.nextSibling;
     }
