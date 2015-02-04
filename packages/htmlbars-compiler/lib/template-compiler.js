@@ -107,21 +107,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'      dom.detectNamespace(contextualElement);\n' +
     indent+'      var fragment = lastResult ? lastResult.fragment : null;\n' +
     indent+'      var morphs = lastResult ? lastResult.morphs : null;\n' +
-    indent+'      if (!fragment && env.useFragmentCache && dom.canClone) {\n' +
-    indent+'        if (this.cachedFragment === null) {\n' +
-    indent+'          fragment = this.build(dom);\n' +
-    indent+'          if (this.hasRendered) {\n' +
-    indent+'            this.cachedFragment = fragment;\n' +
-    indent+'          } else {\n' +
-    indent+'            this.hasRendered = true;\n' +
-    indent+'          }\n' +
-    indent+'        }\n' +
-    indent+'        if (this.cachedFragment) {\n' +
-    indent+'          fragment = dom.cloneNode(this.cachedFragment, true);\n' +
-    indent+'        }\n' +
-    indent+'      } else if (!fragment) {\n' +
-    indent+'        fragment = this.build(dom);\n' +
-    indent+'      }\n' +
+    indent+'      fragment = env.hooks.getCachedFragment(this, fragment, env);\n' +
     hydrationProgram +
     indent+'      return lastResult || { fragment: fragment, morphs: morphs };\n' +
     indent+'    }\n' +

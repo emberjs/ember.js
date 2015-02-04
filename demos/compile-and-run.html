@@ -73,7 +73,7 @@
           if (!skipRender.checked) {
             var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
             var template = compiler.compile(source, compileOptions);
-            var dom = template.render(data, env, output);
+            var dom = template.render(data, env, { contextualElement: output }).fragment;
 
             output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
             output.appendChild(dom);
