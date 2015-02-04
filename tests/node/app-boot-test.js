@@ -21,15 +21,24 @@ QUnit.module("App boot");
 
 QUnit.test("App is created without throwing an exception", function() {
   var App;
+  var domHelper = new DOMHelper(new SimpleDOM.Document());
 
   Ember.run(function() {
-    App = Ember.Application.create();
 
-    App.Router = Ember.Router.extend({
-      location: 'none'
+    App = createApplication();
+
+    App.instanceInitializer({
+      name: 'stub-renderer',
+      initialize: function(app) {
+        app.registry.register('renderer:-dom', {
+          create: function() {
+            return new Ember.View._Renderer(domHelper);
+          }
+        });
+      }
     });
 
-    App.advanceReadiness();
+    App.visit('/');
   });
 
   QUnit.ok(App);
@@ -143,8 +152,9 @@ QUnit.test("It is possible to render a view with {{link-to}} in Node", function(
   var run = Ember.run;
   var app;
   var URL = require('url');
+  var document = new SimpleDOM.Document();
 
-  var domHelper = new DOMHelper(new SimpleDOM.Document());
+  var domHelper = new DOMHelper(document);
   domHelper.protocolForURL = function(url) {
     var protocol = URL.parse(url).protocol;
     return (protocol == null) ? ':' : protocol;
@@ -174,7 +184,7 @@ QUnit.test("It is possible to render a view with {{link-to}} in Node", function(
     QUnit.start();
 
     var morph = {
-      contextualElement: {},
+      contextualElement: document.body,
       setContent: function(element) {
         this.element = element;
       }

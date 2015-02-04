@@ -7,6 +7,7 @@ import Controller from "ember-runtime/controllers/controller";
 import Route from "ember-routing/system/route";
 import RSVP from "ember-runtime/ext/rsvp";
 import keys from "ember-metal/keys";
+import compile from "ember-template-compiler/system/compile";
 
 import "ember-routing";
 
@@ -182,7 +183,7 @@ QUnit.test("log when template and view are missing when flag is active", functio
     return;
   }
 
-  App.register('template:application', function() { return ''; });
+  App.register('template:application', compile("{{outlet}}"));
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
@@ -210,7 +211,7 @@ QUnit.test("log which view is used with a template", function() {
     return;
   }
 
-  App.register('template:application', function() { return 'Template with default view'; });
+  App.register('template:application', compile('{{outlet}}'));
   App.register('template:foo', function() { return 'Template with custom view'; });
   App.register('view:posts', View.extend({ templateName: 'foo' }));
   run(App, 'advanceReadiness');

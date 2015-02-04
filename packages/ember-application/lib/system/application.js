@@ -22,6 +22,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-views/system/renderer";
 import DOMHelper from "dom-helper";
 import SelectView from "ember-views/views/select";
+import { OutletView } from "ember-routing-views/views/outlet";
 import EmberView from "ember-views/views/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
@@ -1003,6 +1004,7 @@ Application.reopenClass({
 
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
+    registry.register('view:-outlet', OutletView);
 
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
@@ -1011,6 +1013,7 @@ Application.reopenClass({
     registry.register('event_dispatcher:main', EventDispatcher);
 
     registry.injection('router:main', 'namespace', 'application:main');
+    registry.injection('view:-outlet', 'namespace', 'application:main');
 
     registry.register('location:auto', AutoLocation);
     registry.register('location:hash', HashLocation);

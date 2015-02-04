@@ -11,7 +11,6 @@ import Ember from "ember-metal/core";
 // ES6TODO: Cleanup modules with side-effects below
 import "ember-routing/ext/run_loop";
 import "ember-routing/ext/controller";
-import "ember-routing/ext/view";
 
 import EmberLocation from "ember-routing/location/api";
 import NoneLocation from "ember-routing/location/none_location";
