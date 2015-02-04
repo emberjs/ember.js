@@ -45,6 +45,13 @@ prototype.compile = function(opcodes, options) {
   var indent = this.indent + '  ';
 
   var morphs = indent+'var morphs;\n';
+  var result = {
+    createMorphsProgram: '',
+    hydrateMorphsProgram: '',
+    fragmentProcessingProgram: ''
+  };
+
+  result.hydrateMorphsProgram = this.source.join('');
 
   if (this.morphs.length) {
     morphs +=
@@ -59,17 +66,17 @@ prototype.compile = function(opcodes, options) {
       morphs += indent+'}\n';
   }
 
-  this.source.unshift(morphs);
+  result.createMorphsProgram = morphs;
 
   if (this.fragmentProcessing.length) {
     var processing = "";
     for (i = 0, l = this.fragmentProcessing.length; i < l; ++i) {
       processing += this.indent+'  '+this.fragmentProcessing[i]+'\n';
     }
-    this.source.unshift(processing);
+    result.fragmentProcessingProgram = processing;
   }
 
-  return this.source.join('');
+  return result;
 };
 
 prototype.prepareArray = function(length) {
