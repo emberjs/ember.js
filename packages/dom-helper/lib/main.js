@@ -419,23 +419,20 @@ prototype.parseHTML = function(html, contextualElement) {
   if (childNodes && childNodes.length > 0) {
     var currentNode = childNodes[0];
 
+    if (contextualElement.tagName === 'SELECT') {
+      currentNode = currentNode.nextSibling;
+    }
+
     while (currentNode) {
       var tempNode = currentNode;
       currentNode = currentNode.nextSibling;
 
       fragment.appendChild(tempNode);
-      applyElementFixes(tempNode);
     }
   }
 
   return fragment;
 };
-
-function applyElementFixes(node) {
-  if (node.tagName === 'OPTION' && node.getAttribute('selected') === null) {
-    node.selected = false;
-  }
-}
 
 var parsingNode;
 
