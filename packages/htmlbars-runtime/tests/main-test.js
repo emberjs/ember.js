@@ -14,6 +14,7 @@ function keys(obj) {
 
 test("hooks are present", function () {
   var hookNames = [
+    "getCachedFragment",
     "content",
     "inline",
     "block",

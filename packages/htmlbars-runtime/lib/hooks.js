@@ -1,3 +1,24 @@
+export function getCachedFragment(template, fragment, env) {
+  var dom = env.dom;
+  if (!fragment && env.useFragmentCache && dom.canClone) {
+    if (template.cachedFragment === null) {
+      fragment = template.build(dom);
+      if (template.hasRendered) {
+        template.cachedFragment = fragment;
+      } else {
+        template.hasRendered = true;
+      }
+    }
+    if (template.cachedFragment) {
+      fragment = dom.cloneNode(template.cachedFragment, true);
+    }
+  } else if (!fragment) {
+    fragment = template.build(dom);
+  }
+
+  return fragment;
+}
+
 export function block(env, morph, context, path, params, hash, template, inverse) {
   var options = {
     morph: morph,
@@ -122,6 +143,7 @@ function lookupHelper(env, context, helperName) {
 }
 
 export default {
+  getCachedFragment: getCachedFragment,
   content: content,
   block: block,
   inline: inline,
