@@ -355,7 +355,7 @@ var CollectionView = ContainerView.extend({
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
-
+        itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
         itemViewProps.contentIndex = idx;
 
