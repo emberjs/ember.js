@@ -110,7 +110,10 @@ function buildDOMWithFix(html, contextualElement){
     throw "Can't set innerHTML on "+tagName+" in this browser";
   }
 
+  html = fixSelect(html, contextualElement);
+
   var wrappingTags = tagNamesRequiringInnerHTMLFix[tagName.toLowerCase()];
+
   var startTag = outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0];
   var endTag = '</'+tagName+'>';
 
@@ -141,16 +144,28 @@ function buildDOMWithFix(html, contextualElement){
 var buildDOM;
 if (needsShy) {
   buildDOM = function buildDOM(html, contextualElement, dom){
+    html = fixSelect(html, contextualElement);
+
     contextualElement = dom.cloneNode(contextualElement, false);
     scriptSafeInnerHTML(contextualElement, html);
     return contextualElement.childNodes;
   };
 } else {
   buildDOM = function buildDOM(html, contextualElement, dom){
+    html = fixSelect(html, contextualElement);
+
     contextualElement = dom.cloneNode(contextualElement, false);
     contextualElement.innerHTML = html;
     return contextualElement.childNodes;
   };
+}
+
+function fixSelect(html, contextualElement) {
+  if (contextualElement.tagName === 'SELECT') {
+    html = "<option></option>" + html;
+  }
+
+  return html;
 }
 
 var buildIESafeDOM;
