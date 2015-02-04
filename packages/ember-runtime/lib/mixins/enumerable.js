@@ -96,7 +96,7 @@ export default Mixin.create({
   /**
     Implement this method to make your class enumerable.
 
-    This method will be call repeatedly during enumeration. The index value
+    This method will be called repeatedly during enumeration. The index value
     will always begin with 0 and increment monotonically. You don't have to
     rely on the index value to determine what object to return, but you should
     always check the value and start from the beginning when you see the
