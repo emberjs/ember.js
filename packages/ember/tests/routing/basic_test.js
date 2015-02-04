@@ -168,28 +168,6 @@ QUnit.test("The Home page and the Camelot page with multiple Router.map calls", 
   equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
 });
 
-QUnit.test("The Homepage register as activeView", function() {
-  Router.map(function() {
-    this.route("home", { path: "/" });
-    this.route("homepage");
-  });
-
-  App.HomeRoute = Ember.Route.extend({
-  });
-
-  App.HomepageRoute = Ember.Route.extend({
-  });
-
-  bootApplication();
-
-  ok(router._lookupActiveView('home'), '`home` active view is connected');
-
-  handleURL('/homepage');
-
-  ok(router._lookupActiveView('homepage'), '`homepage` active view is connected');
-  equal(router._lookupActiveView('home'), undefined, '`home` active view is disconnected');
-});
-
 QUnit.test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
@@ -2566,6 +2544,22 @@ QUnit.test("Route should tear down multiple outlets", function() {
 });
 
 
+QUnit.test("Route will assert if you try to explicitly render {into: ...} a missing template", function () {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render({ into: 'nonexistent' });
+    }
+  });
+
+  expectAssertion(function() {
+    bootApplication();
+  }, "You attempted to render into 'nonexistent' but it was not found");
+});
+
 QUnit.test("Route supports clearing outlet explicitly", function() {
   Ember.TEMPLATES.application = compile("{{outlet}}{{outlet 'modal'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
@@ -3433,4 +3427,55 @@ QUnit.test("Exception during load of initial route is not swallowed", function()
   throws(function() {
     bootApplication();
   }, /\bboom\b/);
+});
+
+QUnit.test("{{outlet}} works when created after initial render", function() {
+  Ember.TEMPLATES.sample = compile("Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye");
+  Ember.TEMPLATES['sample/inner'] = compile("Yay");
+  Ember.TEMPLATES['sample/inner2'] = compile("Boo");
+  Router.map(function() {
+    this.route('sample', { path: '/' }, function() {
+      this.route('inner', { path: '/' });
+      this.route('inner2', { path: '/2' });
+    });
+  });
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "HiBye", "initial render");
+
+  Ember.run(function() {
+    container.lookup('controller:sample').set('showTheThing', true);
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), "HiYayBye", "second render");
+
+  handleURL('/2');
+
+  equal(Ember.$('#qunit-fixture').text(), "HiBooBye", "third render");
+});
+
+QUnit.test("Can rerender application view multiple times when it contains an outlet", function() {
+  Ember.TEMPLATES.application = compile("App{{outlet}}");
+  Ember.TEMPLATES.index = compile("Hello world");
+
+  registry.register('view:application', Ember.View.extend({
+    elementId: 'im-special'
+  }));
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "AppHello world", "initial render");
+
+  Ember.run(function() {
+    Ember.View.views['im-special'].rerender();
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), "AppHello world", "second render");
+
+  Ember.run(function() {
+    Ember.View.views['im-special'].rerender();
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), "AppHello world", "third render");
 });

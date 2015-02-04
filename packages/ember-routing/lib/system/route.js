@@ -3,10 +3,7 @@ import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
-import {
-  forEach,
-  replace
-}from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 import isNone from "ember-metal/is_none";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
@@ -381,6 +378,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method enter
   */
   enter: function() {
+    this.connections = [];
     this.activate();
     this.trigger('activate');
   },
@@ -1786,6 +1784,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
+    var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
     var name;
 
     if (typeof _name === 'object' && !options) {
@@ -1795,53 +1794,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       name = _name;
     }
 
-    var templateName;
-
-    if (name) {
-      name = name.replace(/\//g, '.');
-      templateName = name;
-    } else {
-      name = this.routeName;
-      templateName = this.templateName || name;
-    }
-
-    var renderOptions = buildRenderOptions(this, namePassed, name, options);
-
-    var LOG_VIEW_LOOKUPS = get(this.router, 'namespace.LOG_VIEW_LOOKUPS');
-    var viewName = options && options.view || namePassed && name || this.viewName || name;
-    var view, template;
-
-    var ViewClass = this.container.lookupFactory('view:' + viewName);
-    if (ViewClass) {
-      view = setupView(ViewClass, renderOptions);
-      if (!get(view, 'template')) {
-        view.set('template', this.container.lookup('template:' + templateName));
-      }
-      if (LOG_VIEW_LOOKUPS) {
-        Ember.Logger.info("Rendering " + renderOptions.name + " with " + view, { fullName: 'view:' + renderOptions.name });
-      }
-    } else {
-      template = this.container.lookup('template:' + templateName);
-      if (!template) {
-        Ember.assert("Could not find \"" + name + "\" template or view.", arguments.length === 0 || Ember.isEmpty(arguments[0]));
-        if (LOG_VIEW_LOOKUPS) {
-          Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
-        }
-        return;
-      }
-      var defaultView = renderOptions.into ? 'view:default' : 'view:toplevel';
-      ViewClass = this.container.lookupFactory(defaultView);
-      view = setupView(ViewClass, renderOptions);
-      if (!get(view, 'template')) {
-        view.set('template', template);
-      }
-      if (LOG_VIEW_LOOKUPS) {
-        Ember.Logger.info("Rendering " + renderOptions.name + " with default view " + view, { fullName: 'view:' + renderOptions.name });
-      }
-    }
-
-    if (renderOptions.outlet === 'main') { this.lastRenderedTemplate = name; }
-    appendView(this, view, renderOptions);
+    var renderOptions = buildRenderOptions(this, namePassed, isDefaultRender, name, options);
+    this.connections.push(renderOptions);
+    run.once(this.router, '_setOutlets');
   },
 
   /**
@@ -1888,16 +1843,29 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Object|String} options the options hash or outlet name
   */
   disconnectOutlet: function(options) {
+    var outletName;
+    var parentView;
     if (!options || typeof options === "string") {
-      var outletName = options;
-      options = {};
-      options.outlet = outletName;
+      outletName = options;
+    } else {
+      outletName = options.outlet;
+      parentView = options.parentView;
     }
-    options.parentView = options.parentView ? options.parentView.replace(/\//g, '.') : parentTemplate(this);
-    options.outlet = options.outlet || 'main';
 
-    var parentView = this.router._lookupActiveView(options.parentView);
-    if (parentView) { parentView.disconnectOutlet(options.outlet); }
+    parentView = parentView && parentView.replace(/\//g, '.');
+    if (parentView === parentRoute(this).routeName) {
+      parentView = undefined;
+    }
+    outletName = outletName || 'main';
+
+    for (var i = 0; i < this.connections.length; i++) {
+      var connection = this.connections[i];
+      if (connection.outlet === outletName && connection.into === parentView) {
+        this.connections.splice(i, 1);
+        run.once(this.router, '_setOutlets');
+        return;
+      }
+    }
   },
 
   willDestroy: function() {
@@ -1910,18 +1878,10 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method teardownViews
   */
   teardownViews: function() {
-    // Tear down the top level view
-    if (this.teardownTopLevelView) { this.teardownTopLevelView(); }
-
-    // Tear down any outlets rendered with 'into'
-    var teardownOutletViews = this.teardownOutletViews || [];
-    forEach(teardownOutletViews, function(teardownOutletView) {
-      teardownOutletView();
-    });
-
-    delete this.teardownTopLevelView;
-    delete this.teardownOutletViews;
-    delete this.lastRenderedTemplate;
+    if (this.connections && this.connections.length > 0) {
+      this.connections = [];
+      run.once(this.router, '_setOutlets');
+    }
   }
 });
 
@@ -1947,21 +1907,23 @@ function handlerInfoFor(route, handlerInfos, _offset) {
   }
 }
 
-function parentTemplate(route) {
-  var parent = parentRoute(route);
-  var template;
-
-  if (!parent) { return; }
-
-  if (template = parent.lastRenderedTemplate) {
-    return template;
-  } else {
-    return parentTemplate(parent);
-  }
-}
-
-function buildRenderOptions(route, namePassed, name, options) {
+function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   var controller = options && options.controller;
+  var templateName;
+  var viewName;
+  var ViewClass;
+  var template;
+  var LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
+  var into = options && options.into && options.into.replace(/\//g, '.');
+  var outlet = (options && options.outlet) || 'main';
+
+  if (name) {
+    name = name.replace(/\//g, '.');
+    templateName = name;
+  } else {
+    name = route.routeName;
+    templateName = route.templateName || name;
+  }
 
   if (!controller) {
     if (namePassed) {
@@ -1983,55 +1945,41 @@ function buildRenderOptions(route, namePassed, name, options) {
     controller.set('model', options.model);
   }
 
-  var renderOptions = {
-    into: options && options.into ? options.into.replace(/\//g, '.') : parentTemplate(route),
-    outlet: (options && options.outlet) || 'main',
-    name: name,
-    controller: controller
-  };
+  viewName = options && options.view || namePassed && name || route.viewName || name;
+  ViewClass = route.container.lookupFactory('view:' + viewName);
+  template = route.container.lookup('template:' + templateName);
+  if (!ViewClass && !template) {
+    Ember.assert("Could not find \"" + name + "\" template or view.", isDefaultRender);
+    if (LOG_VIEW_LOOKUPS) {
+      Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+    }
+  }
 
-  Ember.assert("An outlet ("+renderOptions.outlet+") was specified but was not found.", renderOptions.outlet === 'main' || renderOptions.into);
+  Ember.assert("An outlet ("+outlet+") was specified but was not found.", outlet === 'main' || into);
+
+  Ember.assert(
+    "You attempted to render into '" + into + "' but it was not found",
+    !into || Ember.A(route.router.router.state.handlerInfos).any(function(info) {
+      return Ember.A(info.handler.connections || []).any(function(conn) {
+        return conn.name === into;
+      });
+    })
+  );
+
+  if (into && into === parentRoute(route).routeName) {
+    into = undefined;
+  }
+
+  var renderOptions = {
+    into: into,
+    outlet: outlet,
+    name: name,
+    controller: controller,
+    ViewClass: ViewClass,
+    template: template
+  };
 
   return renderOptions;
-}
-
-function setupView(ViewClass, options) {
-  return ViewClass.create({
-    _debugTemplateName: options.name,
-    renderedName: options.name,
-    controller: options.controller
-  });
-}
-
-function appendView(route, view, options) {
-  if (options.into) {
-    var parentView = route.router._lookupActiveView(options.into);
-    var teardownOutletView = generateOutletTeardown(parentView, options.outlet);
-    if (!route.teardownOutletViews) { route.teardownOutletViews = []; }
-    replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
-    parentView.connectOutlet(options.outlet, view);
-  } else {
-    // tear down view if one is already rendered
-    if (route.teardownTopLevelView) {
-      route.teardownTopLevelView();
-    }
-
-    route.router._connectActiveView(options.name, view);
-    route.teardownTopLevelView = function() { view.destroy(); };
-
-    // Notify the application instance that we have created the root-most
-    // view. It is the responsibility of the instance to tell the root view
-    // how to render, typically by appending it to the application's
-    // `rootElement`.
-    var instance = route.container.lookup('-application-instance:main');
-    instance.didCreateRootView(view);
-  }
-}
-
-function generateOutletTeardown(parentView, outlet) {
-  return function() {
-    parentView.disconnectOutlet(outlet);
-  };
 }
 
 function getFullQueryParams(router, state) {
