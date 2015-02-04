@@ -31,12 +31,13 @@ QUnit.module("EmberView - Attribute Bindings", {
 QUnit.test("should render attribute bindings", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
+    attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'novalidate', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
     type: 'submit',
     isDisabled: true,
     exploded: false,
     destroyed: false,
+    novalidate: true, // intentionally lowercase
     exists: true,
     nothing: null,
     notDefined: undefined,
@@ -51,6 +52,7 @@ QUnit.test("should render attribute bindings", function() {
   ok(view.$().prop('disabled'), "supports customizing attribute name for Boolean values");
   ok(!view.$().prop('exploded'), "removes exploded attribute when false");
   ok(!view.$().prop('destroyed'), "removes destroyed attribute when false");
+  ok(view.$().prop('noValidate'), "sets property with correct case");
   ok(view.$().prop('exists'), "adds exists attribute when true");
   ok(!view.$().attr('nothing'), "removes nothing attribute when null");
   ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
