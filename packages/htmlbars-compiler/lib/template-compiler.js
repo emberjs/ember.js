@@ -77,7 +77,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   );
 
   // function hydrate(fragment) { return mustaches; }
-  var hydrationProgram = this.hydrationCompiler.compile(
+  var hydrationPrograms = this.hydrationCompiler.compile(
     this.hydrationOpcodeCompiler.opcodes,
     options
   );
@@ -108,7 +108,9 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'      var fragment = lastResult ? lastResult.fragment : null;\n' +
     indent+'      var morphs = lastResult ? lastResult.morphs : null;\n' +
     indent+'      fragment = env.hooks.getCachedFragment(this, fragment, env);\n' +
-    hydrationProgram +
+    hydrationPrograms.fragmentProcessingProgram +
+    hydrationPrograms.createMorphsProgram +
+    hydrationPrograms.hydrateMorphsProgram +
     indent+'      return lastResult || { fragment: fragment, morphs: morphs };\n' +
     indent+'    }\n' +
     indent+'  };\n' +
