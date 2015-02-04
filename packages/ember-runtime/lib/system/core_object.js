@@ -910,7 +910,7 @@ CoreObject.reopen({
     if (value instanceof Ember.ComputedProperty) {
       var cache = Ember.meta(this.constructor).cache;
 
-      if (cache._computedProperties !== undefined) {
+      if (cache && cache._computedProperties !== undefined) {
         cache._computedProperties = undefined;
       }
     }

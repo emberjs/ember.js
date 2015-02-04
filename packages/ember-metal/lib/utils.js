@@ -289,8 +289,8 @@ export function guidFor(obj) {
 //
 function Meta(obj) {
   this.watching = {};
-  this.cache = {};
-  this.cacheMeta = {};
+  this.cache = undefined;
+  this.cacheMeta = undefined;
   this.source = obj;
   this.deps = undefined;
   this.listeners = undefined;
@@ -377,8 +377,8 @@ function meta(obj, writable) {
 
     ret = o_create(ret);
     ret.watching  = o_create(ret.watching);
-    ret.cache     = {};
-    ret.cacheMeta = {};
+    ret.cache     = undefined;
+    ret.cacheMeta = undefined;
     ret.source    = obj;
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {

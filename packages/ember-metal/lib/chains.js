@@ -36,7 +36,7 @@ function addChainWatcher(obj, keyName, node) {
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
 
-  if (!m.hasOwnProperty('chainWatchers')) {
+  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
     nodes = m.chainWatchers = {};
   }
 
@@ -122,7 +122,7 @@ function lazyGet(obj, key) {
   var possibleDesc = obj[key];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   if (desc && desc._cacheable) {
-    if (key in meta.cache) {
+    if (meta.cache && key in meta.cache) {
       return meta.cache[key];
     } else {
       return undefined;

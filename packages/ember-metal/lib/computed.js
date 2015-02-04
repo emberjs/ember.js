@@ -303,7 +303,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
     var meta = metaFor(obj);
-    if (meta.cache[keyName] !== undefined) {
+    if (meta.cache && meta.cache[keyName] !== undefined) {
       meta.cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
     }
@@ -348,7 +348,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     meta = metaFor(obj);
     cache = meta.cache;
 
-    var result = cache[keyName];
+    var result = cache && cache[keyName];
 
     if (result === UNDEFINED) {
       return undefined;
@@ -357,6 +357,10 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     }
 
     ret = this._getter.call(obj, keyName);
+    cache = meta.cache;
+    if (!cache) {
+      cache = meta.cache = {};
+    }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
     } else {
@@ -447,7 +451,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
   }
 
-  if (cacheable && cache[keyName] !== undefined) {
+  if (cacheable && cache && cache[keyName] !== undefined) {
     if (cache[keyName] !== UNDEFINED) {
       cachedValue = cache[keyName];
     }
@@ -482,6 +486,9 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     if (!hadCachedValue) {
       addDependentKeys(this, obj, keyName, meta);
     }
+    if (!cache) {
+      cache = meta.cache = {};
+    }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
     } else {
@@ -500,11 +507,13 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  if (keyName in meta.cache) {
-    removeDependentKeys(this, obj, keyName, meta);
-  }
+  if (meta.cache) {
+    if (keyName in meta.cache) {
+      removeDependentKeys(this, obj, keyName, meta);
+    }
 
-  if (this._cacheable) { delete meta.cache[keyName]; }
+    if (this._cacheable) { delete meta.cache[keyName]; }
+  }
 
   return null; // no value to restore
 };

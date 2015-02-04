@@ -419,7 +419,10 @@ function partiallyRecomputeFor(obj, dependentKey) {
 function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue) {
   this.context = context;
   this.propertyName = propertyName;
-  this.cache = metaFor(context).cache;
+  var contextMeta = metaFor(context);
+  var contextCache = contextMeta.cache;
+  if (!contextCache) { contextCache = contextMeta.cache = {}; }
+  this.cache = contextCache;
   this.dependentArrays = {};
   this.sugarMeta = {};
   this.initialValue = initialValue;
@@ -574,13 +577,19 @@ ReduceComputedProperty.prototype._callbacks = function () {
 };
 
 ReduceComputedProperty.prototype._hasInstanceMeta = function (context, propertyName) {
-  return !!metaFor(context).cacheMeta[propertyName];
+  var contextMeta = context.__ember_meta__;
+  var cacheMeta = contextMeta && contextMeta.cacheMeta;
+  return !!(cacheMeta && cacheMeta[propertyName]);
 };
 
 ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName) {
-  var cacheMeta = metaFor(context).cacheMeta;
-  var meta = cacheMeta[propertyName];
+  var contextMeta = context.__ember_meta__;
+  var cacheMeta = contextMeta.cacheMeta;
+  var meta = cacheMeta && cacheMeta[propertyName];
 
+  if (!cacheMeta) {
+    cacheMeta = contextMeta.cacheMeta = {};
+  }
   if (!meta) {
     meta = cacheMeta[propertyName] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
     meta.dependentArraysObserver = new DependentArraysObserver(this._callbacks(), this, meta, context, propertyName, meta.sugarMeta);
