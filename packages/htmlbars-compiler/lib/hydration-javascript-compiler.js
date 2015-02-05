@@ -76,7 +76,7 @@ prototype.compile = function(opcodes, options) {
 
   if (result.hasMorphs) {
     result.createMorphsProgram =
-      '  function renderNodes(dom, fragment, contextualElement) {\n' +
+      '  function buildRenderNodes(dom, fragment, contextualElement) {\n' +
       result.fragmentProcessingProgram +
       morphs +
       '    return morphs;\n' +

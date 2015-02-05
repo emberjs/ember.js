@@ -90,7 +90,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   }
 
   var renderNodes = hydrationPrograms.hasMorphs ?
-    indent+'      var morphs = renderNodes(dom, fragment, contextualElement);\n' :
+    indent+'      var morphs = buildRenderNodes(dom, fragment, contextualElement);\n' :
     indent+'      var morphs = null;';
 
   var template =
