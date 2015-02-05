@@ -1,29 +1,22 @@
-export function getCachedFragment(template, fragment, env) {
-  var dom = env.dom;
-  if (!fragment && env.useFragmentCache && dom.canClone) {
-    if (template.cachedFragment === null) {
-      fragment = template.build(dom);
-      if (template.hasRendered) {
-        template.cachedFragment = fragment;
-      } else {
-        template.hasRendered = true;
-      }
-    }
-    if (template.cachedFragment) {
-      fragment = dom.cloneNode(template.cachedFragment, true);
-    }
-  } else if (!fragment) {
-    fragment = template.build(dom);
-  }
+import render from "./render";
 
-  return fragment;
+export function wrap(template) {
+  if (template === null) { return null;  }
+
+  return {
+    isHTMLBars: true,
+    blockParams: template.blockParams,
+    render: function(context, env, options, blockArguments) {
+      return render(template, context, env, options, blockArguments);
+    }
+  };
 }
 
 export function block(env, morph, context, path, params, hash, template, inverse) {
   var options = {
     morph: morph,
-    template: template,
-    inverse: inverse,
+    template: wrap(template),
+    inverse: wrap(inverse),
     lastResult: morph.lastResult
   };
 
@@ -105,6 +98,7 @@ export function set(env, context, name, value) {
 
 export function component(env, morph, context, tagName, attrs, template) {
   var helper = lookupHelper(env, context, tagName);
+  template = wrap(template);
 
   var value;
   if (helper) {
@@ -143,7 +137,6 @@ function lookupHelper(env, context, helperName) {
 }
 
 export default {
-  getCachedFragment: getCachedFragment,
   content: content,
   block: block,
   inline: inline,

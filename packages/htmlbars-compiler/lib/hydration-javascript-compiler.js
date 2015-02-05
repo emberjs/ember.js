@@ -81,6 +81,9 @@ prototype.compile = function(opcodes, options) {
       morphs +
       '    return morphs;\n' +
       '  }\n';
+  } else {
+    result.createMorphsProgram =
+      '  function buildRenderNodes() { return []; }\n';
   }
 
   return result;
