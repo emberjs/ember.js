@@ -28,6 +28,7 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
+  this.elementMorphNum = null;
   this.element = null;
   this.elementNum = -1;
 }
@@ -93,8 +94,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, must
 
   // If our parent reference will be used more than once, cache its reference.
   if (mustacheCount > 1) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null; // Set element to null so we don't cache it twice
+    shareElement(this);
   }
 
   var isElementChecked = detectIsElementChecked(element);
@@ -206,13 +206,12 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   this.opcode('pushLiteral', attr.name);
 
   if (this.element !== null) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null;
+    shareElement(this);
   }
 
   var attrMorphNum = this.morphNum++;
   this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped, namespace);
-  this.opcode('printAttributeHook', attrMorphNum, this.elementNum);
+  this.opcode('printAttributeHook', attrMorphNum);
 };
 
 HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
@@ -220,11 +219,10 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null; // Reset element so we don't cache it more than once
+    shareElement(this);
   }
 
-  this.opcode('printElementHook', this.elementNum);
+  this.opcode('printElementHook', this.elementMorphNum);
 };
 
 HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
@@ -291,6 +289,13 @@ function prepareSexpr(compiler, sexpr) {
   prepareHash(compiler, sexpr.hash);
   prepareParams(compiler, sexpr.params);
   preparePath(compiler, sexpr.path);
+}
+
+function shareElement(compiler) {
+  compiler.opcode('shareElement', ++compiler.elementNum);
+  var morphNum = compiler.elementMorphNum = compiler.morphNum++;
+  compiler.opcode('createElementMorph', morphNum, compiler.elementNum);
+  compiler.element = null; // Set element to null so we don't cache it twice
 }
 
 function distributeMorphs(morphs, opcodes) {

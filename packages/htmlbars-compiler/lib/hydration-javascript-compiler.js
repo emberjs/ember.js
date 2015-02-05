@@ -42,38 +42,45 @@ prototype.compile = function(opcodes, options) {
 
   var i, l;
 
-  var indent = this.indent + '  ';
+  var indent = this.indent;
 
-  var morphs = indent+'var morphs;\n';
+  var morphs;
+
   var result = {
     createMorphsProgram: '',
     hydrateMorphsProgram: '',
-    fragmentProcessingProgram: ''
+    fragmentProcessingProgram: '',
+    hasMorphs: false
   };
 
   result.hydrateMorphsProgram = this.source.join('');
 
   if (this.morphs.length) {
-    morphs +=
-      indent+'if (!morphs) {\n' +
-      indent+'  morphs = new Array(' + this.morphs.length + ');\n';
+    result.hasMorphs = true;
+    morphs =
+      indent+'var morphs = new Array(' + this.morphs.length + ');\n';
 
       for (i = 0, l = this.morphs.length; i < l; ++i) {
         var morph = this.morphs[i];
-        morphs += indent+'  morphs['+i+'] = '+morph+';\n';
+        morphs += indent+'morphs['+i+'] = '+morph+';\n';
       }
-
-      morphs += indent+'}\n';
   }
-
-  result.createMorphsProgram = morphs;
 
   if (this.fragmentProcessing.length) {
     var processing = "";
     for (i = 0, l = this.fragmentProcessing.length; i < l; ++i) {
-      processing += this.indent+'  '+this.fragmentProcessing[i]+'\n';
+      processing += this.indent+this.fragmentProcessing[i]+'\n';
     }
     result.fragmentProcessingProgram = processing;
+  }
+
+  if (result.hasMorphs) {
+    result.createMorphsProgram =
+      '  function renderNodes(dom, fragment, contextualElement) {\n' +
+      result.fragmentProcessingProgram +
+      morphs +
+      '    return morphs;\n' +
+      '  }\n';
   }
 
   return result;
@@ -207,20 +214,19 @@ prototype.printComponentHook = function(morphNum, templateId) {
   ]);
 };
 
-prototype.printAttributeHook = function(attrMorphNum, elementNum) {
+prototype.printAttributeHook = function(attrMorphNum) {
   this.printHook('attribute', [
     'env',
     'morphs[' + attrMorphNum + ']',
-    'element' + elementNum,
     this.stack.pop(), // name
     this.stack.pop() // value
   ]);
 };
 
-prototype.printElementHook = function(elementNum) {
+prototype.printElementHook = function(morphNum) {
   this.printHook('element', [
     'env',
-    'element' + elementNum,
+    'morphs[' + morphNum + ']',
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params
@@ -245,6 +251,12 @@ prototype.createAttrMorph = function(attrMorphNum, elementNum, name, escaped, na
   var morphMethod = escaped ? 'createAttrMorph' : 'createUnsafeAttrMorph';
   var morph = "dom."+morphMethod+"(element"+elementNum+", '"+name+(namespace ? "', '"+namespace : '')+"')";
   this.morphs[attrMorphNum] = morph;
+};
+
+prototype.createElementMorph = function(morphNum, elementNum ) {
+  var morphMethod = 'createElementMorph';
+  var morph = "dom."+morphMethod+"(element"+elementNum+")";
+  this.morphs[morphNum] = morph;
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {

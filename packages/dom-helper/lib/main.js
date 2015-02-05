@@ -105,6 +105,12 @@ function buildSVGDOM(html, dom){
   return div.firstChild.childNodes;
 }
 
+function ElementMorph(element, dom, namespace) {
+  this.element = element;
+  this.dom = dom;
+  this.namespace = namespace;
+}
+
 /*
  * A class wrapping DOM functions to address environment compatibility,
  * namespaces, contextual elements for morph un-escaped content
@@ -344,6 +350,10 @@ prototype.cloneNode = function(element, deep){
 
 prototype.createAttrMorph = function(element, attrName, namespace){
   return new AttrMorph(element, attrName, this, namespace);
+};
+
+prototype.createElementMorph = function(element, namespace){
+  return new ElementMorph(element, this, namespace);
 };
 
 prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
