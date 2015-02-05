@@ -289,7 +289,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   keyUp: function(event) {
     this.interpretKeyEvents(event);
 
-    this.sendAction('key-up', get(this, 'value'), event);
+    sendAction('key-up', this, event);
   },
 
   /**
@@ -305,7 +305,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @param {Event} event
   */
   keyDown: function(event) {
-    this.sendAction('key-down', get(this, 'value'), event);
+    sendAction('key-down', this, event);
   }
 });
 
@@ -325,11 +325,11 @@ function sendAction(eventName, view, event) {
   // back-compat support for keyPress as an event name even though
   // it's also a method name that consumes the event (and therefore
   // incompatible with sendAction semantics).
-  if (on === eventName || (on === 'keyPress' && eventName === 'key-press')) {
-    view.sendAction('action', value);
+  if (on === eventName || (on === 'keyPress' && eventName === 'key-press') || (on === 'keyUp' && eventName === 'key-up') || (on === 'keyDown' && eventName === 'key-down')) {
+    view.sendAction('action', value, event);
   }
 
-  view.sendAction(eventName, value);
+  view.sendAction(eventName, value, event);
 
   if (action || on === eventName) {
     if (!get(view, 'bubbles')) {
