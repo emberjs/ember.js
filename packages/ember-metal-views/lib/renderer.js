@@ -163,6 +163,12 @@ Renderer.prototype.appendTo =
     this.scheduleInsert(view, morph);
   };
 
+Renderer.prototype.appendAttrTo =
+  function Renderer_appendAttrTo(view, target, attrName) {
+    var morph = this._dom.createAttrMorph(target, attrName);
+    this.scheduleInsert(view, morph);
+  };
+
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
     var morph = this._dom.createMorph(target, null, null);

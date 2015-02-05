@@ -553,7 +553,6 @@ QUnit.test('should not reset cursor position when text field receives keyUp even
 
   appendView(view);
 
-  view.$().val('Brosiedoon, King of the Brocean');
   setCaretPosition(view.$(), 5);
 
   run(function() {

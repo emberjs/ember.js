@@ -27,8 +27,11 @@ import {
 import KeyStream from "ember-views/streams/key_stream";
 import StreamBinding from "ember-metal/streams/stream_binding";
 import ContextStream from "ember-views/streams/context_stream";
+import { read } from "ember-metal/streams/utils";
 
-import isNone from 'ember-metal/is_none';
+import AttrNode from "ember-views/attr_nodes/attr_node";
+
+import { typeOf } from "ember-metal/utils";
 import { deprecateProperty } from "ember-metal/deprecate_property";
 import { A as emberA } from "ember-runtime/system/native_array";
 
@@ -57,8 +60,8 @@ import {
   read,
   isStream
 } from "ember-metal/streams/utils";
-import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
-import { normalizeProperty } from "dom-helper/prop";
+
+import { canSetNameOnInputs } from "ember-views/system/platform";
 
 function K() { return this; }
 
@@ -1432,47 +1435,32 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
-    var attributeValue;
     var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
-    forEach(attributeBindings, function(binding) {
-      var split = binding.split(':');
-      var property = split[0];
-      var attributeName = split[1] || property;
+    var binding, split, property, attrName, attrNode, attrValue;
+    var i, l;
+    for (i=0, l=attributeBindings.length; i<l; i++) {
+      binding = attributeBindings[i];
+      split = binding.split(':');
+      property = split[0];
+      attrName = split[1] || property;
 
-      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attributeName !== 'class');
+      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
 
       if (property in this) {
-        this._setupAttributeBindingObservation(property, attributeName);
-
-        // Determine the current value and add it to the render buffer
-        // if necessary.
-        attributeValue = get(this, property);
-        View.applyAttributeBindings(this.renderer._dom, buffer, attributeName, attributeValue);
+        attrValue = this.getStream('view.'+property);
+        attrNode = new AttrNode(attrName, attrValue);
+        this.appendAttr(attrNode);
+        if (!canSetNameOnInputs && attrName === 'name') {
+          buffer.attr('name', read(attrValue));
+        }
       } else {
-        unspecifiedAttributeBindings[property] = attributeName;
+        unspecifiedAttributeBindings[property] = attrName;
       }
-    }, this);
+    }
 
     // Lazily setup setUnknownProperty after attributeBindings are initially applied
     this.setUnknownProperty = this._setUnknownProperty;
-  },
-
-  _setupAttributeBindingObservation: function(property, attributeName) {
-    var attributeValue, elem;
-
-    // Create an observer to add/remove/change the attribute if the
-    // JavaScript property changes.
-    var observer = function() {
-      elem = this.$();
-
-      attributeValue = get(this, property);
-
-      var normalizedName = normalizeProperty(elem, attributeName.toLowerCase()) || attributeName;
-      View.applyAttributeBindings(this.renderer._dom, elem, normalizedName, attributeValue);
-    };
-
-    this.registerObserver(this, property, observer);
   },
 
   /**
@@ -1489,12 +1477,15 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
 
   _setUnknownProperty: function(key, value) {
-    var attributeName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
-    if (attributeName) {
-      this._setupAttributeBindingObservation(key, attributeName);
-    }
+    var attrName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
 
     defineProperty(this, key);
+
+    if (attrName) {
+      var attrValue = this.getStream('view.'+key);
+      var attrNode = new AttrNode(attrName, attrValue);
+      this.appendAttr(attrNode);
+    }
     return set(this, key, value);
   },
 
@@ -1971,6 +1962,10 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     this[property.name] = property.descriptor.value;
   },
 
+  appendAttr: function(node) {
+    return this.currentState.appendAttr(this, node);
+  },
+
   /**
     Removes all children from the `parentView`.
 
@@ -2208,35 +2203,6 @@ View.views = {};
 // at view initialization time. This happens in Ember.ContainerView's init
 // method.
 View.childViewsProperty = childViewsProperty;
-
-// Used by Handlebars helpers, view element attributes
-View.applyAttributeBindings = function(dom, elem, name, initialValue) {
-  var value = sanitizeAttributeValue(dom, elem[0], name, initialValue);
-  var type = typeOf(value);
-
-  // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
-  if (name !== 'value' && (type === 'string' || (type === 'number' && !isNaN(value)))) {
-    if (value !== elem.attr(name)) {
-      elem.attr(name, value);
-    }
-  } else if (name === 'value' || type === 'boolean') {
-    if (isNone(value) || value === false) {
-      // `null`, `undefined` or `false` should remove attribute
-      elem.removeAttr(name);
-      // In IE8 `prop` couldn't remove attribute when name is `required`.
-      if (name === 'required') {
-        elem.removeProp(name);
-      } else {
-        elem.prop(name, '');
-      }
-    } else if (value !== elem.prop(name)) {
-      // value should always be properties
-      elem.prop(name, value);
-    }
-  } else if (!value) {
-    elem.removeAttr(name);
-  }
-};
 
 export default View;
 
