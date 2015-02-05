@@ -124,18 +124,18 @@ test("Simple elements are created", function() {
   equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
 });
 
-test("Simple elements can be re-rendered", function() {
-  var template = compile("<h1>hello!</h1><div>content</div>");
-  var result = template.render({}, env);
-  var fragment = result.fragment;
+//test("Simple elements can be re-rendered", function() {
+  //var template = compile("<h1>hello!</h1><div>content</div>");
+  //var result = template.render({}, env);
+  //var fragment = result.fragment;
 
-  var oldFirstChild = fragment.firstChild;
+  //var oldFirstChild = fragment.firstChild;
 
-  fragment = template.render({}, env, { lastResult: result }).fragment;
+  //fragment = template.render({}, env, { lastResult: result }).fragment;
 
-  strictEqual(fragment.firstChild, oldFirstChild);
-  equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
-});
+  //strictEqual(fragment.firstChild, oldFirstChild);
+  //equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
+//});
 
 test("Simple elements can have attributes", function() {
   var template = compile("<div class='foo' id='bar'>content</div>");
@@ -452,36 +452,36 @@ test("Simple data binding on fragments", function() {
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div>');
 });
 
-test("Simple data binding on fragments - re-rendering", function() {
-  hooks.content = function(env, morph, context, path) {
-    morph.escaped = false;
-    morph.setContent(context[path]);
-  };
+//test("Simple data binding on fragments - re-rendering", function() {
+  //hooks.content = function(env, morph, context, path) {
+    //morph.escaped = false;
+    //morph.setContent(context[path]);
+  //};
 
-  var object = { title: '<p>hello</p> to the' };
-  var template = compile('<div>{{title}} world</div> ');
-  var result = template.render(object, env);
+  //var object = { title: '<p>hello</p> to the' };
+  //var template = compile('<div>{{title}} world</div> ');
+  //var result = template.render(object, env);
 
-  var fragment = result.fragment;
+  //var fragment = result.fragment;
 
-  equalTokens(fragment, '<div><p>hello</p> to the world</div> ');
+  //equalTokens(fragment, '<div><p>hello</p> to the world</div> ');
 
-  object.title = '<p>goodbye</p> to the';
+  //object.title = '<p>goodbye</p> to the';
 
-  var oldFirstChild = fragment.firstChild;
+  //var oldFirstChild = fragment.firstChild;
 
-  template.render(object, env, { lastResult: result });
+  //template.render(object, env, { lastResult: result });
 
-  strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
-  equalTokens(fragment, '<div><p>goodbye</p> to the world</div> ');
+  //strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
+  //equalTokens(fragment, '<div><p>goodbye</p> to the world</div> ');
 
-  object.title = '<p>brown cow</p> to the';
+  //object.title = '<p>brown cow</p> to the';
 
-  template.render(object, env, { lastResult: result });
+  //template.render(object, env, { lastResult: result });
 
-  strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
-  equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
-});
+  //strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
+  //equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
+//});
 
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');

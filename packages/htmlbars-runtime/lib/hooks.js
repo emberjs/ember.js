@@ -62,14 +62,14 @@ export function content(env, morph, context, path) {
   morph.setContent(value);
 }
 
-export function element(env, domElement, context, path, params, hash) {
+export function element(env, morph, context, path, params, hash) {
   var helper = lookupHelper(env, context, path);
   if (helper) {
-    helper.call(context, params, hash, { element: domElement }, env);
+    helper.call(context, params, hash, { element: morph.element }, env);
   }
 }
 
-export function attribute(env, attrMorph, domElement, name, value) {
+export function attribute(env, attrMorph, name, value) {
   attrMorph.setContent(value);
 }
 

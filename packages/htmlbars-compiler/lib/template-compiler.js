@@ -89,6 +89,10 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     templateSignature += ', blockArguments';
   }
 
+  var renderNodes = hydrationPrograms.hasMorphs ?
+    indent+'      var morphs = renderNodes(dom, fragment, contextualElement);\n' :
+    indent+'      var morphs = null;';
+
   var template =
     '(function() {\n' +
     this.getChildTemplateVars(indent + '  ') +
@@ -103,17 +107,14 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'      var dom = env.dom;\n' +
     this.getHydrationHooks(indent + '      ', this.hydrationCompiler.hooks) +
     indent+'      var contextualElement = options && options.contextualElement;\n' +
-    indent+'      var lastResult = options && options.lastResult;\n' +
     indent+'      dom.detectNamespace(contextualElement);\n' +
-    indent+'      var fragment = lastResult ? lastResult.fragment : null;\n' +
-    indent+'      var morphs = lastResult ? lastResult.morphs : null;\n' +
-    indent+'      fragment = env.hooks.getCachedFragment(this, fragment, env);\n' +
-    hydrationPrograms.fragmentProcessingProgram +
-    hydrationPrograms.createMorphsProgram +
+    indent+'      var fragment = env.hooks.getCachedFragment(this, fragment, env);\n' +
+    renderNodes +
     hydrationPrograms.hydrateMorphsProgram +
-    indent+'      return lastResult || { fragment: fragment, morphs: morphs };\n' +
+    indent+'      return { fragment: fragment, morphs: morphs };\n' +
     indent+'    }\n' +
     indent+'  };\n' +
+    hydrationPrograms.createMorphsProgram +
     indent+'}())';
 
   this.templates.push(template);
