@@ -44,6 +44,17 @@ QUnit.module("ember-htmlbars: block params", {
   }
 });
 
+QUnit.test("should raise error if helper not available", function() {
+  view = View.create({
+    template: compile('{{#shouldfail}}{{/shouldfail}}')
+  });
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, 'A helper named `shouldfail` could not be found');
+
+});
+
 QUnit.test("basic block params usage", function() {
   view = View.create({
     committer: { name: "rwjblue" },
