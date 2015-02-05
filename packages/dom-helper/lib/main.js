@@ -367,7 +367,7 @@ prototype.createMorph = function(parent, start, end, contextualElement){
     throw new Error("Cannot pass a fragment as the contextual element to createMorph");
   }
 
-  if (!contextualElement && parent.nodeType === 1) {
+  if (!contextualElement && parent && parent.nodeType === 1) {
     contextualElement = parent;
   }
   var morph = new Morph(this, contextualElement);
