@@ -28,7 +28,9 @@ function optionsFor(morph, env, template, inverse) {
   var options = {
     renderNode: morph,
     contextualElement: morph.contextualElement,
-    env: env
+    env: env,
+    template: null,
+    inverse: null
   };
 
   options.template = wrapForHelper(template, options, env);
