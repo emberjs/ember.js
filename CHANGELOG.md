@@ -1,5 +1,35 @@
 # Ember Changelog
 
+### 1.11.0-beta.1 (February 06, 2015)
+
+- [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
+- [#10186](https://github.com/emberjs/ember.js/pull/10186) Port attributeBindings to AttrNode views [@mixonic](https://github.com/mixonic)
+- [#10184](https://github.com/emberjs/ember.js/pull/10184) Initial support basic Node.js rendering.
+- [#10179](https://github.com/emberjs/ember.js/pull/10179) [FEATURE] Execute initializers in their respective context [@gf3](https://github.com/gf3)
+- [#10213](https://github.com/emberjs/ember.js/pull/10213) Ensure overriding attribute bindings is possible [@miguelcobain](https://github.com/miguelcobain)
+- [#10320](https://github.com/emberjs/ember.js/pull/10320) Start breaking up Ember.View code into mixins based on purpose [@ebryn](https://github.com/ebryn)
+- [#10221](https://github.com/emberjs/ember.js/pull/10221) Embed enabled features in debug builds. [@rwjblue](https://github.com/rwjblue)
+- [#10215](https://github.com/emberjs/ember.js/pull/10215) [Bugfix beta] Prevent Ember from erroring when the errorThrown property is `undefined` [@bmac](https://github.com/bmac)
+- [#10326](https://github.com/emberjs/ember.js/pull/10326) Let `View#appendChild` instantiate `SimpleBoundView`s rather than doing it manually ourselves [@ebryn](https://github.com/ebryn)
+- [#10280](https://github.com/emberjs/ember.js/pull/10280) Moves route-recognizer to a NPM dep, bumps emberjs-build [@danmcclain](https://github.com/danmcclain)
+- [#10256](https://github.com/emberjs/ember.js/pull/10256) Simplify and modularize app/router initialization [@emberjs](https://github.com/emberjs)
+- [#10254](https://github.com/emberjs/ember.js/pull/10254) Make computed.or and computed.and return truthy values [@soulcutter](https://github.com/soulcutter)
+- [#10271](https://github.com/emberjs/ember.js/pull/10271) Clean up boot process [@emberjs](https://github.com/emberjs)
+- [#10268](https://github.com/emberjs/ember.js/pull/10268) Bumped sha to get tildeio/route-recognizer#40, which fixes #10190 [@jayphelps](https://github.com/jayphelps)
+- [#10316](https://github.com/emberjs/ember.js/pull/10316) Make LinkView FastBoot™-compatible [@emberjs](https://github.com/emberjs)
+- [#10321](https://github.com/emberjs/ember.js/pull/10321) `View#element` isn’t observable, we don’t need to use `set` [@ebryn](https://github.com/ebryn)
+- [#10323](https://github.com/emberjs/ember.js/pull/10323) Remove `meta.descs` [@ebryn](https://github.com/ebryn)
+- [#10324](https://github.com/emberjs/ember.js/pull/10324) Don’t run this mandatory setter test in prod [@ebryn](https://github.com/ebryn)
+- [#10329](https://github.com/emberjs/ember.js/pull/10329) Update transpiler to Esperanto. [@rwjblue](https://github.com/rwjblue)
+- [#10352](https://github.com/emberjs/ember.js/pull/10352) Add internal `_willDestroyElement` hook to prevent using instance-based events [@ebryn](https://github.com/ebryn)
+- [#10336](https://github.com/emberjs/ember.js/pull/10336) Remove unnecessary check for `NativeArray` [@tricknotes](https://github.com/tricknotes)
+- [#10334](https://github.com/emberjs/ember.js/pull/10334) Update to HTMLBars v0.10.0. [@rwjblue](https://github.com/rwjblue)
+- [#10338](https://github.com/emberjs/ember.js/pull/10338) Ensure computed.oneWay is exported properly. [@linstula](https://github.com/linstula)
+- [#10345](https://github.com/emberjs/ember.js/pull/10345) Update to QUnit 1.17.1. [@rwjblue](https://github.com/rwjblue)
+- [#10350](https://github.com/emberjs/ember.js/pull/10350) Make meta.cache & meta.cacheMeta lazy [@ebryn](https://github.com/ebryn)
+- [#10353](https://github.com/emberjs/ember.js/pull/10353) Avoid creating context bindings for collection views [@mmun](https://github.com/mmun)
+
+
 ### 1.9.1 (December 23, 2014)
 
 * Allow `{{view}}` helper to properly handle view instances.
