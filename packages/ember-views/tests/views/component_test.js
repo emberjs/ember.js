@@ -190,26 +190,23 @@ QUnit.test("Calling sendAction on a component with multiple parameters", functio
   deepEqual(actionArguments, [firstContext, secondContext], "arguments were sent to the action");
 });
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  QUnit.module('Ember.Component - injected properties');
+QUnit.module('Ember.Component - injected properties');
 
-  QUnit.test("services can be injected into components", function() {
-    var registry = new Registry();
-    var container = registry.container();
+QUnit.test("services can be injected into components", function() {
+  var registry = new Registry();
+  var container = registry.container();
 
-    registry.register('component:application', Component.extend({
-      profilerService: inject.service('profiler')
-    }));
+  registry.register('component:application', Component.extend({
+    profilerService: inject.service('profiler')
+  }));
 
-    registry.register('service:profiler', Service.extend());
+  registry.register('service:profiler', Service.extend());
 
-    var appComponent = container.lookup('component:application');
-    var profilerService = container.lookup('service:profiler');
+  var appComponent = container.lookup('component:application');
+  var profilerService = container.lookup('service:profiler');
 
-    equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
-  });
-}
-
+  equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
+});
 
 QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
 

@@ -185,57 +185,55 @@ QUnit.test("specifying `content` (with `model` specified) does not result in dep
   equal(get(controller, 'model'), 'blammo');
 });
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  QUnit.module('Controller injected properties');
+QUnit.module('Controller injected properties');
 
-  if (!EmberDev.runningProdBuild) {
-    QUnit.test("defining a controller on a non-controller should fail assertion", function() {
-      expectAssertion(function() {
-        var registry = new Registry();
-        var container = registry.container();
+if (!EmberDev.runningProdBuild) {
+  QUnit.test("defining a controller on a non-controller should fail assertion", function() {
+    expectAssertion(function() {
+      var registry = new Registry();
+      var container = registry.container();
 
-        var AnObject = Object.extend({
-          container: container,
-          foo: inject.controller('bar')
-        });
+      var AnObject = Object.extend({
+        container: container,
+        foo: inject.controller('bar')
+      });
 
-        registry.register('foo:main', AnObject);
+      registry.register('foo:main', AnObject);
 
-        container.lookupFactory('foo:main');
+      container.lookupFactory('foo:main');
 
-      }, /Defining an injected controller property on a non-controller is not allowed./);
-    });
-  }
-
-  QUnit.test("controllers can be injected into controllers", function() {
-    var registry = new Registry();
-    var container = registry.container();
-
-    registry.register('controller:post', Controller.extend({
-      postsController: inject.controller('posts')
-    }));
-
-    registry.register('controller:posts', Controller.extend());
-
-    var postController = container.lookup('controller:post');
-    var postsController = container.lookup('controller:posts');
-
-    equal(postsController, postController.get('postsController'), "controller.posts is injected");
-  });
-
-  QUnit.test("services can be injected into controllers", function() {
-    var registry = new Registry();
-    var container = registry.container();
-
-    registry.register('controller:application', Controller.extend({
-      authService: inject.service('auth')
-    }));
-
-    registry.register('service:auth', Service.extend());
-
-    var appController = container.lookup('controller:application');
-    var authService = container.lookup('service:auth');
-
-    equal(authService, appController.get('authService'), "service.auth is injected");
+    }, /Defining an injected controller property on a non-controller is not allowed./);
   });
 }
+
+QUnit.test("controllers can be injected into controllers", function() {
+  var registry = new Registry();
+  var container = registry.container();
+
+  registry.register('controller:post', Controller.extend({
+    postsController: inject.controller('posts')
+  }));
+
+  registry.register('controller:posts', Controller.extend());
+
+  var postController = container.lookup('controller:post');
+  var postsController = container.lookup('controller:posts');
+
+  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+});
+
+QUnit.test("services can be injected into controllers", function() {
+  var registry = new Registry();
+  var container = registry.container();
+
+  registry.register('controller:application', Controller.extend({
+    authService: inject.service('auth')
+  }));
+
+  registry.register('service:auth', Service.extend());
+
+  var appController = container.lookup('controller:application');
+  var authService = container.lookup('service:auth');
+
+  equal(authService, appController.get('authService'), "service.auth is injected");
+});
