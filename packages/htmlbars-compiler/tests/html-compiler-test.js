@@ -131,7 +131,7 @@ test("Simple elements can be re-rendered", function() {
 
   var oldFirstChild = fragment.firstChild;
 
-  result.rerender();
+  result.revalidate();
 
   strictEqual(fragment.firstChild, oldFirstChild);
   equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
@@ -470,14 +470,14 @@ test("Simple data binding on fragments - re-rendering", function() {
 
   var oldFirstChild = fragment.firstChild;
 
-  result.rerender(object);
+  result.revalidate(object);
 
   strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
   equalTokens(fragment, '<div><p>goodbye</p> to the world</div> ');
 
   object.title = '<p>brown cow</p> to the';
 
-  result.rerender(object);
+  result.revalidate(object);
 
   strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
@@ -500,7 +500,7 @@ test("Templates with block helpers - re-rendering", function() {
         state.lastResult = options.inverse.render(this, env, options);
       }
     } else {
-      state.lastResult.rerender(this);
+      state.lastResult.revalidate(this);
     }
   });
 
@@ -511,11 +511,11 @@ test("Templates with block helpers - re-rendering", function() {
   equalTokens(result.fragment, '<div><p>hello world</p></div>');
 
   object.value = 'goodbye world';
-  result.rerender(object);
+  result.revalidate(object);
   equalTokens(result.fragment, '<div><p>goodbye world</p></div>');
 
   object.condition = false;
-  result.rerender(object);
+  result.revalidate(object);
 
   equalTokens(result.fragment, '<div><p>Nothing</p></div>');
 });

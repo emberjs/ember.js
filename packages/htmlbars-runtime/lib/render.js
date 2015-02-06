@@ -21,7 +21,7 @@ export default function render(template, context, env, options, blockArguments) 
   return {
     root: rootNode,
     fragment: fragment,
-    rerender: function(newContext, newEnv, newOptions) {
+    revalidate: function(newContext, newEnv, newOptions) {
       template.render(newContext, rootNode, newEnv || env, newOptions || options);
     }
   };
