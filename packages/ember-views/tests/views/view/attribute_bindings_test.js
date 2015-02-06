@@ -410,3 +410,21 @@ QUnit.test("blacklists href bindings based on protocol", function() {
 
   equal(view.$().attr('href'), "javascript:alert('foo')", "value is not defined");
 });
+
+QUnit.test("attributeBindings should be overridable", function() {
+  var ParentView = EmberView.extend({
+    attributeBindings: ['href'],
+    href: "an href"
+  });
+
+  var ChildView = ParentView.extend({
+    attributeBindings: ['newHref:href'],
+    newHref: "a new href"
+  });
+
+  view = ChildView.create();
+
+  appendView();
+
+  equal(view.$().attr('href'), "a new href", "expect value from subclass attribute binding");
+});
