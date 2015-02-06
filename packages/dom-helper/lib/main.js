@@ -109,6 +109,8 @@ function ElementMorph(element, dom, namespace) {
   this.element = element;
   this.dom = dom;
   this.namespace = namespace;
+
+  this.state = {};
 }
 
 /*

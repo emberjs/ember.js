@@ -7,10 +7,16 @@ export default function render(template, context, env, options, blockArguments) 
   var fragment = getCachedFragment(template, env);
   var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
 
-  var rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
+  var rootNode = (options && options.renderNode) ||
+      dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
+
   rootNode.childNodes = nodes;
 
   template.render(context, rootNode, env, options, blockArguments);
+
+  if (options && options.renderNode) {
+    rootNode.setContent(fragment);
+  }
 
   return {
     root: rootNode,

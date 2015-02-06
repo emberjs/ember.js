@@ -344,7 +344,7 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
 
 test("The compiler can handle unescaped tr in top of content", function() {
   registerHelper('test', function(params, hash, options, env) {
-    return options.template.render(this, env, { contextualElement: options.morph.contextualElement });
+    return options.template.render(this, env, options);
   });
 
   var template = compile('{{#test}}{{{html}}}{{/test}}');
@@ -358,7 +358,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
   registerHelper('test', function(params, hash, options, env) {
-    return options.template.render(this, env, { contextualElement: options.morph.contextualElement });
+    return options.template.render(this, env, options);
   });
 
   var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
@@ -483,6 +483,43 @@ test("Simple data binding on fragments - re-rendering", function() {
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
 });
 
+test("Templates with block helpers - re-rendering", function() {
+  // This represents the internals of a higher-level helper API
+  registerHelper('if', function(params, hash, options, env) {
+    var renderNode = options.renderNode;
+    var state = renderNode.state;
+    var value = params[0];
+    var normalized = !!value;
+
+    if (state.condition !== normalized) {
+      state.condition = normalized;
+
+      if (normalized) {
+        state.lastResult = options.template.render(this, env, options);
+      } else {
+        state.lastResult = options.inverse.render(this, env, options);
+      }
+    } else {
+      state.lastResult.rerender(this);
+    }
+  });
+
+  var object = { condition: true, value: 'hello world' };
+  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, '<div><p>hello world</p></div>');
+
+  object.value = 'goodbye world';
+  result.rerender(object);
+  equalTokens(result.fragment, '<div><p>goodbye world</p></div>');
+
+  object.condition = false;
+  result.rerender(object);
+
+  equalTokens(result.fragment, '<div><p>Nothing</p></div>');
+});
+
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');
   template.render({}, env, { contextualElement: document.createElement('div') });
@@ -515,16 +552,16 @@ test("Morphs are escaped correctly", function() {
   expect(10);
 
   registerHelper('testing-unescaped', function(params, hash, options) {
-    equal(options.morph.parseTextAsHTML, true);
+    equal(options.renderNode.parseTextAsHTML, true);
 
     return params[0];
   });
 
   registerHelper('testing-escaped', function(params, hash, options, env) {
-    equal(options.morph.parseTextAsHTML, false);
+    equal(options.renderNode.parseTextAsHTML, false);
 
     if (options.template) {
-      return options.template.render({}, env, { contextualElement: options.morph.contextualElement });
+      return options.template.render({}, env, options);
     }
 
     return params[0];
@@ -725,7 +762,7 @@ test("Attribute runs can contain helpers", function() {
 */
 test("A simple block helper can return the default document fragment", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, { lastResult: options.lastResult });
+    return options.template.render(this, env, options);
   });
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -734,7 +771,7 @@ test("A simple block helper can return the default document fragment", function(
 // TODO: NEXT
 test("A simple block helper can return text", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env);
+    return options.template.render(this, env, options);
   });
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
@@ -742,7 +779,7 @@ test("A simple block helper can return text", function() {
 
 test("A block helper can have an else block", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    return options.inverse.render(this, env);
+    return options.inverse.render(this, env, options);
   });
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -751,7 +788,7 @@ test("A block helper can have an else block", function() {
 test("A block helper can pass a context to be used in the child", function() {
   registerHelper('testing', function(params, hash, options, env) {
     var context = { title: 'Rails is omakase' };
-    return options.template.render(context, env);
+    return options.template.render(context, env, options);
   });
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
@@ -760,7 +797,7 @@ test("A block helper can pass a context to be used in the child", function() {
 test("Block helpers receive hash arguments", function() {
   registerHelper('testing', function(params, hash, options, env) {
     if (hash.truth) {
-      return options.template.render(this, env);
+      return options.template.render(this, env, options);
     }
   });
 
@@ -840,10 +877,14 @@ test("Node helpers can be used for attribute bindings", function() {
 
 
 test('Components - Called as helpers', function () {
+  var xAppendComponent = compile('{{yield}}{{text}}');
+
   registerHelper('x-append', function(params, hash, options, env) {
-    var result = options.template.render(this, env, { contextualElement: options.morph.contextualElement });
-    result.fragment.appendChild(document.createTextNode(hash.text));
-    return result;
+    var rootNode = options.renderNode;
+    options.renderNode = null;
+    var result = options.template.render(this, env, options);
+    options.renderNode = rootNode;
+    xAppendComponent.render({ yield: result.fragment, text: hash.text }, env, options);
   });
   var object = { bar: 'e', baz: 'c' };
   compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcdef', object);
@@ -886,25 +927,32 @@ test("Simple elements can have dashed attributes", function() {
   equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
 
+function yieldTemplate(parentTemplate, options, callback) {
+  var node = options.renderNode;
+  options.renderNode = null;
+  var child = callback();
+  options.renderNode = node;
+  compile(parentTemplate).render({ yield: child.fragment }, env, options);
+}
+
 test("Block params", function() {
   registerHelper('a', function(params, hash, options, env) {
     var context = createObject(this);
-    var span = document.createElement('span');
-    span.appendChild(options.template.render(context, env, { contextualElement: document.body }, ['W', 'X1']).fragment);
-    return 'A(' + span.innerHTML + ')';
+    yieldTemplate("A({{yield}})", options, function() {
+      return options.template.render(context, env, options, ['W', 'X1']);
+    });
   });
   registerHelper('b', function(params, hash, options, env) {
     var context = createObject(this);
-    var span = document.createElement('span');
-    span.appendChild(options.template.render(context, env, { contextualElement: document.body }, ['X2', 'Y']).fragment);
-    return 'B(' + span.innerHTML + ')';
+    yieldTemplate("B({{yield}})", options, function() {
+      return options.template.render(context, env, options, ['X2', 'Y']);
+    });
   });
   registerHelper('c', function(params, hash, options, env) {
     var context = createObject(this);
-    var span = document.createElement('span');
-    span.appendChild(options.template.render(context, env, { contextualElement: document.body }, ['Z']).fragment);
-    return 'C(' + span.innerHTML + ')';
-    // return "C(" + options.template.render() + ")";
+    yieldTemplate("C({{yield}})", options, function() {
+      return options.template.render(context, env, options, ['Z']);
+    });
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
@@ -925,10 +973,10 @@ test("Block params - Helper should know how many block params it was called with
 
 test('Block params in HTML syntax', function () {
   registerHelper('x-bar', function(params, hash, options, env) {
-    var context = createObject(this);
-    var span = document.createElement('span');
-    span.appendChild(options.template.render(context, env, { contextualElement: document.body }, ['Xerxes', 'York', 'Zed']).fragment);
-    return 'BAR(' + span.innerHTML + ')';
+    var context = this;
+    yieldTemplate("BAR({{yield}})", options, function() {
+      return options.template.render(context, env, options, ['Xerxes', 'York', 'Zed']);
+    });
   });
   compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
 });
@@ -947,7 +995,7 @@ test('Block params in HTML syntax - Throws exception if given zero parameters', 
 
 test('Block params in HTML syntax - Works with a single parameter', function () {
   registerHelper('x-bar', function(params, hash, options, env) {
-    return options.template.render({}, env, { contextualElement: document.body }, ['Xerxes']);
+    return options.template.render({}, env, options, ['Xerxes']);
   });
   compilesTo('<x-bar as |x|>{{x}}</x-bar>', 'Xerxes', {});
 });
@@ -963,7 +1011,7 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
   expect(3);
 
   registerHelper('x-bar', function(params, hash, options) {
-    return options.template.render({}, env, { contextualElement: document.body }, ['Xerxes', 'York']);
+    return options.template.render({}, env, options, ['Xerxes', 'York']);
   });
   compilesTo('<x-bar as |x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
   compilesTo('<x-bar as | x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
@@ -1258,11 +1306,10 @@ test("Block helper allows interior namespace", function() {
   var isTrue = true;
 
   registerHelper('testing', function(params, hash, options, env) {
-    var morph = options.morph;
     if (isTrue) {
-      return options.template.render(this, env, { contextualElement: morph.contextualElement });
+      return options.template.render(this, env, options);
     } else {
-      return options.inverse.render(this, env, { contextualElement: morph.contextualElement });
+      return options.inverse.render(this, env, options);
     }
   });
 
@@ -1285,8 +1332,7 @@ test("Block helper allows interior namespace", function() {
 
 test("Block helper allows namespace to bleed through", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    var morph = options.morph;
-    return options.template.render(this, env, { contextualElement: morph.contextualElement });
+    return options.template.render(this, env, options);
   });
 
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
@@ -1301,8 +1347,7 @@ test("Block helper allows namespace to bleed through", function() {
 
 test("Block helper with root svg allows namespace to bleed through", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    var morph = options.morph;
-    return options.template.render(this, env, { contextualElement: morph.contextualElement });
+    return options.template.render(this, env, options);
   });
 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
@@ -1317,8 +1362,7 @@ test("Block helper with root svg allows namespace to bleed through", function() 
 
 test("Block helper with root foreignObject allows namespace to bleed through", function() {
   registerHelper('testing', function(params, hash, options, env) {
-    var morph = options.morph;
-    return options.template.render(this, env, { contextualElement: morph.contextualElement });
+    return options.template.render(this, env, options);
   });
 
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
