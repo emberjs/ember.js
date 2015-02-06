@@ -1,20 +1,36 @@
 # Ember Changelog
 
-### 1.10.0-beta.4 (January 11, 2015)
+### 1.10.0 (February 6, 2015)
 
-* [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
-* Assert if an attribute set statically and via bind-attr.  For example:
-  `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
-  silently failing).
-* [BUGFIX] Fix deprecated bindAttr helper.
-* [BUGFIX] Do not allow both keyword and block params.
-* Update to HTMLBars v0.8.1
+* [BUGFIX] Ensure that property case is normalized.
+* [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
+* [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
+* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
+* [BUGFIX] Ensure that calling the `wait` testing helpe without routing works properly.
+* [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
+* [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
+* [BUGFIX] Allow unbound helpers to add attributes.
+* [BUGFIX] Ensure compat helpers calling `options.fn` work.
+* [BUGFIX] Fix memory leak in view streams.
+* [BUGFIX] Don't render default layout for `Ember.TextField`.
+* Update HTMLBars version to v0.8.5:
+  * Allow numbers to be parsed as HTML in IE.
+  * Add namespace detection.
+  * Include line number in error thrown for unclosed HTML element.
+  * `removeAttribute` fix for IE <11 and SVG.
+  * Disable `cloneNodes` in IE8.
   * Improve HTML validation and error messages thrown.
   * Fix a number of template compliation issues in IE8.
   * Use the correct namespace in `parseHTML` (fixes various issues that occur
     when changing to and from alternate namespaces).
   * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
   * Change `setProperty` and `morph` to remove an `undefined` attr value.
+* [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
+* Assert if an attribute set statically and via bind-attr.  For example:
+  `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
+  silently failing).
+* [BUGFIX] Fix deprecated bindAttr helper.
+* [BUGFIX] Do not allow both keyword and block params.
 * Cleanup HTMLBars public API
   * Remove `Ember.HTMLBars.helper`.
   * Remove internal `registerBoundHelper` function (use
@@ -22,19 +38,11 @@
 * [BUGFIX] Fix Handlebars compat mode `registerHelper` interop with `makeViewHelper`.
 * [BUGFIX] Ensure that `mergedProperties` are properly merged when all properties are not present.
 * Add options argument to pass url to `Ember.deprecate`.
-
-### 1.10.0-beta.3 (December 29, 2014)
-
 * Deprecate `{{bind}}` helper.
 * Pass array to `Ember.computed.filter` callback
 * [BUGFIX] Prevent mandatory-setter when setter is already present.
 * Remove Handlebars from dependencies.
-* Update HTMLBars to 0.7.1.
 * Fix error when parsing templates with invalid end tags.
-
-
-### 1.10.0-beta.2 (December 23, 2014)
-
 * [BUGFIX] Allow makeBoundHelper to be a sub-expression.
 * [BUGFIX] Allow compat makeBoundHelpers to be sub-expressions.
 * [BUGFIX] Export Ember.Handlebars compat shim for `Ember.Handlebars.SafeString` and `Ember.Handlebars.Utils.escapeExpression`.
@@ -49,9 +57,6 @@
 * Rename `Ember.HTMLBars.registerASTPlugin` to `Ember.HTMLBars.registerPlugin`.
 * Export `ember-template-compiler.js`.
 * Escape `href`, `src`, and `background` attributes for `a`, `link`, `img`, and `iframe` elements.
-
-### 1.10.0-beta.1 (December 10, 2014)
-
 * Move debugging file output from `ember.js` to `ember.debug.js`.
 * Remove `templateData` property from views.
 * Restructure `Ember.libraries` to be more idiomatic.
