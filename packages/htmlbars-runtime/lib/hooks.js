@@ -12,13 +12,33 @@ export function wrap(template) {
   };
 }
 
-export function block(env, morph, context, path, params, hash, template, inverse) {
+export function wrapForHelper(template, options, env) {
+  if (template === null) { return null;  }
+
+  return {
+    isHTMLBars: true,
+    blockParams: template.blockParams,
+    render: function(context, blockArguments) {
+      return render(template, context, env, options, blockArguments);
+    }
+  };
+}
+
+function optionsFor(morph, env, template, inverse) {
   var options = {
     renderNode: morph,
     contextualElement: morph.contextualElement,
-    template: wrap(template),
-    inverse: wrap(inverse),
+    env: env
   };
+
+  options.template = wrapForHelper(template, options, env);
+  options.inverse = wrapForHelper(inverse, options, env);
+
+  return options;
+}
+
+export function block(env, morph, context, path, params, hash, template, inverse) {
+  var options = optionsFor(morph, env, template, inverse);
 
   var helper = lookupHelper(env, context, path);
   helper.call(context, params, hash, options, env);
@@ -87,14 +107,8 @@ export function set(env, context, name, value) {
 
 export function component(env, morph, context, tagName, attrs, template) {
   var helper = lookupHelper(env, context, tagName);
-  template = wrap(template);
-
   if (helper) {
-    var options = {
-      renderNode: morph,
-      template: template
-    };
-
+    var options = optionsFor(morph, env, template, null);
     helper.call(context, [], attrs, options, env);
   } else {
     componentFallback(env, morph, context, tagName, attrs, template);
@@ -114,7 +128,8 @@ function componentFallback(env, morph, context, tagName, attrs, template) {
   for (var name in attrs) {
     element.setAttribute(name, attrs[name]);
   }
-  element.appendChild(template.render(context, env, { contextualElement: morph.contextualElement }).fragment);
+  var fragment = render(template, context, env, { contextualElement: morph.contextualElement }).fragment;
+  element.appendChild(fragment);
   morph.setNode(element);
 }
 

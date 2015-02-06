@@ -343,8 +343,8 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
 });
 
 test("The compiler can handle unescaped tr in top of content", function() {
-  registerHelper('test', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('test', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   var template = compile('{{#test}}{{{html}}}{{/test}}');
@@ -357,8 +357,8 @@ test("The compiler can handle unescaped tr in top of content", function() {
 });
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
-  registerHelper('test', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('test', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
@@ -485,7 +485,7 @@ test("Simple data binding on fragments - re-rendering", function() {
 
 test("Templates with block helpers - re-rendering", function() {
   // This represents the internals of a higher-level helper API
-  registerHelper('if', function(params, hash, options, env) {
+  registerHelper('if', function(params, hash, options) {
     var renderNode = options.renderNode;
     var state = renderNode.state;
     var value = params[0];
@@ -495,9 +495,9 @@ test("Templates with block helpers - re-rendering", function() {
       state.condition = normalized;
 
       if (normalized) {
-        state.lastResult = options.template.render(this, env, options);
+        state.lastResult = options.template.render(this);
       } else {
-        state.lastResult = options.inverse.render(this, env, options);
+        state.lastResult = options.inverse.render(this);
       }
     } else {
       state.lastResult.revalidate(this);
@@ -557,11 +557,11 @@ test("Morphs are escaped correctly", function() {
     return params[0];
   });
 
-  registerHelper('testing-escaped', function(params, hash, options, env) {
+  registerHelper('testing-escaped', function(params, hash, options) {
     equal(options.renderNode.parseTextAsHTML, false);
 
     if (options.template) {
-      return options.template.render({}, env, options);
+      return options.template.render({});
     }
 
     return params[0];
@@ -761,8 +761,8 @@ test("Attribute runs can contain helpers", function() {
 });
 */
 test("A simple block helper can return the default document fragment", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -770,34 +770,34 @@ test("A simple block helper can return the default document fragment", function(
 
 // TODO: NEXT
 test("A simple block helper can return text", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.inverse.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.inverse.render(this);
   });
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  registerHelper('testing', function(params, hash, options, env) {
+  registerHelper('testing', function(params, hash, options) {
     var context = { title: 'Rails is omakase' };
-    return options.template.render(context, env, options);
+    return options.template.render(context);
   });
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
 });
 
 test("Block helpers receive hash arguments", function() {
-  registerHelper('testing', function(params, hash, options, env) {
+  registerHelper('testing', function(params, hash, options) {
     if (hash.truth) {
-      return options.template.render(this, env, options);
+      return options.template.render(this);
     }
   });
 
@@ -882,7 +882,7 @@ test('Components - Called as helpers', function () {
   registerHelper('x-append', function(params, hash, options, env) {
     var rootNode = options.renderNode;
     options.renderNode = null;
-    var result = options.template.render(this, env, options);
+    var result = options.template.render(this);
     options.renderNode = rootNode;
     xAppendComponent.render({ yield: result.fragment, text: hash.text }, env, options);
   });
@@ -936,22 +936,22 @@ function yieldTemplate(parentTemplate, options, callback) {
 }
 
 test("Block params", function() {
-  registerHelper('a', function(params, hash, options, env) {
+  registerHelper('a', function(params, hash, options) {
     var context = createObject(this);
     yieldTemplate("A({{yield}})", options, function() {
-      return options.template.render(context, env, options, ['W', 'X1']);
+      return options.template.render(context, ['W', 'X1']);
     });
   });
-  registerHelper('b', function(params, hash, options, env) {
+  registerHelper('b', function(params, hash, options) {
     var context = createObject(this);
     yieldTemplate("B({{yield}})", options, function() {
-      return options.template.render(context, env, options, ['X2', 'Y']);
+      return options.template.render(context, ['X2', 'Y']);
     });
   });
-  registerHelper('c', function(params, hash, options, env) {
+  registerHelper('c', function(params, hash, options) {
     var context = createObject(this);
     yieldTemplate("C({{yield}})", options, function() {
-      return options.template.render(context, env, options, ['Z']);
+      return options.template.render(context, ['Z']);
     });
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
@@ -972,10 +972,10 @@ test("Block params - Helper should know how many block params it was called with
 });
 
 test('Block params in HTML syntax', function () {
-  registerHelper('x-bar', function(params, hash, options, env) {
+  registerHelper('x-bar', function(params, hash, options) {
     var context = this;
     yieldTemplate("BAR({{yield}})", options, function() {
-      return options.template.render(context, env, options, ['Xerxes', 'York', 'Zed']);
+      return options.template.render(context, ['Xerxes', 'York', 'Zed']);
     });
   });
   compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
@@ -994,8 +994,8 @@ test('Block params in HTML syntax - Throws exception if given zero parameters', 
 
 
 test('Block params in HTML syntax - Works with a single parameter', function () {
-  registerHelper('x-bar', function(params, hash, options, env) {
-    return options.template.render({}, env, options, ['Xerxes']);
+  registerHelper('x-bar', function(params, hash, options) {
+    return options.template.render({}, ['Xerxes']);
   });
   compilesTo('<x-bar as |x|>{{x}}</x-bar>', 'Xerxes', {});
 });
@@ -1011,7 +1011,7 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
   expect(3);
 
   registerHelper('x-bar', function(params, hash, options) {
-    return options.template.render({}, env, options, ['Xerxes', 'York']);
+    return options.template.render({}, ['Xerxes', 'York']);
   });
   compilesTo('<x-bar as |x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
   compilesTo('<x-bar as | x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
@@ -1305,11 +1305,11 @@ test("root svg can take some hydration", function() {
 test("Block helper allows interior namespace", function() {
   var isTrue = true;
 
-  registerHelper('testing', function(params, hash, options, env) {
+  registerHelper('testing', function(params, hash, options) {
     if (isTrue) {
-      return options.template.render(this, env, options);
+      return options.template.render(this);
     } else {
-      return options.inverse.render(this, env, options);
+      return options.inverse.render(this);
     }
   });
 
@@ -1331,8 +1331,8 @@ test("Block helper allows interior namespace", function() {
 });
 
 test("Block helper allows namespace to bleed through", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
@@ -1346,8 +1346,8 @@ test("Block helper allows namespace to bleed through", function() {
 });
 
 test("Block helper with root svg allows namespace to bleed through", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
@@ -1361,8 +1361,8 @@ test("Block helper with root svg allows namespace to bleed through", function() 
 });
 
 test("Block helper with root foreignObject allows namespace to bleed through", function() {
-  registerHelper('testing', function(params, hash, options, env) {
-    return options.template.render(this, env, options);
+  registerHelper('testing', function(params, hash, options) {
+    return options.template.render(this);
   });
 
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
