@@ -14,30 +14,19 @@ export function wrap(template) {
 
 export function block(env, morph, context, path, params, hash, template, inverse) {
   var options = {
-    morph: morph,
+    renderNode: morph,
+    contextualElement: morph.contextualElement,
     template: wrap(template),
     inverse: wrap(inverse),
-    lastResult: morph.lastResult
   };
 
   var helper = lookupHelper(env, context, path);
-  var result = helper.call(context, params, hash, options, env);
-
-  setResultOnMorph(morph, result);
-}
-
-function setResultOnMorph(morph, result) {
-  if (typeof result !== 'object') {
-    morph.setContent(result);
-  } else {
-    morph.lastResult = result;
-    morph.setContent(result.fragment);
-  }
+  helper.call(context, params, hash, options, env);
 }
 
 export function inline(env, morph, context, path, params, hash) {
   var helper = lookupHelper(env, context, path);
-  var value = helper.call(context, params, hash, { morph: morph }, env);
+  var value = helper.call(context, params, hash, { renderNode: morph }, env);
 
   morph.setContent(value);
 }
@@ -47,9 +36,9 @@ export function content(env, morph, context, path) {
 
   var value;
   if (helper) {
-    value = helper.call(context, [], {}, { morph: morph }, env);
+    value = helper.call(context, [], {}, { renderNode: morph }, env);
   } else {
-    value = get(env, context, path);
+    value = env.hooks.get(env, context, path);
   }
 
   morph.setContent(value);
@@ -71,7 +60,7 @@ export function subexpr(env, context, helperName, params, hash) {
   if (helper) {
     return helper.call(context, params, hash, {}, env);
   } else {
-    return get(env, context, helperName);
+    return env.hooks.get(env, context, helperName);
   }
 }
 
@@ -100,18 +89,15 @@ export function component(env, morph, context, tagName, attrs, template) {
   var helper = lookupHelper(env, context, tagName);
   template = wrap(template);
 
-  var value;
   if (helper) {
     var options = {
-      morph: morph,
+      renderNode: morph,
       template: template
     };
 
-    value = helper.call(context, [], attrs, options, env);
-    setResultOnMorph(morph, value);
+    helper.call(context, [], attrs, options, env);
   } else {
-    value = componentFallback(env, morph, context, tagName, attrs, template);
-    morph.setContent(value);
+    componentFallback(env, morph, context, tagName, attrs, template);
   }
 }
 
@@ -129,7 +115,7 @@ function componentFallback(env, morph, context, tagName, attrs, template) {
     element.setAttribute(name, attrs[name]);
   }
   element.appendChild(template.render(context, env, { contextualElement: morph.contextualElement }).fragment);
-  return element;
+  morph.setNode(element);
 }
 
 function lookupHelper(env, context, helperName) {
