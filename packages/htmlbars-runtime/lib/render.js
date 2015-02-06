@@ -1,3 +1,5 @@
+import { forEach } from "../htmlbars-util/array-utils";
+
 export default function render(template, context, env, options, blockArguments) {
   var dom = env.dom;
   var contextualElement = options && options.contextualElement;
@@ -7,10 +9,22 @@ export default function render(template, context, env, options, blockArguments) 
   var fragment = getCachedFragment(template, env);
   var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
 
-  var rootNode = (options && options.renderNode) ||
-      dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
+  var rootNode, ownerNode;
+
+  if (options && options.renderNode) {
+    rootNode = options.renderNode;
+    ownerNode = rootNode.ownerNode;
+  } else {
+    rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
+    ownerNode = rootNode;
+    rootNode.ownerNode = rootNode;
+  }
 
   rootNode.childNodes = nodes;
+
+  forEach(nodes, function(node) {
+    node.ownerNode = ownerNode;
+  });
 
   template.render(context, rootNode, env, options, blockArguments);
 

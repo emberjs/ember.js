@@ -379,6 +379,23 @@ test("The compiler can handle simple helpers", function() {
   compilesTo('<div>{{testing title}}</div>', '<div>hello</div>', { title: 'hello' });
 });
 
+test("Helpers propagate the owner render node", function() {
+  registerHelper('id', function(params, hash, options) {
+    return options.template.render(this);
+  });
+
+  var template = compile('<div>{{#id}}<p>{{#id}}<span>{{#id}}{{name}}{{/id}}</span>{{/id}}</p>{{/id}}</div>');
+  var context = { name: "Tom Dale" };
+  var result = template.render(context, env);
+
+  equalTokens(result.fragment, '<div><p><span>Tom Dale</span></p></div>');
+
+  var root = result.root;
+  strictEqual(root, root.childNodes[0].ownerNode);
+  strictEqual(root, root.childNodes[0].childNodes[0].ownerNode);
+  strictEqual(root, root.childNodes[0].childNodes[0].childNodes[0].ownerNode);
+});
+
 test("The compiler can handle sexpr helpers", function() {
   registerHelper('testing', function(params) {
     return params[0] + "!";
