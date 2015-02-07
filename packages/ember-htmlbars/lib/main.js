@@ -83,8 +83,7 @@ registerHelper('concat', concat);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
-    helpers: helpers,
-    registerHelper: registerHelper,
+    _registerHelper: registerHelper,
     template: template,
     compile: compile,
     precompile: precompile,
