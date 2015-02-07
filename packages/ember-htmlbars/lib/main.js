@@ -111,5 +111,6 @@ export var defaultEnv = {
     concat: concat
   },
 
-  helpers: helpers
+  helpers: helpers,
+  useFragmentCache: true
 };
