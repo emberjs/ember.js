@@ -119,21 +119,24 @@ HydrationOpcodeCompiler.prototype.closeElement = function() {
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
-  
+
   var sexpr = mustache.sexpr;
+  var opcode;
+
+  if (isHelper(sexpr)) {
+    prepareSexpr(this, sexpr);
+    opcode = 'printInlineHook';
+  } else {
+    preparePath(this, sexpr.path);
+    opcode = 'printContentHook';
+  }
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
   var end = this.currentDOMChildIndex;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  if (isHelper(sexpr)) {
-    prepareSexpr(this, sexpr);
-    this.opcode('printInlineHook', morphNum);
-  } else {
-    preparePath(this, sexpr.path);
-    this.opcode('printContentHook', morphNum);
-  }
+  this.opcode(opcode, morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
@@ -205,11 +208,12 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
 
   this.opcode('pushLiteral', attr.name);
 
+  var attrMorphNum = this.morphNum++;
+
   if (this.element !== null) {
     shareElement(this);
   }
 
-  var attrMorphNum = this.morphNum++;
   this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped, namespace);
   this.opcode('printAttributeHook', attrMorphNum);
 };
@@ -222,6 +226,7 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
     shareElement(this);
   }
 
+  publishElementMorph(this);
   this.opcode('printElementHook', this.elementMorphNum);
 };
 
@@ -239,11 +244,11 @@ HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex
 
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
   prepareSexpr(this, sexpr);
-  this.opcode('pushSexprHook');
+  this.opcode('pushSexprHook', this.morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.PathExpression = function(path) {
-  this.opcode('pushGetHook', path.original);
+  this.opcode('pushGetHook', path.original, this.morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.StringLiteral = function(node) {
@@ -293,9 +298,12 @@ function prepareSexpr(compiler, sexpr) {
 
 function shareElement(compiler) {
   compiler.opcode('shareElement', ++compiler.elementNum);
+  compiler.element = null; // Set element to null so we don't cache it twice
+}
+
+function publishElementMorph(compiler) {
   var morphNum = compiler.elementMorphNum = compiler.morphNum++;
   compiler.opcode('createElementMorph', morphNum, compiler.elementNum);
-  compiler.element = null; // Set element to null so we don't cache it twice
 }
 
 function distributeMorphs(morphs, opcodes) {

@@ -20,6 +20,8 @@ export default function render(template, context, env, options, blockArguments) 
     rootNode.ownerNode = rootNode;
   }
 
+  // TODO Invoke disposal hook recursively on old rootNode.childNodes
+
   rootNode.childNodes = nodes;
 
   forEach(nodes, function(node) {
