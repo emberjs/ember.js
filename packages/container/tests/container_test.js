@@ -460,66 +460,64 @@ QUnit.test("factory for non extendables resolves are cached", function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  QUnit.test("The `_onLookup` hook is called on factories when looked up the first time", function() {
-    expect(2);
+QUnit.test("The `_onLookup` hook is called on factories when looked up the first time", function() {
+  expect(2);
 
-    var registry = new Registry();
-    var container = registry.container();
-    var Apple = factory();
+  var registry = new Registry();
+  var container = registry.container();
+  var Apple = factory();
 
-    Apple.reopenClass({
-      _onLookup: function(fullName) {
-        equal(fullName, 'apple:main', 'calls lazy injection method with the lookup full name');
-        equal(this, Apple, 'calls lazy injection method in the factory context');
-      }
-    });
-
-    registry.register('apple:main', Apple);
-
-    container.lookupFactory('apple:main');
-    container.lookupFactory('apple:main');
+  Apple.reopenClass({
+    _onLookup: function(fullName) {
+      equal(fullName, 'apple:main', 'calls lazy injection method with the lookup full name');
+      equal(this, Apple, 'calls lazy injection method in the factory context');
+    }
   });
 
-  QUnit.test("A factory's lazy injections are validated when first instantiated", function() {
-    var registry = new Registry();
-    var container = registry.container();
-    var Apple = factory();
-    var Orange = factory();
+  registry.register('apple:main', Apple);
 
-    Apple.reopenClass({
-      _lazyInjections: function() {
-        return ['orange:main', 'banana:main'];
-      }
-    });
+  container.lookupFactory('apple:main');
+  container.lookupFactory('apple:main');
+});
 
-    registry.register('apple:main', Apple);
-    registry.register('orange:main', Orange);
+QUnit.test("A factory's lazy injections are validated when first instantiated", function() {
+  var registry = new Registry();
+  var container = registry.container();
+  var Apple = factory();
+  var Orange = factory();
 
-    throws(function() {
-      container.lookup('apple:main');
-    }, /Attempting to inject an unknown injection: `banana:main`/);
+  Apple.reopenClass({
+    _lazyInjections: function() {
+      return ['orange:main', 'banana:main'];
+    }
   });
 
-  QUnit.test("Lazy injection validations are cached", function() {
-    expect(1);
+  registry.register('apple:main', Apple);
+  registry.register('orange:main', Orange);
 
-    var registry = new Registry();
-    var container = registry.container();
-    var Apple = factory();
-    var Orange = factory();
-
-    Apple.reopenClass({
-      _lazyInjections: function() {
-        ok(true, 'should call lazy injection method');
-        return ['orange:main'];
-      }
-    });
-
-    registry.register('apple:main', Apple);
-    registry.register('orange:main', Orange);
-
+  throws(function() {
     container.lookup('apple:main');
-    container.lookup('apple:main');
+  }, /Attempting to inject an unknown injection: `banana:main`/);
+});
+
+QUnit.test("Lazy injection validations are cached", function() {
+  expect(1);
+
+  var registry = new Registry();
+  var container = registry.container();
+  var Apple = factory();
+  var Orange = factory();
+
+  Apple.reopenClass({
+    _lazyInjections: function() {
+      ok(true, 'should call lazy injection method');
+      return ['orange:main'];
+    }
   });
-}
+
+  registry.register('apple:main', Apple);
+  registry.register('orange:main', Orange);
+
+  container.lookup('apple:main');
+  container.lookup('apple:main');
+});

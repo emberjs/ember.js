@@ -98,9 +98,7 @@ Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  Ember.inject = inject;
-}
+Ember.inject = inject;
 
 Ember.Array = EmberArray;
 
@@ -174,9 +172,7 @@ Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  Ember.Service = Service;
-}
+Ember.Service = Service;
 
 Ember._ProxyMixin = _ProxyMixin;
 

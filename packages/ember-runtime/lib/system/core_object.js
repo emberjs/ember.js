@@ -858,43 +858,37 @@ function injectedPropertyAssertion() {
   Ember.assert("Injected properties are invalid", validatePropertyInjections(this));
 }
 
-function addOnLookupHandler() {
-  Ember.runInDebug(function() {
-    /**
-      Provides lookup-time type validation for injected properties.
-
-      @private
-      @method _onLookup
-      */
-    ClassMixinProps._onLookup = injectedPropertyAssertion;
-  });
-}
-
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  addOnLookupHandler();
-
+Ember.runInDebug(function() {
   /**
-    Returns a hash of property names and container names that injected
-    properties will lookup on the container lazily.
+    Provides lookup-time type validation for injected properties.
 
-    @method _lazyInjections
-    @return {Object} Hash of all lazy injected property keys to container names
-  */
-  ClassMixinProps._lazyInjections = function() {
-    var injections = {};
-    var proto = this.proto();
-    var key, desc;
+    @private
+    @method _onLookup
+    */
+  ClassMixinProps._onLookup = injectedPropertyAssertion;
+});
 
-    for (key in proto) {
-      desc = proto[key];
-      if (desc instanceof InjectedProperty) {
-        injections[key] = desc.type + ':' + (desc.name || key);
-      }
+/**
+  Returns a hash of property names and container names that injected
+  properties will lookup on the container lazily.
+
+  @method _lazyInjections
+  @return {Object} Hash of all lazy injected property keys to container names
+*/
+ClassMixinProps._lazyInjections = function() {
+  var injections = {};
+  var proto = this.proto();
+  var key, desc;
+
+  for (key in proto) {
+    desc = proto[key];
+    if (desc instanceof InjectedProperty) {
+      injections[key] = desc.type + ':' + (desc.name || key);
     }
+  }
 
-    return injections;
-  };
-}
+  return injections;
+};
 
 var ClassMixin = Mixin.create(ClassMixinProps);
 

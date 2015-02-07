@@ -233,22 +233,20 @@ QUnit.test("controllerFor uses route's controllerName if specified", function() 
   equal(routeTwo.controllerFor('one'), testController);
 });
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  QUnit.module('Route injected properties');
+QUnit.module('Route injected properties');
 
-  QUnit.test("services can be injected into routes", function() {
-    var registry = new Registry();
-    var container = registry.container();
+QUnit.test("services can be injected into routes", function() {
+  var registry = new Registry();
+  var container = registry.container();
 
-    registry.register('route:application', EmberRoute.extend({
-      authService: inject.service('auth')
-    }));
+  registry.register('route:application', EmberRoute.extend({
+    authService: inject.service('auth')
+  }));
 
-    registry.register('service:auth', Service.extend());
+  registry.register('service:auth', Service.extend());
 
-    var appRoute = container.lookup('route:application');
-    var authService = container.lookup('service:auth');
+  var appRoute = container.lookup('route:application');
+  var authService = container.lookup('service:auth');
 
-    equal(authService, appRoute.get('authService'), "service.auth is injected");
-  });
-}
+  equal(authService, appRoute.get('authService'), "service.auth is injected");
+});
