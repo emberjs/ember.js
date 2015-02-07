@@ -13,6 +13,16 @@ import { isStream } from "ember-metal/streams/utils";
 
 var slice = [].slice;
 
+function calculateCompatType(item) {
+  if (isStream(item)) {
+    return 'ID';
+  } else {
+    var itemType = typeof item;
+
+    return itemType.toUpperCase();
+  }
+}
+
 /**
   Wraps an Handlebars helper with an HTMLBars helper for backwards compatibility.
 
@@ -24,7 +34,11 @@ function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
     var param, blockResult, fnResult;
     var context = this;
-    var handlebarsOptions = {};
+    var handlebarsOptions = {
+      hash: { },
+      types: new Array(params.length),
+      hashTypes: { }
+    };
 
     merge(handlebarsOptions, options);
     merge(handlebarsOptions, env);
@@ -40,6 +54,8 @@ function HandlebarsCompatibleHelper(fn) {
     for (var prop in hash) {
       param = hash[prop];
 
+      handlebarsOptions.hashTypes[prop] = calculateCompatType(param);
+
       if (isStream(param)) {
         handlebarsOptions.hash[prop] = param._label;
       } else {
@@ -50,6 +66,8 @@ function HandlebarsCompatibleHelper(fn) {
     var args = new Array(params.length);
     for (var i = 0, l = params.length; i < l; i++) {
       param = params[i];
+
+      handlebarsOptions.types[i] = calculateCompatType(param);
 
       if (isStream(param)) {
         args[i] = param._label;

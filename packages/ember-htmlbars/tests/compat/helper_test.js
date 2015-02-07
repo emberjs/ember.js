@@ -228,5 +228,48 @@ QUnit.test('allows usage of the template fn', function() {
   equal(view.$().text(), 'foo');
 });
 
+QUnit.test('ordered param types are added to options.types', function() {
+  expect(3);
+
+  function someHelper(param1, param2, param3, options) {
+    equal(options.types[0], 'NUMBER');
+    equal(options.types[1], 'ID');
+    equal(options.types[2], 'STRING');
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      first: 'blammo',
+      second: 'blazzico'
+    },
+    template: compile('{{test 1 two "3"}}')
+  });
+
+  runAppend(view);
+});
+
+QUnit.test('`hash` params are to options.hashTypes', function() {
+  expect(3);
+
+  function someHelper(options) {
+    equal(options.hashTypes.string, 'STRING');
+    equal(options.hashTypes.number, 'NUMBER');
+    equal(options.hashTypes.id, 'ID');
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      value: 'Jacquie'
+    },
+    template: compile('{{test string="foo" number=42 id=someBoundThing}}')
+  });
+
+  runAppend(view);
+});
+
 // jscs:enable validateIndentation
 }
