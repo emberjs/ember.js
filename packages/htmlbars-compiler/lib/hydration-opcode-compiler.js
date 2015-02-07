@@ -143,6 +143,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   this.pushMorphPlaceholderNode(childIndex, childCount);
 
   var sexpr = block.sexpr;
+  prepareSexpr(this, sexpr);
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
@@ -152,7 +153,6 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  prepareSexpr(this, sexpr);
   this.opcode('printBlockHook', morphNum, templateId, inverseId);
 };
 
@@ -161,11 +161,6 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 
   var program = component.program || {};
   var blockParams = program.blockParams || [];
-
-  var morphNum = this.morphNum++;
-  var start = this.currentDOMChildIndex;
-  var end = this.currentDOMChildIndex;
-  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   var attrs = component.attributes;
   for (var i = attrs.length - 1; i >= 0; i--) {
@@ -179,11 +174,16 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
       this.accept(unwrapMustache(value));
     } else if (value.type === 'ConcatStatement') {
       prepareParams(this, value.parts);
-      this.opcode('pushConcatHook');
+      this.opcode('pushConcatHook', this.morphNum);
     }
 
     this.opcode('pushLiteral', name);
   }
+
+  var morphNum = this.morphNum++;
+  var start = this.currentDOMChildIndex;
+  var end = this.currentDOMChildIndex;
+  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   this.opcode('prepareObject', attrs.length);
   this.opcode('pushLiteral', component.tag);
@@ -203,7 +203,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.accept(unwrapMustache(value));
   } else if (value.type === 'ConcatStatement') {
     prepareParams(this, value.parts);
-    this.opcode('pushConcatHook');
+    this.opcode('pushConcatHook', this.morphNum);
   }
 
   this.opcode('pushLiteral', attr.name);

@@ -38,7 +38,7 @@ export default function render(template, context, env, options, blockArguments) 
     root: rootNode,
     fragment: fragment,
     revalidate: function(newContext, newEnv, newOptions) {
-      template.render(newContext, rootNode, newEnv || env, newOptions || options);
+      template.render(newContext || context, rootNode, newEnv || env, newOptions || options);
     }
   };
 }

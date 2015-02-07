@@ -40,44 +40,90 @@ function optionsFor(morph, env, template, inverse) {
 }
 
 export function block(env, morph, context, path, params, hash, template, inverse) {
-  var options = optionsFor(morph, env, template, inverse);
+  var state = morph.state;
 
-  var helper = lookupHelper(env, context, path);
-  helper.call(context, params, hash, options, env);
+  if (morph.isDirty) {
+    var options = optionsFor(morph, env, template, inverse);
+
+    var helper = lookupHelper(env, context, path);
+    var result = helper.call(context, params, hash, options, env);
+
+    if (result === undefined && state.lastResult) {
+      state.lastResult.revalidate(this);
+    } else if (result !== undefined) {
+      state.lastResult = result;
+    }
+  } else {
+    state.lastResult.revalidate(this);
+  }
+
+  morph.isDirty = false;
 }
 
 export function inline(env, morph, context, path, params, hash) {
-  var helper = lookupHelper(env, context, path);
-  var value = helper.call(context, params, hash, { renderNode: morph }, env);
+  if (morph.isDirty) {
+    var state = morph.state;
+    var helper = lookupHelper(env, context, path);
 
-  morph.setContent(value);
+    var value = helper.call(context, params, hash, { renderNode: morph }, env);
+
+    if (state.lastValue !== value) {
+      morph.setContent(value);
+    }
+
+    state.lastValue = value;
+    morph.isDirty = false;
+  }
 }
 
 export function content(env, morph, context, path) {
-  var helper = lookupHelper(env, context, path);
+  if (morph.isDirty) {
+    var state = morph.state;
+    var helper = lookupHelper(env, context, path);
 
-  var value;
-  if (helper) {
-    value = helper.call(context, [], {}, { renderNode: morph }, env);
-  } else {
-    value = env.hooks.get(env, morph, context, path);
+    var value;
+    if (helper) {
+      value = helper.call(context, [], {}, { renderNode: morph }, env);
+    } else {
+      value = env.hooks.get(env, morph, context, path);
+    }
+
+    if (state.lastValue !== value) {
+      morph.setContent(value);
+    }
+
+    state.lastValue = value;
+    morph.isDirty = false;
   }
-
-  morph.setContent(value);
 }
 
 export function element(env, morph, context, path, params, hash) {
-  var helper = lookupHelper(env, context, path);
-  if (helper) {
-    helper.call(context, params, hash, { element: morph.element }, env);
+  if (morph.isDirty) {
+    var helper = lookupHelper(env, context, path);
+    if (helper) {
+      helper.call(context, params, hash, { element: morph.element }, env);
+    }
+
+    morph.isDirty = false;
   }
 }
 
-export function attribute(env, attrMorph, name, value) {
-  attrMorph.setContent(value);
+export function attribute(env, morph, name, value) {
+  if (morph.isDirty) {
+    var state = morph.state;
+
+    if (state.lastValue !== value) {
+      morph.setContent(value);
+    }
+
+    state.lastValue = value;
+    morph.isDirty = false;
+  }
 }
 
 export function subexpr(env, morph, context, helperName, params, hash) {
+  if (!morph.isDirty) { return; }
+
   var helper = lookupHelper(env, context, helperName);
   if (helper) {
     return helper.call(context, params, hash, {}, env);
@@ -87,6 +133,8 @@ export function subexpr(env, morph, context, helperName, params, hash) {
 }
 
 export function get(env, morph, context, path) {
+  if (!morph.isDirty) { return; }
+
   if (path === '') {
     return context;
   }
@@ -108,16 +156,22 @@ export function set(env, context, name, value) {
 }
 
 export function component(env, morph, context, tagName, attrs, template) {
-  var helper = lookupHelper(env, context, tagName);
-  if (helper) {
-    var options = optionsFor(morph, env, template, null);
-    helper.call(context, [], attrs, options, env);
-  } else {
-    componentFallback(env, morph, context, tagName, attrs, template);
+  if (morph.isDirty) {
+    var helper = lookupHelper(env, context, tagName);
+    if (helper) {
+      var options = optionsFor(morph, env, template, null);
+      helper.call(context, [], attrs, options, env);
+    } else {
+      componentFallback(env, morph, context, tagName, attrs, template);
+    }
+
+    morph.isDirty = false;
   }
 }
 
-export function concat(env, params) {
+export function concat(env, morph, params) {
+  if (!morph.isDirty) { return; }
+
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     value += params[i];

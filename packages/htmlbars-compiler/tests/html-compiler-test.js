@@ -1,11 +1,10 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import { forEach } from "../htmlbars-util/array-utils";
-import { tokenize } from "../simple-html-tokenizer";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
-import { createObject, normalizeInnerHTML, getTextContent } from "../htmlbars-test-helpers";
+import { createObject, normalizeInnerHTML, getTextContent, equalTokens } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
@@ -26,13 +25,6 @@ var innerHTMLHandlesNewlines = (function() {
   return div.innerHTML.length === 8;
 })();
 
-// IE8 removes comments and does other unspeakable things with innerHTML
-var ie8GenerateTokensNeeded = (function() {
-  var div = document.createElement("div");
-  div.innerHTML = "<!-- foobar -->";
-  return div.innerHTML === "";
-})();
-
 function registerHelper(name, callback) {
   helpers[name] = callback;
 }
@@ -48,49 +40,6 @@ function compilesTo(html, expected, context) {
   return fragment;
 }
 
-function generateTokens(fragmentOrHtml) {
-  var div = document.createElement("div");
-  if (typeof fragmentOrHtml === 'string') {
-    div.innerHTML = fragmentOrHtml;
-  } else {
-    div.appendChild(fragmentOrHtml.cloneNode(true));
-  }
-  if (ie8GenerateTokensNeeded) {
-    // IE8 drops comments and does other unspeakable things on `innerHTML`.
-    // So in that case we do it to both the expected and actual so that they match.
-    var div2 = document.createElement("div");
-    div2.innerHTML = div.innerHTML;
-    div.innerHTML = div2.innerHTML;
-  }
-  return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
-}
-
-function equalTokens(fragment, html) {
-  if (fragment.fragment) { fragment = fragment.fragment; }
-  if (html.fragment) { html = html.fragment; }
-
-  var fragTokens = generateTokens(fragment);
-  var htmlTokens = generateTokens(html);
-
-  function normalizeTokens(token) {
-    if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort(function(a,b){
-        if (a.name > b.name) {
-          return 1;
-        }
-        if (a.name < b.name) {
-          return -1;
-        }
-        return 0;
-      });
-    }
-  }
-
-  forEach(fragTokens.tokens, normalizeTokens);
-  forEach(htmlTokens.tokens, normalizeTokens);
-
-  deepEqual(fragTokens.tokens, htmlTokens.tokens, "Expected: " + html + "; Actual: " + fragTokens.html);
-}
 
 function commonSetup() {
   hooks = merge({}, defaultHooks);
@@ -498,43 +447,6 @@ test("Simple data binding on fragments - re-rendering", function() {
 
   strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
-});
-
-test("Templates with block helpers - re-rendering", function() {
-  // This represents the internals of a higher-level helper API
-  registerHelper('if', function(params, hash, options) {
-    var renderNode = options.renderNode;
-    var state = renderNode.state;
-    var value = params[0];
-    var normalized = !!value;
-
-    if (state.condition !== normalized) {
-      state.condition = normalized;
-
-      if (normalized) {
-        state.lastResult = options.template.render(this);
-      } else {
-        state.lastResult = options.inverse.render(this);
-      }
-    } else {
-      state.lastResult.revalidate(this);
-    }
-  });
-
-  var object = { condition: true, value: 'hello world' };
-  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
-  var result = template.render(object, env);
-
-  equalTokens(result.fragment, '<div><p>hello world</p></div>');
-
-  object.value = 'goodbye world';
-  result.revalidate(object);
-  equalTokens(result.fragment, '<div><p>goodbye world</p></div>');
-
-  object.condition = false;
-  result.revalidate(object);
-
-  equalTokens(result.fragment, '<div><p>Nothing</p></div>');
 });
 
 test("second render respects whitespace", function () {
