@@ -688,6 +688,22 @@ var TemplateRenderingSupport = Mixin.create({
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
 
+  Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
+  mapped, since `:` is not a valid character for properties in Javascript:
+
+  ```javascript
+  UseView = Ember.View.extend({
+    tagName: 'use',
+    attributeBindings: ['xlinkHref:xlink:href'],
+    xlinkHref: '#triangle'
+  });
+  ```
+  Will result in view instances with an HTML representation of:
+
+  ```html
+  <use xlink:href="#triangle"></use>
+  ```
+
   If the return value of an `attributeBindings` monitored property is a boolean
   the property will follow HTML's pattern of repeating the attribute's name as
   its value:
@@ -1432,18 +1448,24 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
 
     @method _applyAttributeBindings
     @param {Ember.RenderBuffer} buffer
+    @param {Array} attributeBindings
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
     var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
-    var binding, split, property, attrName, attrNode, attrValue;
+    var binding, colonIndex, property, attrName, attrNode, attrValue;
     var i, l;
     for (i=0, l=attributeBindings.length; i<l; i++) {
       binding = attributeBindings[i];
-      split = binding.split(':');
-      property = split[0];
-      attrName = split[1] || property;
+      colonIndex = binding.indexOf(':');
+      if (colonIndex === -1) {
+        property = binding;
+        attrName = binding;
+      } else {
+        property = binding.substring(0, colonIndex);
+        attrName = binding.substring(colonIndex + 1);
+      }
 
       Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
 
