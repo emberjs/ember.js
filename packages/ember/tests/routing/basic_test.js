@@ -32,7 +32,7 @@ function handleURLAborts(path) {
     router.handleURL(path).then(function(value) {
       ok(false, 'url: `' + path + '` was NOT to be handled');
     }, function(reason) {
-      ok(reason && reason.message === "TransitionAborted",  'url: `' + path + '` was to be aborted');
+      ok(reason && reason.message === "TransitionAborted", 'url: `' + path + '` was to be aborted');
     });
   });
 }
@@ -1867,7 +1867,7 @@ QUnit.test("Redirecting to the current target with a different context aborts th
       if (count++ > 10) {
         ok(false, 'infinite loop');
       } else {
-        this.transitionTo("bar.baz",  model);
+        this.transitionTo("bar.baz", model);
       }
     },
 

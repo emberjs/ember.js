@@ -575,8 +575,8 @@ QUnit.test("The {{link-to}} helper should not transition if target is not equal 
 QUnit.test("The {{link-to}} helper accepts string/numeric arguments", function() {
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
-    this.route('post',   { path: '/post/:post_id' });
-    this.route('repo',   { path: '/repo/:owner/:name' });
+    this.route('post', { path: '/post/:post_id' });
+    this.route('repo', { path: '/repo/:owner/:name' });
   });
 
   App.FilterController = Ember.Controller.extend({
@@ -1824,13 +1824,13 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     Ember.run($about, 'click');
 
     assertHasClass('active', $index, true, $about, false, $other, false);
-    assertHasClass('ember-transitioning-in',  $index, false, $about, true, $other, false);
+    assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
     assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
     Ember.run(aboutDefer, 'resolve');
 
     assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-in',  $index, false, $about, false, $other, false);
+    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
     assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 }

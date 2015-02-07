@@ -101,7 +101,7 @@ QUnit.test("when the dependent array is null or undefined, `addedItem` is not ca
   });
 
   deepEqual(get(obj, 'doubledNumbers'), [], "When the dependent array is null, the initial value is returned");
-  equal(addCalls, 0,  "`addedItem` is not called when the dependent array is null");
+  equal(addCalls, 0, "`addedItem` is not called when the dependent array is null");
 
   run(function() {
     set(obj, 'numbers', Ember.A([1,2]));

@@ -238,7 +238,7 @@ QUnit.test("can self reject", function() {
 
   deferred.then(function() {
     ok(false, 'should not fulfill');
-  },function(value) {
+  }, function(value) {
     equal(value, deferred, "successfully rejected to itself");
   });
 

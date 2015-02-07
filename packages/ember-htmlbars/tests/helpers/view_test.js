@@ -623,9 +623,9 @@ QUnit.test('{{view}} should not override class bindings defined on a child view'
   });
 
   registry.register('controller:label', Controller, { instantiate: true });
-  registry.register('view:label',       LabelView);
-  registry.register('template:label',   compile('<div id="child-view"></div>'));
-  registry.register('template:nester',  compile('{{render "label"}}'));
+  registry.register('view:label', LabelView);
+  registry.register('template:label', compile('<div id="child-view"></div>'));
+  registry.register('template:nester', compile('{{render "label"}}'));
 
   view = EmberView.create({
     container:    container,
@@ -692,7 +692,7 @@ QUnit.test('should be able to explicitly set a view\'s context', function() {
 
 QUnit.test('Template views add an elementId to child views created using the view helper', function() {
   registry.register('template:parent', compile('<div>{{view view.childView}}</div>'));
-  registry.register('template:child',  compile('I can\'t believe it\'s not butter.'));
+  registry.register('template:child', compile('I can\'t believe it\'s not butter.'));
 
   var ChildView = EmberView.extend({
     container: container,
@@ -853,21 +853,21 @@ QUnit.test('{{view}} should evaluate class bindings set to global paths DEPRECAT
     runAppend(view);
   });
 
-  ok(view.$('input').hasClass('unbound'),     'sets unbound classes directly');
-  ok(view.$('input').hasClass('great'),       'evaluates classes bound to global paths');
-  ok(view.$('input').hasClass('app-direct'),  'evaluates classes bound directly to global paths');
-  ok(view.$('input').hasClass('is-app'),      'evaluates classes bound directly to booleans in global paths - dasherizes and sets class when true');
-  ok(view.$('input').hasClass('enabled'),     'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('disabled'),   'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('unbound'), 'sets unbound classes directly');
+  ok(view.$('input').hasClass('great'), 'evaluates classes bound to global paths');
+  ok(view.$('input').hasClass('app-direct'), 'evaluates classes bound directly to global paths');
+  ok(view.$('input').hasClass('is-app'), 'evaluates classes bound directly to booleans in global paths - dasherizes and sets class when true');
+  ok(view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
 
   run(function() {
     App.set('isApp', false);
     App.set('isEnabled', false);
   });
 
-  ok(!view.$('input').hasClass('is-app'),     'evaluates classes bound directly to booleans in global paths - removes class when false');
-  ok(!view.$('input').hasClass('enabled'),    'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('disabled'),    'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('is-app'), 'evaluates classes bound directly to booleans in global paths - removes class when false');
+  ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
 
   runDestroy(lookup.App);
 });
@@ -884,21 +884,21 @@ QUnit.test('{{view}} should evaluate class bindings set in the current context',
 
   runAppend(view);
 
-  ok(view.$('input').hasClass('unbound'),     'sets unbound classes directly');
-  ok(view.$('input').hasClass('editable'),    'evaluates classes bound in the current context');
+  ok(view.$('input').hasClass('unbound'), 'sets unbound classes directly');
+  ok(view.$('input').hasClass('editable'), 'evaluates classes bound in the current context');
   ok(view.$('input').hasClass('view-direct'), 'evaluates classes bound directly in the current context');
-  ok(view.$('input').hasClass('is-view'),     'evaluates classes bound directly to booleans in the current context - dasherizes and sets class when true');
-  ok(view.$('input').hasClass('enabled'),     'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('disabled'),   'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('is-view'), 'evaluates classes bound directly to booleans in the current context - dasherizes and sets class when true');
+  ok(view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
 
   run(function() {
     view.set('isView', false);
     view.set('isEnabled', false);
   });
 
-  ok(!view.$('input').hasClass('is-view'),    'evaluates classes bound directly to booleans in the current context - removes class when false');
-  ok(!view.$('input').hasClass('enabled'),    'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('disabled'),    'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('is-view'), 'evaluates classes bound directly to booleans in the current context - removes class when false');
+  ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
 });
 
 QUnit.test('{{view}} should evaluate class bindings set with either classBinding or classNameBindings from globals DEPRECATED', function() {
@@ -920,21 +920,21 @@ QUnit.test('{{view}} should evaluate class bindings set with either classBinding
     runAppend(view);
   });
 
-  ok(view.$('input').hasClass('unbound'),          'sets unbound classes directly');
-  ok(view.$('input').hasClass('great'),            'evaluates classBinding');
-  ok(view.$('input').hasClass('really-great'),     'evaluates classNameBinding');
-  ok(view.$('input').hasClass('enabled'),          'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('really-enabled'),   'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('disabled'),        'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('unbound'), 'sets unbound classes directly');
+  ok(view.$('input').hasClass('great'), 'evaluates classBinding');
+  ok(view.$('input').hasClass('really-great'), 'evaluates classNameBinding');
+  ok(view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('really-enabled'), 'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
   ok(!view.$('input').hasClass('really-disabled'), 'evaluates ternary operator in classBindings');
 
   run(function() {
     App.set('isEnabled', false);
   });
 
-  ok(!view.$('input').hasClass('enabled'),        'evaluates ternary operator in classBindings');
+  ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
   ok(!view.$('input').hasClass('really-enabled'), 'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('disabled'),        'evaluates ternary operator in classBindings');
+  ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
   ok(view.$('input').hasClass('really-disabled'), 'evaluates ternary operator in classBindings');
 
   runDestroy(lookup.App);

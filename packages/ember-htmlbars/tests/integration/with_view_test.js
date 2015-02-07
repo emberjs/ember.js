@@ -105,7 +105,7 @@ QUnit.test('bindings can be `this`, in which case they *are* the current context
 QUnit.test('child views can be inserted inside a bind block', function() {
   registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
   registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
-  registry.register('template:other',  compile('cruel'));
+  registry.register('template:other', compile('cruel'));
 
   var context = {
     world: 'world!'
