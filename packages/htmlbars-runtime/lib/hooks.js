@@ -60,7 +60,7 @@ export function content(env, morph, context, path) {
   if (helper) {
     value = helper.call(context, [], {}, { renderNode: morph }, env);
   } else {
-    value = env.hooks.get(env, context, path);
+    value = env.hooks.get(env, morph, context, path);
   }
 
   morph.setContent(value);
@@ -77,16 +77,16 @@ export function attribute(env, attrMorph, name, value) {
   attrMorph.setContent(value);
 }
 
-export function subexpr(env, context, helperName, params, hash) {
+export function subexpr(env, morph, context, helperName, params, hash) {
   var helper = lookupHelper(env, context, helperName);
   if (helper) {
     return helper.call(context, params, hash, {}, env);
   } else {
-    return env.hooks.get(env, context, helperName);
+    return env.hooks.get(env, morph, context, helperName);
   }
 }
 
-export function get(env, context, path) {
+export function get(env, morph, context, path) {
   if (path === '') {
     return context;
   }

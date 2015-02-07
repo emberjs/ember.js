@@ -134,17 +134,19 @@ prototype.pushHook = function(name, args) {
   this.stack.push(name + '(' + args.join(', ') + ')');
 };
 
-prototype.pushGetHook = function(path) {
+prototype.pushGetHook = function(path, morphNum) {
   this.pushHook('get', [
     'env',
+    'morphs[' + morphNum + ']',
     'context',
     string(path)
   ]);
 };
 
-prototype.pushSexprHook = function() {
+prototype.pushSexprHook = function(morphNum) {
   this.pushHook('subexpr', [
     'env',
+    'morphs[' + morphNum + ']',
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params

@@ -15,13 +15,12 @@ test("simple example", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createMorph", [ 1, [ 0 ], 0, 0, true ] ],
-    [ "createMorph", [ 2, [ 0 ], 2, 2, true ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
+    [ "createMorph", [ 1, [ 0 ], 2, 2, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 2 ] ],
+    [ "printContentHook", [ 1 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -122,19 +121,18 @@ test("back to back mustaches should have a text node inserted between them", fun
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createMorph", [ 1, [0], 0, 0, true ] ],
-    [ "createMorph", [ 2, [0], 1, 1, true ] ],
-    [ "createMorph", [ 3, [0], 2, 2, true ] ],
-    [ "createMorph", [ 4, [0], 4, 4, true] ],
-    [ "createElementMorph", [ 0, 0 ] ],
+    [ "createMorph", [ 0, [0], 0, 0, true ] ],
+    [ "createMorph", [ 1, [0], 1, 1, true ] ],
+    [ "createMorph", [ 2, [0], 2, 2, true ] ],
+    [ "createMorph", [ 3, [0], 4, 4, true] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHook", [ 2 ] ],
+    [ "printContentHook", [ 1 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 3 ] ],
+    [ "printContentHook", [ 2 ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printContentHook", [ 4 ] ],
+    [ "printContentHook", [ 3 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -147,7 +145,7 @@ test("helper usage", function() {
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ 3.14 ] ],
     [ "pushLiteral", [ true ] ],
-    [ "pushGetHook", [ "baz.bat" ] ],
+    [ "pushGetHook", [ "baz.bat", 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 4 ] ],
     [ "pushLiteral", [ "foo" ] ],
@@ -190,15 +188,14 @@ test("attribute mustache", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "pushLiteral", [ " after" ] ],
-    [ "pushGetHook", [ "foo" ] ],
+    [ "pushGetHook", [ "foo", 0 ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
-    [ "createAttrMorph", [ 1, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -207,14 +204,13 @@ test("quoted attribute mustache", function() {
   var opcodes = opcodesFor("<div class='{{foo}}'></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo" ] ],
+    [ "pushGetHook", [ "foo", 0 ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
-    [ "createAttrMorph", [ 1, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -223,12 +219,11 @@ test("safe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{foo}}></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo" ] ],
+    [ "pushGetHook", [ "foo", 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
-    [ "createAttrMorph", [ 1, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -237,12 +232,11 @@ test("unsafe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{{foo}}}></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo" ] ],
+    [ "pushGetHook", [ "foo", 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
-    [ "createAttrMorph", [ 1, 0, "class", false, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", false, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -256,15 +250,14 @@ test("attribute helper", function() {
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushSexprHook", [ ] ],
+    [ "pushSexprHook", [ 0 ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
-    [ "createAttrMorph", [ 1, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -274,36 +267,34 @@ test("attribute helpers", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "shareElement", [ 0 ] ],
-    [ "createElementMorph", [ 0, 0 ] ],
     [ "pushLiteral", [ " after" ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushSexprHook", [ ] ],
+    [ "pushSexprHook", [ 0 ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
-    [ "createAttrMorph", [ 1, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
-    [ "pushGetHook", [ 'bare' ] ],
+    [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
+    [ "printAttributeHook", [ 0 ] ],
+    [ "pushGetHook", [ 'bare', 1 ] ],
     [ "pushLiteral", [ 'id' ] ],
-    [ "createAttrMorph", [ 2, 0, 'id', true, null ] ],
-    [ "printAttributeHook", [ 2 ] ],
+    [ "createAttrMorph", [ 1, 0, 'id', true, null ] ],
+    [ "printAttributeHook", [ 1 ] ],
     [ "popParent", [] ],
-    [ "createMorph", [ 3, [], 0, 1, true ] ],
+    [ "createMorph", [ 2, [], 1, 1, true ] ],
     [ "pushLiteral", [ 'morphThing' ] ],
-    [ "printContentHook", [ 3 ] ],
+    [ "printContentHook", [ 2 ] ],
     [ "consumeParent", [ 2 ] ],
-    [ "pushGetHook", [ 'ohMy' ] ],
+    [ "pushGetHook", [ 'ohMy', 3 ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [] ],
     [ "pushLiteral", [ 'class' ] ],
     [ "shareElement", [ 1 ] ],
-    [ "createElementMorph", [ 4, 1 ] ],
-    [ "createAttrMorph", [ 5, 1, 'class', true, null ] ],
-    [ "printAttributeHook", [ 5 ] ],
+    [ "createAttrMorph", [ 3, 1, 'class', true, null ] ],
+    [ "printAttributeHook", [ 3 ] ],
     [ "popParent", [] ]
   ]);
 });
