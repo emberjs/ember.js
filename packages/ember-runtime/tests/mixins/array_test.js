@@ -78,18 +78,18 @@ QUnit.test("the return value of slice has Ember.Array applied", function() {
 QUnit.test("slice supports negative index arguments", function() {
   var testArray = new TestArray([1,2,3,4]);
 
-  deepEqual(testArray.slice(-2),      [3, 4],     'slice(-2)');
-  deepEqual(testArray.slice(-2, -1),  [3],        'slice(-2, -1');
-  deepEqual(testArray.slice(-2, -2),  [],         'slice(-2, -2)');
-  deepEqual(testArray.slice(-1, -2),  [],         'slice(-1, -2)');
+  deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
+  deepEqual(testArray.slice(-2, -1), [3], 'slice(-2, -1');
+  deepEqual(testArray.slice(-2, -2), [], 'slice(-2, -2)');
+  deepEqual(testArray.slice(-1, -2), [], 'slice(-1, -2)');
 
-  deepEqual(testArray.slice(-4, 1),   [1],        'slice(-4, 1)');
-  deepEqual(testArray.slice(-4, 5),   [1,2,3,4],  'slice(-4, 5)');
-  deepEqual(testArray.slice(-4),      [1,2,3,4],  'slice(-4)');
+  deepEqual(testArray.slice(-4, 1), [1], 'slice(-4, 1)');
+  deepEqual(testArray.slice(-4, 5), [1,2,3,4], 'slice(-4, 5)');
+  deepEqual(testArray.slice(-4), [1,2,3,4], 'slice(-4)');
 
-  deepEqual(testArray.slice(0, -1),   [1,2,3],    'slice(0, -1)');
-  deepEqual(testArray.slice(0, -4),   [],         'slice(0, -4)');
-  deepEqual(testArray.slice(0, -3),   [1],        'slice(0, -3)');
+  deepEqual(testArray.slice(0, -1), [1,2,3], 'slice(0, -1)');
+  deepEqual(testArray.slice(0, -4), [], 'slice(0, -4)');
+  deepEqual(testArray.slice(0, -3), [1], 'slice(0, -3)');
 
 });
 
@@ -317,9 +317,9 @@ var ary;
 QUnit.module('EmberArray.@each support', {
   setup: function() {
     ary = new TestArray([
-      { isDone: true,  desc: 'Todo 1' },
+      { isDone: true, desc: 'Todo 1' },
       { isDone: false, desc: 'Todo 2' },
-      { isDone: true,  desc: 'Todo 3' },
+      { isDone: true, desc: 'Todo 3' },
       { isDone: false, desc: 'Todo 4' }
     ]);
   },

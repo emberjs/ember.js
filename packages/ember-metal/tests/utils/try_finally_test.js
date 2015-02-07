@@ -34,13 +34,13 @@ function callTryFinallyWithError() {
     equal(e, error, 'correct error was thrown');
   }
 
-  equal(errorWasThrown, true,  'error was thrown');
+  equal(errorWasThrown, true, 'error was thrown');
 }
 
 QUnit.test("no failure", function() {
   equal(tryFinally(tryable, finalizer), tryableResult, 'correct return value');
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -49,7 +49,7 @@ QUnit.test("no failure, return from finally", function() {
 
   equal(tryFinally(tryable, finalizer), finalizerResult, 'crrect return value');
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -61,7 +61,7 @@ QUnit.test("try failed", function() {
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -73,7 +73,7 @@ QUnit.test("finally failed", function() {
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -89,6 +89,6 @@ QUnit.test("finally and try failed", function() {
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });

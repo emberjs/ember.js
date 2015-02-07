@@ -57,8 +57,8 @@ QUnit.test("Should allow changing of those properties by calling EmberObject#set
   equal(get(obj, 'foo'), 'bar');
   equal(get(obj, 'total'), 12345);
 
-  set(obj,  'foo', 'Chunky Bacon');
-  set(obj,  'total', 12);
+  set(obj, 'foo', 'Chunky Bacon');
+  set(obj, 'total', 12);
 
   equal(get(obj, 'foo'), 'Chunky Bacon');
   equal(get(obj, 'total'), 12);

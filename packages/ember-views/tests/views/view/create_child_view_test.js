@@ -62,7 +62,7 @@ QUnit.test("should update a view instances attributes, including the _parentView
   var myView = myViewClass.create();
   newView = view.createChildView(myView, attrs);
 
-  equal(newView.container,  container, 'expects to share container with parent');
+  equal(newView.container, container, 'expects to share container with parent');
   equal(newView._parentView, view, 'expects to have the correct parent');
   equal(get(newView, 'foo'), 'baz', 'view did get custom attributes');
 
@@ -83,7 +83,7 @@ QUnit.test("should create from string via container lookup", function() {
 
   newView = view.createChildView('bro');
 
-  equal(newView.container,  container, 'expects to share container with parent');
+  equal(newView.container, container, 'expects to share container with parent');
   equal(newView._parentView, view, 'expects to have the correct parent');
 });
 

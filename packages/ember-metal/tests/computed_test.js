@@ -550,7 +550,7 @@ testBoth('depending on simple chain', function(get, set) {
   equal(get(obj, 'prop'), 'BUZZ 2');
   equal(get(obj, 'prop'), 'BUZZ 2');
 
-  set(get(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
+  set(get(obj, 'foo.bar'), 'baz', { biff: 'BLOB' });
   equal(get(obj, 'prop'), 'BLOB 3');
   equal(get(obj, 'prop'), 'BLOB 3');
 

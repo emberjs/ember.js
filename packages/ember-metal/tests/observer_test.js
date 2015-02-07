@@ -967,15 +967,15 @@ testBoth('depending on a Global chain', function(get, set) {
     count++;
   });
 
-  set(get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 1);
 
-  set(get(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
+  set(get(Global, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equal(val, 'BLARG');
   equal(count, 2);
 
-  set(get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
+  set(get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equal(val, 'BOOM');
   equal(count, 3);
 
@@ -983,7 +983,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(val, 'BLARG');
   equal(count, 4);
 
-  set(get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 5);
 
@@ -1218,15 +1218,15 @@ testBoth("observers added/removed during changeProperties should do the right th
   });
 
   equal(removedBeforeFirstChangeObserver.willChangeCount, 0, 'removeBeforeObserver called before the first change sees none');
-  equal(removedBeforeFirstChangeObserver.didChangeCount,  0, 'removeObserver called before the first change sees none');
-  equal(addedBeforeFirstChangeObserver.willChangeCount,   1, 'addBeforeObserver called before the first change sees only 1');
-  equal(addedBeforeFirstChangeObserver.didChangeCount,    1, 'addObserver called before the first change sees only 1');
-  equal(addedAfterFirstChangeObserver.willChangeCount,    1, 'addBeforeObserver called after the first change sees 1');
-  equal(addedAfterFirstChangeObserver.didChangeCount,     1, 'addObserver called after the first change sees 1');
-  equal(addedAfterLastChangeObserver.willChangeCount,     0, 'addBeforeObserver called after the last change sees none');
-  equal(addedAfterLastChangeObserver.didChangeCount,      0, 'addObserver called after the last change sees none');
-  equal(removedBeforeLastChangeObserver.willChangeCount,  1, 'removeBeforeObserver called before the last change still sees 1');
-  equal(removedBeforeLastChangeObserver.didChangeCount,   1, 'removeObserver called before the last change still sees 1');
-  equal(removedAfterLastChangeObserver.willChangeCount,   1, 'removeBeforeObserver called after the last change still sees 1');
-  equal(removedAfterLastChangeObserver.didChangeCount,    1, 'removeObserver called after the last change still sees 1');
+  equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
+  equal(addedBeforeFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called before the first change sees only 1');
+  equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
+  equal(addedAfterFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called after the first change sees 1');
+  equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
+  equal(addedAfterLastChangeObserver.willChangeCount, 0, 'addBeforeObserver called after the last change sees none');
+  equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
+  equal(removedBeforeLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called before the last change still sees 1');
+  equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
+  equal(removedAfterLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called after the last change still sees 1');
+  equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
 });

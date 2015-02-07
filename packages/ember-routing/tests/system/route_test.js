@@ -69,7 +69,7 @@ QUnit.test("'store' can be injected by data persistence frameworks", function() 
     }
   });
 
-  registry.register('route:index',  EmberRoute);
+  registry.register('route:index', EmberRoute);
   registry.register('store:main', Store);
 
   registry.injection('route', 'store', 'store:main');
@@ -89,7 +89,7 @@ QUnit.test("assert if 'store.find' method is not found", function() {
   var Post = EmberObject.extend();
 
   registry.register('route:index', EmberRoute);
-  registry.register('model:post',  Post);
+  registry.register('model:post', Post);
 
   route = container.lookup('route:index');
 

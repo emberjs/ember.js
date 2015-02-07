@@ -1022,8 +1022,8 @@ Application.reopenClass({
 
     registry.register('-bucket-cache:main', BucketCache);
     registry.injection('router', '_bucketCache', '-bucket-cache:main');
-    registry.injection('route',  '_bucketCache', '-bucket-cache:main');
-    registry.injection('controller',  '_bucketCache', '-bucket-cache:main');
+    registry.injection('route', '_bucketCache', '-bucket-cache:main');
+    registry.injection('controller', '_bucketCache', '-bucket-cache:main');
 
     registry.injection('route', 'router', 'router:main');
     registry.injection('location', 'rootURL', '-location-setting:root-url');

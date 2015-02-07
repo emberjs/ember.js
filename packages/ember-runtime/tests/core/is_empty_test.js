@@ -7,5 +7,5 @@ QUnit.module("Ember.isEmpty");
 QUnit.test("Ember.isEmpty", function() {
   var arrayProxy = ArrayProxy.create({ content: Ember.A() });
 
-  equal(true,  isEmpty(arrayProxy), "for an ArrayProxy that has empty content");
+  equal(true, isEmpty(arrayProxy), "for an ArrayProxy that has empty content");
 });

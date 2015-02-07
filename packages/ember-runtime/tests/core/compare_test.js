@@ -68,10 +68,10 @@ QUnit.test('comparables should return values in the range of -1, 0, 1', function
   });
 
   equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
-  equal(compare(zero, 'b'),    0, 'First item comparable - returns  0 (not negated)');
-  equal(compare(one, 'c'),     1, 'First item comparable - returns  1 (not negated)');
+  equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
+  equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
 
-  equal(compare('a', negOne),  1, 'Second item comparable - returns -1 (negated)');
-  equal(compare('b', zero),    0, 'Second item comparable - returns  0 (negated)');
-  equal(compare('c', one),    -1, 'Second item comparable - returns  1 (negated)');
+  equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
+  equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
+  equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
 });

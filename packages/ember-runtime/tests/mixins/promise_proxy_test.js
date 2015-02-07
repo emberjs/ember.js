@@ -50,11 +50,11 @@ QUnit.test("fulfillment", function() {
     didRejectCount++;
   });
 
-  equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
-  equal(get(proxy, 'reason'),      undefined, 'expects the proxy to have no reason');
-  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+  equal(get(proxy, 'isPending'), true, 'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'), false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
@@ -65,29 +65,29 @@ QUnit.test("fulfillment", function() {
   equal(didFulfillCount, 1, 'should have been fulfilled');
   equal(didRejectCount, 0, 'should not have been rejected');
 
-  equal(get(proxy, 'content'),     value, 'expects the proxy to have content');
-  equal(get(proxy, 'reason'),      undefined, 'expects the proxy to still have no reason');
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
-  equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
+  equal(get(proxy, 'content'), value, 'expects the proxy to have content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy to still have no reason');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is no longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), true, 'expects the proxy to indicate that it is fulfilled');
 
   run(deferred, 'resolve', value);
 
   equal(didFulfillCount, 1, 'should still have been only fulfilled once');
-  equal(didRejectCount,  0, 'should still not have been rejected');
+  equal(didRejectCount, 0, 'should still not have been rejected');
 
   run(deferred, 'reject', value);
 
   equal(didFulfillCount, 1, 'should still have been only fulfilled once');
-  equal(didRejectCount,  0, 'should still not have been rejected');
+  equal(didRejectCount, 0, 'should still not have been rejected');
 
-  equal(get(proxy, 'content'),     value, 'expects the proxy to have still have same content');
-  equal(get(proxy, 'reason'),      undefined, 'expects the proxy still to have no reason');
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
-  equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
+  equal(get(proxy, 'content'), value, 'expects the proxy to have still have same content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy still to have no reason');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is no longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), true, 'expects the proxy to indicate that it is fulfilled');
 
   // rest of the promise semantics are tested in directly in RSVP
 });
@@ -108,11 +108,11 @@ QUnit.test("rejection", function() {
     didRejectCount++;
   });
 
-  equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
-  equal(get(proxy, 'reason'),      undefined, 'expects the proxy to have no reason');
-  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+  equal(get(proxy, 'isPending'), true, 'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'), false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
@@ -123,12 +123,12 @@ QUnit.test("rejection", function() {
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
   equal(didRejectCount, 1, 'should have been rejected');
 
-  equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
-  equal(get(proxy, 'reason'),      reason, 'expects the proxy to have a reason');
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  true, 'expects the proxy to indicate that it is  rejected');
-  equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is not longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), true, 'expects the proxy to indicate that it is  rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
   run(deferred, 'reject', reason);
 
@@ -140,12 +140,12 @@ QUnit.test("rejection", function() {
   equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
   equal(didRejectCount, 1, 'should still remain rejected');
 
-  equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
-  equal(get(proxy, 'reason'),      reason, 'expects the proxy to have a reason');
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  true, 'expects the proxy to indicate that it is  rejected');
-  equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is not longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), true, 'expects the proxy to indicate that it is  rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
 
 QUnit.test("unhandled rejects still propagate to RSVP.on('error', ...) ", function() {
@@ -204,31 +204,31 @@ QUnit.test("should reset isFulfilled and isRejected when promise is reset", func
     promise: deferred.promise
   });
 
-  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isPending'), true, 'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'), false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
   run(deferred, 'resolve');
 
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
-  equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is no longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), true, 'expects the proxy to indicate that it is fulfilled');
 
   var anotherDeferred = EmberRSVP.defer();
   proxy.set('promise', anotherDeferred.promise);
 
-  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
-  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isPending'), true, 'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'), false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
   run(anotherDeferred, 'reject');
 
-  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
-  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
-  equal(get(proxy, 'isRejected'),  true,  'expects the proxy to indicate that it is  rejected');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is not longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), true, 'expects the proxy to indicate that it is  rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
 

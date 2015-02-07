@@ -42,14 +42,14 @@ function callTryCatchFinallyWithError() {
     equal(e, error, 'correct error was thrown');
   }
 
-  equal(errorWasThrown, true,  'error was thrown');
+  equal(errorWasThrown, true, 'error was thrown');
 }
 
 QUnit.test("no failure", function() {
   equal(tryCatchFinally(tryable, catchable, finalizer), tryableResult, 'correct return value');
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    0, 'catchable was never called');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 0, 'catchable was never called');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -58,8 +58,8 @@ QUnit.test("no failure, return from finally", function() {
 
   equal(tryCatchFinally(tryable, catchable, finalizer), finalizerResult, 'correct return value');
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    0, 'catchable was never called');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 0, 'catchable was never called');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -73,8 +73,8 @@ QUnit.test("try failed", function() {
 
   equal(result, catchableResult, 'correct return value');
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    1, 'catchable was called once');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 1, 'catchable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -86,8 +86,8 @@ QUnit.test("catch failed", function() {
 
   tryCatchFinally(tryable, catchable, finalizer);
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    0, 'catchable was called once');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 0, 'catchable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -103,8 +103,8 @@ QUnit.test("try and catch failed", function() {
 
   callTryCatchFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    1, 'catchable was called once');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 1, 'catchable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -116,8 +116,8 @@ QUnit.test("finally failed", function() {
 
   callTryCatchFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    0, 'catchable was never called');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 0, 'catchable was never called');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -133,8 +133,8 @@ QUnit.test("finally and try failed", function() {
 
   callTryCatchFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    1, 'catchable was called once');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 1, 'catchable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
@@ -154,7 +154,7 @@ QUnit.test("finally, catch and try failed", function() {
 
   callTryCatchFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
-  equal(catchCount,    1, 'catchable was called once');
+  equal(tryCount, 1, 'tryable was called once');
+  equal(catchCount, 1, 'catchable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
