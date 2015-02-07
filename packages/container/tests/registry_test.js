@@ -56,7 +56,7 @@ QUnit.test("Throw exception when trying to inject `type:thing` on all type(s)", 
 
   throws(function() {
     registry.typeInjection('controller', 'injected', 'controller:post');
-  }, 'Cannot inject a `controller:post` on other controller(s). Register the `controller:post` as a different type and perform the typeInjection.');
+  }, 'Cannot inject a `controller:post` on other controller(s).');
 });
 
 QUnit.test("The registry can take a hook to resolve factories lazily", function() {

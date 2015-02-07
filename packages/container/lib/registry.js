@@ -479,9 +479,7 @@ Registry.prototype = {
     var fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
       throw new Error('Cannot inject a `' + fullName +
-      '` on other ' + type +
-      '(s). Register the `' + fullName +
-      '` as a different type and perform the typeInjection.');
+      '` on other ' + type + '(s).');
     }
 
     var injections = this._typeInjections[type] ||
