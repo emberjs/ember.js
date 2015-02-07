@@ -111,6 +111,7 @@ function ElementMorph(element, dom, namespace) {
   this.namespace = namespace;
 
   this.state = {};
+  this.isDirty = true;
 }
 
 /*

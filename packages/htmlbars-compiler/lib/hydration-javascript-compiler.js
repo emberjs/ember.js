@@ -75,12 +75,13 @@ prototype.compile = function(opcodes, options) {
   }
 
   if (result.hasMorphs) {
+    indent = indent.substr(2);
     result.createMorphsProgram =
-      '  function buildRenderNodes(dom, fragment, contextualElement) {\n' +
+      indent + 'function buildRenderNodes(dom, fragment, contextualElement) {\n' +
       result.fragmentProcessingProgram +
       morphs +
-      '    return morphs;\n' +
-      '  }\n';
+      indent + '  return morphs;\n' +
+      indent+'}\n';
   } else {
     result.createMorphsProgram =
       '  function buildRenderNodes() { return []; }\n';
@@ -154,9 +155,10 @@ prototype.pushSexprHook = function(morphNum) {
   ]);
 };
 
-prototype.pushConcatHook = function() {
+prototype.pushConcatHook = function(morphNum) {
   this.pushHook('concat', [
     'env',
+    'morphs[' + morphNum + ']',
     this.stack.pop() // parts
   ]);
 };
