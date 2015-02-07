@@ -127,7 +127,7 @@ if (foo === 'bara') {
 }
 
 // parameters
-function (test, foo) {
+function(test, foo) {
 }
 ```
 
