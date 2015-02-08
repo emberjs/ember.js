@@ -62,3 +62,11 @@ export function isHelper(sexpr) {
   return (sexpr.params && sexpr.params.length > 0) ||
     (sexpr.hash && sexpr.hash.pairs.length > 0);
 }
+
+export function unwrapMustache(mustache) {
+  if (isHelper(mustache)) {
+    return mustache;
+  } else {
+    return mustache.path;
+  }
+}
