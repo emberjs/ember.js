@@ -1004,7 +1004,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   var target;
   var myState = {
     render: renderOptions,
-    outlets: Object.create(null)
+    outlets: create(null)
   };
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
