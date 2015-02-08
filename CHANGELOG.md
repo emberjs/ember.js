@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### 1.11.0-beta.1 (February 06, 2015)
+### 1.11.0-beta.1 (February 07, 2015)
 
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
 - [#10186](https://github.com/emberjs/ember.js/pull/10186) Port attributeBindings to AttrNode views [@mixonic](https://github.com/mixonic)
