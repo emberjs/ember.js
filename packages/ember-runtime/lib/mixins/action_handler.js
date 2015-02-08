@@ -79,7 +79,7 @@ var ActionHandler = Mixin.create({
     });
     ```
 
-    It is also possible to call `this._super()` from within an
+    It is also possible to call `this._super.apply(this, arguments)` from within an
     action handler if it overrides a handler defined on a parent
     class or mixin:
 
@@ -98,7 +98,7 @@ var ActionHandler = Mixin.create({
       actions: {
         debugRouteInformation: function() {
           // also call the debugRouteInformation of mixed in App.DebugRoute
-          this._super();
+          this._super.apply(this, arguments);
 
           // show additional annoyance
           window.alert(...);
@@ -209,11 +209,8 @@ var ActionHandler = Mixin.create({
     var target;
 
     if (this._actions && this._actions[actionName]) {
-      if (this._actions[actionName].apply(this, args) === true) {
-        // handler returned true, so this action will bubble
-      } else {
-        return;
-      }
+      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+      if (!shouldBubble) { return; }
     }
 
     if (target = get(this, 'target')) {

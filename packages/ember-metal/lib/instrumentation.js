@@ -165,7 +165,9 @@ export function _instrumentStart(name, _payload) {
   @return {Subscriber}
 */
 export function subscribe(pattern, object) {
-  var paths = pattern.split("."), path, regex = [];
+  var paths = pattern.split(".");
+  var path;
+  var regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
     path = paths[i];

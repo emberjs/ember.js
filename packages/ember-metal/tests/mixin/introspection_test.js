@@ -37,7 +37,7 @@ var BarMethods = Mixin.create({
 
 var Combined = Mixin.create(BarProperties, BarMethods);
 
-var obj ;
+var obj;
 
 QUnit.module('Basic introspection', {
   setup: function() {
@@ -46,7 +46,7 @@ QUnit.module('Basic introspection', {
   }
 });
 
-test('Ember.mixins()', function() {
+QUnit.test('Ember.mixins()', function() {
 
   function mapGuids(ary) {
     return EnumerableUtils.map(ary, function(x) { return guidFor(x); });

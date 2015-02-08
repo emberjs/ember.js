@@ -3,7 +3,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var compile, view, originalLookup, lookup;
+var view, originalLookup, lookup;
 
 var originalLookup = Ember.lookup;
 
@@ -20,52 +20,52 @@ QUnit.module('ember-htmlbars: Integration with Globals', {
   }
 });
 
-test('should read from globals (DEPRECATED)', function() {
+QUnit.test('should read from globals (DEPRECATED)', function() {
   Ember.lookup.Global = 'Klarg';
   view = EmberView.create({
     template: compile('{{Global}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global from a Handlebars template is deprecated.');
 
   equal(view.$().text(), Ember.lookup.Global);
 });
 
-test('should read from globals with a path (DEPRECATED)', function() {
+QUnit.test('should read from globals with a path (DEPRECATED)', function() {
   Ember.lookup.Global = { Space: 'Klarg' };
   view = EmberView.create({
     template: compile('{{Global.Space}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);
 });
 
-test('with context, should read from globals (DEPRECATED)', function() {
+QUnit.test('with context, should read from globals (DEPRECATED)', function() {
   Ember.lookup.Global = 'Klarg';
   view = EmberView.create({
     context: {},
     template: compile('{{Global}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global);
 });
 
-test('with context, should read from globals with a path (DEPRECATED)', function() {
+QUnit.test('with context, should read from globals with a path (DEPRECATED)', function() {
   Ember.lookup.Global = { Space: 'Klarg' };
   view = EmberView.create({
     context: {},
     template: compile('{{Global.Space}}')
   });
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);

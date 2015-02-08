@@ -8,7 +8,7 @@
  @property helpers
 */
 var plugins = {
-  ast: [ ]
+  ast: []
 };
 
 /**

@@ -125,7 +125,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   maxlength: null,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.on("paste", this, this._elementValueDidChange);
     this.on("cut", this, this._elementValueDidChange);
     this.on("input", this, this._elementValueDidChange);
@@ -332,7 +332,7 @@ function sendAction(eventName, view, event) {
   view.sendAction(eventName, value);
 
   if (action || on === eventName) {
-    if(!get(view, 'bubbles')) {
+    if (!get(view, 'bubbles')) {
       event.stopPropagation();
     }
   }

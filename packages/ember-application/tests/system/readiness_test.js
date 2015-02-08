@@ -1,8 +1,7 @@
 import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
-var EmberApplication = Application;
+import EmberApplication from "ember-application/system/application";
 
-var jQuery, application;
+var jQuery, application, Application;
 var readyWasCalled, domReady, readyCallbacks;
 
 // We are using a small mock of jQuery because jQuery is third-party code with
@@ -59,7 +58,7 @@ QUnit.module("Application readiness", {
 // synchronously during the application's initialization, we get the same behavior as if
 // it was triggered after initialization.
 
-test("Ember.Application's ready event is called right away if jQuery is already ready", function() {
+QUnit.test("Ember.Application's ready event is called right away if jQuery is already ready", function() {
   jQuery.isReady = true;
 
   run(function() {
@@ -75,7 +74,7 @@ test("Ember.Application's ready event is called right away if jQuery is already 
   equal(readyWasCalled, 1, "application's ready was not called again");
 });
 
-test("Ember.Application's ready event is called after the document becomes ready", function() {
+QUnit.test("Ember.Application's ready event is called after the document becomes ready", function() {
   run(function() {
     application = Application.create({ router: false });
   });
@@ -87,7 +86,7 @@ test("Ember.Application's ready event is called after the document becomes ready
   equal(readyWasCalled, 1, "ready was called now that DOM is ready");
 });
 
-test("Ember.Application's ready event can be deferred by other components", function() {
+QUnit.test("Ember.Application's ready event can be deferred by other components", function() {
   run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
@@ -107,7 +106,7 @@ test("Ember.Application's ready event can be deferred by other components", func
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 });
 
-test("Ember.Application's ready event can be deferred by other components", function() {
+QUnit.test("Ember.Application's ready event can be deferred by other components", function() {
   jQuery.isReady = false;
 
   run(function() {

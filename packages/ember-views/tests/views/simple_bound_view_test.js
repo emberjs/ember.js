@@ -3,19 +3,18 @@ import SimpleBoundView from "ember-views/views/simple_bound_view";
 
 QUnit.module('SimpleBoundView');
 
-test('does not render if update is triggured by normalizedValue is the same as the previous normalizedValue', function(){
+QUnit.test('does not render if update is triggered by normalizedValue is the same as the previous normalizedValue', function() {
   var value = null;
   var obj = { 'foo': 'bar' };
   var lazyValue = new Stream(function() {
     return obj.foo;
   });
-  var isEscaped = true;
-  var view = new SimpleBoundView(lazyValue, isEscaped);
-  view._morph = {
+  var morph = {
     setContent: function(newValue) {
       value = newValue;
     }
   };
+  var view = new SimpleBoundView(null, null, morph, lazyValue);
 
   equal(value, null);
 

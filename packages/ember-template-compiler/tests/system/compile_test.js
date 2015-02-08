@@ -4,10 +4,11 @@ import {
 } from "htmlbars-compiler/compiler";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+// jscs:disable validateIndentation
 
 QUnit.module('ember-htmlbars: compile');
 
-test('compiles the provided template with htmlbars', function() {
+QUnit.test('compiles the provided template with htmlbars', function() {
   var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
 
   var actual = compile(templateString);
@@ -16,7 +17,7 @@ test('compiles the provided template with htmlbars', function() {
   equal(actual.toString(), expected.toString(), 'compile function matches content with htmlbars compile');
 });
 
-test('calls template on the compiled function', function() {
+QUnit.test('calls template on the compiled function', function() {
   var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
 
   var actual = compile(templateString);
@@ -25,4 +26,5 @@ test('calls template on the compiled function', function() {
   ok(actual.isMethod === false, 'sets isMethod via template function');
 });
 
+// jscs:enable validateIndentation
 }

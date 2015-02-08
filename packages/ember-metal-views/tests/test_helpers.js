@@ -1,9 +1,9 @@
-import { create }  from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import { Renderer } from "ember-metal-views";
 
 var renderer;
 
-function MetalRenderer () {
+function MetalRenderer() {
   MetalRenderer._super.call(this);
 }
 MetalRenderer._super = Renderer;
@@ -123,7 +123,7 @@ export function equalHTML(element, expectedHTML, message) {
   }
 
   var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
-  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag){
+  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag) {
     return tag.toLowerCase();
   });
   actualHTML = actualHTML.replace(/\r\n/gm, '');

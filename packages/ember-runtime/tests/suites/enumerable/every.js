@@ -15,7 +15,10 @@ suite.test('every should should invoke callback on each item as long as you retu
   var found = [];
   var result;
 
-  result = obj.every(function(i) { found.push(i); return true; });
+  result = obj.every(function(i) {
+    found.push(i);
+    return true;
+  });
   equal(result, true, 'return value of obj.every');
   deepEqual(found, ary, 'items passed during every() should match');
 });
@@ -28,10 +31,13 @@ suite.test('every should stop invoking when you return false', function() {
   var found = [];
   var result;
 
-  result = obj.every(function(i) { found.push(i); return --cnt>0; });
+  result = obj.every(function(i) {
+    found.push(i);
+    return --cnt>0;
+  });
   equal(result, false, 'return value of obj.every');
   equal(found.length, exp, 'should invoke proper number of times');
-  deepEqual(found, ary.slice(0,-2), 'items passed during every() should match');
+  deepEqual(found, ary.slice(0, -2), 'items passed during every() should match');
 });
 
 // ..........................................................

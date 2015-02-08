@@ -2,7 +2,7 @@ import { compile } from "ember-template-compiler";
 
 QUnit.module('ember-template-compiler: transform-with-as-to-hash');
 
-test('cannot use block params and keyword syntax together', function() {
+QUnit.test('cannot use block params and keyword syntax together', function() {
   expect(1);
 
   throws(function() {

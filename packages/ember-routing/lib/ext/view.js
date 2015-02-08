@@ -17,7 +17,7 @@ EmberView.reopen({
    */
   init: function() {
     this._outlets = {};
-    this._super();
+    this._super.apply(this, arguments);
   },
 
   /**
@@ -132,13 +132,16 @@ EmberView.reopen({
 
   /**
     Gets an outlet that is pending disconnection and then
-    nullifys the object on the `_outlet` object.
+    nullifies the object on the `_outlet` object.
 
     @private
     @method _finishDisconnections
    */
   _finishDisconnections: function() {
-    if (this.isDestroyed) return; // _outlets will be gone anyway
+    if (this.isDestroyed) {
+      return; // _outlets will be gone anyway
+    }
+
     var outlets = get(this, '_outlets');
     var pendingDisconnections = this._pendingDisconnections;
     this._pendingDisconnections = null;

@@ -18,12 +18,12 @@ QUnit.module("EmberView#createChildView", {
   teardown: function() {
     run(function() {
       view.destroy();
-      if(newView) { newView.destroy(); }
+      if (newView) { newView.destroy(); }
     });
   }
 });
 
-test("should create view from class with any passed attributes", function() {
+QUnit.test("should create view from class with any passed attributes", function() {
   var attrs = {
     foo: "baz"
   };
@@ -36,14 +36,14 @@ test("should create view from class with any passed attributes", function() {
   ok(!attrs.parentView, "the original attributes hash was not mutated");
 });
 
-test("should set newView.parentView to receiver", function() {
-  newView = view.createChildView(myViewClass) ;
+QUnit.test("should set newView.parentView to receiver", function() {
+  newView = view.createChildView(myViewClass);
 
   equal(newView.container, container, 'expects to share container with parent');
   equal(get(newView, 'parentView'), view, 'newView.parentView == view');
 });
 
-test("should create property on parentView to a childView instance if provided a viewName", function() {
+QUnit.test("should create property on parentView to a childView instance if provided a viewName", function() {
   var attrs = {
     viewName: "someChildView"
   };
@@ -54,7 +54,7 @@ test("should create property on parentView to a childView instance if provided a
   equal(get(view, 'someChildView'), newView);
 });
 
-test("should update a view instances attributes, including the _parentView and container properties", function() {
+QUnit.test("should update a view instances attributes, including the _parentView and container properties", function() {
   var attrs = {
     foo: "baz"
   };
@@ -62,14 +62,14 @@ test("should update a view instances attributes, including the _parentView and c
   var myView = myViewClass.create();
   newView = view.createChildView(myView, attrs);
 
-  equal(newView.container,  container, 'expects to share container with parent');
+  equal(newView.container, container, 'expects to share container with parent');
   equal(newView._parentView, view, 'expects to have the correct parent');
   equal(get(newView, 'foo'), 'baz', 'view did get custom attributes');
 
   deepEqual(newView, myView);
 });
 
-test("should create from string via container lookup", function() {
+QUnit.test("should create from string via container lookup", function() {
   var ChildViewClass = EmberView.extend();
   var fullName = 'view:bro';
 
@@ -83,14 +83,14 @@ test("should create from string via container lookup", function() {
 
   newView = view.createChildView('bro');
 
-  equal(newView.container,  container, 'expects to share container with parent');
+  equal(newView.container, container, 'expects to share container with parent');
   equal(newView._parentView, view, 'expects to have the correct parent');
 });
 
-test("should assert when trying to create childView from string, but no such view is registered", function() {
+QUnit.test("should assert when trying to create childView from string, but no such view is registered", function() {
   view.container.lookupFactory = function() {};
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     view.createChildView('bro');
   });
 });

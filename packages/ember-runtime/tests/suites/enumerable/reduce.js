@@ -4,7 +4,7 @@ var suite = SuiteModuleBuilder.create();
 
 suite.module('reduce');
 
-suite.test('collectes a summary value from an enumeration', function() {
+suite.test('collects a summary value from an enumeration', function() {
   var obj = this.newObject([1, 2, 3]);
   var res = obj.reduce(function(previousValue, item, index, enumerable) { return previousValue + item; }, 0);
   equal(res, 6);

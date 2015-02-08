@@ -7,12 +7,12 @@ import {
 
 testsFor("ember-metal-views - children");
 
-test("a view can have child views", function() {
+QUnit.test("a view can have child views", function() {
   var view = {
     isView: true,
     tagName: 'ul',
     childViews: [
-      {isView: true, tagName: 'li', textContent: 'ohai'}
+      { isView: true, tagName: 'li', textContent: 'ohai' }
     ]
   };
 
@@ -20,14 +20,14 @@ test("a view can have child views", function() {
   equalHTML('qunit-fixture', "<ul><li>ohai</li></ul>");
 });
 
-test("didInsertElement fires after children are rendered", function() {
+QUnit.test("didInsertElement fires after children are rendered", function() {
   expect(2);
 
   var view = {
     isView: true,
     tagName: 'ul',
     childViews: [
-      {isView: true, tagName: 'li', textContent: 'ohai'}
+      { isView: true, tagName: 'li', textContent: 'ohai' }
     ],
 
     didInsertElement: function() {
@@ -38,5 +38,5 @@ test("didInsertElement fires after children are rendered", function() {
   appendTo(view);
   equalHTML('qunit-fixture', "<ul><li>ohai</li></ul>");
 
-  subject().destroy(view);
+  subject().removeAndDestroy(view);
 });

@@ -45,7 +45,7 @@ export function generateControllerFactory(container, controllerName, context) {
 
   fullName = 'controller:' + controllerName;
 
-  container.register(fullName,  Factory);
+  container._registry.register(fullName, Factory);
 
   return Factory;
 }

@@ -20,7 +20,7 @@ QUnit.module("EmberView.create", {
   }
 });
 
-test("registers view in the global views hash using layerId for event targeted", function() {
+QUnit.test("registers view in the global views hash using layerId for event targeted", function() {
   view = EmberView.create();
   run(function() {
     view.appendTo('#qunit-fixture');
@@ -30,7 +30,7 @@ test("registers view in the global views hash using layerId for event targeted",
 
 QUnit.module("EmberView.createWithMixins");
 
-test("should warn if a computed property is used for classNames", function() {
+QUnit.test("should warn if a computed property is used for classNames", function() {
   expectAssertion(function() {
     EmberView.createWithMixins({
       elementId: 'test',
@@ -41,7 +41,7 @@ test("should warn if a computed property is used for classNames", function() {
   }, /Only arrays of static class strings.*For dynamic classes/i);
 });
 
-test("should warn if a non-array is used for classNameBindings", function() {
+QUnit.test("should warn if a non-array is used for classNameBindings", function() {
   expectAssertion(function() {
     EmberView.createWithMixins({
       elementId: 'test',
@@ -50,4 +50,34 @@ test("should warn if a non-array is used for classNameBindings", function() {
       }).volatile()
     });
   }, /Only arrays are allowed/i);
+});
+
+QUnit.test("creates a renderer if one is not provided", function() {
+  var childView;
+
+  view = EmberView.create({
+    render: function(buffer) {
+      buffer.push('Em');
+      this.appendChild(childView);
+    }
+  });
+
+  childView = EmberView.create({
+    template: function() { return 'ber'; }
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  run(function() {
+    ok(get(view, 'renderer'), "view created without container receives a renderer");
+    strictEqual(get(view, 'renderer'), get(childView, 'renderer'), "parent and child share a renderer");
+  });
+
+
+  run(function() {
+    view.destroy();
+    childView.destroy();
+  });
 });

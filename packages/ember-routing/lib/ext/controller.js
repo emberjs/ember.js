@@ -2,8 +2,7 @@ import Ember from "ember-metal/core"; // FEATURES, deprecate
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
-import { typeOf } from "ember-metal/utils";
-import { meta } from "ember-metal/utils";
+import { typeOf, meta } from "ember-metal/utils";
 import merge from "ember-metal/merge";
 
 import ControllerMixin from "ember-runtime/mixins/controller";
@@ -147,7 +146,8 @@ ControllerMixin.reopen({
     @private
   */
   _calculateCacheKey: function(prefix, _parts, values) {
-    var parts = _parts || [], suffixes = "";
+    var parts = _parts || [];
+    var suffixes = "";
     for (var i = 0, len = parts.length; i < len; ++i) {
       var part = parts[i];
       var value = get(values, part);
@@ -186,7 +186,7 @@ ControllerMixin.reopen({
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function(){
+      this.resource('blogPost', {path:':blogPostId'}, function() {
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });
@@ -275,7 +275,7 @@ ControllerMixin.reopen({
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function(){
+      this.resource('blogPost', {path:':blogPostId'}, function() {
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });

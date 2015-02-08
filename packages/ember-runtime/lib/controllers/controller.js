@@ -21,37 +21,35 @@ function controllerInjectionHelper(factory) {
                "non-controller is not allowed.", Controller.detect(factory));
 }
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  /**
-    Creates a property that lazily looks up another controller in the container.
-    Can only be used when defining another controller.
+/**
+  Creates a property that lazily looks up another controller in the container.
+  Can only be used when defining another controller.
 
-    Example:
+  Example:
 
-    ```javascript
-    App.PostController = Ember.Controller.extend({
-      posts: Ember.inject.controller()
-    });
-    ```
+  ```javascript
+  App.PostController = Ember.Controller.extend({
+    posts: Ember.inject.controller()
+  });
+  ```
 
-    This example will create a `posts` property on the `post` controller that
-    looks up the `posts` controller in the container, making it easy to
-    reference other controllers. This is functionally equivalent to:
+  This example will create a `posts` property on the `post` controller that
+  looks up the `posts` controller in the container, making it easy to
+  reference other controllers. This is functionally equivalent to:
 
-    ```javascript
-    App.PostController = Ember.Controller.extend({
-      needs: 'posts',
-      posts: Ember.computed.alias('controllers.posts')
-    });
-    ```
+  ```javascript
+  App.PostController = Ember.Controller.extend({
+    needs: 'posts',
+    posts: Ember.computed.alias('controllers.posts')
+  });
+  ```
 
-    @method inject.controller
-    @for Ember
-    @param {String} name (optional) name of the controller to inject, defaults
-           to the property's name
-    @return {Ember.InjectedProperty} injection descriptor instance
-    */
-  createInjectionHelper('controller', controllerInjectionHelper);
-}
+  @method inject.controller
+  @for Ember
+  @param {String} name (optional) name of the controller to inject, defaults
+         to the property's name
+  @return {Ember.InjectedProperty} injection descriptor instance
+  */
+createInjectionHelper('controller', controllerInjectionHelper);
 
 export default Controller;

@@ -36,7 +36,7 @@ function addChainWatcher(obj, keyName, node) {
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
 
-  if (!m.hasOwnProperty('chainWatchers')) {
+  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
     nodes = m.chainWatchers = {};
   }
 
@@ -104,7 +104,9 @@ function ChainNode(parent, key, value) {
 var ChainNodePrototype = ChainNode.prototype;
 
 function lazyGet(obj, key) {
-  if (!obj) return undefined;
+  if (!obj) {
+    return undefined;
+  }
 
   var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype
@@ -117,9 +119,10 @@ function lazyGet(obj, key) {
   }
 
   // if a CP only return cached value
-  var desc = meta && meta.descs[key];
+  var possibleDesc = obj[key];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   if (desc && desc._cacheable) {
-    if (key in meta.cache) {
+    if (meta.cache && key in meta.cache) {
       return meta.cache[key];
     } else {
       return undefined;
@@ -270,7 +273,7 @@ ChainNodePrototype.unchain = function(key, path) {
 ChainNodePrototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
+    for (var key in chains) {
       if (!chains.hasOwnProperty(key)) {
         continue;
       }
@@ -340,7 +343,7 @@ ChainNodePrototype.didChange = function(events) {
   // then notify chains...
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
+    for (var key in chains) {
       if (!chains.hasOwnProperty(key)) { continue; }
       chains[key].didChange(events);
     }
@@ -366,7 +369,7 @@ export function finishChains(obj) {
     // finish any current chains node watchers that reference obj
     chainWatchers = m.chainWatchers;
     if (chainWatchers) {
-      for(var key in chainWatchers) {
+      for (var key in chainWatchers) {
         if (!chainWatchers.hasOwnProperty(key)) {
           continue;
         }

@@ -9,7 +9,6 @@ import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
-import { indexOf } from "ember-metal/array";
 import { isStream } from "ember-metal/streams/utils";
 
 function actionArgs(parameters, actionName) {
@@ -65,14 +64,6 @@ var isAllowedEvent = function(event, allowedKeys) {
   return true;
 };
 
-var keyEvents = ['keyUp', 'keyPress', 'keyDown'];
-
-function ignoreKeyEvent(eventName, event, keyCode) {
-  var any = 'any';
-  keyCode = keyCode || any;
-  return indexOf.call(keyEvents, eventName) !== -1 && keyCode !== any && keyCode !== event.which.toString();
-}
-
 ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys) {
   var actionId = uuid();
   var eventName = options.eventName;
@@ -92,12 +83,6 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
       }
 
       var target = options.target.value();
-
-      if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
-        if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
-          return;
-        }
-      }
 
       var actionName;
 
@@ -264,7 +249,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   ```javascript
   App.ApplicationView = Ember.View.extend({
     actions: {
-      anActionName: function(){}
+      anActionName: function() {}
     }
   });
 

@@ -10,18 +10,19 @@ function appendView(view) {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: href attribute", {
-  teardown: function(){
+  teardown: function() {
     if (view) {
       run(view, view.destroy);
     }
   }
 });
 
-test("href is set", function() {
+QUnit.test("href is set", function() {
   view = EmberView.create({
-    context: {url: 'http://example.com'},
+    context: { url: 'http://example.com' },
     template: compile("<a href={{url}}></a>")
   });
   appendView(view);
@@ -30,4 +31,5 @@ test("href is set", function() {
                  "attribute is output");
 });
 
+// jscs:enable validateIndentation
 }

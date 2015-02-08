@@ -21,12 +21,12 @@ var DataAdapter = EmberDataAdapter.extend({
 });
 
 QUnit.module("Data Adapter", {
-  setup:function() {
+  setup: function() {
     run(function() {
       App = EmberApplication.create();
       App.toString = function() { return 'App'; };
       App.deferReadiness();
-      App.__container__.register('data-adapter:main', DataAdapter);
+      App.registry.register('data-adapter:main', DataAdapter);
     });
   },
   teardown: function() {
@@ -37,7 +37,7 @@ QUnit.module("Data Adapter", {
   }
 });
 
-test("Model types added with DefaultResolver", function() {
+QUnit.test("Model types added with DefaultResolver", function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
@@ -46,7 +46,7 @@ test("Model types added with DefaultResolver", function() {
       return Ember.A([1,2,3]);
     },
     columnsForType: function() {
-      return [ { name: 'title', desc: 'Title'} ];
+      return [{ name: 'title', desc: 'Title' }];
     }
   });
 
@@ -59,23 +59,23 @@ test("Model types added with DefaultResolver", function() {
     equal(postType.name, 'post', 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, App.Post, 'Correctly sets the object');
-    deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');
+    deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
   };
 
   adapter.watchModelTypes(modelTypesAdded);
 });
 
-test("Model types added with custom container-debug-adapter", function() {
+QUnit.test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend();
   var StubContainerDebugAdapter = DefaultResolver.extend({
-    canCatalogEntriesByType: function(type){
+    canCatalogEntriesByType: function(type) {
       return true;
     },
-    catalogEntriesByType: function(type){
+    catalogEntriesByType: function(type) {
       return [PostClass];
     }
   });
-  App.__container__.register('container-debug-adapter:main', StubContainerDebugAdapter);
+  App.registry.register('container-debug-adapter:main', StubContainerDebugAdapter);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
@@ -83,7 +83,7 @@ test("Model types added with custom container-debug-adapter", function() {
       return Ember.A([1,2,3]);
     },
     columnsForType: function() {
-      return [ { name: 'title', desc: 'Title'} ];
+      return [{ name: 'title', desc: 'Title' }];
     }
   });
 
@@ -97,13 +97,13 @@ test("Model types added with custom container-debug-adapter", function() {
     equal(postType.name, PostClass.toString(), 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, PostClass, 'Correctly sets the object');
-    deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');
+    deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
   };
 
   adapter.watchModelTypes(modelTypesAdded);
 });
 
-test("Model Types Updated", function() {
+QUnit.test("Model Types Updated", function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
@@ -132,7 +132,7 @@ test("Model Types Updated", function() {
 
 });
 
-test("Records Added", function() {
+QUnit.test("Records Added", function() {
   expect(8);
   var countAdded = 1;
 
@@ -171,7 +171,7 @@ test("Records Added", function() {
   recordList.pushObject(post);
 });
 
-test("Observes and releases a record correctly", function() {
+QUnit.test("Observes and releases a record correctly", function() {
   var updatesCalled = 0;
   App.Post = Model.extend();
 

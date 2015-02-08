@@ -9,14 +9,14 @@ var view;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   QUnit.module("ember-htmlbars: hooks/text_node_test", {
-    teardown: function(){
+    teardown: function() {
       runDestroy(view);
     }
   });
 
-  test("property is output", function() {
+  QUnit.test("property is output", function() {
     view = EmberView.create({
-      context: {name: 'erik'},
+      context: { name: 'erik' },
       template: compile("ohai {{name}}")
     });
     runAppend(view);
@@ -24,9 +24,9 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     equalInnerHTML(view.element, 'ohai erik', "property is output");
   });
 
-  test("path is output", function() {
+  QUnit.test("path is output", function() {
     view = EmberView.create({
-      context: {name: {firstName: 'erik'}},
+      context: { name: { firstName: 'erik' } },
       template: compile("ohai {{name.firstName}}")
     });
     runAppend(view);
@@ -34,8 +34,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     equalInnerHTML(view.element, 'ohai erik', "path is output");
   });
 
-  test("changed property updates", function() {
-    var context = EmberObject.create({name: 'erik'});
+  QUnit.test("changed property updates", function() {
+    var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
       template: compile("ohai {{name}}")

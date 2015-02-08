@@ -18,7 +18,7 @@ QUnit.module("Deferred", {
   }
 });
 
-test("can resolve deferred", function() {
+QUnit.test("can resolve deferred", function() {
   var deferred;
   var count = 0;
 
@@ -35,7 +35,7 @@ test("can resolve deferred", function() {
   equal(count, 1, "was fulfilled");
 });
 
-test("can reject deferred", function() {
+QUnit.test("can reject deferred", function() {
 
   var deferred;
   var count = 0;
@@ -53,7 +53,7 @@ test("can reject deferred", function() {
   equal(count, 1, "fail callback was called");
 });
 
-test("can resolve with then", function() {
+QUnit.test("can resolve with then", function() {
 
   var deferred;
   var count1 = 0;
@@ -75,7 +75,7 @@ test("can resolve with then", function() {
   equal(count2, 0, "then was not rejected");
 });
 
-test("can reject with then", function() {
+QUnit.test("can reject with then", function() {
 
   var deferred;
   var count1 = 0;
@@ -97,7 +97,7 @@ test("can reject with then", function() {
   equal(count2, 1, "then were rejected");
 });
 
-test("can call resolve multiple times", function() {
+QUnit.test("can call resolve multiple times", function() {
 
   var deferred;
   var count = 0;
@@ -119,7 +119,7 @@ test("can call resolve multiple times", function() {
   equal(count, 1, "calling resolve multiple times has no effect");
 });
 
-test("resolve prevent reject", function() {
+QUnit.test("resolve prevent reject", function() {
   var deferred;
   var resolved = false;
   var rejected = false;
@@ -141,7 +141,7 @@ test("resolve prevent reject", function() {
   equal(rejected, false, "is not rejected");
 });
 
-test("reject prevent resolve", function() {
+QUnit.test("reject prevent resolve", function() {
   var deferred;
   var resolved = false;
   var rejected = false;
@@ -163,7 +163,7 @@ test("reject prevent resolve", function() {
   equal(rejected, true, "is rejected");
 });
 
-test("will call callbacks if they are added after resolution", function() {
+QUnit.test("will call callbacks if they are added after resolution", function() {
 
   var deferred;
   var count1 = 0;
@@ -191,7 +191,7 @@ test("will call callbacks if they are added after resolution", function() {
   equal(count1, 2, "callbacks called after resolution");
 });
 
-test("then is chainable", function() {
+QUnit.test("then is chainable", function() {
   var deferred;
   var count = 0;
 
@@ -212,7 +212,7 @@ test("then is chainable", function() {
 
 
 
-test("can self fulfill", function() {
+QUnit.test("can self fulfill", function() {
   expect(1);
   var deferred;
 
@@ -228,7 +228,7 @@ test("can self fulfill", function() {
 });
 
 
-test("can self reject", function() {
+QUnit.test("can self reject", function() {
   expect(1);
   var deferred;
 
@@ -238,14 +238,14 @@ test("can self reject", function() {
 
   deferred.then(function() {
     ok(false, 'should not fulfill');
-  },function(value) {
+  }, function(value) {
     equal(value, deferred, "successfully rejected to itself");
   });
 
   run(deferred, 'reject', deferred);
 });
 
-test("can fulfill to a custom value", function() {
+QUnit.test("can fulfill to a custom value", function() {
   expect(1);
   var deferred;
   var obj = {};
@@ -262,7 +262,7 @@ test("can fulfill to a custom value", function() {
 });
 
 
-test("can chain self fulfilling objects", function() {
+QUnit.test("can chain self fulfilling objects", function() {
   expect(2);
   var firstDeferred, secondDeferred;
 
@@ -284,7 +284,7 @@ test("can chain self fulfilling objects", function() {
   });
 });
 
-test("can do multi level assimilation", function() {
+QUnit.test("can do multi level assimilation", function() {
   expect(1);
   var firstDeferred, secondDeferred;
   var firstDeferredResolved = false;
@@ -307,7 +307,7 @@ test("can do multi level assimilation", function() {
 });
 
 
-test("can handle rejection without rejection handler", function() {
+QUnit.test("can handle rejection without rejection handler", function() {
   expect(2);
 
   var reason = 'some reason';
@@ -326,7 +326,7 @@ test("can handle rejection without rejection handler", function() {
   run(deferred, 'reject', reason);
 });
 
-test("can handle fulfillment without  fulfillment handler", function() {
+QUnit.test("can handle fulfillment without  fulfillment handler", function() {
   expect(2);
 
   var fulfillment = 'some fulfillment';
@@ -345,8 +345,8 @@ test("can handle fulfillment without  fulfillment handler", function() {
   run(deferred, 'resolve', fulfillment);
 });
 
-if (!EmberDev.runningProdBuild){
-  test("causes a deprecation warning when used", function() {
+if (!EmberDev.runningProdBuild) {
+  QUnit.test("causes a deprecation warning when used", function() {
     var deferred, deprecationMade;
     var obj = {};
 

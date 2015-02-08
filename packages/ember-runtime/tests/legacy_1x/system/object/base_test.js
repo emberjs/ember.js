@@ -43,27 +43,26 @@ QUnit.module("A new EmberObject instance", {
   },
 
   teardown: function() {
-    obj = undefined ;
+    obj = undefined;
   }
 
 });
 
-test("Should return its properties when requested using EmberObject#get", function() {
-  equal(get(obj, 'foo'), 'bar') ;
-  equal(get(obj, 'total'), 12345) ;
+QUnit.test("Should return its properties when requested using EmberObject#get", function() {
+  equal(get(obj, 'foo'), 'bar');
+  equal(get(obj, 'total'), 12345);
 });
 
-test("Should allow changing of those properties by calling EmberObject#set", function() {
-  equal(get(obj,'foo'), 'bar') ;
-  equal(get(obj, 'total'), 12345) ;
+QUnit.test("Should allow changing of those properties by calling EmberObject#set", function() {
+  equal(get(obj, 'foo'), 'bar');
+  equal(get(obj, 'total'), 12345);
 
-  set(obj,  'foo', 'Chunky Bacon' ) ;
-  set(obj,  'total', 12 ) ;
+  set(obj, 'foo', 'Chunky Bacon');
+  set(obj, 'total', 12);
 
-  equal(get(obj, 'foo'), 'Chunky Bacon') ;
-  equal(get(obj, 'total'), 12) ;
+  equal(get(obj, 'foo'), 'Chunky Bacon');
+  equal(get(obj, 'total'), 12);
 });
-
 
 QUnit.module("EmberObject observers", {
   setup: function() {
@@ -97,59 +96,57 @@ QUnit.module("EmberObject observers", {
 
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
   }
 });
 
-test("Local observers work", function() {
+QUnit.test("Local observers work", function() {
   obj._normal = false;
   set(obj, "prop1", false);
   equal(obj._normal, true, "Normal observer did change.");
 });
 
-test("Global observers work", function() {
+QUnit.test("Global observers work", function() {
   obj._global = false;
   set(TestNamespace.obj, "value", "test2");
   equal(obj._global, true, "Global observer did change.");
 });
 
-test("Global+Local observer works", function() {
+QUnit.test("Global+Local observer works", function() {
   obj._both = false;
   set(obj, "prop1", false);
   equal(obj._both, true, "Both observer did change.");
 });
 
-
-
 QUnit.module("EmberObject superclass and subclasses", {
   setup: function() {
-    obj = EmberObject.extend ({
-    method1: function() {
-      return "hello";
-    }
-  });
-  obj1 = obj.extend();
-  don = obj1.create ({
-    method2: function() {
-      return this.superclass();
-    }
-  });
+    obj = EmberObject.extend({
+      method1: function() {
+        return "hello";
+      }
+    });
+    obj1 = obj.extend();
+    don = obj1.create({
+      method2: function() {
+        return this.superclass();
+      }
+    });
   },
 
   teardown: function() {
-  obj = undefined ;
-    obj1 = undefined ;
-    don = undefined ;
+    obj = undefined;
+    obj1 = undefined;
+    don = undefined;
   }
 });
 
-test("Checking the detect() function on an object and its subclass", function() {
+QUnit.test("Checking the detect() function on an object and its subclass", function() {
   equal(obj.detect(obj1), true);
   equal(obj1.detect(obj), false);
 });
 
-test("Checking the detectInstance() function on an object and its subclass", function() {
+QUnit.test("Checking the detectInstance() function on an object and its subclass", function() {
   ok(EmberObject.detectInstance(obj.create()));
   ok(obj.detectInstance(obj.create()));
 });

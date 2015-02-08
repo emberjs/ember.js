@@ -1,7 +1,7 @@
 import _default from "ember-views/views/states/default";
 import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 
@@ -35,7 +35,10 @@ merge(hasElement, {
     }
     // TODO: should be scheduled with renderer
     run.scheduleOnce('render', function () {
-      if (view.isDestroying) return;
+      if (view.isDestroying) {
+        return;
+      }
+
       view._renderer.renderTree(view, view._parentView);
     });
   },

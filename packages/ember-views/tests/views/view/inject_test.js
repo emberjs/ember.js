@@ -1,23 +1,22 @@
 import Service from "ember-runtime/system/service";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import inject from "ember-runtime/inject";
 import View from "ember-views/views/view";
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  QUnit.module('EmberView - injected properties');
+QUnit.module('EmberView - injected properties');
 
-  test("services can be injected into views", function() {
-    var container = new Container();
+QUnit.test("services can be injected into views", function() {
+  var registry = new Registry();
+  var container = registry.container();
 
-    container.register('view:application', View.extend({
-      profilerService: inject.service('profiler')
-    }));
+  registry.register('view:application', View.extend({
+    profilerService: inject.service('profiler')
+  }));
 
-    container.register('service:profiler', Service.extend());
+  registry.register('service:profiler', Service.extend());
 
-    var appView = container.lookup('view:application'),
-      profilerService = container.lookup('service:profiler');
+  var appView = container.lookup('view:application');
+  var profilerService = container.lookup('service:profiler');
 
-    equal(profilerService, appView.get('profilerService'), "service.profiler is injected");
-  });
-}
+  equal(profilerService, appView.get('profilerService'), "service.profiler is injected");
+});

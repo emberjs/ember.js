@@ -1,15 +1,12 @@
 /**
 @module ember
-@submodule ember-routing-handlebars
+@submodule ember-routing-htmlbars
 */
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
 import { read, isStream } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
-import {
-  escapeExpression
-} from "ember-htmlbars/utils/string";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
 // This ensures it is loaded first:
@@ -105,7 +102,7 @@ import 'ember-htmlbars';
   `{{link-to}}` will use your application's Router to
   fill the element's `href` property with a url that
   matches the path to the supplied `routeName` for your
-  routers's configured `Location` scheme, which defaults
+  router's configured `Location` scheme, which defaults
   to Ember.HashLocation.
 
   ### Handling current route
@@ -288,7 +285,6 @@ import 'ember-htmlbars';
   @see {Ember.LinkView}
 */
 function linkToHelper(params, hash, options, env) {
-  var shouldEscape = !hash.unescaped;
   var queryParamsObject;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
@@ -306,6 +302,7 @@ function linkToHelper(params, hash, options, env) {
 
   if (!options.template) {
     var linkTitle = params.shift();
+    var shouldEscape = options.morph.escaped;
 
     if (isStream(linkTitle)) {
       hash.linkTitle = { stream: linkTitle };
@@ -313,12 +310,12 @@ function linkToHelper(params, hash, options, env) {
 
     options.template = {
       isHTMLBars: true,
-      render: function() {
-        var value = read(linkTitle);
-        if (value) {
-          return shouldEscape ? escapeExpression(value) : value;
+      render: function(view, env) {
+        var value = read(linkTitle) || "";
+        if (shouldEscape) {
+          return env.dom.createTextNode(value);
         } else {
-          return "";
+          return value;
         }
       }
     };

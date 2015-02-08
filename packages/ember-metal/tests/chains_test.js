@@ -1,10 +1,10 @@
 import { addObserver } from "ember-metal/observer";
 import { finishChains } from "ember-metal/chains";
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 
 QUnit.module("Chains");
 
-test("finishChains should properly copy chains from prototypes to instances", function() {
+QUnit.test("finishChains should properly copy chains from prototypes to instances", function() {
   function didChange() {}
 
   var obj = {};

@@ -11,6 +11,7 @@ import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 import { onLoad } from "ember-runtime/system/lazy_load";
 import htmlbarsCompile from "ember-template-compiler/system/compile";
+import environment from "ember-metal/environment";
 
 /**
 @module ember
@@ -64,11 +65,11 @@ function bootstrap(ctx) {
 }
 
 function _bootstrap() {
-  bootstrap( jQuery(document) );
+  bootstrap(jQuery(document));
 }
 
-function registerComponentLookup(container) {
-  container.register('component-lookup:main', ComponentLookup);
+function registerComponentLookup(registry) {
+  registry.register('component-lookup:main', ComponentLookup);
 }
 
 /*
@@ -84,10 +85,11 @@ function registerComponentLookup(container) {
 
 onLoad('Ember.Application', function(Application) {
   if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    // jscs:disable validateIndentation
 
   Application.initializer({
     name: 'domTemplates',
-    initialize: _bootstrap
+    initialize: environment.hasDOM ? _bootstrap : function() { }
   });
 
   Application.initializer({
@@ -96,6 +98,7 @@ onLoad('Ember.Application', function(Application) {
     initialize: registerComponentLookup
   });
 
+    // jscs:enable validateIndentation
   }
 });
 

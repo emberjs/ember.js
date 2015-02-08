@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import emberRun from "ember-metal/run_loop";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import RSVP from "ember-runtime/ext/rsvp";
 import setupForTesting from "ember-testing/setup_for_testing";
 import EmberApplication from "ember-application/system/application";
@@ -392,7 +392,7 @@ EmberApplication.reopen({
     @default window
     @since 1.2.0
   */
-  helperContainer: window,
+  helperContainer: null,
 
   /**
     This injects the test helpers into the `helperContainer` object. If an object is provided
@@ -412,7 +412,11 @@ EmberApplication.reopen({
     @method injectTestHelpers
   */
   injectTestHelpers: function(helperContainer) {
-    if (helperContainer) { this.helperContainer = helperContainer; }
+    if (helperContainer) {
+      this.helperContainer = helperContainer;
+    } else {
+      this.helperContainer = window;
+    }
 
     this.testHelpers = {};
     for (var name in helpers) {
@@ -421,7 +425,7 @@ EmberApplication.reopen({
       protoWrap(Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
 
-    for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
+    for (var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
       injectHelpersCallbacks[i](this);
     }
   },
@@ -440,6 +444,8 @@ EmberApplication.reopen({
     @method removeTestHelpers
   */
   removeTestHelpers: function() {
+    if (!this.helperContainer) { return; }
+
     for (var name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
       delete this.testHelpers[name];

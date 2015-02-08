@@ -8,7 +8,7 @@ QUnit.module('Ember.Mixin.apply');
 
 function K() {}
 
-test('using apply() should apply properties', function() {
+QUnit.test('using apply() should apply properties', function() {
   var MixinA = Mixin.create({ foo: 'FOO', baz: K });
   var obj = {};
   mixin(obj, MixinA);
@@ -17,7 +17,7 @@ test('using apply() should apply properties', function() {
   equal(get(obj, 'baz'), K, 'should apply foo');
 });
 
-test('applying anonymous properties', function() {
+QUnit.test('applying anonymous properties', function() {
   var obj = {};
   mixin(obj, {
     foo: 'FOO',
@@ -28,13 +28,13 @@ test('applying anonymous properties', function() {
   equal(get(obj, 'baz'), K, 'should apply foo');
 });
 
-test('applying null values', function() {
+QUnit.test('applying null values', function() {
   expectAssertion(function() {
     mixin({}, null);
   });
 });
 
-test('applying a property with an undefined value', function() {
+QUnit.test('applying a property with an undefined value', function() {
   var obj = { tagName: '' };
   mixin(obj, { tagName: undefined });
 

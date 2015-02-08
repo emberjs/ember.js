@@ -1,4 +1,4 @@
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 
 /**
   Returns all of the keys defined on an object or hash. This is useful
@@ -16,18 +16,18 @@ if (!keys || !canDefineNonEnumerableProperties) {
   // modified from
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
   keys = (function () {
-    var hasOwnProperty = Object.prototype.hasOwnProperty,
-        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
-        dontEnums = [
-          'toString',
-          'toLocaleString',
-          'valueOf',
-          'hasOwnProperty',
-          'isPrototypeOf',
-          'propertyIsEnumerable',
-          'constructor'
-        ],
-        dontEnumsLength = dontEnums.length;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    var hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString');
+    var dontEnums = [
+      'toString',
+      'toLocaleString',
+      'valueOf',
+      'hasOwnProperty',
+      'isPrototypeOf',
+      'propertyIsEnumerable',
+      'constructor'
+    ];
+    var dontEnumsLength = dontEnums.length;
 
     return function keys(obj) {
       if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
@@ -39,7 +39,7 @@ if (!keys || !canDefineNonEnumerableProperties) {
 
       for (prop in obj) {
         if (prop !== '_super' &&
-          prop.lastIndexOf('__',0) !== 0 &&
+          prop.lastIndexOf('__', 0) !== 0 &&
           hasOwnProperty.call(obj, prop)) {
           result.push(prop);
         }

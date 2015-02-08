@@ -18,8 +18,8 @@ import { addObserver } from "ember-metal/observer";
 
 QUnit.module("Computed Properties - Number of times evaluated");
 
-test("computed properties that depend on multiple properties should run only once per run loop", function() {
-  var obj = {a: 'a', b: 'b', c: 'c'};
+QUnit.test("computed properties that depend on multiple properties should run only once per run loop", function() {
+  var obj = { a: 'a', b: 'b', c: 'c' };
   var cpCount = 0;
   var obsCount = 0;
 
@@ -48,7 +48,7 @@ test("computed properties that depend on multiple properties should run only onc
   equal(obsCount, 1, "The observer is only invoked once");
 });
 
-test("computed properties are not executed if they are the last segment of an observer chain pain", function() {
+QUnit.test("computed properties are not executed if they are the last segment of an observer chain pain", function() {
   var foo = { bar: { baz: { } } };
 
   var count = 0;

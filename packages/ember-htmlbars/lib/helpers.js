@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import { create as o_create } from "ember-metal/platform";
+import o_create from "ember-metal/platform/create";
 
 /**
  @private

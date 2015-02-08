@@ -8,11 +8,11 @@ import {
   observer
 } from 'ember-metal/mixin';
 import { addObserver } from "ember-metal/observer";
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 
 QUnit.module('Ember.get');
 
-test('should get arbitrary properties on an object', function() {
+QUnit.test('should get arbitrary properties on an object', function() {
   var obj = {
     string: 'string',
     number: 23,
@@ -21,8 +21,10 @@ test('should get arbitrary properties on an object', function() {
     nullValue: null
   };
 
-  for(var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+  for (var key in obj) {
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
     equal(get(obj, key), obj[key], key);
   }
 
@@ -46,19 +48,19 @@ testBoth("should call unknownProperty on watched values if the value is undefine
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 
-test('warn on attempts to get a property of undefined', function() {
+QUnit.test('warn on attempts to get a property of undefined', function() {
   expectAssertion(function() {
     get(undefined, 'aProperty');
   }, /Cannot call get with 'aProperty' on an undefined object/i);
 });
 
-test('warn on attempts to get a property path of undefined', function() {
+QUnit.test('warn on attempts to get a property path of undefined', function() {
   expectAssertion(function() {
     get(undefined, 'aProperty.on.aPath');
   }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
-test('warn on attempts to get a falsy property', function() {
+QUnit.test('warn on attempts to get a falsy property', function() {
   var obj = {};
   expectAssertion(function() {
     get(obj, null);
@@ -78,7 +80,7 @@ test('warn on attempts to get a falsy property', function() {
 // BUGS
 //
 
-test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
+QUnit.test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
 
   var MyMixin = Mixin.create({
     someProperty: 'foo',
@@ -95,7 +97,7 @@ test('(regression) watched properties on unmodified inherited objects should sti
 
 QUnit.module("Ember.getWithDefault");
 
-test('should get arbitrary properties on an object', function() {
+QUnit.test('should get arbitrary properties on an object', function() {
   var obj = {
     string: 'string',
     number: 23,
@@ -104,8 +106,10 @@ test('should get arbitrary properties on an object', function() {
     nullValue: null
   };
 
-  for(var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+  for (var key in obj) {
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
     equal(getWithDefault(obj, key, "fail"), obj[key], key);
   }
 
@@ -117,7 +121,7 @@ test('should get arbitrary properties on an object', function() {
   equal(getWithDefault(obj, "not-present", "default"), "default", "non-present key retrieves the default");
 });
 
-test('should call unknownProperty if defined and value is undefined', function() {
+QUnit.test('should call unknownProperty if defined and value is undefined', function() {
 
   var obj = {
     count: 0,
@@ -157,7 +161,7 @@ testBoth("if unknownProperty is present, it is called", function(get, set) {
 // BUGS
 //
 
-test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
+QUnit.test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
 
   var MyMixin = Mixin.create({
     someProperty: 'foo',

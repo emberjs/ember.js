@@ -33,7 +33,10 @@ var TargetActionSupport = Mixin.create({
 
     if (typeOf(target) === "string") {
       var value = get(this, target);
-      if (value === undefined) { value = get(Ember.lookup, target); }
+      if (value === undefined) {
+        value = get(Ember.lookup, target);
+      }
+
       return value;
     } else {
       return target;
@@ -131,7 +134,9 @@ var TargetActionSupport = Mixin.create({
         ret = target[action].apply(target, args(actionContext));
       }
 
-      if (ret !== false) ret = true;
+      if (ret !== false) {
+        ret = true;
+      }
 
       return ret;
     } else {

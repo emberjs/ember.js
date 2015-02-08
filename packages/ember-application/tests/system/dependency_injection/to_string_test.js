@@ -7,14 +7,14 @@ import { guidFor } from "ember-metal/utils";
 
 var originalLookup, App, originalModelInjections;
 
-QUnit.module("Ember.Application Dependency Injection – toString",{
+QUnit.module("Ember.Application Dependency Injection – toString", {
   setup: function() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
 
     originalLookup = Ember.lookup;
 
-    run(function(){
+    run(function() {
       App = Application.create();
       Ember.lookup = {
         App: App
@@ -32,22 +32,22 @@ QUnit.module("Ember.Application Dependency Injection – toString",{
   }
 });
 
-test("factories", function() {
+QUnit.test("factories", function() {
   var PostFactory = App.__container__.lookupFactory('model:post');
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 
-test("instances", function() {
+QUnit.test("instances", function() {
   var post = App.__container__.lookup('model:post');
   var guid = guidFor(post);
 
   equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
 });
 
-test("with a custom resolver", function() {
-  run(App,'destroy');
+QUnit.test("with a custom resolver", function() {
+  run(App, 'destroy');
 
-  run(function(){
+  run(function() {
     App = Application.create({
       Resolver: DefaultResolver.extend({
         makeToString: function(factory, fullName) {
@@ -57,7 +57,7 @@ test("with a custom resolver", function() {
     });
   });
 
-  App.__container__.register('model:peter', EmberObject.extend());
+  App.registry.register('model:peter', EmberObject.extend());
 
   var peter = App.__container__.lookup('model:peter');
   var guid = guidFor(peter);

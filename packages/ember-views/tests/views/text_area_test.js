@@ -19,7 +19,7 @@ function append() {
 
 QUnit.module("TextArea", {
   setup: function() {
-   TestObject = window.TestObject = EmberObject.create({
+    TestObject = window.TestObject = EmberObject.create({
       value: null
     });
 
@@ -35,14 +35,14 @@ QUnit.module("TextArea", {
   }
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+QUnit.test("should become disabled if the disabled attribute is true", function() {
   textArea.set('disabled', true);
   append();
 
   ok(textArea.$().is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+QUnit.test("should become disabled if the disabled attribute is true", function() {
   append();
   ok(textArea.$().is(":not(:disabled)"));
 
@@ -53,7 +53,7 @@ test("should become disabled if the disabled attribute is true", function() {
   ok(textArea.$().is(":not(:disabled)"));
 });
 
-test("input value is updated when setting value property of view", function() {
+QUnit.test("input value is updated when setting value property of view", function() {
   run(function() {
     set(textArea, 'value', 'foo');
     textArea.append();
@@ -66,7 +66,7 @@ test("input value is updated when setting value property of view", function() {
   equal(textArea.$().val(), "bar", "updates text field after value changes");
 });
 
-test("input placeholder is updated when setting placeholder property of view", function() {
+QUnit.test("input placeholder is updated when setting placeholder property of view", function() {
   run(function() {
     set(textArea, 'placeholder', 'foo');
     textArea.append();
@@ -79,7 +79,7 @@ test("input placeholder is updated when setting placeholder property of view", f
   equal(textArea.$().attr('placeholder'), "bar", "updates text area after placeholder changes");
 });
 
-test("input name is updated when setting name property of view", function() {
+QUnit.test("input name is updated when setting name property of view", function() {
   run(function() {
     set(textArea, 'name', 'foo');
     textArea.append();
@@ -92,7 +92,7 @@ test("input name is updated when setting name property of view", function() {
   equal(textArea.$().attr('name'), "bar", "updates text area after name changes");
 });
 
-test("input maxlength is updated when setting maxlength property of view", function() {
+QUnit.test("input maxlength is updated when setting maxlength property of view", function() {
   run(function() {
     set(textArea, 'maxlength', '300');
     textArea.append();
@@ -105,7 +105,7 @@ test("input maxlength is updated when setting maxlength property of view", funct
   equal(textArea.$().attr('maxlength'), "400", "updates text area after maxlength changes");
 });
 
-test("input rows is updated when setting rows property of view", function() {
+QUnit.test("input rows is updated when setting rows property of view", function() {
   run(function() {
     set(textArea, 'rows', '3');
     textArea.append();
@@ -118,7 +118,7 @@ test("input rows is updated when setting rows property of view", function() {
   equal(textArea.$().attr('rows'), "4", "updates text area after rows changes");
 });
 
-test("input cols is updated when setting cols property of view", function() {
+QUnit.test("input cols is updated when setting cols property of view", function() {
   run(function() {
     set(textArea, 'cols', '30');
     textArea.append();
@@ -131,7 +131,7 @@ test("input cols is updated when setting cols property of view", function() {
   equal(textArea.$().attr('cols'), "40", "updates text area after cols changes");
 });
 
-test("input tabindex is updated when setting tabindex property of view", function() {
+QUnit.test("input tabindex is updated when setting tabindex property of view", function() {
   run(function() {
     set(textArea, 'tabindex', '4');
     textArea.append();
@@ -144,7 +144,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textArea.$().attr('tabindex'), "1", "updates text area after tabindex changes");
 });
 
-test("input title is updated when setting title property of view", function() {
+QUnit.test("input title is updated when setting title property of view", function() {
   run(function() {
     set(textArea, 'title', 'FooTitle');
     textArea.append();
@@ -155,7 +155,7 @@ test("input title is updated when setting title property of view", function() {
   equal(textArea.$().attr('title'), 'BarTitle', "updates text area after title changes");
 });
 
-test("value binding works properly for inputs that haven't been created", function() {
+QUnit.test("value binding works properly for inputs that haven't been created", function() {
   run(function() {
     textArea.destroy(); // destroy existing textarea
     textArea = TextArea.createWithMixins({
@@ -178,8 +178,8 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
-forEach.call([ 'cut', 'paste', 'input' ], function(eventName) {
-  test("should update the value on " + eventName + " events", function() {
+forEach.call(['cut', 'paste', 'input'], function(eventName) {
+  QUnit.test("should update the value on " + eventName + " events", function() {
 
     run(function() {
       textArea.append();
@@ -194,7 +194,7 @@ forEach.call([ 'cut', 'paste', 'input' ], function(eventName) {
   });
 });
 
-test("should call the insertNewline method when return key is pressed", function() {
+QUnit.test("should call the insertNewline method when return key is pressed", function() {
   var wasCalled;
   var event = EmberObject.create({
     keyCode: 13
@@ -210,7 +210,7 @@ test("should call the insertNewline method when return key is pressed", function
   ok(wasCalled, "invokes insertNewline method");
 });
 
-test("should call the cancel method when escape key is pressed", function() {
+QUnit.test("should call the cancel method when escape key is pressed", function() {
   var wasCalled;
   var event = EmberObject.create({
     keyCode: 27

@@ -15,22 +15,23 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: class attribute", {
-  teardown: function(){
+  teardown: function() {
     if (view) {
       run(view, view.destroy);
     }
   }
 });
 
-test("class renders before didInsertElement", function() {
+QUnit.test("class renders before didInsertElement", function() {
   var matchingElement;
   view = EmberView.create({
-    didInsertElement: function(){
+    didInsertElement: function() {
       matchingElement = this.$('div.blue');
     },
-    context: {color: 'blue'},
+    context: { color: 'blue' },
     template: compile("<div class={{color}}>Hi!</div>")
   });
   appendView(view);
@@ -39,9 +40,9 @@ test("class renders before didInsertElement", function() {
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
 
-test("class property can contain multiple classes", function() {
+QUnit.test("class property can contain multiple classes", function() {
   view = EmberView.create({
-    context: {classes: 'large blue'},
+    context: { classes: 'large blue' },
     template: compile("<div class={{classes}}></div>")
   });
   appendView(view);
@@ -52,9 +53,9 @@ test("class property can contain multiple classes", function() {
   ok(view.$('.blue')[0], 'second class found');
 });
 
-test("class property is removed when updated with a null value", function() {
+QUnit.test("class property is removed when updated with a null value", function() {
   view = EmberView.create({
-    context: {class: 'large'},
+    context: { class: 'large' },
     template: compile("<div class={{class}}></div>")
   });
   appendView(view);
@@ -66,9 +67,9 @@ test("class property is removed when updated with a null value", function() {
   equal(view.element.firstChild.className, '', "attribute is removed");
 });
 
-test("class attribute concats bound values", function() {
+QUnit.test("class attribute concats bound values", function() {
   view = EmberView.create({
-    context: {size: 'large', color: 'blue'},
+    context: { size: 'large', color: 'blue' },
     template: compile("<div class='{{size}} {{color}} round'></div>")
   });
   appendView(view);
@@ -78,7 +79,7 @@ test("class attribute concats bound values", function() {
 
 if (isInlineIfEnabled) {
 
-test("class attribute accepts nested helpers, and updates", function() {
+QUnit.test("class attribute accepts nested helpers, and updates", function() {
   view = EmberView.create({
     context: {
       size: 'large',
@@ -100,7 +101,7 @@ test("class attribute accepts nested helpers, and updates", function() {
 
 }
 
-test("class attribute can accept multiple classes from a single value, and update", function() {
+QUnit.test("class attribute can accept multiple classes from a single value, and update", function() {
   view = EmberView.create({
     context: {
       size: 'large small'
@@ -116,7 +117,7 @@ test("class attribute can accept multiple classes from a single value, and updat
   ok(view.element.firstChild.className, 'medium', 'classes are updated');
 });
 
-test("class attribute can grok concatted classes, and update", function() {
+QUnit.test("class attribute can grok concatted classes, and update", function() {
   view = EmberView.create({
     context: {
       size: 'large',
@@ -134,7 +135,7 @@ test("class attribute can grok concatted classes, and update", function() {
   ok(view.element.firstChild.className, 'btn-large -post whoop', 'classes are updated');
 });
 
-test("class attribute stays in order", function() {
+QUnit.test("class attribute stays in order", function() {
   view = EmberView.create({
     context: {
       showA: 'a',
@@ -150,4 +151,5 @@ test("class attribute stays in order", function() {
   ok(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
 
+// jscs:enable validateIndentation
 }

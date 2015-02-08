@@ -3,12 +3,7 @@
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import run from "ember-metal/run_loop";
-
-// this is technically incorrect (per @wycats)
-// it should be `import * as RSVP from 'rsvp';` but
-// Esprima does not support this syntax yet (and neither does
-// es6-module-transpiler 0.4.0 - 0.6.2).
-module RSVP from 'rsvp';
+import * as RSVP from 'rsvp';
 
 var testModuleName = 'ember-testing/test';
 var Test;
@@ -41,7 +36,7 @@ RSVP.Promise.prototype.fail = function(callback, label){
   return this['catch'](callback, label);
 };
 
-RSVP.onerrorDefault = function (e) {
+export function onerrorDefault(e) {
   var error;
 
   if (e && e.errorThrown) {
@@ -74,8 +69,8 @@ RSVP.onerrorDefault = function (e) {
       Logger.error(error.stack);
     }
   }
-};
+}
 
-RSVP.on('error', RSVP.onerrorDefault);
+RSVP.on('error', onerrorDefault);
 
 export default RSVP;

@@ -30,7 +30,7 @@ import EmberObject from 'ember-runtime/system/object';
 
   * Changed call calls for obj.bind(...) to bind(obj, ...);
 
-  * Changed all calls to sc_super() to this._super()
+  * Changed all calls to sc_super() to this._super.apply(this, arguments)
 
   * Changed all calls to disconnect() to pass the root object.
 
@@ -49,8 +49,8 @@ var originalLookup, lookup;
 
 QUnit.module("basic object binding", {
   setup: function() {
-    fromObject = EmberObject.create({ value: 'start' }) ;
-    toObject = EmberObject.create({ value: 'end' }) ;
+    fromObject = EmberObject.create({ value: 'start' });
+    toObject = EmberObject.create({ value: 'end' });
     root = { fromObject: fromObject, toObject: toObject };
     run(function () {
       binding = bind(root, 'toObject.value', 'fromObject.value');
@@ -58,27 +58,27 @@ QUnit.module("basic object binding", {
   }
 });
 
-test("binding should have synced on connect", function() {
+QUnit.test("binding should have synced on connect", function() {
   equal(get(toObject, "value"), "start", "toObject.value should match fromObject.value");
 });
 
-test("fromObject change should propagate to toObject only after flush", function() {
+QUnit.test("fromObject change should propagate to toObject only after flush", function() {
   run(function () {
-    set(fromObject, "value", "change") ;
-    equal(get(toObject, "value"), "start") ;
+    set(fromObject, "value", "change");
+    equal(get(toObject, "value"), "start");
   });
-  equal(get(toObject, "value"), "change") ;
+  equal(get(toObject, "value"), "change");
 });
 
-test("toObject change should propagate to fromObject only after flush", function() {
+QUnit.test("toObject change should propagate to fromObject only after flush", function() {
   run(function () {
-    set(toObject, "value", "change") ;
-    equal(get(fromObject, "value"), "start") ;
+    set(toObject, "value", "change");
+    equal(get(fromObject, "value"), "start");
   });
-  equal(get(fromObject, "value"), "change") ;
+  equal(get(fromObject, "value"), "change");
 });
 
-test("deferred observing during bindings", function() {
+QUnit.test("deferred observing during bindings", function() {
 
   // setup special binding
   fromObject = EmberObject.create({
@@ -113,7 +113,7 @@ test("deferred observing during bindings", function() {
   equal(toObject.callCount, 2, 'should call observer twice');
 });
 
-test("binding disconnection actually works", function() {
+QUnit.test("binding disconnection actually works", function() {
   binding.disconnect(root);
   run(function () {
     set(fromObject, 'value', 'change');
@@ -129,8 +129,8 @@ QUnit.module("one way binding", {
 
   setup: function() {
     run(function() {
-      fromObject = EmberObject.create({ value: 'start' }) ;
-      toObject = EmberObject.create({ value: 'end' }) ;
+      fromObject = EmberObject.create({ value: 'start' });
+      toObject = EmberObject.create({ value: 'end' });
       root = { fromObject: fromObject, toObject: toObject };
       binding = oneWay(root, 'toObject.value', 'fromObject.value');
     });
@@ -140,7 +140,7 @@ QUnit.module("one way binding", {
   }
 });
 
-test("fromObject change should propagate after flush", function() {
+QUnit.test("fromObject change should propagate after flush", function() {
   run(function() {
     set(fromObject, "value", "change");
     equal(get(toObject, "value"), "start");
@@ -148,7 +148,7 @@ test("fromObject change should propagate after flush", function() {
   equal(get(toObject, "value"), "change");
 });
 
-test("toObject change should NOT propagate", function() {
+QUnit.test("toObject change should NOT propagate", function() {
   run(function() {
     set(toObject, "value", "change");
     equal(get(fromObject, "value"), "start");
@@ -166,18 +166,18 @@ QUnit.module("chained binding", {
 
   setup: function() {
     run(function() {
-      first = EmberObject.create({ output: 'first' }) ;
+      first = EmberObject.create({ output: 'first' });
 
       second = EmberObject.createWithMixins({
         input: 'second',
         output: 'second',
 
         inputDidChange: emberObserver("input", function() {
-          set(this, "output", get(this, "input")) ;
+          set(this, "output", get(this, "input"));
         })
-      }) ;
+      });
 
-      third = EmberObject.create({ input: "third" }) ;
+      third = EmberObject.create({ input: "third" });
 
       root = { first: first, second: second, third: third };
       binding1 = bind(root, 'second.input', 'first.output');
@@ -189,17 +189,17 @@ QUnit.module("chained binding", {
   }
 });
 
-test("changing first output should propograte to third after flush", function() {
+QUnit.test("changing first output should propagate to third after flush", function() {
   run(function() {
-    set(first, "output", "change") ;
-    equal("change", get(first, "output"), "first.output") ;
-    ok("change" !== get(third, "input"), "third.input") ;
+    set(first, "output", "change");
+    equal("change", get(first, "output"), "first.output");
+    ok("change" !== get(third, "input"), "third.input");
   });
 
-  equal("change", get(first, "output"), "first.output") ;
-  equal("change", get(second, "input"), "second.input") ;
-  equal("change", get(second, "output"), "second.output") ;
-  equal("change", get(third,"input"), "third.input") ;
+  equal("change", get(first, "output"), "first.output");
+  equal("change", get(second, "input"), "second.input");
+  equal("change", get(second, "output"), "second.output");
+  equal("change", get(third, "input"), "third.input");
 });
 
 // ..........................................................
@@ -235,7 +235,7 @@ QUnit.module("Custom Binding", {
   }
 });
 
-test("two bindings to the same value should sync in the order they are initialized", function() {
+QUnit.test("two bindings to the same value should sync in the order they are initialized", function() {
 
   run.begin();
 
@@ -255,7 +255,7 @@ test("two bindings to the same value should sync in the order they are initializ
     }),
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'c', this.C.create({ owner: this }));
     }
 
@@ -296,7 +296,7 @@ QUnit.module("propertyNameBinding with longhand", {
   }
 });
 
-test("works with full path", function() {
+QUnit.test("works with full path", function() {
   run(function () {
     set(TestNamespace.fromObject, 'value', "updatedValue");
   });
@@ -310,7 +310,7 @@ test("works with full path", function() {
   equal(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
-test("works with local path", function() {
+QUnit.test("works with local path", function() {
   run(function () {
     set(TestNamespace.toObject, 'localValue', "updatedValue");
   });

@@ -22,7 +22,7 @@ QUnit.module('Simple Stream', {
   }
 });
 
-test('supports a stream argument', function() {
+QUnit.test('supports a stream argument', function() {
   var stream = new SimpleStream(source);
   equal(stream.value(), "zlurp");
 
@@ -30,7 +30,7 @@ test('supports a stream argument', function() {
   equal(stream.value(), "blorg");
 });
 
-test('supports a non-stream argument', function() {
+QUnit.test('supports a non-stream argument', function() {
   var stream = new SimpleStream(value);
   equal(stream.value(), "zlurp");
 

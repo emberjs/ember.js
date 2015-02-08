@@ -1,76 +1,39 @@
 # Ember Changelog
 
-### 1.10.0 (February 7, 2015)
+### 1.11.0-beta.1 (February 06, 2015)
 
-* [BUGFIX] Ensure that property case is normalized.
-* [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
-* [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
-* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
-* [BUGFIX] Ensure that calling the `wait` testing helpe without routing works properly.
-* [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
-* [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
-* [BUGFIX] Allow unbound helpers to add attributes.
-* [BUGFIX] Ensure compat helpers calling `options.fn` work.
-* [BUGFIX] Fix memory leak in view streams.
-* [BUGFIX] Don't render default layout for `Ember.TextField`.
-* Update HTMLBars version to v0.8.5:
-  * Allow numbers to be parsed as HTML in IE.
-  * Add namespace detection.
-  * Include line number in error thrown for unclosed HTML element.
-  * `removeAttribute` fix for IE <11 and SVG.
-  * Disable `cloneNodes` in IE8.
-  * Improve HTML validation and error messages thrown.
-  * Fix a number of template compliation issues in IE8.
-  * Use the correct namespace in `parseHTML` (fixes various issues that occur
-    when changing to and from alternate namespaces).
-  * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
-  * Change `setProperty` and `morph` to remove an `undefined` attr value.
-* Remove dots from default resolver descriptions.
-* Add helpful assertion if a block helper is not found.
-* Make Ember.HTMLBars version of registerHelper private.
-* [BUGFIX] Add `options.types` and `options.hashTypes` for Handlebars compatible helpers.
-* [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
-* Assert if an attribute set statically and via bind-attr.  For example:
-  `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
-  silently failing).
-* [BUGFIX] Fix deprecated bindAttr helper.
-* [BUGFIX] Do not allow both keyword and block params.
-* Cleanup HTMLBars public API
-  * Remove `Ember.HTMLBars.helper`.
-  * Remove internal `registerBoundHelper` function (use
-    `registerHelper('blah', makeViewHelper(SomeView))` or `registerHelper('blah', makeBoundHelper(func))`).
-* [BUGFIX] Fix Handlebars compat mode `registerHelper` interop with `makeViewHelper`.
-* [BUGFIX] Ensure that `mergedProperties` are properly merged when all properties are not present.
-* Add options argument to pass url to `Ember.deprecate`.
-* Deprecate `{{bind}}` helper.
-* Pass array to `Ember.computed.filter` callback
-* [BUGFIX] Prevent mandatory-setter when setter is already present.
-* Remove Handlebars from dependencies.
-* Fix error when parsing templates with invalid end tags.
-* [BUGFIX] Allow makeBoundHelper to be a sub-expression.
-* [BUGFIX] Allow compat makeBoundHelpers to be sub-expressions.
-* [BUGFIX] Export Ember.Handlebars compat shim for `Ember.Handlebars.SafeString` and `Ember.Handlebars.Utils.escapeExpression`.
-* [BUGFIX] Allow `Ember.inject` injected properties to be overridden (makes testing significantly easier).
-* [BUGFIX] Don’t assert uncaught RSVP rejections. We are already logging the error, but asserting breaks everything else on the run loop queue.
-* [BUGFIX] Allow tagName to be a CP (with deprecation).
-* [BUGFIX] Allow view instances in {{view}}.
-* [BUGFIX] Ensure bound attrs flush immediately.
-* [PERFORMANCE] Initialize views in preRender state.
-* [PERFORMANCE] `View#element` should not be observable.
-* Add ember-template-compiler package.
-* Rename `Ember.HTMLBars.registerASTPlugin` to `Ember.HTMLBars.registerPlugin`.
-* Export `ember-template-compiler.js`.
+- [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
+- [#10186](https://github.com/emberjs/ember.js/pull/10186) Port attributeBindings to AttrNode views [@mixonic](https://github.com/mixonic)
+- [#10184](https://github.com/emberjs/ember.js/pull/10184) Initial support basic Node.js rendering.
+- [#10179](https://github.com/emberjs/ember.js/pull/10179) [FEATURE] Execute initializers in their respective context [@gf3](https://github.com/gf3)
+- [#10213](https://github.com/emberjs/ember.js/pull/10213) Ensure overriding attribute bindings is possible [@miguelcobain](https://github.com/miguelcobain)
+- [#10320](https://github.com/emberjs/ember.js/pull/10320) Start breaking up Ember.View code into mixins based on purpose [@ebryn](https://github.com/ebryn)
+- [#10221](https://github.com/emberjs/ember.js/pull/10221) Embed enabled features in debug builds. [@rwjblue](https://github.com/rwjblue)
+- [#10215](https://github.com/emberjs/ember.js/pull/10215) [Bugfix beta] Prevent Ember from erroring when the errorThrown property is `undefined` [@bmac](https://github.com/bmac)
+- [#10326](https://github.com/emberjs/ember.js/pull/10326) Let `View#appendChild` instantiate `SimpleBoundView`s rather than doing it manually ourselves [@ebryn](https://github.com/ebryn)
+- [#10280](https://github.com/emberjs/ember.js/pull/10280) Moves route-recognizer to a NPM dep, bumps emberjs-build [@danmcclain](https://github.com/danmcclain)
+- [#10256](https://github.com/emberjs/ember.js/pull/10256) Simplify and modularize app/router initialization [@emberjs](https://github.com/emberjs)
+- [#10254](https://github.com/emberjs/ember.js/pull/10254) Make computed.or and computed.and return truthy values [@soulcutter](https://github.com/soulcutter)
+- [#10271](https://github.com/emberjs/ember.js/pull/10271) Clean up boot process [@emberjs](https://github.com/emberjs)
+- [#10268](https://github.com/emberjs/ember.js/pull/10268) Bumped sha to get tildeio/route-recognizer#40, which fixes #10190 [@jayphelps](https://github.com/jayphelps)
+- [#10316](https://github.com/emberjs/ember.js/pull/10316) Make LinkView FastBoot™-compatible [@emberjs](https://github.com/emberjs)
+- [#10321](https://github.com/emberjs/ember.js/pull/10321) `View#element` isn’t observable, we don’t need to use `set` [@ebryn](https://github.com/ebryn)
+- [#10323](https://github.com/emberjs/ember.js/pull/10323) Remove `meta.descs` [@ebryn](https://github.com/ebryn)
+- [#10324](https://github.com/emberjs/ember.js/pull/10324) Don’t run this mandatory setter test in prod [@ebryn](https://github.com/ebryn)
+- [#10329](https://github.com/emberjs/ember.js/pull/10329) Update transpiler to Esperanto. [@rwjblue](https://github.com/rwjblue)
+- [#10352](https://github.com/emberjs/ember.js/pull/10352) Add internal `_willDestroyElement` hook to prevent using instance-based events [@ebryn](https://github.com/ebryn)
+- [#10336](https://github.com/emberjs/ember.js/pull/10336) Remove unnecessary check for `NativeArray` [@tricknotes](https://github.com/tricknotes)
+- [#10334](https://github.com/emberjs/ember.js/pull/10334) Update to HTMLBars v0.10.0. [@rwjblue](https://github.com/rwjblue)
+- [#10338](https://github.com/emberjs/ember.js/pull/10338) Ensure computed.oneWay is exported properly. [@linstula](https://github.com/linstula)
+- [#10345](https://github.com/emberjs/ember.js/pull/10345) Update to QUnit 1.17.1. [@rwjblue](https://github.com/rwjblue)
+- [#10350](https://github.com/emberjs/ember.js/pull/10350) Make meta.cache & meta.cacheMeta lazy [@ebryn](https://github.com/ebryn)
+- [#10353](https://github.com/emberjs/ember.js/pull/10353) Avoid creating context bindings for collection views [@mmun](https://github.com/mmun)
+
+
+### 1.9.1 (December 23, 2014)
+
+* Allow `{{view}}` helper to properly handle view instances.
 * Escape `href`, `src`, and `background` attributes for `a`, `link`, `img`, and `iframe` elements.
-* Move debugging file output from `ember.js` to `ember.debug.js`.
-* Remove `templateData` property from views.
-* Restructure `Ember.libraries` to be more idiomatic.
-* Prevent creating an extra view for each select option.
-* Deprecate the block form of the bind helper.
-* Cleanup `Ember.CoreObject` init argument passing.
-* Allow all rejection types to be handled by default RSVP error handler.
-* Deprecate setting ContainerView#childViews.
-* [FEATURE] ember-htmlbars - Enable the HTMLBars rendering engine.
-* [FEATURE] ember-htmlbars-block-params - Enable block params feature for HTMLBars.
 
 ### 1.9.0 (December 8, 2014)
 
@@ -84,7 +47,7 @@
 * Enable `Ember.run.join` to return a value even if within an existing run loop.
 * Update `Ember.EventDispatcher` to use `Ember.run.join`. This is required so that synchronous
   events (like focus) do not spawn a nested run loop.
-* Deprecate context switching for of {{each}}.
+* Deprecate context switching form of {{each}}.
 * Deprecate context switching form of {{with}}.
 * Add improved error message when a component lookup fails.
 * Ensure that component actions that are subscribed to, trigger an assertion when unhandled. Consider the following example:
@@ -95,8 +58,7 @@
 {{some-other-component action="saveMe"}}
 ```
 
-Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action
-it would silently continue.  Now, an assertion would be triggered.
+Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action, it would silently continue.  Now, an assertion would be triggered.
 
 * [PERF] Speedup Mixin creation.
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
@@ -115,14 +77,6 @@ it would silently continue.  Now, an assertion would be triggered.
 * [FEATURE] ember-routing-fire-activate-deactivate-events.
 * [FEATURE] ember-testing-pause-test.
 
-### Ember 1.8.1 (November, 4, 2014)
-
-* [BUGFIX] Make sure that `{{view}}` can accept a Ember.View instance.
-* [BUGFIX] Throw an assertion if `classNameBindings` are specified on a tag-less view.
-* [BUGFIX] Setting an `attributeBinding` for `class` attribute triggers assertion.
-* [BUGFIX] Fix `htmlSafe` to allow non-strings in unescaped code.
-* [BUGFIX] Add support for null prototype object to mandatory setter code. Prevents errors when operating on Ember Data `meta` objects.
-* [BUGFIX] Fix an issue with select/each that causes the last item rendered to be selected.
 
 ### Ember 1.8.1 (November, 4, 2014)
 

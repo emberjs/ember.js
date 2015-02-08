@@ -3,7 +3,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var originalLookup, originalLog, logCalls, lookup, view, compile;
+var originalLookup, originalLog, logCalls, lookup, view;
 
 QUnit.module('ember-htmlbars: {{#log}} helper', {
   setup: function() {
@@ -26,7 +26,7 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
   }
 });
 
-test('should be able to log a property', function() {
+QUnit.test('should be able to log a property', function() {
   var context = {
     value: 'one'
   };
@@ -42,7 +42,7 @@ test('should be able to log a property', function() {
   equal(logCalls[0], 'one', 'should call log with value');
 });
 
-test('should be able to log a view property', function() {
+QUnit.test('should be able to log a view property', function() {
   view = EmberView.create({
     template: compile('{{log view.value}}'),
     value: 'one'
@@ -54,7 +54,7 @@ test('should be able to log a view property', function() {
   equal(logCalls[0], 'one', 'should call log with value');
 });
 
-test('should be able to log `this`', function() {
+QUnit.test('should be able to log `this`', function() {
   view = EmberView.create({
     context: 'one',
     template: compile('{{log this}}')

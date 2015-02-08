@@ -15,7 +15,7 @@ QUnit.module('Libraries registry', {
   }
 });
 
-test('core libraries come before other libraries', function() {
+QUnit.test('core libraries come before other libraries', function() {
   expect(2);
 
   libs.register('my-lib', '2.0.0a');
@@ -25,7 +25,7 @@ test('core libraries come before other libraries', function() {
   equal(registry[1].name, 'my-lib');
 });
 
-test('only the first registration of a library is stored', function() {
+QUnit.test('only the first registration of a library is stored', function() {
   expect(3);
 
   libs.register('magic', 1.23);
@@ -36,8 +36,8 @@ test('only the first registration of a library is stored', function() {
   equal(registry.length, 1);
 });
 
-test('attempting to register a library that is already registered warns you', function() {
-  if (EmberDev && EmberDev.runningProdBuild){
+QUnit.test('attempting to register a library that is already registered warns you', function() {
+  if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
   }
@@ -59,7 +59,7 @@ test('attempting to register a library that is already registered warns you', fu
   Ember.warn = oldWarn;
 });
 
-test('libraries can be de-registered', function() {
+QUnit.test('libraries can be de-registered', function() {
   expect(2);
 
   libs.register('lib1', '1.0.0b');
@@ -74,7 +74,7 @@ test('libraries can be de-registered', function() {
 });
 
 
-test('Libraries#each allows us to loop through each registered library (but is deprecated)', function() {
+QUnit.test('Libraries#each allows us to loop through each registered library (but is deprecated)', function() {
   expect(5);
 
   var items = [{ name: 'lib1', version: '1.0.0' }, { name: 'lib2', version: '2.0.0' }];

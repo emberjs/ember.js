@@ -42,26 +42,26 @@ function checkTemplate(templateName) {
   runDestroy(view);
 }
 
-test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
+QUnit.test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
+QUnit.test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate" >{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-test('template without data-template-name or id should default to application', function() {
+QUnit.test('template without data-template-name or id should default to application', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('application');
 });
 
 if (typeof Handlebars === 'object') {
-  test('template with type text/x-raw-handlebars should be parsed', function() {
+  QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
     run(function() {
@@ -75,7 +75,7 @@ if (typeof Handlebars === 'object') {
   });
 }
 
-test('duplicated default application templates should throw exception', function() {
+QUnit.test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
   throws(function () {
@@ -85,7 +85,7 @@ test('duplicated default application templates should throw exception', function
   "duplicate templates should not be allowed");
 });
 
-test('default application template and id application template present should throw exception', function() {
+QUnit.test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
   throws(function () {
@@ -95,7 +95,7 @@ test('default application template and id application template present should th
   "duplicate templates should not be allowed");
 });
 
-test('default application template and data-template-name application template present should throw exception', function() {
+QUnit.test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
   throws(function () {
@@ -105,7 +105,7 @@ test('default application template and data-template-name application template p
   "duplicate templates should not be allowed");
 });
 
-test('duplicated template id should throw exception', function() {
+QUnit.test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
   throws(function () {
@@ -115,7 +115,7 @@ test('duplicated template id should throw exception', function() {
   "duplicate templates should not be allowed");
 });
 
-test('duplicated template data-template-name should throw exception', function() {
+QUnit.test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
   throws(function () {
@@ -126,7 +126,7 @@ test('duplicated template data-template-name should throw exception', function()
 });
 
 if (Ember.component) {
-  test('registerComponents initializer', function(){
+  QUnit.test('registerComponents initializer', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     App = run(Ember.Application, 'create');
@@ -135,7 +135,7 @@ if (Ember.component) {
     ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
   });
 
-  test('registerComponents and generated components', function(){
+  QUnit.test('registerComponents and generated components', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     App = run(Ember.Application, 'create');
@@ -143,10 +143,10 @@ if (Ember.component) {
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
   });
 
-  test('registerComponents and non-geneated components', function(){
+  QUnit.test('registerComponents and non-generated components', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
-    run(function(){
+    run(function() {
       App = Ember.Application.create();
 
       // currently Component code must be loaded before initializers

@@ -34,15 +34,15 @@ var a_slice = [].slice;
  @since 1.4.0
 */
 
-export function sum(dependentKey){
+export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: 0,
 
-    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue + item;
     },
 
-    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue - item;
     }
   });
@@ -224,7 +224,7 @@ export function map(dependentKey, callback) {
   @param {String} propertyKey
   @return {Ember.ComputedProperty} an array mapped to the specified key
 */
-export function mapBy (dependentKey, propertyKey) {
+export function mapBy(dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
   return map(dependentKey + '.@each.' + propertyKey, callback);
 }
@@ -331,7 +331,7 @@ export function filter(dependentKey, callback) {
   @param {*} value
   @return {Ember.ComputedProperty} the filtered array
 */
-export function filterBy (dependentKey, propertyKey, value) {
+export function filterBy(dependentKey, propertyKey, value) {
   var callback;
 
   if (arguments.length === 2) {

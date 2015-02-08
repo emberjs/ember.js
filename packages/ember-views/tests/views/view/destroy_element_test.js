@@ -13,7 +13,7 @@ QUnit.module("EmberView#destroyElement", {
   }
 });
 
-test("if it has no element, does nothing", function() {
+QUnit.test("if it has no element, does nothing", function() {
   var callCount = 0;
   view = EmberView.create({
     willDestroyElement: function() { callCount++; }
@@ -28,7 +28,7 @@ test("if it has no element, does nothing", function() {
   equal(callCount, 0, 'did not invoke callback');
 });
 
-test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
+QUnit.test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var parentCount = 0;
@@ -60,7 +60,7 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
   ok(!get(get(view, 'childViews').objectAt(0), 'element'), 'child no longer has an element');
 });
 
-test("returns receiver", function() {
+QUnit.test("returns receiver", function() {
   var ret;
   view = EmberView.create();
 
@@ -72,7 +72,7 @@ test("returns receiver", function() {
   equal(ret, view, 'returns receiver');
 });
 
-test("removes element from parentNode if in DOM", function() {
+QUnit.test("removes element from parentNode if in DOM", function() {
   view = EmberView.create();
 
   run(function() {

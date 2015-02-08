@@ -1,8 +1,8 @@
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 
 QUnit.module("Ember.create()");
 
-test("should inherit the properties from the parent object", function() {
+QUnit.test("should inherit the properties from the parent object", function() {
   var obj = { foo: 'FOO' };
   var obj2 = create(obj);
   ok(obj !== obj2, 'should be a new instance');
@@ -14,7 +14,7 @@ test("should inherit the properties from the parent object", function() {
 });
 
 // NOTE: jshint may interfere with this test since it defines its own Object.create if missing
-test("passing additional property descriptors should define", function() {
+QUnit.test("passing additional property descriptors should define", function() {
   var obj = { foo: 'FOO', repl: 'obj' };
   var obj2 = create(obj, {
     bar: {
@@ -30,7 +30,7 @@ test("passing additional property descriptors should define", function() {
   equal(obj2.repl, 'obj2', 'should have replaced parent');
 });
 
-test("passing additional property descriptors should not pollute parent object", function() {
+QUnit.test("passing additional property descriptors should not pollute parent object", function() {
   var obj = { foo: 'FOO', repl: 'obj' };
   var obj2 = create(obj, {
     repl: {

@@ -41,9 +41,9 @@ import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import Cache from "ember-metal/cache";
 import {
-  create,
   hasPropertyAccessors
-} from "ember-metal/platform";
+} from 'ember-metal/platform/define_property';
+import create from 'ember-metal/platform/create';
 import {
   filter,
   forEach,
@@ -127,8 +127,50 @@ import {
   cacheFor
 } from "ember-metal/computed";
 
-// side effect of defining the computed.* macros
-import "ember-metal/computed_macros";
+import alias from 'ember-metal/alias';
+import {
+  empty,
+  notEmpty,
+  none,
+  not,
+  bool,
+  match,
+  equal,
+  gt,
+  gte,
+  lt,
+  lte,
+  oneWay as computedOneWay,
+  readOnly,
+  defaultTo,
+  deprecatingAlias,
+  and,
+  or,
+  any,
+  collect
+} from "ember-metal/computed_macros";
+
+computed.empty = empty;
+computed.notEmpty = notEmpty;
+computed.none = none;
+computed.not = not;
+computed.bool = bool;
+computed.match = match;
+computed.equal = equal;
+computed.gt = gt;
+computed.gte = gte;
+computed.lt = lt;
+computed.lte = lte;
+computed.alias = alias;
+computed.oneWay = computedOneWay;
+computed.reads = computedOneWay;
+computed.readOnly = readOnly;
+computed.defaultTo = defaultTo;
+computed.deprecatingAlias = deprecatingAlias;
+computed.and = and;
+computed.or = or;
+computed.any = any;
+computed.collect = collect;
 
 import {
   _suspendBeforeObserver,
@@ -166,6 +208,20 @@ import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
 import Backburner from 'backburner';
+import {
+  isStream,
+  subscribe,
+  unsubscribe,
+  read,
+  readHash,
+  readArray,
+  scanArray,
+  scanHash,
+  concat,
+  chain
+} from "ember-metal/streams/utils";
+
+import Stream from "ember-metal/streams/stream";
 
 // END IMPORTS
 
@@ -323,12 +379,26 @@ Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 Ember.isNone = isNone;
 Ember.isEmpty = isEmpty;
 Ember.isBlank = isBlank;
-
-if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
-  Ember.isPresent = isPresent;
-}
+Ember.isPresent = isPresent;
 
 Ember.merge = merge;
+
+if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
+  Ember.stream = {
+    Stream: Stream,
+
+    isStream: isStream,
+    subscribe: subscribe,
+    unsubscribe: unsubscribe,
+    read: read,
+    readHash: readHash,
+    readArray: readArray,
+    scanArray: scanArray,
+    scanHash: scanHash,
+    concat: concat,
+    chain: chain
+  };
+}
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember

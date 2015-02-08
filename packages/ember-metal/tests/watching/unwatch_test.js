@@ -29,7 +29,10 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
 
   var obj = {};
   defineProperty(obj, 'foo', computed(function(keyName, value) {
-    if (value !== undefined) this.__foo = value;
+    if (value !== undefined) {
+      this.__foo = value;
+    }
+
     return this.__foo;
   }));
   addListeners(obj, 'foo');
@@ -64,7 +67,7 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
   equal(didCount, 0, 'should NOT have invoked didCount');
 });
 
-test('unwatching should be nested', function() {
+QUnit.test('unwatching should be nested', function() {
 
   var obj = { foo: 'BIFF' };
   addListeners(obj, 'foo');

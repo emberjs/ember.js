@@ -1,19 +1,10 @@
 import ComponentLookup from "ember-views/component_lookup";
-import Container from "container";
+import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var view, container;
-
-function generateContainer() {
-  var container = new Container();
-
-  container.optionsForType('template', { instantiate: false });
-  container.register('component-lookup:main', ComponentLookup);
-
-  return container;
-}
+var view, registry, container;
 
 // this is working around a bug in defeatureify that prevents nested flags
 // from being stripped
@@ -26,16 +17,22 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   if (componentGenerationEnabled) {
     QUnit.module("ember-htmlbars: component hook", {
       setup: function() {
-        container = generateContainer();
+        registry = new Registry();
+        container = registry.container();
+
+        registry.optionsForType('template', { instantiate: false });
+        registry.register('component-lookup:main', ComponentLookup);
       },
 
-      teardown: function(){
+      teardown: function() {
         runDestroy(view);
+        runDestroy(container);
+        registry = container = view = null;
       }
     });
 
-    test("component is looked up from the container", function() {
-      container.register('template:components/foo-bar', compile('yippie!'));
+    QUnit.test("component is looked up from the container", function() {
+      registry.register('template:components/foo-bar', compile('yippie!'));
 
       view = EmberView.create({
         container: container,
@@ -47,7 +44,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       equal(view.$().text(), 'yippie!', 'component was looked up and rendered');
     });
 
-    test("asserts if component is not found", function() {
+    QUnit.test("asserts if component is not found", function() {
       view = EmberView.create({
         container: container,
         template: compile("<foo-bar />")

@@ -26,7 +26,7 @@ QUnit.module('Stream Binding', {
   }
 });
 
-test('basic', function() {
+QUnit.test('basic', function() {
   var binding = new StreamBinding(source);
 
   equal(binding.value(), "zlurp");
@@ -40,7 +40,7 @@ test('basic', function() {
   binding.destroy(); // destroy should not fail
 });
 
-test('the source stream can send values to a single subscriber', function() {
+QUnit.test('the source stream can send values to a single subscriber', function() {
   var binding = new StreamBinding(source);
   var obj = mixin({}, { toBinding: binding });
 
@@ -54,7 +54,7 @@ test('the source stream can send values to a single subscriber', function() {
   equal(get(obj, 'to'), "blorg", "value has synced after run loop");
 });
 
-test('the source stream can send values to multiple subscribers', function() {
+QUnit.test('the source stream can send values to multiple subscribers', function() {
   var binding = new StreamBinding(source);
   var obj1 = mixin({}, { toBinding: binding });
   var obj2 = mixin({}, { toBinding: binding });
@@ -72,7 +72,7 @@ test('the source stream can send values to multiple subscribers', function() {
   equal(get(obj2, 'to'), "blorg", "value has synced after run loop");
 });
 
-test('a subscriber can set the value on the source stream and notify the other subscribers', function() {
+QUnit.test('a subscriber can set the value on the source stream and notify the other subscribers', function() {
   var binding = new StreamBinding(source);
   var obj1 = mixin({}, { toBinding: binding });
   var obj2 = mixin({}, { toBinding: binding });
@@ -87,7 +87,7 @@ test('a subscriber can set the value on the source stream and notify the other s
   equal(source.value(), "blorg", "value has synced after run loop");
 });
 
-test('if source and subscribers sync value, source wins', function() {
+QUnit.test('if source and subscribers sync value, source wins', function() {
   var binding = new StreamBinding(source);
   var obj1 = mixin({}, { toBinding: binding });
   var obj2 = mixin({}, { toBinding: binding });
@@ -106,7 +106,7 @@ test('if source and subscribers sync value, source wins', function() {
   equal(get(obj3, 'to'), "hoopla", "value has synced after run loop");
 });
 
-test('the last value sent by the source wins', function() {
+QUnit.test('the last value sent by the source wins', function() {
   var binding = new StreamBinding(source);
   var obj = mixin({}, { toBinding: binding });
 
@@ -120,7 +120,7 @@ test('the last value sent by the source wins', function() {
   equal(get(obj, 'to'), "hoopla", "value has synced after run loop");
 });
 
-test('continues to notify subscribers after first consumption, even if not consumed', function() {
+QUnit.test('continues to notify subscribers after first consumption, even if not consumed', function() {
   var counter = 0;
   var binding = new StreamBinding(source);
 

@@ -6,7 +6,7 @@ import {
 
 testsFor("ember-metal-views - attributes");
 
-test('aliased attributeBindings', function() {
+QUnit.test('aliased attributeBindings', function() {
   var view = {
     isView: true,
     attributeBindings: ['isDisabled:disabled'],
@@ -17,5 +17,5 @@ test('aliased attributeBindings', function() {
 
   equal(el.getAttribute('disabled'), 'disabled', "The attribute alias was set");
 
-  subject().destroy(view);
+  subject().removeAndDestroy(view);
 });

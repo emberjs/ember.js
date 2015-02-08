@@ -1,32 +1,34 @@
 import EmberView from "ember-views/views/view";
-import Container from 'container/container';
+import Registry from "container/registry";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-template-compiler/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var container, view;
+var registry, container, view;
 
 QUnit.module('component - invocation', {
   setup: function() {
-    container = new Container();
-    container.optionsForType('component', { singleton: false });
-    container.optionsForType('view', { singleton: false });
-    container.optionsForType('template', { instantiate: false });
-    container.optionsForType('helper', { instantiate: false });
-    container.register('component-lookup:main', ComponentLookup);
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('component', { singleton: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('helper', { instantiate: false });
+    registry.register('component-lookup:main', ComponentLookup);
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
+    registry = container = view = null;
   }
 });
 
-test('non-block without properties', function() {
+QUnit.test('non-block without properties', function() {
   expect(1);
 
-  container.register('template:components/non-block', compile('In layout'));
+  registry.register('template:components/non-block', compile('In layout'));
 
   view = EmberView.extend({
     template: compile('{{non-block}}'),
@@ -38,10 +40,10 @@ test('non-block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout');
 });
 
-test('block without properties', function() {
+QUnit.test('block without properties', function() {
   expect(1);
 
-  container.register('template:components/with-block', compile('In layout - {{yield}}'));
+  registry.register('template:components/with-block', compile('In layout - {{yield}}'));
 
   view = EmberView.extend({
     template: compile('{{#with-block}}In template{{/with-block}}'),
@@ -53,10 +55,10 @@ test('block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - In template');
 });
 
-test('non-block with properties', function() {
+QUnit.test('non-block with properties', function() {
   expect(1);
 
-  container.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
+  registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
 
   view = EmberView.extend({
     template: compile('{{non-block someProp="something here"}}'),
@@ -68,10 +70,10 @@ test('non-block with properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
-test('block with properties', function() {
+QUnit.test('block with properties', function() {
   expect(1);
 
-  container.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
+  registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
 
   view = EmberView.extend({
     template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}'),

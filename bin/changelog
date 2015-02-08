@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+'use strict';
+
+/*
+ * This script generates the template a changelog by comparing a current version
+ * with master. Run this, copy what's logged into the `CHANGELOG.md` and update
+ * the top section based on the changes listed in "Community Contributions"
+ *
+ * Usage:
+ *
+ * bin/changelog
+ */
+
+var EOL       = require('os').EOL;
+var RSVP      = require('rsvp');
+var Promise   = RSVP.Promise;
+var GitHubApi = require('github');
+
+var github         = new GitHubApi({version: '3.0.0'});
+var compareCommits = RSVP.denodeify(github.repos.compareCommits);
+var currentVersion = process.env.PRIOR_VERSION;
+
+compareCommits({
+  user: 'emberjs',
+  repo: 'ember.js',
+  base: currentVersion,
+  head: 'master'
+})
+.then(processPages)
+.then(console.log)
+.catch(function(err) {
+  console.error(err);
+})
+
+function processPages(res) {
+  var contributions = res.commits.map(function(commitInfo) {
+    return commitInfo.commit.message
+
+  }).filter(function(message) {
+    return message.indexOf('Merge pull request #') > -1;
+  }).map(function(message) {
+    var numAndAuthor = message.match(/#(\d+) from (.*)\//).slice(1,3);
+    var title        = message.split('\n\n')[1];
+
+    return {
+      number:  +numAndAuthor[0],
+      author:  numAndAuthor[1],
+      title:   title
+    };
+  }).sort(function(a, b) {
+    return a.number > b.number;
+  }).map(function(pr) {
+    var link   = '[#' + pr.number + ']' +
+                 '(https://github.com/emberjs/ember.js/pull/' + pr.number + ')';
+    var title  = pr.title;
+    var author = '[@' + pr.author + ']' +
+                 '(https://github.com/' + pr.author +')';
+
+    return '- ' + link + ' ' + title + ' ' + author;
+  }).join('\n');
+
+  if (github.hasNextPage(res)) {
+    return github.getNextPage(res)
+      .then(function(nextPage) {
+        console.log('getting next page!');
+        contributions += processPages(nextPage);
+      });
+  } else {
+    return RSVP.resolve(contributions);
+  }
+}

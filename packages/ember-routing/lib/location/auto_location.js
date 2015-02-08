@@ -6,6 +6,9 @@ import HistoryLocation from "ember-routing/location/history_location";
 import HashLocation from "ember-routing/location/hash_location";
 import NoneLocation from "ember-routing/location/none_location";
 
+import environment from "ember-metal/environment";
+import { supportsHashChange, supportsHistory } from "ember-routing/location/feature_detect";
+
 /**
 @module ember
 @submodule ember-routing
@@ -26,6 +29,26 @@ import NoneLocation from "ember-routing/location/none_location";
   @static
 */
 export default {
+  /**
+    @private
+
+    Attached for mocking in tests
+
+    @property location
+    @default environment.location
+  */
+  _location: environment.location,
+
+  /**
+    @private
+
+    Attached for mocking in tests
+
+    @since 1.5.1
+    @property _history
+    @default environment.history
+  */
+  _history: environment.history,
 
   /**
     @private
@@ -49,38 +72,6 @@ export default {
     @default '/'
   */
   rootURL: '/',
-
-  /**
-    @private
-
-    Attached for mocking in tests
-
-    @since 1.5.1
-    @property _window
-    @default window
-  */
-  _window: window,
-
-  /**
-    @private
-
-    Attached for mocking in tests
-
-    @property location
-    @default window.location
-  */
-  _location: window.location,
-
-  /**
-    @private
-
-    Attached for mocking in tests
-
-    @since 1.5.1
-    @property _history
-    @default window.history
-  */
-  _history: window.history,
 
   /**
     @private
@@ -138,51 +129,30 @@ export default {
     return origin;
   },
 
+  _userAgent: environment.userAgent,
+
   /**
     @private
-
-    We assume that if the history object has a pushState method, the host should
-    support HistoryLocation.
 
     @method _getSupportsHistory
   */
   _getSupportsHistory: function () {
-    // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
-    // The stock browser on Android 2.2 & 2.3 returns positive on history support
-    // Unfortunately support is really buggy and there is no clean way to detect
-    // these bugs, so we fall back to a user agent sniff :(
-    var userAgent = this._window.navigator.userAgent;
-
-    // We only want Android 2, stock browser, and not Chrome which identifies
-    // itself as 'Mobile Safari' as well
-    if (userAgent.indexOf('Android 2') !== -1 &&
-        userAgent.indexOf('Mobile Safari') !== -1 &&
-        userAgent.indexOf('Chrome') === -1) {
-      return false;
-    }
-
-    return !!(this._history && 'pushState' in this._history);
+    return supportsHistory(environment.userAgent, environment.history);
   },
 
   /**
     @private
-
-    IE8 running in IE7 compatibility mode gives false positive, so we must also
-    check documentMode.
 
     @method _getSupportsHashChange
   */
   _getSupportsHashChange: function () {
-    var _window = this._window;
-    var documentMode = _window.document.documentMode;
-
-    return ('onhashchange' in _window && (documentMode === undefined || documentMode > 7 ));
+    return supportsHashChange(document.documentMode, window);
   },
 
   /**
     @private
 
-    Redirects the browser using location.replace, prepending the locatin.origin
+    Redirects the browser using location.replace, prepending the location.origin
     to prevent phishing attempts
 
     @method _replacePath
@@ -281,7 +251,7 @@ export default {
       // If the path already has a trailing slash, remove the one
       // from the hashed route so we don't double up.
       if (path.slice(-1) === '/') {
-          routeHash = routeHash.substr(1);
+        routeHash = routeHash.substr(1);
       }
 
       // This is the "expected" final order
@@ -351,14 +321,9 @@ export default {
       if (currentPath === historyPath) {
         implementationClass = this._HistoryLocation;
       } else {
-        if (Ember.FEATURES.isEnabled("ember-routing-auto-location-uses-replace-state-for-history")) {
-          if (currentPath.substr(0, 2) === '/#') {
-            this._history.replaceState({ path: historyPath }, null, historyPath);
-            implementationClass = this._HistoryLocation;
-          } else {
-            cancelRouterSetup = true;
-            this._replacePath(historyPath);
-          }
+        if (currentPath.substr(0, 2) === '/#') {
+          this._history.replaceState({ path: historyPath }, null, historyPath);
+          implementationClass = this._HistoryLocation;
         } else {
           cancelRouterSetup = true;
           this._replacePath(historyPath);

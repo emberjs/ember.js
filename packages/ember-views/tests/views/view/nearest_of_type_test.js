@@ -17,11 +17,11 @@ QUnit.module("View#nearest*", {
   var Mixin = EmberMixin.create({});
   var Parent = View.extend(Mixin, {
     render: function(buffer) {
-      this.appendChild( View.create() );
+      this.appendChild(View.create());
     }
   });
 
-  test("nearestOfType should find the closest view by view class", function() {
+  QUnit.test("nearestOfType should find the closest view by view class", function() {
     var child;
 
     run(function() {
@@ -33,7 +33,7 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Parent), parentView, "finds closest view in the hierarchy by class");
   });
 
-  test("nearestOfType should find the closest view by mixin", function() {
+  QUnit.test("nearestOfType should find the closest view by mixin", function() {
     var child;
 
     run(function() {
@@ -45,24 +45,37 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-test("nearestWithProperty should search immediate parent", function() {
-  var childView;
+  QUnit.test("nearestWithProperty should search immediate parent", function() {
+    var childView;
 
-  view = View.create({
-    myProp: true,
+    view = View.create({
+      myProp: true,
 
-    render: function(buffer) {
-      this.appendChild(View.create());
-    }
+      render: function(buffer) {
+        this.appendChild(View.create());
+      }
+    });
+
+    run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    childView = view.get('childViews')[0];
+    equal(childView.nearestWithProperty('myProp'), view);
+
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
+  QUnit.test("nearestChildOf should be deprecated", function() {
+    var child;
+
+    run(function() {
+      parentView = Parent.create();
+      parentView.appendTo('#qunit-fixture');
+    });
+
+    child = parentView.get('childViews')[0];
+    expectDeprecation(function() {
+      child.nearestChildOf(Parent);
+    }, 'nearestChildOf has been deprecated.');
   });
-
-  childView = view.get('childViews')[0];
-  equal(childView.nearestWithProperty('myProp'), view);
-
-});
-
 }());

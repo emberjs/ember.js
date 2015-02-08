@@ -24,7 +24,10 @@
   @return {void}
 */
 var defineProperty = (function checkCompliance(defineProperty) {
-  if (!defineProperty) return;
+  if (!defineProperty) {
+    return;
+  }
+
   try {
     var a = 5;
     var obj = {};
@@ -38,9 +41,14 @@ var defineProperty = (function checkCompliance(defineProperty) {
         a = v;
       }
     });
-    if (obj.a !== 5) return;
+    if (obj.a !== 5) {
+      return;
+    }
+
     obj.a = 10;
-    if (a !== 10) return;
+    if (a !== 10) {
+      return;
+    }
 
     // check non-enumerability
     defineProperty(obj, 'a', {
@@ -50,19 +58,25 @@ var defineProperty = (function checkCompliance(defineProperty) {
       value: true
     });
     for (var key in obj) {
-      if (key === 'a') return;
+      if (key === 'a') {
+        return;
+      }
     }
 
     // Detects a bug in Android <3.2 where you cannot redefine a property using
     // Object.defineProperty once accessors have already been set.
-    if (obj.a !== true) return;
+    if (obj.a !== true) {
+      return;
+    }
 
     // Detects a bug in Android <3 where redefining a property without a value changes the value
     // Object.defineProperty once accessors have already been set.
     defineProperty(obj, 'a', {
       enumerable: false
     });
-    if (obj.a !== true) return;
+    if (obj.a !== true) {
+      return;
+    }
 
     // defineProperty is compliant
     return defineProperty;
@@ -107,12 +121,17 @@ if (hasES5CompliantDefineProperty && typeof document !== 'undefined') {
 }
 
 if (!hasES5CompliantDefineProperty) {
-  defineProperty = function defineProperty(obj, keyName, desc) {
+  defineProperty = function definePropertyPolyfill(obj, keyName, desc) {
     if (!desc.get) { obj[keyName] = desc.value; }
   };
 }
 
+var hasPropertyAccessors = hasES5CompliantDefineProperty;
+var canDefineNonEnumerableProperties = hasES5CompliantDefineProperty;
+
 export {
   hasES5CompliantDefineProperty,
-  defineProperty
+  defineProperty,
+  hasPropertyAccessors,
+  canDefineNonEnumerableProperties
 };

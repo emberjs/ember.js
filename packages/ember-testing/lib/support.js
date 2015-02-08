@@ -1,6 +1,8 @@
 import Ember from "ember-metal/core";
 import jQuery from "ember-views/system/jquery";
 
+import environment from "ember-metal/environment";
+
 /**
   @module ember
   @submodule ember-testing
@@ -25,31 +27,33 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-$(function() {
-  /*
-    Determine whether a checkbox checked using jQuery's "click" method will have
-    the correct value for its checked property.
+if (environment.hasDOM) {
+  $(function() {
+    /*
+      Determine whether a checkbox checked using jQuery's "click" method will have
+      the correct value for its checked property.
 
-    If we determine that the current jQuery version exhibits this behavior,
-    patch it to work correctly as in the commit for the actual fix:
-    https://github.com/jquery/jquery/commit/1fb2f92.
-  */
-  testCheckboxClick(function() {
-    if (!this.checked && !$.event.special.click) {
-      $.event.special.click = {
-        // For checkbox, fire native event so checked state will be right
-        trigger: function() {
-          if ($.nodeName( this, "input" ) && this.type === "checkbox" && this.click) {
-            this.click();
-            return false;
+      If we determine that the current jQuery version exhibits this behavior,
+      patch it to work correctly as in the commit for the actual fix:
+      https://github.com/jquery/jquery/commit/1fb2f92.
+    */
+    testCheckboxClick(function() {
+      if (!this.checked && !$.event.special.click) {
+        $.event.special.click = {
+          // For checkbox, fire native event so checked state will be right
+          trigger: function() {
+            if ($.nodeName(this, "input") && this.type === "checkbox" && this.click) {
+              this.click();
+              return false;
+            }
           }
-        }
-      };
-    }
-  });
+        };
+      }
+    });
 
-  // Try again to verify that the patch took effect or blow up.
-  testCheckboxClick(function() {
-    Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+    // Try again to verify that the patch took effect or blow up.
+    testCheckboxClick(function() {
+      Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+    });
   });
-});
+}

@@ -43,8 +43,9 @@ function K() { return this; }
   @namespace Ember
   @extends Ember.Object
   @uses Ember.ActionHandler
+  @uses Ember.Evented
 */
-var Route = EmberObject.extend(ActionHandler, {
+var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     Configuration hash for this route's queryParams. The possible
     configuration options and their defaults are as follows
@@ -100,7 +101,9 @@ var Route = EmberObject.extend(ActionHandler, {
     var qpProps = get(controllerProto, '_normalizedQueryParams');
     var cacheMeta = get(controllerProto, '_cacheMeta');
 
-    var qps = [], map = {}, self = this;
+    var qps = [];
+    var map = {};
+    var self = this;
     for (var propName in qpProps) {
       if (!qpProps.hasOwnProperty(propName)) { continue; }
 
@@ -354,9 +357,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   exit: function() {
     this.deactivate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('deactivate');
-    }
+    this.trigger('deactivate');
     this.teardownViews();
   },
 
@@ -381,9 +382,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   enter: function() {
     this.activate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('activate');
-    }
+    this.trigger('activate');
   },
 
   /**
@@ -1312,8 +1311,9 @@ var Route = EmberObject.extend(ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return copy(params); }
-    else if (!name) {
+    if (!name && sawParams) {
+      return copy(params);
+    } else if (!name) {
       if (transition.resolveIndex < 1) { return; }
 
       var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
@@ -1343,7 +1343,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {String} type the model type
     @param {Object} value the value passed to find
   */
-  findModel: function(){
+  findModel: function() {
     var store = get(this, 'store');
     return store.find.apply(store, arguments);
   },
@@ -1361,7 +1361,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @method store
     @param {Object} store
   */
-  store: computed(function(){
+  store: computed(function() {
     var container = this.container;
     var routeName = this.routeName;
     var namespace = get(this, 'router.namespace');
@@ -1424,7 +1424,8 @@ var Route = EmberObject.extend(ActionHandler, {
     if (params.length < 1) { return; }
     if (!model) { return; }
 
-    var name = params[0], object = {};
+    var name = params[0];
+    var object = {};
 
     if (params.length === 1) {
       if (name in model) {
@@ -1695,7 +1696,7 @@ var Route = EmberObject.extend(ActionHandler, {
     ```javascript
     // posts route
     Ember.Route.extend({
-      renderTemplate: function(){
+      renderTemplate: function() {
         this.render('photos', {
           into: 'application',
           outlet: 'anOutletName'
@@ -1776,9 +1777,9 @@ var Route = EmberObject.extend(ActionHandler, {
                     referenced by name. Defaults to the parent template
     @param {String} [options.outlet] the outlet inside `options.template` to render into.
                     Defaults to 'main'
-    @param {String} [options.controller] the controller to use for this template,
-                    referenced by name. Defaults to the Route's paired controller
-    @param {String} [options.model] the model object to set on `options.controller`
+    @param {String|Object} [options.controller] the controller to use for this template,
+                    referenced by name or as a controller instance. Defaults to the Route's paired controller
+    @param {Object} [options.model] the model object to set on `options.controller`.
                     Defaults to the return value of the Route's model hook
   */
   render: function(_name, options) {
@@ -1924,12 +1925,6 @@ var Route = EmberObject.extend(ActionHandler, {
   }
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-  // TODO add mixin directly to `Route` class definition above, once this
-  // feature is merged:
-  Route.reopen(Evented);
-}
-
 var defaultQPMeta = {
   qps: [],
   map: {},
@@ -2016,21 +2011,21 @@ function appendView(route, view, options) {
     replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
     parentView.connectOutlet(options.outlet, view);
   } else {
-    var rootElement = get(route.router, 'namespace.rootElement');
     // tear down view if one is already rendered
     if (route.teardownTopLevelView) {
       route.teardownTopLevelView();
     }
-    route.router._connectActiveView(options.name, view);
-    route.teardownTopLevelView = generateTopLevelTeardown(view);
-    view.appendTo(rootElement);
-  }
-}
 
-function generateTopLevelTeardown(view) {
-  return function() {
-    view.destroy();
-  };
+    route.router._connectActiveView(options.name, view);
+    route.teardownTopLevelView = function() { view.destroy(); };
+
+    // Notify the application instance that we have created the root-most
+    // view. It is the responsibility of the instance to tell the root view
+    // how to render, typically by appending it to the application's
+    // `rootElement`.
+    var instance = route.container.lookup('-application-instance:main');
+    instance.didCreateRootView(view);
+  }
 }
 
 function generateOutletTeardown(parentView, outlet) {

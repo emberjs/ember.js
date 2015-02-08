@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // deprecate, assert
+import environment from "ember-metal/environment";
 
 /**
 @module ember
@@ -178,7 +179,7 @@ export default {
   },
 
   implementations: {},
-  _location: window.location,
+  _location: environment.location,
 
   /**
     Returns the current `location.hash` by parsing location.href since browsers

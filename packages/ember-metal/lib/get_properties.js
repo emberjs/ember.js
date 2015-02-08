@@ -32,7 +32,7 @@ export default function getProperties(obj) {
     i = 0;
     propertyNames = arguments[1];
   }
-  for(var len = propertyNames.length; i < len; i++) {
+  for (var len = propertyNames.length; i < len; i++) {
     ret[propertyNames[i]] = get(obj, propertyNames[i]);
   }
   return ret;

@@ -2,11 +2,11 @@ import run from 'ember-metal/run_loop';
 
 QUnit.module('system/run_loop/run_test');
 
-test('Ember.run invokes passed function, returning value', function() {
+QUnit.test('Ember.run invokes passed function, returning value', function() {
   var obj = {
     foo: function() { return [this.bar, 'FOO']; },
     bar: 'BAR',
-    checkArgs: function(arg1, arg2) { return [ arg1, this.bar, arg2 ]; }
+    checkArgs: function(arg1, arg2) { return [arg1, this.bar, arg2]; }
   };
 
   equal(run(function() { return 'FOO'; }), 'FOO', 'pass function only');

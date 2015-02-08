@@ -1,27 +1,30 @@
-import Container from "container";
+import Registry from "container/registry";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 
-var container, view;
+var registry, container, view;
 
 QUnit.module("EmberView - Template Functionality", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
     run(function() {
       if (view) { view.destroy(); }
+      container.destroy();
+      registry = container = view = null;
     });
   }
 });
 
-test("Template views return throw if their template cannot be found", function() {
+QUnit.test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
-    container: { lookup: function() { }}
+    container: { lookup: function() { } }
   });
 
   expectAssertion(function() {
@@ -30,7 +33,7 @@ test("Template views return throw if their template cannot be found", function()
 });
 
 if (typeof Handlebars === "object") {
-  test("should allow standard Handlebars template usage", function() {
+  QUnit.test("should allow standard Handlebars template usage", function() {
     view = EmberView.create({
       context: { name: "Erik" },
       template: Handlebars.compile("Hello, {{name}}")
@@ -44,8 +47,8 @@ if (typeof Handlebars === "object") {
   });
 }
 
-test("should call the function of the associated template", function() {
-  container.register('template:testTemplate', function() {
+QUnit.test("should call the function of the associated template", function() {
+  registry.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
   });
 
@@ -61,8 +64,8 @@ test("should call the function of the associated template", function() {
   ok(view.$('#twas-called').length, "the named template was called");
 });
 
-test("should call the function of the associated template with itself as the context", function() {
-  container.register('template:testTemplate', function(dataSource) {
+QUnit.test("should call the function of the associated template with itself as the context", function() {
+  registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
 
@@ -82,7 +85,7 @@ test("should call the function of the associated template with itself as the con
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
+QUnit.test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -102,7 +105,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should not use defaultTemplate if template is provided", function() {
+QUnit.test("should not use defaultTemplate if template is provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -118,10 +121,10 @@ test("should not use defaultTemplate if template is provided", function() {
   equal("foo", view.$().text(), "default template was not printed");
 });
 
-test("should not use defaultTemplate if template is provided", function() {
+QUnit.test("should not use defaultTemplate if template is provided", function() {
   var View;
 
-  container.register('template:foobar', function() { return 'foo'; });
+  registry.register('template:foobar', function() { return 'foo'; });
 
   View = EmberView.extend({
     container: container,
@@ -137,7 +140,7 @@ test("should not use defaultTemplate if template is provided", function() {
   equal("foo", view.$().text(), "default template was not printed");
 });
 
-test("should render an empty element if no template is specified", function() {
+QUnit.test("should render an empty element if no template is specified", function() {
   view = EmberView.create();
   run(function() {
     view.createElement();
@@ -146,7 +149,7 @@ test("should render an empty element if no template is specified", function() {
   equal(view.$().html(), '', "view div should be empty");
 });
 
-test("should provide a controller to the template if a controller is specified on the view", function() {
+QUnit.test("should provide a controller to the template if a controller is specified on the view", function() {
   expect(7);
 
   var Controller1 = EmberObject.extend({
@@ -237,7 +240,7 @@ test("should provide a controller to the template if a controller is specified o
   });
 });
 
-test("should throw an assertion if no container has been set", function() {
+QUnit.test("should throw an assertion if no container has been set", function() {
   expect(1);
   var View;
 
@@ -245,7 +248,7 @@ test("should throw an assertion if no container has been set", function() {
     templateName: 'foobar'
   });
 
-  raises(function() {
+  throws(function() {
     view = View.create();
     run(function() {
       view.createElement();

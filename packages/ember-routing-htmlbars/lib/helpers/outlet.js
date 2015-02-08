@@ -85,7 +85,7 @@ export function outletHelper(params, hash, options, env) {
 
   outletSource = this;
   while (!outletSource.get('template.isTop')) {
-    outletSource = outletSource.get('_parentView');
+    outletSource = outletSource._parentView;
   }
   set(this, 'outletSource', outletSource);
 
@@ -101,7 +101,7 @@ export function outletHelper(params, hash, options, env) {
     );
     Ember.assert(
       "The view name you supplied '" + viewName + "' did not resolve to a view.",
-      this.container.has(viewFullName)
+      this.container._registry.has(viewFullName)
     );
   }
 

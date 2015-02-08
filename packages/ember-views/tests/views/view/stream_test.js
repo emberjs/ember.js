@@ -11,7 +11,7 @@ QUnit.module("ember-views: streams", {
   }
 });
 
-test("can return a stream that is notified of changes", function() {
+QUnit.test("can return a stream that is notified of changes", function() {
   expect(2);
 
   view = EmberView.create({
@@ -31,7 +31,7 @@ test("can return a stream that is notified of changes", function() {
   run(view, 'set', 'controller.name', 'Max');
 });
 
-test("a single stream is used for the same path", function() {
+QUnit.test("a single stream is used for the same path", function() {
   expect(2);
 
   var stream1, stream2;
@@ -53,7 +53,7 @@ test("a single stream is used for the same path", function() {
   equal(stream1, stream2, 'streams "" and "this"  should be the same object');
 });
 
-test("the stream returned is labeled with the requested path", function() {
+QUnit.test("the stream returned is labeled with the requested path", function() {
   expect(2);
   var stream;
 
@@ -61,7 +61,7 @@ test("the stream returned is labeled with the requested path", function() {
     controller: {
       name: 'Robert'
     },
-    
+
     foo: 'bar'
   });
 

@@ -14,23 +14,23 @@ function AttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
-AttrNode.prototype.init = function init(attrName, simpleAttrValue){
+AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isView = true;
 
-  // That these semantics are used is very unfortunate.
   this.tagName = '';
-  this.classNameBindings = [];
+  this.isVirtual = true;
 
   this.attrName = attrName;
   this.attrValue = simpleAttrValue;
   this.isDirty = true;
+  this.isDestroying = false;
   this.lastValue = null;
 
   subscribe(this.attrValue, this.rerender, this);
 };
 
-AttrNode.prototype.renderIfDirty = function renderIfDirty(){
-  if (this.isDirty) {
+AttrNode.prototype.renderIfDirty = function renderIfDirty() {
+  if (this.isDirty && !this.isDestroying) {
     var value = read(this.attrValue);
     if (value !== this.lastValue) {
       this._renderer.renderTree(this, this._parentView);
@@ -42,11 +42,19 @@ AttrNode.prototype.renderIfDirty = function renderIfDirty(){
 
 AttrNode.prototype.render = function render(buffer) {
   this.isDirty = false;
+  if (this.isDestroying) {
+    return;
+  }
   var value = read(this.attrValue);
 
-  this._morph.setContent(value);
+  if (this.attrName === 'value' && (value === null || value === undefined)) {
+    value = '';
+  }
 
-  this.lastValue = value;
+  if (this.lastValue !== null || value !== null) {
+    this._morph.setContent(value);
+    this.lastValue = value;
+  }
 };
 
 AttrNode.prototype.rerender = function render() {
@@ -55,11 +63,14 @@ AttrNode.prototype.rerender = function render() {
 };
 
 AttrNode.prototype.destroy = function render() {
+  this.isDestroying = true;
   this.isDirty = false;
+
   unsubscribe(this.attrValue, this.rerender, this);
 
-  var parent = this._parentView;
-  if (parent) { parent.removeChild(this); }
+  if (!this.removedFromDOM && this._renderer) {
+    this._renderer.remove(this, true);
+  }
 };
 
 export default AttrNode;

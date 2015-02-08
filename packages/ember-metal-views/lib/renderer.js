@@ -1,13 +1,20 @@
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
+import environment from "ember-metal/environment";
 
-function Renderer() {
+var domHelper = environment.hasDOM ? new DOMHelper() : null;
+
+function Renderer(_helper, _destinedForDOM) {
   this._uuid = 0;
+
+  // These sizes and values are somewhat arbitrary (but sensible)
+  // pre-allocation defaults.
   this._views = new Array(2000);
   this._queue = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._elements = new Array(17);
   this._inserts = {};
-  this._dom = new DOMHelper();
+  this._dom = _helper || domHelper;
+  this._destinedForDOM = _destinedForDOM === undefined ? true : _destinedForDOM;
 }
 
 function Renderer_renderTree(_view, _parentView, _insertAt) {
@@ -57,9 +64,17 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       contextualElement = parent._childViewsMorph.contextualElement;
     }
     if (!contextualElement && view._didCreateElementWithoutMorph) {
-      // This code path is only used by createElement and rerender when createElement
-      // was previously called on a view.
-      contextualElement = document.body;
+      // This code path is used by view.createElement(), which has two purposes:
+      //
+      // 1. Legacy usage of `createElement()`. Nobody really knows what the point
+      //    of that is. This usage may be removed in Ember 2.0.
+      // 2. FastBoot, which creates an element and has no DOM to insert it into.
+      //
+      // For FastBoot purposes, rendering the DOM without a contextual element
+      // should work fine, because it essentially re-emits the original markup
+      // as a String, which will then be parsed again by the browser, which will
+      // apply the appropriate parsing rules.
+      contextualElement = typeof document !== 'undefined' ? document.body : null;
     }
     element = this.createElement(view, contextualElement);
 
@@ -145,6 +160,12 @@ Renderer.prototype.scheduleInsert =
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
     var morph = this._dom.appendMorph(target);
+    this.scheduleInsert(view, morph);
+  };
+
+Renderer.prototype.appendAttrTo =
+  function Renderer_appendAttrTo(view, target, attrName) {
+    var morph = this._dom.createAttrMorph(target, attrName);
     this.scheduleInsert(view, morph);
   };
 
@@ -262,7 +283,7 @@ function Renderer_afterRemove(view, shouldDestroy) {
 }
 
 Renderer.prototype.remove = Renderer_remove;
-Renderer.prototype.destroy = function (view) {
+Renderer.prototype.removeAndDestroy = function (view) {
   this.remove(view, true);
 };
 

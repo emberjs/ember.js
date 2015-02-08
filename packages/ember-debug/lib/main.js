@@ -4,6 +4,8 @@ import Ember from "ember-metal/core";
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
+import environment from "ember-metal/environment";
+
 /**
 Ember Debug
 
@@ -197,7 +199,7 @@ Ember.runInDebug = function(func) {
   any specific FEATURES flag is truthy.
 
   This method is called automatically in debug canary builds.
-  
+
   @private
   @method _warnIfUsingStrippedFeatureFlags
   @return {void}
@@ -219,7 +221,7 @@ if (!Ember.testing) {
   // Complain if they're using FEATURE flags in builds other than canary
   Ember.FEATURES['features-stripped-test'] = true;
   var featuresWereStripped = true;
-  
+
   if (Ember.FEATURES.isEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }
@@ -229,16 +231,16 @@ if (!Ember.testing) {
 
   // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = typeof InstallTrigger !== 'undefined';
-  var isChrome = !!window.chrome && !window.opera;
+  var isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener("load", function() {
       if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
-        if(isChrome) {
+        if (isChrome) {
           downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
-        } else if(isFirefox) {
+        } else if (isFirefox) {
           downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
         }
 

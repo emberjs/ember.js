@@ -9,7 +9,7 @@ import EmberError from "ember-metal/error";
 import {
   isPath
 } from "ember-metal/path_cache";
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
@@ -26,7 +26,7 @@ var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
   @param {Object} value The value to set
   @return {Object} the passed value.
 */
-var set = function set(obj, keyName, value, tolerant) {
+export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
     Ember.assert("Path '" + obj + "' must be global if no obj is given.", IS_GLOBAL.test(obj));
     value = keyName;
@@ -41,7 +41,9 @@ var set = function set(obj, keyName, value, tolerant) {
   }
 
   var meta = obj['__ember_meta__'];
-  var desc = meta && meta.descs[keyName];
+  var possibleDesc = obj[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+
   var isUnknown, currentValue;
 
   if (desc === undefined && isPath(keyName)) {
@@ -51,7 +53,7 @@ var set = function set(obj, keyName, value, tolerant) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
-  if (desc !== undefined) {
+  if (desc) {
     desc.set(obj, keyName, value);
   } else {
 
@@ -104,7 +106,7 @@ var set = function set(obj, keyName, value, tolerant) {
     }
   }
   return value;
-};
+}
 
 function setPath(root, path, value, tolerant) {
   var keyName;
@@ -126,8 +128,11 @@ function setPath(root, path, value, tolerant) {
   }
 
   if (!root) {
-    if (tolerant) { return; }
-    else { throw new EmberError('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
+    if (tolerant) {
+      return;
+    } else {
+      throw new EmberError('Property set failed: object in path "'+path+'" could not be found or was destroyed.');
+    }
   }
 
   return set(root, keyName, value);
@@ -149,7 +154,3 @@ function setPath(root, path, value, tolerant) {
 export function trySet(root, path, value) {
   return set(root, path, value, true);
 }
-
-export {
-  set
-};

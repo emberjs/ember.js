@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 
-var view ;
+var view;
 QUnit.module("EmberView#$", {
   setup: function() {
     view = EmberView.extend({
@@ -23,7 +23,7 @@ QUnit.module("EmberView#$", {
   }
 });
 
-test("returns undefined if no element", function() {
+QUnit.test("returns undefined if no element", function() {
   var view = EmberView.create();
   ok(!get(view, 'element'), 'precond - should have no element');
   equal(view.$(), undefined, 'should return undefined');
@@ -34,7 +34,7 @@ test("returns undefined if no element", function() {
   });
 });
 
-test("returns jQuery object selecting element if provided", function() {
+QUnit.test("returns jQuery object selecting element if provided", function() {
   ok(get(view, 'element'), 'precond - should have element');
 
   var jquery = view.$();
@@ -42,7 +42,7 @@ test("returns jQuery object selecting element if provided", function() {
   equal(jquery[0], get(view, 'element'), 'element should be element');
 });
 
-test("returns jQuery object selecting element inside element if provided", function() {
+QUnit.test("returns jQuery object selecting element inside element if provided", function() {
   ok(get(view, 'element'), 'precond - should have element');
 
   var jquery = view.$('span');
@@ -50,7 +50,7 @@ test("returns jQuery object selecting element inside element if provided", funct
   equal(jquery[0].parentNode, get(view, 'element'), 'element should be in element');
 });
 
-test("returns empty jQuery object if filter passed that does not match item in parent", function() {
+QUnit.test("returns empty jQuery object if filter passed that does not match item in parent", function() {
   ok(get(view, 'element'), 'precond - should have element');
 
   var jquery = view.$('body'); // would normally work if not scoped to view

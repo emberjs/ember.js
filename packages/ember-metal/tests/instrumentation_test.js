@@ -14,14 +14,14 @@ QUnit.module("Ember Instrumentation", {
   }
 });
 
-test("execute block even if no listeners", function() {
+QUnit.test("execute block even if no listeners", function() {
   var result = instrument("render", {}, function() {
     return "hello";
   });
   equal(result, "hello", 'called block');
 });
 
-test("subscribing to a simple path receives the listener", function() {
+QUnit.test("subscribing to a simple path receives the listener", function() {
   expect(12);
 
   var sentPayload = {};
@@ -62,7 +62,7 @@ test("subscribing to a simple path receives the listener", function() {
   });
 });
 
-test("returning a value from the before callback passes it to the after callback", function() {
+QUnit.test("returning a value from the before callback passes it to the after callback", function() {
   expect(2);
 
   var passthru1 = {};
@@ -89,7 +89,7 @@ test("returning a value from the before callback passes it to the after callback
   instrument("render", null, function() {});
 });
 
-test("instrument with 2 args (name, callback) no payload", function() {
+QUnit.test("instrument with 2 args (name, callback) no payload", function() {
   expect(1);
 
   subscribe("render", {
@@ -102,7 +102,7 @@ test("instrument with 2 args (name, callback) no payload", function() {
   instrument("render", function() {});
 });
 
-test("instrument with 3 args (name, callback, binding) no payload", function() {
+QUnit.test("instrument with 3 args (name, callback, binding) no payload", function() {
   expect(2);
 
   var binding = {};
@@ -119,10 +119,10 @@ test("instrument with 3 args (name, callback, binding) no payload", function() {
 });
 
 
-test("instrument with 3 args (name, payload, callback) with payload", function() {
+QUnit.test("instrument with 3 args (name, payload, callback) with payload", function() {
   expect(1);
 
-  var expectedPayload = { hi: 1};
+  var expectedPayload = { hi: 1 };
   subscribe("render", {
     before: function(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
@@ -133,7 +133,7 @@ test("instrument with 3 args (name, payload, callback) with payload", function()
   instrument("render", expectedPayload, function() {});
 });
 
-test("instrument with 4 args (name, payload, callback, binding) with payload", function() {
+QUnit.test("instrument with 4 args (name, payload, callback, binding) with payload", function() {
   expect(2);
 
   var expectedPayload = { hi: 1 };
@@ -151,7 +151,7 @@ test("instrument with 4 args (name, payload, callback, binding) with payload", f
 });
 
 
-test("raising an exception in the instrumentation attaches it to the payload", function() {
+QUnit.test("raising an exception in the instrumentation attaches it to the payload", function() {
   expect(2);
 
   var error = new Error("Instrumentation");
@@ -175,7 +175,7 @@ test("raising an exception in the instrumentation attaches it to the payload", f
   });
 });
 
-test("it is possible to add a new subscriber after the first instrument", function() {
+QUnit.test("it is possible to add a new subscriber after the first instrument", function() {
   instrument("render.handlebars", null, function() {});
 
   subscribe("render", {
@@ -190,7 +190,7 @@ test("it is possible to add a new subscriber after the first instrument", functi
   instrument("render.handlebars", null, function() {});
 });
 
-test("it is possible to remove a subscriber", function() {
+QUnit.test("it is possible to remove a subscriber", function() {
   expect(4);
 
   var count = 0;

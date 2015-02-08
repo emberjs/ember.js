@@ -32,7 +32,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.IndexRoute = EmberRoute.extend({
-        model: function(){
+        model: function() {
           indexHitCount += 1;
         }
       });
@@ -40,7 +40,7 @@ QUnit.module("ember-testing Acceptance", {
       App.PostsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'posts';
-          this._super();
+          this._super.apply(this, arguments);
         }
       });
 
@@ -52,7 +52,7 @@ QUnit.module("ember-testing Acceptance", {
       App.CommentsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'comments';
-          this._super();
+          this._super.apply(this, arguments);
         }
       });
 
@@ -90,7 +90,7 @@ QUnit.module("ember-testing Acceptance", {
   }
 });
 
-test("helpers can be chained with then", function() {
+QUnit.test("helpers can be chained with then", function() {
   expect(5);
 
   currentRoute = 'index';
@@ -116,7 +116,7 @@ test("helpers can be chained with then", function() {
 
 // Keep this for backwards compatibility
 
-test("helpers can be chained to each other", function() {
+QUnit.test("helpers can be chained to each other", function() {
   expect(5);
 
   currentRoute = 'index';
@@ -139,7 +139,7 @@ test("helpers can be chained to each other", function() {
   });
 });
 
-test("helpers don't need to be chained", function() {
+QUnit.test("helpers don't need to be chained", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -162,7 +162,7 @@ test("helpers don't need to be chained", function() {
   });
 });
 
-test("Nested async helpers", function() {
+QUnit.test("Nested async helpers", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -187,7 +187,7 @@ test("Nested async helpers", function() {
   });
 });
 
-test("Multiple nested async helpers", function() {
+QUnit.test("Multiple nested async helpers", function() {
   expect(2);
 
   visit('/posts');
@@ -205,7 +205,7 @@ test("Multiple nested async helpers", function() {
   });
 });
 
-test("Helpers nested in thens", function() {
+QUnit.test("Helpers nested in thens", function() {
   expect(3);
 
   currentRoute = 'index';
@@ -230,7 +230,7 @@ test("Helpers nested in thens", function() {
   });
 });
 
-test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
   expect(0);
 
   Test.adapter = QUnitAdapter.create({
@@ -242,14 +242,14 @@ test("Aborted transitions are not logged via Ember.Test.adapter#exception", func
   visit("/abort_transition");
 });
 
-test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
   expect(2);
 
   var asyncHandled;
   Test.adapter = QUnitAdapter.create({
     exception: function(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
-      asyncHandled['catch'](function(){ }); // handle the rejection so it doesn't leak later.
+      asyncHandled['catch'](function() { }); // handle the rejection so it doesn't leak later.
     }
   });
 
@@ -262,7 +262,7 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   asyncHandled = click(".does-not-exist");
 });
 
-test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception", function () {
+QUnit.test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception", function () {
   expect(1);
 
   Test.adapter = QUnitAdapter.create({
@@ -278,20 +278,20 @@ test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#except
   });
 });
 
-test("should not start routing on the root URL when visiting another", function(){
+QUnit.test("should not start routing on the root URL when visiting another", function() {
   visit('/posts');
 
-  andThen(function(){
+  andThen(function() {
     ok(find('#comments-link'), 'found comments-link');
     equal(currentRoute, 'posts', "Successfully visited posts route");
     equal(indexHitCount, 0, 'should not hit index route when visiting another route');
   });
 });
 
-test("only enters the index route once when visiting /", function(){
+QUnit.test("only enters the index route once when visiting /", function() {
   visit('/');
 
-  andThen(function(){
+  andThen(function() {
     equal(indexHitCount, 1, 'should hit index once when visiting /');
   });
 });

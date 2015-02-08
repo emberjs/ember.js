@@ -16,6 +16,8 @@ import {
   getViewBoundingClientRect
 } from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
+import Renderer from "ember-views/system/renderer";
+import DOMHelper from "dom-helper";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
@@ -36,11 +38,9 @@ import TextSupport from "ember-views/mixins/text_support";
 import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
-import BoundView from "ember-views/views/bound_view";
 import SimpleBoundView from "ember-views/views/simple_bound_view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import {
-  _SimpleMetamorphView,
+  default as _MetamorphView,
   _Metamorph
 } from "ember-views/views/metamorph_view";
 import {
@@ -72,13 +72,13 @@ Ember.CoreView = CoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
+Ember.View.DOMHelper = DOMHelper;
+Ember.View._Renderer = Renderer;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
 Ember._SimpleBoundView = SimpleBoundView;
-Ember._BoundView = BoundView;
-Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
 Ember.Select = Select;

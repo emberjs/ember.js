@@ -5,7 +5,7 @@ import Mixin from 'ember-metal/mixin';
 
 QUnit.module('Ember.Mixin#reopen');
 
-test('using reopen() to add more properties to a simple', function() {
+QUnit.test('using reopen() to add more properties to a simple', function() {
   var MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });
   MixinA.reopen({ bar: 'BAR', foo: 'FOO2' });
   var obj = {};
@@ -16,9 +16,9 @@ test('using reopen() to add more properties to a simple', function() {
   equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
 });
 
-test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function(){
+QUnit.test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function() {
   var Taco = EmberObject.extend({
-    createBreakfast: function(){
+    createBreakfast: function() {
       // There is no original createBreakfast function.
       // Calling the wrapped _super function here
       // used to end in an infinite call loop
@@ -28,7 +28,7 @@ test('using reopen() and calling _super where there is not a super function does
   });
 
   Taco.reopen({
-    createBreakfast: function(){
+    createBreakfast: function() {
       return this._super.apply(this, arguments);
     }
   });
@@ -36,10 +36,10 @@ test('using reopen() and calling _super where there is not a super function does
   var taco = Taco.create();
 
   var result;
-  run(function(){
+  run(function() {
     try {
       result = taco.createBreakfast();
-    } catch (e) {
+    } catch(e) {
       result = "Your breakfast was interrupted by an infinite stack error.";
     }
   });

@@ -1,1 +1,0 @@
-{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each group in view.groupedContent}}{{view view.groupView content=group.content label=group.label}}{{/each}}{{else}}{{#each item in view.content}}{{view view.optionView content=item}}{{/each}}{{/if}}

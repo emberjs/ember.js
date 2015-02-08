@@ -28,7 +28,7 @@ suite.test("[X].removeAt(0) => [] + notify", function() {
 
 suite.test("[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception", function() {
   var obj = this.newObject([]);
-  raises(function() {
+  throws(function() {
     obj.removeAt(200);
   }, Error);
 });
@@ -108,7 +108,7 @@ suite.test("[A,B,C,D].removeAt(1,2) => [A,D] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  equal(obj.removeAt(1,2), obj, 'return self');
+  equal(obj.removeAt(1, 2), obj, 'return self');
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(get(obj, 'length'), after.length, 'length');

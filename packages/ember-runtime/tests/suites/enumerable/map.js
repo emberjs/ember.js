@@ -22,7 +22,7 @@ suite.test('map should iterate over list', function() {
 suite.test('map should iterate over list after mutation', function() {
   if (get(this, 'canTestMutation')) {
     expect(0);
-    return ;
+    return;
   }
 
   var obj = this.newObject();

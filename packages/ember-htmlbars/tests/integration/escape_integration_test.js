@@ -3,10 +3,10 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
 import { set } from 'ember-metal/property_set';
-import { create as o_create } from 'ember-metal/platform';
+import o_create from 'ember-metal/platform/create';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var compile, view;
+var view;
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
   teardown: function() {
@@ -16,7 +16,7 @@ QUnit.module('ember-htmlbars: Integration with Globals', {
   }
 });
 
-test('should read from a global-ish simple local path without deprecation', function() {
+QUnit.test('should read from a global-ish simple local path without deprecation', function() {
   view = EmberView.create({
     context: { NotGlobal: 'Gwar' },
     template: compile('{{NotGlobal}}')
@@ -28,7 +28,7 @@ test('should read from a global-ish simple local path without deprecation', func
   equal(view.$().text(), 'Gwar');
 });
 
-test('should read a number value', function() {
+QUnit.test('should read a number value', function() {
   var context = { aNumber: 1 };
   view = EmberView.create({
     context: context,
@@ -38,14 +38,14 @@ test('should read a number value', function() {
   runAppend(view);
   equal(view.$().text(), '1');
 
-  run(function(){
+  run(function() {
     set(context, 'aNumber', 2);
   });
 
   equal(view.$().text(), '2');
 });
 
-test('should read an escaped number value', function() {
+QUnit.test('should read an escaped number value', function() {
   var context = { aNumber: 1 };
   view = EmberView.create({
     context: context,
@@ -55,14 +55,14 @@ test('should read an escaped number value', function() {
   runAppend(view);
   equal(view.$().text(), '1');
 
-  run(function(){
+  run(function() {
     set(context, 'aNumber', 2);
   });
 
   equal(view.$().text(), '2');
 });
 
-test('should read from an Object.create(null)', function() {
+QUnit.test('should read from an Object.create(null)', function() {
   // Use ember's polyfill for Object.create
   var nullObject = o_create(null);
   nullObject['foo'] = 'bar';
@@ -74,14 +74,14 @@ test('should read from an Object.create(null)', function() {
   runAppend(view);
   equal(view.$().text(), 'bar');
 
-  run(function(){
+  run(function() {
     set(nullObject, 'foo', 'baz');
   });
 
   equal(view.$().text(), 'baz');
 });
 
-test('should escape HTML in primitive value contexts when using normal mustaches', function() {
+QUnit.test('should escape HTML in primitive value contexts when using normal mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
     template: compile('{{this}}')
@@ -100,7 +100,7 @@ test('should escape HTML in primitive value contexts when using normal mustaches
   equal(view.$('i').length, 0, 'does not create an element when value is updated');
 });
 
-test('should not escape HTML in primitive value contexts when using triple mustaches', function() {
+QUnit.test('should not escape HTML in primitive value contexts when using triple mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
     template: compile('{{{this}}}')

@@ -6,29 +6,22 @@
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
 import {
-  SafeString as htmlbarsSafeString,
-  htmlSafe as htmlbarsHtmlSafe
-} from "ember-htmlbars/utils/string";
-import {
   GUID_KEY,
   uuid
 } from "ember-metal/utils";
 
 function K() { return this; }
 
-var SafeString = htmlbarsSafeString;
-var htmlSafe = htmlbarsHtmlSafe;
-
-function SimpleBoundView(lazyValue, isEscaped) {
-  this.lazyValue = lazyValue;
-  this.isEscaped = isEscaped;
+function SimpleBoundView(parentView, renderer, morph, stream) {
+  this.stream = stream;
   this[GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
   this.state = 'preRender';
   this.updateId = null;
-  this._parentView = null;
+  this._parentView = parentView;
   this.buffer = null;
-  this._morph = null;
+  this._morph = morph;
+  this.renderer = renderer;
 }
 
 SimpleBoundView.prototype = {
@@ -53,15 +46,13 @@ SimpleBoundView.prototype = {
   propertyDidChange: K,
 
   normalizedValue: function() {
-    var result = this.lazyValue.value();
+    var result = this.stream.value();
 
     if (result === null || result === undefined) {
-      result = "";
-    } else if (!this.isEscaped && !(result instanceof SafeString)) {
-      result = htmlSafe(result);
+      return "";
+    } else {
+      return result;
     }
-
-    return result;
   },
 
   render: function(buffer) {
@@ -71,7 +62,7 @@ SimpleBoundView.prototype = {
   },
 
   rerender: function() {
-    switch(this.state) {
+    switch (this.state) {
       case 'preRender':
       case 'destroyed':
         break;
@@ -100,15 +91,18 @@ SimpleBoundView.prototype = {
   }
 };
 
+SimpleBoundView.create = function(attrs) {
+  return new SimpleBoundView(attrs._parentView, attrs.renderer, attrs._morph, attrs.stream);
+};
+
+SimpleBoundView.isViewClass = true;
+
 export function appendSimpleBoundView(parentView, morph, stream) {
-  var view = new SimpleBoundView(stream, morph.escaped);
-  view._morph = morph;
+  var view = parentView.appendChild(SimpleBoundView, { _morph: morph, stream: stream });
 
   stream.subscribe(parentView._wrapAsScheduled(function() {
     run.scheduleOnce('render', view, 'rerender');
   }));
-
-  parentView.appendChild(view);
 }
 
 export default SimpleBoundView;

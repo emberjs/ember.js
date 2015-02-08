@@ -2,7 +2,7 @@ import { parsePropertyPath } from "ember-views/streams/class_name_binding";
 
 QUnit.module("EmberView - parsePropertyPath");
 
-test("it works with a simple property path", function() {
+QUnit.test("it works with a simple property path", function() {
   var parsed = parsePropertyPath("simpleProperty");
 
   equal(parsed.path, "simpleProperty", "path is parsed correctly");
@@ -11,7 +11,7 @@ test("it works with a simple property path", function() {
   equal(parsed.classNames, "", "there is no classNames");
 });
 
-test("it works with a more complex property path", function() {
+QUnit.test("it works with a more complex property path", function() {
   var parsed = parsePropertyPath("content.simpleProperty");
 
   equal(parsed.path, "content.simpleProperty", "path is parsed correctly");
@@ -20,7 +20,7 @@ test("it works with a more complex property path", function() {
   equal(parsed.classNames, "", "there is no classNames");
 });
 
-test("className is extracted", function() {
+QUnit.test("className is extracted", function() {
   var parsed = parsePropertyPath("content.simpleProperty:class");
 
   equal(parsed.path, "content.simpleProperty", "path is parsed correctly");
@@ -29,7 +29,7 @@ test("className is extracted", function() {
   equal(parsed.classNames, ":class", "there is a classNames");
 });
 
-test("falsyClassName is extracted", function() {
+QUnit.test("falsyClassName is extracted", function() {
   var parsed = parsePropertyPath("content.simpleProperty:class:falsyClass");
 
   equal(parsed.path, "content.simpleProperty", "path is parsed correctly");
@@ -38,7 +38,7 @@ test("falsyClassName is extracted", function() {
   equal(parsed.classNames, ":class:falsyClass", "there is a classNames");
 });
 
-test("it works with an empty true class", function() {
+QUnit.test("it works with an empty true class", function() {
   var parsed = parsePropertyPath("content.simpleProperty::falsyClass");
 
   equal(parsed.path, "content.simpleProperty", "path is parsed correctly");

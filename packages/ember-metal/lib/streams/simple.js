@@ -1,6 +1,6 @@
 import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import { read, isStream } from "ember-metal/streams/utils";
 
 function SimpleStream(source) {
