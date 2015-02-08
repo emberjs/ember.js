@@ -296,11 +296,18 @@ function helper(app, name) {
       // It's the first async helper in current context
       lastPromise = fn.apply(app, args);
     } else {
-      // wait for last helper's promise to resolve
-      // and then execute
+      // wait for last helper's promise to resolve and then
+      // execute. To be safe, we need to tell the adapter we're going
+      // asynchronous here, because fn may not be invoked before we
+      // return.
+      Test.adapter.asyncStart();
       run(function() {
         lastPromise = Test.resolve(lastPromise).then(function() {
-          return fn.apply(app, args);
+          try {
+            return fn.apply(app, args);
+          } finally {
+            Test.adapter.asyncEnd();
+          }
         });
       });
     }

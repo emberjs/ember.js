@@ -69,6 +69,12 @@ QUnit.module("ember-testing Acceptance", {
       App.setupForTesting();
     });
 
+    Test.registerAsyncHelper('slowHelper', function() {
+      return Test.promise(function(resolve) {
+        setTimeout(resolve, 10);
+      });
+    });
+
     App.injectTestHelpers();
 
     find = window.find;
@@ -82,6 +88,7 @@ QUnit.module("ember-testing Acceptance", {
 
   teardown: function() {
     App.removeTestHelpers();
+    Test.unregisterHelper('slowHelper');
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
     App = null;
@@ -294,4 +301,38 @@ QUnit.test("only enters the index route once when visiting /", function() {
   andThen(function() {
     equal(indexHitCount, 1, 'should hit index once when visiting /');
   });
+});
+
+QUnit.test("test must not finish while asyncHelpers are pending", function () {
+  var async = 0;
+  var innerRan = false;
+
+  Test.adapter = QUnitAdapter.extend({
+    asyncStart: function() {
+      async++;
+      this._super();
+    },
+    asyncEnd: function() {
+      async--;
+      this._super();
+    }
+  }).create();
+
+  App.testHelpers.slowHelper();
+  andThen(function() {
+    innerRan = true;
+  });
+
+
+  equal(innerRan, false, 'should not have run yet');
+  ok(async > 0, 'should have told the adapter to pause');
+
+  if (async === 0) {
+    // If we failed the test, prevent zalgo from escaping and breaking
+    // our other tests.
+    Test.adapter.asyncStart();
+    Test.resolve().then(function() {
+      Test.adapter.asyncEnd();
+    });
+  }
 });
