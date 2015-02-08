@@ -33,8 +33,14 @@ test('allows enabling of features', function() {
   var templateOutput;
   var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
 
-  templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
+  var featureValue = templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'];
 
-  templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
-  ok(templateOutput.match(/component\(env, morph0, context, "some-thing"/), 'component generation can be enabled');
+  if (featureValue || featureValue === null) {
+    templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
+
+    templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
+    ok(templateOutput.match(/component\(env, morph0, context, "some-thing"/), 'component generation can be enabled');
+  } else {
+    ok(true, 'cannot test features in feature stripped build');
+  }
 });
