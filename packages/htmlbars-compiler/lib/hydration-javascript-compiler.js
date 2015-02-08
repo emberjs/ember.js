@@ -1,5 +1,5 @@
 import { processOpcodes } from "./utils";
-import { string, array } from "../htmlbars-util/quoting";
+import { array } from "../htmlbars-util/quoting";
 
 function HydrationJavaScriptCompiler() {
   this.stack = [];
@@ -96,33 +96,22 @@ prototype.compile = function(opcodes, options) {
 
 prototype.prepareArray = function(length) {
   var values = [];
-  var expressionValues = [];
 
   for (var i = 0; i < length; i++) {
-    values.push(this.stack.pop());
-    expressionValues.push(this.expressionStack.pop());
+    values.push(this.expressionStack.pop());
   }
 
-  this.expressionStack.push(expressionValues);
-  this.stack.push('[' + values.join(', ') + ']');
+  this.expressionStack.push(values);
 };
 
 prototype.prepareObject = function(size) {
   var pairs = [];
-  var expressionPairs = [];
 
   for (var i = 0; i < size; i++) {
-    pairs.push(this.stack.pop() + ': ' + this.stack.pop());
-    expressionPairs.push(this.expressionStack.pop(), this.expressionStack.pop());
+    pairs.push(this.expressionStack.pop(), this.expressionStack.pop());
   }
 
-  this.expressionStack.push(expressionPairs);
-  this.stack.push('{' + pairs.join(', ') + '}');
-};
-
-prototype.pushRaw = function(value) {
-  this.expressionStack.push(value);
-  this.stack.push(value);
+  this.expressionStack.push(pairs);
 };
 
 prototype.openBoundary = function() {
@@ -135,75 +124,30 @@ prototype.closeBoundary = function() {
 
 prototype.pushLiteral = function(value) {
   this.expressionStack.push(value);
-
-  if (typeof value === 'string') {
-    this.stack.push(string(value));
-  } else {
-    this.stack.push(value.toString());
-  }
 };
 
-prototype.pushHook = function(name, args) {
-  this.hooks[name] = true;
-  this.stack.push(name + '(' + args.join(', ') + ')');
-};
-
-prototype.pushGetHook = function(path, morphNum) {
+prototype.pushGetHook = function(path) {
   this.expressionStack.push([ 'get', path ]);
-
-  this.pushHook('get', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    string(path)
-  ]);
 };
 
-prototype.pushSexprHook = function(morphNum) {
+prototype.pushSexprHook = function() {
   this.expressionStack.push([
     'subexpr',
     this.expressionStack.pop(),
     this.expressionStack.pop(),
     this.expressionStack.pop()
   ]);
-
-  this.pushHook('subexpr', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    this.stack.pop(), // path
-    this.stack.pop(), // params
-    this.stack.pop() // hash
-  ]);
 };
 
-prototype.pushConcatHook = function(morphNum) {
+prototype.pushConcatHook = function() {
   this.expressionStack.push([ 'concat', this.expressionStack.pop() ]);
-
-  this.pushHook('concat', [
-    'env',
-    'morphs[' + morphNum + ']',
-    this.stack.pop() // parts
-  ]);
 };
 
-prototype.printHook = function(name, args) {
-  this.hooks[name] = true;
-  this.source.push(this.indent + '  ' + name + '(' + args.join(', ') + ');\n');
-};
-
-prototype.printSetHook = function(name, index) {
+prototype.printSetHook = function(name) {
   this.augmentContext.push(name);
-
-  this.printHook('set', [
-    'env',
-    'context',
-    string(name),
-    'blockArguments[' + index + ']'
-  ]);
 };
 
-prototype.printBlockHook = function(morphNum, templateId, inverseId) {
+prototype.printBlockHook = function(templateId, inverseId) {
   this.statements.push([
     'block',
     this.expressionStack.pop(), // path
@@ -212,99 +156,43 @@ prototype.printBlockHook = function(morphNum, templateId, inverseId) {
     templateId,
     inverseId
   ]);
-
-  this.printHook('block', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    this.stack.pop(), // path
-    this.stack.pop(), // params
-    this.stack.pop(), // hash
-    templateId === null ? 'null' : 'child' + templateId,
-    inverseId === null ? 'null' : 'child' + inverseId
-  ]);
 };
 
-prototype.printInlineHook = function(morphNum) {
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
+prototype.printInlineHook = function() {
+  var path = this.expressionStack.pop();
+  var params = this.expressionStack.pop();
+  var hash = this.expressionStack.pop();
 
-  var exprPath = this.expressionStack.pop();
-  var exprParams = this.expressionStack.pop();
-  var exprHash = this.expressionStack.pop();
-
-  this.statements.push([ 'inline', exprPath, exprParams, exprHash ]);
-
-  this.printHook('inline', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    path,
-    params,
-    hash
-  ]);
+  this.statements.push([ 'inline', path, params, hash ]);
 };
 
-prototype.printContentHook = function(morphNum) {
+prototype.printContentHook = function() {
   this.statements.push([ 'content', this.expressionStack.pop() ]);
-
-  this.printHook('content', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    this.stack.pop() // path
-  ]);
 };
 
-prototype.printComponentHook = function(morphNum, templateId) {
+prototype.printComponentHook = function(templateId) {
   this.statements.push([
     'component',
     this.expressionStack.pop(), // path
     this.expressionStack.pop(), // attrs
     templateId
   ]);
-
-  this.printHook('component', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    this.stack.pop(), // path
-    this.stack.pop(), // attrs
-    templateId === null ? 'null' : 'child' + templateId
-  ]);
 };
 
-prototype.printAttributeHook = function(attrMorphNum) {
+prototype.printAttributeHook = function() {
   this.statements.push([
     'attribute',
     this.expressionStack.pop(), // name
     this.expressionStack.pop()  // value;
   ]);
-
-  this.printHook('attribute', [
-    'env',
-    'morphs[' + attrMorphNum + ']',
-    this.stack.pop(), // name
-    this.stack.pop() // value
-  ]);
 };
 
-prototype.printElementHook = function(morphNum) {
+prototype.printElementHook = function() {
   this.statements.push([
     'element',
     this.expressionStack.pop(), // path
     this.expressionStack.pop(), // params
     this.expressionStack.pop()  // hash
-  ]);
-
-  this.printHook('element', [
-    'env',
-    'morphs[' + morphNum + ']',
-    'context',
-    this.stack.pop(), // path
-    this.stack.pop(), // params
-    this.stack.pop() // hash
   ]);
 };
 

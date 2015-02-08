@@ -18,9 +18,9 @@ test("simple example", function() {
     [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "createMorph", [ 1, [ 0 ], 2, 2, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -33,7 +33,7 @@ test("simple block", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printBlockHook", [ 0, 0, null ] ],
+    [ "printBlockHook", [ 0, null ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -46,7 +46,7 @@ test("simple block with block params", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printBlockHook", [ 0, 0, null ] ],
+    [ "printBlockHook", [ 0, null ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -57,7 +57,7 @@ test("element with a sole mustache child", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -68,7 +68,7 @@ test("element with a mustache between two text nodes", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], 1, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -80,7 +80,7 @@ test("mustache two elements deep", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0, 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ],
     [ "popParent", [] ]
   ]);
@@ -92,12 +92,12 @@ test("two sibling elements with mustaches", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], 0, 0, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
     [ "createMorph", [ 1, [ 1 ], 0, 0, true ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -109,10 +109,10 @@ test("mustaches at the root", function() {
     [ "createMorph", [ 1, [ ], 2, 2, true ] ],
     [ "openBoundary", [ ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "closeBoundary", [ ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHook", [ 1 ] ]
+    [ "printContentHook", [ ] ]
   ]);
 });
 
@@ -126,13 +126,13 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "createMorph", [ 2, [0], 2, 2, true ] ],
     [ "createMorph", [ 3, [0], 4, 4, true] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHook", [ 0 ] ],
+    [ "printContentHook", [ ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHook", [ 1 ] ],
+    [ "printContentHook", [ ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHook", [ 2 ] ],
+    [ "printContentHook", [ ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printContentHook", [ 3 ] ],
+    [ "printContentHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -145,11 +145,11 @@ test("helper usage", function() {
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ 3.14 ] ],
     [ "pushLiteral", [ true ] ],
-    [ "pushGetHook", [ "baz.bat", 0 ] ],
+    [ "pushGetHook", [ "baz.bat" ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 4 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printInlineHook", [ 0 ] ],
+    [ "printInlineHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -163,7 +163,7 @@ test("node mustache", function() {
     [ "pushLiteral", [ "foo" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createElementMorph", [ 0, 0 ] ],
-    [ "printElementHook", [ 0 ] ],
+    [ "printElementHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -178,7 +178,7 @@ test("node helper", function() {
     [ "pushLiteral", [ "foo" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createElementMorph", [ 0, 0 ] ],
-    [ "printElementHook", [ 0 ] ],
+    [ "printElementHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -188,14 +188,14 @@ test("attribute mustache", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "pushLiteral", [ " after" ] ],
-    [ "pushGetHook", [ "foo", 0 ] ],
+    [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -204,13 +204,13 @@ test("quoted attribute mustache", function() {
   var opcodes = opcodesFor("<div class='{{foo}}'></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo", 0 ] ],
+    [ "pushGetHook", [ "foo" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [ 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -219,11 +219,11 @@ test("safe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{foo}}></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo", 0 ] ],
+    [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -232,11 +232,11 @@ test("unsafe bare attribute mustache", function() {
   var opcodes = opcodesFor("<div class={{{foo}}}></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "pushGetHook", [ "foo", 0 ] ],
+    [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", false, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -250,14 +250,14 @@ test("attribute helper", function() {
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushSexprHook", [ 0 ] ],
+    [ "pushSexprHook", [ ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -272,29 +272,29 @@ test("attribute helpers", function() {
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushSexprHook", [ 0 ] ],
+    [ "pushSexprHook", [ ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
     [ "pushConcatHook", [ 0 ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "createAttrMorph", [ 0, 0, "class", true, null ] ],
-    [ "printAttributeHook", [ 0 ] ],
-    [ "pushGetHook", [ 'bare', 1 ] ],
+    [ "printAttributeHook", [ ] ],
+    [ "pushGetHook", [ 'bare' ] ],
     [ "pushLiteral", [ 'id' ] ],
     [ "createAttrMorph", [ 1, 0, 'id', true, null ] ],
-    [ "printAttributeHook", [ 1 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ],
     [ "createMorph", [ 2, [], 1, 1, true ] ],
     [ "pushLiteral", [ 'morphThing' ] ],
-    [ "printContentHook", [ 2 ] ],
+    [ "printContentHook", [ ] ],
     [ "consumeParent", [ 2 ] ],
-    [ "pushGetHook", [ 'ohMy', 3 ] ],
+    [ "pushGetHook", [ 'ohMy' ] ],
     [ "prepareArray", [ 1 ] ],
     [ "pushConcatHook", [ 3 ] ],
     [ "pushLiteral", [ 'class' ] ],
     [ "shareElement", [ 1 ] ],
     [ "createAttrMorph", [ 3, 1, 'class', true, null ] ],
-    [ "printAttributeHook", [ 3 ] ],
+    [ "printAttributeHook", [ ] ],
     [ "popParent", [] ]
   ]);
 });

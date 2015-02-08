@@ -28,7 +28,6 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
-  this.elementMorphNum = null;
   this.element = null;
   this.elementNum = -1;
 }
@@ -136,7 +135,7 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   var end = this.currentDOMChildIndex;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  this.opcode(opcode, morphNum);
+  this.opcode(opcode);
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
@@ -153,7 +152,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  this.opcode('printBlockHook', morphNum, templateId, inverseId);
+  this.opcode('printBlockHook', templateId, inverseId);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childCount) {
@@ -187,7 +186,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 
   this.opcode('prepareObject', attrs.length);
   this.opcode('pushLiteral', component.tag);
-  this.opcode('printComponentHook', morphNum, this.templateId++, blockParams.length);
+  this.opcode('printComponentHook', this.templateId++, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
@@ -215,7 +214,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   }
 
   this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped, namespace);
-  this.opcode('printAttributeHook', attrMorphNum);
+  this.opcode('printAttributeHook');
 };
 
 HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
@@ -227,7 +226,7 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
   }
 
   publishElementMorph(this);
-  this.opcode('printElementHook', this.elementMorphNum);
+  this.opcode('printElementHook');
 };
 
 HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
@@ -244,11 +243,11 @@ HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex
 
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
   prepareSexpr(this, sexpr);
-  this.opcode('pushSexprHook', this.morphNum);
+  this.opcode('pushSexprHook');
 };
 
 HydrationOpcodeCompiler.prototype.PathExpression = function(path) {
-  this.opcode('pushGetHook', path.original, this.morphNum);
+  this.opcode('pushGetHook', path.original);
 };
 
 HydrationOpcodeCompiler.prototype.StringLiteral = function(node) {
@@ -302,7 +301,7 @@ function shareElement(compiler) {
 }
 
 function publishElementMorph(compiler) {
-  var morphNum = compiler.elementMorphNum = compiler.morphNum++;
+  var morphNum = compiler.morphNum++;
   compiler.opcode('createElementMorph', morphNum, compiler.elementNum);
 }
 
