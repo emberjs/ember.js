@@ -1011,7 +1011,7 @@ function appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, ren
   var target;
   var myState = {
     render: renderOptions,
-    outlets: Object.create(null)
+    outlets: create(null)
   };
   if (!parentRoute) {
     liveRoutes = myState;
