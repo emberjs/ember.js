@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### 1.10.0 (February 6, 2015)
+### 1.10.0 (February 7, 2015)
 
 * [BUGFIX] Ensure that property case is normalized.
 * [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
@@ -25,6 +25,10 @@
     when changing to and from alternate namespaces).
   * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
   * Change `setProperty` and `morph` to remove an `undefined` attr value.
+* Remove dots from default resolver descriptions.
+* Add helpful assertion if a block helper is not found.
+* Make Ember.HTMLBars version of registerHelper private.
+* [BUGFIX] Add `options.types` and `options.hashTypes` for Handlebars compatible helpers.
 * [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
 * Assert if an attribute set statically and via bind-attr.  For example:
   `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
