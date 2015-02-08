@@ -1,24 +1,24 @@
 {
   "features": {
-    "features-stripped-test": null,
+    "features-stripped-test": false,
     "ember-routing-named-substates": true,
     "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-htmlbars": true,
     "ember-htmlbars-block-params": true,
-    "ember-htmlbars-component-generation": null,
+    "ember-htmlbars-component-generation": false,
     "ember-htmlbars-component-helper": true,
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
-    "new-computed-syntax": null,
-    "ember-testing-checkbox-helpers": null,
-    "ember-metal-stream": null,
+    "new-computed-syntax": false,
+    "ember-testing-checkbox-helpers": false,
+    "ember-metal-stream": false,
     "ember-htmlbars-each-with-index": true,
-    "ember-application-instance-initializers": null,
-    "ember-application-initializer-context": null,
+    "ember-application-instance-initializers": false,
+    "ember-application-initializer-context": false,
     "ember-router-willtransition": true,
-    "ember-application-visit": null
+    "ember-application-visit": false
   },
   "debugStatements": [
     "Ember.warn",
