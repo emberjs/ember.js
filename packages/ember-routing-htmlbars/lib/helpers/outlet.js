@@ -4,8 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // assert
-import { set } from "ember-metal/property_set";
-import { OutletView } from "ember-routing-views/views/outlet";
 
 /**
   The `outlet` helper is a placeholder that the router will fill in with
@@ -71,7 +69,6 @@ import { OutletView } from "ember-routing-views/views/outlet";
   @return {String} HTML string
 */
 export function outletHelper(params, hash, options, env) {
-  var outletSource;
   var viewName;
   var viewClass;
   var viewFullName;
@@ -83,11 +80,6 @@ export function outletHelper(params, hash, options, env) {
 
   var property = params[0] || 'main';
 
-  outletSource = this;
-  while (!outletSource.get('template.isTop')) {
-    outletSource = outletSource._parentView;
-  }
-  set(this, 'outletSource', outletSource);
 
   // provide controller override
   viewName = hash.view;
@@ -105,11 +97,8 @@ export function outletHelper(params, hash, options, env) {
     );
   }
 
-  viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || OutletView;
-
-  hash.currentViewBinding = '_view.outletSource._outlets.' + property;
-
+  viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || this.container.lookupFactory('view:-outlet');
+  hash._outletName = property;
   options.helperName = options.helperName || 'outlet';
-
   return env.helpers.view.helperFunction.call(this, [viewClass], hash, options, env);
 }

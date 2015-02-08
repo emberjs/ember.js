@@ -188,6 +188,45 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
+  _setOutlets: function() {
+    var handlerInfos = this.router.currentHandlerInfos;
+    var route;
+    var parentRoute;
+    var defaultParentState;
+    var liveRoutes = null;
+
+    if (!handlerInfos) {
+      return;
+    }
+
+    for (var i = 0; i < handlerInfos.length; i++) {
+      route = handlerInfos[i].handler;
+
+      var connections = (route.connections.length > 0) ? route.connections : [{
+          name: route.routeName,
+          outlet: 'main'
+      }];
+
+      var ownState;
+      for (var j = 0; j < connections.length; j++) {
+        var appended = appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, connections[j]);
+        liveRoutes = appended.liveRoutes;
+        if (appended.ownState.render.name === route.routeName) {
+          ownState = appended.ownState;
+        }
+      }
+      parentRoute = route;
+      defaultParentState = ownState;
+    }
+    if (!this._toplevelView) {
+      var OutletView = this.container.lookupFactory('view:-outlet');
+      this._toplevelView = OutletView.create({ _isTopLevel: true });
+      var instance = this.container.lookup('-application-instance:main');
+      instance.didCreateRootView(this._toplevelView);
+    }
+    this._toplevelView.setOutletState(liveRoutes);
+  },
+
   /**
     Handles notifying any listeners of an impending URL
     change.
@@ -316,6 +355,10 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   willDestroy: function() {
+    if (this._toplevelView) {
+      this._toplevelView.destroy();
+      this._toplevelView = null;
+    }
     this._super.apply(this, arguments);
     this.reset();
   },
@@ -948,5 +991,46 @@ function forEachQueryParam(router, targetRouteName, queryParams, callback) {
     }
   }
 }
+
+function findLiveRoute(liveRoutes, name) {
+  var stack = [liveRoutes];
+  while (stack.length > 0) {
+    var test = stack.shift();
+    if (test.render.name === name) {
+      return test;
+    }
+    var outlets = test.outlets;
+    for (var outletName in outlets) {
+      stack.push(outlets[outletName]);
+    }
+  }
+}
+
+function appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, renderOptions) {
+  var targetName;
+  var target;
+  var myState = {
+    render: renderOptions,
+    outlets: Object.create(null)
+  };
+  if (!parentRoute) {
+    liveRoutes = myState;
+  }
+  targetName = renderOptions.into || (parentRoute && parentRoute.routeName);
+  if (renderOptions.into) {
+    target = findLiveRoute(liveRoutes, renderOptions.into);
+  } else {
+    target = defaultParentState;
+  }
+  if (target) {
+    set(target.outlets, renderOptions.outlet, myState);
+  }
+  return {
+    liveRoutes: liveRoutes,
+    ownState: myState
+  };
+}
+
+
 
 export default EmberRouter;
