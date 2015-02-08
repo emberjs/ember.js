@@ -24,7 +24,7 @@ function mockBrowserLocation(overrides) {
 
 QUnit.module("Location Utilities");
 
-test("replacePath cannot be used to redirect to a different origin", function() {
+QUnit.test("replacePath cannot be used to redirect to a different origin", function() {
   expect(1);
 
   var expectedURL;
@@ -43,7 +43,7 @@ test("replacePath cannot be used to redirect to a different origin", function() 
   replacePath(location, '//google.com');
 });
 
-test("getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
+QUnit.test("getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
   expect(2);
 
   var location = mockBrowserLocation({ pathname: 'test' });
@@ -53,14 +53,14 @@ test("getPath() should normalize location.pathname, making sure it always return
   equal(getPath(location), '/test', 'When a leading slash is already there, it isn\'t added again');
 });
 
-test("getQuery() should return location.search as-is", function() {
+QUnit.test("getQuery() should return location.search as-is", function() {
   expect(1);
 
   var location = mockBrowserLocation({ search: '?foo=bar' });
   equal(getQuery(location), '?foo=bar');
 });
 
-test("getFullPath() should return full pathname including query and hash", function() {
+QUnit.test("getFullPath() should return full pathname including query and hash", function() {
   expect(1);
 
   var location = mockBrowserLocation({
@@ -73,14 +73,14 @@ test("getFullPath() should return full pathname including query and hash", funct
   equal(getFullPath(location), '/about?foo=bar#foo');
 });
 
-test("Feature-Detecting onhashchange", function() {
+QUnit.test("Feature-Detecting onhashchange", function() {
   equal(supportsHashChange(undefined, { onhashchange: function() {} }), true, "When not in IE, use onhashchange existence as evidence of the feature");
   equal(supportsHashChange(undefined, { }), false, "When not in IE, use onhashchange absence as evidence of the feature absence");
   equal(supportsHashChange(7, { onhashchange: function() {} }), false, "When in IE7 compatibility mode, never report existence of the feature");
   equal(supportsHashChange(8, { onhashchange: function() {} }), true, "When in IE8+, use onhashchange existence as evidence of the feature");
 });
 
-test("Feature-detecting the history API", function() {
+QUnit.test("Feature-detecting the history API", function() {
   equal(supportsHistory("", { pushState: true }), true, "returns true if not Android Gingerbread and history.pushState exists");
   equal(supportsHistory("", {}), false, "returns false if history.pushState doesn't exist");
   equal(supportsHistory("", undefined), false, "returns false if history doesn't exist");
