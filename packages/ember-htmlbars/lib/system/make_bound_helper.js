@@ -18,7 +18,7 @@ import {
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
   from the template. If a bound property was provided in the template it will be resolved to its
-  value and any changes to the bound property cause the helper function to be re-ran with the updated
+  value and any changes to the bound property cause the helper function to be re-run with the updated
   values.
 
   * `params` - An array of resolved ordered parameters.
@@ -26,7 +26,7 @@ import {
 
   For example:
 
-  * With an unqouted ordered parameter:
+  * With an unquoted ordered parameter:
 
     ```javascript
     {{x-capitalize foo}}
