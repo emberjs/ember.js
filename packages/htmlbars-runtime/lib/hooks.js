@@ -49,12 +49,12 @@ export function block(env, morph, context, path, params, hash, template, inverse
     var result = helper.call(context, params, hash, options, env);
 
     if (result === undefined && state.lastResult) {
-      state.lastResult.revalidate(this);
+      state.lastResult.revalidate(context);
     } else if (result !== undefined) {
       state.lastResult = result;
     }
   } else {
-    state.lastResult.revalidate(this);
+    state.lastResult.revalidate(context);
   }
 
   morph.isDirty = false;
