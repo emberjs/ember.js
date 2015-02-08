@@ -41,11 +41,11 @@ var nodeHandlers = {
     switchToHandlebars(this);
     this.acceptToken(block);
 
-    var sexpr = this.acceptNode(block.sexpr);
+    block = acceptCommonNodes(this, block);
     var program = block.program ? this.acceptNode(block.program) : null;
     var inverse = block.inverse ? this.acceptNode(block.inverse) : null;
 
-    var node = buildBlock(sexpr, program, inverse);
+    var node = buildBlock(block.path, block.params, block.hash, program, inverse);
     var parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   },
@@ -58,7 +58,7 @@ var nodeHandlers = {
       return;
     }
 
-    this.acceptNode(mustache.sexpr);
+    acceptCommonNodes(this, mustache);
     switchToHandlebars(this);
     this.acceptToken(mustache);
 
@@ -88,25 +88,7 @@ var nodeHandlers = {
   },
 
   SubExpression: function(sexpr) {
-    delete sexpr.isHelper;
-
-    this.acceptNode(sexpr.path);
-
-    if (sexpr.params) {
-      for (var i = 0; i < sexpr.params.length; i++) {
-        this.acceptNode(sexpr.params[i]);
-      }
-    } else {
-      sexpr.params = [];
-    }
-
-    if (sexpr.hash) {
-      this.acceptNode(sexpr.hash);
-    } else {
-      sexpr.hash = buildHash();
-    }
-
-    return sexpr;
+    return acceptCommonNodes(this, sexpr);
   },
 
   PathExpression: function(path) {
@@ -151,6 +133,26 @@ function leadingNewlineDifference(original, value) {
   var lines = difference.split(/\n/);
 
   return lines.length - 1;
+}
+
+function acceptCommonNodes(compiler, node) {
+  compiler.acceptNode(node.path);
+
+  if (node.params) {
+    for (var i = 0; i < node.params.length; i++) {
+      compiler.acceptNode(node.params[i]);
+    }
+  } else {
+    node.params = [];
+  }
+
+  if (node.hash) {
+    compiler.acceptNode(node.hash);
+  } else {
+    node.hash = buildHash();
+  }
+
+  return node;
 }
 
 export default nodeHandlers;

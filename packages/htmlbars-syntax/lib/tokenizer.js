@@ -1,5 +1,5 @@
 import { Tokenizer } from "../simple-html-tokenizer";
-import { isHelper } from "./utils";
+import { unwrapMustache } from "./utils";
 import { map } from "../htmlbars-util/array-utils";
 import builders from "./builders";
 
@@ -86,14 +86,6 @@ function prepareConcatPart(node) {
 
 function formatTokenInfo(tokenizer) {
   return '`' + tokenizer.token.tagName + '` (on line ' + tokenizer.line + ')';
-}
-
-export function unwrapMustache(mustache) {
-  if (isHelper(mustache.sexpr)) {
-    return mustache.sexpr;
-  } else {
-    return mustache.sexpr.path;
-  }
 }
 
 export { Tokenizer };

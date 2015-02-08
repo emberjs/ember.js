@@ -58,20 +58,20 @@ var tokenHandlers = {
     switch(tokenizer.state) {
       // Tag helpers
       case "tagName":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addTagHelper(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
       case "beforeAttributeName":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addTagHelper(mustache);
         return;
       case "attributeName":
       case "afterAttributeName":
         tokenizer.finalizeAttributeValue();
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addTagHelper(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
       case "afterAttributeValueQuoted":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addTagHelper(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
 

@@ -3,14 +3,7 @@ import { processOpcodes } from "./utils";
 import { getAttrNamespace } from "../htmlbars-util";
 import { forEach } from "../htmlbars-util/array-utils";
 import { isHelper } from "../htmlbars-syntax/utils";
-
-function unwrapMustache(mustache) {
-  if (isHelper(mustache.sexpr)) {
-    return mustache.sexpr;
-  } else {
-    return mustache.sexpr.path;
-  }
-}
+import { unwrapMustache } from "../htmlbars-syntax/utils";
 
 function detectIsElementChecked(element){
   for (var i=0, len=element.attributes.length;i<len;i++) {
@@ -121,27 +114,23 @@ HydrationOpcodeCompiler.prototype.closeElement = function() {
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
-  
-  var sexpr = mustache.sexpr;
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
   var end = this.currentDOMChildIndex;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  if (isHelper(sexpr)) {
-    prepareSexpr(this, sexpr);
+  if (isHelper(mustache)) {
+    prepareCommonOpcodes(this, mustache);
     this.opcode('printInlineHook', morphNum);
   } else {
-    preparePath(this, sexpr.path);
+    preparePath(this, mustache.path);
     this.opcode('printContentHook', morphNum);
   }
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
-
-  var sexpr = block.sexpr;
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
@@ -151,7 +140,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  prepareSexpr(this, sexpr);
+  prepareCommonOpcodes(this, block);
   this.opcode('printBlockHook', morphNum, templateId, inverseId);
 };
 
@@ -218,7 +207,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
-  prepareSexpr(this, sexpr);
+  prepareCommonOpcodes(this, sexpr);
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
@@ -241,8 +230,13 @@ HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex
   this.comment();
 };
 
+HydrationOpcodeCompiler.prototype.MustacheStatement = function(mustache) {
+  prepareCommonOpcodes(this, mustache);
+  this.opcode('pushSexprHook');
+};
+
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
-  prepareSexpr(this, sexpr);
+  prepareCommonOpcodes(this, sexpr);
   this.opcode('pushSexprHook');
 };
 
@@ -289,10 +283,10 @@ function prepareHash(compiler, hash) {
   compiler.opcode('prepareObject', pairs.length);
 }
 
-function prepareSexpr(compiler, sexpr) {
-  prepareHash(compiler, sexpr.hash);
-  prepareParams(compiler, sexpr.params);
-  preparePath(compiler, sexpr.path);
+function prepareCommonOpcodes(compiler, node) {
+  prepareHash(compiler, node.hash);
+  prepareParams(compiler, node.params);
+  preparePath(compiler, node.path);
 }
 
 function distributeMorphs(morphs, opcodes) {
