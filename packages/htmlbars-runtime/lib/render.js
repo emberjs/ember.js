@@ -1,4 +1,5 @@
 import { forEach } from "../htmlbars-util/array-utils";
+import ExpressionVisitor from "./expression-visitor";
 
 export default function render(template, context, env, options, blockArguments) {
   var dom = env.dom;
@@ -28,7 +29,10 @@ export default function render(template, context, env, options, blockArguments) 
     node.ownerNode = ownerNode;
   });
 
-  template.render(context, rootNode, env, options, blockArguments);
+  var statements = template.statements;
+  var augmentContext = template.augmentContext;
+
+  populateNodes(context);
 
   if (options && options.renderNode) {
     rootNode.setContent(fragment);
@@ -37,17 +41,29 @@ export default function render(template, context, env, options, blockArguments) 
   return {
     root: rootNode,
     fragment: fragment,
-    revalidate: function(newContext, newEnv, newOptions) {
-      template.render(newContext || context, rootNode, newEnv || env, newOptions || options);
+    revalidate: function(newContext) {
+      populateNodes(newContext || context);
     }
   };
+
+  function populateNodes(context) {
+    var i, l;
+
+    for (i=0, l=augmentContext.length; i<l; i++) {
+      env.hooks.set(env, context, augmentContext[i], blockArguments[i]);
+    }
+
+    for (i=0, l=statements.length; i<l; i++) {
+      ExpressionVisitor.accept(statements[i], nodes[i], context, env, template);
+    }
+  }
 }
 
 export function getCachedFragment(template, env) {
   var dom = env.dom, fragment;
   if (env.useFragmentCache && dom.canClone) {
     if (template.cachedFragment === null) {
-      fragment = template.build(dom);
+      fragment = template.buildFragment(dom);
       if (template.hasRendered) {
         template.cachedFragment = fragment;
       } else {
@@ -58,7 +74,7 @@ export function getCachedFragment(template, env) {
       fragment = dom.cloneNode(template.cachedFragment, true);
     }
   } else if (!fragment) {
-    fragment = template.build(dom);
+    fragment = template.buildFragment(dom);
   }
 
   return fragment;

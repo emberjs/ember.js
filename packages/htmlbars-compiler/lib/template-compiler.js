@@ -89,6 +89,16 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     templateSignature += ', blockArguments';
   }
 
+  var statements = hydrationPrograms.statements.map(function(s) {
+    return indent+'      '+JSON.stringify(s);
+  }).join(",\n");
+
+  var augmentContext = JSON.stringify(hydrationPrograms.augmentContext);
+
+  var templates = this.childTemplates.map(function(_, index) {
+    return 'child' + index;
+  }).join(', ');
+
   var template =
     '(function() {\n' +
     this.getChildTemplateVars(indent + '  ') +
@@ -98,18 +108,13 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'    blockParams: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
-    indent+'    build: ' + fragmentProgram + ',\n' +
-    indent+'    buildRenderNodes: buildRenderNodes,\n' +
-    indent+'    render: function render(' + templateSignature + ') {\n' +
-    indent+'      var dom = env.dom;\n' +
-    this.getHydrationHooks(indent + '      ', this.hydrationCompiler.hooks) +
-    indent+'      var contextualElement = options && options.contextualElement;\n' +
-    indent+'      dom.detectNamespace(contextualElement);\n' +
-    indent+'      var morphs = rootNode.childNodes;\n' +
-    hydrationPrograms.hydrateMorphsProgram +
-    indent+'    }\n' +
+    indent+'    buildFragment: ' + fragmentProgram + ',\n' +
+    indent+'    buildRenderNodes: ' + hydrationPrograms.createMorphsProgram + ',\n' +
+    indent+'    statements: [\n' + statements + '\n' +
+    indent+'    ],\n' +
+    indent+'    augmentContext: ' + augmentContext + ',\n' +
+    indent+'    templates: [' + templates + ']\n' +
     indent+'  };\n' +
-    hydrationPrograms.createMorphsProgram +
     indent+'}())';
 
   this.templates.push(template);
