@@ -4,7 +4,11 @@ import ApplicationInstance from "ember-application/system/application-instance";
 import { indexOf } from "ember-metal/array";
 import jQuery from "ember-views/system/jquery";
 
-var app;
+var app, initializeContextFeatureEnabled;
+
+if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+  initializeContextFeatureEnabled = true;
+}
 
 if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   QUnit.module("Ember.Application instance initializers", {
@@ -323,7 +327,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     });
   });
 
-  if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+  if (initializeContextFeatureEnabled) {
     QUnit.test("initializers should be executed in their own context", function() {
       expect(1);
 

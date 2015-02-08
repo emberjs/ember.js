@@ -4,6 +4,11 @@ import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 
+var instanceInitializersFeatureEnabled;
+if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+  instanceInitializersFeatureEnabled = true;
+}
+
 /**
  A lightweight registry used to store factory and option information keyed
  by type.
@@ -171,7 +176,7 @@ Registry.prototype = {
   lookup: function(fullName, options) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
 
-    if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+    if (instanceInitializersFeatureEnabled) {
       Ember.deprecate('`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
     }
 
@@ -181,7 +186,7 @@ Registry.prototype = {
   lookupFactory: function(fullName) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
 
-    if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+    if (instanceInitializersFeatureEnabled) {
       Ember.deprecate('`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
     }
 
