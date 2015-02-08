@@ -608,7 +608,7 @@ var Select = View.extend({
     var content = get(this, 'contentValues');
     if (!el) { return; }
 
-    var selectionIndex = content.indexOf(selectionValue);
+    var selectionIndex = indexOf(content, selectionValue);
     var prompt = get(this, 'prompt');
 
     if (prompt) { selectionIndex += 1; }
