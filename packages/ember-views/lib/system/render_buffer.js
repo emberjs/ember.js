@@ -7,6 +7,7 @@ import jQuery from "ember-views/system/jquery";
 import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
 import { create } from "ember-metal/platform";
+import { normalizeProperty } from "morph/dom-helper/prop";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -25,7 +26,7 @@ import { create } from "ember-metal/platform";
 // we test the string and context to see if the browser is about to
 // perform this cleanup, but with a special allowance for disregarding
 // <script tags. This disregarding of <script being the first child item
-// may bend the offical spec a bit, and is only needed for Handlebars
+// may bend the official spec a bit, and is only needed for Handlebars
 // templates.
 //
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
@@ -277,7 +278,7 @@ _RenderBuffer.prototype = {
       var childView = childViews[i];
       var ref = el.querySelector('#morph-'+i);
 
-      Ember.assert('An error occured while setting up template bindings. Please check ' +
+      Ember.assert('An error occurred while setting up template bindings. Please check ' +
                    (childView && childView._parentView && childView._parentView._debugTemplateName ?
                         '"' + childView._parentView._debugTemplateName + '" template ' :
                         ''
@@ -303,10 +304,16 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(content) {
-    if (this.buffer === null) {
-      this.buffer = '';
+    if (typeof content === 'string') {
+      if (this.buffer === null) {
+        this.buffer = '';
+      }
+      Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
+      this.buffer += content;
+    } else {
+      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      this.buffer = content;
     }
-    this.buffer += content;
     return this;
   },
 
@@ -453,7 +460,6 @@ _RenderBuffer.prototype = {
     }
 
     var element = this.dom.createElement(tagString, this.outerContextualElement());
-    var $element = jQuery(element);
 
     if (id) {
       this.dom.setAttribute(element, 'id', id);
@@ -467,9 +473,7 @@ _RenderBuffer.prototype = {
 
     if (style) {
       for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          styleBuffer += (prop + ':' + style[prop] + ';');
-        }
+        styleBuffer += (prop + ':' + style[prop] + ';');
       }
 
       this.dom.setAttribute(element, 'style', styleBuffer);
@@ -479,9 +483,7 @@ _RenderBuffer.prototype = {
 
     if (attrs) {
       for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          this.dom.setAttribute(element, attr, attrs[attr]);
-        }
+        this.dom.setAttribute(element, attr, attrs[attr]);
       }
 
       this.elementAttributes = null;
@@ -489,9 +491,9 @@ _RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          $element.prop(prop, props[prop]);
-        }
+        var normalizedCase = normalizeProperty(element, prop.toLowerCase()) || prop;
+
+        this.dom.setPropertyStrict(element, normalizedCase, props[prop]);
       }
 
       this.elementProperties = null;
@@ -508,7 +510,7 @@ _RenderBuffer.prototype = {
   element: function() {
     var content = this.innerContent();
     // No content means a text node buffer, with the content
-    // in _element. HandlebarsBoundView is an example.
+    // in _element. Ember._BoundView is an example.
     if (content === null)  {
       return this._element;
     }
@@ -520,11 +522,19 @@ _RenderBuffer.prototype = {
       this._element = document.createDocumentFragment();
     }
 
-    var nodes = this.dom.parseHTML(content, contextualElement);
-    while (nodes[0]) {
-      this._element.appendChild(nodes[0]);
+    if (content.nodeType) {
+      this._element.appendChild(content);
+    } else {
+      var nodes;
+      nodes = this.dom.parseHTML(content, contextualElement);
+      while (nodes[0]) {
+        this._element.appendChild(nodes[0]);
+      }
     }
-    this.hydrateMorphs(contextualElement);
+    // This should only happen with legacy string buffers
+    if (this.childViews.length > 0) {
+      this.hydrateMorphs(contextualElement);
+    }
 
     return this._element;
   },

@@ -322,7 +322,7 @@ test("should pop false and 0", function() {
   });
 });
 
-test("the copy() should return an indentical set", function() {
+test("the copy() should return an identical set", function() {
   var oldLength = set.length;
   var obj;
 

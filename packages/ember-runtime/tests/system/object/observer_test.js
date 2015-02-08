@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
-import {observer} from "ember-metal/mixin";
+import { observer } from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { testBoth } from "ember-metal/tests/props_helper";
 import EmberObject from "ember-runtime/system/object";
 
 QUnit.module('EmberObject observer');
@@ -74,7 +74,7 @@ testBoth('observer on instance', function(get, set) {
 
 });
 
-testBoth('observer on instance overridding class', function(get, set) {
+testBoth('observer on instance overriding class', function(get, set) {
 
   var MyClass = EmberObject.extend({
 

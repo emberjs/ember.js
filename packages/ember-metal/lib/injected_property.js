@@ -1,9 +1,9 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { ComputedProperty } from "ember-metal/computed";
+import { AliasedProperty } from "ember-metal/alias";
 import { Descriptor } from "ember-metal/properties";
 import { create } from "ember-metal/platform";
-import { inspect } from "ember-metal/utils";
-import EmberError from "ember-metal/error";
+import { meta } from "ember-metal/utils";
 
 /**
   Read-only property that returns the result of a container lookup.
@@ -20,27 +20,30 @@ function InjectedProperty(type, name) {
   this.type = type;
   this.name = name;
 
-  this._super$Constructor(function(keyName) {
-    Ember.assert("Attempting to lookup an injected property on an object " +
-                 "without a container, ensure that the object was " +
-                 "instantiated via a container.", this.container);
+  this._super$Constructor(injectedPropertyGet);
+  AliasedPropertyPrototype.oneWay.call(this);
+}
 
-    return this.container.lookup(type + ':' + (name || keyName));
-  }, { readOnly: true });
+function injectedPropertyGet(keyName) {
+  var desc = meta(this).descs[keyName];
+
+  Ember.assert("Attempting to lookup an injected property on an object " +
+               "without a container, ensure that the object was " +
+               "instantiated via a container.", this.container);
+
+  return this.container.lookup(desc.type + ':' + (desc.name || keyName));
 }
 
 InjectedProperty.prototype = create(Descriptor.prototype);
 
 var InjectedPropertyPrototype = InjectedProperty.prototype;
 var ComputedPropertyPrototype = ComputedProperty.prototype;
+var AliasedPropertyPrototype = AliasedProperty.prototype;
 
 InjectedPropertyPrototype._super$Constructor = ComputedProperty;
 
 InjectedPropertyPrototype.get = ComputedPropertyPrototype.get;
-
-InjectedPropertyPrototype.set = function(obj, keyName) {
-  throw new EmberError("Cannot set injected property '" + keyName + "' on object: " + inspect(obj));
-};
+InjectedPropertyPrototype.readOnly = ComputedPropertyPrototype.readOnly;
 
 InjectedPropertyPrototype.teardown = ComputedPropertyPrototype.teardown;
 

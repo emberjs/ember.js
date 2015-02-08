@@ -30,6 +30,24 @@ import Component from "ember-views/views/component";
 
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
+import ComponentLookup from "ember-views/component_lookup";
+import Checkbox from "ember-views/views/checkbox";
+import TextSupport from "ember-views/mixins/text_support";
+import TextField from "ember-views/views/text_field";
+import TextArea from "ember-views/views/text_area";
+
+import BoundView from "ember-views/views/bound_view";
+import SimpleBoundView from "ember-views/views/simple_bound_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
+import {
+  _SimpleMetamorphView,
+  _Metamorph
+} from "ember-views/views/metamorph_view";
+import {
+  Select,
+  SelectOption,
+  SelectOptgroup
+} from "ember-views/views/select";
 // END IMPORTS
 
 /**
@@ -54,7 +72,21 @@ Ember.CoreView = CoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
+Ember.Checkbox = Checkbox;
+Ember.TextField = TextField;
+Ember.TextArea = TextArea;
 
+Ember._SimpleBoundView = SimpleBoundView;
+Ember._BoundView = BoundView;
+Ember._SimpleMetamorphView = _SimpleMetamorphView;
+Ember._MetamorphView = _MetamorphView;
+Ember._Metamorph = _Metamorph;
+Ember.Select = Select;
+Ember.SelectOption = SelectOption;
+Ember.SelectOptgroup = SelectOptgroup;
+
+Ember.TextSupport = TextSupport;
+Ember.ComponentLookup = ComponentLookup;
 Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;

@@ -188,7 +188,13 @@ test("returns model.id if params include *_id", function(){
   deepEqual(route.serialize(model, ['post_id']), {post_id: 2}, "serialized correctly");
 });
 
-test("returns undefined if model is not set", function(){
+test("returns checks for existence of model.post_id before trying model.id", function() {
+  var model = { post_id: 3 };
+
+  deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, "serialized correctly");
+});
+
+test("returns undefined if model is not set", function() {
   equal(route.serialize(undefined, ['post_id']), undefined, "serialized correctly");
 });
 
@@ -238,8 +244,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 
     container.register('service:auth', Service.extend());
 
-    var appRoute = container.lookup('route:application'),
-      authService = container.lookup('service:auth');
+    var appRoute = container.lookup('route:application');
+    var authService = container.lookup('service:auth');
 
     equal(authService, appRoute.get('authService'), "service.auth is injected");
   });

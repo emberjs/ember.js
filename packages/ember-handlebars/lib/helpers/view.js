@@ -4,16 +4,14 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
-// var emberWarn = Ember.warn, emberAssert = Ember.assert;
 
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
 import keys from "ember-metal/keys";
 import { IS_BINDING } from "ember-metal/mixin";
-import { readViewFactory } from "ember-views/streams/read";
+import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
 import SimpleStream from "ember-metal/streams/simple";
-import { read } from "ember-metal/streams/read";
 
 function makeBindings(options) {
   var hash = options.hash;
@@ -96,7 +94,7 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (hash.attributeBindings) {
-      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed." +
+      Ember.assert("Setting 'attributeBindings' via template helpers is not allowed." +
                    " Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
     }
@@ -134,19 +132,12 @@ export var ViewHelper = EmberObject.create({
   helper: function(thisContext, newView, options) {
     var data = options.data;
     var fn   = options.fn;
-    var newViewProto;
 
     makeBindings(options);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
-    viewOptions.templateData = data;
-
-    if (View.detectInstance(newView)) {
-      newViewProto = newView;
-    } else {
-      newViewProto = newView.proto();
-    }
+    var newViewProto = newView.proto();
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName",
@@ -176,7 +167,6 @@ export var ViewHelper = EmberObject.create({
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
-    viewOptions.templateData = data;
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName",
@@ -379,7 +369,7 @@ export function viewHelper(path) {
   var options = arguments[arguments.length - 1];
   var types = options.types;
   var view = options.data.view;
-  var container = view.container || read(view._keywords.view).container;
+  var container = view.container || view._keywords.view.value().container;
   var viewClass;
 
   // If no path is provided, treat path param as options

@@ -55,7 +55,7 @@ function click(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
 
-  if ($el.is(':input')) {
+  if ($el.is(':input, [contenteditable=true]')) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
       run($el, function(){
@@ -173,8 +173,10 @@ function wait(app, value) {
 
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
+      var router = app.__container__.lookup('router:main');
+
       // 1. If the router is loading, keep polling
-      var routerIsLoading = !!app.__container__.lookup('router:main').router.activeTransition;
+      var routerIsLoading = router.router && !!router.router.activeTransition;
       if (routerIsLoading) { return; }
 
       // 2. If there are pending Ajax requests, keep polling
@@ -410,6 +412,7 @@ if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
    click('.btn');
    ```
 
+   @since 1.9.0
    @method pauseTest
    @return {Object} A promise that will never resolve
    */

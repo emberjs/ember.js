@@ -1,5 +1,5 @@
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
-import EmberHandlebars from "ember-handlebars-compiler";
+import { SafeString } from "ember-htmlbars/utils/string";
 
 QUnit.module('ember-views: sanitizeAttributeValue(null, "href")');
 
@@ -31,12 +31,12 @@ test('blocks javascript: protocol', function() {
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
 });
 
-test('blocks vbscript: protocol', function() {
+test('blocks blacklisted protocols', function() {
   /* jshint scripturl:true */
 
   expect(1);
 
-  var expected = 'vbscript:alert("foo")';
+  var expected = 'javascript:alert("foo")';
   var actual = sanitizeAttributeValue(null, 'href', expected);
 
   equal(actual, 'unsafe:' + expected, 'protocol escaped');
@@ -48,7 +48,7 @@ test('does not block SafeStrings', function() {
   expect(1);
 
   var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(null, 'href', new EmberHandlebars.SafeString(expected));
+  var actual = sanitizeAttributeValue(null, 'href', new SafeString(expected));
 
   equal(actual, expected, 'protocol unescaped');
 });

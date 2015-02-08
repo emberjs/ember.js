@@ -18,6 +18,32 @@ QUnit.module("EmberView - Template Functionality", {
   }
 });
 
+test("Template views return throw if their template cannot be found", function() {
+  view = EmberView.create({
+    templateName: 'cantBeFound',
+    container: { lookup: function() { }}
+  });
+
+  expectAssertion(function() {
+    get(view, 'template');
+  }, /cantBeFound/);
+});
+
+if (typeof Handlebars === "object") {
+  test("should allow standard Handlebars template usage", function() {
+    view = EmberView.create({
+      context: { name: "Erik" },
+      template: Handlebars.compile("Hello, {{name}}")
+    });
+
+    run(function() {
+      view.createElement();
+    });
+
+    equal(view.$().text(), "Hello, Erik");
+  });
+}
+
 test("should call the function of the associated template", function() {
   container.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
@@ -162,7 +188,6 @@ test("should provide a controller to the template if a controller is specified o
     template: function(buffer, options) {
       options.data.view.appendChild(EmberView.create({
         controller: controller2,
-        templateData: options.data,
         template: function(context, options) {
           contextForView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
@@ -188,7 +213,6 @@ test("should provide a controller to the template if a controller is specified o
 
     template: function(buffer, options) {
       options.data.view.appendChild(EmberView.create({
-        templateData: options.data,
         template: function(context, options) {
           contextForControllerlessView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();

@@ -13,7 +13,7 @@ import {
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
-import EmberHandlebars from 'ember-handlebars';
+import helpers from 'ember-htmlbars/helpers';
 
 export var Resolver = EmberObject.extend({
   /**
@@ -235,12 +235,13 @@ export default EmberObject.extend({
   */
   lookupDescription: function(fullName) {
     var parsedName = this.parseName(fullName);
+    var description;
 
     if (parsedName.type === 'template') {
       return 'template at ' + parsedName.fullNameWithoutType.replace(/\./g, '/');
     }
 
-    var description = parsedName.root + '.' + classify(parsedName.name);
+    description = parsedName.root + '.' + classify(parsedName.name).replace(/\./g, '');
 
     if (parsedName.type !== 'model') {
       description += classify(parsedName.type);
@@ -350,7 +351,7 @@ export default EmberObject.extend({
     @method resolveHelper
   */
   resolveHelper: function(parsedName) {
-    return this.resolveOther(parsedName) || EmberHandlebars.helpers[parsedName.fullNameWithoutType];
+    return this.resolveOther(parsedName) || helpers[parsedName.fullNameWithoutType];
   },
   /**
     Look up the specified object (from parsedName) on the appropriate

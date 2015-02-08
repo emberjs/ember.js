@@ -5,7 +5,6 @@
     <title>Ember</title>
     <link rel="stylesheet" href="../qunit/qunit.css">
     <script src="../qunit/qunit.js"></script>
-    <script src="../handlebars/handlebars.js"></script>
 
     <script type="text/javascript">
       window.loadScript = function(url) {
@@ -56,8 +55,7 @@
         // Don't worry about jQuery version
         ENV['FORCE_JQUERY'] = true;
 
-        // Don't worry about jQuery version
-        ENV['RAISE_ON_DEPRECATION'] = !!QUnit.urlParams.raiseonunhandleddeprecation;
+        ENV['RAISE_ON_DEPRECATION'] = true;
       })();
     </script>
 
@@ -67,8 +65,12 @@
       if (dist) {
         loadScript('../ember.' + dist + '.js');
       } else {
-        loadScript('../ember.js');
+        loadScript('../ember.debug.js');
       }
+    </script>
+
+    <script>
+      loadScript('../ember-template-compiler.js');
     </script>
 
     <script>
@@ -119,8 +121,6 @@
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
         QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
-        // Raise on unhandled deprecation
-        QUnit.config.urlConfig.push({ id: 'raiseonunhandleddeprecation', label: 'Raise on Deprecation'});
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
       })();

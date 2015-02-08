@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // FEATURES, K, A, deprecate, assert, Logger
+import Ember from "ember-metal/core"; // FEATURES, A, deprecate, assert, Logger
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -27,6 +27,8 @@ import generateController from "ember-routing/system/generate_controller";
 import { stashParamNames } from "ember-routing/utils";
 
 var slice = Array.prototype.slice;
+
+function K() { return this; }
 
 /**
 @module ember
@@ -343,7 +345,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} transition
     @since 1.7.0
   */
-  resetController: Ember.K,
+  resetController: K,
 
   /**
     @private
@@ -628,7 +630,7 @@ var Route = EmberObject.extend(ActionHandler, {
   _actions: {
 
     queryParamsDidChange: function(changed, totalPresent, removed) {
-      var qpMap = this.get('_qp').map;
+      var qpMap = get(this, '_qp').map;
 
       var totalChanged = keys(changed).concat(keys(removed));
       for (var i = 0, len = totalChanged.length; i < len; ++i) {
@@ -739,7 +741,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method deactivate
   */
-  deactivate: Ember.K,
+  deactivate: K,
 
   /**
     This hook is executed when the router enters the route. It is not executed
@@ -747,7 +749,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method activate
   */
-  activate: Ember.K,
+  activate: K,
 
   /**
     Transition the application into another route. The route may
@@ -795,6 +797,19 @@ var Route = EmberObject.extend(ActionHandler, {
     ```javascript
     this.transitionTo('/');
     this.transitionTo('/blog/post/1/comment/13');
+    this.transitionTo('/blog/posts?sort=title');
+    ```
+
+    An options hash with a `queryParams` property may be provided as
+    the final argument to add query parameters to the destination URL.
+
+    ```javascript
+    this.transitionTo('blogPost', 1, {
+      queryParams: {showComments: 'true'}
+    });
+
+    // if you just want to transition the query parameters without changing the route
+    this.transitionTo({queryParams: {sort: 'date'}});
     ```
 
     See also 'replaceWith'.
@@ -862,10 +877,30 @@ var Route = EmberObject.extend(ActionHandler, {
     });
     ```
 
+    Nested Route with Query String Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.resource('fruits', function() {
+        this.route('apples');
+      });
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        transitionToApples: function() {
+          this.transitionTo('fruits.apples', {queryParams: {color: 'red'}});
+        }
+      }
+    });
+    ```
+
     @method transitionTo
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
   */
@@ -963,7 +998,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     ```javascript
     App.Router.map(function() {
-      this.route("index");
+      this.route('index');
     });
 
     App.ApplicationRoute = Ember.Route.extend({
@@ -1108,7 +1143,7 @@ var Route = EmberObject.extend(ActionHandler, {
             // convert the reject into a resolve and the
             // transition would continue. To propagate the
             // error so that it'd be handled by the `error`
-            // hook, you would have to either
+            // hook, you would have to
             return Ember.RSVP.reject(e);
           });
         }
@@ -1118,13 +1153,12 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method beforeModel
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this route
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
   */
-  beforeModel: Ember.K,
+  beforeModel: K,
 
   /**
     This hook is called after this route's model has resolved.
@@ -1152,13 +1186,12 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this handler
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
-  afterModel: Ember.K,
+  afterModel: K,
 
   /**
     A hook you can implement to optionally redirect to another route.
@@ -1184,7 +1217,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} model the model for this route
     @param {Transition} transition the transition object associated with the current transition
   */
-  redirect: Ember.K,
+  redirect: K,
 
   /**
     Called when the context is changed by router.js.
@@ -1257,7 +1290,6 @@ var Route = EmberObject.extend(ActionHandler, {
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
-    @param {Object} queryParams the query params for this route
     @return {Object|Promise} the model for this route. If
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
@@ -1341,7 +1373,7 @@ var Route = EmberObject.extend(ActionHandler, {
         Ember.assert("You used the dynamic segment " + name + "_id in your route " +
                      routeName + ", but " + namespace + "." + classify(name) +
                      " did not exist and you did not override your route's `model` " +
-                     "hook.", modelClass);
+                     "hook.", !!modelClass);
 
         if (!modelClass) { return; }
 
@@ -1394,8 +1426,12 @@ var Route = EmberObject.extend(ActionHandler, {
 
     var name = params[0], object = {};
 
-    if (/_id$/.test(name) && params.length === 1) {
-      object[name] = get(model, "id");
+    if (params.length === 1) {
+      if (name in model) {
+        object[name] = get(model, name);
+      } else if (/_id$/.test(name)) {
+        object[name] = get(model, "id");
+      }
     } else {
       object = getProperties(model, params);
     }
@@ -1745,18 +1781,18 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {String} [options.model] the model object to set on `options.controller`
                     Defaults to the return value of the Route's model hook
   */
-  render: function(name, options) {
+  render: function(_name, options) {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
-    var namePassed = typeof name === 'string' && !!name;
+    var namePassed = typeof _name === 'string' && !!_name;
+    var name;
 
-    if (typeof name === 'object' && !options) {
-      options = name;
+    if (typeof _name === 'object' && !options) {
       name = this.routeName;
+      options = _name;
+    } else {
+      name = _name;
     }
-
-    options = options || {};
-    options.namePassed = namePassed;
 
     var templateName;
 
@@ -1768,30 +1804,43 @@ var Route = EmberObject.extend(ActionHandler, {
       templateName = this.templateName || name;
     }
 
-    var viewName = options.view || namePassed && name || this.viewName || name;
+    var renderOptions = buildRenderOptions(this, namePassed, name, options);
 
-    var container = this.container;
-    var view = container.lookup('view:' + viewName);
-    var template = view ? view.get('template') : null;
+    var LOG_VIEW_LOOKUPS = get(this.router, 'namespace.LOG_VIEW_LOOKUPS');
+    var viewName = options && options.view || namePassed && name || this.viewName || name;
+    var view, template;
 
-    if (!template) {
-      template = container.lookup('template:' + templateName);
-    }
-
-    if (!view && !template) {
-      Ember.assert("Could not find \"" + name + "\" template or view.", Ember.isEmpty(arguments[0]));
-      if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
-        Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+    var ViewClass = this.container.lookupFactory('view:' + viewName);
+    if (ViewClass) {
+      view = setupView(ViewClass, renderOptions);
+      if (!get(view, 'template')) {
+        view.set('template', this.container.lookup('template:' + templateName));
       }
-      return;
+      if (LOG_VIEW_LOOKUPS) {
+        Ember.Logger.info("Rendering " + renderOptions.name + " with " + view, { fullName: 'view:' + renderOptions.name });
+      }
+    } else {
+      template = this.container.lookup('template:' + templateName);
+      if (!template) {
+        Ember.assert("Could not find \"" + name + "\" template or view.", arguments.length === 0 || Ember.isEmpty(arguments[0]));
+        if (LOG_VIEW_LOOKUPS) {
+          Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+        }
+        return;
+      }
+      var defaultView = renderOptions.into ? 'view:default' : 'view:toplevel';
+      ViewClass = this.container.lookupFactory(defaultView);
+      view = setupView(ViewClass, renderOptions);
+      if (!get(view, 'template')) {
+        view.set('template', template);
+      }
+      if (LOG_VIEW_LOOKUPS) {
+        Ember.Logger.info("Rendering " + renderOptions.name + " with default view " + view, { fullName: 'view:' + renderOptions.name });
+      }
     }
 
-    options = normalizeOptions(this, name, template, options);
-    view = setupView(view, container, options);
-
-    if (options.outlet === 'main') { this.lastRenderedTemplate = name; }
-
-    appendView(this, view, options);
+    if (renderOptions.outlet === 'main') { this.lastRenderedTemplate = name; }
+    appendView(this, view, renderOptions);
   },
 
   /**
@@ -1895,7 +1944,8 @@ function parentRoute(route) {
 function handlerInfoFor(route, handlerInfos, _offset) {
   if (!handlerInfos) { return; }
 
-  var offset = _offset || 0, current;
+  var offset = _offset || 0;
+  var current;
   for (var i=0, l=handlerInfos.length; i<l; i++) {
     current = handlerInfos[i].handler;
     if (current === route) { return handlerInfos[i+offset]; }
@@ -1903,7 +1953,8 @@ function handlerInfoFor(route, handlerInfos, _offset) {
 }
 
 function parentTemplate(route) {
-  var parent = parentRoute(route), template;
+  var parent = parentRoute(route);
+  var template;
 
   if (!parent) { return; }
 
@@ -1914,25 +1965,15 @@ function parentTemplate(route) {
   }
 }
 
-function normalizeOptions(route, name, template, options) {
-  options = options || {};
-  options.into = options.into ? options.into.replace(/\//g, '.') : parentTemplate(route);
-  options.outlet = options.outlet || 'main';
-  options.name = name;
-  options.template = template;
-  options.LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
+function buildRenderOptions(route, namePassed, name, options) {
+  var controller = options && options.controller;
 
-  Ember.assert("An outlet ("+options.outlet+") was specified but was not found.", options.outlet === 'main' || options.into);
-
-  var controller = options.controller;
-  var model = options.model;
-
-  if (options.controller) {
-    controller = options.controller;
-  } else if (options.namePassed) {
-    controller = route.container.lookup('controller:' + name) || route.controllerName || route.routeName;
-  } else {
-    controller = route.controllerName || route.container.lookup('controller:' + name);
+  if (!controller) {
+    if (namePassed) {
+      controller = route.container.lookup('controller:' + name) || route.controllerName || route.routeName;
+    } else {
+      controller = route.controllerName || route.container.lookup('controller:' + name);
+    }
   }
 
   if (typeof controller === 'string') {
@@ -1943,38 +1984,28 @@ function normalizeOptions(route, name, template, options) {
     }
   }
 
-  if (model) {
-    controller.set('model', model);
+  if (options && options.model) {
+    controller.set('model', options.model);
   }
 
-  options.controller = controller;
+  var renderOptions = {
+    into: options && options.into ? options.into.replace(/\//g, '.') : parentTemplate(route),
+    outlet: (options && options.outlet) || 'main',
+    name: name,
+    controller: controller
+  };
 
-  return options;
+  Ember.assert("An outlet ("+renderOptions.outlet+") was specified but was not found.", renderOptions.outlet === 'main' || renderOptions.into);
+
+  return renderOptions;
 }
 
-function setupView(view, container, options) {
-  if (view) {
-    if (options.LOG_VIEW_LOOKUPS) {
-      Ember.Logger.info("Rendering " + options.name + " with " + view, { fullName: 'view:' + options.name });
-    }
-  } else {
-    var defaultView = options.into ? 'view:default' : 'view:toplevel';
-    view = container.lookup(defaultView);
-    if (options.LOG_VIEW_LOOKUPS) {
-      Ember.Logger.info("Rendering " + options.name + " with default view " + view, { fullName: 'view:' + options.name });
-    }
-  }
-
-  if (!get(view, 'templateName')) {
-    set(view, 'template', options.template);
-
-    set(view, '_debugTemplateName', options.name);
-  }
-
-  set(view, 'renderedName', options.name);
-  set(view, 'controller', options.controller);
-
-  return view;
+function setupView(ViewClass, options) {
+  return ViewClass.create({
+    _debugTemplateName: options.name,
+    renderedName: options.name,
+    controller: options.controller
+  });
 }
 
 function appendView(route, view, options) {
@@ -1985,7 +2016,7 @@ function appendView(route, view, options) {
     replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
     parentView.connectOutlet(options.outlet, view);
   } else {
-    var rootElement = get(route, 'router.namespace.rootElement');
+    var rootElement = get(route.router, 'namespace.rootElement');
     // tear down view if one is already rendered
     if (route.teardownTopLevelView) {
       route.teardownTopLevelView();

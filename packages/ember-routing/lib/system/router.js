@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // FEATURES, Logger, K, assert
+import Ember from "ember-metal/core"; // FEATURES, Logger, assert
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -13,7 +13,7 @@ import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
 import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   routeArgs,
   getActiveTargetName,
@@ -29,6 +29,8 @@ import { create } from "ember-metal/platform";
 import Router from 'router';
 import 'router/transition';
 
+function K() { return this; }
+
 var slice = [].slice;
 
 /**
@@ -38,6 +40,7 @@ var slice = [].slice;
   @class Router
   @namespace Ember
   @extends Ember.Object
+  @uses Ember.Evented
 */
 var EmberRouter = EmberObject.extend(Evented, {
   /**
@@ -66,7 +69,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   rootURL: '/',
 
   init: function() {
-    this.router = this.constructor.router || this.constructor.map(Ember.K);
+    this.router = this.constructor.router || this.constructor.map(K);
     this._activeViews = {};
     this._setupLocation();
     this._qpCache = {};
@@ -98,7 +101,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
   */
   startRouting: function() {
-    this.router = this.router || this.constructor.map(Ember.K);
+    this.router = this.router || this.constructor.map(K);
 
     var router = this.router;
     var location = get(this, 'location');
@@ -171,7 +174,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   transitionTo: function() {
-    var args = slice.call(arguments), queryParams;
+    var args = slice.call(arguments);
+    var queryParams;
     if (resemblesURL(args[0])) {
       return this._doURLTransition('transitionTo', args[0]);
     }
@@ -399,10 +403,12 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     for (var key in groupedByUrlKey) {
       var qps = groupedByUrlKey[key];
-      if (qps.length > 1) {
-        var qp0 = qps[0].qp, qp1=qps[1].qp;
-        Ember.assert(fmt("You're not allowed to have more than one controller property map to the same query param key, but both `%@` and `%@` map to `%@`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `%@: { as: 'other-%@' }`", [qp0.fprop, qp1.fprop, qp0.urlKey, qp0.prop, qp0.prop]), false);
-      }
+      Ember.assert(fmt("You're not allowed to have more than one controller " +
+                       "property map to the same query param key, but both " +
+                       "`%@` and `%@` map to `%@`. You can fix this by mapping " +
+                       "one of the controller properties to a different query " +
+                       "param key via the `as` config option, e.g. `%@: { as: 'other-%@' }`",
+                       [qps[0].qp.fprop, qps[1] ? qps[1].qp.fprop : "", qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
       var qp = qps[0].qp;
       queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
     }
@@ -795,8 +801,8 @@ EmberRouter.reopenClass({
       if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
         router._willChangeContextEvent = 'willChangeModel';
       } else {
-        router._triggerWillChangeContext = Ember.K;
-        router._triggerWillLeave = Ember.K;
+        router._triggerWillChangeContext = K;
+        router._triggerWillLeave = K;
       }
 
       router.callbacks = [];
@@ -858,9 +864,8 @@ function listenForTransitionErrors(transition) {
   transition.then(null, function(error) {
     if (!error || !error.name) { return; }
 
-    if (error.name === "UnrecognizedURLError") {
-      Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
-    }
+    Ember.assert("The URL '" + error.message + "' did not match any routes in your application", error.name !== "UnrecognizedURLError");
+
     return error;
   }, 'Ember: Process errors from Router');
 }

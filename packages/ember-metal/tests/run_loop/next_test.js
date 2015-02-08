@@ -30,7 +30,7 @@ asyncTest('callback should be called from within separate loop', function() {
   setTimeout(function() {
     QUnit.start();
     ok(secondRunLoop, 'callback was called from within run loop');
-    ok(firstRunLoop && secondRunLoop !== firstRunLoop, 'two seperate run loops were invoked');
+    ok(firstRunLoop && secondRunLoop !== firstRunLoop, 'two separate run loops were invoked');
   }, 20);
 });
 

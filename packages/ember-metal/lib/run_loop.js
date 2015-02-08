@@ -49,7 +49,7 @@ var slice = [].slice;
 
   ```javascript
   run(function() {
-    // code to be execute within a RunLoop
+    // code to be executed within a RunLoop
   });
   ```
 
@@ -153,8 +153,7 @@ run.join = function() {
     May be a function or a string. If you pass a string
     then it will be looked up on the passed target.
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
-  @return {Object} return value from invoking the passed function. Please note,
-  when called within an existing loop, no return value is possible.
+  @return {Function} returns a new function that will always have a particular context
   @since 1.4.0
 */
 run.bind = function(target, method /* args */) {
@@ -175,7 +174,7 @@ run.queues = backburner.queueNames;
 
   ```javascript
   run.begin();
-  // code to be execute within a RunLoop
+  // code to be executed within a RunLoop
   run.end();
   ```
 
@@ -193,7 +192,7 @@ run.begin = function() {
 
   ```javascript
   run.begin();
-  // code to be execute within a RunLoop
+  // code to be executed within a RunLoop
   run.end();
   ```
 
@@ -612,7 +611,7 @@ run.throttle = function() {
 function checkAutoRun() {
   if (!run.currentRunLoop) {
     Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun." +
-                 " You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
+                 " You will need to wrap any code with asynchronous side-effects in a run", !Ember.testing);
   }
 }
 

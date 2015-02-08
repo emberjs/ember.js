@@ -1,5 +1,4 @@
 require 'bundler/setup'
-require 'ember-dev/tasks'
 require './lib/ember/version'
 require 'zlib'
 require 'fileutils'
@@ -15,7 +14,7 @@ namespace :release do
   end
 
   task :gem do
-    sh "rakep"
+    sh 'npm run-script build'
     sh 'gem build ember-source.gemspec'
     sh "gem push ember-source-#{Ember::VERSION.gsub('-','.')}.gem"
   end

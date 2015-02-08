@@ -12,22 +12,22 @@
     "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": false,
     "ember-runtime-item-controller-inline-class": false,
-    "ember-metal-injected-properties": false,
+    "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
-    "ember-testing-pause-test": true
+    "ember-testing-pause-test": true,
+    "ember-htmlbars": true,
+    "ember-htmlbars-block-params": true,
+    "ember-htmlbars-component-generation": false,
+    "ember-htmlbars-inline-if-helper": false,
+    "ember-htmlbars-attribute-syntax": false
   },
   "debugStatements": [
     "Ember.warn",
-    "emberWarn",
     "Ember.assert",
-    "emberAssert",
     "Ember.deprecate",
-    "emberDeprecate",
     "Ember.debug",
-    "emberDebug",
     "Ember.Logger.info",
-    "Ember.runInDebug",
-    "runInDebug"
+    "Ember.runInDebug"
   ]
 }

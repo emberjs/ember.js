@@ -3,18 +3,26 @@
 // this is so that the global exports occur properly
 import "ember-metal";
 import "ember-runtime";
-import "ember-handlebars";
 import "ember-views";
 import "ember-routing";
-import "ember-routing-handlebars";
 import "ember-application";
 import "ember-extension-support";
+import "ember-htmlbars";
+import "ember-routing-htmlbars";
+
+import { runLoadHooks } from 'ember-runtime/system/lazy_load';
+
+if (Ember.__loader.registry['ember-template-compiler']) {
+  requireModule('ember-template-compiler');
+}
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
 if (Ember.__loader.registry['ember-testing']) {
   requireModule('ember-testing');
 }
+
+runLoadHooks('Ember');
 
 /**
 Ember

@@ -1,11 +1,11 @@
 import Ember from 'ember-metal/core';
-import {addObserver} from 'ember-metal/observer';
-import {computed} from 'ember-metal/computed';
-import {mapBy, union, sort} from 'ember-runtime/computed/reduce_computed_macros';
+import { addObserver } from 'ember-metal/observer';
+import { computed } from 'ember-metal/computed';
+import { mapBy, union, sort } from 'ember-runtime/computed/reduce_computed_macros';
 import run from 'ember-metal/run_loop';
-import {defineProperty} from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import compare from 'ember-runtime/compare';
-import testBoth from 'ember-metal/tests/props_helper';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
 
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {

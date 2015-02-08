@@ -45,18 +45,20 @@ test("returns element if you set the value", function() {
   equal(get(view, 'element'), dom, 'now has set element');
 });
 
-test("should not allow the elementId to be changed after inserted", function() {
-  view = EmberView.create({
-    elementId: 'one'
+Ember.runInDebug(function() {
+  test("should not allow the elementId to be changed after inserted", function() {
+    view = EmberView.create({
+      elementId: 'one'
+    });
+
+    run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    raises(function() {
+      view.set('elementId', 'two');
+    }, "raises elementId changed exception");
+
+    equal(view.get('elementId'), 'one', 'elementId is still "one"');
   });
-
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  raises(function() {
-    view.set('elementId', 'two');
-  }, "raises elementId changed exception");
-
-  equal(view.get('elementId'), 'one', 'elementId is still "one"');
 });

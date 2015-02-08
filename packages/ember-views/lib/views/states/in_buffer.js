@@ -1,7 +1,7 @@
 import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";
 
-import Ember from "ember-metal/core"; // Ember.assert
+import jQuery from "ember-views/system/jquery";
 import { create } from "ember-metal/platform";
 import merge from "ember-metal/merge";
 
@@ -19,7 +19,7 @@ merge(inBuffer, {
     // rerender the view to allow the render method to reflect the
     // changes.
     view.rerender();
-    return Ember.$();
+    return jQuery();
   },
 
   // when a view is rendered in a buffer, rerendering it simply

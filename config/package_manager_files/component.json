@@ -2,12 +2,11 @@
   "name": "ember",
   "repo": "components/ember",
   "version": "VERSION_STRING_PLACEHOLDER",
-  "main": "ember.js",
+  "main": "ember.debug.js",
   "scripts": [
-    "ember.js"
+    "ember.debug.js"
   ],
   "dependencies": {
-    "component/jquery": ">= 1.7.0 <= 2.1.0",
-    "components/handlebars.js": ">= 2.0.0 < 3.0.0"
+    "components/jquery": ">= 1.7.0 < 2.2.0"
   }
 }

@@ -1,5 +1,5 @@
 // Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
-// Ember.K, jQuery, Ember.lookup,
+// jQuery, Ember.lookup,
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
@@ -17,21 +17,19 @@ import { defineProperty } from "ember-metal/properties";
 import { guidFor } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import { observer } from "ember-metal/mixin";
-import SimpleStream from "ember-metal/streams/simple";
 import KeyStream from "ember-views/streams/key_stream";
 import StreamBinding from "ember-metal/streams/stream_binding";
 import ContextStream from "ember-views/streams/context_stream";
 
-import {
-  typeOf,
-  isArray
-} from "ember-metal/utils";
+import { typeOf } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
 import { Mixin } from 'ember-metal/mixin';
 import { deprecateProperty } from "ember-metal/deprecate_property";
 import { A as emberA } from "ember-runtime/system/native_array";
 
-import { dasherize } from "ember-runtime/system/string";
+import {
+  streamifyClassNameBinding
+} from "ember-views/streams/class_name_binding";
 
 // ES6TODO: functions on EnumerableUtils should get their own export
 import {
@@ -51,8 +49,24 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
+import {
+  subscribe,
+  read,
+  isStream
+} from "ember-metal/streams/utils";
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
+import { normalizeProperty } from "morph/dom-helper/prop";
 
+function K() { return this; }
+
+// Circular dep
+var _htmlbarsDefaultEnv;
+function buildHTMLBarsDefaultEnv(){
+  if (!_htmlbarsDefaultEnv) {
+    _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
+  }
+  return create(_htmlbarsDefaultEnv);
+}
 
 /**
 @module ember
@@ -599,7 +613,7 @@ var EMPTY_ARRAY = [];
       mouseEnter: function(event, view) {
         // view might be instance of either
         // OuterView or InnerView depending on
-        // where on the page the user interaction occured
+        // where on the page the user interaction occurred
       }
     })
   });
@@ -751,10 +765,12 @@ var View = CoreView.extend({
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }),
+
+  _controller: null,
 
   /**
     The controller managing this view. If this property is set, it will be
@@ -763,7 +779,16 @@ var View = CoreView.extend({
     @property controller
     @type Object
   */
-  controller: computed('_parentView', function(key) {
+  controller: computed(function(key, value) {
+    if (arguments.length === 2) {
+      this._controller = value;
+      return value;
+    }
+
+    if (this._controller) {
+      return this._controller;
+    }
+
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
   }),
@@ -786,15 +811,29 @@ var View = CoreView.extend({
     var layoutName = get(this, 'layoutName');
     var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
+    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph) {
     var template = get(this, 'template');
-    if (template) { template(context, options); }
+
+    if (template) {
+      var useHTMLBars = false;
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.isHTMLBars;
+      }
+
+      if (useHTMLBars) {
+        return template.render(this, options, morph.contextualElement);
+      } else {
+        return template(context, options);
+      }
+    }
   },
+
+  _blockArguments: EMPTY_ARRAY,
 
   templateForName: function(name, type) {
     if (!name) { return; }
@@ -848,7 +887,11 @@ var View = CoreView.extend({
     @property _context
     @private
   */
-  _context: computed(function(key) {
+  _context: computed(function(key, value) {
+    if (arguments.length === 2) {
+      return value;
+    }
+
     var parentView, controller;
 
     if (controller = get(this, 'controller')) {
@@ -1064,10 +1107,23 @@ var View = CoreView.extend({
       // is the view's controller by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      output = template(context, { data: data });
+      var options = { data: data };
+      var useHTMLBars = false;
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.isHTMLBars;
+      }
+
+      if (useHTMLBars) {
+        Ember.assert('template must be an object. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'object');
+        var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
+        output = template.render(this, env, buffer.innerContextualElement(), this._blockArguments);
+      } else {
+        Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
+        output = template(context, options);
+      }
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.
@@ -1113,18 +1169,11 @@ var View = CoreView.extend({
     // ('content.isUrgent')
     forEach(classBindings, function(binding) {
 
-      var parsedPath;
-
-      if (typeof binding === 'string') {
-        Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", binding.indexOf(' ') === -1);
-        parsedPath = View._parsePropertyPath(binding);
-        if (parsedPath.path === '') {
-          parsedPath.stream = new SimpleStream(true);
-        } else {
-          parsedPath.stream = this.getStream('_view.' + parsedPath.path);
-        }
+      var boundBinding;
+      if (isStream(binding)) {
+        boundBinding = binding;
       } else {
-        parsedPath = binding;
+        boundBinding = streamifyClassNameBinding(this, binding, '_view.');
       }
 
       // Variable in which the old class value is saved. The observer function
@@ -1136,8 +1185,8 @@ var View = CoreView.extend({
       // class name.
       var observer = this._wrapAsScheduled(function() {
         // Get the current value of the property
-        newClass = this._classStringForProperty(parsedPath);
         elem = this.$();
+        newClass = read(boundBinding);
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -1158,7 +1207,7 @@ var View = CoreView.extend({
       });
 
       // Get the class name for the property at its current value
-      dasherizedClass = this._classStringForProperty(parsedPath);
+      dasherizedClass = read(boundBinding);
 
       if (dasherizedClass) {
         // Ensure that it gets into the classNames array
@@ -1171,7 +1220,7 @@ var View = CoreView.extend({
         oldClass = dasherizedClass;
       }
 
-      parsedPath.stream.subscribe(observer, this);
+      subscribe(boundBinding, observer, this);
       // Remove className so when the view is rerendered,
       // the className is added based on binding reevaluation
       this.one('willClearRender', function() {
@@ -1231,7 +1280,8 @@ var View = CoreView.extend({
 
       attributeValue = get(this, property);
 
-      View.applyAttributeBindings(elem, attributeName, attributeValue);
+      var normalizedName = normalizeProperty(elem, attributeName.toLowerCase()) || attributeName;
+      View.applyAttributeBindings(elem, normalizedName, attributeValue);
     };
 
     this.registerObserver(this, property, observer);
@@ -1366,7 +1416,7 @@ var View = CoreView.extend({
   /**
     Replaces the content of the specified parent element with this view's
     element. If the view does not have an HTML representation yet,
-    `createElement()` will be called automatically.
+    the element will be generated automatically.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -1389,8 +1439,8 @@ var View = CoreView.extend({
 
   /**
     Appends the view's element to the document body. If the view does
-    not have an HTML representation yet, `createElement()` will be called
-    automatically.
+    not have an HTML representation yet
+    the element will be generated automatically.
 
     If your application uses the `rootElement` property, you must append
     the view within that element. Rendering views outside of the `rootElement`
@@ -1480,7 +1530,7 @@ var View = CoreView.extend({
 
     @event willInsertElement
   */
-  willInsertElement: Ember.K,
+  willInsertElement: K,
 
   /**
     Called when the element of the view has been inserted into the DOM
@@ -1492,7 +1542,7 @@ var View = CoreView.extend({
 
     @event didInsertElement
   */
-  didInsertElement: Ember.K,
+  didInsertElement: K,
 
   /**
     Called when the view is about to rerender, but before anything has
@@ -1501,7 +1551,7 @@ var View = CoreView.extend({
 
     @event willClearRender
   */
-  willClearRender: Ember.K,
+  willClearRender: K,
 
   /**
     Destroys any existing element along with the element for any child views
@@ -1535,14 +1585,14 @@ var View = CoreView.extend({
 
     @event willDestroyElement
   */
-  willDestroyElement: Ember.K,
+  willDestroyElement: K,
 
   /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange
   */
-  parentViewDidChange: Ember.K,
+  parentViewDidChange: K,
 
   instrumentName: 'view',
 
@@ -1558,7 +1608,7 @@ var View = CoreView.extend({
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
-    var classNameBindings = get(this, 'classNameBindings');
+    var classNameBindings = this.classNameBindings;
     if (classNameBindings.length) {
       this._applyClassNameBindings(classNameBindings);
     }
@@ -1566,7 +1616,7 @@ var View = CoreView.extend({
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
     // existing classNames infrastructure.
-    var attributeBindings = get(this, 'attributeBindings');
+    var attributeBindings = this.attributeBindings;
     if (attributeBindings.length) {
       this._applyAttributeBindings(buffer, attributeBindings);
     }
@@ -1739,7 +1789,7 @@ var View = CoreView.extend({
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
 
-    Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
+    Ember.assert("Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.", typeOf(this.classNames) === 'array');
     this.classNames = emberA(this.classNames.slice());
   },
 
@@ -1856,8 +1906,6 @@ var View = CoreView.extend({
     attrs._parentView = this;
 
     if (CoreView.detect(view)) {
-      attrs.templateData = attrs.templateData || get(this, 'templateData');
-
       attrs.container = this.container;
       view = view.create(attrs);
 
@@ -1872,25 +1920,19 @@ var View = CoreView.extend({
 
       Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
 
-      attrs.templateData = get(this, 'templateData');
       view = ViewKlass.create(attrs);
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
+
       attrs.container = this.container;
-
-      if (!get(view, 'templateData')) {
-        attrs.templateData = get(this, 'templateData');
-      }
-
       setProperties(view, attrs);
-
     }
 
     return view;
   },
 
-  becameVisible: Ember.K,
-  becameHidden: Ember.K,
+  becameVisible: K,
+  becameHidden: K,
 
   /**
     When the view's `isVisible` property changes, toggle the visibility
@@ -2021,20 +2063,40 @@ var View = CoreView.extend({
   },
 
   getStream: function(path) {
-    return this._getContextStream().get(path);
+    var stream = this._getContextStream().get(path);
+
+    stream._label = path;
+
+    return stream;
   },
 
-  _getBindingForStream: function(path) {
+  _getBindingForStream: function(pathOrStream) {
     if (this._streamBindings === undefined) {
       this._streamBindings = create(null);
       this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    var path = pathOrStream;
+    if (isStream(pathOrStream)) {
+      path = pathOrStream._label;
+
+      if (!path) {
+        // if no _label is present on the provided stream
+        // it is likely a subexpr and cannot be set (so it
+        // does not need a StreamBinding)
+        return pathOrStream;
+      }
     }
 
     if (this._streamBindings[path] !== undefined) {
       return this._streamBindings[path];
     } else {
       var stream = this._getContextStream().get(path);
-      return this._streamBindings[path] = new StreamBinding(stream);
+      var streamBinding = new StreamBinding(stream);
+
+      streamBinding._label = path;
+
+      return this._streamBindings[path] = streamBinding;
     }
   },
 
@@ -2102,115 +2164,6 @@ deprecateProperty(View.prototype, 'states', '_states');
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
 
-View.reopenClass({
-
-  /**
-    Parse a path and return an object which holds the parsed properties.
-
-    For example a path like "content.isEnabled:enabled:disabled" will return the
-    following object:
-
-    ```javascript
-    {
-      path: "content.isEnabled",
-      className: "enabled",
-      falsyClassName: "disabled",
-      classNames: ":enabled:disabled"
-    }
-    ```
-
-    @method _parsePropertyPath
-    @static
-    @private
-  */
-  _parsePropertyPath: function(path) {
-    var split = path.split(':');
-    var propertyPath = split[0];
-    var classNames = "";
-    var className, falsyClassName;
-
-    // check if the property is defined as prop:class or prop:trueClass:falseClass
-    if (split.length > 1) {
-      className = split[1];
-      if (split.length === 3) { falsyClassName = split[2]; }
-
-      classNames = ':' + className;
-      if (falsyClassName) { classNames += ":" + falsyClassName; }
-    }
-
-    return {
-      stream: undefined,
-      path: propertyPath,
-      classNames: classNames,
-      className: (className === '') ? undefined : className,
-      falsyClassName: falsyClassName
-    };
-  },
-
-  /**
-    Get the class name for a given value, based on the path, optional
-    `className` and optional `falsyClassName`.
-
-    - if a `className` or `falsyClassName` has been specified:
-      - if the value is truthy and `className` has been specified,
-        `className` is returned
-      - if the value is falsy and `falsyClassName` has been specified,
-        `falsyClassName` is returned
-      - otherwise `null` is returned
-    - if the value is `true`, the dasherized last part of the supplied path
-      is returned
-    - if the value is not `false`, `undefined` or `null`, the `value`
-      is returned
-    - if none of the above rules apply, `null` is returned
-
-    @method _classStringForValue
-    @param path
-    @param val
-    @param className
-    @param falsyClassName
-    @static
-    @private
-  */
-  _classStringForValue: function(path, val, className, falsyClassName) {
-    if(isArray(val)) {
-      val = get(val, 'length') !== 0;
-    }
-
-    // When using the colon syntax, evaluate the truthiness or falsiness
-    // of the value to determine which className to return
-    if (className || falsyClassName) {
-      if (className && !!val) {
-        return className;
-
-      } else if (falsyClassName && !val) {
-        return falsyClassName;
-
-      } else {
-        return null;
-      }
-
-    // If value is a Boolean and true, return the dasherized property
-    // name.
-    } else if (val === true) {
-      // Normalize property path to be suitable for use
-      // as a class name. For exaple, content.foo.barBaz
-      // becomes bar-baz.
-      var parts = path.split('.');
-      return dasherize(parts[parts.length-1]);
-
-    // If the value is not false, undefined, or null, return the current
-    // value of the property.
-    } else if (val !== false && val != null) {
-      return val;
-
-    // Nothing to display. Return null so that the old class is removed
-    // but no new class is added.
-    } else {
-      return null;
-    }
-  }
-});
-
 var mutation = EmberObject.extend(Evented).create();
 // TODO MOVE TO RENDERER HOOKS
 View.addMutationListener = function(callback) {
@@ -2241,6 +2194,7 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+// Used by Handlebars helpers, view element attributes
 View.applyAttributeBindings = function(elem, name, initialValue) {
   var value = sanitizeAttributeValue(elem[0], name, initialValue);
   var type = typeOf(value);

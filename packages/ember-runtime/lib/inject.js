@@ -1,5 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { indexOf } from "ember-metal/enumerable_utils";
+import { meta } from "ember-metal/utils";
 import InjectedProperty from "ember-metal/injected_property";
 import keys from "ember-metal/keys";
 
@@ -37,26 +38,22 @@ export function createInjectionHelper(type, validator) {
 }
 
 /**
-  Validation function intended to be invoked at when extending a factory with
-  injected properties. Runs per-type validation functions once for each injected
-  type encountered.
-
-  Note that this currently modifies the mixin themselves, which is technically
-  dubious but is practically of little consequence. This may change in the
-  future.
+  Validation function that runs per-type validation functions once for each
+  injected type encountered.
 
   @private
   @method validatePropertyInjections
   @namespace Ember
-  @param {Object} factory The factory object being extended
-  @param {Object} props A hash of properties to be added to the factory
+  @param {Object} factory The factory object
 */
-export function validatePropertyInjections(factory, props) {
+export function validatePropertyInjections(factory) {
+  var proto = factory.proto();
+  var descs = meta(proto).descs;
   var types = [];
   var key, desc, validator, i, l;
 
-  for (key in props) {
-    desc = props[key];
+  for (key in descs) {
+    desc = descs[key];
     if (desc instanceof InjectedProperty && indexOf(types, desc.type) === -1) {
       types.push(desc.type);
     }

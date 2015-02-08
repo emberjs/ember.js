@@ -61,7 +61,6 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       // was previously called on a view.
       contextualElement = document.body;
     }
-    Ember.assert("Required contextualElement for view "+_view+" is missing", contextualElement);
     element = this.createElement(view, contextualElement);
 
     parents[level++] = parentIndex;
@@ -225,9 +224,12 @@ function Renderer_remove(_view, shouldDestroy, reset) {
 }
 
 function Renderer_insertElement(view, parentView, element, index) {
-  if (element === null || element === undefined) return;
+  if (element === null || element === undefined) {
+    return;
+  }
+
   if (view._morph) {
-    view._morph.update(element);
+    view._morph.setContent(element);
   } else if (parentView) {
     if (index === -1) {
       view._morph = parentView._childViewsMorph.append(element);

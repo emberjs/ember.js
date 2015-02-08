@@ -356,7 +356,7 @@ QUnit.module("Computed properties", {
         return 'dependentCached';
       }).property('changer'),
 
-      // everytime it is recomputed, increments call
+      // every time it is recomputed, increments call
       incCallCount: 0,
       inc: computed(function() {
         return this.incCallCount++;

@@ -35,7 +35,15 @@ Ember Debug
     falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
-  if (!test) {
+  var throwAssertion;
+
+  if (Ember.typeOf(test) === 'function') {
+    throwAssertion = !test();
+  } else {
+    throwAssertion = !test;
+  }
+
+  if (throwAssertion) {
     throw new EmberError("Assertion Failed: " + desc);
   }
 };
@@ -53,7 +61,9 @@ Ember.assert = function(desc, test) {
 Ember.warn = function(message, test) {
   if (!test) {
     Logger.warn("WARNING: "+message);
-    if ('trace' in Logger) Logger.trace();
+    if ('trace' in Logger) {
+      Logger.trace();
+    }
   }
 };
 
@@ -81,9 +91,19 @@ Ember.debug = function(message) {
   @param {String} message A description of the deprecation.
   @param {Boolean} test An optional boolean. If falsy, the deprecation
     will be displayed.
+  @param {Object} options An optional object that can be used to pass
+    in a `url` to the transition guide on the emberjs.com website.
 */
-Ember.deprecate = function(message, test) {
-  if (test) { return; }
+Ember.deprecate = function(message, test, options) {
+  var noDeprecation;
+
+  if (typeof test === 'function') {
+    noDeprecation = test();
+  } else {
+    noDeprecation = test;
+  }
+
+  if (noDeprecation) { return; }
 
   if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
 
@@ -91,6 +111,13 @@ Ember.deprecate = function(message, test) {
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
   try { __fail__.fail(); } catch (e) { error = e; }
+
+  if (arguments.length === 3) {
+    Ember.assert('options argument to Ember.deprecate should be an object', options && typeof options === 'object');
+    if (options.url) {
+      message += ' See ' + options.url + ' for more details.';
+    }
+  }
 
   if (Ember.LOG_STACKTRACE_ON_DEPRECATION && error.stack) {
     var stack;
@@ -219,4 +246,17 @@ if (!Ember.testing) {
       }
     }, false);
   }
+}
+
+/*
+  We are transitioning away from `ember.js` to `ember.debug.js` to make
+  it much clearer that it is only for local development purposes.
+
+  This flag value is changed by the tooling (by a simple string replacement)
+  so that if `ember.js` (which must be output for backwards compat reasons) is
+  used a nice helpful warning message will be printed out.
+*/
+export var runningNonEmberDebugJS = false;
+if (runningNonEmberDebugJS) {
+  Ember.warn('Please use `ember.debug.js` instead of `ember.js` for development and debugging.');
 }

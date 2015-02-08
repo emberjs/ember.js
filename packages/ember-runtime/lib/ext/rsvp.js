@@ -41,7 +41,20 @@ RSVP.Promise.prototype.fail = function(callback, label){
   return this['catch'](callback, label);
 };
 
-RSVP.onerrorDefault = function (error) {
+RSVP.onerrorDefault = function (e) {
+  var error;
+
+  if (e && e.errorThrown) {
+    // jqXHR provides this
+    error = e.errorThrown;
+    if (typeof error === 'string') {
+      error = new Error(error);
+    }
+    error.__reason_with_error_thrown__ = e;
+  } else {
+    error = e;
+  }
+
   if (error && error.name !== 'TransitionAborted') {
     if (Ember.testing) {
       // ES6TODO: remove when possible
@@ -59,7 +72,6 @@ RSVP.onerrorDefault = function (error) {
       Ember.onerror(error);
     } else {
       Logger.error(error.stack);
-      Ember.assert(error, false);
     }
   }
 };

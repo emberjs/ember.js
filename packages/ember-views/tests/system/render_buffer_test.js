@@ -41,6 +41,40 @@ test("RenderBuffers combine strings", function() {
   equal(el.childNodes[0].nodeValue, 'ab', "Multiple pushes should concatenate");
 });
 
+test("RenderBuffers push fragments", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var fragment = document.createElement('span');
+  buffer.generateElement();
+
+  buffer.push(fragment);
+
+  var el = buffer.element();
+  equal(el.tagName.toLowerCase(), 'div');
+  equal(el.childNodes[0].tagName, 'SPAN', "Fragment is pushed into the buffer");
+});
+
+test("RenderBuffers cannot push fragments when something else is in the buffer", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var fragment = document.createElement('span');
+  buffer.generateElement();
+
+  buffer.push(fragment);
+  expectAssertion(function(){
+    buffer.push(fragment);
+  });
+});
+
+test("RenderBuffers cannot push strings after fragments", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var fragment = document.createElement('span');
+  buffer.generateElement();
+
+  buffer.push(fragment);
+  expectAssertion(function(){
+    buffer.push('howdy');
+  });
+});
+
 test("value of 0 is included in output", function() {
   var buffer, el;
   buffer = new RenderBuffer('input', document.body);

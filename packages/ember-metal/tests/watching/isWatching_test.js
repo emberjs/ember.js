@@ -1,3 +1,4 @@
+import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
 import { defineProperty } from "ember-metal/properties";
 import {
@@ -52,7 +53,7 @@ test("isWatching is true for chained observers", function() {
 
 test("isWatching is true for computed properties", function() {
   testObserver(function(obj, key, fn) {
-    defineProperty(obj, 'computed', Ember.computed(fn).property(key));
+    defineProperty(obj, 'computed', computed(fn).property(key));
     get(obj, 'computed');
   }, function(obj, key, fn) {
     defineProperty(obj, 'computed', null);
@@ -61,7 +62,7 @@ test("isWatching is true for computed properties", function() {
 
 test("isWatching is true for chained computed properties", function() {
   testObserver(function(obj, key, fn) {
-    defineProperty(obj, 'computed', Ember.computed(fn).property(key + '.bar'));
+    defineProperty(obj, 'computed', computed(fn).property(key + '.bar'));
     get(obj, 'computed');
   }, function(obj, key, fn) {
     defineProperty(obj, 'computed', null);

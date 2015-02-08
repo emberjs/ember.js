@@ -24,7 +24,6 @@ import {
   meta as metaFor,
   wrap,
   makeArray,
-  apply,
   isArray
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
@@ -45,6 +44,7 @@ import {
   addListener,
   removeListener
 } from "ember-metal/events";
+import { isStream } from "ember-metal/streams/utils";
 
 var REQUIRED;
 var a_slice = [].slice;
@@ -52,17 +52,34 @@ var a_slice = [].slice;
 function superFunction(){
   var func = this.__nextSuper;
   var ret;
+
   if (func) {
-    var args = new Array(arguments.length);
-    for (var i = 0, l = args.length; i < l; i++) {
-      args[i] = arguments[i];
-    }
+    var length = arguments.length;
     this.__nextSuper = null;
-    ret = apply(this, func, args);
+    if (length === 0) {
+      ret = func.call(this);
+    } else if (length === 1) {
+      ret = func.call(this, arguments[0]);
+    } else if (length === 2) {
+      ret = func.call(this, arguments[0], arguments[1]);
+    } else {
+      ret = func.apply(this, arguments);
+    }
     this.__nextSuper = func;
+    return ret;
   }
-  return ret;
 }
+
+// ensure we prime superFunction to mitigate
+// v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+var primer = {
+  __nextSuper: function(a,b,c,d ) { }
+};
+
+superFunction.call(primer);
+superFunction.call(primer, 1);
+superFunction.call(primer, 1, 2);
+superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
   var m = metaFor(obj, true);
@@ -340,7 +357,7 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding.isStream) {
+        if (isStream(binding)) {
           connectStreamBinding(obj, to, binding);
           continue;
         } else if (binding instanceof Binding) {

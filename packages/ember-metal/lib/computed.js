@@ -22,9 +22,6 @@ import {
 @module ember-metal
 */
 
-Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties" +
-           "are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
-
 var metaFor = meta;
 var a_slice = [].slice;
 
@@ -123,9 +120,11 @@ function ComputedProperty(func, opts) {
   this._suspended = undefined;
   this._meta = undefined;
 
-  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
+  Ember.deprecate("Passing opts.cacheable to the CP constructor is deprecated. Invoke `volatile()` on the CP instead.", !opts || !opts.hasOwnProperty('cacheable'));
+  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;   // TODO: Set always to `true` once this deprecation is gone.
   this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false;
+  Ember.deprecate("Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.", !opts || !opts.hasOwnProperty('readOnly'));
+  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false; // TODO: Set always to `false` once this deprecation is gone.
 }
 
 ComputedProperty.prototype = new Descriptor();
@@ -146,8 +145,10 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
   @param {Boolean} aFlag optional set to `false` to disable caching
   @return {Ember.ComputedProperty} this
   @chainable
+  @deprecated All computed properties are cacheble by default. Use `volatile()` instead to opt-out to caching.
 */
 ComputedPropertyPrototype.cacheable = function(aFlag) {
+  Ember.deprecate('ComputedProperty.cacheable() is deprecated. All computed properties are cacheable by default.');
   this._cacheable = aFlag !== false;
   return this;
 };
@@ -169,7 +170,8 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   @chainable
 */
 ComputedPropertyPrototype.volatile = function() {
-  return this.cacheable(false);
+  this._cacheable = false;
+  return this;
 };
 
 /**
@@ -193,7 +195,8 @@ ComputedPropertyPrototype.volatile = function() {
   @chainable
 */
 ComputedPropertyPrototype.readOnly = function(readOnly) {
-  this._readOnly = readOnly === undefined || !!readOnly;
+  Ember.deprecate('Passing arguments to ComputedProperty.readOnly() is deprecated.', arguments.length === 0);
+  this._readOnly = readOnly === undefined || !!readOnly; // Force to true once this deprecation is gone
   return this;
 };
 
@@ -505,7 +508,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
-  
+
   A computed property defined in this way might look like this:
 
   ```js
@@ -521,12 +524,12 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var client = Person.create();
 
   client.get('fullName'); // 'Betty Jones'
-  
+
   client.set('lastName', 'Fuller');
   client.get('fullName'); // 'Betty Fuller'
   ```
 
-  _Note: This is the prefered way to define computed properties when writing third-party
+  _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
   will have prototype extensions enabled._
 

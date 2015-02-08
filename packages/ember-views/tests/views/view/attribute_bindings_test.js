@@ -2,9 +2,9 @@ import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import { observersFor } from "ember-metal/observer";
 import { changeProperties } from "ember-metal/property_events";
+import { SafeString } from "ember-htmlbars/utils/string";
 
 import EmberView from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars-compiler";
 
 var originalLookup = Ember.lookup;
 var lookup, view;
@@ -55,6 +55,21 @@ test("should render attribute bindings", function() {
   ok(!view.$().attr('nothing'), "removes nothing attribute when null");
   ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
+});
+
+test("should normalize case for attribute bindings", function() {
+  view = EmberView.create({
+    tagName: 'input',
+    attributeBindings: ['disAbled'],
+
+    disAbled: true
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  ok(view.$().prop('disabled'), "sets property with correct case");
 });
 
 test("should update attribute bindings", function() {
@@ -316,7 +331,7 @@ test("blacklists href bindings based on protocol", function() {
   equal(view.$().attr('href'), "unsafe:javascript:alert('foo')", "value property sanitized");
 
   run(function() {
-    view.set('href', new EmberHandlebars.SafeString(view.get('href')));
+    view.set('href', new SafeString(view.get('href')));
   });
 
   equal(view.$().attr('href'), "javascript:alert('foo')", "value is not defined");

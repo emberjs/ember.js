@@ -1,14 +1,16 @@
 import "ember";
 
+import compile from "ember-template-compiler/system/compile";
+import helpers from "ember-htmlbars/helpers";
+
 var App, container;
-var compile = Ember.Handlebars.compile;
 var originalHelpers;
 
 function prepare(){
   Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
   Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
 
-  originalHelpers = Ember.A(Ember.keys(Ember.Handlebars.helpers));
+  originalHelpers = Ember.A(Ember.keys(helpers));
 }
 
 function cleanup(){
@@ -22,11 +24,11 @@ function cleanup(){
 }
 
 function cleanupHandlebarsHelpers(){
-  var currentHelpers = Ember.A(Ember.keys(Ember.Handlebars.helpers));
+  var currentHelpers = Ember.A(Ember.keys(helpers));
 
   currentHelpers.forEach(function(name){
     if (!originalHelpers.contains(name)) {
-      delete Ember.Handlebars.helpers[name];
+      delete helpers[name];
     }
   });
 }
@@ -92,7 +94,7 @@ test("Late-registered components can be rendered with custom `template` property
   });
 
   equal(Ember.$('#wrapper').text(), "there goes watch him as he GOES", "The component is composed correctly");
-  ok(!Ember.Handlebars.helpers['my-hero'], "Component wasn't saved to global Handlebars.helpers hash");
+  ok(!helpers['my-hero'], "Component wasn't saved to global helpers hash");
 });
 
 test("Late-registered components can be rendered with template registered on the container", function() {
@@ -105,7 +107,7 @@ test("Late-registered components can be rendered with template registered on the
   });
 
   equal(Ember.$('#wrapper').text(), "hello world funkytowny-funkytowny!!!", "The component is composed correctly");
-  ok(!Ember.Handlebars.helpers['sally-rutherford'], "Component wasn't saved to global Handlebars.helpers hash");
+  ok(!helpers['sally-rutherford'], "Component wasn't saved to global helpers hash");
 });
 
 test("Late-registered components can be rendered with ONLY the template registered on the container", function() {
@@ -117,7 +119,7 @@ test("Late-registered components can be rendered with ONLY the template register
   });
 
   equal(Ember.$('#wrapper').text(), "hello world goodfreakingTIMES-goodfreakingTIMES!!!", "The component is composed correctly");
-  ok(!Ember.Handlebars.helpers['borf-snorlax'], "Component wasn't saved to global Handlebars.helpers hash");
+  ok(!helpers['borf-snorlax'], "Component wasn't saved to global helpers hash");
 });
 
 test("Component-like invocations are treated as bound paths if neither template nor component are registered on the container", function() {
@@ -197,6 +199,9 @@ test("Assigning templateName and layoutName should use the templates specified",
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // ember-htmlbars doesn't throw an exception when a helper is not found
+
 test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#no-good}} {{/no-good}}</div>");
 
@@ -204,6 +209,8 @@ test('Using name of component that does not exist', function () {
     boot();
   }, /Could not find component or helper named 'no-good'/);
 });
+
+}
 
 QUnit.module("Application Lifecycle - Component Context", {
   setup: prepare,

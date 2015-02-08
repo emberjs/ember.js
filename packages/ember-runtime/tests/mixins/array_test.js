@@ -4,9 +4,9 @@ import { set } from "ember-metal/property_set";
 import { addObserver } from "ember-metal/observer";
 import { observer as emberObserver } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
-import { testBoth } from 'ember-runtime/tests/props_helper';
-import { ArrayTests } from 'ember-runtime/tests/suites/array';
-import EmberObject from 'ember-runtime/system/object';
+import { testBoth } from "ember-metal/tests/props_helper";
+import { ArrayTests } from "ember-runtime/tests/suites/array";
+import EmberObject from "ember-runtime/system/object";
 import EmberArray from "ember-runtime/mixins/array";
 
 /*

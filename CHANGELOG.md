@@ -1,9 +1,76 @@
 # Ember Changelog
 
-### 1.9.1 (December 23, 2014)
+### 1.10.0 (February 7, 2015)
 
-* Allow `{{view}}` helper to proper handle view instances.
+* [BUGFIX] Ensure that property case is normalized.
+* [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
+* [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
+* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
+* [BUGFIX] Ensure that calling the `wait` testing helpe without routing works properly.
+* [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
+* [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
+* [BUGFIX] Allow unbound helpers to add attributes.
+* [BUGFIX] Ensure compat helpers calling `options.fn` work.
+* [BUGFIX] Fix memory leak in view streams.
+* [BUGFIX] Don't render default layout for `Ember.TextField`.
+* Update HTMLBars version to v0.8.5:
+  * Allow numbers to be parsed as HTML in IE.
+  * Add namespace detection.
+  * Include line number in error thrown for unclosed HTML element.
+  * `removeAttribute` fix for IE <11 and SVG.
+  * Disable `cloneNodes` in IE8.
+  * Improve HTML validation and error messages thrown.
+  * Fix a number of template compliation issues in IE8.
+  * Use the correct namespace in `parseHTML` (fixes various issues that occur
+    when changing to and from alternate namespaces).
+  * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
+  * Change `setProperty` and `morph` to remove an `undefined` attr value.
+* Remove dots from default resolver descriptions.
+* Add helpful assertion if a block helper is not found.
+* Make Ember.HTMLBars version of registerHelper private.
+* [BUGFIX] Add `options.types` and `options.hashTypes` for Handlebars compatible helpers.
+* [BUGFIX] Fix usage of `emptyView` with `{{#each}}` helper.
+* Assert if an attribute set statically and via bind-attr.  For example:
+  `<div class="foo" {{bind-attr class="bar"}}></div>` will now trigger an assertion (instead of
+  silently failing).
+* [BUGFIX] Fix deprecated bindAttr helper.
+* [BUGFIX] Do not allow both keyword and block params.
+* Cleanup HTMLBars public API
+  * Remove `Ember.HTMLBars.helper`.
+  * Remove internal `registerBoundHelper` function (use
+    `registerHelper('blah', makeViewHelper(SomeView))` or `registerHelper('blah', makeBoundHelper(func))`).
+* [BUGFIX] Fix Handlebars compat mode `registerHelper` interop with `makeViewHelper`.
+* [BUGFIX] Ensure that `mergedProperties` are properly merged when all properties are not present.
+* Add options argument to pass url to `Ember.deprecate`.
+* Deprecate `{{bind}}` helper.
+* Pass array to `Ember.computed.filter` callback
+* [BUGFIX] Prevent mandatory-setter when setter is already present.
+* Remove Handlebars from dependencies.
+* Fix error when parsing templates with invalid end tags.
+* [BUGFIX] Allow makeBoundHelper to be a sub-expression.
+* [BUGFIX] Allow compat makeBoundHelpers to be sub-expressions.
+* [BUGFIX] Export Ember.Handlebars compat shim for `Ember.Handlebars.SafeString` and `Ember.Handlebars.Utils.escapeExpression`.
+* [BUGFIX] Allow `Ember.inject` injected properties to be overridden (makes testing significantly easier).
+* [BUGFIX] Don’t assert uncaught RSVP rejections. We are already logging the error, but asserting breaks everything else on the run loop queue.
+* [BUGFIX] Allow tagName to be a CP (with deprecation).
+* [BUGFIX] Allow view instances in {{view}}.
+* [BUGFIX] Ensure bound attrs flush immediately.
+* [PERFORMANCE] Initialize views in preRender state.
+* [PERFORMANCE] `View#element` should not be observable.
+* Add ember-template-compiler package.
+* Rename `Ember.HTMLBars.registerASTPlugin` to `Ember.HTMLBars.registerPlugin`.
+* Export `ember-template-compiler.js`.
 * Escape `href`, `src`, and `background` attributes for `a`, `link`, `img`, and `iframe` elements.
+* Move debugging file output from `ember.js` to `ember.debug.js`.
+* Remove `templateData` property from views.
+* Restructure `Ember.libraries` to be more idiomatic.
+* Prevent creating an extra view for each select option.
+* Deprecate the block form of the bind helper.
+* Cleanup `Ember.CoreObject` init argument passing.
+* Allow all rejection types to be handled by default RSVP error handler.
+* Deprecate setting ContainerView#childViews.
+* [FEATURE] ember-htmlbars - Enable the HTMLBars rendering engine.
+* [FEATURE] ember-htmlbars-block-params - Enable block params feature for HTMLBars.
 
 ### 1.9.0 (December 8, 2014)
 
@@ -48,6 +115,14 @@ it would silently continue.  Now, an assertion would be triggered.
 * [FEATURE] ember-routing-fire-activate-deactivate-events.
 * [FEATURE] ember-testing-pause-test.
 
+### Ember 1.8.1 (November, 4, 2014)
+
+* [BUGFIX] Make sure that `{{view}}` can accept a Ember.View instance.
+* [BUGFIX] Throw an assertion if `classNameBindings` are specified on a tag-less view.
+* [BUGFIX] Setting an `attributeBinding` for `class` attribute triggers assertion.
+* [BUGFIX] Fix `htmlSafe` to allow non-strings in unescaped code.
+* [BUGFIX] Add support for null prototype object to mandatory setter code. Prevents errors when operating on Ember Data `meta` objects.
+* [BUGFIX] Fix an issue with select/each that causes the last item rendered to be selected.
 
 ### Ember 1.8.1 (November, 4, 2014)
 
@@ -761,7 +836,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * Added the ability to chain test helpers
 * BREAKING: Move setting controller's `model` into setupController
 * Updated ember-latest jsbin starting point URL
-* Documentation for ComputedProperty cachable
+* Documentation for ComputedProperty cacheable
 * Mask deprecation warning in metaPath testing
 * mask deprecation warnings (when knowingly triggering them)
 * Deprecate Ember.metaPath
@@ -883,7 +958,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * don't rely on EXTEND_PROTOTYPES == true
 * Fixes Ember.EnumerableUtils without extend prototypes
 * Do not flag .generateController for documentation.
-* Do not build the docs for `.cachable`. Fixes #2329.
+* Do not build the docs for `.cacheable`. Fixes #2329.
 * cleanup MutableEnumerable documentation
 * Add Ember.Application#removeTestHelpers
 * Fix a couple issues
@@ -1284,7 +1359,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * Don't update the route if we're routing
 * Don't special-case the top-level '/'
 * Make routing unwind properly
-* Replace occurances of goToState with transitionTo.
+* Replace occurrences of goToState with transitionTo.
 * No longer support RunLoop instantiation without `new`.
 * Improve naming and code style
 * Guard mergeMixins parameters more generally

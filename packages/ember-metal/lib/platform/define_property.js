@@ -57,6 +57,13 @@ var defineProperty = (function checkCompliance(defineProperty) {
     // Object.defineProperty once accessors have already been set.
     if (obj.a !== true) return;
 
+    // Detects a bug in Android <3 where redefining a property without a value changes the value
+    // Object.defineProperty once accessors have already been set.
+    defineProperty(obj, 'a', {
+      enumerable: false
+    });
+    if (obj.a !== true) return;
+
     // defineProperty is compliant
     return defineProperty;
   } catch (e) {

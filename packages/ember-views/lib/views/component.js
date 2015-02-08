@@ -9,6 +9,7 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
+import defaultComponentLayout from "ember-htmlbars/templates/component";
 
 var a_slice = Array.prototype.slice;
 
@@ -19,7 +20,7 @@ var a_slice = Array.prototype.slice;
 
 /**
   An `Ember.Component` is a view that is completely
-  isolated. Property access in its templates go
+  isolated. Properties accessed in its templates go
   to the view object and actions are targeted at
   the view object. There is no access to the
   surrounding context or outer controller; all
@@ -117,9 +118,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     set(this, 'controller', this);
   },
 
-  defaultLayout: function(context, options){
-    Ember.Handlebars.helpers['yield'].call(context, options);
-  },
+  defaultLayout: defaultComponentLayout,
 
   /**
   A components template property is set by passing a block
@@ -146,7 +145,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
@@ -162,7 +161,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   _setupKeywords: function() {},
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph, blockArguments) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -173,11 +172,12 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       view.appendChild(View, {
         isVirtual: true,
         tagName: '',
-        _contextView: parentView,
         template: template,
+        _blockArguments: blockArguments,
+        _contextView: parentView,
+        _morph: morph,
         context: get(parentView, 'context'),
-        controller: get(parentView, 'controller'),
-        templateData: { keywords: {} }
+        controller: get(parentView, 'controller')
       });
     }
   },

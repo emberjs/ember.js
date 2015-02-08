@@ -60,11 +60,10 @@ import {
 } from "ember-metal/property_get";
 
 import {
+  accumulateListeners,
   addListener,
   hasListeners,
-  listenersDiff,
   listenersFor,
-  listenersUnion,
   on,
   removeListener,
   sendEvent,
@@ -160,12 +159,13 @@ import {
   oneWay
 } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
-import libraries from "ember-metal/libraries";
+import Libraries from "ember-metal/libraries";
 import isNone from 'ember-metal/is_none';
 import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
+import Backburner from 'backburner';
 
 // END IMPORTS
 
@@ -227,17 +227,16 @@ Ember._getPath       = _getPath;
 
 Ember.EnumerableUtils = EnumerableUtils;
 
-Ember.on                = on;
-Ember.addListener       = addListener;
-Ember.removeListener    = removeListener;
-Ember._suspendListener  = suspendListener;
-Ember._suspendListeners = suspendListeners;
-Ember.sendEvent         = sendEvent;
-Ember.hasListeners      = hasListeners;
-Ember.watchedEvents     = watchedEvents;
-Ember.listenersFor      = listenersFor;
-Ember.listenersDiff     = listenersDiff;
-Ember.listenersUnion    = listenersUnion;
+Ember.on                  = on;
+Ember.addListener         = addListener;
+Ember.removeListener      = removeListener;
+Ember._suspendListener    = suspendListener;
+Ember._suspendListeners   = suspendListeners;
+Ember.sendEvent           = sendEvent;
+Ember.hasListeners        = hasListeners;
+Ember.watchedEvents       = watchedEvents;
+Ember.listenersFor        = listenersFor;
+Ember.accumulateListeners = accumulateListeners;
 
 Ember._ObserverSet = ObserverSet;
 
@@ -311,7 +310,14 @@ Ember.isGlobalPath = isGlobalPath;
 
 Ember.run = run;
 
-Ember.libraries = libraries;
+/**
+ * @class Backburner
+ * @for Ember
+ * @private
+*/
+Ember.Backburner = Backburner;
+
+Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;

@@ -23,7 +23,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
     @for Ember
     @param {Object} obj Value to test
     @return {Boolean}
-    @since 1.7.0
+    @since 1.8.0
     */
   isPresent = function isPresent(obj) {
     return !isBlank(obj);

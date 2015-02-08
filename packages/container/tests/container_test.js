@@ -670,13 +670,32 @@ test("factory for non extendables resolves are cached", function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  test("The `_onLookup` hook is called on factories when looked up the first time", function() {
+    expect(2);
+
+    var container = new Container();
+    var Apple = factory();
+
+    Apple.reopenClass({
+      _onLookup: function(fullName) {
+        equal(fullName, 'apple:main', 'calls lazy injection method with the lookup full name');
+        equal(this, Apple, 'calls lazy injection method in the factory context');
+      }
+    });
+
+    container.register('apple:main', Apple);
+
+    container.lookupFactory('apple:main');
+    container.lookupFactory('apple:main');
+  });
+
   test("A factory's lazy injections are validated when first instantiated", function() {
     var container = new Container();
     var Apple = factory();
     var Orange = factory();
 
     Apple.reopenClass({
-      lazyInjections: function() {
+      _lazyInjections: function() {
         return [ 'orange:main', 'banana:main' ];
       }
     });
@@ -687,5 +706,26 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     throws(function() {
       container.lookup('apple:main');
     }, /Attempting to inject an unknown injection: `banana:main`/);
+  });
+
+  test("Lazy injection validations are cached", function() {
+    expect(1);
+
+    var container = new Container();
+    var Apple = factory();
+    var Orange = factory();
+
+    Apple.reopenClass({
+      _lazyInjections: function() {
+        ok(true, 'should call lazy injection method');
+        return [ 'orange:main' ];
+      }
+    });
+
+    container.register('apple:main', Apple);
+    container.register('orange:main', Orange);
+
+    container.lookup('apple:main');
+    container.lookup('apple:main');
   });
 }

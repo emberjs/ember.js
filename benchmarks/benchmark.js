@@ -2860,7 +2860,7 @@
         if (!clocked && (divisor = divisors[clone.cycles]) != null) {
           count = floor(4e6 / divisor);
         }
-        // calculate how many more iterations it will take to achive the `minTime`
+        // calculate how many more iterations it will take to achieve the `minTime`
         if (count <= clone.count) {
           count += Math.ceil((minTime - clocked) / period);
         }

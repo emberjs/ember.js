@@ -9,7 +9,8 @@
 */
 
 import Ember from "ember-metal/core";
-// Ember.assert, Ember.K, Ember.config
+import merge from "ember-metal/merge";
+// Ember.assert, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -47,6 +48,7 @@ import {
   K
 } from 'ember-metal/core';
 import { hasPropertyAccessors } from "ember-metal/platform";
+import { validatePropertyInjections } from "ember-runtime/inject";
 
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
@@ -98,6 +100,7 @@ function makeCtor() {
       initProperties = null;
 
       var concatenatedProperties = this.concatenatedProperties;
+      var mergedProperties = this.mergedProperties;
 
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
@@ -134,7 +137,7 @@ function makeCtor() {
                        "time, when Ember.ActionHandler is used (i.e. views, " +
                        "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
-          if (concatenatedProperties && 
+          if (concatenatedProperties &&
               concatenatedProperties.length > 0 &&
               indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -148,6 +151,14 @@ function makeCtor() {
             } else {
               value = makeArray(value);
             }
+          }
+
+          if (mergedProperties &&
+              mergedProperties.length &&
+              indexOf(mergedProperties, keyName) >= 0) {
+            var originalValue = this[keyName];
+
+            value = merge(originalValue, value);
           }
 
           if (desc) {
@@ -170,16 +181,28 @@ function makeCtor() {
         }
       }
     }
+
     finishPartial(this, m);
+
     var length = arguments.length;
-    var args = new Array(length);
-    for (var x = 0; x < length; x++) {
-      args[x] = arguments[x];
+
+    if (length === 0) {
+      this.init();
+    } else if (length === 1) {
+      this.init(arguments[0]);
+    } else {
+      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+      // we may want to keep this around till this ages out on mobile
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+      this.init.apply(this, args);
     }
-    apply(this, this.init, args);
+
     m.proto = proto;
     finishChains(this);
-    sendEvent(this, "init");
+    sendEvent(this, 'init');
   };
 
   Class.toString = Mixin.prototype.toString;
@@ -306,8 +329,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
     ```
 
-    Using the `concatenatedProperties` property, we can tell to Ember that mix
-    the content of the properties.
+    Using the `concatenatedProperties` property, we can tell Ember to mix the
+    content of the properties.
 
     In `Ember.View` the `classNameBindings` and `attributeBindings` properties
     are also concatenated, in addition to `classNames`.
@@ -444,10 +467,6 @@ CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 
 function makeToString(ret) {
   return function() { return ret; };
-}
-
-if (Ember.config.overridePrototypeMixin) {
-  Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);
 }
 
 CoreObject.__super__ = null;
@@ -785,7 +804,8 @@ var ClassMixinProps = {
     ```
 
     This will return the original hash that was passed to `meta()`.
-
+    
+    @static
     @method metaForProperty
     @param key {String} property name
   */
@@ -820,7 +840,8 @@ var ClassMixinProps = {
   /**
     Iterate over each computed property for the class, passing its name
     and any associated metadata (see `metaForProperty`) to the callback.
-
+    
+    @static
     @method eachComputedProperty
     @param {Function} callback
     @param {Object} binding
@@ -839,15 +860,33 @@ var ClassMixinProps = {
   }
 };
 
+function injectedPropertyAssertion() {
+  Ember.assert("Injected properties are invalid", validatePropertyInjections(this));
+}
+
+function addOnLookupHandler() {
+  Ember.runInDebug(function() {
+    /**
+      Provides lookup-time type validation for injected properties.
+
+      @private
+      @method _onLookup
+      */
+    ClassMixinProps._onLookup = injectedPropertyAssertion;
+  });
+}
+
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  addOnLookupHandler();
+
   /**
     Returns a hash of property names and container names that injected
     properties will lookup on the container lazily.
 
-    @method lazyInjections
+    @method _lazyInjections
     @return {Object} Hash of all lazy injected property keys to container names
   */
-  ClassMixinProps.lazyInjections = function() {
+  ClassMixinProps._lazyInjections = function() {
     var injections = {};
     var proto = this.proto();
     var descs = meta(proto).descs;
@@ -867,10 +906,6 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 var ClassMixin = Mixin.create(ClassMixinProps);
 
 ClassMixin.ownerConstructor = CoreObject;
-
-if (Ember.config.overrideClassMixin) {
-  Ember.config.overrideClassMixin(ClassMixin);
-}
 
 CoreObject.ClassMixin = ClassMixin;
 

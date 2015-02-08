@@ -91,6 +91,28 @@ test('mergedProperties should be concatenated', function() {
   deepEqual(get(obj, 'bar'), { a: true, l: true, e: true, x: true }, "get bar");
 });
 
+test("mergedProperties should exist even if not explicitly set on create", function() {
+
+  var AnObj = Ember.Object.extend({
+    mergedProperties: ['options'],
+    options: {
+      a: 'a',
+      b: {
+        c: 'ccc'
+      }
+    }
+  });
+
+  var obj = AnObj.create({
+    options: {
+      a: 'A'
+    }
+  });
+
+  equal(get(obj, "options").a, 'A');
+  equal(get(obj, "options").b.c, 'ccc');
+});
+
 test("mergedProperties' overwriting methods can call _super", function() {
 
   expect(4);

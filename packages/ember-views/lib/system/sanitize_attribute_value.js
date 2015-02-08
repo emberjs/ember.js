@@ -1,7 +1,5 @@
 /* jshint scripturl:true */
 
-import EmberHandlebars from "ember-handlebars-compiler";
-
 var parsingNode;
 var badProtocols = {
   'javascript:': true,
@@ -35,8 +33,8 @@ export default function sanitizeAttributeValue(element, attribute, value) {
     tagName = element.tagName;
   }
 
-  if (value instanceof EmberHandlebars.SafeString) {
-    return value.toString();
+  if (value && value.toHTML) {
+    return value.toHTML();
   }
 
   if ((tagName === null || badTags[tagName]) && badAttributes[attribute]) {

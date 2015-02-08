@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import { dasherize } from "ember-runtime/system/string";
@@ -209,7 +208,7 @@ export default EmberObject.extend({
       }
     };
 
-    var observer = { didChange: contentDidChange, willChange: Ember.K };
+    var observer = { didChange: contentDidChange, willChange: function() { return this; } };
     records.addArrayObserver(self, observer);
 
     release = function() {
@@ -286,7 +285,7 @@ export default EmberObject.extend({
       didChange: function() {
         run.scheduleOnce('actions', this, onChange);
       },
-      willChange: Ember.K
+      willChange: function() { return this; }
     };
 
     records.addArrayObserver(this, observer);

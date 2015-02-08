@@ -1,4 +1,4 @@
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { testBoth } from "ember-metal/tests/props_helper";
 
 QUnit.module('Function.prototype.observes() helper');
 

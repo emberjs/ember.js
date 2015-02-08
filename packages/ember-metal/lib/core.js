@@ -91,7 +91,7 @@ MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
 /**
   Hash of enabled Canary features. Add to this before creating your application.
 
-  You can also define `ENV.FEATURES` if you need to enable features flagged at runtime.
+  You can also define `EmberENV.FEATURES` if you need to enable features flagged at runtime.
 
   @class FEATURES
   @namespace Ember
@@ -107,8 +107,8 @@ Ember.FEATURES = Ember.ENV.FEATURES || {};
 
   You can define the following configuration options:
 
-  * `ENV.ENABLE_ALL_FEATURES` - force all features to be enabled.
-  * `ENV.ENABLE_OPTIONAL_FEATURES` - enable any features that have not been explicitly
+  * `EmberENV.ENABLE_ALL_FEATURES` - force all features to be enabled.
+  * `EmberENV.ENABLE_OPTIONAL_FEATURES` - enable any features that have not been explicitly
     enabled/disabled.
 
   @method isEnabled
@@ -144,7 +144,7 @@ Ember.FEATURES.isEnabled = function(feature) {
 
   In general we recommend leaving this option set to true since it rarely
   conflicts with other code. If you need to turn it off however, you can
-  define an `ENV.EXTEND_PROTOTYPES` config to disable it.
+  define an `EmberENV.EXTEND_PROTOTYPES` config to disable it.
 
   @property EXTEND_PROTOTYPES
   @type Boolean
@@ -198,11 +198,11 @@ Ember.K = K;
 
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 
-if ('undefined' === typeof Ember.assert) { Ember.assert = Ember.K; }
-if ('undefined' === typeof Ember.warn) { Ember.warn = Ember.K; }
-if ('undefined' === typeof Ember.debug) { Ember.debug = Ember.K; }
-if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = Ember.K; }
-if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = Ember.K; }
+if ('undefined' === typeof Ember.assert) { Ember.assert = K; }
+if ('undefined' === typeof Ember.warn) { Ember.warn = K; }
+if ('undefined' === typeof Ember.debug) { Ember.debug = K; }
+if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = K; }
+if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = K; }
 if ('undefined' === typeof Ember.deprecateFunc) {
   Ember.deprecateFunc = function(_, func) { return func; };
 }

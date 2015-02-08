@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import {create} from "ember-metal/platform";
 import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
@@ -23,7 +22,7 @@ test("no promise, invoking then should raise", function(){
   var proxy = ObjectPromiseProxy.create();
 
   raises(function(){
-    proxy.then(Ember.K, Ember.K);
+    proxy.then(function() { return this; }, function() { return this; });
   }, new RegExp("PromiseProxy's promise must be set"));
 });
 
@@ -146,7 +145,7 @@ test("rejection", function(){
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
+test("unhandled rejects still propagate to RSVP.on('error', ...) ", function(){
   expect(1);
 
   RSVP.on('error', onerror);
@@ -192,7 +191,7 @@ test("should work with promise inheritance", function(){
     promise: new PromiseSubclass(function(){ })
   });
 
-  ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritence');
+  ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
 });
 
 test("should reset isFulfilled and isRejected when promise is reset", function() {

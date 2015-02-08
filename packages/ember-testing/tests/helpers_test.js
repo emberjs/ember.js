@@ -12,6 +12,7 @@ import setupForTesting from "ember-testing/setup_for_testing";
 import EmberRouter from "ember-routing/system/router";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
+import compile from "ember-template-compiler/system/compile";
 
 var App, originalAdapter = Test.adapter;
 
@@ -24,6 +25,7 @@ function cleanup(){
     jQuery(document).off('ajaxComplete');
   });
   Test.pendingAjaxRequests = null;
+  Test.waiters = null;
 
   // Other cleanup
 
@@ -72,7 +74,16 @@ function currentURL(app){
   return app.testHelpers.currentURL();
 }
 
-QUnit.module("ember-testing Helpers", {
+function setupApp() {
+  run(function() {
+    App = EmberApplication.create();
+    App.setupForTesting();
+
+    App.injectTestHelpers();
+  });
+}
+
+QUnit.module("ember-testing: Helper setup", {
   setup: function(){ cleanup(); },
   teardown: function() { cleanup(); }
 });
@@ -125,130 +136,6 @@ test("App.reset() after Application.setupForTesting leaves the system in a defer
 
   App.reset();
   equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
-});
-
-test("`visit` advances readiness.", function(){
-  expect(2);
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-    App.injectTestHelpers();
-  });
-
-  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
-
-  App.testHelpers.visit('/').then(function(){
-    equal(App._readinessDeferrals, 0, "App's readiness was advanced by visit.");
-  });
-});
-
-test("`wait` helper can be passed a resolution value", function() {
-  expect(4);
-
-  var promise, wait;
-
-  promise = new RSVP.Promise(function(resolve) {
-    run(null, resolve, 'promise');
-  });
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  wait = App.testHelpers.wait;
-
-  wait('text').then(function(val) {
-    equal(val, 'text', 'can resolve to a string');
-    return wait(1);
-  }).then(function(val) {
-    equal(val, 1, 'can resolve to an integer');
-    return wait({ age: 10 });
-  }).then(function(val) {
-    deepEqual(val, { age: 10 }, 'can resolve to an object');
-    return wait(promise);
-  }).then(function(val) {
-    equal(val, 'promise', 'can resolve to a promise resolution value');
-  });
-
-});
-
-test("`click` triggers appropriate events in order", function() {
-  expect(4);
-
-  var click, wait, events;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
-
-    didInsertElement: function() {
-      this.$().on('mousedown focusin mouseup click', function(e) {
-        events.push(e.type);
-      });
-    },
-
-    Checkbox: Ember.Checkbox.extend({
-      click: function() {
-        events.push('click:' + this.get('checked'));
-      },
-
-      change: function() {
-        events.push('change:' + this.get('checked'));
-      }
-    })
-  });
-
-  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}}');
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  click = App.testHelpers.click;
-  wait  = App.testHelpers.wait;
-
-  wait().then(function() {
-    events = [];
-    return click('.index-view');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'mouseup', 'click'],
-      'fires events in order');
-  }).then(function() {
-    events = [];
-    return click('.index-view input[type=text]');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'focusin', 'mouseup', 'click'],
-      'fires focus events on inputs');
-  }).then(function() {
-    events = [];
-    return click('.index-view textarea');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'focusin', 'mouseup', 'click'],
-      'fires focus events on textareas');
-  }).then(function() {
-    // In IE (< 8), the change event only fires when the value changes before element focused.
-    jQuery('.index-view input[type=checkbox]').focus();
-    events = [];
-    return click('.index-view input[type=checkbox]');
-  }).then(function() {
-    // i.e. mousedown, mouseup, change:true, click, click:true
-    // Firefox differs so we can't assert the exact ordering here.
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
-    equal(events.length, 5, 'fires click and change on checkboxes');
-  });
 });
 
 test("Ember.Application#setupForTesting attaches ajax listeners", function() {
@@ -348,28 +235,151 @@ test("Ember.Application#removeTestHelpers resets the helperContainer's original 
   ok(helpers.visit === 'snazzleflabber', "original value added back to container");
 });
 
+QUnit.module("ember-testing: Helper methods", {
+  setup: function() {
+    setupApp();
+  },
+  teardown: function() {
+    cleanup();
+  }
+});
+
 test("`wait` respects registerWaiters", function() {
-  expect(2);
+  expect(3);
 
   var counter=0;
   function waiter() {
     return ++counter > 2;
   }
 
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers();
+  var other=0;
+  function otherWaiter() {
+    return ++other > 2;
+  }
 
   run(App, App.advanceReadiness);
   Test.registerWaiter(waiter);
+  Test.registerWaiter(otherWaiter);
 
   App.testHelpers.wait().then(function() {
     equal(waiter(), true, 'should not resolve until our waiter is ready');
     Test.unregisterWaiter(waiter);
-    equal(Test.waiters.length, 0, 'should not leave a waiter registered');
+    equal(Test.waiters.length, 1, 'should not leave the waiter registered');
+    other = 0;
+    return App.testHelpers.wait();
+  }).then(function() {
+    equal(otherWaiter(), true, 'other waiter is still registered');
+  });
+});
+
+test("`visit` advances readiness.", function() {
+  expect(2);
+
+  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
+
+  App.testHelpers.visit('/').then(function(){
+    equal(App._readinessDeferrals, 0, "App's readiness was advanced by visit.");
+  });
+});
+
+test("`wait` helper can be passed a resolution value", function() {
+  expect(4);
+
+  var promise, wait;
+
+  promise = new RSVP.Promise(function(resolve) {
+    run(null, resolve, 'promise');
+  });
+
+  run(App, App.advanceReadiness);
+
+  wait = App.testHelpers.wait;
+
+  wait('text').then(function(val) {
+    equal(val, 'text', 'can resolve to a string');
+    return wait(1);
+  }).then(function(val) {
+    equal(val, 1, 'can resolve to an integer');
+    return wait({ age: 10 });
+  }).then(function(val) {
+    deepEqual(val, { age: 10 }, 'can resolve to an object');
+    return wait(promise);
+  }).then(function(val) {
+    equal(val, 'promise', 'can resolve to a promise resolution value');
+  });
+
+});
+
+test("`click` triggers appropriate events in order", function() {
+  expect(5);
+
+  var click, wait, events;
+
+  App.IndexView = EmberView.extend({
+    classNames: 'index-view',
+
+    didInsertElement: function() {
+      this.$().on('mousedown focusin mouseup click', function(e) {
+        events.push(e.type);
+      });
+    },
+
+    Checkbox: Ember.Checkbox.extend({
+      click: function() {
+        events.push('click:' + this.get('checked'));
+      },
+
+      change: function() {
+        events.push('change:' + this.get('checked'));
+      }
+    })
+  });
+
+  Ember.TEMPLATES.index = compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>');
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  wait().then(function() {
+    events = [];
+    return click('.index-view');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'mouseup', 'click'],
+      'fires events in order');
+  }).then(function() {
+    events = [];
+    return click('.index-view input[type=text]');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on inputs');
+  }).then(function() {
+    events = [];
+    return click('.index-view textarea');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on textareas');
+  }).then(function() {
+    events = [];
+    return click('.index-view div');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on contenteditable');
+  }).then(function() {
+    // In IE (< 8), the change event only fires when the value changes before element focused.
+    jQuery('.index-view input[type=checkbox]').focus();
+    events = [];
+    return click('.index-view input[type=checkbox]');
+  }).then(function() {
+    // i.e. mousedown, mouseup, change:true, click, click:true
+    // Firefox differs so we can't assert the exact ordering here.
+    // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
+    equal(events.length, 5, 'fires click and change on checkboxes');
   });
 });
 
@@ -377,13 +387,6 @@ test("`wait` waits for outstanding timers", function() {
   expect(1);
 
   var wait_done = false;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers();
 
   run(App, App.advanceReadiness);
 
@@ -398,7 +401,7 @@ test("`wait` waits for outstanding timers", function() {
 
 
 test("`wait` respects registerWaiters with optional context", function() {
-  expect(2);
+  expect(3);
 
   var obj = {
     counter: 0,
@@ -407,41 +410,181 @@ test("`wait` respects registerWaiters with optional context", function() {
     }
   };
 
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers();
+  var other=0;
+  function otherWaiter() {
+    return ++other > 2;
+  }
 
   run(App, App.advanceReadiness);
   Test.registerWaiter(obj, obj.ready);
+  Test.registerWaiter(otherWaiter);
 
   App.testHelpers.wait().then(function() {
     equal(obj.ready(), true, 'should not resolve until our waiter is ready');
     Test.unregisterWaiter(obj, obj.ready);
-    equal(Test.waiters.length, 0, 'should not leave a waiter registered');
+    equal(Test.waiters.length, 1, 'should not leave the waiter registered');
+    return App.testHelpers.wait();
+  }).then(function() {
+    equal(otherWaiter(), true, 'other waiter should still be registered');
+  });
+});
+
+test("`wait` does not error if routing has not begun", function() {
+  expect(1);
+
+  App.testHelpers.wait().then(function() {
+    ok(true, 'should not error without `visit`');
+  });
+});
+
+test("`triggerEvent accepts an optional options hash without context", function() {
+  expect(3);
+
+  var triggerEvent, wait, event;
+
+  App.IndexView = EmberView.extend({
+    template: compile('{{input type="text" id="scope" class="input"}}'),
+
+    didInsertElement: function() {
+      this.$('.input').on('blur change', function(e) {
+        event = e;
+      });
+    }
   });
 
+  run(App, App.advanceReadiness);
 
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait         = App.testHelpers.wait;
+
+  wait().then(function() {
+    return triggerEvent('.input', 'blur', { keyCode: 13 });
+  }).then(function() {
+    equal(event.keyCode, 13, 'options were passed');
+    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.target.getAttribute('id'), 'scope', 'triggered on the correct element');
+  });
+});
+
+test("`triggerEvent can limit searching for a selector to a scope", function(){
+  expect(2);
+
+  var triggerEvent, wait, event;
+
+  App.IndexView = EmberView.extend({
+    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
+
+    didInsertElement: function() {
+      this.$('.input').on('blur change', function(e) {
+        event = e;
+      });
+    }
+  });
+
+  run(App, App.advanceReadiness);
+
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait         = App.testHelpers.wait;
+
+  wait().then(function() {
+    return triggerEvent('.input', '#limited', 'blur');
+  }).then(function() {
+    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
+  });
+});
+
+test("`triggerEvent` can be used to trigger arbitrary events", function() {
+  expect(2);
+
+  var triggerEvent, wait, event;
+
+  App.IndexView = EmberView.extend({
+    template: compile('{{input type="text" id="foo"}}'),
+
+    didInsertElement: function() {
+      this.$('#foo').on('blur change', function(e) {
+        event = e;
+      });
+    }
+  });
+
+  run(App, App.advanceReadiness);
+
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait         = App.testHelpers.wait;
+
+  wait().then(function() {
+    return triggerEvent('#foo', 'blur');
+  }).then(function() {
+    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
+  });
+});
+
+test("`fillIn` takes context into consideration", function() {
+  expect(2);
+  var fillIn, find, visit, andThen;
+
+  App.IndexView = EmberView.extend({
+    template: compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
+  });
+
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+
+  visit('/');
+  fillIn('.current', '#parent', 'current value');
+  andThen(function() {
+    equal(find('#first').val(), 'current value');
+    equal(find('#second').val(), '');
+  });
+});
+
+test("`triggerEvent accepts an optional options hash and context", function(){
+  expect(3);
+
+  var triggerEvent, wait, event;
+
+  App.IndexView = EmberView.extend({
+    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
+
+    didInsertElement: function() {
+      this.$('.input').on('blur change', function(e) {
+        event = e;
+      });
+    }
+  });
+
+  run(App, App.advanceReadiness);
+
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait         = App.testHelpers.wait;
+
+  wait().then(function() {
+    return triggerEvent('.input', '#limited', 'blur', { keyCode: 13 });
+  }).then(function() {
+    equal(event.keyCode, 13, 'options were passed');
+    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
+  });
 });
 
 if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
-
   QUnit.module("ember-testing debugging helpers", {
     setup: function(){
-      cleanup();
+      setupApp();
 
       run(function() {
-        App = EmberApplication.create();
         App.Router = EmberRouter.extend({
           location: 'none'
         });
-
-        App.setupForTesting();
       });
 
-      App.injectTestHelpers();
       run(App, 'advanceReadiness');
     },
 
@@ -465,10 +608,12 @@ if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
 
 QUnit.module("ember-testing routing helpers", {
   setup: function(){
-    cleanup();
-
     run(function() {
       App = EmberApplication.create();
+      App.setupForTesting();
+
+      App.injectTestHelpers();
+
       App.Router = EmberRouter.extend({
         location: 'none'
       });
@@ -478,11 +623,8 @@ QUnit.module("ember-testing routing helpers", {
           this.route("new");
         });
       });
-
-      App.setupForTesting();
     });
 
-    App.injectTestHelpers();
     run(App, 'advanceReadiness');
   },
 
@@ -524,17 +666,12 @@ test("currentRouteName for '/posts/new'", function(){
 
 QUnit.module("ember-testing pendingAjaxRequests", {
   setup: function(){
-    cleanup();
-
-    run(function() {
-      App = EmberApplication.create();
-      App.setupForTesting();
-    });
-
-    App.injectTestHelpers();
+    setupApp();
   },
 
-  teardown: function() { cleanup(); }
+  teardown: function() {
+    cleanup();
+  }
 });
 
 test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", function() {
@@ -552,7 +689,7 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
   jQuery(document).trigger('ajaxSend', xhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 
-  Ember.run(function(){
+  run(function(){
     setupForTesting();
   });
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
@@ -566,184 +703,10 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
 
 test("pendingAjaxRequests is reset by setupForTesting", function() {
   Test.pendingAjaxRequests = 1;
-  Ember.run(function(){
+  run(function(){
     setupForTesting();
   });
   equal(Test.pendingAjaxRequests, 0, 'pendingAjaxRequests is reset');
-});
-
-test("`triggerEvent accepts an optional options hash and context", function(){
-  expect(3);
-
-  var triggerEvent, wait, event;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
-    didInsertElement: function() {
-      this.$('.input').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  wait().then(function() {
-    return triggerEvent('.input', '#limited', 'blur', { keyCode: 13 });
-  }).then(function() {
-    equal(event.keyCode, 13, 'options were passed');
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
-  });
-});
-
-
-test("`triggerEvent accepts an optional options hash without context", function(){
-  expect(3);
-
-  var triggerEvent, wait, event;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="scope" class="input"}}'),
-
-    didInsertElement: function() {
-      this.$('.input').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  wait().then(function() {
-    return triggerEvent('.input', 'blur', { keyCode: 13 });
-  }).then(function() {
-    equal(event.keyCode, 13, 'options were passed');
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'scope', 'triggered on the correct element');
-  });
-});
-
-test("`triggerEvent can limit searching for a selector to a scope", function(){
-  expect(2);
-
-  var triggerEvent, wait, event;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
-    didInsertElement: function() {
-      this.$('.input').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  wait().then(function() {
-    return triggerEvent('.input', '#limited', 'blur');
-  }).then(function() {
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
-  });
-});
-
-test("`triggerEvent` can be used to trigger arbitrary events", function() {
-  expect(2);
-
-  var triggerEvent, wait, event;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
-
-    didInsertElement: function() {
-      this.$('#foo').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  wait().then(function() {
-    return triggerEvent('#foo', 'blur');
-  }).then(function() {
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
-  });
-});
-
-
-test("`fillIn` takes context into consideration", function() {
-  expect(2);
-  var fillIn, find, visit, andThen;
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
-  });
-
-  App.injectTestHelpers();
-
-  run(App, App.advanceReadiness);
-
-  fillIn = App.testHelpers.fillIn;
-  find = App.testHelpers.find;
-  visit = App.testHelpers.visit;
-  andThen = App.testHelpers.andThen;
-
-  visit('/');
-  fillIn('.current', '#parent', 'current value');
-  andThen(function() {
-    equal(find('#first').val(), 'current value');
-    equal(find('#second').val(), '');
-  });
 });
 
 QUnit.module("ember-testing async router", {

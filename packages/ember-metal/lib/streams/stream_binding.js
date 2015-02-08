@@ -6,11 +6,11 @@ import Stream from "ember-metal/streams/stream";
 function StreamBinding(stream) {
   Ember.assert("StreamBinding error: tried to bind to object that is not a stream", stream && stream.isStream);
 
+  this.init();
   this.stream = stream;
   this.senderCallback = undefined;
   this.senderContext = undefined;
   this.senderValue = undefined;
-  this.destroyed = false;
 
   stream.subscribe(this._onNotify, this);
 }
@@ -44,7 +44,7 @@ merge(StreamBinding.prototype, {
   },
 
   _sync: function() {
-    if (this.destroyed) {
+    if (this.state === 'destroyed') {
       return;
     }
 
@@ -59,18 +59,18 @@ merge(StreamBinding.prototype, {
     this.senderValue = undefined;
 
     // Force StreamBindings to always notify
-    this.cache = undefined;
+    this.state = 'clean';
 
     this.notifyExcept(senderCallback, senderContext);
   },
 
-  destroy: function() {
-    if (this.destroyed) {
-      return;
-    }
+  _super$destroy: Stream.prototype.destroy,
 
-    this.destroyed = true;
-    this.stream.unsubscribe(this._onNotify, this);
+  destroy: function() {
+    if (this._super$destroy()) {
+      this.stream.unsubscribe(this._onNotify, this);
+      return true;
+    }
   }
 });
 

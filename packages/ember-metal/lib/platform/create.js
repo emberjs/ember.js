@@ -2,6 +2,9 @@
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
 // REMOVE_USE_STRICT: true
+//
+
+import defineProperties from 'ember-metal/platform/define_properties';
 
 /**
 @class platform
@@ -12,6 +15,7 @@
 /**
   Identical to `Object.create()`. Implements if not available natively.
 
+  @since 1.8.0
   @method create
   @for Ember
 */
@@ -86,7 +90,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
     }
 
     if (properties !== undefined) {
-      Object.defineProperties(object, properties);
+      defineProperties(object, properties);
     }
 
     return object;
