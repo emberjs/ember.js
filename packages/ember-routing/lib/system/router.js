@@ -387,12 +387,6 @@ var EmberRouter = EmberObject.extend(Evented, {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
 
-    if (rootURL && this.container && !this.container._registry.has('-location-setting:root-url')) {
-      this.container._registry.register('-location-setting:root-url', rootURL, {
-        instantiate: false
-      });
-    }
-
     if ('string' === typeof location && this.container) {
       var resolvedLocation = this.container.lookup('location:' + location);
 
@@ -409,8 +403,15 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
 
     if (location !== null && typeof location === 'object') {
-      if (rootURL && typeof rootURL === 'string') {
-        location.rootURL = rootURL;
+      if (rootURL) {
+        set(location, 'rootURL', rootURL);
+      }
+
+      // Allow the location to do any feature detection, such as AutoLocation
+      // detecting history support. This gives it a chance to set its
+      // `cancelRouterSetup` property which aborts routing.
+      if (typeof location.detect === 'function') {
+        location.detect();
       }
 
       // ensure that initState is called AFTER the rootURL is set on

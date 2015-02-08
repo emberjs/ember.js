@@ -27,7 +27,8 @@ if (hasDOM) {
     isChrome: !!window.chrome && !window.opera,
     location: window.location,
     history: window.history,
-    userAgent: window.navigator.userAgent
+    userAgent: window.navigator.userAgent,
+    global: window
   };
 } else {
   environment = {
@@ -35,7 +36,8 @@ if (hasDOM) {
     isChrome: false,
     location: null,
     history: null,
-    userAgent: "Lynx (textmode)"
+    userAgent: "Lynx (textmode)",
+    global: null
   };
 }
 

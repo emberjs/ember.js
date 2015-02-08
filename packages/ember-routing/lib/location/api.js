@@ -1,5 +1,6 @@
 import Ember from "ember-metal/core"; // deprecate, assert
 import environment from "ember-metal/environment";
+import { getHash } from "ember-routing/location/util";
 
 /**
 @module ember
@@ -111,6 +112,10 @@ import environment from "ember-metal/environment";
   * replaceURL(path): replace the current URL (optional).
   * onUpdateURL(callback): triggers the callback when the URL changes.
   * formatURL(url): formats `url` to be placed into `href` attribute.
+  * detect() (optional): instructs the location to do any feature detection
+      necessary. If the location needs to redirect to a different URL, it
+      can cancel routing by setting the `cancelRouterSetup` property on itself
+      to `false`.
 
   Calling setURL or replaceURL will not trigger onUpdateURL callbacks.
 
@@ -192,15 +197,6 @@ export default {
     @since 1.4.0
   */
   _getHash: function () {
-    // AutoLocation has it at _location, HashLocation at .location.
-    // Being nice and not changing
-    var href = (this._location || this.location).href;
-    var hashIndex = href.indexOf('#');
-
-    if (hashIndex === -1) {
-      return '';
-    } else {
-      return href.substr(hashIndex);
-    }
+    return getHash(this.location);
   }
 };
