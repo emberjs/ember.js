@@ -1,4 +1,4 @@
-import Morph from "./morph-range";
+import Morph from "../morph-range";
 import AttrMorph from "./morph-attr";
 import {
   buildHTMLDOM,
@@ -363,6 +363,8 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   var morph = new Morph(this, contextualElement);
   morph.firstNode = start;
   morph.lastNode = end;
+  morph.state = {};
+  morph.isDirty = true;
   return morph;
 };
 
