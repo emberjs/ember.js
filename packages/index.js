@@ -89,16 +89,6 @@ module.exports = {
 
     "htmlbars-test-helpers": { },
 
-    "morph-range": {
-      node: true,
-      test: [
-        "util-handlebars-inliner",
-        "htmlbars-test-helpers",
-        "htmlbars-util",
-        "dom-helper"
-      ]
-    },
-
     "morph-attr": {
       node: true,
       lib: [

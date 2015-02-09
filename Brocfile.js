@@ -21,6 +21,10 @@ var demos = new Funnel('demos', {
 var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
 
+var npm = 'node_modules';
+var MorphRange = new Funnel(npm+'/morph-range/lib/');
+dependableTrees['morph-range'] = MorphRange;
+
 dependableTrees['syntax-handlebars-inliner'] = handlebarsInlinedTrees.syntax;
 dependableTrees['util-handlebars-inliner'] = handlebarsInlinedTrees.util;
 
