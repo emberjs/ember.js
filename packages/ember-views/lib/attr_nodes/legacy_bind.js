@@ -22,7 +22,11 @@ LegacyBindAttrNode.prototype.render = function render(buffer) {
   }
   var value = read(this.attrValue);
 
-  if (this.attrName === 'value' && (value === null || value === undefined)) {
+  if (value === undefined) {
+    value = null;
+  }
+
+  if (this.attrName === 'value' && value === null) {
     value = '';
   }
 
