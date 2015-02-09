@@ -60,6 +60,24 @@ QUnit.module("Ember.AutoLocation", {
   }
 });
 
+QUnit.test("AutoLocation should return concrete implementation's value for `getURL`", function() {
+  expect(1);
+
+  var browserLocation = mockBrowserLocation();
+  var browserHistory = mockBrowserHistory();
+
+  location = createLocation(browserLocation, browserHistory);
+  location.detect();
+
+  var concreteImplementation = get(location, 'concreteImplementation');
+
+  concreteImplementation.getURL = function() {
+    return '/lincoln/park';
+  };
+
+  equal(location.getURL(), '/lincoln/park');
+});
+
 QUnit.test("AutoLocation should use a HistoryLocation instance when pushStates is supported", function() {
   expect(1);
 
