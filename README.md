@@ -45,7 +45,7 @@ versions of jQuery.
 
 ## From the CLI
 
-1. Install phantomjs from http://phantomjs.org
+1. Install phantomjs from http://phantomjs.org.
 
 2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
    run a more comprehensive suite.
@@ -71,15 +71,15 @@ the `website` and `data` repos in addition to this repo.
   Ember repo. Make sure to follow the setup steps in the Ember Data repo,
   which includes installing npm modules.
 
-## Preview API documentation
+## Preview API Documentation
 
-* From the website repo, run `bundle exec rake preview`
+* From the website repo, run `bundle exec rake preview`.
 
-* The docs will be available at <http://localhost:4567/api>
+* The docs will be available at <http://localhost:4567/api>.
 
-## Build API documentation
+## Build API Documentation
 
-* From the website repo, run `bundle exec rake build`
+* From the website repo, run `bundle exec rake build`.
 
 * The website, along with documentation, will be built into the `build`
-  directory
+  directory.
