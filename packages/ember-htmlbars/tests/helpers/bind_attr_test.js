@@ -585,3 +585,29 @@ test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>", fun
     runAppend(view);
   }, /You cannot set `data-bar` manually and via `{{bind-attr}}` helper on the same element/);
 });
+
+QUnit.test("src attribute bound to undefined is not present", function() {
+  var template = compile("<img {{bind-attr src=view.undefinedValue}}>");
+
+  view = EmberView.create({
+    template: template,
+    undefinedValue: undefined
+  });
+
+  runAppend(view);
+
+  ok(!view.element.hasAttribute('src'), "src attribute not present");
+});
+
+QUnit.test("src attribute bound to null is not present", function() {
+  var template = compile("<img {{bind-attr src=view.nullValue}}>");
+
+  view = EmberView.create({
+    template: template,
+    nullValue: null
+  });
+
+  runAppend(view);
+
+  ok(!view.element.hasAttribute('src'), "src attribute not present");
+});

@@ -20,6 +20,14 @@ LegacyBindAttrNode.prototype.render = function render(buffer) {
   var value = read(this.attrValue);
   var type = typeOf(value);
 
+  if (value === undefined) {
+    value = null;
+  }
+
+  if (this.attrName === 'value' && value === null) {
+    value = '';
+  }
+
   Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]),
                value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
