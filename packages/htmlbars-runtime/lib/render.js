@@ -18,7 +18,7 @@ export default function render(template, context, env, options, blockArguments) 
   } else {
     rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
     ownerNode = rootNode;
-    rootNode.ownerNode = rootNode;
+    initializeNode(rootNode, ownerNode);
   }
 
   // TODO Invoke disposal hook recursively on old rootNode.childNodes
@@ -26,7 +26,7 @@ export default function render(template, context, env, options, blockArguments) 
   rootNode.childNodes = nodes;
 
   forEach(nodes, function(node) {
-    node.ownerNode = ownerNode;
+    initializeNode(node, ownerNode);
   });
 
   var statements = template.statements;
@@ -57,6 +57,12 @@ export default function render(template, context, env, options, blockArguments) 
       ExpressionVisitor.accept(statements[i], nodes[i], context, env, template);
     }
   }
+}
+
+function initializeNode(node, owner) {
+  node.ownerNode = owner;
+  node.state = {};
+  node.isDirty = true;
 }
 
 export function getCachedFragment(template, env) {

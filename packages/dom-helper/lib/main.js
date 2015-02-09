@@ -1,4 +1,4 @@
-import Morph from "./morph-range";
+import Morph from "../morph-range";
 import AttrMorph from "./morph-attr";
 import {
   buildHTMLDOM,
