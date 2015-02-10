@@ -1187,6 +1187,7 @@ test("svg can live with hydration", function() {
   var template = compile('<svg></svg>{{name}}');
 
   var fragment = template.render({ name: 'Milly' }, env, { contextualElement: document.body }).fragment;
+
   equal(
     fragment.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );

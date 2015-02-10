@@ -84,6 +84,39 @@ test("a simple implementation of a dirtying rerender", function() {
   equalTokens(result.fragment, '<div><p>Nothing</p></div>');
 });
 
+test("block helpers whose template has a morph at the edge", function() {
+  registerHelper('id', function(params, hash, options) {
+    return options.template.render(this);
+  });
+
+  var template = compile("{{#id}}{{value}}{{/id}}");
+  var object = { value: "hello world" };
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, 'hello world');
+  var firstNode = result.root.firstNode;
+  equal(firstNode.nodeType, 3, "first node of the parent template");
+  equal(firstNode.textContent, "", "its content should be empty");
+
+  var secondNode = firstNode.nextSibling;
+  equal(secondNode.nodeType, 3, "first node of the helper template should be a text node");
+  equal(secondNode.textContent, "", "its content should be empty");
+
+  var textContent = secondNode.nextSibling;
+  equal(textContent.nodeType, 3, "second node of the helper should be a text node");
+  equal(textContent.textContent, "hello world", "its content should be hello world");
+
+  var fourthNode = textContent.nextSibling;
+  equal(fourthNode.nodeType, 3, "last node of the helper should be a text node");
+  equal(fourthNode.textContent, "", "its content should be empty");
+
+  var lastNode = fourthNode.nextSibling;
+  equal(lastNode.nodeType, 3, "last node of the parent template should be a text node");
+  equal(lastNode.textContent, "", "its content should be empty");
+
+  strictEqual(lastNode.nextSibling, null, "there should only be five nodes");
+});
+
 test("clean content doesn't get blown away", function() {
   var template = compile("<div>{{value}}</div>");
   var object = { value: "hello" };
