@@ -395,11 +395,13 @@ merge(states.hasElement, {
     var childViews = view._childViews;
     var renderer = view._renderer;
 
-    var i, len, childView;
-    for (i = 0, len = childViews.length; i < len; i++) {
-      childView = childViews[i];
-      if (!childView._elementCreated) {
-        renderer.renderTree(childView, view, i);
+    var refMorph = null;
+    for (var i = childViews.length-1; i >= 0; i--) {
+      var childView = childViews[i];
+      if (childView._elementCreated) {
+        refMorph = childView._morph;
+      } else {
+        renderer.renderTree(childView, view, refMorph);
       }
     }
   }
