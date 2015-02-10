@@ -464,6 +464,160 @@ var TemplateRenderingSupport = Mixin.create({
   }
 });
 
+var ClassNamesSupport = Mixin.create({
+  concatenatedProperties: ['classNames', 'classNameBindings'],
+
+  init: function() {
+    this._super.apply(this, arguments);
+
+    Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
+    this.classNameBindings = emberA(this.classNameBindings.slice());
+
+    Ember.assert("Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.", typeOf(this.classNames) === 'array');
+    this.classNames = emberA(this.classNames.slice());
+  },
+
+  /**
+    Standard CSS class names to apply to the view's outer element. This
+    property automatically inherits any class names defined by the view's
+    superclasses as well.
+
+    @property classNames
+    @type Array
+    @default ['ember-view']
+  */
+  classNames: ['ember-view'],
+
+  /**
+    A list of properties of the view to apply as class names. If the property
+    is a string value, the value of that string will be applied as a class
+    name.
+
+    ```javascript
+    // Applies the 'high' class to the view element
+    Ember.View.extend({
+      classNameBindings: ['priority']
+      priority: 'high'
+    });
+    ```
+
+    If the value of the property is a Boolean, the name of that property is
+    added as a dasherized class name.
+
+    ```javascript
+    // Applies the 'is-urgent' class to the view element
+    Ember.View.extend({
+      classNameBindings: ['isUrgent']
+      isUrgent: true
+    });
+    ```
+
+    If you would prefer to use a custom value instead of the dasherized
+    property name, you can pass a binding like this:
+
+    ```javascript
+    // Applies the 'urgent' class to the view element
+    Ember.View.extend({
+      classNameBindings: ['isUrgent:urgent']
+      isUrgent: true
+    });
+    ```
+
+    This list of properties is inherited from the view's superclasses as well.
+
+    @property classNameBindings
+    @type Array
+    @default []
+  */
+  classNameBindings: EMPTY_ARRAY,
+
+  /**
+    Iterates over the view's `classNameBindings` array, inserts the value
+    of the specified property into the `classNames` array, then creates an
+    observer to update the view's element if the bound property ever changes
+    in the future.
+
+    @method _applyClassNameBindings
+    @private
+  */
+  _applyClassNameBindings: function() {
+    var classBindings = this.classNameBindings;
+
+    if (!classBindings || !classBindings.length) { return; }
+
+    var classNames = this.classNames;
+    var elem, newClass, dasherizedClass;
+
+    // Loop through all of the configured bindings. These will be either
+    // property names ('isUrgent') or property paths relative to the view
+    // ('content.isUrgent')
+    forEach(classBindings, function(binding) {
+
+      var boundBinding;
+      if (isStream(binding)) {
+        boundBinding = binding;
+      } else {
+        boundBinding = streamifyClassNameBinding(this, binding, '_view.');
+      }
+
+      // Variable in which the old class value is saved. The observer function
+      // closes over this variable, so it knows which string to remove when
+      // the property changes.
+      var oldClass;
+
+      // Set up an observer on the context. If the property changes, toggle the
+      // class name.
+      var observer = this._wrapAsScheduled(function() {
+        // Get the current value of the property
+        elem = this.$();
+        newClass = read(boundBinding);
+
+        // If we had previously added a class to the element, remove it.
+        if (oldClass) {
+          elem.removeClass(oldClass);
+          // Also remove from classNames so that if the view gets rerendered,
+          // the class doesn't get added back to the DOM.
+          classNames.removeObject(oldClass);
+        }
+
+        // If necessary, add a new class. Make sure we keep track of it so
+        // it can be removed in the future.
+        if (newClass) {
+          elem.addClass(newClass);
+          oldClass = newClass;
+        } else {
+          oldClass = null;
+        }
+      });
+
+      // Get the class name for the property at its current value
+      dasherizedClass = read(boundBinding);
+
+      if (dasherizedClass) {
+        // Ensure that it gets into the classNames array
+        // so it is displayed when we render.
+        addObject(classNames, dasherizedClass);
+
+        // Save a reference to the class name so we can remove it
+        // if the observer fires. Remember that this variable has
+        // been closed over by the observer.
+        oldClass = dasherizedClass;
+      }
+
+      subscribe(boundBinding, observer, this);
+      // Remove className so when the view is rerendered,
+      // the className is added based on binding reevaluation
+      this.one('willClearRender', function() {
+        if (oldClass) {
+          classNames.removeObject(oldClass);
+          oldClass = null;
+        }
+      });
+
+    }, this);
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -1067,9 +1221,9 @@ var TemplateRenderingSupport = Mixin.create({
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, {
+var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, {
 
-  concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
+  concatenatedProperties: ['attributeBindings'],
 
   /**
     @property isView
@@ -1356,88 +1510,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   */
   rerender: function() {
     return this.currentState.rerender(this);
-  },
-
-  /**
-    Iterates over the view's `classNameBindings` array, inserts the value
-    of the specified property into the `classNames` array, then creates an
-    observer to update the view's element if the bound property ever changes
-    in the future.
-
-    @method _applyClassNameBindings
-    @private
-  */
-  _applyClassNameBindings: function(classBindings) {
-    var classNames = this.classNames;
-    var elem, newClass, dasherizedClass;
-
-    // Loop through all of the configured bindings. These will be either
-    // property names ('isUrgent') or property paths relative to the view
-    // ('content.isUrgent')
-    forEach(classBindings, function(binding) {
-
-      var boundBinding;
-      if (isStream(binding)) {
-        boundBinding = binding;
-      } else {
-        boundBinding = streamifyClassNameBinding(this, binding, '_view.');
-      }
-
-      // Variable in which the old class value is saved. The observer function
-      // closes over this variable, so it knows which string to remove when
-      // the property changes.
-      var oldClass;
-
-      // Set up an observer on the context. If the property changes, toggle the
-      // class name.
-      var observer = this._wrapAsScheduled(function() {
-        // Get the current value of the property
-        elem = this.$();
-        newClass = read(boundBinding);
-
-        // If we had previously added a class to the element, remove it.
-        if (oldClass) {
-          elem.removeClass(oldClass);
-          // Also remove from classNames so that if the view gets rerendered,
-          // the class doesn't get added back to the DOM.
-          classNames.removeObject(oldClass);
-        }
-
-        // If necessary, add a new class. Make sure we keep track of it so
-        // it can be removed in the future.
-        if (newClass) {
-          elem.addClass(newClass);
-          oldClass = newClass;
-        } else {
-          oldClass = null;
-        }
-      });
-
-      // Get the class name for the property at its current value
-      dasherizedClass = read(boundBinding);
-
-      if (dasherizedClass) {
-        // Ensure that it gets into the classNames array
-        // so it is displayed when we render.
-        addObject(classNames, dasherizedClass);
-
-        // Save a reference to the class name so we can remove it
-        // if the observer fires. Remember that this variable has
-        // been closed over by the observer.
-        oldClass = dasherizedClass;
-      }
-
-      subscribe(boundBinding, observer, this);
-      // Remove className so when the view is rerendered,
-      // the className is added based on binding reevaluation
-      this.one('willClearRender', function() {
-        if (oldClass) {
-          classNames.removeObject(oldClass);
-          oldClass = null;
-        }
-      });
-
-    }, this);
   },
 
   _unspecifiedAttributeBindings: null,
@@ -1809,10 +1881,8 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
-    var classNameBindings = this.classNameBindings;
-    if (classNameBindings.length) {
-      this._applyClassNameBindings(classNameBindings);
-    }
+
+    this._applyClassNameBindings();
 
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
@@ -1871,60 +1941,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   ariaRole: null,
 
   /**
-    Standard CSS class names to apply to the view's outer element. This
-    property automatically inherits any class names defined by the view's
-    superclasses as well.
-
-    @property classNames
-    @type Array
-    @default ['ember-view']
-  */
-  classNames: ['ember-view'],
-
-  /**
-    A list of properties of the view to apply as class names. If the property
-    is a string value, the value of that string will be applied as a class
-    name.
-
-    ```javascript
-    // Applies the 'high' class to the view element
-    Ember.View.extend({
-      classNameBindings: ['priority']
-      priority: 'high'
-    });
-    ```
-
-    If the value of the property is a Boolean, the name of that property is
-    added as a dasherized class name.
-
-    ```javascript
-    // Applies the 'is-urgent' class to the view element
-    Ember.View.extend({
-      classNameBindings: ['isUrgent']
-      isUrgent: true
-    });
-    ```
-
-    If you would prefer to use a custom value instead of the dasherized
-    property name, you can pass a binding like this:
-
-    ```javascript
-    // Applies the 'urgent' class to the view element
-    Ember.View.extend({
-      classNameBindings: ['isUrgent:urgent']
-      isUrgent: true
-    });
-    ```
-
-    This list of properties is inherited from the view's superclasses as well.
-
-    @property classNameBindings
-    @type Array
-    @default []
-  */
-  classNameBindings: EMPTY_ARRAY,
-
-  /**
     A list of properties of the view to apply as attributes. If the property is
     a string value, the value of that string will be applied as the attribute.
 
@@ -1972,12 +1988,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     }
 
     this._super.apply(this, arguments);
-
-    Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
-    this.classNameBindings = emberA(this.classNameBindings.slice());
-
-    Ember.assert("Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.", typeOf(this.classNames) === 'array');
-    this.classNames = emberA(this.classNames.slice());
   },
 
   __defineNonEnumerable: function(property) {
@@ -2228,4 +2238,4 @@ View.childViewsProperty = childViewsProperty;
 
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport };
+export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
