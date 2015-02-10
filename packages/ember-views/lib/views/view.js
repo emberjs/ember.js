@@ -1156,10 +1156,6 @@ var View = CoreView.extend(
   */
   parentViewDidChange: K,
 
-  beforeRender: function(buffer) {},
-
-  afterRender: function(buffer) {},
-
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
