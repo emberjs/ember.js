@@ -528,11 +528,8 @@ RenderBuffer.prototype = {
     if (content.nodeType) {
       this._element.appendChild(content);
     } else {
-      var nodes;
-      nodes = this.dom.parseHTML(content, contextualElement);
-      while (nodes[0]) {
-        this._element.appendChild(nodes[0]);
-      }
+      var frag = this.dom.parseHTML(content, contextualElement);
+      this._element.appendChild(frag);
     }
 
     // This should only happen with legacy string buffers
