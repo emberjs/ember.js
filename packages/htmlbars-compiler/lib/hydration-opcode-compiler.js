@@ -119,8 +119,8 @@ HydrationOpcodeCompiler.prototype.closeElement = function() {
   this.currentDOMChildIndex = this.paths.pop();
 };
 
-HydrationOpcodeCompiler.prototype.mustache = function(mustache) {
-  this.pushMorphPlaceholderNode();
+HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childCount) {
+  this.pushMorphPlaceholderNode(childIndex, childCount);
   
   var sexpr = mustache.sexpr;
 
@@ -138,8 +138,8 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache) {
   }
 };
 
-HydrationOpcodeCompiler.prototype.block = function(block) {
-  this.pushMorphPlaceholderNode();
+HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
+  this.pushMorphPlaceholderNode(childIndex, childCount);
 
   var sexpr = block.sexpr;
 
@@ -155,8 +155,8 @@ HydrationOpcodeCompiler.prototype.block = function(block) {
   this.opcode('printBlockHook', morphNum, templateId, inverseId);
 };
 
-HydrationOpcodeCompiler.prototype.component = function(component) {
-  this.pushMorphPlaceholderNode();
+HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childCount) {
+  this.pushMorphPlaceholderNode(childIndex, childCount);
 
   var program = component.program || {};
   var blockParams = program.blockParams || [];
@@ -229,7 +229,15 @@ HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
   this.opcode('printElementHook', this.elementNum);
 };
 
-HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function() {
+HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
+  if (this.paths.length === 0) {
+    if (childIndex === 0) {
+      this.opcode('openBoundary');
+    }
+    if (childIndex === childCount - 1) {
+      this.opcode('closeBoundary');
+    }
+  }
   this.comment();
 };
 
