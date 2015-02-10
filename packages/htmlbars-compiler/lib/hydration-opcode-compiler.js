@@ -121,7 +121,9 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
   if (isHelper(mustache)) {
-    prepareCommonOpcodes(this, mustache);
+    prepareHash(this, mustache.hash);
+    prepareParams(this, mustache.params);
+    preparePath(this, mustache.path);
     this.opcode('printInlineHook', morphNum);
   } else {
     preparePath(this, mustache.path);
@@ -140,7 +142,9 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  prepareCommonOpcodes(this, block);
+  prepareHash(this, block.hash);
+  prepareParams(this, block.params);
+  preparePath(this, block.path);
   this.opcode('printBlockHook', morphNum, templateId, inverseId);
 };
 
@@ -207,7 +211,9 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
-  prepareCommonOpcodes(this, sexpr);
+  prepareHash(this, sexpr.hash);
+  prepareParams(this, sexpr.params);
+  preparePath(this, sexpr.path);
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
@@ -231,12 +237,16 @@ HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex
 };
 
 HydrationOpcodeCompiler.prototype.MustacheStatement = function(mustache) {
-  prepareCommonOpcodes(this, mustache);
+  prepareHash(this, mustache.hash);
+  prepareParams(this, mustache.params);
+  preparePath(this, mustache.path);
   this.opcode('pushSexprHook');
 };
 
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
-  prepareCommonOpcodes(this, sexpr);
+  prepareHash(this, sexpr.hash);
+  prepareParams(this, sexpr.params);
+  preparePath(this, sexpr.path);
   this.opcode('pushSexprHook');
 };
 
@@ -281,12 +291,6 @@ function prepareHash(compiler, hash) {
   }
 
   compiler.opcode('prepareObject', pairs.length);
-}
-
-function prepareCommonOpcodes(compiler, node) {
-  prepareHash(compiler, node.hash);
-  prepareParams(compiler, node.params);
-  preparePath(compiler, node.path);
 }
 
 function distributeMorphs(morphs, opcodes) {
