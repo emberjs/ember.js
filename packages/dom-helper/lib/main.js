@@ -401,6 +401,12 @@ prototype.appendMorph = function(element, contextualElement) {
   return this.createMorph(element, insertion, insertion, contextualElement);
 };
 
+prototype.insertBoundary = function(fragment, index) {
+  // this will always be null or firstChild
+  var child = index === null ? null : this.childAtIndex(fragment, index);
+  this.insertBefore(fragment, this.createTextNode(''), child);
+};
+
 prototype.parseHTML = function(html, contextualElement) {
   var childNodes;
 

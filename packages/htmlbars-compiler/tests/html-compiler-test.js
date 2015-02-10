@@ -312,7 +312,7 @@ test("The compiler can handle top-level unescaped tr", function() {
   var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
-    fragment.firstChild.tagName, 'TR',
+    fragment.firstChild.nextSibling.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -322,7 +322,7 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
   var fragment = template.render(context, env, document.createElement('tr'));
 
   equal(
-    fragment.firstChild.tagName, 'TD',
+    fragment.firstChild.nextSibling.tagName, 'TD',
     "root td is returned" );
 });
 
@@ -336,7 +336,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
   var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
-    fragment.firstChild.tagName, 'TR',
+    fragment.firstChild.nextSibling.nextSibling.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -351,7 +351,7 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
   var tableNode = fragment.firstChild;
 
   equal(
-    tableNode.firstChild.tagName, 'TR',
+    tableNode.firstChild.nextSibling.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -1221,16 +1221,16 @@ test("Block helper allows interior namespace", function() {
 
   var fragment = template.render({ isTrue: true }, env, document.body);
   equal(
-    fragment.firstChild.namespaceURI, svgNamespace,
+    fragment.firstChild.nextSibling.namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
 
   isTrue = false;
   fragment = template.render({ isTrue: false }, env, document.body);
   equal(
-    fragment.firstChild.namespaceURI, xhtmlNamespace,
+    fragment.firstChild.nextSibling.namespaceURI, xhtmlNamespace,
     "inverse block path has a normal namespace");
   equal(
-    fragment.firstChild.childNodes[0].namespaceURI, svgNamespace,
+    fragment.firstChild.nextSibling.firstChild.namespaceURI, svgNamespace,
     "svg namespace inside an element inside a block is present" );
 });
 
