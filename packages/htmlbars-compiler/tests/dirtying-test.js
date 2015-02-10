@@ -49,9 +49,9 @@ test("a simple implementation of a dirtying rerender", function() {
       state.condition = normalized;
 
       if (normalized) {
-        return options.template.render(this);
+        return options.template.yield();
       } else {
-        return options.inverse.render(this);
+        return options.inverse.yield();
       }
     }
   });
@@ -86,7 +86,7 @@ test("a simple implementation of a dirtying rerender", function() {
 
 test("block helpers whose template has a morph at the edge", function() {
   registerHelper('id', function(params, hash, options) {
-    return options.template.render(this);
+    return options.template.yield();
   });
 
   var template = compile("{{#id}}{{value}}{{/id}}");
@@ -137,7 +137,7 @@ test("clean content doesn't get blown away", function() {
   };
 
   object.value = "hello";
-  textRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 });
 
@@ -160,7 +160,7 @@ test("helper calls follow the normal dirtying rules", function() {
 
   var textRenderNode = result.root.childNodes[0];
 
-  textRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 
   equalTokens(result.fragment, '<div>GOODBYE</div>');
@@ -171,7 +171,7 @@ test("helper calls follow the normal dirtying rules", function() {
 
   // Checks normalized value, not raw value
   object.value = "GoOdByE";
-  textRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 });
 
@@ -189,7 +189,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
 
   var attrRenderNode = result.root.childNodes[0];
 
-  attrRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 
   equalTokens(result.fragment, "<div class='universe'>hello</div>");
@@ -199,7 +199,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   };
 
   object.value = "universe";
-  attrRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 });
 
@@ -217,7 +217,7 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 
   var attrRenderNode = result.root.childNodes[0];
 
-  attrRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 
   equalTokens(result.fragment, "<div class='hello universe'>hello</div>");
@@ -227,6 +227,6 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   };
 
   object.value = "universe";
-  attrRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
 });
