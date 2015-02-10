@@ -3,6 +3,10 @@ import { Mixin } from "ember-metal/mixin";
 import { get } from "ember-metal/property_get";
 
 var LegacyViewSupport = Mixin.create({
+  beforeRender: function(buffer) {},
+
+  afterRender: function(buffer) {},
+
   mutateChildViews: function(callback) {
     var childViews = this._childViews;
     var idx = childViews.length;
