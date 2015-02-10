@@ -618,6 +618,113 @@ var ClassNamesSupport = Mixin.create({
   }
 });
 
+var AttributeBindingsSupport = Ember.Mixin.create({
+  concatenatedProperties: ['attributeBindings'],
+
+  /**
+    A list of properties of the view to apply as attributes. If the property is
+    a string value, the value of that string will be applied as the attribute.
+
+    ```javascript
+    // Applies the type attribute to the element
+    // with the value "button", like <div type="button">
+    Ember.View.extend({
+      attributeBindings: ['type'],
+      type: 'button'
+    });
+    ```
+
+    If the value of the property is a Boolean, the name of that property is
+    added as an attribute.
+
+    ```javascript
+    // Renders something like <div enabled="enabled">
+    Ember.View.extend({
+      attributeBindings: ['enabled'],
+      enabled: true
+    });
+    ```
+
+    @property attributeBindings
+  */
+  attributeBindings: EMPTY_ARRAY,
+
+  _unspecifiedAttributeBindings: null,
+
+  /**
+    Iterates through the view's attribute bindings, sets up observers for each,
+    then applies the current value of the attributes to the passed render buffer.
+
+    @method _applyAttributeBindings
+    @param {Ember.RenderBuffer} buffer
+    @param {Array} attributeBindings
+    @private
+  */
+  _applyAttributeBindings: function(buffer) {
+    var attributeBindings = this.attributeBindings;
+
+    if (!attributeBindings || !attributeBindings.length) { return; }
+
+    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
+
+    var binding, colonIndex, property, attrName, attrNode, attrValue;
+    var i, l;
+    for (i=0, l=attributeBindings.length; i<l; i++) {
+      binding = attributeBindings[i];
+      colonIndex = binding.indexOf(':');
+      if (colonIndex === -1) {
+        property = binding;
+        attrName = binding;
+      } else {
+        property = binding.substring(0, colonIndex);
+        attrName = binding.substring(colonIndex + 1);
+      }
+
+      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
+
+      if (property in this) {
+        attrValue = this.getStream('view.'+property);
+        attrNode = new AttrNode(attrName, attrValue);
+        this.appendAttr(attrNode);
+        if (!canSetNameOnInputs && attrName === 'name') {
+          buffer.attr('name', read(attrValue));
+        }
+      } else {
+        unspecifiedAttributeBindings[property] = attrName;
+      }
+    }
+
+    // Lazily setup setUnknownProperty after attributeBindings are initially applied
+    this.setUnknownProperty = this._setUnknownProperty;
+  },
+
+  /**
+    We're using setUnknownProperty as a hook to setup attributeBinding observers for
+    properties that aren't defined on a view at initialization time.
+
+    Note: setUnknownProperty will only be called once for each property.
+
+    @method setUnknownProperty
+    @param key
+    @param value
+    @private
+  */
+  setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
+
+  _setUnknownProperty: function(key, value) {
+    var attrName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
+
+    defineProperty(this, key);
+
+    if (attrName) {
+      var attrValue = this.getStream('view.'+key);
+      var attrNode = new AttrNode(attrName, attrValue);
+      this.appendAttr(attrNode);
+    }
+    return set(this, key, value);
+  }
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -1221,9 +1328,7 @@ var ClassNamesSupport = Mixin.create({
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, {
-
-  concatenatedProperties: ['attributeBindings'],
+var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, AttributeBindingsSupport, {
 
   /**
     @property isView
@@ -1510,77 +1615,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   */
   rerender: function() {
     return this.currentState.rerender(this);
-  },
-
-  _unspecifiedAttributeBindings: null,
-
-  /**
-    Iterates through the view's attribute bindings, sets up observers for each,
-    then applies the current value of the attributes to the passed render buffer.
-
-    @method _applyAttributeBindings
-    @param {Ember.RenderBuffer} buffer
-    @param {Array} attributeBindings
-    @private
-  */
-  _applyAttributeBindings: function(buffer, attributeBindings) {
-    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
-
-    var binding, colonIndex, property, attrName, attrNode, attrValue;
-    var i, l;
-    for (i=0, l=attributeBindings.length; i<l; i++) {
-      binding = attributeBindings[i];
-      colonIndex = binding.indexOf(':');
-      if (colonIndex === -1) {
-        property = binding;
-        attrName = binding;
-      } else {
-        property = binding.substring(0, colonIndex);
-        attrName = binding.substring(colonIndex + 1);
-      }
-
-      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
-
-      if (property in this) {
-        attrValue = this.getStream('view.'+property);
-        attrNode = new AttrNode(attrName, attrValue);
-        this.appendAttr(attrNode);
-        if (!canSetNameOnInputs && attrName === 'name') {
-          buffer.attr('name', read(attrValue));
-        }
-      } else {
-        unspecifiedAttributeBindings[property] = attrName;
-      }
-    }
-
-    // Lazily setup setUnknownProperty after attributeBindings are initially applied
-    this.setUnknownProperty = this._setUnknownProperty;
-  },
-
-  /**
-    We're using setUnknownProperty as a hook to setup attributeBinding observers for
-    properties that aren't defined on a view at initialization time.
-
-    Note: setUnknownProperty will only be called once for each property.
-
-    @method setUnknownProperty
-    @param key
-    @param value
-    @private
-  */
-  setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
-
-  _setUnknownProperty: function(key, value) {
-    var attrName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
-
-    defineProperty(this, key);
-
-    if (attrName) {
-      var attrValue = this.getStream('view.'+key);
-      var attrNode = new AttrNode(attrName, attrValue);
-      this.appendAttr(attrNode);
-    }
-    return set(this, key, value);
   },
 
   /**
@@ -1887,10 +1921,7 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
     // existing classNames infrastructure.
-    var attributeBindings = this.attributeBindings;
-    if (attributeBindings.length) {
-      this._applyAttributeBindings(buffer, attributeBindings);
-    }
+    this._applyAttributeBindings(buffer);
 
     buffer.setClasses(this.classNames);
     buffer.id(this.elementId);
@@ -1939,34 +1970,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     @default null
   */
   ariaRole: null,
-
-  /**
-    A list of properties of the view to apply as attributes. If the property is
-    a string value, the value of that string will be applied as the attribute.
-
-    ```javascript
-    // Applies the type attribute to the element
-    // with the value "button", like <div type="button">
-    Ember.View.extend({
-      attributeBindings: ['type'],
-      type: 'button'
-    });
-    ```
-
-    If the value of the property is a Boolean, the name of that property is
-    added as an attribute.
-
-    ```javascript
-    // Renders something like <div enabled="enabled">
-    Ember.View.extend({
-      attributeBindings: ['enabled'],
-      enabled: true
-    });
-    ```
-
-    @property attributeBindings
-  */
-  attributeBindings: EMPTY_ARRAY,
 
   // .......................................................
   // CORE DISPLAY METHODS
@@ -2238,4 +2241,4 @@ View.childViewsProperty = childViewsProperty;
 
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
+export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, AttributeBindingsSupport };
