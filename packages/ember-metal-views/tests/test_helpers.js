@@ -47,15 +47,13 @@ MetalRenderer.prototype.createElement = function (view, contextualElement) {
     }
   }
   if (view.childViews) {
-    view._childViewsMorph = this._dom.createMorph(el, null, null);
+    view._childViewsMorph = this._dom.appendMorph(el);
   } else if (view.textContent) {
     setElementText(el, view.textContent);
   } else if (view.innerHTML) {
     this._dom.detectNamespace(el);
-    var nodes = this._dom.parseHTML(view.innerHTML, el);
-    while (nodes[0]) {
-      el.appendChild(nodes[0]);
-    }
+    var frag = this._dom.parseHTML(view.innerHTML, el);
+    el.appendChild(frag);
   }
   return el;
 };

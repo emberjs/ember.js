@@ -170,7 +170,12 @@ Renderer.prototype.appendAttrTo =
 
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    var morph = this._dom.createMorph(target, null, null);
+    var morph;
+    if (target.firstNode) {
+      morph = this._dom.createMorph(target, target.firstNode, target.lastNode);
+    } else {
+      morph = this._dom.appendMorph(target);
+    }
     this.scheduleInsert(view, morph);
   };
 
