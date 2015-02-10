@@ -35,6 +35,9 @@ import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
 import AttributeBindingsSupport from "ember-views/mixins/attribute_bindings_support";
+import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
+import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
+import VisibilitySupport from "ember-views/mixins/visibility_support";
 
 function K() { return this; }
 
@@ -661,7 +664,18 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
-var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, AttributeBindingsSupport, {
+var View = CoreView.extend(
+  ViewStreamSupport,
+  ViewKeywordSupport,
+  ViewContextSupport,
+  ViewChildViewsSupport,
+  ViewStateSupport,
+  TemplateRenderingSupport,
+  ClassNamesSupport,
+  AttributeBindingsSupport,
+  LegacyViewSupport,
+  InstrumentationSupport,
+  VisibilitySupport, {
 
   /**
     @property isView
@@ -698,18 +712,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     @default null
   */
   layoutName: null,
-
-  /**
-    Used to identify this view during debugging
-
-    @property instrumentDisplay
-    @type String
-  */
-  instrumentDisplay: computed(function() {
-    if (this.helperName) {
-      return '{{' + this.helperName + '}}';
-    }
-  }),
 
   /**
     The template used to render the view. This should be a function that
@@ -799,15 +801,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     this.rerender();
   }),
 
-  /**
-    If `false`, the view will appear hidden in DOM.
-
-    @property isVisible
-    @type Boolean
-    @default null
-  */
-  isVisible: true,
-
   // When it's a virtual view, we need to notify the parent that their
   // childViews will change.
   _childViewsWillChange: beforeObserver('childViews', function() {
@@ -825,25 +818,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
       if (parentView) { propertyDidChange(parentView, 'childViews'); }
     }
   }),
-
-  /**
-    Return the nearest ancestor that is an instance of the provided
-    class.
-
-    @method nearestInstanceOf
-    @param {Class} klass Subclass of Ember.View (or Ember.View itself)
-    @return Ember.View
-    @deprecated
-  */
-  nearestInstanceOf: function(klass) {
-    Ember.deprecate("nearestInstanceOf is deprecated and will be removed from future releases. Use nearestOfType.");
-    var view = get(this, 'parentView');
-
-    while (view) {
-      if (view instanceof klass) { return view; }
-      view = get(view, 'parentView');
-    }
-  },
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -878,26 +852,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
 
     while (view) {
       if (property in view) { return view; }
-      view = get(view, 'parentView');
-    }
-  },
-
-  /**
-    Return the nearest ancestor whose parent is an instance of
-    `klass`.
-
-    @method nearestChildOf
-    @param {Class} klass Subclass of Ember.View (or Ember.View itself)
-    @return Ember.View
-    @deprecated
-  */
-  nearestChildOf: function(klass) {
-    Ember.deprecate("nearestChildOf has been deprecated.");
-
-    var view = get(this, 'parentView');
-
-    while (view) {
-      if (get(view, 'parentView') instanceof klass) { return view; }
       view = get(view, 'parentView');
     }
   },
@@ -990,19 +944,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   */
   $: function(sel) {
     return this.currentState.$(this, sel);
-  },
-
-  mutateChildViews: function(callback) {
-    var childViews = this._childViews;
-    var idx = childViews.length;
-    var view;
-
-    while (--idx >= 0) {
-      view = childViews[idx];
-      callback(this, view, idx);
-    }
-
-    return this;
   },
 
   forEachChildView: function(callback) {
@@ -1233,13 +1174,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   */
   parentViewDidChange: K,
 
-  instrumentName: 'view',
-
-  instrumentDetails: function(hash) {
-    hash.template = get(this, 'templateName');
-    this._super(hash);
-  },
-
   beforeRender: function(buffer) {},
 
   afterRender: function(buffer) {},
@@ -1334,24 +1268,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
   },
 
   /**
-    Removes all children from the `parentView`.
-
-    @method removeAllChildren
-    @return {Ember.View} receiver
-  */
-  removeAllChildren: function() {
-    return this.mutateChildViews(function(parentView, view) {
-      parentView.removeChild(view);
-    });
-  },
-
-  destroyAllChildren: function() {
-    return this.mutateChildViews(function(parentView, view) {
-      view.destroy();
-    });
-  },
-
-  /**
     Removes the view from its `parentView`, if one is found. Otherwise
     does nothing.
 
@@ -1389,79 +1305,6 @@ var View = CoreView.extend(ViewStreamSupport, ViewKeywordSupport, ViewContextSup
     }
 
     return this;
-  },
-
-  becameVisible: K,
-  becameHidden: K,
-
-  /**
-    When the view's `isVisible` property changes, toggle the visibility
-    element of the actual DOM element.
-
-    @method _isVisibleDidChange
-    @private
-  */
-  _isVisibleDidChange: observer('isVisible', function() {
-    if (this._isVisible === get(this, 'isVisible')) { return ; }
-    run.scheduleOnce('render', this, this._toggleVisibility);
-  }),
-
-  _toggleVisibility: function() {
-    var $el = this.$();
-    var isVisible = get(this, 'isVisible');
-
-    if (this._isVisible === isVisible) { return ; }
-
-    // It's important to keep these in sync, even if we don't yet have
-    // an element in the DOM to manipulate:
-    this._isVisible = isVisible;
-
-    if (!$el) { return; }
-
-    $el.toggle(isVisible);
-
-    if (this._isAncestorHidden()) { return; }
-
-    if (isVisible) {
-      this._notifyBecameVisible();
-    } else {
-      this._notifyBecameHidden();
-    }
-  },
-
-  _notifyBecameVisible: function() {
-    this.trigger('becameVisible');
-
-    this.forEachChildView(function(view) {
-      var isVisible = get(view, 'isVisible');
-
-      if (isVisible || isVisible === null) {
-        view._notifyBecameVisible();
-      }
-    });
-  },
-
-  _notifyBecameHidden: function() {
-    this.trigger('becameHidden');
-    this.forEachChildView(function(view) {
-      var isVisible = get(view, 'isVisible');
-
-      if (isVisible || isVisible === null) {
-        view._notifyBecameHidden();
-      }
-    });
-  },
-
-  _isAncestorHidden: function() {
-    var parent = get(this, 'parentView');
-
-    while (parent) {
-      if (get(parent, 'isVisible') === false) { return true; }
-
-      parent = get(parent, 'parentView');
-    }
-
-    return false;
   },
 
   // .......................................................
