@@ -31,7 +31,7 @@ prototype.compile = function(opcodes, options) {
   this.hasCloseBoundary = false;
   this.statements = [];
   this.expressionStack = [];
-  this.augmentContext = [];
+  this.locals = [];
   this.hasOpenBoundary = false;
   this.hasCloseBoundary = false;
 
@@ -56,7 +56,7 @@ prototype.compile = function(opcodes, options) {
     hydrateMorphsProgram: '',
     fragmentProcessingProgram: '',
     statements: this.statements,
-    augmentContext: this.augmentContext,
+    locals: this.locals,
     hasMorphs: false
   };
 
@@ -158,7 +158,7 @@ prototype.pushConcatHook = function() {
 };
 
 prototype.printSetHook = function(name) {
-  this.augmentContext.push(name);
+  this.locals.push(name);
 };
 
 prototype.printBlockHook = function(templateId, inverseId) {

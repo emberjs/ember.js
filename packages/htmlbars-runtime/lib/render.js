@@ -1,7 +1,7 @@
 import { forEach } from "../htmlbars-util/array-utils";
 import ExpressionVisitor from "./expression-visitor";
 
-export default function render(template, context, env, options, blockArguments) {
+export default function render(template, scope, env, options, blockArguments) {
   var dom = env.dom;
   var contextualElement = options && options.contextualElement;
 
@@ -30,9 +30,9 @@ export default function render(template, context, env, options, blockArguments) 
   });
 
   var statements = template.statements;
-  var augmentContext = template.augmentContext;
+  var locals = template.locals;
 
-  populateNodes(context);
+  populateNodes(scope, blockArguments);
 
   if (options && options.renderNode) {
     rootNode.setContent(fragment);
@@ -41,20 +41,30 @@ export default function render(template, context, env, options, blockArguments) 
   return {
     root: rootNode,
     fragment: fragment,
-    revalidate: function(newContext) {
-      populateNodes(newContext || context);
+    dirty: function() {
+      var nodes = [rootNode];
+
+      while (nodes.length) {
+        var node = nodes.pop();
+        node.isDirty = true;
+        nodes.push.apply(nodes, node.childNodes);
+      }
+    },
+    revalidate: function(newScope, newBlockArguments) {
+      if (newScope !== undefined) { scope.self = newScope; }
+      populateNodes(scope, newBlockArguments || blockArguments);
     }
   };
 
-  function populateNodes(context) {
+  function populateNodes(scope, blockArguments) {
     var i, l;
 
-    for (i=0, l=augmentContext.length; i<l; i++) {
-      env.hooks.set(env, context, augmentContext[i], blockArguments[i]);
+    for (i=0, l=locals.length; i<l; i++) {
+      env.hooks.bindLocal(env, scope, locals[i], blockArguments[i]);
     }
 
     for (i=0, l=statements.length; i<l; i++) {
-      ExpressionVisitor.accept(statements[i], nodes[i], context, env, template);
+      ExpressionVisitor.accept(statements[i], nodes[i], scope, env, template);
     }
   }
 }

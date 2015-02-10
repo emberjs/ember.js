@@ -14,6 +14,7 @@ function keys(obj) {
 
 test("hooks are present", function () {
   var hookNames = [
+    "createScope",
     "content",
     "inline",
     "block",
@@ -23,7 +24,7 @@ test("hooks are present", function () {
     "subexpr",
     "concat",
     "get",
-    "set"
+    "bindLocal"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {
