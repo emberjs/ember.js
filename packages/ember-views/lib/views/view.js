@@ -3,9 +3,6 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
-
-import Evented from "ember-runtime/mixins/evented";
-import EmberObject from "ember-runtime/system/object";
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
@@ -903,21 +900,6 @@ var View = CoreView.extend(
     return this.currentState.rerender(this);
   },
 
-  /**
-    Given a property name, returns a dasherized version of that
-    property name if the property evaluates to a non-falsy value.
-
-    For example, if the view has property `isUrgent` that evaluates to true,
-    passing `isUrgent` to this method will return `"is-urgent"`.
-
-    @method _classStringForProperty
-    @param property
-    @private
-  */
-  _classStringForProperty: function(parsedPath) {
-    return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
-  },
-
   // ..........................................................
   // ELEMENT SUPPORT
   //
@@ -1383,20 +1365,6 @@ deprecateProperty(View.prototype, 'states', '_states');
 
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
-
-var mutation = EmberObject.extend(Evented).create();
-// TODO MOVE TO RENDERER HOOKS
-View.addMutationListener = function(callback) {
-  mutation.on('change', callback);
-};
-
-View.removeMutationListener = function(callback) {
-  mutation.off('change', callback);
-};
-
-View.notifyMutationListeners = function() {
-  mutation.trigger('change');
-};
 
 /**
   Global views hash
