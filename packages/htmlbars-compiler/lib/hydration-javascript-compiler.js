@@ -32,6 +32,8 @@ prototype.compile = function(opcodes, options) {
   this.statements = [];
   this.expressionStack = [];
   this.augmentContext = [];
+  this.hasOpenBoundary = false;
+  this.hasCloseBoundary = false;
 
   processOpcodes(this, opcodes);
 
@@ -74,22 +76,34 @@ prototype.compile = function(opcodes, options) {
   if (this.fragmentProcessing.length) {
     var processing = "";
     for (i = 0, l = this.fragmentProcessing.length; i < l; ++i) {
-      processing += this.indent+this.fragmentProcessing[i]+'\n';
+      processing += this.indent+'  '+this.fragmentProcessing[i]+'\n';
     }
     result.fragmentProcessingProgram = processing;
   }
 
+  var createMorphsProgram;
   if (result.hasMorphs) {
-    result.createMorphsProgram =
+    createMorphsProgram =
       'function buildRenderNodes(dom, fragment, contextualElement) {\n' +
-      result.fragmentProcessingProgram +
-      morphs +
+      result.fragmentProcessingProgram + morphs;
+
+      if (this.hasOpenBoundary) {
+        createMorphsProgram += indent+"  dom.insertBoundary(fragment, 0);\n";
+      }
+
+      if (this.hasCloseBoundary) {
+        createMorphsProgram += indent+"  dom.insertBoundary(fragment, null);\n";
+      }
+
+      createMorphsProgram +=
       indent + '  return morphs;\n' +
       indent+'}';
   } else {
-    result.createMorphsProgram =
+    createMorphsProgram =
       'function buildRenderNodes() { return []; }';
   }
+
+  result.createMorphsProgram = createMorphsProgram;
 
   return result;
 };

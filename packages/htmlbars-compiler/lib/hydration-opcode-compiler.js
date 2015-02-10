@@ -71,6 +71,10 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   }
 };
 
+HydrationOpcodeCompiler.prototype.insertBoundary = function(first) {
+  this.opcode(first ? 'openBoundary' : 'closeBoundary');
+};
+
 HydrationOpcodeCompiler.prototype.endProgram = function() {
   distributeMorphs(this.morphs, this.opcodes);
 };
