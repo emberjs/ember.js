@@ -390,19 +390,15 @@ prototype.createUnsafeMorphAt = function(parent, startIndex, endIndex, contextua
 };
 
 prototype.insertMorphBefore = function(element, referenceChild, contextualElement) {
-  var start = this.document.createTextNode('');
-  var end = this.document.createTextNode('');
-  element.insertBefore(start, referenceChild);
-  element.insertBefore(end, referenceChild);
-  return this.createMorph(element, start, end, contextualElement);
+  var insertion = this.document.createComment('');
+  element.insertBefore(insertion, referenceChild);
+  return this.createMorph(element, insertion, insertion, contextualElement);
 };
 
 prototype.appendMorph = function(element, contextualElement) {
-  var start = this.document.createTextNode('');
-  var end = this.document.createTextNode('');
-  element.appendChild(start);
-  element.appendChild(end);
-  return this.createMorph(element, start, end, contextualElement);
+  var insertion = this.document.createComment('');
+  element.appendChild(insertion);
+  return this.createMorph(element, insertion, insertion, contextualElement);
 };
 
 prototype.parseHTML = function(html, contextualElement) {
