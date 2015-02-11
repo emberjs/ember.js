@@ -302,7 +302,7 @@ function linkToHelper(params, hash, options, env) {
 
   if (!options.template) {
     var linkTitle = params.shift();
-    var shouldEscape = options.morph.escaped;
+    var parseTextAsHTML = options.morph.parseTextAsHTML;
 
     if (isStream(linkTitle)) {
       hash.linkTitle = { stream: linkTitle };
@@ -312,10 +312,10 @@ function linkToHelper(params, hash, options, env) {
       isHTMLBars: true,
       render: function(view, env) {
         var value = read(linkTitle) || "";
-        if (shouldEscape) {
-          return env.dom.createTextNode(value);
-        } else {
+        if (parseTextAsHTML) {
           return value;
+        } else {
+          return env.dom.createTextNode(value);
         }
       }
     };
