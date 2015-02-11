@@ -60,7 +60,7 @@ export default function render(template, scope, env, options, blockArguments) {
     var i, l;
 
     for (i=0, l=locals.length; i<l; i++) {
-      env.hooks.bindLocal(env, scope, locals[i], blockArguments[i]);
+      env.hooks.bindLocal(scope, env, locals[i], blockArguments[i]);
     }
 
     for (i=0, l=statements.length; i<l; i++) {
