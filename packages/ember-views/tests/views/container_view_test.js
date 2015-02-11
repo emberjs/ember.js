@@ -263,7 +263,7 @@ QUnit.test("views that are removed from a ContainerView should have their child 
     container.removeObject(view);
   });
   equal(get(view, 'childViews.length'), 0, "child views are cleared when removed from container view");
-  equal(container.$().html(), '', "the child view is removed from the DOM");
+  equal(container.$().text(), '', "the child view is removed from the DOM");
 });
 
 QUnit.test("if a ContainerView starts with an empty currentView, nothing is displayed", function() {
