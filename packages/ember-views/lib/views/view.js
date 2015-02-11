@@ -993,6 +993,29 @@ var View = CoreView.extend(
   },
 
   /**
+    @private
+
+    Renders the view into `body` element and returns the element.
+
+    This method is useful if you want to render the view into an element that
+    is not in the document's body. Instead, a new `body` element, detached from
+    the DOM is returned. FastBoot uses this to serialize the rendered view into
+    a string for transmission over the network.
+
+    @method renderToElement
+    @return {HTMLBodyElement} element
+  */
+  renderToElement: function() {
+    var element = this.renderer._dom.createElement('body');
+
+    run(this, function() {
+      this.renderer.appendTo(this, element);
+    });
+
+    return element;
+  },
+
+  /**
     Replaces the content of the specified parent element with this view's
     element. If the view does not have an HTML representation yet,
     the element will be generated automatically.
@@ -1087,7 +1110,8 @@ var View = CoreView.extend(
 
   /**
     Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method.
+    recursively calling the `render()` method. Once the element is created,
+    it sets the `element` property of the view to the rendered element.
 
     After the element has been inserted into the DOM, `didInsertElement` will
     be called on this view and all of its child views.
