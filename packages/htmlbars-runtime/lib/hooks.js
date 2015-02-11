@@ -62,8 +62,8 @@ export function createScope(parentScope, localVariables) {
   var scope;
 
   if (parentScope) {
-    scope = Object.create(parentScope);
-    scope.locals = Object.create(parentScope.locals);
+    scope = createObject(parentScope);
+    scope.locals = createObject(parentScope.locals);
   } else {
     scope = { self: null, locals: {} };
   }
@@ -81,7 +81,7 @@ export function block(env, morph, scope, path, params, hash, template, inverse) 
   if (morph.isDirty) {
     var options = optionsFor(morph, scope, env, template, inverse);
 
-    var helper = lookupHelper(env, scope, path);
+    var helper = lookupHelper(scope, env, path);
     var result = helper(params, hash, options, env);
 
     if (result === undefined && state.lastResult) {
@@ -99,7 +99,7 @@ export function block(env, morph, scope, path, params, hash, template, inverse) 
 export function inline(env, morph, scope, path, params, hash) {
   if (morph.isDirty) {
     var state = morph.state;
-    var helper = lookupHelper(env, scope, path);
+    var helper = lookupHelper(scope, env, path);
 
     var value = helper(params, hash, { renderNode: morph }, env);
 
@@ -115,7 +115,7 @@ export function inline(env, morph, scope, path, params, hash) {
 export function content(env, morph, scope, path) {
   if (morph.isDirty) {
     var state = morph.state;
-    var helper = lookupHelper(env, scope, path);
+    var helper = lookupHelper(scope, env, path);
 
     var value;
     if (helper) {
@@ -135,7 +135,7 @@ export function content(env, morph, scope, path) {
 
 export function element(env, morph, scope, path, params, hash) {
   if (morph.isDirty) {
-    var helper = lookupHelper(env, scope, path);
+    var helper = lookupHelper(scope, env, path);
     if (helper) {
       helper(params, hash, { element: morph.element }, env);
     }
@@ -160,7 +160,7 @@ export function attribute(env, morph, name, value) {
 export function subexpr(env, morph, scope, helperName, params, hash) {
   if (!morph.isDirty) { return; }
 
-  var helper = lookupHelper(env, scope, helperName);
+  var helper = lookupHelper(scope, env, helperName);
   if (helper) {
     return helper(params, hash, {}, env);
   } else {
@@ -188,13 +188,13 @@ export function get(env, morph, scope, path) {
   return value;
 }
 
-export function bindLocal(env, scope, name, value) {
+export function bindLocal(scope, env, name, value) {
   scope.locals[name] = value;
 }
 
 export function component(env, morph, scope, tagName, attrs, template) {
   if (morph.isDirty) {
-    var helper = lookupHelper(env, scope, tagName);
+    var helper = lookupHelper(scope, env, tagName);
     if (helper) {
       var options = optionsFor(morph, scope, env, template, null);
       helper([], attrs, options, env);
@@ -226,8 +226,20 @@ function componentFallback(env, morph, scope, tagName, attrs, template) {
   morph.setNode(element);
 }
 
-function lookupHelper(env, scope, helperName) {
+function lookupHelper(scope, env, helperName) {
   return env.helpers[helperName];
+}
+
+// IE8 does not have Object.create, so use a polyfill if needed.
+// Polyfill based on Mozilla's (MDN)
+export function createObject(obj) {
+  if (typeof Object.create === 'function') {
+    return Object.create(obj);
+  } else {
+    var Temp = function() {};
+    Temp.prototype = obj;
+    return new Temp();
+  }
 }
 
 export default {
