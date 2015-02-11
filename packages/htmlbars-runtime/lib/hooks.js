@@ -274,24 +274,17 @@ export function bindBlock(env, scope, block) {
 export function block(morph, env, scope, path, params, hash, template, inverse) {
   var state = morph.state;
 
-  if (morph.isDirty) {
-    var options = optionsFor(template, inverse);
+  var options = optionsFor(template, inverse);
 
-    var helper = env.hooks.lookupHelper(env, scope, path);
-    helper.call(thisFor(options.templates), params, hash, options.templates);
+  var helper = env.hooks.lookupHelper(env, scope, path);
+  helper.call(thisFor(options.templates), params, hash, options.templates);
 
-    if (state.lastResult && isStable(options.yielded, state.lastYielded)) {
-      state.lastResult.revalidate(options.yielded.self, options.yielded.blockArguments);
-    } else {
-      state.lastResult = applyYieldedTemplate(options.yielded, env, scope, morph);
-    }
-
-    state.lastYielded = options.yielded;
+  if (state.lastResult && isStable(options.yielded, state.lastYielded)) {
+    state.lastResult.revalidate(options.yielded.self, options.yielded.blockArguments);
   } else {
-    state.lastResult.revalidate(scope.self);
+    state.lastResult = applyYieldedTemplate(options.yielded, env, scope, morph);
+    state.lastYielded = options.yielded;
   }
-
-  morph.isDirty = false;
 }
 
 function isStable(yielded, lastYielded) {
@@ -444,26 +437,22 @@ function scopeForYieldedTemplate(env, parentScope, yielded) {
   it invokes the `partial` host hook.
 */
 export function inline(morph, env, scope, path, params, hash) {
-  if (morph.isDirty) {
-    var state = morph.state;
-    var value;
+  var state = morph.state;
+  var value;
 
-    if (path in env.hooks.keywords) {
-      env.hooks.keywords[path](morph, env, scope, params, hash);
-      morph.isDirty = false;
-      return;
-    }
-
-    var helper = env.hooks.lookupHelper(env, scope, path);
-    value = helper(params, hash, {});
-
-    if (state.lastValue !== value) {
-      morph.setContent(value);
-    }
-
-    state.lastValue = value;
-    morph.isDirty = false;
+  if (path in env.hooks.keywords) {
+    env.hooks.keywords[path](morph, env, scope, params, hash);
+    return;
   }
+
+  var helper = env.hooks.lookupHelper(env, scope, path);
+  value = helper(params, hash, {});
+
+  if (state.lastValue !== value) {
+    morph.setContent(value);
+  }
+
+  state.lastValue = value;
 }
 
 export var keywords = {
@@ -542,7 +531,7 @@ export function content(morph, env, scope, path) {
   if (isHelper(env, scope, path)) {
     return env.hooks.inline(morph, env, scope, path, [], {});
   } else {
-    var value = env.hooks.get(morph, env, scope, path);
+    var value = env.hooks.get(env, scope, path);
     return env.hooks.range(morph, env, value);
   }
 }
@@ -566,16 +555,13 @@ export function content(morph, env, scope, path) {
   that represents a range of content with a value.
 */
 export function range(morph, env, value) {
-  if (morph.isDirty) {
-    var state = morph.state;
+  var state = morph.state;
 
-    if (state.lastValue !== value) {
-      morph.setContent(value);
-    }
-
-    state.lastValue = value;
-    morph.isDirty = false;
+  if (state.lastValue !== value) {
+    morph.setContent(value);
   }
+
+  state.lastValue = value;
 }
 
 /**
@@ -606,13 +592,9 @@ export function range(morph, env, value) {
   `attribute` hook.
 */
 export function element(morph, env, scope, path, params, hash) {
-  if (morph.isDirty) {
-    var helper = lookupHelper(env, scope, path);
-    if (helper) {
-      helper(params, hash, { element: morph.element });
-    }
-
-    morph.isDirty = false;
+  var helper = lookupHelper(env, scope, path);
+  if (helper) {
+    helper(params, hash, { element: morph.element });
   }
 }
 
@@ -638,21 +620,16 @@ export function element(morph, env, scope, path, params, hash) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, name, value) {
-  if (morph.isDirty) {
-    var state = morph.state;
+  var state = morph.state;
 
-    if (state.lastValue !== value) {
-      morph.setContent(value);
-    }
-
-    state.lastValue = value;
-    morph.isDirty = false;
+  if (state.lastValue !== value) {
+    morph.setContent(value);
   }
+
+  state.lastValue = value;
 }
 
-export function subexpr(morph, env, scope, helperName, params, hash) {
-  if (!morph.isDirty) { return; }
-
+export function subexpr(env, scope, helperName, params, hash) {
   var helper = lookupHelper(env, scope, helperName);
   return helper(params, hash, {});
 }
@@ -660,7 +637,6 @@ export function subexpr(morph, env, scope, helperName, params, hash) {
 /**
   Host Hook: get
 
-  @param {RenderNode} renderNode
   @param {Environment} env
   @param {Scope} scope
   @param {String} path
@@ -678,9 +654,7 @@ export function subexpr(morph, env, scope, helperName, params, hash) {
   This hook is the "leaf" hook of the system. It is used to
   resolve a path relative to the current scope.
 */
-export function get(morph, env, scope, path) {
-  if (!morph.isDirty) { return; }
-
+export function get(env, scope, path) {
   if (path === '') {
     return scope.self;
   }
@@ -712,15 +686,10 @@ export function component(morph, env, scope, tagName, attrs, template) {
     return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null);
   }
 
-  if (morph.isDirty) {
-    componentFallback(morph, env, scope, tagName, attrs, template);
-    morph.isDirty = false;
-  }
+  componentFallback(morph, env, scope, tagName, attrs, template);
 }
 
-export function concat(morph, env, params) {
-  if (!morph.isDirty) { return; }
-
+export function concat(env, params) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     value += params[i];
