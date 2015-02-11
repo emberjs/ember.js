@@ -405,7 +405,7 @@ export default Mixin.create({
 
   /**
     Returns an array with all of the items in the enumeration where the passed
-    function returns false for. This method is the inverse of filter().
+    function returns true. This method is the inverse of filter().
 
     The callback method you provide should have the following signature (all
     parameters are optional):
