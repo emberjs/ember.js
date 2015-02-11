@@ -47,7 +47,7 @@ function generateTokens(fragmentOrHtml) {
   return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
 }
 
-export function equalTokens(fragment, html) {
+export function equalTokens(fragment, html, message) {
   if (fragment.fragment) { fragment = fragment.fragment; }
   if (html.fragment) { html = html.fragment; }
 
@@ -71,7 +71,11 @@ export function equalTokens(fragment, html) {
   forEach(fragTokens.tokens, normalizeTokens);
   forEach(htmlTokens.tokens, normalizeTokens);
 
-  deepEqual(fragTokens.tokens, htmlTokens.tokens, "Expected: " + html + "; Actual: " + fragTokens.html);
+  var msg = "Expected: " + html + "; Actual: " + fragTokens.html;
+
+  if (message) { msg += " (" + message + ")"; }
+
+  deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
 // detect weird IE8 html strings

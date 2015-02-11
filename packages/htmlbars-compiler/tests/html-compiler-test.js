@@ -477,28 +477,22 @@ test("morph receives escaping information", function() {
 });
 
 test("Morphs are escaped correctly", function() {
-  expect(10);
-
-  registerHelper('testing-unescaped', function(params, hash, options) {
-    equal(options.renderNode.parseTextAsHTML, true);
-
+  registerHelper('testing-unescaped', function(params) {
     return params[0];
   });
 
   registerHelper('testing-escaped', function(params, hash, options) {
-    equal(options.renderNode.parseTextAsHTML, false);
-
     if (options.template) {
-      return options.template.render({});
+      return this.yield();
     }
 
     return params[0];
   });
 
-  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped "a"}}}</div>', '<div><!---->-a</div>');
-  compilesTo('<div>{{testing-escaped}}-{{testing-escaped "b"}}</div>', '<div><!---->-b</div>');
-  compilesTo('<div>{{#testing-escaped}}c{{/testing-escaped}}</div>', '<div>c</div>');
-  compilesTo('<div><testing-escaped>c</testing-escaped></div>', '<div>c</div>');
+  compilesTo('<div>{{{testing-unescaped "<span>hi</span>"}}}</div>', '<div><span>hi</span></div>');
+  compilesTo('<div>{{testing-escaped "<hi>"}}</div>', '<div>&lt;hi&gt;</div>');
+  compilesTo('<div>{{#testing-escaped}}<hi></hi>{{/testing-escaped}}</div>', '<div><hi></hi></div>');
+  compilesTo('<div><testing-escaped><hi></hi></testing-escaped></div>', '<div><hi></hi></div>');
 });
 
 test("Attributes can use computed values", function() {
@@ -797,17 +791,12 @@ test("Node helpers can be used for attribute bindings", function() {
 
 
 test('Components - Called as helpers', function () {
-  var xAppendComponent = compile('{{yield}}{{text}}');
-
-  registerHelper('x-append', function(params, hash, options) {
-    var rootNode = options.renderNode;
-    options.renderNode = null;
-    var result = this.yield();
-    options.renderNode = rootNode;
-    xAppendComponent.render({ yield: result.fragment, text: hash.text }, env, options);
+  registerHelper('x-append', function(params, hash) {
+    QUnit.deepEqual(hash, { text: "de" });
+    this.yield();
   });
   var object = { bar: 'e', baz: 'c' };
-  compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcdef', object);
+  compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcf', object);
 });
 
 if (innerHTMLSupportsCustomTags) {
@@ -847,30 +836,15 @@ test("Simple elements can have dashed attributes", function() {
   equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
 
-function yieldTemplate(parentTemplate, options, callback, bind) {
-  var node = options.renderNode;
-  options.renderNode = null;
-  var child = callback.call(bind);
-  options.renderNode = node;
-
-  compile(parentTemplate).render({ yield: child.fragment }, env, options);
-}
-
 test("Block params", function() {
-  registerHelper('a', function(params, hash, options) {
-    yieldTemplate("A({{yield}})", options, function() {
-      return this.yield(['W', 'X1']);
-    }, this);
+  registerHelper('a', function() {
+    this.withLayout(compile("A({{yield 'W' 'X1'}})"));
   });
-  registerHelper('b', function(params, hash, options) {
-    yieldTemplate("B({{yield}})", options, function() {
-      return this.yield(['X2', 'Y']);
-    }, this);
+  registerHelper('b', function() {
+    this.withLayout(compile("B({{yield 'X2' 'Y'}})"));
   });
-  registerHelper('c', function(params, hash, options) {
-    yieldTemplate("C({{yield}})", options, function() {
-      return this.yield(['Z']);
-    }, this);
+  registerHelper('c', function() {
+    this.withLayout(compile("C({{yield 'Z'}})"));
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
@@ -880,7 +854,7 @@ test("Block params - Helper should know how many block params it was called with
   expect(4);
 
   registerHelper('count-block-params', function(params, hash, options) {
-    equal(options.template.blockParams, hash.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
+    equal(options.template.arity, hash.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
   compile('{{#count-block-params count=0}}{{/count-block-params}}').render({}, env, { contextualElement: document.body });
@@ -890,10 +864,10 @@ test("Block params - Helper should know how many block params it was called with
 });
 
 test('Block params in HTML syntax', function () {
-  registerHelper('x-bar', function(params, hash, options) {
-    yieldTemplate("BAR({{yield}})", options, function() {
-      return this.yield(['Xerxes', 'York', 'Zed']);
-    }, this);
+  var layout = compile("BAR({{yield 'Xerxes' 'York' 'Zed'}})");
+
+  registerHelper('x-bar', function() {
+    this.withLayout(layout);
   });
   compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
 });
@@ -939,7 +913,7 @@ test('Block params in HTML syntax - Helper should know how many block params it 
   expect(4);
 
   registerHelper('count-block-params', function(params, hash, options) {
-    equal(options.template.blockParams, parseInt(hash.count, 10), 'Helpers should receive the correct number of block params in options.template.blockParams.');
+    equal(options.template.arity, parseInt(hash.count, 10), 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
   compile('<count-block-params count="0"></count-block-params>').render({ count: 0 }, env, { contextualElement: document.body });

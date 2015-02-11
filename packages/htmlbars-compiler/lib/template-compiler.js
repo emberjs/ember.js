@@ -135,7 +135,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'  return {\n' +
     indent+'    isHTMLBars: true,\n' +
     indent+'    revision: "' + this.revision + '",\n' +
-    indent+'    blockParams: ' + blockParams.length + ',\n' +
+    indent+'    arity: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
     indent+'    buildFragment: ' + fragmentProgram + ',\n' +

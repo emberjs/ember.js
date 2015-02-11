@@ -29,58 +29,164 @@ QUnit.module("HTML-based compiler (dirtying)", {
 });
 
 test("a simple implementation of a dirtying rerender", function() {
-  var makeNodeDirty;
-
-  // This represents the internals of a higher-level helper API
   registerHelper('if', function(params, hash, options) {
-    var renderNode = options.renderNode;
-
-    makeNodeDirty = function() {
-      renderNode.isDirty = true;
-    };
-
-    var state = renderNode.state;
-    var value = params[0];
-    var normalized = !!value;
-
-    // If the node is unstable
-    if (state.condition !== normalized) {
-      state.condition = normalized;
-
-      if (normalized) {
-        return options.template.yield();
-      } else {
-        return options.inverse.yield();
-      }
+    if (!!params[0]) {
+      return options.template.yield();
+    } else {
+      return options.inverse.yield();
     }
   });
 
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
   var result = template.render(object, env);
+  var valueNode = result.fragment.firstChild.firstChild.firstChild;
 
-  equalTokens(result.fragment, '<div><p>hello world</p></div>');
+  equalTokens(result.fragment, '<div><p>hello world</p></div>', "Initial render");
 
-  makeNodeDirty();
+  result.dirty();
   result.revalidate();
 
-  equalTokens(result.fragment, '<div><p>hello world</p></div>');
+  equalTokens(result.fragment, '<div><p>hello world</p></div>', "After dirtying but not updating");
+  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   // Even though the #if was stable, a dirty child node is updated
   object.value = 'goodbye world';
-  var textRenderNode = result.root.childNodes[0].childNodes[0];
-  textRenderNode.isDirty = true;
+  result.dirty();
   result.revalidate();
-  equalTokens(result.fragment, '<div><p>goodbye world</p></div>');
+  equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After updating and dirtying");
+  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   // Should not update since render node is not marked as dirty
   object.condition = false;
   result.revalidate();
-  equalTokens(result.fragment, '<div><p>goodbye world</p></div>');
+  equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After flipping the condition but not dirtying");
+  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
-  makeNodeDirty();
+  result.dirty();
   result.revalidate();
-  equalTokens(result.fragment, '<div><p>Nothing</p></div>');
+  equalTokens(result.fragment, '<div><p>Nothing</p></div>', "And then dirtying");
+  QUnit.notStrictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+});
+
+test("a dirtying rerender using `withLayout`", function() {
+  var component = compile("<p>{{yield}}</p>");
+  var template = compile("<div><simple-component>{{title}}</simple-component></div>");
+
+  registerHelper("simple-component", function() {
+    return this.withLayout(component);
+  });
+
+  var object = { title: "Hello world" };
+  var result = template.render(object, env);
+
+  var valueNode = getValueNode();
+  equalTokens(result.fragment, '<div><p>Hello world</p></div>');
+
+  result.dirty();
+  result.revalidate();
+
+  equalTokens(result.fragment, '<div><p>Hello world</p></div>');
+  strictEqual(getValueNode(), valueNode);
+
+  object.title = "Goodbye world";
+
+  result.dirty();
+  result.revalidate();
+  equalTokens(result.fragment, '<div><p>Goodbye world</p></div>');
+  strictEqual(getValueNode(), valueNode);
+
+  function getValueNode() {
+    return result.fragment.firstChild.firstChild.firstChild;
+  }
+});
+
+test("a dirtying rerender using `withLayout` and self", function() {
+  var component = compile("<p><span>{{attrs.name}}</span>{{yield}}</p>");
+  var template = compile("<div><simple-component name='Yo! '>{{title}}</simple-component></div>");
+
+  registerHelper("simple-component", function(params, hash) {
+    return this.withLayout(component, { attrs: hash });
+  });
+
+  var object = { title: "Hello world" };
+  var result = template.render(object, env);
+
+  var nameNode = getNameNode();
+  var titleNode = getTitleNode();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
+
+  rerender();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
+  assertStableNodes();
+
+  object.title = "Goodbye world";
+
+  rerender();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Goodbye world</p></div>');
+  assertStableNodes();
+
+  function rerender() {
+    result.dirty();
+    result.revalidate();
+  }
+
+  function assertStableNodes() {
+    strictEqual(getNameNode(), nameNode);
+    strictEqual(getTitleNode(), titleNode);
+  }
+
+  function getNameNode() {
+    return result.fragment.firstChild.firstChild.firstChild.firstChild;
+  }
+
+  function getTitleNode() {
+    return result.fragment.firstChild.firstChild.firstChild.nextSibling;
+  }
+});
+
+test("a dirtying rerender using `withLayout`, self and block args", function() {
+  var component = compile("<p>{{yield attrs.name}}</p>");
+  var template = compile("<div><simple-component name='Yo! ' as |key|><span>{{key}}</span>{{title}}</simple-component></div>");
+
+  registerHelper("simple-component", function(params, hash) {
+    return this.withLayout(component, { attrs: hash });
+  });
+
+  var object = { title: "Hello world" };
+  var result = template.render(object, env);
+
+  var nameNode = getNameNode();
+  var titleNode = getTitleNode();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
+
+  rerender();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
+  assertStableNodes();
+
+  object.title = "Goodbye world";
+
+  rerender();
+  equalTokens(result.fragment, '<div><p><span>Yo! </span>Goodbye world</p></div>');
+  assertStableNodes();
+
+  function rerender() {
+    result.dirty();
+    result.revalidate();
+  }
+
+  function assertStableNodes() {
+    strictEqual(getNameNode(), nameNode);
+    strictEqual(getTitleNode(), titleNode);
+  }
+
+  function getNameNode() {
+    return result.fragment.firstChild.firstChild.firstChild.firstChild;
+  }
+
+  function getTitleNode() {
+    return result.fragment.firstChild.firstChild.firstChild.nextSibling;
+  }
 });
 
 test("block helpers whose template has a morph at the edge", function() {
@@ -179,19 +285,19 @@ test("attribute nodes follow the normal dirtying rules", function() {
   var object = { value: "world" };
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div class='world'>hello</div>");
+  equalTokens(result.fragment, "<div class='world'>hello</div>", "Initial render");
 
   object.value = "universe";
   result.revalidate(); // without setting the node to dirty
 
-  equalTokens(result.fragment, "<div class='world'>hello</div>");
+  equalTokens(result.fragment, "<div class='world'>hello</div>", "Revalidating without dirtying");
 
   var attrRenderNode = result.root.childNodes[0];
 
   result.dirty();
   result.revalidate();
 
-  equalTokens(result.fragment, "<div class='universe'>hello</div>");
+  equalTokens(result.fragment, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 
   attrRenderNode.setContent = function() {
     ok(false, "Should not get called");

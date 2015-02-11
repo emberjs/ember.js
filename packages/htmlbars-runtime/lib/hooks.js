@@ -77,60 +77,58 @@ export function wrap(template) {
 
   return {
     isHTMLBars: true,
-    blockParams: template.blockParams,
+    arity: template.arity,
+    raw: template,
     render: function(self, env, options, blockArguments) {
-      var scope = env.hooks.createScope(null, template.blockParams);
-      scope.self = self;
+      var scope = env.hooks.createScope(null, template.arity);
+      env.hooks.bindSelf(scope, self);
       return render(template, env, scope, options, blockArguments);
     }
   };
 }
 
-export function wrapForHelper(template, env, originalScope, options) {
+export function wrapForHelper(template, yielded) {
   if (template === null) { return null;  }
 
   return {
-    isHTMLBars: true,
-    blockParams: template.blockParams,
+    arity: template.arity,
+    yield: yieldArgs,
+    withLayout: withLayout,
 
-    yield: function(blockArguments) {
-      var scope = originalScope;
-
-      if (blockArguments !== undefined) {
-        scope = env.hooks.createScope(originalScope, template.blockParams);
-      }
-
-      return render(template, env, scope, options, blockArguments);
-    },
-
-    render: function(newSelf, blockArguments) {
-      var scope = originalScope;
-      if (newSelf !== originalScope.self || blockArguments !== undefined) {
-        scope = env.hooks.createScope(originalScope, template.blockParams);
-        scope.self = newSelf;
-      }
-
-      return render(template, env, scope, options, blockArguments);
+    render: function(self, blockArguments) {
+      yieldArgs(blockArguments);
+      yielded.self = self;
     }
   };
+
+  function withLayout(layoutTemplate, self) {
+    yielded.self = self;
+    yielded.layout = layoutTemplate;
+    yielded.template = template;
+  }
+
+  function yieldArgs(blockArguments) {
+    if (blockArguments !== undefined) {
+      yielded.blockArguments = blockArguments;
+    }
+
+    yielded.template = template;
+  }
 }
 
-function optionsFor(morph, env, scope, template, inverse) {
-  var options = {
-    renderNode: morph,
-    env: env,
-    template: null,
-    inverse: null
+function optionsFor(template, inverse) {
+  var yielded = { self: undefined, blockArguments: null, template: null, layout: null };
+
+  var templates = {
+    template: wrapForHelper(template, yielded),
+    inverse: wrapForHelper(inverse, yielded)
   };
 
-  options.template = wrapForHelper(template, env, scope, options);
-  options.inverse = wrapForHelper(inverse, env, scope, options);
-
-  return options;
+  return { templates: templates, yielded: yielded };
 }
 
 function thisFor(options) {
-  return { yield: options.template.yield };
+  return { yield: options.template.yield, withLayout: options.template.withLayout };
 }
 
 /**
@@ -159,21 +157,70 @@ function thisFor(options) {
   hook uses the scope to retrieve a value for a given
   scope and variable name.
 */
-export function createScope(parentScope, localVariables) {
+export function createScope(parentScope) {
   var scope;
 
   if (parentScope) {
     scope = createObject(parentScope);
     scope.locals = createObject(parentScope.locals);
   } else {
-    scope = { self: null, locals: {} };
-  }
-
-  for (var i=0, l=localVariables.length; i<l; i++) {
-    scope.locals[localVariables[i]] = null;
+    scope = { self: null, block: null, locals: {} };
   }
 
   return scope;
+}
+
+/**
+  Host Hook: bindSelf
+
+  @param {Scope} scope
+  @param {any} self
+
+  Corresponds to entering a template.
+
+  This hook is invoked when the `self` value for a scope is ready to be bound.
+
+  The host must ensure that child scopes reflect the change to the `self` in
+  future calls to the `get` hook.
+*/
+export function bindSelf(scope, self) {
+  scope.self = self;
+}
+
+/**
+  Host Hook: bindLocal
+
+  @param {Environment} env
+  @param {Scope} scope
+  @param {String} name
+  @param {any} value
+
+  Corresponds to entering a template with block arguments.
+
+  This hook is invoked when a local variable for a scope has been provided.
+
+  The host must ensure that child scopes reflect the change in future calls
+  to the `get` hook.
+*/
+export function bindLocal(env, scope, name, value) {
+  scope.locals[name] = value;
+}
+
+/**
+  Host Hook: bindBlock
+
+  @param {Environment} env
+  @param {Scope} scope
+  @param {Function} block
+
+  Corresponds to entering a layout that was invoked by a block helper with
+  `yieldWithLayout`.
+
+  This hook is invoked with an opaque block that will be passed along to the
+  layout, and inserted into the layout when `{{yield}}` is used.
+*/
+export function bindBlock(env, scope, block) {
+  scope.block = block;
 }
 
 /**
@@ -228,21 +275,134 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   var state = morph.state;
 
   if (morph.isDirty) {
-    var options = optionsFor(morph, env, scope, template, inverse);
+    var options = optionsFor(template, inverse);
 
     var helper = lookupHelper(env, scope, path);
-    var result = helper.call(thisFor(options), params, hash, options);
+    helper.call(thisFor(options.templates), params, hash, options.templates);
 
-    if (result === undefined && state.lastResult) {
-      state.lastResult.revalidate(scope.self);
-    } else if (result !== undefined) {
-      state.lastResult = result;
+    if (state.lastResult && isStable(options.yielded, state.lastYielded)) {
+      state.lastResult.revalidate(options.yielded.self, options.yielded.blockArguments);
+    } else {
+      state.lastResult = applyYieldedTemplate(options.yielded, env, scope, morph);
     }
+
+    state.lastYielded = options.yielded;
   } else {
     state.lastResult.revalidate(scope.self);
   }
 
   morph.isDirty = false;
+}
+
+function isStable(yielded, lastYielded) {
+  if (yielded.layout && !lastYielded.layout) { return false; }
+
+  if (yielded.layout) {
+    return isStableLayout(yielded, lastYielded);
+  } else {
+    return isStableTemplate(yielded, lastYielded);
+  }
+}
+
+function isStableTemplate(yielded, lastYielded) {
+  return yielded.template === lastYielded.template;
+}
+
+function isStableLayout(yielded, lastYielded) {
+  return isStableTemplate(yielded, lastYielded) &&
+         yielded.layout === lastYielded.layout;
+}
+
+// Block helpers can choose to call `yield` or `yieldWithLayout`. The choice of
+// which template to render and whether a layout was chosen is recorded in the
+// `yielded` object.
+//
+// For example, if a helper calls `this.yield()`, the `yielded` structure
+// looks like:
+//
+// ```
+// { template: passedTemplate, layout: null, blockArguments: null, self: undefined }
+// ```
+//
+// If a helper calls `this.yieldWithLayout(layout, { title: "Hello" }), the
+// structure looks like:
+//
+// ```
+// {
+//   template: passedTemplate,
+//   layout: layout,
+//   blockArguments: null,
+//   self: { title: "Hello" }
+// }
+// ```
+//
+// This function takes that structure, sets up the correct scopes for each
+// template, and invokes the templates.
+//
+// When a template is being revalidated, this code will also determine
+// whether the previously rendered template is still stable or whether
+// it needs to be built from scratch. In general, a template needs to be
+// re-rendered from scratch only if the helper switches between the
+// primary template and the inverse, or if it selects a different layout
+// across runs.
+function applyYieldedTemplate(yielded, env, parentScope, morph) {
+  var template = yielded.template;
+  if (!template) { return; }
+
+  if (yielded.layout) {
+    var layoutScope = scopeForYieldedTemplate(env, null, yielded);
+    env.hooks.bindBlock(env, layoutScope, blockToYield);
+
+    // Render the layout with the block available
+    return render(yielded.layout.raw, env, layoutScope, { renderNode: morph });
+  } else {
+    var scope = scopeForYieldedTemplate(env, parentScope, yielded);
+
+    // Render the template that was selected by the helper
+    return renderTemplate(morph, scope, yielded.blockArguments);
+  }
+
+  function renderTemplate(renderNode, scope, blockArguments) {
+    return render(template, env, scope, { renderNode: renderNode }, blockArguments);
+  }
+
+  function blockToYield(blockArguments, renderNode) {
+    var state = renderNode.state;
+
+    if (state.lastResult) {
+      state.lastResult.revalidate(parentScope.self, blockArguments);
+    } else {
+      var scope = parentScope;
+
+      // Since a yielded template shares a `self` with its original context,
+      // we only need to create a new scope if the template has block parameters
+      if (template.arity) {
+        scope = env.hooks.createScope(parentScope, template.arity);
+      }
+
+      state.lastResult = renderTemplate(renderNode, scope, blockArguments);
+    }
+  }
+}
+
+// This function takes a `yielded` structure and creates a new scope for the
+// template that will be rendered. If the call to `yield` did not supply a
+// `self` and the template did not have block arguments, the original scope
+// is shared.
+//
+// Otherwise, this function asks the host to create a new child scope.
+function scopeForYieldedTemplate(env, parentScope, yielded) {
+  var scope = parentScope;
+
+  if (parentScope === null || yielded.template.arity || yielded.self !== undefined) {
+    scope = env.hooks.createScope(scope, yielded.template.arity);
+  }
+
+  if (yielded.self !== undefined) {
+    env.hooks.bindSelf(scope, yielded.self);
+  }
+
+  return scope;
 }
 
 /**
@@ -290,6 +450,9 @@ export function inline(morph, env, scope, path, params, hash) {
 
     if (path === 'partial') {
       value = env.hooks.partial(morph, env, scope, params[0]);
+    } else if (path === 'yield') {
+      scope.block(params, morph);
+      return;
     } else {
       var helper = lookupHelper(env, scope, path);
       value = helper(params, hash, { renderNode: morph });
@@ -302,6 +465,10 @@ export function inline(morph, env, scope, path, params, hash) {
     state.lastValue = value;
     morph.isDirty = false;
   }
+}
+
+function isHelper(env, scope, path) {
+  return path === 'partial' || path === 'yield' || lookupHelper(env, scope, path);
 }
 
 /**
@@ -360,11 +527,10 @@ export function partial(renderNode, env, scope, path) {
 export function content(morph, env, scope, path) {
   if (morph.isDirty) {
     var state = morph.state;
-    var helper = lookupHelper(env, scope, path);
 
     var value;
-    if (helper) {
-      value = helper([], {}, { renderNode: morph });
+    if (isHelper(env, scope, path)) {
+      return env.hooks.inline(morph, env, scope, path, [], {});
     } else {
       value = env.hooks.get(morph, env, scope, path);
     }
@@ -508,20 +674,13 @@ export function get(morph, env, scope, path) {
   return value;
 }
 
-export function bindLocal(env, scope, name, value) {
-  scope.locals[name] = value;
-}
-
 export function component(morph, env, scope, tagName, attrs, template) {
-  if (morph.isDirty) {
-    var helper = lookupHelper(env, scope, tagName);
-    if (helper) {
-      var options = optionsFor(morph, env, scope, template, null);
-      helper.call(thisFor(options), [], attrs, options);
-    } else {
-      componentFallback(morph, env, scope, tagName, attrs, template);
-    }
+  if (isHelper(env, scope, tagName)) {
+    return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null);
+  }
 
+  if (morph.isDirty) {
+    componentFallback(morph, env, scope, tagName, attrs, template);
     morph.isDirty = false;
   }
 }
@@ -564,6 +723,9 @@ export function createObject(obj) {
 
 export default {
   createScope: createScope,
+  bindSelf: bindSelf,
+  bindLocal: bindLocal,
+  bindBlock: bindBlock,
   content: content,
   block: block,
   inline: inline,
@@ -574,5 +736,4 @@ export default {
   subexpr: subexpr,
   concat: concat,
   get: get,
-  bindLocal: bindLocal
 };
