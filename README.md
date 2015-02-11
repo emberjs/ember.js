@@ -34,15 +34,11 @@ info on how HTMLBars is structured and its approach to efficiently building / em
 
 # How to Run Tests
 
-## Via testem
+## Via Ember CLI
 
-[Testem](https://github.com/airportyh/testem) is a tool for running tests against
-multiple launchers. For instance, Chrome and PhantomJS.
+1. Run: `ember test --server`
 
-1. Install Testem: `npm install -g testem`
-2. Run testem: `testem` or run Testem with specific browers: `testem -l Safari,Firefox`
-
-Testem is a CI tool, so it will run tests as you change files.
+Ember CLI is a CI tool, so it will run tests as you change files.
 
 ## On the console with PhantomJS
 

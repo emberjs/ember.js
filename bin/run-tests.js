@@ -92,13 +92,13 @@ var testRuns = RSVP.resolve();
 
 if (process.env.CI && process.env.TEST_BROWSERS) {
   testRuns = testRuns.then(function() {
-    return runBrowserTests('./node_modules/.bin/testem', ['ci', '--port', '7000', '--timeout', '540', '-P', '2', '--launch', process.env.TEST_BROWSERS]);
+    return runBrowserTests('./node_modules/.bin/ember', ['test', '--port', '7000', '--config-file', './testem-sauce.json']);
   });
 }
 
 if (!process.env.CI) {
   testRuns = testRuns.then(function() {
-    return runBrowserTests('./node_modules/.bin/testem', ['ci', '--launch', 'PhantomJS']);
+    return runBrowserTests('./node_modules/.bin/ember', ['test']);
   });
 }
 
