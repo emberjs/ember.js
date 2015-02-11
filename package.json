@@ -40,7 +40,7 @@
     "ember-cli-sauce": "0.0.7",
     "git-repo-version": "0.0.2",
     "handlebars": "mmun/handlebars.js#new-ast-3238645f",
-    "morph-range": "^0.1.1",
+    "morph-range": "^0.1.2",
     "qunit": "^0.7.2",
     "rsvp": "~3.0.6",
     "testem": "0.6.35"
