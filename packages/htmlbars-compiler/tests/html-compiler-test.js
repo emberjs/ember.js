@@ -392,62 +392,6 @@ test("Simple data binding using text nodes", function() {
   equalTokens(fragment, '<div>brown cow world</div>');
 });
 
-test("Simple data binding on fragments", function() {
-  var callback;
-
-  hooks.content = function(morph, env, scope, path) {
-    morph.parseTextAsHTML = true;
-    callback = function() {
-      morph.setContent(scope.self[path]);
-    };
-    callback();
-  };
-
-  var object = { title: '<p>hello</p> to the' };
-  var fragment = compilesTo('<div>{{title}} world</div>', '<div><p>hello</p> to the world</div>', object);
-
-  object.title = '<p>goodbye</p> to the';
-  callback();
-
-  equalTokens(fragment, '<div><p>goodbye</p> to the world</div>');
-
-  object.title = '<p>brown cow</p> to the';
-  callback();
-
-  equalTokens(fragment, '<div><p>brown cow</p> to the world</div>');
-});
-
-test("Simple data binding on fragments - re-rendering", function() {
-  hooks.content = function(morph, env, scope, path) {
-    morph.parseTextAsHTML = true;
-    morph.setContent(scope.self[path]);
-  };
-
-  var object = { title: '<p>hello</p> to the' };
-  var template = compile('<div>{{title}} world</div> ');
-  var result = template.render(object, env);
-
-  var fragment = result.fragment;
-
-  equalTokens(fragment, '<div><p>hello</p> to the world</div> ');
-
-  object.title = '<p>goodbye</p> to the';
-
-  var oldFirstChild = fragment.firstChild;
-
-  result.revalidate(object);
-
-  strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
-  equalTokens(fragment, '<div><p>goodbye</p> to the world</div> ');
-
-  object.title = '<p>brown cow</p> to the';
-
-  result.revalidate(object);
-
-  strictEqual(fragment.firstChild, oldFirstChild, "Static nodes in the fragment should have stable identity");
-  equalTokens(fragment, '<div><p>brown cow</p> to the world</div> ');
-});
-
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');
   template.render({}, env, { contextualElement: document.createElement('div') });
