@@ -27,8 +27,18 @@ prototype.compile = function(opcodes, options) {
   this.parentCount = 0;
   this.indent = (options && options.indent) || "";
   this.hooks = {};
+  this.hasOpenBoundary = false;
+  this.hasCloseBoundary = false;
 
   processOpcodes(this, opcodes);
+
+  if (this.hasOpenBoundary) {
+    this.source.unshift(this.indent+"  dom.insertBoundary(fragment, 0);\n");
+  }
+
+  if (this.hasCloseBoundary) {
+    this.source.unshift(this.indent+"  dom.insertBoundary(fragment, null);\n");
+  }
 
   var i, l;
   if (this.morphs.length) {
@@ -73,6 +83,14 @@ prototype.prepareObject = function(size) {
 
 prototype.pushRaw = function(value) {
   this.stack.push(value);
+};
+
+prototype.openBoundary = function() {
+  this.hasOpenBoundary = true;
+};
+
+prototype.closeBoundary = function() {
+  this.hasCloseBoundary = true;
 };
 
 prototype.pushLiteral = function(value) {
