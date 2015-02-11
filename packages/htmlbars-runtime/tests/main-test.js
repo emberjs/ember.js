@@ -14,20 +14,26 @@ function keys(obj) {
 
 test("hooks are present", function () {
   var hookNames = [
+    "keywords",
     "createScope",
     "bindSelf",
     "bindLocal",
     "bindBlock",
-    "get",
+    "lookupHelper",
+    "hasHelper",
     "content",
+    "range",
+    "block",
     "inline",
     "partial",
-    "block",
     "component",
     "element",
     "attribute",
     "subexpr",
     "concat",
+    "get",
+    "getRoot",
+    "getChild",
   ];
 
   for (var i = 0; i < hookNames.length; i++) {

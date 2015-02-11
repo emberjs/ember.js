@@ -277,7 +277,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   if (morph.isDirty) {
     var options = optionsFor(template, inverse);
 
-    var helper = lookupHelper(env, scope, path);
+    var helper = env.hooks.lookupHelper(env, scope, path);
     helper.call(thisFor(options.templates), params, hash, options.templates);
 
     if (state.lastResult && isStable(options.yielded, state.lastYielded)) {
@@ -448,15 +448,14 @@ export function inline(morph, env, scope, path, params, hash) {
     var state = morph.state;
     var value;
 
-    if (path === 'partial') {
-      value = env.hooks.partial(morph, env, scope, params[0]);
-    } else if (path === 'yield') {
-      scope.block(params, morph);
+    if (path in env.hooks.keywords) {
+      env.hooks.keywords[path](morph, env, scope, params, hash);
+      morph.isDirty = false;
       return;
-    } else {
-      var helper = lookupHelper(env, scope, path);
-      value = helper(params, hash, { renderNode: morph });
     }
+
+    var helper = env.hooks.lookupHelper(env, scope, path);
+    value = helper(params, hash, {});
 
     if (state.lastValue !== value) {
       morph.setContent(value);
@@ -467,8 +466,19 @@ export function inline(morph, env, scope, path, params, hash) {
   }
 }
 
+export var keywords = {
+  partial: function(morph, env, scope, params) {
+    var value = env.hooks.partial(morph, env, scope, params[0]);
+    morph.setContent(value);
+  },
+
+  yield: function(morph, env, scope, params) {
+    scope.block(params, morph);
+  }
+};
+
 function isHelper(env, scope, path) {
-  return path === 'partial' || path === 'yield' || lookupHelper(env, scope, path);
+  return (path in env.hooks.keywords) || hasHelper(env, scope, path);
 }
 
 /**
@@ -514,26 +524,50 @@ export function partial(renderNode, env, scope, path) {
 
   ```hbs
   {{content}}
+  {{{unescaped}}}
+  {{helper}}
   ```
 
   This hook is responsible for updating a render node
   that represents an area of text with a value.
 
-  Ideally, this hook would be refactored so it did not
-  combine both the responsibility for identifying whether
-  the path represented a helper as well as updating the
-  render node.
+  It is invoked for both helpers and content. The default
+  implementation of this hook classifies the path name.
+
+  If the path is a helper or a keyword, it invokes the `inline`
+  hook. Otherwise, it invokes the `get` hook to get the value
+  and then invokes the range hook with the value.
 */
 export function content(morph, env, scope, path) {
+  if (isHelper(env, scope, path)) {
+    return env.hooks.inline(morph, env, scope, path, [], {});
+  } else {
+    var value = env.hooks.get(morph, env, scope, path);
+    return env.hooks.range(morph, env, value);
+  }
+}
+
+/**
+  Host hook: range
+
+  @param {RenderNode} renderNode
+  @param {Environment} env
+  @param {Scope} scope
+  @param {any} value
+
+  Corresponds to:
+
+  ```hbs
+  {{content}}
+  {{{unescaped}}}
+  ```
+
+  This hook is responsible for updating a render node
+  that represents a range of content with a value.
+*/
+export function range(morph, env, value) {
   if (morph.isDirty) {
     var state = morph.state;
-
-    var value;
-    if (isHelper(env, scope, path)) {
-      return env.hooks.inline(morph, env, scope, path, [], {});
-    } else {
-      value = env.hooks.get(morph, env, scope, path);
-    }
 
     if (state.lastValue !== value) {
       morph.setContent(value);
@@ -620,11 +654,7 @@ export function subexpr(morph, env, scope, helperName, params, hash) {
   if (!morph.isDirty) { return; }
 
   var helper = lookupHelper(env, scope, helperName);
-  if (helper) {
-    return helper(params, hash, {});
-  } else {
-    return env.hooks.get(morph, env, scope, helperName);
-  }
+  return helper(params, hash, {});
 }
 
 /**
@@ -647,12 +677,6 @@ export function subexpr(morph, env, scope, helperName, params, hash) {
 
   This hook is the "leaf" hook of the system. It is used to
   resolve a path relative to the current scope.
-
-  NOTE: This should be refactored into three hooks: splitting
-  the path into parts, looking up the first part on the scope,
-  and resolving the remainder a piece at a time. It would also
-  be useful to have a "classification" hook that handles
-  classifying a name as either a helper or value.
 */
 export function get(morph, env, scope, path) {
   if (!morph.isDirty) { return; }
@@ -662,16 +686,25 @@ export function get(morph, env, scope, path) {
   }
 
   var keys = path.split('.');
-  var value = (keys[0] in scope.locals) ? scope.locals : scope.self;
+  var value = env.hooks.getRoot(scope, keys[0]);
 
-  for (var i = 0; i < keys.length; i++) {
+  for (var i = 1; i < keys.length; i++) {
     if (value) {
-      value = value[keys[i]];
+      value = env.hooks.getChild(value, keys[i]);
     } else {
       break;
     }
   }
+
   return value;
+}
+
+export function getRoot(scope, key) {
+  return key in scope.locals ? scope.locals[key] : scope.self[key];
+}
+
+export function getChild(value, key) {
+  return value[key];
 }
 
 export function component(morph, env, scope, tagName, attrs, template) {
@@ -705,7 +738,11 @@ function componentFallback(morph, env, scope, tagName, attrs, template) {
   morph.setNode(element);
 }
 
-function lookupHelper(env, scope, helperName) {
+export function hasHelper(env, scope, helperName) {
+  return helperName in env.helpers;
+}
+
+export function lookupHelper(env, scope, helperName) {
   return env.helpers[helperName];
 }
 
@@ -722,11 +759,15 @@ export function createObject(obj) {
 }
 
 export default {
+  keywords: keywords,
   createScope: createScope,
   bindSelf: bindSelf,
   bindLocal: bindLocal,
   bindBlock: bindBlock,
+  lookupHelper: lookupHelper,
+  hasHelper: hasHelper,
   content: content,
+  range: range,
   block: block,
   inline: inline,
   partial: partial,
@@ -736,4 +777,6 @@ export default {
   subexpr: subexpr,
   concat: concat,
   get: get,
+  getRoot: getRoot,
+  getChild: getChild,
 };
