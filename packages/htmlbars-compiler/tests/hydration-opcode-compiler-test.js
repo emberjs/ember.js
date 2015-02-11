@@ -107,8 +107,10 @@ test("mustaches at the root", function() {
   deepEqual(opcodes, [
     [ "createMorph", [ 0, [ ], 0, 0, true ] ],
     [ "createMorph", [ 1, [ ], 2, 2, true ] ],
+    [ "openBoundary", [ ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHook", [ 0 ] ],
+    [ "closeBoundary", [ ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "printContentHook", [ 1 ] ]
   ]);
