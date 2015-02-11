@@ -87,44 +87,99 @@ export function wrap(template) {
   };
 }
 
-export function wrapForHelper(template, yielded) {
+export function wrapForHelper(template, env, scope, morph) {
   if (template === null) { return null;  }
+
+  var yieldArgs = yieldTemplate(template, env, scope, morph);
 
   return {
     arity: template.arity,
     yield: yieldArgs,
-    withLayout: withLayout,
+    withLayout: yieldWithLayout(template, env, scope, morph),
 
     render: function(self, blockArguments) {
-      yieldArgs(blockArguments);
-      yielded.self = self;
+      yieldArgs(blockArguments, self);
     }
   };
+}
 
-  function withLayout(layoutTemplate, self) {
-    yielded.self = self;
-    yielded.layout = layoutTemplate;
-    yielded.template = template;
-  }
+function yieldTemplate(template, env, parentScope, morph) {
+  return function(blockArguments, self) {
+    var scope = parentScope;
+    var state = morph.state;
 
-  function yieldArgs(blockArguments) {
-    if (blockArguments !== undefined) {
-      yielded.blockArguments = blockArguments;
+    if (state.lastYielded && isStableTemplate(template, state.lastYielded)) {
+      return state.lastResult.revalidate(self, blockArguments);
     }
 
-    yielded.template = template;
+    if (self !== undefined || parentScope === null || template.arity) {
+      scope = env.hooks.createScope(parentScope, template.arity);
+    }
+
+    if (self !== undefined ){
+      env.hooks.bindSelf(scope, self);
+    }
+
+    state.lastYielded = { self: self, template: template, layout: null };
+
+    // Render the template that was selected by the helper
+    state.lastResult = render(template, env, scope, { renderNode: morph }, blockArguments);
+  };
+}
+
+function isStableTemplate(template, lastYielded) {
+  return !lastYielded.layout && template === lastYielded.template;
+}
+
+function yieldWithLayout(template, env, parentScope, morph) {
+  return function(layout, self) {
+    var layoutScope = env.hooks.createScope(null, layout.arity);
+    var state = morph.state;
+
+    if (state.lastYielded && isStableLayout(template, layout, state.lastYielded)) {
+      return state.lastResult.revalidate(self, []);
+    }
+
+    if (self !== undefined) {
+      env.hooks.bindSelf(layoutScope, self);
+    }
+
+    env.hooks.bindBlock(env, layoutScope, blockToYield);
+
+    state.lastYielded = { self: self, template: template, layout: layout };
+
+    // Render the layout with the block available
+    state.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph });
+  };
+
+  function blockToYield(blockArguments, renderNode) {
+    var state = renderNode.state;
+
+    if (state.lastResult) {
+      state.lastResult.revalidate(parentScope.self, blockArguments);
+    } else {
+      var scope = parentScope;
+
+      // Since a yielded template shares a `self` with its original context,
+      // we only need to create a new scope if the template has block parameters
+      if (template.arity) {
+        scope = env.hooks.createScope(parentScope, template.arity);
+      }
+
+      state.lastResult = render(template, env, scope, { renderNode: renderNode }, blockArguments);
+    }
   }
 }
 
-function optionsFor(template, inverse) {
-  var yielded = { self: undefined, blockArguments: null, template: null, layout: null };
+function isStableLayout(template, layout, lastYielded) {
+  return template === lastYielded.template && layout === lastYielded.layout;
+}
 
-  var templates = {
-    template: wrapForHelper(template, yielded),
-    inverse: wrapForHelper(inverse, yielded)
+function optionsFor(template, inverse, env, scope, morph) {
+  return {
+    template: wrapForHelper(template, env, scope, morph),
+    inverse: wrapForHelper(inverse, env, scope, morph)
   };
-
-  return { templates: templates, yielded: yielded };
 }
 
 function thisFor(options) {
@@ -272,130 +327,10 @@ export function bindBlock(env, scope, block) {
   appropriate arguments.
 */
 export function block(morph, env, scope, path, params, hash, template, inverse) {
-  var state = morph.state;
-
-  var options = optionsFor(template, inverse);
+  var templates = optionsFor(template, inverse, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  helper.call(thisFor(options.templates), params, hash, options.templates);
-
-  if (state.lastResult && isStable(options.yielded, state.lastYielded)) {
-    state.lastResult.revalidate(options.yielded.self, options.yielded.blockArguments);
-  } else {
-    state.lastResult = applyYieldedTemplate(options.yielded, env, scope, morph);
-    state.lastYielded = options.yielded;
-  }
-}
-
-function isStable(yielded, lastYielded) {
-  if (yielded.layout && !lastYielded.layout) { return false; }
-
-  if (yielded.layout) {
-    return isStableLayout(yielded, lastYielded);
-  } else {
-    return isStableTemplate(yielded, lastYielded);
-  }
-}
-
-function isStableTemplate(yielded, lastYielded) {
-  return yielded.template === lastYielded.template;
-}
-
-function isStableLayout(yielded, lastYielded) {
-  return isStableTemplate(yielded, lastYielded) &&
-         yielded.layout === lastYielded.layout;
-}
-
-// Block helpers can choose to call `yield` or `yieldWithLayout`. The choice of
-// which template to render and whether a layout was chosen is recorded in the
-// `yielded` object.
-//
-// For example, if a helper calls `this.yield()`, the `yielded` structure
-// looks like:
-//
-// ```
-// { template: passedTemplate, layout: null, blockArguments: null, self: undefined }
-// ```
-//
-// If a helper calls `this.yieldWithLayout(layout, { title: "Hello" }), the
-// structure looks like:
-//
-// ```
-// {
-//   template: passedTemplate,
-//   layout: layout,
-//   blockArguments: null,
-//   self: { title: "Hello" }
-// }
-// ```
-//
-// This function takes that structure, sets up the correct scopes for each
-// template, and invokes the templates.
-//
-// When a template is being revalidated, this code will also determine
-// whether the previously rendered template is still stable or whether
-// it needs to be built from scratch. In general, a template needs to be
-// re-rendered from scratch only if the helper switches between the
-// primary template and the inverse, or if it selects a different layout
-// across runs.
-function applyYieldedTemplate(yielded, env, parentScope, morph) {
-  var template = yielded.template;
-  if (!template) { return; }
-
-  if (yielded.layout) {
-    var layoutScope = scopeForYieldedTemplate(env, null, yielded);
-    env.hooks.bindBlock(env, layoutScope, blockToYield);
-
-    // Render the layout with the block available
-    return render(yielded.layout.raw, env, layoutScope, { renderNode: morph });
-  } else {
-    var scope = scopeForYieldedTemplate(env, parentScope, yielded);
-
-    // Render the template that was selected by the helper
-    return renderTemplate(morph, scope, yielded.blockArguments);
-  }
-
-  function renderTemplate(renderNode, scope, blockArguments) {
-    return render(template, env, scope, { renderNode: renderNode }, blockArguments);
-  }
-
-  function blockToYield(blockArguments, renderNode) {
-    var state = renderNode.state;
-
-    if (state.lastResult) {
-      state.lastResult.revalidate(parentScope.self, blockArguments);
-    } else {
-      var scope = parentScope;
-
-      // Since a yielded template shares a `self` with its original context,
-      // we only need to create a new scope if the template has block parameters
-      if (template.arity) {
-        scope = env.hooks.createScope(parentScope, template.arity);
-      }
-
-      state.lastResult = renderTemplate(renderNode, scope, blockArguments);
-    }
-  }
-}
-
-// This function takes a `yielded` structure and creates a new scope for the
-// template that will be rendered. If the call to `yield` did not supply a
-// `self` and the template did not have block arguments, the original scope
-// is shared.
-//
-// Otherwise, this function asks the host to create a new child scope.
-function scopeForYieldedTemplate(env, parentScope, yielded) {
-  var scope = parentScope;
-
-  if (parentScope === null || yielded.template.arity || yielded.self !== undefined) {
-    scope = env.hooks.createScope(scope, yielded.template.arity);
-  }
-
-  if (yielded.self !== undefined) {
-    env.hooks.bindSelf(scope, yielded.self);
-  }
-
-  return scope;
+  helper.call(thisFor(templates), params, hash, templates);
 }
 
 /**
