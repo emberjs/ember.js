@@ -9,12 +9,12 @@ export function wrap(template) {
     render: function(self, env, options, blockArguments) {
       var scope = env.hooks.createScope(null, template.blockParams);
       scope.self = self;
-      return render(template, scope, env, options, blockArguments);
+      return render(template, env, scope, options, blockArguments);
     }
   };
 }
 
-export function wrapForHelper(template, originalScope, options, env) {
+export function wrapForHelper(template, env, originalScope, options) {
   if (template === null) { return null;  }
 
   return {
@@ -28,7 +28,7 @@ export function wrapForHelper(template, originalScope, options, env) {
         scope = env.hooks.createScope(originalScope, template.blockParams);
       }
 
-      return render(template, scope, env, options, blockArguments);
+      return render(template, env, scope, options, blockArguments);
     },
 
     render: function(newSelf, blockArguments) {
@@ -38,12 +38,12 @@ export function wrapForHelper(template, originalScope, options, env) {
         scope.self = newSelf;
       }
 
-      return render(template, scope, env, options, blockArguments);
+      return render(template, env, scope, options, blockArguments);
     }
   };
 }
 
-function optionsFor(morph, scope, env, template, inverse) {
+function optionsFor(morph, env, scope, template, inverse) {
   var options = {
     renderNode: morph,
     contextualElement: morph.contextualElement,
@@ -52,8 +52,8 @@ function optionsFor(morph, scope, env, template, inverse) {
     inverse: null
   };
 
-  options.template = wrapForHelper(template, scope, options, env);
-  options.inverse = wrapForHelper(inverse, scope, options, env);
+  options.template = wrapForHelper(template, env, scope, options);
+  options.inverse = wrapForHelper(inverse, env, scope, options);
 
   return options;
 }
@@ -75,14 +75,14 @@ export function createScope(parentScope, localVariables) {
   return scope;
 }
 
-export function block(env, morph, scope, path, params, hash, template, inverse) {
+export function block(morph, env, scope, path, params, hash, template, inverse) {
   var state = morph.state;
 
   if (morph.isDirty) {
-    var options = optionsFor(morph, scope, env, template, inverse);
+    var options = optionsFor(morph, env, scope, template, inverse);
 
-    var helper = lookupHelper(scope, env, path);
-    var result = helper(params, hash, options, env);
+    var helper = lookupHelper(env, scope, path);
+    var result = helper(params, hash, options);
 
     if (result === undefined && state.lastResult) {
       state.lastResult.revalidate(scope.self);
@@ -96,12 +96,17 @@ export function block(env, morph, scope, path, params, hash, template, inverse) 
   morph.isDirty = false;
 }
 
-export function inline(env, morph, scope, path, params, hash) {
+export function inline(morph, env, scope, path, params, hash) {
   if (morph.isDirty) {
     var state = morph.state;
-    var helper = lookupHelper(scope, env, path);
+    var value;
 
-    var value = helper(params, hash, { renderNode: morph }, env);
+    if (path === 'partial') {
+      value = env.hooks.partial(morph, env, scope, params[0]);
+    } else {
+      var helper = lookupHelper(env, scope, path);
+      value = helper(params, hash, { renderNode: morph });
+    }
 
     if (state.lastValue !== value) {
       morph.setContent(value);
@@ -112,16 +117,21 @@ export function inline(env, morph, scope, path, params, hash) {
   }
 }
 
-export function content(env, morph, scope, path) {
+export function partial(renderNode, env, scope, path) {
+  var template = env.partials[path];
+  return template.render(scope.self, env, { contextualElement: renderNode.contextualElement }).fragment;
+}
+
+export function content(morph, env, scope, path) {
   if (morph.isDirty) {
     var state = morph.state;
-    var helper = lookupHelper(scope, env, path);
+    var helper = lookupHelper(env, scope, path);
 
     var value;
     if (helper) {
-      value = helper([], {}, { renderNode: morph }, env);
+      value = helper([], {}, { renderNode: morph });
     } else {
-      value = env.hooks.get(env, morph, scope, path);
+      value = env.hooks.get(morph, env, scope, path);
     }
 
     if (state.lastValue !== value) {
@@ -133,18 +143,18 @@ export function content(env, morph, scope, path) {
   }
 }
 
-export function element(env, morph, scope, path, params, hash) {
+export function element(morph, env, scope, path, params, hash) {
   if (morph.isDirty) {
-    var helper = lookupHelper(scope, env, path);
+    var helper = lookupHelper(env, scope, path);
     if (helper) {
-      helper(params, hash, { element: morph.element }, env);
+      helper(params, hash, { element: morph.element });
     }
 
     morph.isDirty = false;
   }
 }
 
-export function attribute(env, morph, name, value) {
+export function attribute(morph, env, name, value) {
   if (morph.isDirty) {
     var state = morph.state;
 
@@ -157,18 +167,18 @@ export function attribute(env, morph, name, value) {
   }
 }
 
-export function subexpr(env, morph, scope, helperName, params, hash) {
+export function subexpr(morph, env, scope, helperName, params, hash) {
   if (!morph.isDirty) { return; }
 
-  var helper = lookupHelper(scope, env, helperName);
+  var helper = lookupHelper(env, scope, helperName);
   if (helper) {
-    return helper(params, hash, {}, env);
+    return helper(params, hash, {});
   } else {
-    return env.hooks.get(env, morph, scope, helperName);
+    return env.hooks.get(morph, env, scope, helperName);
   }
 }
 
-export function get(env, morph, scope, path) {
+export function get(morph, env, scope, path) {
   if (!morph.isDirty) { return; }
 
   if (path === '') {
@@ -188,25 +198,25 @@ export function get(env, morph, scope, path) {
   return value;
 }
 
-export function bindLocal(scope, env, name, value) {
+export function bindLocal(env, scope, name, value) {
   scope.locals[name] = value;
 }
 
-export function component(env, morph, scope, tagName, attrs, template) {
+export function component(morph, env, scope, tagName, attrs, template) {
   if (morph.isDirty) {
-    var helper = lookupHelper(scope, env, tagName);
+    var helper = lookupHelper(env, scope, tagName);
     if (helper) {
-      var options = optionsFor(morph, scope, env, template, null);
-      helper([], attrs, options, env);
+      var options = optionsFor(morph, env, scope, template, null);
+      helper([], attrs, options);
     } else {
-      componentFallback(env, morph, scope, tagName, attrs, template);
+      componentFallback(morph, env, scope, tagName, attrs, template);
     }
 
     morph.isDirty = false;
   }
 }
 
-export function concat(env, morph, params) {
+export function concat(morph, env, params) {
   if (!morph.isDirty) { return; }
 
   var value = "";
@@ -216,17 +226,17 @@ export function concat(env, morph, params) {
   return value;
 }
 
-function componentFallback(env, morph, scope, tagName, attrs, template) {
+function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
   for (var name in attrs) {
     element.setAttribute(name, attrs[name]);
   }
-  var fragment = render(template, scope, env, { contextualElement: morph.contextualElement }).fragment;
+  var fragment = render(template, env, scope, { contextualElement: morph.contextualElement }).fragment;
   element.appendChild(fragment);
   morph.setNode(element);
 }
 
-function lookupHelper(scope, env, helperName) {
+function lookupHelper(env, scope, helperName) {
   return env.helpers[helperName];
 }
 
@@ -247,6 +257,7 @@ export default {
   content: content,
   block: block,
   inline: inline,
+  partial: partial,
   component: component,
   element: element,
   attribute: attribute,

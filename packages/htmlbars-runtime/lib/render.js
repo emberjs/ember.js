@@ -1,7 +1,7 @@
 import { forEach } from "../htmlbars-util/array-utils";
 import ExpressionVisitor from "./expression-visitor";
 
-export default function render(template, scope, env, options, blockArguments) {
+export default function render(template, env, scope, options, blockArguments) {
   var dom = env.dom;
   var contextualElement = options && options.contextualElement;
 
@@ -60,11 +60,11 @@ export default function render(template, scope, env, options, blockArguments) {
     var i, l;
 
     for (i=0, l=locals.length; i<l; i++) {
-      env.hooks.bindLocal(scope, env, locals[i], blockArguments[i]);
+      env.hooks.bindLocal(env, scope, locals[i], blockArguments[i]);
     }
 
     for (i=0, l=statements.length; i<l; i++) {
-      ExpressionVisitor.accept(statements[i], nodes[i], scope, env, template);
+      ExpressionVisitor.accept(statements[i], nodes[i], env, scope, template);
     }
   }
 }
