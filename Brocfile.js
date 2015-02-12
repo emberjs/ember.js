@@ -9,6 +9,7 @@ var EmberBuild = require('emberjs-build');
 var packages   = require('./lib/packages');
 
 var emberBuild = new EmberBuild({
+  htmlbars: require('htmlbars'),
   packages: packages
 });
 
