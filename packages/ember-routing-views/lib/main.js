@@ -9,9 +9,15 @@ Ember Routing Views
 import Ember from "ember-metal/core";
 
 import { LinkView } from "ember-routing-views/views/link";
-import { OutletView } from "ember-routing-views/views/outlet";
+import {
+  OutletView,
+  CoreOutletView
+} from "ember-routing-views/views/outlet";
 
 Ember.LinkView = LinkView;
 Ember.OutletView = OutletView;
+if (Ember.FEATURES.isEnabled('ember-routing-core-outlet')) {
+  Ember.CoreOutletView = CoreOutletView;
+}
 
 export default Ember;
