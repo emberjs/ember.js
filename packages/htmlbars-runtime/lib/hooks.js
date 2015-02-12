@@ -1,6 +1,7 @@
 import render from "./render";
 import MorphList from "morph-list";
-import { createChildMorph } from "htmlbars-runtime/render";
+import { createChildMorph } from "./render";
+import { createObject } from "../htmlbars-util/object-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -109,10 +110,9 @@ export function wrapForHelper(template, env, scope, morph, pruneMorphStart) {
 function yieldTemplate(template, env, parentScope, morph) {
   return function(blockArguments, self) {
     var scope = parentScope;
-    var state = morph.state;
 
-    if (state.lastYielded && isStableTemplate(template, state.lastYielded)) {
-      return state.lastResult.revalidate(self, blockArguments);
+    if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
+      return morph.lastResult.revalidate(self, blockArguments);
     }
 
     // Check to make sure that we actually **need** a new scope, and can't
@@ -127,44 +127,43 @@ function yieldTemplate(template, env, parentScope, morph) {
       env.hooks.bindSelf(scope, self);
     }
 
-    state.lastYielded = { self: self, template: template, layout: null };
+    morph.lastYielded = { self: self, template: template, layout: null };
 
     // Render the template that was selected by the helper
-    state.lastResult = render(template, env, scope, { renderNode: morph }, blockArguments);
+    morph.lastResult = render(template, env, scope, { renderNode: morph }, blockArguments);
   };
 }
 
 function yieldItem(template, env, parentScope, morph, pruneMorphStart) {
   var currentMorph = null;
-  var morphList = morph.state.morphList;
+  var morphList = morph.morphList;
   if (morphList) {
     currentMorph = morphList.firstChildMorph;
     pruneMorphStart.item = currentMorph;
   }
 
   return function(key, blockArguments) {
-    var state = morph.state;
     var morphList, morphMap;
 
-    if (!state.morphList) {
-      state.morphList = new MorphList();
-      state.morphMap = {};
-      morph.setMorphList(state.morphList);
+    if (!morph.morphList) {
+      morph.morphList = new MorphList();
+      morph.morphMap = {};
+      morph.setMorphList(morph.morphList);
     }
 
-    morphList = state.morphList;
-    morphMap = state.morphMap;
+    morphList = morph.morphList;
+    morphMap = morph.morphMap;
 
-    if (currentMorph && currentMorph.state.key === key) {
+    if (currentMorph && currentMorph.key === key) {
       yieldTemplate(template, env, parentScope, currentMorph)(blockArguments);
       currentMorph = currentMorph.nextMorph;
-    } else if (currentMorph && key in morphMap) {
+    } else if (currentMorph && morphMap[key] !== undefined) {
       var foundMorph = morphMap[key];
       yieldTemplate(template, env, parentScope, foundMorph)(blockArguments);
       morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
-      childMorph.state.key = key;
+      childMorph.key = key;
       morphMap[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
       yieldTemplate(template, env, parentScope, childMorph)(blockArguments);
@@ -181,10 +180,9 @@ function isStableTemplate(template, lastYielded) {
 function yieldWithLayout(template, env, parentScope, morph) {
   return function(layout, self) {
     var layoutScope = env.hooks.createScope(null, layout.arity);
-    var state = morph.state;
 
-    if (state.lastYielded && isStableLayout(template, layout, state.lastYielded)) {
-      return state.lastResult.revalidate(self, []);
+    if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
+      return morph.lastResult.revalidate(self, []);
     }
 
     if (self !== undefined) {
@@ -193,17 +191,15 @@ function yieldWithLayout(template, env, parentScope, morph) {
 
     env.hooks.bindBlock(env, layoutScope, blockToYield);
 
-    state.lastYielded = { self: self, template: template, layout: layout };
+    morph.lastYielded = { self: self, template: template, layout: layout };
 
     // Render the layout with the block available
-    state.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph });
+    morph.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph });
   };
 
   function blockToYield(blockArguments, renderNode) {
-    var state = renderNode.state;
-
-    if (state.lastResult) {
-      state.lastResult.revalidate(parentScope.self, blockArguments);
+    if (renderNode.lastResult) {
+      renderNode.lastResult.revalidate(parentScope.self, blockArguments);
     } else {
       var scope = parentScope;
 
@@ -213,7 +209,7 @@ function yieldWithLayout(template, env, parentScope, morph) {
         scope = env.hooks.createScope(parentScope, template.arity);
       }
 
-      state.lastResult = render(template, env, scope, { renderNode: renderNode }, blockArguments);
+      renderNode.lastResult = render(template, env, scope, { renderNode: renderNode }, blockArguments);
     }
   }
 }
@@ -389,11 +385,11 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   helper.call(thisFor(options.templates), params, hash, options.templates);
 
   var item = options.pruneMorphStart.item;
-  var morphMap = morph.state.morphMap;
+  var morphMap = morph.morphMap;
 
   while (item) {
     var next = item.nextMorph;
-    delete morphMap[item.state.key];
+    delete morphMap[item.key];
     item.destroy();
     item = next;
   }
@@ -438,22 +434,22 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   it invokes the `partial` host hook.
 */
 export function inline(morph, env, scope, path, params, hash) {
-  var state = morph.state;
   var value;
 
-  if (path in env.hooks.keywords) {
-    env.hooks.keywords[path](morph, env, scope, params, hash);
+  var keyword = env.hooks.keywords[path];
+  if (keyword) {
+    keyword(morph, env, scope, params, hash);
     return;
   }
 
   var helper = env.hooks.lookupHelper(env, scope, path);
   value = helper(params, hash, {});
 
-  if (state.lastValue !== value) {
+  if (morph.lastValue !== value) {
     morph.setContent(value);
   }
 
-  state.lastValue = value;
+  morph.lastValue = value;
 }
 
 export var keywords = {
@@ -468,7 +464,7 @@ export var keywords = {
 };
 
 function isHelper(env, scope, path) {
-  return (path in env.hooks.keywords) || hasHelper(env, scope, path);
+  return (env.hooks.keywords[path] !== undefined) || hasHelper(env, scope, path);
 }
 
 /**
@@ -556,13 +552,11 @@ export function content(morph, env, scope, path) {
   that represents a range of content with a value.
 */
 export function range(morph, env, value) {
-  var state = morph.state;
-
-  if (state.lastValue !== value) {
+  if (morph.lastValue !== value) {
     morph.setContent(value);
   }
 
-  state.lastValue = value;
+  morph.lastValue = value;
 }
 
 /**
@@ -621,13 +615,11 @@ export function element(morph, env, scope, path, params, hash) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, name, value) {
-  var state = morph.state;
-
-  if (state.lastValue !== value) {
+  if (morph.lastValue !== value) {
     morph.setContent(value);
   }
 
-  state.lastValue = value;
+  morph.lastValue = value;
 }
 
 export function subexpr(env, scope, helperName, params, hash) {
@@ -709,23 +701,11 @@ function componentFallback(morph, env, scope, tagName, attrs, template) {
 }
 
 export function hasHelper(env, scope, helperName) {
-  return helperName in env.helpers;
+  return env.helpers[helperName] !== undefined;
 }
 
 export function lookupHelper(env, scope, helperName) {
   return env.helpers[helperName];
-}
-
-// IE8 does not have Object.create, so use a polyfill if needed.
-// Polyfill based on Mozilla's (MDN)
-export function createObject(obj) {
-  if (typeof Object.create === 'function') {
-    return Object.create(obj);
-  } else {
-    var Temp = function() {};
-    Temp.prototype = obj;
-    return new Temp();
-  }
 }
 
 export default {

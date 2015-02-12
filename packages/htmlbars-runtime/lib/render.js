@@ -1,6 +1,7 @@
 import { forEach } from "../htmlbars-util/array-utils";
 import ExpressionVisitor from "./expression-visitor";
-import Morph from "morph-range";
+import { AlwaysDirtyVisitor } from "./expression-visitor";
+import Morph from "./morph";
 
 export default function render(template, env, scope, options, blockArguments) {
   var dom = env.dom;
@@ -39,7 +40,7 @@ export default function render(template, env, scope, options, blockArguments) {
   var statements = template.statements;
   var locals = template.locals;
 
-  populateNodes(scope, blockArguments);
+  populateNodes(scope, blockArguments, AlwaysDirtyVisitor);
 
   if (options && options.renderNode) {
     rootNode.setContent(fragment);
@@ -64,18 +65,22 @@ export default function render(template, env, scope, options, blockArguments) {
             nodes.push(current);
             current = current.nextMorph;
           }
-        } else if (node.state.morphList) {
-          nodes.push(node.state.morphList);
+        } else if (node.morphList) {
+          nodes.push(node.morphList);
         }
       }
     },
     revalidate: function(newScope, newBlockArguments) {
       if (newScope !== undefined) { scope.self = newScope; }
-      populateNodes(scope, newBlockArguments || blockArguments);
+      populateNodes(scope, newBlockArguments || blockArguments, ExpressionVisitor);
+    },
+    rerender: function(newScope, newBlockArguments) {
+      if (newScope !== undefined) { scope.self = newScope; }
+      populateNodes(scope, newBlockArguments || blockArguments, AlwaysDirtyVisitor);
     }
   };
 
-  function populateNodes(scope, blockArguments) {
+  function populateNodes(scope, blockArguments, ExpressionVisitor) {
     var i, l;
 
     for (i=0, l=locals.length; i<l; i++) {
@@ -90,8 +95,6 @@ export default function render(template, env, scope, options, blockArguments) {
 
 function initializeNode(node, owner) {
   node.ownerNode = owner;
-  node.state = {};
-  node.isDirty = true;
 }
 
 export function createChildMorph(dom, parentMorph, contextualElement) {
