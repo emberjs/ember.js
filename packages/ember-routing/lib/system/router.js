@@ -191,7 +191,6 @@ var EmberRouter = EmberObject.extend(Evented, {
   _setOutlets: function() {
     var handlerInfos = this.router.currentHandlerInfos;
     var route;
-    var parentRoute;
     var defaultParentState;
     var liveRoutes = null;
 
@@ -201,21 +200,15 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     for (var i = 0; i < handlerInfos.length; i++) {
       route = handlerInfos[i].handler;
-
-      var connections = (route.connections.length > 0) ? route.connections : [{
-          name: route.routeName,
-          outlet: 'main'
-      }];
-
+      var connections = normalizedConnections(route);
       var ownState;
       for (var j = 0; j < connections.length; j++) {
-        var appended = appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, connections[j]);
+        var appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
         liveRoutes = appended.liveRoutes;
         if (appended.ownState.render.name === route.routeName) {
           ownState = appended.ownState;
         }
       }
-      parentRoute = route;
       defaultParentState = ownState;
     }
     if (!this._toplevelView) {
@@ -993,6 +986,7 @@ function forEachQueryParam(router, targetRouteName, queryParams, callback) {
 }
 
 function findLiveRoute(liveRoutes, name) {
+  if (!liveRoutes) { return; }
   var stack = [liveRoutes];
   while (stack.length > 0) {
     var test = stack.shift();
@@ -1006,17 +1000,12 @@ function findLiveRoute(liveRoutes, name) {
   }
 }
 
-function appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, renderOptions) {
-  var targetName;
+function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   var target;
   var myState = {
     render: renderOptions,
     outlets: Object.create(null)
   };
-  if (!parentRoute) {
-    liveRoutes = myState;
-  }
-  targetName = renderOptions.into || (parentRoute && parentRoute.routeName);
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
   } else {
@@ -1024,6 +1013,9 @@ function appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, ren
   }
   if (target) {
     set(target.outlets, renderOptions.outlet, myState);
+  } else {
+    Ember.assert("You attempted to render into '" + renderOptions.into + "' but it was not found", !renderOptions.into);
+    liveRoutes = myState;
   }
   return {
     liveRoutes: liveRoutes,
@@ -1031,6 +1023,34 @@ function appendLiveRoute(liveRoutes, route, parentRoute, defaultParentState, ren
   };
 }
 
+function normalizedConnections(route) {
+  var connections = route.connections;
+  var mainConnections = [];
+  var otherConnections = [];
+
+  for (var i = 0; i < connections.length; i++) {
+    var connection = connections[i];
+    if (connection.outlet === 'main') {
+      mainConnections.push(connection);
+    } else {
+      otherConnections.push(connection);
+    }
+  }
+
+  if (mainConnections.length === 0) {
+    // There's always an entry to represent the route, even if it
+    // doesn't actually render anything into its own
+    // template. This gives other routes a place to target.
+    mainConnections.push({
+      name: route.routeName,
+      outlet: 'main'
+    });
+  }
+
+  // We process main connections first, because a main connection may
+  // be targeted by other connections.
+  return mainConnections.concat(otherConnections);
+}
 
 
 export default EmberRouter;
