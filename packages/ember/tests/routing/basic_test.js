@@ -3479,3 +3479,74 @@ QUnit.test("Can rerender application view multiple times when it contains an out
 
   equal(Ember.$('#qunit-fixture').text(), "AppHello world", "third render");
 });
+
+QUnit.test("Can render into a named outlet at the top level", function() {
+  Ember.TEMPLATES.application = compile("A-{{outlet}}-B-{{outlet \"other\"}}-C");
+  Ember.TEMPLATES.modal = compile("Hello world");
+  Ember.TEMPLATES.index = compile("The index");
+
+  registry.register('route:application', Ember.Route.extend({
+    renderTemplate: function() {
+      this.render();
+      this.render('modal', {
+        into: 'application',
+        outlet: 'other'
+      });
+    }
+  }));
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "initial render");
+});
+
+QUnit.test("Can render into a named outlet at the top level, with empty main outlet", function() {
+  Ember.TEMPLATES.application = compile("A-{{outlet}}-B-{{outlet \"other\"}}-C");
+  Ember.TEMPLATES.modal = compile("Hello world");
+
+  Router.map(function() {
+    this.route('hasNoTemplate', { path: '/' });
+  });
+
+  registry.register('route:application', Ember.Route.extend({
+    renderTemplate: function() {
+      this.render();
+      this.render('modal', {
+        into: 'application',
+        outlet: 'other'
+      });
+    }
+  }));
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "A--B-Hello world-C", "initial render");
+});
+
+
+QUnit.test("Can render into a named outlet at the top level, later", function() {
+  Ember.TEMPLATES.application = compile("A-{{outlet}}-B-{{outlet \"other\"}}-C");
+  Ember.TEMPLATES.modal = compile("Hello world");
+  Ember.TEMPLATES.index = compile("The index");
+
+  registry.register('route:application', Ember.Route.extend({
+    actions: {
+      launch: function() {
+        this.render('modal', {
+          into: 'application',
+          outlet: 'other'
+        });
+      }
+    }
+  }));
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "A-The index-B--C", "initial render");
+
+  Ember.run(router, 'send', 'launch');
+
+  //debugger;
+  //router._setOutlets();
+  equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "second render");
+});
