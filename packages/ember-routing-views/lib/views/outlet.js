@@ -24,7 +24,7 @@ export var CoreOutletView = ContainerView.extend({
     return parent;
   },
 
-  _linkParent: Ember.on('didInsertElement', function() {
+  _linkParent: Ember.on('init', 'parentViewDidChange', function() {
     var parent = this._parentOutlet();
     if (parent) {
       parent._childOutlets.push(this);
