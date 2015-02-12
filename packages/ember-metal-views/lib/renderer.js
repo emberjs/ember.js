@@ -17,10 +17,9 @@ function Renderer(_helper, _destinedForDOM) {
   this._destinedForDOM = _destinedForDOM === undefined ? true : _destinedForDOM;
 }
 
-function Renderer_renderTree(_view, _parentView, _insertAt) {
+function Renderer_renderTree(_view, _parentView, _refMorph) {
   var views = this._views;
   views[0] = _view;
-  var insertAt = _insertAt === undefined ? -1 : _insertAt;
   var index = 0;
   var total = 1;
   var levelBase = _parentView ? _parentView._level+1 : 0;
@@ -114,7 +113,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
       parentIndex = parents[level];
       parent = parentIndex === -1 ? _parentView : views[parentIndex];
-      this.insertElement(view, parent, element, -1);
+      this.insertElement(view, parent, element, null);
       index = queue[--length];
       view = views[index];
       element = elements[level];
@@ -122,7 +121,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
     }
   }
 
-  this.insertElement(view, _parentView, element, insertAt);
+  this.insertElement(view, _parentView, element, _refMorph);
 
   for (i=total-1; i>=0; i--) {
     if (willInsert) {
@@ -171,7 +170,12 @@ Renderer.prototype.appendAttrTo =
 
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    var morph = this._dom.createMorph(target, null, null);
+    var morph;
+    if (target.firstNode) {
+      morph = this._dom.createMorph(target, target.firstNode, target.lastNode);
+    } else {
+      morph = this._dom.appendMorph(target);
+    }
     this.scheduleInsert(view, morph);
   };
 
@@ -244,7 +248,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
   }
 }
 
-function Renderer_insertElement(view, parentView, element, index) {
+function Renderer_insertElement(view, parentView, element, refMorph) {
   if (element === null || element === undefined) {
     return;
   }
@@ -252,11 +256,7 @@ function Renderer_insertElement(view, parentView, element, index) {
   if (view._morph) {
     view._morph.setContent(element);
   } else if (parentView) {
-    if (index === -1) {
-      view._morph = parentView._childViewsMorph.append(element);
-    } else {
-      view._morph = parentView._childViewsMorph.insert(index, element);
-    }
+    view._morph = parentView._childViewsMorph.insertContentBeforeMorph(element, refMorph);
   }
 }
 

@@ -272,7 +272,7 @@ var ContainerView = View.extend(MutableArray, {
       buffer._element = element;
       this._childViewsMorph = dom.appendMorph(element, this._morph.contextualElement);
     } else {
-      this._childViewsMorph = dom.createMorph(element, element.lastChild, null);
+      this._childViewsMorph = dom.appendMorph(element);
     }
 
     return element;
@@ -395,12 +395,13 @@ merge(states.hasElement, {
     var childViews = view._childViews;
     var renderer = view._renderer;
 
-    var i, len, childView;
-    for (i = 0, len = childViews.length; i < len; i++) {
-      childView = childViews[i];
+    var refMorph = null;
+    for (var i = childViews.length-1; i >= 0; i--) {
+      var childView = childViews[i];
       if (!childView._elementCreated) {
-        renderer.renderTree(childView, view, i);
+        renderer.renderTree(childView, view, refMorph);
       }
+      refMorph = childView._morph;
     }
   }
 });
