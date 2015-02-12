@@ -3500,6 +3500,38 @@ QUnit.test("Can render into a named outlet at the top level", function() {
   equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "initial render");
 });
 
+QUnit.test("Can disconnect a named outlet at the top level", function() {
+  Ember.TEMPLATES.application = compile("A-{{outlet}}-B-{{outlet \"other\"}}-C");
+  Ember.TEMPLATES.modal = compile("Hello world");
+  Ember.TEMPLATES.index = compile("The index");
+
+  registry.register('route:application', Ember.Route.extend({
+    renderTemplate: function() {
+      this.render();
+      this.render('modal', {
+        into: 'application',
+        outlet: 'other'
+      });
+    },
+    actions: {
+      banish: function() {
+        this.disconnectOutlet({
+          parentView: 'application',
+          outlet: 'other'
+        });
+      }
+    }
+  }));
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "initial render");
+
+  Ember.run(router, 'send', 'banish');
+
+  equal(Ember.$('#qunit-fixture').text(), "A-The index-B--C", "second render");
+});
+
 QUnit.test("Can render into a named outlet at the top level, with empty main outlet", function() {
   Ember.TEMPLATES.application = compile("A-{{outlet}}-B-{{outlet \"other\"}}-C");
   Ember.TEMPLATES.modal = compile("Hello world");

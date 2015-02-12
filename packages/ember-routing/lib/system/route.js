@@ -1845,6 +1845,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   disconnectOutlet: function(options) {
     var outletName;
     var parentView;
+    var parent;
     if (!options || typeof options === "string") {
       outletName = options;
     } else {
@@ -1853,7 +1854,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     parentView = parentView && parentView.replace(/\//g, '.');
-    if (parentView === parentRoute(this).routeName) {
+    parent = parentRoute(this);
+    if (parent && parentView === parent.routeName) {
       parentView = undefined;
     }
     outletName = outletName || 'main';
