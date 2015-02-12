@@ -15,7 +15,7 @@ var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 var emberBuild = new EmberBuild({
   htmlbars: require('htmlbars'),
   packages: packages,
-  _vendoredPackages: {
+  vendoredPackages: {
       'loader':                vendoredPackage('loader'),
       'rsvp':                  vendoredES6Package('rsvp'),
       'backburner':            vendoredES6Package('backburner'),
@@ -25,6 +25,7 @@ var emberBuild = new EmberBuild({
       'dom-helper':            htmlbarsPackage('dom-helper'),
       'morph-range':           htmlbarsPackage('morph-range'),
       'morph-attr':            htmlbarsPackage('morph-attr'),
+      'htmlbars-runtime':      htmlbarsPackage('htmlbars-runtime'),
       'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
       'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
       'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
