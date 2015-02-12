@@ -58,6 +58,10 @@ function optionsFor(morph, env, scope, template, inverse) {
   return options;
 }
 
+function thisFor(options) {
+  return { yield: options.template.yield };
+}
+
 export function createScope(parentScope, localVariables) {
   var scope;
 
@@ -82,7 +86,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
     var options = optionsFor(morph, env, scope, template, inverse);
 
     var helper = lookupHelper(env, scope, path);
-    var result = helper(params, hash, options);
+    var result = helper.call(thisFor(options), params, hash, options);
 
     if (result === undefined && state.lastResult) {
       state.lastResult.revalidate(scope.self);
@@ -207,7 +211,7 @@ export function component(morph, env, scope, tagName, attrs, template) {
     var helper = lookupHelper(env, scope, tagName);
     if (helper) {
       var options = optionsFor(morph, env, scope, template, null);
-      helper([], attrs, options);
+      helper.call(thisFor(options), [], attrs, options);
     } else {
       componentFallback(morph, env, scope, tagName, attrs, template);
     }
