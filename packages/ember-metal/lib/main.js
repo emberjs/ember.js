@@ -10,9 +10,9 @@ import Ember from "ember-metal/core";
 import merge from "ember-metal/merge";
 import {
   instrument,
-  reset,
-  subscribe,
-  unsubscribe
+  reset as instrumentationReset,
+  subscribe as instrumentationSubscribe,
+  unsubscribe as instrumentationUnsubscribe
 } from "ember-metal/instrumentation";
 import {
   EMPTY_META,
@@ -228,12 +228,12 @@ import Stream from "ember-metal/streams/stream";
 // BEGIN EXPORTS
 var EmberInstrumentation = Ember.Instrumentation = {};
 EmberInstrumentation.instrument = instrument;
-EmberInstrumentation.subscribe = subscribe;
-EmberInstrumentation.unsubscribe = unsubscribe;
-EmberInstrumentation.reset  = reset;
+EmberInstrumentation.subscribe = instrumentationSubscribe;
+EmberInstrumentation.unsubscribe = instrumentationUnsubscribe;
+EmberInstrumentation.reset  = instrumentationReset;
 
 Ember.instrument = instrument;
-Ember.subscribe = subscribe;
+Ember.subscribe = instrumentationSubscribe;
 
 Ember._Cache = Cache;
 
