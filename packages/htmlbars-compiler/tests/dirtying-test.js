@@ -1,6 +1,5 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import defaultHooks from "../htmlbars-runtime/hooks";
-import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
 import { equalTokens } from "../htmlbars-test-helpers";
@@ -13,7 +12,7 @@ function registerHelper(name, callback) {
 
 function commonSetup() {
   hooks = merge({}, defaultHooks);
-  helpers = merge({}, defaultHelpers);
+  helpers = {};
   partials = {};
 
   env = {

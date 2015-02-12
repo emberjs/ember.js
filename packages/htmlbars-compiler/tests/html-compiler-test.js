@@ -1,7 +1,6 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import { forEach } from "../htmlbars-util/array-utils";
 import defaultHooks from "../htmlbars-runtime/hooks";
-import defaultHelpers from "../htmlbars-runtime/helpers";
 import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
 import { normalizeInnerHTML, getTextContent, equalTokens } from "../htmlbars-test-helpers";
@@ -43,7 +42,7 @@ function compilesTo(html, expected, context) {
 
 function commonSetup() {
   hooks = merge({}, defaultHooks);
-  helpers = merge({}, defaultHelpers);
+  helpers = {};
   partials = {};
 
   env = {
@@ -372,9 +371,9 @@ test("The compiler passes along the hash arguments", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.content = function(env, morph, context, path) {
+  hooks.content = function(morph, env, scope, path) {
     callback = function() {
-      morph.setContent(context.self[path]);
+      morph.setContent(scope.self[path]);
     };
     callback();
   };
@@ -396,10 +395,10 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.content = function(env, morph, context, path) {
+  hooks.content = function(morph, env, scope, path) {
     morph.parseTextAsHTML = true;
     callback = function() {
-      morph.setContent(context.self[path]);
+      morph.setContent(scope.self[path]);
     };
     callback();
   };
@@ -419,9 +418,9 @@ test("Simple data binding on fragments", function() {
 });
 
 test("Simple data binding on fragments - re-rendering", function() {
-  hooks.content = function(env, morph, context, path) {
+  hooks.content = function(morph, env, scope, path) {
     morph.parseTextAsHTML = true;
-    morph.setContent(context.self[path]);
+    morph.setContent(scope.self[path]);
   };
 
   var object = { title: '<p>hello</p> to the' };
@@ -461,7 +460,7 @@ test("second render respects whitespace", function () {
 test("morph receives escaping information", function() {
   expect(3);
 
-  hooks.content = function(env, morph, context, path) {
+  hooks.content = function(morph, env, scope, path) {
     if (path === 'escaped') {
       equal(morph.parseTextAsHTML, false);
     } else if (path === 'unescaped') {
@@ -804,7 +803,7 @@ test("Node helpers can be used for attribute bindings", function() {
 test('Components - Called as helpers', function () {
   var xAppendComponent = compile('{{yield}}{{text}}');
 
-  registerHelper('x-append', function(params, hash, options, env) {
+  registerHelper('x-append', function(params, hash, options) {
     var rootNode = options.renderNode;
     options.renderNode = null;
     var result = options.template.yield();

@@ -17,6 +17,7 @@ test("hooks are present", function () {
     "createScope",
     "content",
     "inline",
+    "partial",
     "block",
     "component",
     "element",
