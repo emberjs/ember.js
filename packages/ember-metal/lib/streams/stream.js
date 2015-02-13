@@ -8,6 +8,30 @@ import {
 @module ember-metal
 */
 
+function Subscriber(callback, context) {
+  this.next = null;
+  this.prev = null;
+  this.callback = callback;
+  this.context = context;
+}
+
+Subscriber.prototype.removeFrom = function(stream) {
+  var next = this.next;
+  var prev = this.prev;
+
+  if (prev) {
+    prev.next = next;
+  } else {
+    stream.subscriberHead = next;
+  }
+
+  if (next) {
+    next.prev = prev;
+  } else {
+    stream.subscriberTail = prev;
+  }
+};
+
 /**
   @public
   @class Stream
@@ -25,7 +49,8 @@ Stream.prototype = {
   init: function() {
     this.state = 'dirty';
     this.cache = undefined;
-    this.subscribers = undefined;
+    this.subscriberHead = null;
+    this.subscriberTail = null;
     this.children = undefined;
     this._label = undefined;
   },
@@ -85,43 +110,51 @@ Stream.prototype = {
   },
 
   subscribe: function(callback, context) {
-    if (this.subscribers === undefined) {
-      this.subscribers = [callback, context];
+    var subscriber = new Subscriber(callback, context, this);
+    if (this.subscriberHead === null) {
+      this.subscriberHead = this.subscriberTail = subscriber;
     } else {
-      this.subscribers.push(callback, context);
+      var tail = this.subscriberTail;
+      tail.next = subscriber;
+      subscriber.prev = tail;
+      this.subscriberTail = subscriber;
     }
+
+    var stream = this;
+    return function() { subscriber.removeFrom(stream); };
   },
 
   unsubscribe: function(callback, context) {
-    var subscribers = this.subscribers;
+    var subscriber = this.subscriberHead;
 
-    if (subscribers !== undefined) {
-      for (var i = 0, l = subscribers.length; i < l; i += 2) {
-        if (subscribers[i] === callback && subscribers[i+1] === context) {
-          subscribers.splice(i, 2);
-          return;
-        }
+    while (subscriber) {
+      var next = subscriber.next;
+      if (subscriber.callback === callback && subscriber.context === context) {
+        subscriber.removeFrom(this);
       }
+      subscriber = next;
     }
   },
 
   _notifySubscribers: function(callbackToSkip, contextToSkip) {
-    var subscribers = this.subscribers;
+    var subscriber = this.subscriberHead;
 
-    if (subscribers !== undefined) {
-      for (var i = 0, l = subscribers.length; i < l; i += 2) {
-        var callback = subscribers[i];
-        var context = subscribers[i+1];
+    while (subscriber) {
+      var next = subscriber.next;
 
-        if (callback === callbackToSkip && context === contextToSkip) {
-          continue;
-        }
+      var callback = subscriber.callback;
+      var context = subscriber.context;
 
-        if (context === undefined) {
-          callback(this);
-        } else {
-          callback.call(context, this);
-        }
+      subscriber = next;
+
+      if (callback === callbackToSkip && context === contextToSkip) {
+        continue;
+      }
+
+      if (context === undefined) {
+        callback(this);
+      } else {
+        callback.call(context, this);
       }
     }
   },
@@ -134,6 +167,8 @@ Stream.prototype = {
       for (var key in children) {
         children[key].destroy();
       }
+
+      this.subscriberHead = this.subscriberTail = null;
 
       return true;
     }
