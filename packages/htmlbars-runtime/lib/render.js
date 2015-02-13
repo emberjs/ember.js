@@ -3,7 +3,13 @@ import ExpressionVisitor from "./expression-visitor";
 
 export default function render(template, env, scope, options, blockArguments) {
   var dom = env.dom;
-  var contextualElement = options && options.contextualElement;
+  var contextualElement;
+
+  if (options && options.renderNode) {
+    contextualElement = options.renderNode.contextualElement;
+  } else if (options && options.contextualElement) {
+    contextualElement = options.contextualElement;
+  }
 
   dom.detectNamespace(contextualElement);
 

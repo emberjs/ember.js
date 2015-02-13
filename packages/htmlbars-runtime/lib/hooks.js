@@ -46,7 +46,6 @@ export function wrapForHelper(template, env, originalScope, options) {
 function optionsFor(morph, env, scope, template, inverse) {
   var options = {
     renderNode: morph,
-    contextualElement: morph.contextualElement,
     env: env,
     template: null,
     inverse: null
@@ -123,7 +122,7 @@ export function inline(morph, env, scope, path, params, hash) {
 
 export function partial(renderNode, env, scope, path) {
   var template = env.partials[path];
-  return template.render(scope.self, env, { contextualElement: renderNode.contextualElement }).fragment;
+  return template.render(scope.self, env, {}).fragment;
 }
 
 export function content(morph, env, scope, path) {
@@ -235,7 +234,7 @@ function componentFallback(morph, env, scope, tagName, attrs, template) {
   for (var name in attrs) {
     element.setAttribute(name, attrs[name]);
   }
-  var fragment = render(template, env, scope, { contextualElement: morph.contextualElement }).fragment;
+  var fragment = render(template, env, scope, {}).fragment;
   element.appendChild(fragment);
   morph.setNode(element);
 }
