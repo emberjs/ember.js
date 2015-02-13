@@ -8,6 +8,7 @@ import { repeat } from "../htmlbars-util/quoting";
 
 function TemplateCompiler(options) {
   this.options = options || {};
+  this.revision = this.options.revision || "HTMLBars@VERSION_STRING_PLACEHOLDER";
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
   this.fragmentCompiler = new FragmentJavaScriptCompiler();
   this.hydrationOpcodeCompiler = new HydrationOpcodeCompiler();
@@ -93,6 +94,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     this.getChildTemplateVars(indent + '  ') +
     indent+'  return {\n' +
     indent+'    isHTMLBars: true,\n' +
+    indent+'    revision: "' + this.revision + '",\n' +
     indent+'    blockParams: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
