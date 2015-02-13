@@ -6,8 +6,8 @@
 import Ember from "ember-metal/core";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 
-export default function component(env, morph, view, tagName, attrs, template) {
-  var helper = lookupHelper(tagName, view, env);
+export default function component(morph, env, scope, tagName, attrs, template) {
+  var helper = lookupHelper(tagName, scope.self, env);
 
   Ember.assert('You specified `' + tagName + '` in your template, but a component for `' + tagName + '` could not be found.', !!helper);
 

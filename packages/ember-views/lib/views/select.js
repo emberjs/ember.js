@@ -30,14 +30,14 @@ var defaultTemplate = htmlbarsTemplate;
 var selectOptionDefaultTemplate = {
   isHTMLBars: true,
   revision: 'Ember@VERSION_STRING_PLACEHOLDER',
-  render(context, env, contextualElement) {
+  render(context) {
     var lazyValue = context.getStream('view.label');
 
     lazyValue.subscribe(context._wrapAsScheduled(function() {
       run.scheduleOnce('render', context, 'rerender');
     }));
 
-    return lazyValue.value();
+    return { fragment: lazyValue.value() };
   }
 };
 

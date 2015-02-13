@@ -3,6 +3,6 @@
 @submodule ember-htmlbars
 */
 
-export default function get(env, view, path) {
-  return view.getStream(path);
+export default function get(morph, env, scope, path) {
+  return scope.self.getStream(path);
 }

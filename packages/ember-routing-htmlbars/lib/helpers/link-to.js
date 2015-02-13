@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { isStream } from "ember-metal/streams/utils";
+import { isStream, read } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
 import inlineEscapedLinkTo from "ember-htmlbars/templates/link-to-escaped";
 import inlineUnescapedLinkTo from "ember-htmlbars/templates/link-to-unescaped";
@@ -314,6 +314,19 @@ function linkToHelper(params, hash, options, env) {
     }
 
     hash.linkTitle = linkTitle;
+
+    options.template = {
+      isHTMLBars: true,
+      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
+      render: function(view, env) {
+        var value = read(hash.linkTitle) || "";
+        if (!parseTextAsHTML) {
+          value =  env.dom.createTextNode(value);
+        }
+
+        return { fragment: value };
+      }
+    };
   }
 
   for (var i = 0; i < params.length; i++) {
