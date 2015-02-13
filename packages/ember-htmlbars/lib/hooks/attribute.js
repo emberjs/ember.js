@@ -14,7 +14,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   boundAttributesEnabled = true;
 }
 
-export default function attribute(env, morph, element, attrName, attrValue) {
+export default function attribute(morph, env, attrName, attrValue) {
   if (boundAttributesEnabled) {
     var attrNode = new AttrNode(attrName, attrValue);
     attrNode._morph = morph;
@@ -23,8 +23,8 @@ export default function attribute(env, morph, element, attrName, attrValue) {
     if (isStream(attrValue)) {
       throw new EmberError('Bound attributes are not yet supported in Ember.js');
     } else {
-      var sanitizedValue = sanitizeAttributeValue(env.dom, element, attrName, attrValue);
-      env.dom.setProperty(element, attrName, sanitizedValue);
+      var sanitizedValue = sanitizeAttributeValue(env.dom, morph.element, attrName, attrValue);
+      env.dom.setProperty(morph.element, attrName, sanitizedValue);
     }
   }
 }

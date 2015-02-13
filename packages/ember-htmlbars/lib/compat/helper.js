@@ -47,7 +47,7 @@ function HandlebarsCompatibleHelper(fn) {
 
     if (options.isBlock) {
       handlebarsOptions.fn = function() {
-        blockResult = options.template.render(context, env, options.morph.contextualElement);
+        blockResult = options.template.render(context, env, { contextualElement: options.morph.contextualElement }).fragment;
       };
     }
 

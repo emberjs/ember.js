@@ -74,7 +74,7 @@ function appendBlockConditional(view, inverted, helperName, params, hash, option
   } else {
     var template = condition ? truthyTemplate : falsyTemplate;
     if (template) {
-      return template.render(view, env, options.morph.contextualElement);
+      return template.render(view, env, { contextualElement: options.morph.contextualElement }).fragment;
     }
   }
 }

@@ -7,7 +7,7 @@ import {
   concat as streamConcat
 } from "ember-metal/streams/utils";
 
-export default function concat(env, parts) {
+export default function concat(morph, env, parts) {
   return streamConcat(parts, '');
 }
 
