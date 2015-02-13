@@ -149,7 +149,7 @@ OrderedSet.prototype = {
       if (index > -1) {
         list.splice(index, 1);
       }
-      Ember.set (this, 'size', list.length);
+      Ember.set(this, 'size', list.length);
       return true;
     } else {
       return false;
