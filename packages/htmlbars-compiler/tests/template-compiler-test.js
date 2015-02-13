@@ -58,3 +58,12 @@ test("it omits unnecessary namespace changes", function () {
   equal(countNamespaceChanges('<div><svg><title><h1>foobar</h1></title></svg></div><svg></svg>'), 3);
 });
 
+test('it adds the provided revision to the template', function () {
+  var ast = preprocess('{{foo}}');
+  var compiler = new TemplateCompiler({
+    revision: 'FOO.BAR'
+  });
+  var program = compiler.compile(ast);
+
+  ok(program.indexOf('revision: "FOO.BAR"') > -1);
+});
