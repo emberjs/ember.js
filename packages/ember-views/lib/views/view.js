@@ -995,21 +995,52 @@ var View = CoreView.extend(
   /**
     @private
 
-    Renders the view into `body` element and returns the element.
+    Creates a new DOM element, renders the view into it, then returns the
+    element.
+
+    By default, the element created and rendered into will be a `BODY` element,
+    since this is the default context that views are rendered into when being
+    inserted directly into the DOM.
+
+    ```js
+    var element = view.renderToElement();
+    element.tagName; // => "BODY"
+    ```
+
+    You can override the kind of element rendered into and returned by
+    specifying an optional tag name as the first argument.
+
+    ```js
+    var element = view.renderToElement('table');
+    element.tagName; // => "TABLE"
+    ```
 
     This method is useful if you want to render the view into an element that
     is not in the document's body. Instead, a new `body` element, detached from
     the DOM is returned. FastBoot uses this to serialize the rendered view into
     a string for transmission over the network.
 
+    ```js
+    app.visit('/').then(function(instance) {
+      var element;
+      Ember.run(function() {
+        element = renderToElement(instance);
+      });
+
+      res.send(serialize(element));
+    });
+    ```
+
     @method renderToElement
+    @param {String} tagName The tag of the element to create and render into. Defaults to "body".
     @return {HTMLBodyElement} element
   */
-  renderToElement: function() {
-    var element = this.renderer._dom.createElement('body');
+  renderToElement: function(tagName) {
+    tagName = tagName || 'body';
+
+    var element = this.renderer._dom.createElement(tagName);
 
     this.renderer.appendTo(this, element);
-
     return element;
   },
 
