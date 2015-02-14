@@ -47,7 +47,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
   @extends Ember.View
   @see {Handlebars.helpers.link-to}
 **/
-var LinkView = Ember.LinkView = EmberComponent.extend({
+var LinkView = EmberComponent.extend({
   tagName: 'a',
 
   /**
