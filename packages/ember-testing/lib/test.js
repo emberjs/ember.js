@@ -281,7 +281,7 @@ function helper(app, name) {
 
   return function() {
     var args = slice.call(arguments);
-    var lastPromise = Test.lastPromise;
+    var lastPromise;
 
     args.unshift(app);
 
@@ -292,35 +292,28 @@ function helper(app, name) {
       return fn.apply(app, args);
     }
 
-    if (!lastPromise) {
-      // It's the first async helper in current context
-      lastPromise = fn.apply(app, args);
-    } else {
-      // wait for last helper's promise to resolve and then
-      // execute. To be safe, we need to tell the adapter we're going
-      // asynchronous here, because fn may not be invoked before we
-      // return.
-      Test.adapter.asyncStart();
-      run(function() {
-        lastPromise = Test.resolve(lastPromise).then(function() {
-          try {
-            return fn.apply(app, args);
-          } finally {
-            Test.adapter.asyncEnd();
-          }
-        });
-      });
-    }
+    lastPromise = run(function() {
+      return Test.resolve(Test.lastPromise);
+    });
 
-    return lastPromise;
+    // wait for last helper's promise to resolve and then
+    // execute. To be safe, we need to tell the adapter we're going
+    // asynchronous here, because fn may not be invoked before we
+    // return.
+    Test.adapter.asyncStart();
+    return lastPromise.then(function() {
+      return fn.apply(app, args);
+    }).finally(function() {
+      Test.adapter.asyncEnd();
+    });
   };
 }
 
 function run(fn) {
   if (!emberRun.currentRunLoop) {
-    emberRun(fn);
+    return emberRun(fn);
   } else {
-    fn();
+    return fn();
   }
 }
 
@@ -484,6 +477,7 @@ Test.Promise = function() {
 
 Test.Promise.prototype = create(RSVP.Promise.prototype);
 Test.Promise.prototype.constructor = Test.Promise;
+Test.Promise.resolve = Test.resolve;
 
 // Patch `then` to isolate async methods
 // specifically `Ember.Test.lastPromise`
@@ -500,7 +494,6 @@ Test.Promise.prototype.then = function(onSuccess, onFailure) {
 // 1. Set `Ember.Test.lastPromise` to null
 // 2. Invoke method
 // 3. Return the last promise created during method
-// 4. Restore `Ember.Test.lastPromise` to original value
 function isolate(fn, val) {
   var value, lastPromise;
 
@@ -510,6 +503,7 @@ function isolate(fn, val) {
   value = fn(val);
 
   lastPromise = Test.lastPromise;
+  Test.lastPromise = null;
 
   // If the method returned a promise
   // return that promise. If not,
@@ -517,12 +511,11 @@ function isolate(fn, val) {
   if ((value && (value instanceof Test.Promise)) || !lastPromise) {
     return value;
   } else {
-    run(function() {
-      lastPromise = Test.resolve(lastPromise).then(function() {
+    return run(function() {
+      return Test.resolve(lastPromise).then(function() {
         return value;
       });
     });
-    return lastPromise;
   }
 }
 
