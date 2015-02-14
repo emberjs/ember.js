@@ -18,7 +18,8 @@
     "ember-application-instance-initializers": null,
     "ember-application-initializer-context": null,
     "ember-router-willtransition": true,
-    "ember-application-visit": null
+    "ember-application-visit": null,
+    "ember-views-component-block-info": null
   },
   "debugStatements": [
     "Ember.warn",

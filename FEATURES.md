@@ -215,3 +215,80 @@ for a detailed explanation.
   ```
 
   Added in [#10274](https://github.com/emberjs/ember.js/pull/10274)
+
+* `ember-views-component-block-info`
+
+  Adds a couple utility methods to detect block/block param presence:
+
+  * `hasBlock`
+
+    Adds the ability to easily detect if a component was invoked with or
+    without a block.
+
+    Example (`hasBlock` will be `false`):
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{foo-bar}}
+
+    {{! templates/components/foo-bar.js }}
+    {{#if hasBlock}}
+      This will not be printed, because no block was provided
+    {{/if}}
+    ```
+
+    Example (`hasBlock` will be `true`):
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{#foo-bar}}
+      Hi!
+    {{/foo-bar}}
+
+    {{! templates/components/foo-bar.js }}
+    {{#if hasBlock}}
+      This will be printed because a block was provided
+      {{yield}}
+    {{/if}}
+    ```
+
+  * `hasBlockParams`
+
+  Adds the ability to easily detect if a component was invoked with block parameter
+  supplied.
+
+  Example (`hasBlockParams` will be `false`):
+
+  ```hbs
+  {{! templates/application.hbs }}
+
+  {{#foo-bar}}
+    Hi!.
+  {{/foo-bar}}
+
+  {{! templates/components/foo-bar.js }}
+  {{#if hasBlockParams}}
+    {{yield this}}
+    This will not be printed, because no block was provided
+  {{/if}}
+  ```
+
+  Example (`hasBlockParams` will be `true`):
+
+  ```hbs
+  {{! templates/application.hbs }}
+
+  {{#foo-bar as |foo|}}
+    Hi!
+  {{/foo-bar}}
+
+  {{! templates/components/foo-bar.js }}
+  {{#if hasBlockParams}}
+    {{yield this}}
+    This will be printed because a block was provided
+  {{/if}}
+  ```
+
+  Addd in [#10461](https://github.com/emberjs/ember.js/pull/10461)

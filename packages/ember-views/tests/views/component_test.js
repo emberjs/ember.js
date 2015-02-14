@@ -244,3 +244,24 @@ QUnit.test('component with target', function() {
 
   appComponent.send('foo', 'baz');
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-component-has-block')) {
+  QUnit.test('component with a template will report hasBlock: true', function() {
+    expect(1);
+
+    var appComponent = Component.create({
+      template: 'some-thing-yolo'
+    });
+
+    equal(get(appComponent, 'hasBlock'), true);
+  });
+
+  QUnit.test('component without a template will report hasBlock: false', function() {
+    expect(1);
+
+    var appComponent = Component.create({
+    });
+
+    equal(get(appComponent, 'hasBlock'), false);
+  });
+}

@@ -9,6 +9,7 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
+import { bool } from "ember-metal/computed_macros";
 import defaultComponentLayout from "ember-htmlbars/templates/component";
 
 var a_slice = Array.prototype.slice;
@@ -323,5 +324,87 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
+  Component.reopen({
+    /**
+      Returns true when the component was invoked with a block template.
+
+     Example (`hasBlock` will be `false`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlock}}
+        This will not be printed, because no block was provided
+      {{/if}}
+      ```
+
+     Example (`hasBlock` will be `true`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar}}
+        Hi!
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlock}}
+        This will be printed because a block was provided
+        {{yield}}
+      {{/if}}
+      ```
+      @public
+      @property hasBlock
+      @returns Boolean
+    */
+    hasBlock: bool('template'),
+
+    /**
+      Returns true when the component was invoked with a block parameter
+      supplied.
+
+      Example (`hasBlockParams` will be `false`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar}}
+        No block parameter.
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlockParams}}
+        This will not be printed, because no block was provided
+        {{yield this}}
+      {{/if}}
+      ```
+
+      Example (`hasBlockParams` will be `true`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar as |foo|}}
+        Hi!
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlockParams}}
+        This will be printed because a block was provided
+        {{yield this}}
+      {{/if}}
+      ```
+      @public
+      @property hasBlockParams
+      @returns Boolean
+    */
+    hasBlockParams: bool('template.blockParams')
+  });
+}
 
 export default Component;
