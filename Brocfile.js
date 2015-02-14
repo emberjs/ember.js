@@ -174,7 +174,7 @@ for (var packageName in packages.dependencies) {
 }
 
 trees = replace(mergeTrees(trees, {overwrite: true}), {
-  files: [ 'es6/htmlbars.js', 'amd/htmlbars.js', 'cjs/htmlbars.js' ],
+  files: [ 'es6/htmlbars.js', 'es6/htmlbars-compiler/template-compiler.js', 'amd/htmlbars.js', 'cjs/htmlbars.js' ],
   patterns: [
     { match: /VERSION_STRING_PLACEHOLDER/g, replacement: getVersion() }
   ]
