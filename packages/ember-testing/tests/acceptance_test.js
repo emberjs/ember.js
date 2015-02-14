@@ -7,6 +7,7 @@ import "ember-testing/initializers"; // ensure the initializer is setup
 import EmberApplication from "ember-application/system/application";
 import EmberRoute from "ember-routing/system/route";
 import compile from "ember-template-compiler/system/compile";
+import RSVP from "ember-runtime/ext/rsvp";
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 import "ember-routing"; //ES6TODO: fixme?
@@ -70,7 +71,7 @@ QUnit.module("ember-testing Acceptance", {
     });
 
     Test.registerAsyncHelper('slowHelper', function() {
-      return Test.promise(function(resolve) {
+      return new RSVP.Promise(function(resolve) {
         setTimeout(resolve, 10);
       });
     });
