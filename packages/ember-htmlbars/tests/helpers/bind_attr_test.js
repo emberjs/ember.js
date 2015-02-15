@@ -204,32 +204,19 @@ QUnit.test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   var originalBindAttr = helpers['bind-attr'];
 
   try {
-    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      helpers['bind-attr'] = {
-        helperFunction: function() {
-          equal(arguments[0], 'foo', 'First arg match');
-          equal(arguments[1], 'bar', 'Second arg match');
-
-          return 'result';
-        }
-      };
-    } else {
-      helpers['bind-attr'] = function() {
+    helpers['bind-attr'] = {
+      helperFunction: function() {
         equal(arguments[0], 'foo', 'First arg match');
         equal(arguments[1], 'bar', 'Second arg match');
 
         return 'result';
-      };
-    }
+      }
+    };
 
     expectDeprecation(function() {
       var result;
 
-      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        result = helpers.bindAttr.helperFunction('foo', 'bar');
-      } else {
-        result = helpers.bindAttr('foo', 'bar');
-      }
+      result = helpers.bindAttr.helperFunction('foo', 'bar');
       equal(result, 'result', 'Result match');
     }, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
   } finally {

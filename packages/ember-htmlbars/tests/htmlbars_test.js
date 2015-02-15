@@ -4,16 +4,13 @@ import { domHelper } from "ember-htmlbars/env";
 import { equalHTML } from "htmlbars-test-helpers";
 import merge from "ember-metal/merge";
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+QUnit.module("ember-htmlbars: main");
 
-  QUnit.module("ember-htmlbars: main");
+QUnit.test("HTMLBars is present and can be executed", function() {
+  var template = compile("ohai");
 
-  QUnit.test("HTMLBars is present and can be executed", function() {
-    var template = compile("ohai");
+  var env = merge({ dom: domHelper }, defaultEnv);
 
-    var env = merge({ dom: domHelper }, defaultEnv);
-
-    var output = template.render({}, env, document.body);
-    equalHTML(output, "ohai");
-  });
-}
+  var output = template.render({}, env, document.body);
+  equalHTML(output, "ohai");
+});

@@ -18,9 +18,6 @@ function aliasHelper(params, hash, options, env) {
   });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-// jscs:disable validateIndentation
-
 QUnit.module("ember-htmlbars: block params", {
   setup: function() {
     registerHelper('alias', aliasHelper);
@@ -136,6 +133,3 @@ QUnit.test("components can yield values", function() {
 
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });
-
-// jscs:enable validateIndentation
-}

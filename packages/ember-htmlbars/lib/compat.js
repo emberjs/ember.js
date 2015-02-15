@@ -13,21 +13,18 @@ import {
   escapeExpression
 } from "ember-htmlbars/utils/string";
 
-var EmberHandlebars;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
-  EmberHandlebars.helpers = helpers;
-  EmberHandlebars.helper = compatHandlebarsHelper;
-  EmberHandlebars.registerHelper = compatRegisterHelper;
-  EmberHandlebars.registerBoundHelper = compatRegisterBoundHelper;
-  EmberHandlebars.makeBoundHelper = compatMakeBoundHelper;
-  EmberHandlebars.get = compatHandlebarsGet;
-  EmberHandlebars.makeViewHelper = makeViewHelper;
+var EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
+EmberHandlebars.helpers = helpers;
+EmberHandlebars.helper = compatHandlebarsHelper;
+EmberHandlebars.registerHelper = compatRegisterHelper;
+EmberHandlebars.registerBoundHelper = compatRegisterBoundHelper;
+EmberHandlebars.makeBoundHelper = compatMakeBoundHelper;
+EmberHandlebars.get = compatHandlebarsGet;
+EmberHandlebars.makeViewHelper = makeViewHelper;
 
-  EmberHandlebars.SafeString = SafeString;
-  EmberHandlebars.Utils =  {
-    escapeExpression: escapeExpression
-  };
-}
+EmberHandlebars.SafeString = SafeString;
+EmberHandlebars.Utils =  {
+  escapeExpression: escapeExpression
+};
 
 export default EmberHandlebars;

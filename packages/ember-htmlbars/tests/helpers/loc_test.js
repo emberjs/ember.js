@@ -51,8 +51,6 @@ QUnit.test('localize takes passed formats into an account', function() {
   runDestroy(view);
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
 QUnit.test('localize throws an assertion if the second parameter is a binding', function() {
   var view = buildView('{{loc "Hello %@" name}}', {
     name: 'Bob Foster'
@@ -76,5 +74,3 @@ QUnit.test('localize a binding throws an assertion', function() {
 
   runDestroy(view);
 });
-// jscs:enable validateIndentation
-}

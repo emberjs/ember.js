@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // TEMPLATES
 import run from "ember-metal/run_loop";
 
 import Namespace from "ember-runtime/system/namespace";
@@ -178,12 +177,8 @@ QUnit.test("Outlets bind to the current view, not the current concrete view", fu
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-// TODO: Remove flag when {{with}} is fixed.
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
 QUnit.test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
-  var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
+  var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{outlet}}{{/if}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
 
   var routerState = {
@@ -198,9 +193,7 @@ QUnit.test("Outlets bind to the current template's view, not inner contexts [DEP
 
   top.setOutletState(routerState);
 
-  expectDeprecation(function() {
-    runAppend(top);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  runAppend(top);
 
   routerState.outlets.main = withTemplate(bottomTemplate);
 
@@ -211,9 +204,6 @@ QUnit.test("Outlets bind to the current template's view, not inner contexts [DEP
   var output = jQuery('#qunit-fixture h1 ~ h3').text();
   equal(output, "BOTTOM", "all templates were rendered");
 });
-
-// jscs:enable validateIndentation
-}
 
 QUnit.test("should support layouts", function() {
   var template = "{{outlet}}";
@@ -254,21 +244,12 @@ QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted na
   runAppend(top);
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
-    top.setOutletState(withTemplate("{{outlet foo}}"));
-    expectAssertion(function() {
-      runAppend(top);
-    }, "Using {{outlet}} with an unquoted name is not supported.");
-  });
-} else {
-  QUnit.test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
-    top.setOutletState(withTemplate("{{outlet foo}}"));
-    expectDeprecation(function() {
-      runAppend(top);
-    }, 'Using {{outlet}} with an unquoted name is not supported. Please update to quoted usage \'{{outlet "foo"}}\'.');
-  });
-}
+QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+  top.setOutletState(withTemplate("{{outlet foo}}"));
+  expectAssertion(function() {
+    runAppend(top);
+  }, "Using {{outlet}} with an unquoted name is not supported.");
+});
 
 function withTemplate(string) {
   return {

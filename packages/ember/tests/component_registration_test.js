@@ -15,7 +15,9 @@ function prepare() {
 
 function cleanup() {
   Ember.run(function() {
-    App.destroy();
+    if (App) {
+      App.destroy();
+    }
     App = null;
     Ember.TEMPLATES = {};
 
@@ -180,20 +182,13 @@ QUnit.test("Assigning templateName and layoutName should use the templates speci
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-  // ember-htmlbars doesn't throw an exception when a helper is not found
-
 QUnit.test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#no-good}} {{/no-good}}</div>");
 
-  throws(function () {
+  expectAssertion(function () {
     boot();
-  }, /Could not find component or helper named 'no-good'/);
+  }, /A helper named `no-good` could not be found/);
 });
-
-// jscs:enable validateIndentation
-}
 
 QUnit.module("Application Lifecycle - Component Context", {
   setup: prepare,

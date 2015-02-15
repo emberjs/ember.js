@@ -215,31 +215,6 @@ QUnit.test("can bind a keyword to a component and use it in yield", function() {
   equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
-QUnit.test("yield uses the layout context for non component [DEPRECATED]", function() {
-  view = EmberView.create({
-    controller: {
-      boundText: "outer",
-      inner: {
-        boundText: "inner"
-      }
-    },
-    layout: compile("<p>{{boundText}}</p>{{#with inner}}<p>{{yield}}</p>{{/with}}"),
-    template: compile('{{boundText}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
-
-  equal('outerinner', view.$('p').text(), "Yield points at the right context");
-});
-
-// jscs:enable validateIndentation
-}
-
 QUnit.test("yield view should be a virtual view", function() {
   var component = Component.extend({
     isParentComponent: true,
