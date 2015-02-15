@@ -111,13 +111,6 @@ for a detailed explanation.
 
   Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
 
-* `ember-routing-fire-activate-deactivate-events`
-
-  Fire `activate` and `deactivate` events, additionally to the corresponding
-  `Ember.Route` hooks.
-
-  Added in [#5569](https://github.com/emberjs/ember.js/pull/5569)
-
 * `ember-testing-pause-test`
 
   Helper to pause a test, for use in debugging and TDD.
