@@ -16,7 +16,7 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 var trim = jQuery.trim;
 var container, registry, view, otherContainer, originalViewKeyword;
 
-QUnit.module('ember-views/views/container_view_test', {
+QUnit.module('Ember.ContainerView', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
@@ -456,13 +456,35 @@ QUnit.test('if a ContainerView starts with a currentView and then a different cu
   equal(trim(container.$().text()), 'This is the tertiary view.', 'should render its child');
 });
 
-QUnit.test('should be able to modify childViews many times during an run loop', function () {
-  container = ContainerView.create();
+var child, count;
+QUnit.module('Ember.ContainerView - modify childViews', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+    registry = new Registry();
+    container = ContainerView.create();
 
-  run(function() {
-    container.appendTo('#qunit-fixture');
-  });
+    run(function() {
+      container.appendTo('#qunit-fixture');
+    });
 
+    count = 0;
+    child = View.create({
+      template: function () {
+        count++;
+        return 'child';
+      }
+    });
+  },
+  teardown() {
+    run(function() {
+      container.destroy();
+      if (view) { view.destroy(); }
+      if (otherContainer) { otherContainer.destroy(); }
+    });
+  }
+});
+
+QUnit.test('should be able to modify childViews many times during a run loop', function () {
   var one = View.create({
     template: compile('one')
   });
@@ -504,6 +526,24 @@ QUnit.test('should be able to modify childViews then rerender the ContainerView 
   });
 
   equal(trim(container.$().text()), 'child');
+});
+
+QUnit.test('should be able to modify childViews then remove the ContainerView in same run loop', function () {
+  run(function() {
+    container.pushObject(child);
+    container.remove();
+  });
+
+  equal(count, 0, 'did not render child');
+});
+
+QUnit.test('should be able to modify childViews then destroy the ContainerView in same run loop', function () {
+  run(function() {
+    container.pushObject(child);
+    container.destroy();
+  });
+
+  equal(count, 0, 'did not render child');
 });
 
 QUnit.test('should be able to modify childViews then rerender then modify again the ContainerView in same run loop', function () {
@@ -570,6 +610,20 @@ QUnit.test('should be able to modify childViews then rerender again the Containe
 
   // IE 8 adds a line break but this shouldn't affect validity
   equal(trim(container.$().text()), 'onetwo');
+});
+
+QUnit.module('Ember.ContainerView', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+    registry = new Registry();
+  },
+  teardown() {
+    run(function() {
+      container.destroy();
+      if (view) { view.destroy(); }
+      if (otherContainer) { otherContainer.destroy(); }
+    });
+  }
 });
 
 QUnit.test('should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM', function () {

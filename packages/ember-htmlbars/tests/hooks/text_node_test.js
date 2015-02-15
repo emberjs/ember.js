@@ -7,7 +7,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view;
 
-QUnit.module('ember-htmlbars: hooks/text_node_test', {
+QUnit.module('ember-htmlbars: textNode hook', {
   teardown() {
     runDestroy(view);
   }

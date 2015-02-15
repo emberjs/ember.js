@@ -52,106 +52,32 @@ QUnit.test('should become disabled if the disabled attribute is true', function(
   ok(textArea.$().is(':not(:disabled)'));
 });
 
-QUnit.test('input value is updated when setting value property of view', function() {
+['placeholder', 'name', 'title', 'maxlength', 'rows', 'cols', 'tabindex'].forEach(function(attributeName) {
+  QUnit.test(`text area ${attributeName} is updated when setting ${attributeName} property of view`, function() {
+    run(function() {
+      set(textArea, attributeName, '1');
+      textArea.append();
+    });
+
+    equal(textArea.$().attr(attributeName), '1', 'renders text area with ' + attributeName);
+
+    run(function() { set(textArea, attributeName, '2'); });
+
+    equal(textArea.$().attr(attributeName), '2', `updates text area after ${attributeName} changes`);
+  });
+});
+
+QUnit.test('text area value is updated when setting value property of view', function() {
   run(function() {
     set(textArea, 'value', 'foo');
     textArea.append();
   });
 
-  equal(textArea.$().val(), 'foo', 'renders text field with value');
+  equal(textArea.$().val(), 'foo', 'renders text area with value');
 
   run(function() { set(textArea, 'value', 'bar'); });
 
-  equal(textArea.$().val(), 'bar', 'updates text field after value changes');
-});
-
-QUnit.test('input placeholder is updated when setting placeholder property of view', function() {
-  run(function() {
-    set(textArea, 'placeholder', 'foo');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('placeholder'), 'foo', 'renders text area with placeholder');
-
-  run(function() { set(textArea, 'placeholder', 'bar'); });
-
-  equal(textArea.$().attr('placeholder'), 'bar', 'updates text area after placeholder changes');
-});
-
-QUnit.test('input name is updated when setting name property of view', function() {
-  run(function() {
-    set(textArea, 'name', 'foo');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('name'), 'foo', 'renders text area with name');
-
-  run(function() { set(textArea, 'name', 'bar'); });
-
-  equal(textArea.$().attr('name'), 'bar', 'updates text area after name changes');
-});
-
-QUnit.test('input maxlength is updated when setting maxlength property of view', function() {
-  run(function() {
-    set(textArea, 'maxlength', '300');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('maxlength'), '300', 'renders text area with maxlength');
-
-  run(function() { set(textArea, 'maxlength', '400'); });
-
-  equal(textArea.$().attr('maxlength'), '400', 'updates text area after maxlength changes');
-});
-
-QUnit.test('input rows is updated when setting rows property of view', function() {
-  run(function() {
-    set(textArea, 'rows', '3');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('rows'), '3', 'renders text area with rows');
-
-  run(function() { set(textArea, 'rows', '4'); });
-
-  equal(textArea.$().attr('rows'), '4', 'updates text area after rows changes');
-});
-
-QUnit.test('input cols is updated when setting cols property of view', function() {
-  run(function() {
-    set(textArea, 'cols', '30');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('cols'), '30', 'renders text area with cols');
-
-  run(function() { set(textArea, 'cols', '40'); });
-
-  equal(textArea.$().attr('cols'), '40', 'updates text area after cols changes');
-});
-
-QUnit.test('input tabindex is updated when setting tabindex property of view', function() {
-  run(function() {
-    set(textArea, 'tabindex', '4');
-    textArea.append();
-  });
-
-  equal(textArea.$().attr('tabindex'), '4', 'renders text area with the tabindex');
-
-  run(function() { set(textArea, 'tabindex', '1'); });
-
-  equal(textArea.$().attr('tabindex'), '1', 'updates text area after tabindex changes');
-});
-
-QUnit.test('input title is updated when setting title property of view', function() {
-  run(function() {
-    set(textArea, 'title', 'FooTitle');
-    textArea.append();
-  });
-  equal(textArea.$().attr('title'), 'FooTitle', 'renders text area with the title');
-
-  run(function() { set(textArea, 'title', 'BarTitle'); });
-  equal(textArea.$().attr('title'), 'BarTitle', 'updates text area after title changes');
+  equal(textArea.$().val(), 'bar', 'updates text area after value changes');
 });
 
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
