@@ -29,6 +29,7 @@ var defaultTemplate = htmlbarsTemplate;
 
 var selectOptionDefaultTemplate = {
   isHTMLBars: true,
+  revision: 'Ember@VERSION_STRING_PLACEHOLDER',
   render: function(context, env, contextualElement) {
     var lazyValue = context.getStream('view.label');
 

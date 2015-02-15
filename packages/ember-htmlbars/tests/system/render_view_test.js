@@ -17,6 +17,7 @@ QUnit.test('default environment values are passed through', function() {
   view = EmberView.create({
     template: {
       isHTMLBars: true,
+      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
       render: function(view, env, contextualElement, blockArguments) {
         for (var i = 0, l = keyNames.length; i < l; i++) {
           var keyName = keyNames[i];
@@ -28,4 +29,19 @@ QUnit.test('default environment values are passed through', function() {
   });
 
   runAppend(view);
+});
+
+QUnit.test('Provides a helpful assertion if revisions do not match.', function() {
+  view = EmberView.create({
+    template: {
+      isHTMLBars: true,
+      revision: 'Foo-Bar-Baz',
+      render: function() { }
+    }
+  });
+
+  expectAssertion(function() {
+    runAppend(view);
+  },
+  /was compiled with `Foo-Bar-Baz`/);
 });

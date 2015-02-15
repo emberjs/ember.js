@@ -17,6 +17,8 @@ export default function() {
   }
 
   return {
+    revision: 'Ember@VERSION_STRING_PLACEHOLDER',
+
     disableComponentGeneration: disableComponentGeneration,
 
     plugins: plugins

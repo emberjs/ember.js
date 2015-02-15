@@ -310,6 +310,7 @@ function linkToHelper(params, hash, options, env) {
 
     options.template = {
       isHTMLBars: true,
+      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
       render: function(view, env) {
         var value = read(linkTitle) || "";
         if (parseTextAsHTML) {
