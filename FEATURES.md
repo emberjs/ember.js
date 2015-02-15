@@ -104,13 +104,6 @@ for a detailed explanation.
 
   Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)
 
-* `ember-routing-multi-current-when`
-
-  Allows the `link-to` helper's currentWhen property to accept multiple routes
-  using a ` ` (space) delimiter, for more control over a link's active state.
-
-  Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
-
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
