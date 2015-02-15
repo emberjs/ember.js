@@ -456,58 +456,54 @@ QUnit.test("{{with}} helper can bind to keywords with 'as'", function() {
   equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-  testWithAs("ember-htmlbars: {{#with x as |y|}}", "{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}");
-}
+testWithAs("ember-htmlbars: {{#with x as |y|}}", "{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}");
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-  QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
-    setup: function() {
-      Ember.lookup = lookup = { Ember: Ember };
+QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
+  setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
 
-      view = EmberView.create({
-        template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
-        context: {
-          admin: { name: "Tom Dale" },
-          user: { name: "Yehuda Katz" }
-        }
-      });
-
-      runAppend(view);
-    },
-
-    teardown: function() {
-      runDestroy(view);
-      Ember.lookup = originalLookup;
-    }
-  });
-
-  QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
-    equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
-  });
-
-  QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
-    run(function() {
-      view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
-      view.set('context', {
-        name: 'Stef',
-        other: 'Yehuda'
-      });
+    view = EmberView.create({
+      template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
+      context: {
+        admin: { name: "Tom Dale" },
+        user: { name: "Yehuda Katz" }
+      }
     });
 
-    equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
-  });
+    runAppend(view);
+  },
 
-  QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
-    run(function() {
-      view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
-      view.set('context', {
-        first: 'Limbo',
-        fifth: 'Wrath',
-        ninth: 'Treachery'
-      });
+  teardown: function() {
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
+  equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
+});
+
+QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
+  run(function() {
+    view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
+    view.set('context', {
+      name: 'Stef',
+      other: 'Yehuda'
     });
-
-    equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
   });
-}
+
+  equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
+});
+
+QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+  run(function() {
+    view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
+    view.set('context', {
+      first: 'Limbo',
+      fifth: 'Wrath',
+      ninth: 'Treachery'
+    });
+  });
+
+  equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
+});

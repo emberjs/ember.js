@@ -1061,7 +1061,4 @@ function testEachWithItem(moduleName, useBlockParams) {
 }
 
 testEachWithItem("{{#each foo in bar}}", false);
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-  testEachWithItem("{{#each bar as |foo|}}", true);
-}
+testEachWithItem("{{#each bar as |foo|}}", true);
