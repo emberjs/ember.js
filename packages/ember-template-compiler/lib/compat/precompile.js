@@ -2,6 +2,7 @@
 @module ember
 @submodule ember-template-compiler
 */
+import compileOptions from "ember-template-compiler/system/compile_options";
 
 var compile, compileSpec;
 
@@ -20,5 +21,5 @@ export default function(string) {
   var asObject = arguments[1] === undefined ? true : arguments[1];
   var compileFunc = asObject ? compile : compileSpec;
 
-  return compileFunc(string);
+  return compileFunc(string, compileOptions());
 }

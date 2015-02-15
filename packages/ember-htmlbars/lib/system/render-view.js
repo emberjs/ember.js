@@ -23,6 +23,12 @@ export default function renderView(view, buffer, template) {
 }
 
 function renderHTMLBarsTemplate(view, buffer, template) {
+  Ember.assert(
+    'The template being rendered by `' + view + '` was compiled with `' + template.revision +
+    '` which does not match `Ember@VERSION_STRING_PLACEHOLDER` (this revision).',
+    template.revision === 'Ember@VERSION_STRING_PLACEHOLDER'
+  );
+
   var contextualElement = buffer.innerContextualElement();
   var args = view._blockArguments;
   var env = {
