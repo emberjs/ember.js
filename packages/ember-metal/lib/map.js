@@ -24,6 +24,7 @@ import { guidFor } from "ember-metal/utils";
 import { indexOf } from "ember-metal/array";
 import create from "ember-metal/platform/create";
 import { deprecateProperty } from "ember-metal/deprecate_property";
+import Ember from "ember-metal/core";
 
 function missingFunction(fn) {
   throw new TypeError('' + Object.prototype.toString.call(fn) + " is not a function");
@@ -94,7 +95,7 @@ OrderedSet.prototype = {
   clear: function() {
     this.presenceSet = create(null);
     this.list = [];
-    this.size = 0;
+    Ember.set(this, 'size', 0);
   },
 
   /**
@@ -110,7 +111,7 @@ OrderedSet.prototype = {
 
     if (presenceSet[guid] !== true) {
       presenceSet[guid] = true;
-      this.size = list.push(obj);
+      Ember.set(this, 'size', list.push(obj));
     }
 
     return this;
@@ -148,7 +149,7 @@ OrderedSet.prototype = {
       if (index > -1) {
         list.splice(index, 1);
       }
-      this.size = list.length;
+      Ember.set(this, 'size', list.length);
       return true;
     } else {
       return false;
@@ -323,7 +324,7 @@ Map.prototype = {
 
     values[guid] = value;
 
-    this.size = keys.size;
+    Ember.set(this, 'size', keys.size);
 
     return this;
   },
@@ -360,7 +361,7 @@ Map.prototype = {
 
     if (keys.delete(key, guid)) {
       delete values[guid];
-      this.size = keys.size;
+      Ember.set(this, 'size', keys.size);
       return true;
     } else {
       return false;
@@ -421,7 +422,7 @@ Map.prototype = {
   clear: function() {
     this._keys.clear();
     this._values = create(null);
-    this.size = 0;
+    Ember.set(this, 'size', 0);
   },
 
   /**
