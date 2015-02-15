@@ -93,16 +93,6 @@ QUnit.test("the default resolver resolves helpers", function() {
   registerHelper('fooresolvertest', fooresolvertestHelper);
   registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
 
-  var retrievedFooResolverTestHelper, retrievedBarBazResolverTestHelper;
-
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest').helperFunction;
-    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test').helperFunction;
-  } else {
-    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest');
-    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test');
-  }
-
   fooresolvertestHelper();
   barBazResolverTestHelper();
 });

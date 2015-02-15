@@ -4,7 +4,6 @@
     "ember-routing-named-substates": true,
     "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
-    "ember-htmlbars": true,
     "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-component-helper": true,

@@ -65,15 +65,12 @@ registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  Ember.HTMLBars = {
-    _registerHelper: registerHelper,
-    template: template,
-    compile: compile,
-    precompile: precompile,
-    makeViewHelper: makeViewHelper,
-    makeBoundHelper: makeBoundHelper,
-    registerPlugin: registerPlugin
-  };
-
-}
+Ember.HTMLBars = {
+  _registerHelper: registerHelper,
+  template: template,
+  compile: compile,
+  precompile: precompile,
+  makeViewHelper: makeViewHelper,
+  makeBoundHelper: makeBoundHelper,
+  registerPlugin: registerPlugin
+};

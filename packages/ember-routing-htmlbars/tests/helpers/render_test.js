@@ -506,9 +506,6 @@ QUnit.test("{{render}} works with slash notation", function() {
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
 QUnit.test("throws an assertion if {{render}} is called with an unquoted template name", function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({ container: container });
@@ -538,26 +535,3 @@ QUnit.test("throws an assertion if {{render}} is called with a literal for a mod
     runAppend(view);
   }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
 });
-
-// jscs:enable validateIndentation
-} else {
-// jscs:disable validateIndentation
-
-QUnit.test("Using quoteless templateName works properly (DEPRECATED)", function() {
-  var template = '<h1>HI</h1>{{render home}}';
-  var controller = EmberController.extend({ container: container });
-  view = EmberView.create({
-    controller: controller.create(),
-    template: compile(template)
-  });
-
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
-
-  expectDeprecation("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"home\"}}.");
-  runAppend(view);
-
-  equal(view.$('p:contains(BYE)').length, 1, "template was rendered");
-});
-
-// jscs:enable validateIndentation
-}

@@ -762,12 +762,7 @@ var View = CoreView.extend(
     var template = get(this, 'template');
 
     if (template) {
-      var useHTMLBars = false;
-      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.isHTMLBars;
-      }
-
-      if (useHTMLBars) {
+      if (template.isHTMLBars) {
         return template.render(this, options, morph.contextualElement);
       } else {
         return template(context, options);

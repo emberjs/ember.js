@@ -222,11 +222,7 @@ function applyClassNameBindings(classNameBindings, view) {
 function bindAttrHelperDeprecated() {
   Ember.deprecate("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
 
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    return helpers['bind-attr'].helperFunction.apply(this, arguments);
-  } else {
-    return helpers['bind-attr'].apply(this, arguments);
-  }
+  return helpers['bind-attr'].helperFunction.apply(this, arguments);
 }
 
 export default bindAttrHelper;

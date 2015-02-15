@@ -19,9 +19,6 @@ function registerRepeatHelper() {
   }));
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
 QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
     registry = new Registry();
@@ -276,6 +273,3 @@ QUnit.test('when no hash parameters are bound, no new views are created', functi
   ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
   equal(view.$().text(), 'aaa');
 });
-
-// jscs:enable validateIndentation
-}

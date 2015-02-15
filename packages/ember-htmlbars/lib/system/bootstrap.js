@@ -84,9 +84,6 @@ function registerComponentLookup(registry) {
 */
 
 onLoad('Ember.Application', function(Application) {
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    // jscs:disable validateIndentation
-
   Application.initializer({
     name: 'domTemplates',
     initialize: environment.hasDOM ? _bootstrap : function() { }
@@ -97,9 +94,6 @@ onLoad('Ember.Application', function(Application) {
     after: 'domTemplates',
     initialize: registerComponentLookup
   });
-
-    // jscs:enable validateIndentation
-  }
 });
 
 export default bootstrap;
