@@ -15,7 +15,9 @@ function prepare() {
 
 function cleanup() {
   Ember.run(function() {
-    App.destroy();
+    if (App) {
+      App.destroy();
+    }
     App = null;
     Ember.TEMPLATES = {};
 
@@ -183,7 +185,7 @@ QUnit.test("Assigning templateName and layoutName should use the templates speci
 QUnit.test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#no-good}} {{/no-good}}</div>");
 
-  throws(function () {
+  expectAssertion(function () {
     boot();
   }, /A helper named `no-good` could not be found/);
 });
