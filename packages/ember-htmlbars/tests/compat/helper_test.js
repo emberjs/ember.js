@@ -12,9 +12,6 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   teardown: function() {
     runDestroy(view);
@@ -270,6 +267,3 @@ QUnit.test('`hash` params are to options.hashTypes', function() {
 
   runAppend(view);
 });
-
-// jscs:enable validateIndentation
-}

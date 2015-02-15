@@ -3,9 +3,6 @@ import {
   compile as htmlbarsCompile
 } from "htmlbars-compiler/compiler";
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
 QUnit.module('ember-htmlbars: compile');
 
 QUnit.test('compiles the provided template with htmlbars', function() {
@@ -42,6 +39,3 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
 
   ok(actual.revision !== expected.revision, 'revision differs from default');
 });
-
-// jscs:enable validateIndentation
-}

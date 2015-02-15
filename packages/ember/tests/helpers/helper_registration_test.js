@@ -80,17 +80,9 @@ QUnit.test("Bound helpers registered on the container can be late-invoked", func
   ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
   // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
   // and we are not going to recreate the handlebars helperMissing concept
 QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
-
-  var realHelperMissing = helpers.helperMissing;
-  helpers.helperMissing = function() {
-    return "NOHALPER";
-  };
 
   // Note: the reason we're not allowing undashed helpers is to avoid
   // a possible perf hit in hot code paths, i.e. _triageMustache.
@@ -98,19 +90,14 @@ QUnit.test("Undashed helpers registered on the container can not (presently) be 
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{omg 'GRRR'}}|{{yorp}}|{{yorp 'ahh'}}</div>");
 
-  boot(function() {
-    registry.register('helper:omg', function() {
-      return "OMG";
+  expectAssertion(function() {
+    boot(function() {
+      registry.register('helper:omg', function() {
+        return "OMG";
+      });
+      registry.register('helper:yorp', makeBoundHelper(function() {
+        return "YORP";
+      }));
     });
-    registry.register('helper:yorp', makeBoundHelper(function() {
-      return "YORP";
-    }));
-  });
-
-  equal(Ember.$('#wrapper').text(), "|NOHALPER||NOHALPER", "The undashed helper was invoked from the container");
-
-  helpers.helperMissing = realHelperMissing;
+  }, /A helper named 'omg' could not be found/);
 });
-
-// jscs:enable validateIndentation
-}

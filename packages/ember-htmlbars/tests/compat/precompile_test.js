@@ -1,7 +1,6 @@
 import EmberHandlebars from "ember-htmlbars/compat";
 
 var precompile = EmberHandlebars.precompile;
-var parse = EmberHandlebars.parse;
 var template = 'Hello World';
 var result;
 
@@ -21,15 +20,3 @@ QUnit.test("precompile creates a string when asObject is false", function() {
   result = precompile(template, false);
   equal(typeof(result), "string");
 });
-
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-// jscs:disable validateIndentation
-
-QUnit.test("precompile creates an object when passed an AST", function() {
-  var ast = parse(template);
-  result = precompile(ast);
-  equal(typeof(result), "object");
-});
-
-// jscs:enable validateIndentation
-}
