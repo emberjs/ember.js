@@ -42,7 +42,6 @@
     "handlebars": "mmun/handlebars.js#new-ast-3238645f",
     "morph-range": "^0.1.2",
     "qunit": "^0.7.2",
-    "rsvp": "~3.0.6",
-    "testem": "0.6.35"
+    "rsvp": "~3.0.6"
   }
 }
