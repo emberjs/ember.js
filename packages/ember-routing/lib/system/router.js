@@ -99,7 +99,6 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   init: function() {
     this._activeViews = {};
-    this._setupLocation();
     this._qpCache = {};
     this._queuedQPChanges = {};
   },
@@ -126,9 +125,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   startRouting: function(moduleBasedResolver) {
     var initialURL = get(this, 'initialURL');
-    var location = get(this, 'location');
 
-    if (this.setupRouter(moduleBasedResolver, location)) {
+    if (this.setupRouter(moduleBasedResolver)) {
       if (typeof initialURL === "undefined") {
         initialURL = get(this, 'location').getURL();
       }
@@ -141,6 +139,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   setupRouter: function(moduleBasedResolver) {
     this._initRouterJs(moduleBasedResolver);
+    this._setupLocation();
 
     var router = this.router;
     var location = get(this, 'location');
