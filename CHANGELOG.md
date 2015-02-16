@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### 1.11.0-beta.2 (February 15, 2015)
+
+- [#10372](https://github.com/emberjs/ember.js/pull/10372) / [#10431](https://github.com/emberjs/ember.js/pull/10431) / [#10439](https://github.com/emberjs/ember.js/pull/10439) / [#10442](https://github.com/emberjs/ember.js/pull/10442) Decouple route transition from view creation.
+- [#10436](https://github.com/emberjs/ember.js/pull/10436) [BUGFIX] Ensure `instrument.{subscribe,unsubscribe,reset}` aren’t accidentally clobbered.
+- [#10462](https://github.com/emberjs/ember.js/pull/10462) [BUGFIX] Fix incorrect export of `Ember.OutletView`.
+- [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr shoud remove attributes.
+- [#10413](https://github.com/emberjs/ember.js/pull/10413) Update to use inclusive `morph-range` (via HTMLBars v0.11.1).
+- [#10464](https://github.com/emberjs/ember.js/pull/10464) Add helpful assertion if templates are compiled with a different template compiler revision.
+
+
+
 ### 1.11.0-beta.1 (February 07, 2015)
 
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
