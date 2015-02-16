@@ -10,11 +10,16 @@ import { runDestroy } from "ember-runtime/tests/utils";
 
 var registry, container;
 
-function createRouter(overrides) {
+function createRouter(overrides, disableSetup) {
   var opts = merge({ container: container }, overrides);
   var routerWithContainer = Router.extend();
+  var router = routerWithContainer.create(opts);
 
-  return routerWithContainer.create(opts);
+  if (!disableSetup) {
+    router.setupRouter();
+  }
+
+  return router;
 }
 
 QUnit.module("Ember Router", {
@@ -35,15 +40,24 @@ QUnit.module("Ember Router", {
 });
 
 QUnit.test("can create a router without a container", function() {
-  createRouter({ container: null });
+  createRouter({ container: null }, true);
 
   ok(true, 'no errors were thrown when creating without a container');
 });
 
 QUnit.test("should not create a router.js instance upon init", function() {
-  var router = createRouter();
+  var router = createRouter(null, true);
 
   ok(!router.router);
+});
+
+QUnit.test("should not reify location until setupRouter is called", function() {
+  var router = createRouter(null, true);
+  equal(typeof router.location, 'string', "location is specified as a string");
+
+  router.setupRouter();
+
+  equal(typeof router.location, 'object', "location is reified into an object");
 });
 
 QUnit.test("should destroy its location upon destroying the routers container.", function() {

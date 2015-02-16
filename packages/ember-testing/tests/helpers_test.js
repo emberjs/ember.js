@@ -111,7 +111,7 @@ QUnit.test("Ember.Application#setupForTesting", function() {
     App.setupForTesting();
   });
 
-  equal(App.__container__.lookup('router:main').location.implementation, 'none');
+  equal(App.__container__.lookup('router:main').location, 'none');
 });
 
 QUnit.test("Ember.Application.setupForTesting sets the application to `testing`.", function() {
