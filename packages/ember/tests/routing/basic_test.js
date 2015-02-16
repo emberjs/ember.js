@@ -3196,6 +3196,31 @@ QUnit.test("rejecting the model hooks promise with a non-error prints the `messa
   bootApplication();
 });
 
+QUnit.test("rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property", function() {
+  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
+  var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
+
+  Router.map(function() {
+    this.route("yippie", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
+    equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
+    equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
+    equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
+  };
+
+  App.YippieRoute = Ember.Route.extend({
+    model: function() {
+      return Ember.RSVP.reject({
+        errorThrown: { message: rejectedMessage, stack: rejectedStack }
+      });
+    }
+  });
+
+  bootApplication();
+});
+
 QUnit.test("rejecting the model hooks promise with no reason still logs error", function() {
   Router.map(function() {
     this.route("wowzers", { path: "/" });
