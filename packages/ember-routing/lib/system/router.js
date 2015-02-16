@@ -759,8 +759,14 @@ var defaultActionHandlers = {
   }
 };
 
-function logError(error, initialMessage) {
+function logError(_error, initialMessage) {
   var errorArgs = [];
+  var error;
+  if (_error && typeof _error === 'object' && typeof _error.errorThrown === 'object') {
+    error = _error.errorThrown;
+  } else {
+    error = _error;
+  }
 
   if (initialMessage) { errorArgs.push(initialMessage); }
 
