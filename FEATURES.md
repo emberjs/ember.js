@@ -5,6 +5,17 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-routing-core-outlet`
+
+  Provides a non-virtual version of OutletView named
+  CoreOutletView. You would use CoreOutletView just like you're use
+  OutletView: by extending it with whatever behavior you want and then
+  passing it to the `{{outlet}}` helper's `view` property.
+
+  The only difference between them is that OutletView has no element
+  of its own (it is a "virtual" view), whereas CoreOutletView has an
+  element.
+
 * `ember-application-visit`
 
   Provides an API for creating an application instance and specifying
