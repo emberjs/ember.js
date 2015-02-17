@@ -382,6 +382,8 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   var options = optionsFor(template, inverse, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
+  params = normalizeArray(params);
+  hash = normalizeObject(hash);
   helper.call(thisFor(options.templates), params, hash, options.templates);
 
   var item = options.pruneMorphStart.item;
@@ -443,6 +445,8 @@ export function inline(morph, env, scope, path, params, hash) {
   }
 
   var helper = env.hooks.lookupHelper(env, scope, path);
+  params = normalizeArray(env, params);
+  hash = normalizeObject(env, hash);
   value = helper(params, hash, {});
 
   if (morph.lastValue !== value) {
@@ -450,6 +454,26 @@ export function inline(morph, env, scope, path, params, hash) {
   }
 
   morph.lastValue = value;
+}
+
+function normalizeArray(env, array) {
+  var out = new Array(array.length);
+
+  for (var i=0, l=array.length; i<l; i++) {
+    out[i] = env.hooks.getValue(array[i]);
+  }
+
+  return out;
+}
+
+function normalizeObject(env, object) {
+  var out = {};
+
+  for (var prop in object)  {
+    out[prop] = env.hooks.getValue(object[prop]);
+  }
+
+  return out;
 }
 
 export var keywords = {
@@ -552,6 +576,8 @@ export function content(morph, env, scope, path) {
   that represents a range of content with a value.
 */
 export function range(morph, env, value) {
+  value = env.hooks.getValue(value);
+
   if (morph.lastValue !== value) {
     morph.setContent(value);
   }
@@ -589,6 +615,8 @@ export function range(morph, env, value) {
 export function element(morph, env, scope, path, params, hash) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
+    params = normalizeArray(env, params);
+    hash = normalizeObject(env, hash);
     helper(params, hash, { element: morph.element });
   }
 }
@@ -615,6 +643,8 @@ export function element(morph, env, scope, path, params, hash) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, name, value) {
+  value = env.hooks.getValue(value);
+
   if (morph.lastValue !== value) {
     morph.setContent(value);
   }
@@ -624,6 +654,8 @@ export function attribute(morph, env, name, value) {
 
 export function subexpr(env, scope, helperName, params, hash) {
   var helper = lookupHelper(env, scope, helperName);
+  params = normalizeArray(env, params);
+  hash = normalizeObject(env, hash);
   return helper(params, hash, {});
 }
 
@@ -674,6 +706,10 @@ export function getChild(value, key) {
   return value[key];
 }
 
+export function getValue(value) {
+  return value;
+}
+
 export function component(morph, env, scope, tagName, attrs, template) {
   if (isHelper(env, scope, tagName)) {
     return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null);
@@ -685,7 +721,7 @@ export function component(morph, env, scope, tagName, attrs, template) {
 export function concat(env, params) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
-    value += params[i];
+    value += env.hooks.getValue(params[i]);
   }
   return value;
 }
@@ -693,7 +729,7 @@ export function concat(env, params) {
 function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
   for (var name in attrs) {
-    element.setAttribute(name, attrs[name]);
+    element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
   var fragment = render(template, env, scope, {}).fragment;
   element.appendChild(fragment);
@@ -729,4 +765,5 @@ export default {
   get: get,
   getRoot: getRoot,
   getChild: getChild,
+  getValue: getValue,
 };
