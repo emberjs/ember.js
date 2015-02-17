@@ -1,5 +1,5 @@
 import render from "./render";
-import MorphList from "morph-list";
+import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
 
