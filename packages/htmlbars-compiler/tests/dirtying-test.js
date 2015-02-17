@@ -335,3 +335,146 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   result.dirty();
   result.revalidate();
 });
+
+test("An implementation of #each", function() {
+  registerHelper('each', function(params) {
+    var list = params[0];
+
+    for (var i=0, l=list.length; i<l; i++) {
+      var item = list[i];
+      this.yieldItem(item.key, [item]);
+    }
+  });
+
+  var template = compile("<ul>{{#each list as |item|}}<li class={{item.class}}>{{item.name}}</li>{{/each}}</ul>");
+  var object = { list: [
+    { key: "1", name: "Tom Dale", "class": "tomdale" },
+    { key: "2", name: "Yehuda Katz", "class": "wycats" }
+  ]};
+  var result = template.render(object, env);
+
+  var itemNode = getItemNode('tomdale');
+  var nameNode = getNameNode('tomdale');
+
+  equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "Initial render");
+
+  rerender();
+  assertStableNodes('tomdale', "after no-op rerender");
+  equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+
+  object = { list: [object.list[1], object.list[0]] };
+  rerender(object);
+  assertStableNodes('tomdale', "after changing the list order");
+  equalTokens(result.fragment, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+    { key: "2", name: "Kris Selden", "class": "krisselden" }
+  ]};
+  rerender(object);
+  assertStableNodes('mmun', "after changing the list entries, but with stable keys");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li></ul>", "After changing the list entries, but with stable keys");
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+    { key: "2", name: "Kristoph Selden", "class": "krisselden" },
+    { key: "3", name: "Matthew Beale", "class": "mixonic" }
+  ]};
+
+  rerender(object);
+  assertStableNodes('mmun', "after adding an additional entry");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+    { key: "3", name: "Matthew Beale", "class": "mixonic" }
+  ]};
+
+  rerender(object);
+  assertStableNodes('mmun', "after removing the middle entry");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+    { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
+    { key: "5", name: "Robert Jackson", "class": "rwjblue" },
+  ]};
+
+  rerender(object);
+  assertStableNodes('mmun', "after adding two more entries");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding two more entries");
+
+  // New node for stability check
+  itemNode = getItemNode('rwjblue');
+  nameNode = getNameNode('rwjblue');
+
+  object = { list: [
+    { key: "5", name: "Robert Jackson", "class": "rwjblue" }
+  ]};
+
+  rerender(object);
+  assertStableNodes('rwjblue', "after removing two entries");
+  equalTokens(result.fragment, "<ul><li class='rwjblue'>Robert Jackson</li></ul>", "After removing two entries");
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+    { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
+    { key: "5", name: "Robert Jackson", "class": "rwjblue" },
+  ]};
+
+  rerender(object);
+  assertStableNodes('rwjblue', "after adding back entries");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding back entries");
+
+  // New node for stability check
+  itemNode = getItemNode('mmun');
+  nameNode = getNameNode('mmun');
+
+  object = { list: [
+    { key: "1", name: "Martin Muñoz", "class": "mmun" },
+  ]};
+
+  rerender(object);
+  assertStableNodes('mmun', "after removing from the back");
+  equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li></ul>", "After removing from the back");
+
+  object = { list: [] };
+
+  rerender(object);
+  strictEqual(result.fragment.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
+  equalTokens(result.fragment, "<ul><!----></ul>", "After removing the remaining entries");
+
+  function rerender(context) {
+    result.dirty();
+    result.revalidate(context);
+  }
+
+  function assertStableNodes(className, message) {
+    strictEqual(getItemNode(className), itemNode, "The item node has not changed " + message);
+    strictEqual(getNameNode(className), nameNode, "The name node has not changed " + message);
+  }
+
+  function getItemNode(className) {
+    // <li>
+    var itemNode = result.fragment.firstChild.firstChild;
+
+    while (itemNode) {
+      if (itemNode.getAttribute('class') === className) { break; }
+      itemNode = itemNode.nextSibling;
+    }
+
+    ok(itemNode, "Expected node with class='" + className + "'");
+    return itemNode;
+  }
+
+  function getNameNode(className) {
+    // {{item.name}}
+    var itemNode = getItemNode(className);
+    ok(itemNode, "Expected child node of node with class='" + className + "', but no parent node found");
+
+    var childNode = itemNode && itemNode.firstChild;
+    ok(childNode, "Expected child node of node with class='" + className + "', but not child node found");
+
+    return childNode;
+  }
+});

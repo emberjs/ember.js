@@ -1,5 +1,6 @@
 import { forEach } from "../htmlbars-util/array-utils";
 import ExpressionVisitor from "./expression-visitor";
+import Morph from "morph-range";
 
 export default function render(template, env, scope, options, blockArguments) {
   var dom = env.dom;
@@ -53,7 +54,19 @@ export default function render(template, env, scope, options, blockArguments) {
       while (nodes.length) {
         var node = nodes.pop();
         node.isDirty = true;
-        nodes.push.apply(nodes, node.childNodes);
+
+        if (node.childNodes) {
+          nodes.push.apply(nodes, node.childNodes);
+        } else if (node.firstChildMorph) {
+          var current = node.firstChildMorph;
+
+          while (current) {
+            nodes.push(current);
+            current = current.nextMorph;
+          }
+        } else if (node.state.morphList) {
+          nodes.push(node.state.morphList);
+        }
       }
     },
     revalidate: function(newScope, newBlockArguments) {
@@ -79,6 +92,12 @@ function initializeNode(node, owner) {
   node.ownerNode = owner;
   node.state = {};
   node.isDirty = true;
+}
+
+export function createChildMorph(dom, parentMorph, contextualElement) {
+  var morph = Morph.empty(dom, contextualElement || parentMorph.contextualElement);
+  initializeNode(morph, parentMorph.ownerNode);
+  return morph;
 }
 
 export function getCachedFragment(template, env) {
