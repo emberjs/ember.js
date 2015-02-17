@@ -1,4 +1,4 @@
-import MorphBase from "morph-range";
+import MorphBase from "../morph-range";
 import { createObject } from "../htmlbars-util/object-utils";
 
 function HTMLBarsMorph(domHelper, contextualElement) {
