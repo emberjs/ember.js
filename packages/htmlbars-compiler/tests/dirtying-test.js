@@ -362,6 +362,10 @@ test("An implementation of #each", function() {
   assertStableNodes('tomdale', "after no-op rerender");
   equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
 
+  result.revalidate();
+  assertStableNodes('tomdale', "after non-dirty rerender");
+  equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+
   object = { list: [object.list[1], object.list[0]] };
   rerender(object);
   assertStableNodes('tomdale', "after changing the list order");

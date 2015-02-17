@@ -111,7 +111,18 @@ export default merge(createObject(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template) {
     if (!morph.isDirty) {
-      morph.lastResult.revalidate(scope.self);
+      var morphList = morph.morphList;
+      if (morph.morphList) {
+        var current = morphList.firstChildMorph;
+
+        while (current) {
+          var next = current.nextMorph;
+          current.lastResult.revalidate();
+          current = next;
+        }
+      } else {
+        morph.lastResult.revalidate();
+      }
       return;
     }
 
