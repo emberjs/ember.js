@@ -1,4 +1,6 @@
 import render from "./render";
+import MorphList from "morph-list";
+import { createChildMorph } from "htmlbars-runtime/render";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -87,7 +89,7 @@ export function wrap(template) {
   };
 }
 
-export function wrapForHelper(template, env, scope, morph) {
+export function wrapForHelper(template, env, scope, morph, pruneMorphStart) {
   if (template === null) { return null;  }
 
   var yieldArgs = yieldTemplate(template, env, scope, morph);
@@ -95,6 +97,7 @@ export function wrapForHelper(template, env, scope, morph) {
   return {
     arity: template.arity,
     yield: yieldArgs,
+    yieldItem: yieldItem(template, env, scope, morph, pruneMorphStart),
     withLayout: yieldWithLayout(template, env, scope, morph),
 
     render: function(self, blockArguments) {
@@ -112,11 +115,15 @@ function yieldTemplate(template, env, parentScope, morph) {
       return state.lastResult.revalidate(self, blockArguments);
     }
 
+    // Check to make sure that we actually **need** a new scope, and can't
+    // share the parent scope. Note that we need to move this check into
+    // a host hook, because the host's notion of scope may require a new
+    // scope in more cases than the ones we can determine statically.
     if (self !== undefined || parentScope === null || template.arity) {
       scope = env.hooks.createScope(parentScope, template.arity);
     }
 
-    if (self !== undefined ){
+    if (self !== undefined) {
       env.hooks.bindSelf(scope, self);
     }
 
@@ -124,6 +131,46 @@ function yieldTemplate(template, env, parentScope, morph) {
 
     // Render the template that was selected by the helper
     state.lastResult = render(template, env, scope, { renderNode: morph }, blockArguments);
+  };
+}
+
+function yieldItem(template, env, parentScope, morph, pruneMorphStart) {
+  var currentMorph = null;
+  var morphList = morph.state.morphList;
+  if (morphList) {
+    currentMorph = morphList.firstChildMorph;
+    pruneMorphStart.item = currentMorph;
+  }
+
+  return function(key, blockArguments) {
+    var state = morph.state;
+    var morphList, morphMap;
+
+    if (!state.morphList) {
+      state.morphList = new MorphList();
+      state.morphMap = {};
+      morph.setMorphList(state.morphList);
+    }
+
+    morphList = state.morphList;
+    morphMap = state.morphMap;
+
+    if (currentMorph && currentMorph.state.key === key) {
+      yieldTemplate(template, env, parentScope, currentMorph)(blockArguments);
+      currentMorph = currentMorph.nextMorph;
+    } else if (currentMorph && key in morphMap) {
+      var foundMorph = morphMap[key];
+      yieldTemplate(template, env, parentScope, foundMorph)(blockArguments);
+      morphList.insertBeforeMorph(foundMorph, currentMorph);
+    } else {
+      var childMorph = createChildMorph(env.dom, morph);
+      childMorph.state.key = key;
+      morphMap[key] = childMorph;
+      morphList.insertBeforeMorph(childMorph, currentMorph);
+      yieldTemplate(template, env, parentScope, childMorph)(blockArguments);
+    }
+
+    pruneMorphStart.item = currentMorph;
   };
 }
 
@@ -176,14 +223,23 @@ function isStableLayout(template, layout, lastYielded) {
 }
 
 function optionsFor(template, inverse, env, scope, morph) {
+  var pruneMorphStart = { item: null };
+
   return {
-    template: wrapForHelper(template, env, scope, morph),
-    inverse: wrapForHelper(inverse, env, scope, morph)
+    templates: {
+      template: wrapForHelper(template, env, scope, morph, pruneMorphStart),
+      inverse: wrapForHelper(inverse, env, scope, morph, pruneMorphStart)
+    },
+    pruneMorphStart: pruneMorphStart
   };
 }
 
 function thisFor(options) {
-  return { yield: options.template.yield, withLayout: options.template.withLayout };
+  return {
+    yield: options.template.yield,
+    yieldItem: options.template.yieldItem,
+    withLayout: options.template.withLayout
+  };
 }
 
 /**
@@ -327,10 +383,20 @@ export function bindBlock(env, scope, block) {
   appropriate arguments.
 */
 export function block(morph, env, scope, path, params, hash, template, inverse) {
-  var templates = optionsFor(template, inverse, env, scope, morph);
+  var options = optionsFor(template, inverse, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  helper.call(thisFor(templates), params, hash, templates);
+  helper.call(thisFor(options.templates), params, hash, options.templates);
+
+  var item = options.pruneMorphStart.item;
+  var morphMap = morph.state.morphMap;
+
+  while (item) {
+    var next = item.nextMorph;
+    delete morphMap[item.state.key];
+    item.destroy();
+    item = next;
+  }
 }
 
 /**
