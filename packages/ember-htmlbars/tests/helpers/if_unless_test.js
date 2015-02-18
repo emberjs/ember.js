@@ -282,7 +282,6 @@ QUnit.test('should update the block when object passed to #unless helper changes
     });
 
     equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
-
     run(function() {
       set(view, 'onDrugs', true);
     });

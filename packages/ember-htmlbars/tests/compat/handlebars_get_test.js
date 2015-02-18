@@ -12,7 +12,7 @@ var compile = EmberHandlebars.compile;
 var originalLookup = Ember.lookup;
 var TemplateTests, registry, container, lookup, view;
 
-QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
+QUnit.module("ember-htmlbars: compat - Ember.Handlebars.get", {
   setup() {
     Ember.lookup = lookup = {};
     registry = new Registry();

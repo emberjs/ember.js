@@ -43,7 +43,7 @@ function expectDeprecationInHTMLBars() {
   // enable a deprecation notice
 }
 
-QUnit.module("ember-htmlbars: makeBoundHelper", {
+QUnit.module("ember-htmlbars: compat - makeBoundHelper", {
   setup() {
   },
   teardown() {
