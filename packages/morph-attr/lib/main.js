@@ -30,6 +30,8 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.state = {};
   this.isDirty = false;
   this.escaped = true;
+  this.lastValue = null;
+  this.linkedParams = null;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);
   if (this.namespace) {

@@ -503,3 +503,35 @@ test("An implementation of #each", function() {
     return childNode;
   }
 });
+
+test("Returning true from `linkRenderNodes` makes the value itself stable across renders", function() {
+  var streams = { hello: { value: "hello" }, world: { value: "world" } };
+
+  hooks.linkRenderNode = function() {
+    return true;
+  };
+
+  hooks.getValue = function(stream) {
+    return stream();
+  };
+
+  var concatCalled = 0;
+  hooks.concat = function(env, params) {
+    ok(++concatCalled === 1, "The concat hook is only invoked one time (invoked " + concatCalled + " times)");
+    return function() {
+      return params[0].value + params[1] + params[2].value;
+    };
+  };
+
+  var template = compile("<div class='{{hello}} {{world}}'></div>");
+  var result = template.render(streams, env);
+
+  equalTokens(result.fragment, "<div class='hello world'></div>");
+
+  streams.hello.value = "goodbye";
+
+  result.dirty();
+  result.revalidate();
+
+  equalTokens(result.fragment, "<div class='goodbye world'></div>");
+});

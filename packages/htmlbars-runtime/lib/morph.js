@@ -13,6 +13,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.morphList = null;
   this.morphMap = null;
   this.key = null;
+  this.linkedParams = null;
 }
 
 HTMLBarsMorph.empty = function(domHelper, contextualElement) {
