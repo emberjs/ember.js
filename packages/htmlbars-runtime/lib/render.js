@@ -46,7 +46,7 @@ export default function render(template, env, scope, options, blockArguments) {
     rootNode.setContent(fragment);
   }
 
-  return {
+  var lastResult = {
     root: rootNode,
     fragment: fragment,
     dirty: function() {
@@ -79,6 +79,10 @@ export default function render(template, env, scope, options, blockArguments) {
       populateNodes(scope, newBlockArguments || blockArguments, AlwaysDirtyVisitor);
     }
   };
+
+  rootNode.lastResult = lastResult;
+
+  return lastResult;
 
   function populateNodes(scope, blockArguments, ExpressionVisitor) {
     var i, l;

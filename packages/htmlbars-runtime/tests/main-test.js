@@ -15,6 +15,7 @@ function keys(obj) {
 test("hooks are present", function () {
   var hookNames = [
     "keywords",
+    "linkedRenderNode",
     "createScope",
     "bindSelf",
     "bindLocal",
@@ -34,6 +35,7 @@ test("hooks are present", function () {
     "get",
     "getRoot",
     "getChild",
+    "getValue"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {

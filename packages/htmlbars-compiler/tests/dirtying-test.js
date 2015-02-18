@@ -22,6 +22,14 @@ function commonSetup() {
     partials: partials,
     useFragmentCache: true
   };
+
+  registerHelper('if', function(params, hash, options) {
+    if (!!params[0]) {
+      return options.template.yield();
+    } else if (options.inverse) {
+      return options.inverse.yield();
+    }
+  });
 }
 
 QUnit.module("HTML-based compiler (dirtying)", {
@@ -29,14 +37,6 @@ QUnit.module("HTML-based compiler (dirtying)", {
 });
 
 test("a simple implementation of a dirtying rerender", function() {
-  registerHelper('if', function(params, hash, options) {
-    if (!!params[0]) {
-      return options.template.yield();
-    } else {
-      return options.inverse.yield();
-    }
-  });
-
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
   var result = template.render(object, env);
@@ -67,6 +67,27 @@ test("a simple implementation of a dirtying rerender", function() {
   result.revalidate();
   equalTokens(result.fragment, '<div><p>Nothing</p></div>', "And then dirtying");
   QUnit.notStrictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+});
+
+test("a simple implementation of a dirtying rerender without inverse", function() {
+  var object = { condition: true, value: 'hello world' };
+  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, '<div><p>hello world</p></div>', "Initial render");
+
+  // Should not update since render node is not marked as dirty
+  object.condition = false;
+
+  result.dirty();
+  result.revalidate();
+  equalTokens(result.fragment, '<div><!----></div>', "If the condition is false, the morph becomes empty");
+
+  object.condition = true;
+
+  result.dirty();
+  result.revalidate();
+  equalTokens(result.fragment, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
 });
 
 test("a dirtying rerender using `withLayout`", function() {
