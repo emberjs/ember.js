@@ -107,7 +107,7 @@ export default EmberObject.extend({
 
   router: computed(function() {
     return this.container.lookup('router:main');
-  }),
+  }).readOnly(),
 
   /**
     Instantiates and sets up the router, specifically overriding the default
