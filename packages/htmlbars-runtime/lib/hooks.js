@@ -81,6 +81,7 @@ export function wrap(template) {
   return {
     isHTMLBars: true,
     arity: template.arity,
+    revision: template.revision,
     raw: template,
     render: function(self, env, options, blockArguments) {
       var scope = env.hooks.createScope(null, template.arity);
@@ -97,6 +98,7 @@ export function wrapForHelper(template, env, scope, morph, morphsToPrune) {
 
   return {
     arity: template.arity,
+    revision: template.revision,
     yield: yieldArgs,
     yieldItem: yieldItem(template, env, scope, morph, morphsToPrune),
     withLayout: yieldWithLayout(template, env, scope, morph, morphsToPrune),
@@ -239,6 +241,14 @@ function thisFor(options) {
     yieldItem: options.template.yieldItem,
     withLayout: options.template.withLayout
   };
+}
+
+function linkParams(env, morph, params, hash) {
+  var isStable = env.hooks.linkRenderNode(morph, params, hash);
+
+  if (isStable) {
+    morph.linkedParams = { params: params, hash: hash };
+  }
 }
 
 /**
@@ -390,7 +400,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   var options = optionsFor(template, inverse, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  env.hooks.linkedRenderNode(morph, params, hash);
+  linkParams(env, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   helper.call(thisFor(options.templates), params, hash, options.templates);
@@ -412,7 +422,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   }
 }
 
-export function linkedRenderNode(/* morph, params, hash */) {
+export function linkRenderNode(/* morph, params, hash */) {
   return;
 }
 
@@ -463,7 +473,7 @@ export function inline(morph, env, scope, path, params, hash) {
   }
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  env.hooks.linkedRenderNode(morph, params, hash);
+  linkParams(env, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   value = helper(params, hash, {});
@@ -595,7 +605,7 @@ export function content(morph, env, scope, path) {
   that represents a range of content with a value.
 */
 export function range(morph, env, value) {
-  env.hooks.linkedRenderNode(morph, [value]);
+  linkParams(env, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -635,7 +645,7 @@ export function range(morph, env, value) {
 export function element(morph, env, scope, path, params, hash) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
-    env.hooks.linkedRenderNode(morph, params, hash);
+    linkParams(env, morph, params, hash);
     params = normalizeArray(env, params);
     hash = normalizeObject(env, hash);
     helper(params, hash, { element: morph.element });
@@ -664,7 +674,7 @@ export function element(morph, env, scope, path, params, hash) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, name, value) {
-  env.hooks.linkedRenderNode(morph, [value]);
+  linkParams(env, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -750,7 +760,7 @@ export function concat(env, params) {
 
 function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
-  env.hooks.linkedRenderNode(morph, [], attrs);
+  linkParams(env, morph, [], attrs);
   for (var name in attrs) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
@@ -769,7 +779,7 @@ export function lookupHelper(env, scope, helperName) {
 
 export default {
   keywords: keywords,
-  linkedRenderNode: linkedRenderNode,
+  linkRenderNode: linkRenderNode,
   createScope: createScope,
   bindSelf: bindSelf,
   bindLocal: bindLocal,
