@@ -90,16 +90,16 @@ export function wrap(template) {
   };
 }
 
-export function wrapForHelper(template, env, scope, morph, pruneMorphStart) {
+export function wrapForHelper(template, env, scope, morph, morphsToPrune) {
   if (template === null) { return null;  }
 
-  var yieldArgs = yieldTemplate(template, env, scope, morph);
+  var yieldArgs = yieldTemplate(template, env, scope, morph, morphsToPrune);
 
   return {
     arity: template.arity,
     yield: yieldArgs,
-    yieldItem: yieldItem(template, env, scope, morph, pruneMorphStart),
-    withLayout: yieldWithLayout(template, env, scope, morph),
+    yieldItem: yieldItem(template, env, scope, morph, morphsToPrune),
+    withLayout: yieldWithLayout(template, env, scope, morph, morphsToPrune),
 
     render: function(self, blockArguments) {
       yieldArgs(blockArguments, self);
@@ -107,8 +107,9 @@ export function wrapForHelper(template, env, scope, morph, pruneMorphStart) {
   };
 }
 
-function yieldTemplate(template, env, parentScope, morph) {
+function yieldTemplate(template, env, parentScope, morph, morphsToPrune) {
   return function(blockArguments, self) {
+    morphsToPrune.clearMorph = null;
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
@@ -134,12 +135,12 @@ function yieldTemplate(template, env, parentScope, morph) {
   };
 }
 
-function yieldItem(template, env, parentScope, morph, pruneMorphStart) {
+function yieldItem(template, env, parentScope, morph, morphsToPrune) {
   var currentMorph = null;
   var morphList = morph.morphList;
   if (morphList) {
     currentMorph = morphList.firstChildMorph;
-    pruneMorphStart.item = currentMorph;
+    morphsToPrune.morphListStart = currentMorph;
   }
 
   return function(key, blockArguments) {
@@ -155,21 +156,22 @@ function yieldItem(template, env, parentScope, morph, pruneMorphStart) {
     morphMap = morph.morphMap;
 
     if (currentMorph && currentMorph.key === key) {
-      yieldTemplate(template, env, parentScope, currentMorph)(blockArguments);
+      yieldTemplate(template, env, parentScope, currentMorph, morphsToPrune)(blockArguments);
       currentMorph = currentMorph.nextMorph;
     } else if (currentMorph && morphMap[key] !== undefined) {
       var foundMorph = morphMap[key];
-      yieldTemplate(template, env, parentScope, foundMorph)(blockArguments);
+      yieldTemplate(template, env, parentScope, foundMorph, morphsToPrune)(blockArguments);
       morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
       childMorph.key = key;
       morphMap[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
-      yieldTemplate(template, env, parentScope, childMorph)(blockArguments);
+      yieldTemplate(template, env, parentScope, childMorph, morphsToPrune)(blockArguments);
     }
 
-    pruneMorphStart.item = currentMorph;
+    morphsToPrune.morphListStart = currentMorph;
+    morphsToPrune.clearMorph = null;
   };
 }
 
@@ -177,8 +179,9 @@ function isStableTemplate(template, lastYielded) {
   return !lastYielded.layout && template === lastYielded.template;
 }
 
-function yieldWithLayout(template, env, parentScope, morph) {
+function yieldWithLayout(template, env, parentScope, morph, morphsToPrune) {
   return function(layout, self) {
+    morphsToPrune.clearMorph = null;
     var layoutScope = env.hooks.createScope(null, layout.arity);
 
     if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
@@ -219,14 +222,14 @@ function isStableLayout(template, layout, lastYielded) {
 }
 
 function optionsFor(template, inverse, env, scope, morph) {
-  var pruneMorphStart = { item: null };
+  var morphsToPrune = { morphListStart: null, clearMorph: morph };
 
   return {
     templates: {
-      template: wrapForHelper(template, env, scope, morph, pruneMorphStart),
-      inverse: wrapForHelper(inverse, env, scope, morph, pruneMorphStart)
+      template: wrapForHelper(template, env, scope, morph, morphsToPrune),
+      inverse: wrapForHelper(inverse, env, scope, morph, morphsToPrune)
     },
-    pruneMorphStart: pruneMorphStart
+    morphsToPrune: morphsToPrune
   };
 }
 
@@ -379,14 +382,21 @@ export function bindBlock(env, scope, block) {
   appropriate arguments.
 */
 export function block(morph, env, scope, path, params, hash, template, inverse) {
+  var keyword = env.hooks.keywords[path];
+  if (keyword && !keyword(morph, env, scope, params, hash, template, inverse)) {
+    return;
+  }
+
   var options = optionsFor(template, inverse, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  params = normalizeArray(params);
-  hash = normalizeObject(hash);
+  env.hooks.linkedRenderNode(morph, params, hash);
+  params = normalizeArray(env, params);
+  hash = normalizeObject(env, hash);
   helper.call(thisFor(options.templates), params, hash, options.templates);
 
-  var item = options.pruneMorphStart.item;
+  var item = options.morphsToPrune.morphListStart;
+  var toClear = options.morphsToPrune.clearMorph;
   var morphMap = morph.morphMap;
 
   while (item) {
@@ -395,6 +405,15 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
     item.destroy();
     item = next;
   }
+
+  if (toClear) {
+    toClear.clear();
+    morph.lastYielded = null;
+  }
+}
+
+export function linkedRenderNode(/* morph, params, hash */) {
+  return;
 }
 
 /**
@@ -439,12 +458,12 @@ export function inline(morph, env, scope, path, params, hash) {
   var value;
 
   var keyword = env.hooks.keywords[path];
-  if (keyword) {
-    keyword(morph, env, scope, params, hash);
+  if (keyword && !keyword(morph, env, scope, params, hash, null, null)) {
     return;
   }
 
   var helper = env.hooks.lookupHelper(env, scope, path);
+  env.hooks.linkedRenderNode(morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   value = helper(params, hash, {});
@@ -576,6 +595,7 @@ export function content(morph, env, scope, path) {
   that represents a range of content with a value.
 */
 export function range(morph, env, value) {
+  env.hooks.linkedRenderNode(morph, [value]);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -615,6 +635,7 @@ export function range(morph, env, value) {
 export function element(morph, env, scope, path, params, hash) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
+    env.hooks.linkedRenderNode(morph, params, hash);
     params = normalizeArray(env, params);
     hash = normalizeObject(env, hash);
     helper(params, hash, { element: morph.element });
@@ -643,6 +664,7 @@ export function element(morph, env, scope, path, params, hash) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, name, value) {
+  env.hooks.linkedRenderNode(morph, [value]);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -728,6 +750,7 @@ export function concat(env, params) {
 
 function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
+  env.hooks.linkedRenderNode(morph, [], attrs);
   for (var name in attrs) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
@@ -746,6 +769,7 @@ export function lookupHelper(env, scope, helperName) {
 
 export default {
   keywords: keywords,
+  linkedRenderNode: linkedRenderNode,
   createScope: createScope,
   bindSelf: bindSelf,
   bindLocal: bindLocal,
