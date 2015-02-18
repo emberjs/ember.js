@@ -30,6 +30,16 @@ function commonSetup() {
       return options.inverse.yield();
     }
   });
+
+  registerHelper('each', function(params) {
+    var list = params[0];
+
+    for (var i=0, l=list.length; i<l; i++) {
+      var item = list[i];
+      this.yieldItem(item.key, [item]);
+    }
+  });
+
 }
 
 QUnit.module("HTML-based compiler (dirtying)", {
@@ -358,15 +368,6 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 });
 
 test("An implementation of #each", function() {
-  registerHelper('each', function(params) {
-    var list = params[0];
-
-    for (var i=0, l=list.length; i<l; i++) {
-      var item = list[i];
-      this.yieldItem(item.key, [item]);
-    }
-  });
-
   var template = compile("<ul>{{#each list as |item|}}<li class={{item.class}}>{{item.name}}</li>{{/each}}</ul>");
   var object = { list: [
     { key: "1", name: "Tom Dale", "class": "tomdale" },
@@ -534,4 +535,111 @@ test("Returning true from `linkRenderNodes` makes the value itself stable across
   result.revalidate();
 
   equalTokens(result.fragment, "<div class='goodbye world'></div>");
+});
+
+var cleanedUpCount;
+var cleanedUpNode;
+
+QUnit.module("HTML-based compiler (dirtying) - pruning", {
+  beforeEach: function() {
+    commonSetup();
+    cleanedUpCount = 0;
+    cleanedUpNode = null;
+
+    hooks.cleanup = function(renderNode) {
+      cleanedUpNode = renderNode;
+      cleanedUpCount++;
+    };
+  }
+});
+
+test("Pruned render nodes invoke a cleanup hook when replaced", function() {
+  var object = { condition: true, value: 'hello world', falsy: "Nothing" };
+  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>{{falsy}}</p>{{/if}}</div>');
+
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, "<div><p>hello world</p></div>");
+
+  object.condition = false;
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
+  strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
+
+  object.condition = true;
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 2, "cleanup hook was invoked again");
+  strictEqual(cleanedUpNode.lastValue, 'Nothing', "The correct render node is passed in");
+});
+
+test("Pruned render nodes invoke a cleanup hook when cleared", function() {
+  var object = { condition: true, value: 'hello world' };
+  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
+
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, "<div><p>hello world</p></div>");
+
+  object.condition = false;
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
+  strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
+
+  object.condition = true;
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 1, "cleanup hook was not invoked again");
+});
+
+test("Pruned lists invoke a cleanup hook when removing elements", function() {
+  var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
+  var template = compile('<div>{{#each list as |item|}}<p>{{item.word}}</p>{{/each}}</div>');
+
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
+
+  object.list.pop();
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 2, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
+
+  object.list.pop();
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 4, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
+});
+
+test("Pruned lists invoke a cleanup hook on their subtrees when removing elements", function() {
+  var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
+  var template = compile('<div>{{#each list as |item|}}<p>{{#if item.word}}{{item.word}}{{/if}}</p>{{/each}}</div>');
+
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
+
+  object.list.pop();
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 3, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
+
+  object.list.pop();
+  result.dirty();
+  result.revalidate();
+
+  strictEqual(cleanedUpCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
 });

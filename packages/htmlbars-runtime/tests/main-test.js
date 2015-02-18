@@ -35,11 +35,13 @@ test("hooks are present", function () {
     "get",
     "getRoot",
     "getChild",
-    "getValue"
+    "getValue",
+    "cleanup"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {
-    ok(hooks[hookNames[i]], "hook " + hookNames[i] + " is present");
+    var hook = hooks[hookNames[i]];
+    ok(hook !== undefined, "hook " + hookNames[i] + " is present");
   }
 
   equal(keys(hooks).length, hookNames.length, "Hooks length match");
