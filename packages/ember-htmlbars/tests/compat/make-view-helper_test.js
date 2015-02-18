@@ -7,7 +7,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var registry, container, view;
 
-QUnit.module('ember-htmlbars: makeViewHelper compat', {
+QUnit.module('ember-htmlbars: compat - makeViewHelper compat', {
   setup() {
     registry = new Registry();
     container = registry.container();

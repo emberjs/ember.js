@@ -12,7 +12,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
+QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
   teardown() {
     runDestroy(view);
 
