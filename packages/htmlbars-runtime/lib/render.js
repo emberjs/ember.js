@@ -1,4 +1,5 @@
 import { forEach } from "../htmlbars-util/array-utils";
+import { visitChildren } from "../htmlbars-util/morph-utils";
 import ExpressionVisitor from "./expression-visitor";
 import { AlwaysDirtyVisitor } from "./expression-visitor";
 import Morph from "./morph";
@@ -31,6 +32,12 @@ export default function render(template, env, scope, options, blockArguments) {
 
   // TODO Invoke disposal hook recursively on old rootNode.childNodes
 
+  if (rootNode.childNodes && env.hooks.cleanup) {
+    visitChildren(rootNode.childNodes, function(node) {
+      env.hooks.cleanup(node);
+    });
+  }
+
   rootNode.childNodes = nodes;
 
   forEach(nodes, function(node) {
@@ -50,25 +57,7 @@ export default function render(template, env, scope, options, blockArguments) {
     root: rootNode,
     fragment: fragment,
     dirty: function() {
-      var nodes = [rootNode];
-
-      while (nodes.length) {
-        var node = nodes.pop();
-        node.isDirty = true;
-
-        if (node.childNodes) {
-          nodes.push.apply(nodes, node.childNodes);
-        } else if (node.firstChildMorph) {
-          var current = node.firstChildMorph;
-
-          while (current) {
-            nodes.push(current);
-            current = current.nextMorph;
-          }
-        } else if (node.morphList) {
-          nodes.push(node.morphList);
-        }
-      }
+      visitChildren([rootNode], function(node) { node.isDirty = true; });
     },
     revalidate: function(newScope, newBlockArguments) {
       if (newScope !== undefined) { scope.self = newScope; }

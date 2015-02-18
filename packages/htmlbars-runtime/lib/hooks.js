@@ -2,6 +2,7 @@ import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
+import { visitChildren } from "../htmlbars-util/morph-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -146,6 +147,10 @@ function yieldItem(template, env, parentScope, morph, morphsToPrune) {
   }
 
   return function(key, blockArguments) {
+    if (typeof key !== 'string') {
+      throw new Error("You must provide a string key when calling `yieldItem`; you provided " + key);
+    }
+
     var morphList, morphMap;
 
     if (!morph.morphList) {
@@ -412,13 +417,19 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   while (item) {
     var next = item.nextMorph;
     delete morphMap[item.key];
+    visitChildren([item], cleanup);
     item.destroy();
     item = next;
   }
 
   if (toClear) {
+    visitChildren(toClear.childNodes, cleanup);
     toClear.clear();
     morph.lastYielded = null;
+  }
+
+  function cleanup(node) {
+    if (env.hooks.cleanup) { env.hooks.cleanup(node); }
   }
 }
 
@@ -800,4 +811,5 @@ export default {
   getRoot: getRoot,
   getChild: getChild,
   getValue: getValue,
+  cleanup: null
 };
