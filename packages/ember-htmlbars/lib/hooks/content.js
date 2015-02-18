@@ -22,7 +22,7 @@ export default function content(env, morph, view, path) {
   }
 
   if (isStream(result)) {
-    appendSimpleBoundView(view, morph, result);
+    appendSimpleBoundView(env.data.view, morph, result);
   } else {
     morph.setContent(result);
   }
