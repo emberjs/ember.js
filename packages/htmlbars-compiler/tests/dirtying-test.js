@@ -26,7 +26,7 @@ function commonSetup() {
   registerHelper('if', function(params, hash, options) {
     if (!!params[0]) {
       return options.template.yield();
-    } else if (options.inverse) {
+    } else if (options.inverse.yield) {
       return options.inverse.yield();
     }
   });

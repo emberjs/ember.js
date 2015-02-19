@@ -425,8 +425,8 @@ test("Morphs are escaped correctly", function() {
     return params[0];
   });
 
-  registerHelper('testing-escaped', function(params, hash, options) {
-    if (options.template) {
+  registerHelper('testing-escaped', function(params) {
+    if (this.yield) {
       return this.yield();
     }
 
