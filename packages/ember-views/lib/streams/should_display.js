@@ -8,6 +8,7 @@ import {
 import create from 'ember-metal/platform/create';
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
+import { addDependency } from "ember-metal/streams/utils";
 
 export default function shouldDisplay(predicate) {
   if (isStream(predicate)) {
@@ -66,4 +67,16 @@ ShouldDisplayStream.prototype.valueFn = function() {
   }
 
   return !!newPredicate;
+};
+
+ShouldDisplayStream.prototype._super$destroy = Stream.prototype.destroy;
+
+ShouldDisplayStream.prototype.destroy = function(prune) {
+  if (this.state !== 'destroyed') {
+    addDependency(this, this.predicateUnsubscribe);
+    addDependency(this, this.truthyUnsubscribe);
+    addDependency(this, this.lengthUnsubscribe);
+
+    return this._super$destroy(prune);
+  }
 };

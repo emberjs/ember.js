@@ -7,7 +7,7 @@ import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
 import create from "ember-metal/platform/create";
-import { subscribe, unsubscribe, read } from "ember-metal/streams/utils";
+import { subscribe, addDependency, read } from "ember-metal/streams/utils";
 
 export default function subexpr(env, scope, helperName, params, hash) {
   var helper = lookupHelper(helperName, scope.self, env);
@@ -54,11 +54,11 @@ merge(SubexprStream.prototype, {
       var sourceHash = this.source.hash;
 
       for (var i=0, l=sourceParams.length; i<l; i++) {
-        subscribe(sourceParams[i], this._didChange, this);
+        addDependency(this, subscribe(sourceParams[i], this._didChange, this));
       }
 
       for (var prop in sourceHash) {
-        subscribe(sourceHash[prop], this._didChange, this);
+        addDependency(subscribe(sourceHash[prop], this._didChange, this));
       }
 
       this.subscribed = true;
@@ -73,21 +73,8 @@ merge(SubexprStream.prototype, {
 
   _super$destroy: Stream.prototype.destroy,
 
-  destroy: function() {
-    if (this._super$destroy()) {
-      if (this.subscribed) {
-        var params = this.source.params;
-        var hash = this.source.hash;
-
-        for (var i=0, l=params.length; i<l; i++) {
-          unsubscribe(params[i], this._didChange, this);
-        }
-
-        for (var prop in hash) {
-          unsubscribe(hash[prop], this._didChange, this);
-        }
-      }
-
+  destroy: function(prune) {
+    if (this._super$destroy(prune)) {
       this.source = undefined;
       return true;
     }

@@ -43,7 +43,10 @@ function renderHTMLBarsTemplate(view, buffer, template) {
     }
   };
 
-  return template.render(view, env, { contextualElement: contextualElement }, args).fragment;
+  var lastResult = template.render(view, env, { contextualElement: contextualElement }, args);
+  view.lastResult = lastResult;
+
+  return lastResult.fragment;
 }
 
 function renderLegacyTemplate(view, buffer, template) {

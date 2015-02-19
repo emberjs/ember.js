@@ -229,33 +229,25 @@ QUnit.test("The `if` helper ignores a controller option", function() {
 });
 
 QUnit.test('should not rerender if truthiness does not change', function() {
-  var renderCount = 0;
-
   view = EmberView.create({
     template: compile('<h1 id="first">{{#if view.shouldDisplay}}{{view view.InnerViewClass}}{{/if}}</h1>'),
 
     shouldDisplay: true,
 
     InnerViewClass: EmberView.extend({
-      template: compile('bam'),
-
-      render() {
-        renderCount++;
-        return this._super.apply(this, arguments);
-      }
+      template: compile('bam')
     })
   });
 
   runAppend(view);
 
-  equal(renderCount, 1, 'precond - should have rendered once');
   equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
+  equal(view.$('#first div').text(), 'bam', 'inserts a div into the DOM');
 
   run(function() {
     set(view, 'shouldDisplay', 1);
   });
 
-  equal(renderCount, 1, 'should not have rerendered');
   equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
 });
 
@@ -382,7 +374,10 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
-    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
+    MyView: Ember.View.extend({
+      tagName: 'input'
+    }),
     display: false
   });
 
