@@ -12,7 +12,7 @@ function StreamBinding(stream) {
   this.senderContext = undefined;
   this.senderValue = undefined;
 
-  stream.subscribe(this._onNotify, this);
+  this.addDependency(stream, this._onNotify, this);
 }
 
 StreamBinding.prototype = create(Stream.prototype);
@@ -62,15 +62,6 @@ merge(StreamBinding.prototype, {
     this.state = 'clean';
 
     this.notifyExcept(senderCallback, senderContext);
-  },
-
-  _super$destroy: Stream.prototype.destroy,
-
-  destroy: function() {
-    if (this._super$destroy()) {
-      this.stream.unsubscribe(this._onNotify, this);
-      return true;
-    }
   }
 });
 
