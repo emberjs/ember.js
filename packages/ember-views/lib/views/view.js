@@ -763,7 +763,7 @@ var View = CoreView.extend(
 
     if (template) {
       if (template.isHTMLBars) {
-        return template.render(this, options, morph.contextualElement);
+        return template.render(context, options, morph.contextualElement);
       } else {
         return template(context, options);
       }
