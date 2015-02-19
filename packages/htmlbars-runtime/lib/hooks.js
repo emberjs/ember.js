@@ -93,7 +93,11 @@ export function wrap(template) {
 }
 
 export function wrapForHelper(template, env, scope, morph, morphsToPrune) {
-  if (template === null) { return null;  }
+  if (template === null) {
+    return {
+      withLayout: yieldWithLayout(null, env, scope, morph, morphsToPrune)
+    };
+  }
 
   var yieldArgs = yieldTemplate(template, env, scope, morph, morphsToPrune);
 
@@ -483,11 +487,13 @@ export function inline(morph, env, scope, path, params, hash) {
     return;
   }
 
+  var options = optionsFor(null, null, env, scope, morph);
+
   var helper = env.hooks.lookupHelper(env, scope, path);
   linkParams(env, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
-  value = helper(params, hash, {});
+  value = helper.call(thisFor(options.templates), params, hash, options.templates);
 
   if (morph.lastValue !== value) {
     morph.setContent(value);
