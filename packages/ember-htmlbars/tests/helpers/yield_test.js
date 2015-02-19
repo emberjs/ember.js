@@ -318,6 +318,19 @@ QUnit.test("simple bindings inside of a yielded template should work properly wh
   equal(view.$().text(), "ohai");
 });
 
+QUnit.test("nested simple bindings inside of a yielded template should work properly when the yield is nested inside of another view", function() {
+  view = EmberView.create({
+    layout:   compile('{{#if view.falsy}}{{else}}{{yield}}{{/if}}'),
+    template: compile("{{#if view.falsy}}{{else}}{{view.text}}{{/if}}"),
+    text: "ohai"
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().text(), "ohai");
+});
 
 QUnit.module("ember-htmlbars: Component {{yield}}", {
   setup: function() {},
