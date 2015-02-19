@@ -26,24 +26,24 @@ function ifUnless(params, hash, options, truthy) {
   Ember.assert(
     "The block form of the `if` and `unless` helpers expect exactly one " +
     "argument, e.g. `{{#if newMessages}} You have new messages. {{/if}}.`",
-    !options.template || params.length === 1
+    !options.template.yield || params.length === 1
   );
 
   Ember.assert(
     "The inline form of the `if` and `unless` helpers expect two or " +
     "three arguments, e.g. `{{if trialExpired 'Expired' expiryDate}}` " +
     "or `{{unless isFirstLogin 'Welcome back!'}}`.",
-    options.template || params.length === 2 || params.length === 3
+    !!options.template.yield || params.length === 2 || params.length === 3
   );
 
   if (truthy) {
-    if (options.template) {
+    if (options.template.yield) {
       options.template.yield();
     } else {
       return params[1];
     }
   } else {
-    if (options.inverse) {
+    if (options.inverse.yield) {
       options.inverse.yield();
     } else {
       return params[2];
