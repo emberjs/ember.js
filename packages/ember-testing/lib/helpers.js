@@ -420,8 +420,8 @@ asyncHelper('andThen', andThen);
 Example:
 
 ```javascript
-function validateRouteName(){
-equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
+function validateRouteName() {
+  equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
 }
 
 visit('/some/path').then(validateRouteName)
@@ -439,8 +439,8 @@ helper('currentRouteName', currentRouteName);
 Example:
 
 ```javascript
-function validateURL(){
-equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+function validateURL() {
+  equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
 }
 
 click('#some-link-id').then(validateURL);
@@ -458,8 +458,8 @@ helper('currentPath', currentPath);
 Example:
 
 ```javascript
-function validateURL(){
-equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+function validateURL() {
+  equal(currentURL(), '/some/path', "correct URL was transitioned into.");
 }
 
 click('#some-link-id').then(validateURL);
