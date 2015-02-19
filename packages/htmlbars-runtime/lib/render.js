@@ -59,6 +59,14 @@ export default function render(template, env, scope, options, blockArguments) {
     dirty: function() {
       visitChildren([rootNode], function(node) { node.isDirty = true; });
     },
+    destroy: function() {
+      if (env.hooks.cleanup) {
+        visitChildren([rootNode], function(node) {
+          env.hooks.cleanup(node);
+        });
+      }
+      rootNode.clear();
+    },
     revalidate: function(newScope, newBlockArguments) {
       if (newScope !== undefined) { scope.self = newScope; }
       populateNodes(scope, newBlockArguments || blockArguments, ExpressionVisitor);
