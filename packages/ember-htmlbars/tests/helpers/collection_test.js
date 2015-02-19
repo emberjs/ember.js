@@ -430,7 +430,8 @@ QUnit.test("should unsubscribe stream bindings", function() {
 });
 
 function countSubscribers(stream) {
-  var count = 0, subscriber = stream.subscriberHead;
+  var count = 0;
+  var subscriber = stream.subscriberHead;
 
   while (subscriber) {
     count++;
