@@ -95,12 +95,12 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   equalTokens(result.fragment, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
 });
 
-test("a dirtying rerender using `withLayout`", function() {
+test("a dirtying rerender using `yieldIn`", function() {
   var component = compile("<p>{{yield}}</p>");
   var template = compile("<div><simple-component>{{title}}</simple-component></div>");
 
   registerHelper("simple-component", function() {
-    return this.withLayout(component);
+    return this.yieldIn(component);
   });
 
   var object = { title: "Hello world" };
@@ -125,12 +125,12 @@ test("a dirtying rerender using `withLayout`", function() {
   }
 });
 
-test("a dirtying rerender using `withLayout` and self", function() {
+test("a dirtying rerender using `yieldIn` and self", function() {
   var component = compile("<p><span>{{attrs.name}}</span>{{yield}}</p>");
   var template = compile("<div><simple-component name='Yo! '>{{title}}</simple-component></div>");
 
   registerHelper("simple-component", function(params, hash) {
-    return this.withLayout(component, { attrs: hash });
+    return this.yieldIn(component, { attrs: hash });
   });
 
   var object = { title: "Hello world" };
@@ -168,12 +168,12 @@ test("a dirtying rerender using `withLayout` and self", function() {
   }
 });
 
-test("a dirtying rerender using `withLayout`, self and block args", function() {
+test("a dirtying rerender using `yieldIn`, self and block args", function() {
   var component = compile("<p>{{yield attrs.name}}</p>");
   var template = compile("<div><simple-component name='Yo! ' as |key|><span>{{key}}</span>{{title}}</simple-component></div>");
 
   registerHelper("simple-component", function(params, hash) {
-    return this.withLayout(component, { attrs: hash });
+    return this.yieldIn(component, { attrs: hash });
   });
 
   var object = { title: "Hello world" };

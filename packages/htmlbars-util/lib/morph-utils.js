@@ -45,9 +45,11 @@ export function validateChildMorphs(env, morph, visitor) {
 }
 
 export function linkParams(env, scope, morph, path, params, hash) {
-  var isStable = env.hooks.linkRenderNode(morph, scope, path, params, hash);
+  if (morph.linkedParams) {
+    return;
+  }
 
-  if (isStable) {
+  if (env.hooks.linkRenderNode(morph, scope, path, params, hash)) {
     morph.linkedParams = { params: params, hash: hash };
   }
 }

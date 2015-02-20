@@ -2,7 +2,7 @@ import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
-import { visitChildren, validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
+import { visitChildren, validateChildMorphs } from "../htmlbars-util/morph-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -99,7 +99,7 @@ export function wrap(template) {
 export function wrapForHelper(template, env, scope, morph, morphsToPrune, visitor) {
   if (template === null) {
     return {
-      withLayout: yieldWithLayout(null, env, scope, morph, morphsToPrune, visitor)
+      yieldIn: yieldInShadowTemplate(null, env, scope, morph, morphsToPrune, visitor)
     };
   }
 
@@ -110,7 +110,7 @@ export function wrapForHelper(template, env, scope, morph, morphsToPrune, visito
     revision: template.revision,
     yield: yieldArgs,
     yieldItem: yieldItem(template, env, scope, morph, morphsToPrune, visitor),
-    withLayout: yieldWithLayout(template, env, scope, morph, morphsToPrune, visitor),
+    yieldIn: yieldInShadowTemplate(template, env, scope, morph, morphsToPrune, visitor),
 
     render: function(self, blockArguments) {
       yieldArgs(blockArguments, self);
@@ -135,7 +135,7 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor
       scope = env.hooks.createChildScope(parentScope);
     }
 
-    morph.lastYielded = { self: self, template: template, layout: null };
+    morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
     morph.lastResult = render(template, env, scope, { renderNode: morph, self: self, blockArguments: blockArguments });
@@ -187,24 +187,32 @@ function yieldItem(template, env, parentScope, morph, morphsToPrune, visitor) {
 }
 
 function isStableTemplate(template, lastYielded) {
-  return !lastYielded.layout && template === lastYielded.template;
+  return !lastYielded.shadowTemplate && template === lastYielded.template;
 }
 
-function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visitor) {
-  return function(layout, self) {
+function yieldInShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
+  var hostYield = hostYieldWithShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor);
+
+  return function(shadowTemplate, self) {
+    hostYield(shadowTemplate, env, self, []);
+  };
+}
+
+export function hostYieldWithShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
+  return function(shadowTemplate, env, self, blockArguments) {
     morphsToPrune.clearMorph = null;
 
-    if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
-      return morph.lastResult.revalidateWith(env, undefined, self, [], visitor);
+    if (morph.lastYielded && isStableShadowRoot(template, shadowTemplate, morph.lastYielded)) {
+      return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     }
 
-    var layoutScope = env.hooks.createFreshScope();
-    env.hooks.bindBlock(env, layoutScope, blockToYield);
+    var shadowScope = env.hooks.createShadowScope(parentScope);
+    env.hooks.bindBlock(env, shadowScope, blockToYield);
 
-    morph.lastYielded = { self: self, template: template, layout: layout };
+    morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };
 
-    // Render the layout with the block available
-    morph.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph, self: self });
+    // Render the shadow template with the block available
+    morph.lastResult = render(shadowTemplate.raw, env, shadowScope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 
   function blockToYield(blockArguments, renderNode) {
@@ -224,8 +232,8 @@ function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visit
   }
 }
 
-function isStableLayout(template, layout, lastYielded) {
-  return template === lastYielded.template && layout === lastYielded.layout;
+function isStableShadowRoot(template, shadowTemplate, lastYielded) {
+  return template === lastYielded.template && shadowTemplate === lastYielded.shadowTemplate;
 }
 
 function optionsFor(template, inverse, env, scope, morph, visitor) {
@@ -244,7 +252,7 @@ function thisFor(options) {
   return {
     yield: options.template.yield,
     yieldItem: options.template.yieldItem,
-    withLayout: options.template.withLayout
+    yieldIn: options.template.yieldIn
   };
 }
 
@@ -252,7 +260,6 @@ function thisFor(options) {
   Host Hook: createScope
 
   @param {Scope?} parentScope
-  @param {Array<String>} localVariables
   @return Scope
 
   Corresponds to entering a new HTMLBars block.
@@ -265,9 +272,7 @@ function thisFor(options) {
   a fresh Scope.
 
   When invoked for a child template, the `parentScope`
-  is the scope for the parent environment, and
-  `localVariables` is an array of names of new variable
-  bindings that should be created for this scope.
+  is the scope for the parent environment.
 
   Note that the `Scope` is an opaque value that is
   passed to other host hooks. For example, the `get`
@@ -284,6 +289,65 @@ export function createScope(env, parentScope) {
 
 export function createFreshScope() {
   return { self: null, block: null, locals: {} };
+}
+
+/**
+  Host Hook: createShadowScope
+
+  @param {Scope?} parentScope
+  @return Scope
+
+  Corresponds to rendering a new template into an existing
+  render tree, but with a new top-level lexical scope. This
+  template is called the "shadow root".
+
+  If a shadow template invokes `{{yield}}`, it will render
+  the block provided to the shadow root in the original
+  lexical scope.
+
+  ```hbs
+  {{!-- post template --}}
+  <p>{{props.title}}</p>
+  {{yield}}
+
+  {{!-- blog template --}}
+  {{#post title="Hello world"}}
+    <p>by {{byline}}</p>
+    <article>This is my first post</article>
+  {{/post}}
+
+  {{#post title="Goodbye world"}}
+    <p>by {{byline}}</p>
+    <article>This is my last post</article>
+  {{/post}}
+  ```
+
+  ```js
+  helpers.post = function(params, hash, options) {
+    options.template.yieldIn(postTemplate, { props: hash });
+  };
+
+  blog.render({ byline: "Yehuda Katz" });
+  ```
+
+  Produces:
+
+  ```html
+  <p>Hello world</p>
+  <p>by Yehuda Katz</p>
+  <article>This is my first post</article>
+
+  <p>Goodbye world</p>
+  <p>by Yehuda Katz</p>
+  <article>This is my last post</article>
+  ```
+
+  In short, `yieldIn` creates a new top-level scope for the
+  provided template and renders it, making the original block
+  available to `{{yield}}` in that template.
+*/
+export function createShadowScope(/* parentScope */) {
+  return createFreshScope();
 }
 
 export function createChildScope(parent) {
@@ -335,11 +399,11 @@ export function bindLocal(env, scope, name, value) {
   @param {Scope} scope
   @param {Function} block
 
-  Corresponds to entering a layout that was invoked by a block helper with
-  `yieldWithLayout`.
+  Corresponds to entering a shadow template that was invoked by a block helper with
+  `yieldIn`.
 
   This hook is invoked with an opaque block that will be passed along to the
-  layout, and inserted into the layout when `{{yield}}` is used.
+  shadow template, and inserted into the shadow template when `{{yield}}` is used.
 */
 export function bindBlock(env, scope, block) {
   scope.block = block;
@@ -394,16 +458,21 @@ export function bindBlock(env, scope, block) {
   appropriate arguments.
 */
 export function block(morph, env, scope, path, params, hash, template, inverse, visitor) {
-  if (handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor)) {
+  if (handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor)) {
     return;
   }
 
-  var options = optionsFor(template, inverse, env, scope, morph, visitor);
+  hostBlock(morph, env, scope, template, inverse, visitor, function(options) {
+    var helper = env.hooks.lookupHelper(env, scope, path);
+    params = normalizeArray(env, params);
+    hash = normalizeObject(env, hash);
+    helper.call(thisFor(options.templates), params, hash, options.templates);
+  });
+}
 
-  var helper = env.hooks.lookupHelper(env, scope, path);
-  params = normalizeArray(env, params);
-  hash = normalizeObject(env, hash);
-  helper.call(thisFor(options.templates), params, hash, options.templates);
+export function hostBlock(morph, env, scope, template, inverse, visitor, callback) {
+  var options = optionsFor(template, inverse, env, scope, morph, visitor);
+  callback(options);
 
   var item = options.morphsToPrune.morphListStart;
   var toClear = options.morphsToPrune.clearMorph;
@@ -431,6 +500,21 @@ function pruneMorph(morph, cleanup) {
   morph.clear();
   morph.lastResult = null;
   morph.lastYielded = null;
+  morph.childNodes = null;
+}
+
+function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
+  var redirect = env.hooks.classify(env, scope, path);
+  if (redirect) {
+    env.hooks[redirect](morph, env, scope, path, hash, template, inverse, visitor);
+    return true;
+  }
+
+  if (handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor)) {
+    return true;
+  }
+
+  return false;
 }
 
 function handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor) {
@@ -530,12 +614,11 @@ export function linkRenderNode(/* morph, scope, params, hash */) {
   it invokes the `partial` host hook.
 */
 export function inline(morph, env, scope, path, params, hash, visitor) {
-  var value;
-
-  if (handleKeyword(path, morph, env, scope, params, hash, null, null, visitor)) {
+  if (handleRedirect(morph, env, scope, path, params, hash, null, null, visitor)) {
     return;
   }
 
+  var value;
   var options = optionsFor(null, null, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
@@ -570,6 +653,10 @@ function normalizeObject(env, object) {
   return out;
 }
 
+export function classify(/* env, scope, path */) {
+  return null;
+}
+
 export var keywords = {
   partial: function(morph, env, scope, params) {
     var value = env.hooks.partial(morph, env, scope, params[0]);
@@ -582,10 +669,6 @@ export var keywords = {
     return true;
   }
 };
-
-function isHelper(env, scope, path) {
-  return (env.hooks.keywords[path] !== undefined) || hasHelper(env, scope, path);
-}
 
 /**
   Host Hook: partial
@@ -616,49 +699,6 @@ function isHelper(env, scope, path) {
 export function partial(renderNode, env, scope, path) {
   var template = env.partials[path];
   return template.render(scope.self, env, {}).fragment;
-}
-
-/**
-  Host hook: content
-
-  @param {RenderNode} renderNode
-  @param {Environment} env
-  @param {Scope} scope
-  @param {String} path
-
-  Corresponds to:
-
-  ```hbs
-  {{content}}
-  {{{unescaped}}}
-  {{helper}}
-  ```
-
-  This hook is responsible for updating a render node
-  that represents an area of text with a value.
-
-  It is invoked for both helpers and content. The default
-  implementation of this hook classifies the path name.
-
-  If the path is a helper or a keyword, it invokes the `inline`
-  hook. Otherwise, it invokes the `get` hook to get the value
-  and then invokes the range hook with the value.
-*/
-export function content(morph, env, scope, path, visitor) {
-  if (isHelper(env, scope, path)) {
-    return env.hooks.inline(morph, env, scope, path, [], {}, visitor);
-  } else {
-    var params;
-    if (morph.linkedParams) {
-      params = morph.linkedParams.params;
-    } else {
-      params = [env.hooks.get(env, scope, path)];
-    }
-
-    linkParams(env, scope, morph, '@range', params, null);
-
-    return env.hooks.range(morph, env, scope, params[0]);
-  }
 }
 
 /**
@@ -815,7 +855,7 @@ export function getValue(value) {
 }
 
 export function component(morph, env, scope, tagName, attrs, template, visitor) {
-  if (isHelper(env, scope, tagName)) {
+  if (env.hooks.hasHelper(env, scope, tagName)) {
     return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null, visitor);
   }
 
@@ -849,29 +889,35 @@ export function lookupHelper(env, scope, helperName) {
 }
 
 export default {
+  // fundamental hooks that you will likely want to override
+  bindLocal: bindLocal,
+  bindSelf: bindSelf,
+  classify: classify,
+  cleanup: null,
+  component: component,
+  concat: concat,
+  createFreshScope: createFreshScope,
+  getChild: getChild,
+  getRoot: getRoot,
+  getValue: getValue,
   keywords: keywords,
   linkRenderNode: linkRenderNode,
-  createScope: createScope,
-  createFreshScope: createFreshScope,
-  createChildScope: createChildScope,
-  bindSelf: bindSelf,
-  bindLocal: bindLocal,
-  bindBlock: bindBlock,
-  lookupHelper: lookupHelper,
-  hasHelper: hasHelper,
-  content: content,
-  range: range,
-  block: block,
-  inline: inline,
   partial: partial,
-  component: component,
-  element: element,
-  attribute: attribute,
   subexpr: subexpr,
-  concat: concat,
+
+  // fundamental hooks with good default behavior
+  bindBlock: bindBlock,
+  createChildScope: createChildScope,
+  createShadowScope: createShadowScope,
+  hasHelper: hasHelper,
+  lookupHelper: lookupHelper,
+
+  // derived hooks
+  attribute: attribute,
+  block: block,
+  createScope: createScope,
+  element: element,
   get: get,
-  getRoot: getRoot,
-  getChild: getChild,
-  getValue: getValue,
-  cleanup: null
+  inline: inline,
+  range: range,
 };

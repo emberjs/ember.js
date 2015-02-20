@@ -368,30 +368,6 @@ test("The compiler passes along the hash arguments", function() {
   compilesTo('<div>{{testing first="one" second="two"}}</div>', '<div>one-two</div>');
 });
 
-test("Simple data binding using text nodes", function() {
-  var callback;
-
-  hooks.content = function(morph, env, scope, path) {
-    callback = function() {
-      morph.setContent(scope.self[path]);
-    };
-    callback();
-  };
-
-  var object = { title: 'hello' };
-  var fragment = compilesTo('<div>{{title}} world</div>', '<div>hello world</div>', object);
-
-  object.title = 'goodbye';
-  callback();
-
-  equalTokens(fragment, '<div>goodbye world</div>');
-
-  object.title = 'brown cow';
-  callback();
-
-  equalTokens(fragment, '<div>brown cow world</div>');
-});
-
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');
   template.render({}, env, { contextualElement: document.createElement('div') });
@@ -399,25 +375,6 @@ test("second render respects whitespace", function () {
   equal(fragment.childNodes.length, 3, 'fragment contains 3 text nodes');
   equal(getTextContent(fragment.childNodes[0]), 'Hello ', 'first text node ends with one space character');
   equal(getTextContent(fragment.childNodes[2]), ' ', 'last text node contains one space character');
-});
-
-test("morph receives escaping information", function() {
-  expect(3);
-
-  hooks.content = function(morph, env, scope, path) {
-    if (path === 'escaped') {
-      equal(morph.parseTextAsHTML, false);
-    } else if (path === 'unescaped') {
-      equal(morph.parseTextAsHTML, true);
-    }
-
-    morph.setContent(path);
-  };
-
-  // so we NEED a reference to div. because it's passed in twice.
-  // not divs childNodes.
-  // the parent we need to save is fragment.childNodes
-  compilesTo('<div>{{escaped}}-{{{unescaped}}}</div>', '<div>escaped-unescaped</div>');
 });
 
 test("Morphs are escaped correctly", function() {
@@ -782,13 +739,13 @@ test("Simple elements can have dashed attributes", function() {
 
 test("Block params", function() {
   registerHelper('a', function() {
-    this.withLayout(compile("A({{yield 'W' 'X1'}})"));
+    this.yieldIn(compile("A({{yield 'W' 'X1'}})"));
   });
   registerHelper('b', function() {
-    this.withLayout(compile("B({{yield 'X2' 'Y'}})"));
+    this.yieldIn(compile("B({{yield 'X2' 'Y'}})"));
   });
   registerHelper('c', function() {
-    this.withLayout(compile("C({{yield 'Z'}})"));
+    this.yieldIn(compile("C({{yield 'Z'}})"));
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
@@ -811,7 +768,7 @@ test('Block params in HTML syntax', function () {
   var layout = compile("BAR({{yield 'Xerxes' 'York' 'Zed'}})");
 
   registerHelper('x-bar', function() {
-    this.withLayout(layout);
+    this.yieldIn(layout);
   });
   compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
 });
