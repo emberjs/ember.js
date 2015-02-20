@@ -230,7 +230,7 @@ export default {
 
   shouldPrune: function(node, env, scope, params, hash) {
     // If `isStable` returns false, this function can return true to
-    // remove the node entirely instead of calling `render`.
+    // clear the render node entirely instead of calling `render`.
   }
 }
 ```
