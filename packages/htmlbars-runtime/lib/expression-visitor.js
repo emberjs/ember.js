@@ -128,7 +128,22 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
 
   // [ 'content', path ]
   content: function(node, morph, env, scope, visitor) {
-    env.hooks.content(morph, env, scope, node[1], visitor);
+    var path = node[1];
+
+    if (isHelper(env, scope, path)) {
+      env.hooks.inline(morph, env, scope, path, [], {}, visitor);
+      return;
+    }
+
+    var params;
+    if (morph.linkedParams) {
+      params = morph.linkedParams.params;
+    } else {
+      params = [env.hooks.get(env, scope, path)];
+    }
+
+    linkParams(env, scope, morph, '@range', params, null);
+    env.hooks.range(morph, env, scope, params[0]);
   },
 
   // [ 'element', path, params, hash ]
@@ -226,3 +241,7 @@ export default merge(createObject(base), {
 
   dirtyComponent: AlwaysDirtyVisitor.component
 });
+
+function isHelper(env, scope, path) {
+  return (env.hooks.keywords[path] !== undefined) || env.hooks.hasHelper(env, scope, path);
+}

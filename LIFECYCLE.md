@@ -40,12 +40,14 @@ Scope management:
   implementation of this hook creates a new scope with a `self` slot
   for the dynamic context and `locals`, a dictionary of local
   variables.
-* `createChildScope`: create a new scope that inherits from the
-  top-level scope. The child scope must reflect updates to `self`
-  or `locals` on the parent scope automatically, so the default
-  implementation of this hook uses `Object.create` on both the
-  scope object and the locals.
-* `bindSelf`: a `self` value has been provided for the scope
+* `createShadowScope`: create a new scope for a template that is
+  being rendered in the middle of the render tree with a new,
+  top-level scope (a "shadow root").
+* `createChildScope`: create a new scope that inherits from the parent
+  scope. The child scope must reflect updates to `self` or `locals` on
+  the parent scope automatically, so the default implementation of this
+  hook uses `Object.create` on both the scope object and the locals.
+* `bindSelf`: a fresh `self` value has been provided for the scope
 * `bindLocal`: a specific local variable has been provided for
   the scope (through block arguments).
 
@@ -211,21 +213,22 @@ export default {
     // stability.
   },
 
-  render: function(node, env, scope, params, hash, template, inverse, visitor) {
-    // This function is invoked on the first render, and any time the
-    // isStable function returns false.
+  setupState: function(state, env, scope, params, hash) {
+    // This function is invoked before `isStable` so that it can update any
+    // internal state based on external changes.
   },
+
+  isEmpty: function(state, env, scope, params, hash) {
+    // If `isStable` returns false, or this is the first render,
+    // this function can return true to indicate that the morph
+    // should be empty (and `render` should not be called).
+  }
 
   isPaused: function(state, env, scope, params, hash) {
     // This function is invoked on renders after the first render; if
     // it returns true, the entire subtree is assumed valid, and dirty
     // checking does not continue. This is useful during animations,
     // and in some cases, as a performance optimization.
-  },
-
-  setupState: function(state, env, scope, params, hash) {
-    // This function is invoked before `isStable` so that it can update any
-    // internal state based on external changes.
   },
 
   isStable: function(state, env, scope, params, hash) {
@@ -235,10 +238,16 @@ export default {
     // called again to produce new values.
   },
 
-  isEmpty: function(state, env, scope, params, hash) {
-    // If `isStable` returns false, or this is the first render,
-    // this function can return true to indicate that the morph
-    // should be empty (and `render` should not be called).
+  rerender: function(morph, env, scope, params, hash, template, inverse
+visitor) {
+    // This function is invoked if the `isStable` check returns true.
+    // Occasionally, you may have a bit of work to do when a node is
+    // stable even though you aren't tearing it down.
+  },
+
+  render: function(node, env, scope, params, hash, template, inverse, visitor) {
+    // This function is invoked on the first render, and any time the
+    // isStable function returns false.
   }
 }
 ```
