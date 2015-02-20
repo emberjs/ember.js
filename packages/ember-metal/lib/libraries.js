@@ -67,4 +67,10 @@ Libraries.prototype = {
   }
 };
 
+if (Ember.FEATURES.isEnabled("ember-libraries-isregistered")) {
+  Libraries.prototype.isRegistered = function(name) {
+    return !!this._getLibraryByName(name);
+  };
+}
+
 export default Libraries;
