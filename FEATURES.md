@@ -5,6 +5,11 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-libraries-isregistered`
+
+  Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
+  a library is registered with Ember or not.
+
 * `ember-routing-core-outlet`
 
   Provides a non-virtual version of OutletView named
