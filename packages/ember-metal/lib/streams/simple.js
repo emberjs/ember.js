@@ -6,10 +6,7 @@ import { read, isStream } from "ember-metal/streams/utils";
 function SimpleStream(source) {
   this.init();
   this.source = source;
-
-  if (isStream(source)) {
-    source.subscribe(this._didChange, this);
-  }
+  this.dependency = this.addDependency(this.source);
 }
 
 SimpleStream.prototype = create(Stream.prototype);
@@ -30,30 +27,16 @@ merge(SimpleStream.prototype, {
   setSource: function(nextSource) {
     var prevSource = this.source;
     if (nextSource !== prevSource) {
-      if (isStream(prevSource)) {
-        prevSource.unsubscribe(this._didChange, this);
-      }
-
-      if (isStream(nextSource)) {
-        nextSource.subscribe(this._didChange, this);
-      }
-
+      this.dependency.replace(nextSource);
       this.source = nextSource;
       this.notify();
     }
-  },
-
-  _didChange: function() {
-    this.notify();
   },
 
   _super$destroy: Stream.prototype.destroy,
 
   destroy: function() {
     if (this._super$destroy()) {
-      if (isStream(this.source)) {
-        this.source.unsubscribe(this._didChange, this);
-      }
       this.source = undefined;
       return true;
     }

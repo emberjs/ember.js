@@ -420,14 +420,26 @@ QUnit.test("should unsubscribe stream bindings", function() {
 
   var barStreamBinding = view._streamBindings['view.baz'];
 
-  equal(barStreamBinding.subscribers.length, 3*2, "adds 3 subscribers");
+  equal(countSubscribers(barStreamBinding), 3, "adds 3 subscribers");
 
   run(function() {
     view.get('content').popObject();
   });
 
-  equal(barStreamBinding.subscribers.length, 2*2, "removes 1 subscriber");
+  equal(countSubscribers(barStreamBinding), 2, "removes 1 subscriber");
 });
+
+function countSubscribers(stream) {
+  var count = 0;
+  var subscriber = stream.subscriberHead;
+
+  while (subscriber) {
+    count++;
+    subscriber = subscriber.next;
+  }
+
+  return count;
+}
 
 QUnit.test("should work inside a bound {{#if}}", function() {
   var testData = A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })]);
