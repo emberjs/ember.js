@@ -49,6 +49,7 @@ var ViewChildViewsSupport = Mixin.create({
   init() {
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
+    this.ownerView = this;
 
     this._super(...arguments);
   },
@@ -135,6 +136,12 @@ var ViewChildViewsSupport = Mixin.create({
     }
 
     return view;
+  },
+
+  linkChild: function(instance) {
+    instance.container = this.container;
+    instance._parentView = this;
+    instance.ownerView = this.ownerView;
   }
 });
 

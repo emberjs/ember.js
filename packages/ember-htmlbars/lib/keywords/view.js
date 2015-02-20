@@ -4,41 +4,56 @@
 */
 
 import { get } from "ember-metal/property_get";
-import { read } from "ember-metal/streams/utils";
+import { readViewFactory } from "ember-views/streams/utils";
 import Ember from "ember-metal/core";
+import EmberView from "ember-views/views/view";
 
 export default function viewKeyword(morph, env, scope, params, hash, template, inverse) {
-  var view = hash.view = read(params[0]).create();
+  var read = env.hooks.getValue;
+  var parentView = read(scope.locals.view);
+  var view = hash.view = getView(read(params[0]), parentView.container);
+  parentView.linkChild(view);
 
   morph.state.view = view;
-  view._transitionTo('inBuffer');
 
   Ember.assert("Expected morph to have only a single node", morph.firstNode === morph.lastNode);
 
   var dom = env.dom;
 
-  var element = dom.createElement(tagNameFor(view));
+  var contentMorph = view.renderer.contentMorphForView(view, morph, dom);
 
-  dom.setAttribute(element, 'id', view.elementId);
-  dom.insertBefore(morph.firstNode.parentNode, element, morph.firstNode);
+  var viewHasTemplate = get(view, 'template') || get(view, 'layout') || template;
+  var inDOM = parentView._state === 'inDOM';
 
-  if (get(view, 'template') || get(view, 'layout')) {
-    dom.insertBefore(element, morph.firstNode, null);
-    morph.contextualElement = element;
-
-    env.hooks.block(morph, env, scope, '@view', params, hash, null, null);
+  if (viewHasTemplate) {
+    env.hooks.block(contentMorph, env, scope, '@view', params, hash, template, null);
   }
 
-  view._transitionTo('hasElement');
-  view._transitionTo('inDOM');
+  view.renderer.didCreateElement(view);
+
+  if (inDOM) {
+    view._transitionTo('inDOM');
+  } else {
+    view.ownerView.newlyCreated.push(view);
+  }
 }
 
-function tagNameFor(view) {
-  var tagName = get(view, 'tagName');
+function getView(viewPath, container) {
+  var viewClassOrInstance;
 
-  if (tagName === null || tagName === undefined) {
-    tagName = 'div';
+  if (!viewPath) {
+    if (container) {
+      viewClassOrInstance = container.lookupFactory('view:toplevel');
+    } else {
+      viewClassOrInstance = EmberView;
+    }
+  } else {
+    viewClassOrInstance = readViewFactory(viewPath, container);
   }
 
-  return tagName;
+  if (viewClassOrInstance instanceof EmberView) {
+    return viewClassOrInstance;
+  } else {
+    return viewClassOrInstance.create();
+  }
 }

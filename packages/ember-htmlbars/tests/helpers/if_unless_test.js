@@ -584,8 +584,8 @@ QUnit.test('edge case: child conditional should not render children if parent co
   });
 
   // TODO: Priority Queue, for now ensure correct result.
-  //ok(!childCreated, 'child should not be created');
-  ok(child.isDestroyed, 'child should be gone');
+  ok(!childCreated, 'child should not be created');
+  //ok(child.isDestroyed, 'child should be gone');
   equal(view.$().text(), '');
 });
 

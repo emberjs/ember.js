@@ -22,31 +22,23 @@ export default function renderView(view, buffer, template) {
   }
 }
 
-function renderHTMLBarsTemplate(view, buffer, template) {
+// This function only gets called once per render of a "root view" (`appendTo`). Otherwise,
+// HTMLBars propagates the existing env and renders templates for a given render node.
+export function renderHTMLBarsTemplate(view, contextualElement, template) {
   Ember.assert(
     'The template being rendered by `' + view + '` was compiled with `' + template.revision +
     '` which does not match `Ember@VERSION_STRING_PLACEHOLDER` (this revision).',
     template.revision === 'Ember@VERSION_STRING_PLACEHOLDER'
   );
 
-  var contextualElement = buffer.innerContextualElement();
-  var args = view._blockArguments;
   var env = {
-    view: this,
     dom: view.renderer._dom,
     hooks: defaultEnv.hooks,
     helpers: defaultEnv.helpers,
-    useFragmentCache: defaultEnv.useFragmentCache,
-    data: {
-      view: view,
-      buffer: buffer
-    }
+    useFragmentCache: defaultEnv.useFragmentCache
   };
 
-  var lastResult = template.render(view, env, { contextualElement: contextualElement }, args);
-  view.lastResult = lastResult;
-
-  return lastResult.fragment;
+  return template.render(view, env, { contextualElement: contextualElement });
 }
 
 function renderLegacyTemplate(view, buffer, template) {

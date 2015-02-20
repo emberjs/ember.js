@@ -490,7 +490,7 @@ RenderBuffer.prototype = {
       this.elementProperties = null;
     }
 
-    this._element = element;
+    return this._element = element;
   },
 
   /**

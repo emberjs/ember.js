@@ -859,33 +859,6 @@ var View = CoreView.extend(
   },
 
   /**
-    When the parent view changes, recursively invalidate `controller`
-
-    @method _parentViewDidChange
-    @private
-  */
-  _parentViewDidChange: observer('_parentView', function() {
-    if (this.isDestroying) { return; }
-
-    this._setupKeywords();
-    this.trigger('parentViewDidChange');
-
-    if (get(this, 'parentView.controller') && !get(this, 'controller')) {
-      this.notifyPropertyChange('controller');
-    }
-  }),
-
-  _controllerDidChange: observer('controller', function() {
-    if (this.isDestroying) { return; }
-
-    this.rerender();
-
-    this.forEachChildView(function(view) {
-      view.propertyDidChange('controller');
-    });
-  }),
-
-  /**
     Renders the view again. This will work regardless of whether the
     view is already in the DOM or not. If the view is in the DOM, the
     rendering process will be deferred to give bindings a chance
@@ -1323,6 +1296,8 @@ var View = CoreView.extend(
     return this.currentState.appendAttr(this, node);
   },
 
+  templateRenderer: null,
+
   /**
     Removes the view from its `parentView`, if one is found. Otherwise
     does nothing.
@@ -1502,6 +1477,7 @@ View.views = {};
 // at view initialization time. This happens in Ember.ContainerView's init
 // method.
 View.childViewsProperty = childViewsProperty;
+
 
 export default View;
 

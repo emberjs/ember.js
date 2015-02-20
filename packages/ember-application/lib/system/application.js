@@ -19,7 +19,7 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import Renderer from "ember-views/system/renderer";
+import Renderer from "ember-metal-views/renderer";
 import DOMHelper from "dom-helper";
 import SelectView from "ember-views/views/select";
 import { OutletView } from "ember-routing-views/views/outlet";
