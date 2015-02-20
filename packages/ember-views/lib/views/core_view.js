@@ -1,4 +1,4 @@
-import Renderer from "ember-views/system/renderer";
+import Renderer from "ember-metal-views/renderer";
 import DOMHelper from "dom-helper";
 
 import {

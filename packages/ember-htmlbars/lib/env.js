@@ -5,16 +5,8 @@ import DOMHelper from "dom-helper";
 import { hooks } from "htmlbars-runtime";
 import merge from "ember-metal/merge";
 
-//import inline from "ember-htmlbars/hooks/inline";
-//import content from "ember-htmlbars/hooks/content";
-//import component from "ember-htmlbars/hooks/component";
-//import createScope from "ember-htmlbars/hooks/create-scope";
-//import block from "ember-htmlbars/hooks/block";
-//import element from "ember-htmlbars/hooks/element";
 import subexpr from "ember-htmlbars/hooks/subexpr";
-//import attribute from "ember-htmlbars/hooks/attribute";
 import concat from "ember-htmlbars/hooks/concat";
-//import get from "ember-htmlbars/hooks/get";
 import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
 import bindLocal from "ember-htmlbars/hooks/bind-local";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
@@ -40,10 +32,12 @@ var emberHooks = merge(hooks, {
 import unbound from "ember-htmlbars/keywords/unbound";
 import ifKeyword from "ember-htmlbars/keywords/if";
 import view from "ember-htmlbars/keywords/view";
+import debuggerKeyword from "ember-htmlbars/keywords/debugger";
 
 merge(emberHooks.keywords, {
-  unbound: unbound,
   "if": ifKeyword,
+  "debugger": debuggerKeyword,
+  unbound: unbound,
   view: view
 });
 
