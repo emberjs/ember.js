@@ -111,6 +111,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     var path = node[1], params = node[2], hash = node[3], templateId = node[4], inverseId = node[5];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
 
+    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.block(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1],
                            templateId === null ? null : template.templates[templateId],
                            inverseId === null ? null : template.templates[inverseId],
@@ -122,12 +123,15 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     var path = node[1], params = node[2], hash = node[3];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
 
+    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.inline(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1], visitor);
   },
 
   // [ 'content', path ]
   content: function(node, morph, env, scope, visitor) {
     var path = node[1];
+
+    morph.isDirty = morph.isSubtreeDirty = false;
 
     if (isHelper(env, scope, path)) {
       env.hooks.inline(morph, env, scope, path, [], {}, visitor);
@@ -150,6 +154,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     var path = node[1], params = node[2], hash = node[3];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
 
+    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.element(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1], visitor);
   },
 
@@ -158,6 +163,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     var name = node[1], value = node[2];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, '@attribute', [value], null);
 
+    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.attribute(morph, env, scope, name, paramsAndHash[0][0]);
   },
 
@@ -166,6 +172,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     var path = node[1], attrs = node[2], templateId = node[3];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, null, attrs);
 
+    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.component(morph, env, scope, path, paramsAndHash[1],
                         template.templates[templateId], visitor);
   }
@@ -174,74 +181,61 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
 export default merge(createObject(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template, visitor) {
-    if (morph.isDirty) {
-      this.dirtyBlock(node, morph, env, scope, template, visitor);
-      morph.isDirty = false;
-    } else {
-      validateChildMorphs(env, morph, visitor);
-    }
+    dirtyCheck(env, morph, visitor, function(visitor) {
+      AlwaysDirtyVisitor.block(node, morph, env, scope, template, visitor);
+    });
   },
-
-  dirtyBlock: AlwaysDirtyVisitor.block,
 
   // [ 'inline', path, params, hash ]
   inline: function(node, morph, env, scope, visitor) {
-    if (morph.isDirty) {
-      this.dirtyInline(node, morph, env, scope, visitor);
-      morph.isDirty = false;
-    } else {
-      validateChildMorphs(env, morph, visitor);
-    }
+    dirtyCheck(env, morph, visitor, function(visitor) {
+      AlwaysDirtyVisitor.inline(node, morph, env, scope, visitor);
+    });
   },
-
-  dirtyInline: AlwaysDirtyVisitor.inline,
 
   // [ 'content', path ]
   content: function(node, morph, env, scope, visitor) {
-    if (morph.isDirty) {
-      this.dirtyContent(node, morph, env, scope, visitor);
-      morph.isDirty = false;
-    } else {
-      validateChildMorphs(env, morph, visitor);
-    }
+    dirtyCheck(env, morph, visitor, function(visitor) {
+      AlwaysDirtyVisitor.content(node, morph, env, scope, visitor);
+    });
   },
-
-  dirtyContent: AlwaysDirtyVisitor.content,
 
   // [ 'element', path, params, hash ]
   element: function(node, morph, env, scope, template, visitor) {
-    if (morph.isDirty) {
-      this.dirtyElement(node, morph, env, scope, template, visitor);
-      morph.isDirty = false;
-    } else {
-      validateChildMorphs(env, morph, visitor);
-    }
+    dirtyCheck(env, morph, visitor, function(visitor) {
+      AlwaysDirtyVisitor.element(node, morph, env, scope, template, visitor);
+    });
   },
-
-  dirtyElement: AlwaysDirtyVisitor.element,
 
   // [ 'attribute', name, value ]
   attribute: function(node, morph, env, scope, template) {
-    if (morph.isDirty) {
-      this.dirtyAttribute(node, morph, env, scope, template);
-      morph.isDirty = false;
-    }
+    dirtyCheck(env, morph, null, function() {
+      AlwaysDirtyVisitor.dirtyAttribute(node, morph, env, scope, template);
+    });
   },
-
-  dirtyAttribute: AlwaysDirtyVisitor.attribute,
 
   // [ 'component', path, attrs, templateId ]
   component: function(node, morph, env, scope, template, visitor) {
-    if (morph.isDirty) {
-      this.dirtyComponent(node, morph, env, scope, template, visitor);
-      morph.isDirty = false;
-    } else {
-      validateChildMorphs(env, morph, visitor);
-    }
+    dirtyCheck(env, morph, visitor, function(visitor) {
+      AlwaysDirtyVisitor.component(node, morph, env, scope, template, visitor);
+    });
   },
-
-  dirtyComponent: AlwaysDirtyVisitor.component
 });
+
+function dirtyCheck(env, morph, visitor, callback) {
+  var isDirty = morph.isDirty;
+  var isSubtreeDirty = morph.isSubtreeDirty;
+
+  if (isSubtreeDirty) {
+    visitor = AlwaysDirtyVisitor;
+  }
+
+  if (isDirty || isSubtreeDirty) {
+    callback(visitor);
+  } else {
+    validateChildMorphs(env, morph, visitor);
+  }
+}
 
 function isHelper(env, scope, path) {
   return (env.hooks.keywords[path] !== undefined) || env.hooks.hasHelper(env, scope, path);
