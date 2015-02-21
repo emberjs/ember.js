@@ -110,7 +110,7 @@ QUnit.test("should not add loading and error routes if _isRouterMapResult is fal
 });
 
 QUnit.test("should show warning if an explicit index route is defined with path different than '/' or ''", function() {
-  expect(0);
+  expect(1);
   Ember.warn = function(msg, test) {
     if (!test) {
       equal(msg, "You are defining an 'index' route with a path different than '/'. Ember will not generate the default URL handler for the parent route. (You will probably get UnrecognizedURLError exceptions).");
