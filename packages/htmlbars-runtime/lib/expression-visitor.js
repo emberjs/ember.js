@@ -155,7 +155,7 @@ export function validateChildMorphs(morph, visitor) {
 
     while (current) {
       var next = current.nextMorph;
-      current.lastResult.revalidateWith(undefined, undefined, visitor);
+      validateChildMorphs(current, visitor);
       current = next;
     }
   } else if (morph.lastResult) {
