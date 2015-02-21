@@ -174,9 +174,9 @@ export default merge(createObject(base), {
     if (morph.isDirty) {
       this.dirtyBlock(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
+    } else {
+      validateChildMorphs(morph, visitor);
     }
-
-    validateChildMorphs(morph, visitor);
   },
 
   dirtyBlock: AlwaysDirtyVisitor.block,
@@ -186,11 +186,9 @@ export default merge(createObject(base), {
     if (morph.isDirty) {
       this.dirtyInline(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
+    } else {
+      validateChildMorphs(morph, visitor);
     }
-
-    // TODO: If child morphs were newly created by the `inline` hook
-    // (via a keyword), we should not need to revalidate them again.
-    validateChildMorphs(morph, visitor);
   },
 
   dirtyInline: AlwaysDirtyVisitor.inline,
@@ -200,9 +198,9 @@ export default merge(createObject(base), {
     if (morph.isDirty) {
       env.hooks.content(morph, env, scope, node[1], visitor);
       morph.isDirty = false;
+    } else {
+      validateChildMorphs(morph, visitor);
     }
-
-    validateChildMorphs(morph, visitor);
   },
 
   // [ 'element', path, params, hash ]
@@ -210,9 +208,9 @@ export default merge(createObject(base), {
     if (morph.isDirty) {
       this.dirtyElement(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
+    } else {
+      validateChildMorphs(morph, visitor);
     }
-
-    validateChildMorphs(morph, visitor);
   },
 
   dirtyElement: AlwaysDirtyVisitor.element,
@@ -232,9 +230,9 @@ export default merge(createObject(base), {
     if (morph.isDirty) {
       this.dirtyComponent(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
+    } else {
+      validateChildMorphs(morph, visitor);
     }
-
-    validateChildMorphs(morph, visitor);
   },
 
   dirtyComponent: AlwaysDirtyVisitor.component
