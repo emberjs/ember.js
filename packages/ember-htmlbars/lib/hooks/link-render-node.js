@@ -7,6 +7,10 @@ import { isStream } from "ember-metal/streams/utils";
 import run from "ember-metal/run_loop";
 
 export default function linkRenderNode(renderNode, params, hash) {
+  if (renderNode.state.unbound) {
+    return true;
+  }
+
   var unsubscribers = [];
 
   if (params.length) {
@@ -34,10 +38,6 @@ function subscribe(node, stream, unsubscribers) {
 
   unsubscribers.push(stream.subscribe(function() {
     node.isDirty = true;
-    run.scheduleOnce('render', node.ownerNode, rerender);
+    run.scheduleOnce('render', node.ownerNode.lastResult, 'revalidate');
   }));
-}
-
-function rerender() {
-  this.lastResult.revalidate();
 }

@@ -8,6 +8,7 @@ import { readArray } from "ember-metal/streams/utils";
 export default function unbound(morph, env, scope, originalParams, hash, template, inverse) {
   var path = originalParams.shift();
   var params = readArray(originalParams);
+  morph.state.unbound = true;
 
   if (params.length === 0) {
     return env.hooks.range(morph, env, path);

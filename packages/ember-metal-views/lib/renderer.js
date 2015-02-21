@@ -24,6 +24,7 @@ Renderer.prototype.renderTopLevelView =
     var result = view.renderTemplate(view, contentMorph.contextualElement, template);
 
     view.lastResult = result;
+    view.renderNode = morph;
     contentMorph.setNode(result.fragment);
 
     for (var i=0, l=newlyCreated.length; i<l; i++) {
@@ -138,6 +139,7 @@ function contentMorphForView(view, morph, dom) {
   if (element && element.nodeType === 1) {
     view.element = element;
     contentMorph = dom.insertMorphBefore(element, null);
+    contentMorph.ownerNode = morph.ownerNode;
     morph.childNodes = [contentMorph];
     morph.setContent(element);
   } else {

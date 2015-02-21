@@ -14,10 +14,16 @@ import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
 import getValue from "ember-htmlbars/hooks/get-value";
 import cleanup from "ember-htmlbars/hooks/cleanup";
+import content from "ember-htmlbars/hooks/content";
+import inline from "ember-htmlbars/hooks/inline";
+import block from "ember-htmlbars/hooks/block";
+import component from "ember-htmlbars/hooks/component";
 
 import helpers from "ember-htmlbars/helpers";
 
-var emberHooks = merge(hooks, {
+var emberHooks = merge({}, hooks);
+
+merge(emberHooks, {
   linkRenderNode: linkRenderNode,
   bindLocal: bindLocal,
   bindSelf: bindSelf,
@@ -26,7 +32,11 @@ var emberHooks = merge(hooks, {
   getValue: getValue,
   subexpr: subexpr,
   concat: concat,
-  cleanup: cleanup
+  cleanup: cleanup,
+  content: content,
+  inline: inline,
+  block: block,
+  component: component
 });
 
 import unbound from "ember-htmlbars/keywords/unbound";
@@ -40,7 +50,6 @@ merge(emberHooks.keywords, {
   unbound: unbound,
   view: view
 });
-
 
 export default {
   hooks: emberHooks,

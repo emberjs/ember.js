@@ -24,5 +24,20 @@ export default EmberObject.extend({
       }
       return Component;
     }
+  },
+
+  isComponent: function(name, container) {
+    return container._registry.has('component:' + name) ||
+           container._registry.has('template:components/' + name);
+  },
+
+  componentFor: function(name, container) {
+    var fullName = 'component:' + name;
+    return container.lookupFactory(fullName);
+  },
+
+  layoutFor: function(name, container) {
+    var templateFullName = 'template:components/' + name;
+    return container.lookup(templateFullName);
   }
 });
