@@ -54,16 +54,14 @@ test("a simple implementation of a dirtying rerender", function() {
 
   equalTokens(result.fragment, '<div><p>hello world</p></div>', "Initial render");
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, '<div><p>hello world</p></div>', "After dirtying but not updating");
   strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   // Even though the #if was stable, a dirty child node is updated
   object.value = 'goodbye world';
-  result.dirty();
-  result.revalidate();
+  result.rerender();
   equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After updating and dirtying");
   strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
@@ -73,8 +71,7 @@ test("a simple implementation of a dirtying rerender", function() {
   equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After flipping the condition but not dirtying");
   strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
   equalTokens(result.fragment, '<div><p>Nothing</p></div>', "And then dirtying");
   QUnit.notStrictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 });
@@ -89,14 +86,12 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   // Should not update since render node is not marked as dirty
   object.condition = false;
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
   equalTokens(result.fragment, '<div><!----></div>', "If the condition is false, the morph becomes empty");
 
   object.condition = true;
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
   equalTokens(result.fragment, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
 });
 
@@ -114,16 +109,14 @@ test("a dirtying rerender using `withLayout`", function() {
   var valueNode = getValueNode();
   equalTokens(result.fragment, '<div><p>Hello world</p></div>');
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, '<div><p>Hello world</p></div>');
   strictEqual(getValueNode(), valueNode);
 
   object.title = "Goodbye world";
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
   equalTokens(result.fragment, '<div><p>Goodbye world</p></div>');
   strictEqual(getValueNode(), valueNode);
 
@@ -158,8 +151,7 @@ test("a dirtying rerender using `withLayout` and self", function() {
   assertStableNodes();
 
   function rerender() {
-    result.dirty();
-    result.revalidate();
+    result.rerender();
   }
 
   function assertStableNodes() {
@@ -202,8 +194,7 @@ test("a dirtying rerender using `withLayout`, self and block args", function() {
   assertStableNodes();
 
   function rerender() {
-    result.dirty();
-    result.revalidate();
+    result.rerender();
   }
 
   function assertStableNodes() {
@@ -273,8 +264,7 @@ test("clean content doesn't get blown away", function() {
   };
 
   object.value = "hello";
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 });
 
 test("helper calls follow the normal dirtying rules", function() {
@@ -296,8 +286,7 @@ test("helper calls follow the normal dirtying rules", function() {
 
   var textRenderNode = result.root.childNodes[0];
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, '<div>GOODBYE</div>');
 
@@ -307,8 +296,7 @@ test("helper calls follow the normal dirtying rules", function() {
 
   // Checks normalized value, not raw value
   object.value = "GoOdByE";
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 });
 
 test("attribute nodes follow the normal dirtying rules", function() {
@@ -325,8 +313,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
 
   var attrRenderNode = result.root.childNodes[0];
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 
@@ -335,8 +322,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   };
 
   object.value = "universe";
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 });
 
 test("attribute nodes w/ concat follow the normal dirtying rules", function() {
@@ -353,8 +339,7 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 
   var attrRenderNode = result.root.childNodes[0];
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, "<div class='hello universe'>hello</div>");
 
@@ -363,8 +348,7 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   };
 
   object.value = "universe";
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 });
 
 test("An implementation of #each", function() {
@@ -471,8 +455,7 @@ test("An implementation of #each", function() {
   equalTokens(result.fragment, "<ul><!----></ul>", "After removing the remaining entries");
 
   function rerender(context) {
-    result.dirty();
-    result.revalidate(context);
+    result.rerender(context);
   }
 
   function assertStableNodes(className, message) {
@@ -531,8 +514,7 @@ test("Returning true from `linkRenderNodes` makes the value itself stable across
 
   streams.hello.value = "goodbye";
 
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   equalTokens(result.fragment, "<div class='goodbye world'></div>");
 });
@@ -562,15 +544,13 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   equalTokens(result.fragment, "<div><p>hello world</p></div>");
 
   object.condition = false;
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
   strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
 
   object.condition = true;
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 2, "cleanup hook was invoked again");
   strictEqual(cleanedUpNode.lastValue, 'Nothing', "The correct render node is passed in");
@@ -585,15 +565,13 @@ test("Pruned render nodes invoke a cleanup hook when cleared", function() {
   equalTokens(result.fragment, "<div><p>hello world</p></div>");
 
   object.condition = false;
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
   strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
 
   object.condition = true;
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 1, "cleanup hook was not invoked again");
 });
@@ -607,15 +585,13 @@ test("Pruned lists invoke a cleanup hook when removing elements", function() {
   equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
 
   object.list.pop();
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 2, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
 
   object.list.pop();
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 4, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
@@ -630,15 +606,13 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
   equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
 
   object.list.pop();
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 3, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
 
   object.list.pop();
-  result.dirty();
-  result.revalidate();
+  result.rerender();
 
   strictEqual(cleanedUpCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
