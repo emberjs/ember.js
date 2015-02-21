@@ -67,21 +67,23 @@ export default function render(template, env, scope, options, blockArguments) {
       }
       rootNode.clear();
     },
-    revalidate: function(newScope, newBlockArguments) {
-      if (newScope !== undefined) { scope.self = newScope; }
-      populateNodes(scope, newBlockArguments || blockArguments, ExpressionVisitor);
+    revalidate: function(scope, blockArguments) {
+      lastResult.revalidateWith(scope, blockArguments, ExpressionVisitor);
     },
-    rerender: function(newScope, newBlockArguments) {
+    rerender: function(scope, blockArguments) {
+      lastResult.revalidateWith(scope, blockArguments, AlwaysDirtyVisitor);
+    },
+    revalidateWith: function(newScope, newBlockArguments, visitor) {
       if (newScope !== undefined) { scope.self = newScope; }
-      populateNodes(scope, newBlockArguments || blockArguments, AlwaysDirtyVisitor);
-    }
+      populateNodes(scope, newBlockArguments || blockArguments, visitor);
+    },
   };
 
   rootNode.lastResult = lastResult;
 
   return lastResult;
 
-  function populateNodes(scope, blockArguments, ExpressionVisitor) {
+  function populateNodes(scope, blockArguments, visitor) {
     var i, l;
 
     for (i=0, l=locals.length; i<l; i++) {
@@ -89,7 +91,7 @@ export default function render(template, env, scope, options, blockArguments) {
     }
 
     for (i=0, l=statements.length; i<l; i++) {
-      ExpressionVisitor.accept(statements[i], nodes[i], env, scope, template);
+      visitor.accept(statements[i], nodes[i], env, scope, template, visitor);
     }
   }
 }

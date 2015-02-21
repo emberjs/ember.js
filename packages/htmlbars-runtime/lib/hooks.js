@@ -92,21 +92,21 @@ export function wrap(template) {
   };
 }
 
-export function wrapForHelper(template, env, scope, morph, morphsToPrune) {
+export function wrapForHelper(template, env, scope, morph, morphsToPrune, visitor) {
   if (template === null) {
     return {
-      withLayout: yieldWithLayout(null, env, scope, morph, morphsToPrune)
+      withLayout: yieldWithLayout(null, env, scope, morph, morphsToPrune, visitor)
     };
   }
 
-  var yieldArgs = yieldTemplate(template, env, scope, morph, morphsToPrune);
+  var yieldArgs = yieldTemplate(template, env, scope, morph, morphsToPrune, visitor);
 
   return {
     arity: template.arity,
     revision: template.revision,
     yield: yieldArgs,
-    yieldItem: yieldItem(template, env, scope, morph, morphsToPrune),
-    withLayout: yieldWithLayout(template, env, scope, morph, morphsToPrune),
+    yieldItem: yieldItem(template, env, scope, morph, morphsToPrune, visitor),
+    withLayout: yieldWithLayout(template, env, scope, morph, morphsToPrune, visitor),
 
     render: function(self, blockArguments) {
       yieldArgs(blockArguments, self);
@@ -114,13 +114,13 @@ export function wrapForHelper(template, env, scope, morph, morphsToPrune) {
   };
 }
 
-function yieldTemplate(template, env, parentScope, morph, morphsToPrune) {
+function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
   return function(blockArguments, self) {
     morphsToPrune.clearMorph = null;
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
-      return morph.lastResult.revalidate(self, blockArguments);
+      return morph.lastResult.revalidateWith(self, blockArguments, visitor);
     }
 
     // Check to make sure that we actually **need** a new scope, and can't
@@ -142,7 +142,7 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune) {
   };
 }
 
-function yieldItem(template, env, parentScope, morph, morphsToPrune) {
+function yieldItem(template, env, parentScope, morph, morphsToPrune, visitor) {
   var currentMorph = null;
   var morphList = morph.morphList;
   if (morphList) {
@@ -167,18 +167,18 @@ function yieldItem(template, env, parentScope, morph, morphsToPrune) {
     morphMap = morph.morphMap;
 
     if (currentMorph && currentMorph.key === key) {
-      yieldTemplate(template, env, parentScope, currentMorph, morphsToPrune)(blockArguments);
+      yieldTemplate(template, env, parentScope, currentMorph, morphsToPrune, visitor)(blockArguments);
       currentMorph = currentMorph.nextMorph;
     } else if (currentMorph && morphMap[key] !== undefined) {
       var foundMorph = morphMap[key];
-      yieldTemplate(template, env, parentScope, foundMorph, morphsToPrune)(blockArguments);
+      yieldTemplate(template, env, parentScope, foundMorph, morphsToPrune, visitor)(blockArguments);
       morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
       childMorph.key = key;
       morphMap[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
-      yieldTemplate(template, env, parentScope, childMorph, morphsToPrune)(blockArguments);
+      yieldTemplate(template, env, parentScope, childMorph, morphsToPrune, visitor)(blockArguments);
     }
 
     morphsToPrune.morphListStart = currentMorph;
@@ -190,13 +190,13 @@ function isStableTemplate(template, lastYielded) {
   return !lastYielded.layout && template === lastYielded.template;
 }
 
-function yieldWithLayout(template, env, parentScope, morph, morphsToPrune) {
+function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visitor) {
   return function(layout, self) {
     morphsToPrune.clearMorph = null;
     var layoutScope = env.hooks.createScope(null, layout.arity);
 
     if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
-      return morph.lastResult.revalidate(self, []);
+      return morph.lastResult.revalidateWith(self, [], visitor);
     }
 
     if (self !== undefined) {
@@ -213,7 +213,7 @@ function yieldWithLayout(template, env, parentScope, morph, morphsToPrune) {
 
   function blockToYield(blockArguments, renderNode) {
     if (renderNode.lastResult) {
-      renderNode.lastResult.revalidate(parentScope.self, blockArguments);
+      renderNode.lastResult.revalidateWith(parentScope.self, blockArguments, visitor);
     } else {
       var scope = parentScope;
 
@@ -232,13 +232,13 @@ function isStableLayout(template, layout, lastYielded) {
   return template === lastYielded.template && layout === lastYielded.layout;
 }
 
-function optionsFor(template, inverse, env, scope, morph) {
+function optionsFor(template, inverse, env, scope, morph, visitor) {
   var morphsToPrune = { morphListStart: null, clearMorph: morph };
 
   return {
     templates: {
-      template: wrapForHelper(template, env, scope, morph, morphsToPrune),
-      inverse: wrapForHelper(inverse, env, scope, morph, morphsToPrune)
+      template: wrapForHelper(template, env, scope, morph, morphsToPrune, visitor),
+      inverse: wrapForHelper(inverse, env, scope, morph, morphsToPrune, visitor)
     },
     morphsToPrune: morphsToPrune
   };
@@ -400,13 +400,13 @@ export function bindBlock(env, scope, block) {
   where appropriate, and properly invokes the helper with the
   appropriate arguments.
 */
-export function block(morph, env, scope, path, params, hash, template, inverse) {
+export function block(morph, env, scope, path, params, hash, template, inverse, visitor) {
   var keyword = env.hooks.keywords[path];
-  if (keyword && !keyword(morph, env, scope, params, hash, template, inverse)) {
+  if (keyword && !keyword(morph, env, scope, params, hash, template, inverse, visitor)) {
     return;
   }
 
-  var options = optionsFor(template, inverse, env, scope, morph);
+  var options = optionsFor(template, inverse, env, scope, morph, visitor);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
   linkParams(env, morph, params, hash);
@@ -760,9 +760,9 @@ export function getValue(value) {
   return value;
 }
 
-export function component(morph, env, scope, tagName, attrs, template) {
+export function component(morph, env, scope, tagName, attrs, template, visitor) {
   if (isHelper(env, scope, tagName)) {
-    return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null);
+    return env.hooks.block(morph, env, scope, tagName, [], attrs, template, null, visitor);
   }
 
   componentFallback(morph, env, scope, tagName, attrs, template);
