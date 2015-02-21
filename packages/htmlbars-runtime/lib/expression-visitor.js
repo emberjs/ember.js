@@ -148,7 +148,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   }
 });
 
-function validateChildMorphs(morph, visitor) {
+export function validateChildMorphs(morph, visitor) {
   var morphList = morph.morphList;
   if (morph.morphList) {
     var current = morphList.firstChildMorph;
