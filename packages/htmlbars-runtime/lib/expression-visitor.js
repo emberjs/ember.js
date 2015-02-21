@@ -115,71 +115,94 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   }
 });
 
+function validateChildMorphs(morph) {
+  var morphList = morph.morphList;
+  if (morph.morphList) {
+    var current = morphList.firstChildMorph;
+
+    while (current) {
+      var next = current.nextMorph;
+      current.lastResult.revalidate();
+      current = next;
+    }
+  } else if (morph.lastResult) {
+    morph.lastResult.revalidate();
+  } else if (morph.childNodes) {
+    // This means that the childNodes were wired up manually
+    for (var i=0, l=morph.childNodes.length; i<l; i++) {
+      validateChildMorphs(morph.childNodes[i]);
+    }
+  }
+}
+
 export default merge(createObject(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template) {
-    if (!morph.isDirty) {
-      var morphList = morph.morphList;
-      if (morph.morphList) {
-        var current = morphList.firstChildMorph;
-
-        while (current) {
-          var next = current.nextMorph;
-          current.lastResult.revalidate();
-          current = next;
-        }
-      } else {
-        morph.lastResult.revalidate();
-      }
-      return;
+    if (morph.isDirty) {
+      this.dirtyBlock(node, morph, env, scope, template);
+      morph.isDirty = false;
     }
 
-    this.dirtyBlock(node, morph, env, scope, template);
-
-    morph.isDirty = false;
+    validateChildMorphs(morph);
   },
 
   dirtyBlock: AlwaysDirtyVisitor.block,
 
   // [ 'inline', path, params, hash ]
   inline: function(node, morph, env, scope, template) {
-    if (!morph.isDirty) { return; }
-    this.dirtyInline(node, morph, env, scope, template);
-    morph.isDirty = false;
+    if (morph.isDirty) {
+      this.dirtyInline(node, morph, env, scope, template);
+      morph.isDirty = false;
+    }
+
+    // TODO: If child morphs were newly created by the `inline` hook
+    // (via a keyword), we should not need to revalidate them again.
+    validateChildMorphs(morph);
   },
 
   dirtyInline: AlwaysDirtyVisitor.inline,
 
   // [ 'content', path ]
   content: function(node, morph, env, scope) {
-    if (!morph.isDirty) { return; }
-    env.hooks.content(morph, env, scope, node[1]);
-    morph.isDirty = false;
+    if (morph.isDirty) {
+      env.hooks.content(morph, env, scope, node[1]);
+      morph.isDirty = false;
+    }
+
+    validateChildMorphs(morph);
   },
 
   // [ 'element', path, params, hash ]
   element: function(node, morph, env, scope, template) {
-    if (!morph.isDirty) { return; }
-    this.dirtyElement(node, morph, env, scope, template);
-    morph.isDirty = false;
+    if (morph.isDirty) {
+      this.dirtyElement(node, morph, env, scope, template);
+      morph.isDirty = false;
+    }
+
+    validateChildMorphs(morph);
   },
 
   dirtyElement: AlwaysDirtyVisitor.element,
 
   // [ 'attribute', name, value ]
   attribute: function(node, morph, env, scope, template) {
-    if (!morph.isDirty) { return; }
-    this.dirtyAttribute(node, morph, env, scope, template);
-    morph.isDirty = false;
+    if (morph.isDirty) {
+      this.dirtyAttribute(node, morph, env, scope, template);
+      morph.isDirty = false;
+    }
+
+    validateChildMorphs(morph);
   },
 
   dirtyAttribute: AlwaysDirtyVisitor.attribute,
 
   // [ 'component', path, attrs, templateId ]
   component: function(node, morph, env, scope, template) {
-    if (!morph.isDirty) { return; }
-    this.dirtyComponent(node, morph, env, scope, template);
-    morph.isDirty = false;
+    if (morph.isDirty) {
+      this.dirtyComponent(node, morph, env, scope, template);
+      morph.isDirty = false;
+    }
+    validateChildMorphs(morph);
   },
 
   dirtyComponent: AlwaysDirtyVisitor.component

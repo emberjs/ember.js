@@ -429,6 +429,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse) 
   if (toClear) {
     visitChildren(toClear.childNodes, cleanup);
     toClear.clear();
+    morph.lastResult = null;
     morph.lastYielded = null;
   }
 
