@@ -7,6 +7,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.state = {};
   this.ownerNode = null;
   this.isDirty = false;
+  this.isSubtreeDirty = false;
   this.lastYielded = null;
   this.lastResult = null;
   this.lastValue = null;
