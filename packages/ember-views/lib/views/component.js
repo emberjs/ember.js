@@ -5,12 +5,10 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
 import { bool } from "ember-metal/computed_macros";
-import defaultComponentLayout from "ember-htmlbars/templates/component";
 
 /**
 @module ember
@@ -117,15 +115,6 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }),
 
-  init() {
-    this._super(...arguments);
-    this._keywords.view = this;
-    set(this, 'context', this);
-    set(this, 'controller', this);
-  },
-
-  defaultLayout: defaultComponentLayout,
-
   /**
   A components template property is set by passing a block
   during its invocation. It is executed within the parent context.
@@ -167,29 +156,6 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @property templateName
   */
   templateName: null,
-
-  _setupKeywords() {},
-
-  _yield(context, options, morph, blockArguments) {
-    var view = options.data.view;
-    var parentView = this._parentView;
-    var template = get(this, 'template');
-
-    if (template) {
-      Ember.assert("A Component must have a parent view in order to yield.", parentView);
-
-      view.appendChild(View, {
-        isVirtual: true,
-        tagName: '',
-        template: template,
-        _blockArguments: blockArguments,
-        _contextView: parentView,
-        _morph: morph,
-        context: get(parentView, 'context'),
-        controller: get(parentView, 'controller')
-      });
-    }
-  },
 
   /**
     If the component is currently inserted into the DOM of a parent view, this

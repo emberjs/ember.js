@@ -26,13 +26,15 @@ export default function viewKeyword(morph, env, scope, params, hash, template, i
   var inDOM = parentView._state === 'inDOM';
 
   if (viewHasTemplate) {
-    env.hooks.block(contentMorph, env, scope, '@view', params, hash, template, null);
+    var viewHash = { self: view, layout: get(view, 'template') };
+    env.hooks.block(contentMorph, env, scope, '@view', params, viewHash, template, null);
   }
 
   view.renderer.didCreateElement(view);
 
   if (inDOM) {
-    view._transitionTo('inDOM');
+    // TODO: Make sure this gets called once all descendents are also in DOM
+    view.renderer.didInsertElement(view);
   } else {
     view.ownerView.newlyCreated.push(view);
   }

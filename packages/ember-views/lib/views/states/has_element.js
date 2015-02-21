@@ -3,7 +3,6 @@ import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
 import create from 'ember-metal/platform/create';
 import jQuery from "ember-views/system/jquery";
-import EmberError from "ember-metal/error";
 
 /**
 @module ember
@@ -11,6 +10,7 @@ import EmberError from "ember-metal/error";
 */
 
 import { get } from "ember-metal/property_get";
+import { visitChildren } from "htmlbars-runtime";
 
 var hasElement = create(_default);
 
@@ -30,17 +30,9 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender(view) {
-    if (view._root._morph && !view._elementInserted) {
-      throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
-    }
-    // TODO: should be scheduled with renderer
-    run.scheduleOnce('render', function () {
-      if (view.isDestroying) {
-        return;
-      }
-
-      view._renderer.renderTree(view, view._parentView);
-    });
+    var renderNode = view.renderNode;
+    visitChildren([renderNode], function(node) { node.isDirty = true; });
+    run.scheduleOnce('render', renderNode.ownerNode.lastResult, 'revalidate');
   },
 
   // once the view is already in the DOM, destroying it removes it
