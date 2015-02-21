@@ -36,6 +36,20 @@ QUnit.test('only the first registration of a library is stored', function() {
   equal(registry.length, 1);
 });
 
+if (Ember.FEATURES.isEnabled('ember-libraries-isregistered')) {
+  QUnit.test('isRegistered returns correct value', function() {
+    expect(3);
+
+    equal(libs.isRegistered('magic'), false);
+
+    libs.register('magic', 1.23);
+    equal(libs.isRegistered('magic'), true);
+
+    libs.deRegister('magic');
+    equal(libs.isRegistered('magic'), false);
+  });
+}
+
 QUnit.test('attempting to register a library that is already registered warns you', function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');

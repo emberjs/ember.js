@@ -169,17 +169,15 @@ export function scanHash(hash) {
                   replaced by the current value of the stream
  */
 export function concat(array, separator) {
-  // TODO: Create subclass ConcatStream < Stream. Defer
-  // subscribing to streams until the value() is called.
   var hasStream = scanArray(array);
   if (hasStream) {
     var i, l;
     var stream = new Stream(function() {
-      return readArray(array).join(separator);
+      return concat(readArray(array), separator);
     });
 
     for (i = 0, l=array.length; i < l; i++) {
-      subscribe(array[i], stream.notify, stream);
+      stream.addDependency(array[i]);
     }
 
     return stream;
