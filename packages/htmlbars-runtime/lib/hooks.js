@@ -480,11 +480,11 @@ export function linkRenderNode(/* morph, params, hash */) {
   a keyword. Instead of invoking a helper named `partial`,
   it invokes the `partial` host hook.
 */
-export function inline(morph, env, scope, path, params, hash) {
+export function inline(morph, env, scope, path, params, hash, visitor) {
   var value;
 
   var keyword = env.hooks.keywords[path];
-  if (keyword && !keyword(morph, env, scope, params, hash, null, null)) {
+  if (keyword && !keyword(morph, env, scope, params, hash, null, null, visitor)) {
     return;
   }
 
@@ -595,9 +595,9 @@ export function partial(renderNode, env, scope, path) {
   hook. Otherwise, it invokes the `get` hook to get the value
   and then invokes the range hook with the value.
 */
-export function content(morph, env, scope, path) {
+export function content(morph, env, scope, path, visitor) {
   if (isHelper(env, scope, path)) {
-    return env.hooks.inline(morph, env, scope, path, [], {});
+    return env.hooks.inline(morph, env, scope, path, [], {}, visitor);
   } else {
     var value = env.hooks.get(env, scope, path);
     return env.hooks.range(morph, env, value);
@@ -660,7 +660,7 @@ export function range(morph, env, value) {
   to be superseded by component syntax and the
   `attribute` hook.
 */
-export function element(morph, env, scope, path, params, hash) {
+export function element(morph, env, scope, path, params, hash /*, visitor */) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
     linkParams(env, morph, params, hash);

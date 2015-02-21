@@ -50,7 +50,7 @@ var base = {
     }
   },
 
-  acceptParams: function(nodes, morph, env, scope, template) {
+  acceptParams: function(nodes, morph, env, scope) {
     if (morph.linkedParams) {
       return morph.linkedParams.params;
     }
@@ -58,13 +58,13 @@ var base = {
     var arr = new Array(nodes.length);
 
     for (var i=0, l=nodes.length; i<l; i++) {
-      arr[i] =  this.accept(nodes[i], morph, env, scope, template);
+      arr[i] =  this.accept(nodes[i], morph, env, scope, null, null);
     }
 
     return arr;
   },
 
-  acceptHash: function(pairs, morph, env, scope, template) {
+  acceptHash: function(pairs, morph, env, scope) {
     if (morph.linkedParams) {
       return morph.linkedParams.hash;
     }
@@ -72,7 +72,7 @@ var base = {
     var object = {};
 
     for (var i=0, l=pairs.length; i<l; i += 2) {
-      object[pairs[i]] = this.accept(pairs[i+1], morph, env, scope, template);
+      object[pairs[i]] = this.accept(pairs[i+1], morph, env, scope, null, null);
     }
 
     return object;
@@ -84,16 +84,16 @@ var base = {
   },
 
   // [ 'subexpr', path, params, hash ]
-  subexpr: function(node, morph, env, scope, template) {
+  subexpr: function(node, morph, env, scope) {
     var path = node[1], params = node[2], hash = node[3];
     return env.hooks.subexpr(env, scope, path,
-                             this.acceptParams(params, morph, env, scope, template),
-                             this.acceptHash(hash, morph, env, scope, template));
+                             this.acceptParams(params, morph, env, scope),
+                             this.acceptHash(hash, morph, env, scope));
   },
 
   // [ 'concat', parts ]
-  concat: function(node, morph, env, scope, template) {
-    return env.hooks.concat(env, this.acceptParams(node[1], morph, env, scope, template));
+  concat: function(node, morph, env, scope) {
+    return env.hooks.concat(env, this.acceptParams(node[1], morph, env, scope));
   }
 };
 
@@ -110,11 +110,11 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   },
 
   // [ 'inline', path, params, hash ]
-  inline: function(node, morph, env, scope, template, visitor) {
+  inline: function(node, morph, env, scope, visitor) {
     var path = node[1], params = node[2], hash = node[3];
     env.hooks.inline(morph, env, scope, path,
-                            this.acceptParams(params, morph, env, scope, template),
-                            this.acceptHash(hash, morph, env, scope, template),
+                            this.acceptParams(params, morph, env, scope),
+                            this.acceptHash(hash, morph, env, scope),
                             visitor);
   },
 
@@ -124,18 +124,18 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   },
 
   // [ 'element', path, params, hash ]
-  element: function(node, morph, env, scope, template, visitor) {
+  element: function(node, morph, env, scope, visitor) {
     var path = node[1], params = node[2], hash = node[3];
     env.hooks.element(morph, env, scope, path,
-                      this.acceptParams(params, morph, env, scope, template),
-                      this.acceptHash(hash, morph, env, scope, template),
+                      this.acceptParams(params, morph, env, scope),
+                      this.acceptHash(hash, morph, env, scope),
                       visitor);
   },
 
   // [ 'attribute', name, value ]
-  attribute: function(node, morph, env, scope, template) {
+  attribute: function(node, morph, env, scope) {
     env.hooks.attribute(morph, env, node[1],
-                        this.acceptParams([node[2]], morph, env, scope, template)[0]);
+                        this.acceptParams([node[2]], morph, env, scope)[0]);
   },
 
   // [ 'component', path, attrs, templateId ]
@@ -182,9 +182,9 @@ export default merge(createObject(base), {
   dirtyBlock: AlwaysDirtyVisitor.block,
 
   // [ 'inline', path, params, hash ]
-  inline: function(node, morph, env, scope, template, visitor) {
+  inline: function(node, morph, env, scope, visitor) {
     if (morph.isDirty) {
-      this.dirtyInline(node, morph, env, scope, template, visitor);
+      this.dirtyInline(node, morph, env, scope, visitor);
       morph.isDirty = false;
     } else {
       validateChildMorphs(morph, visitor);
