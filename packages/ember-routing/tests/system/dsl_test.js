@@ -1,13 +1,15 @@
 import EmberRouter from "ember-routing/system/router";
 import { forEach } from "ember-metal/enumerable_utils";
 
-var Router;
+var Router, oldWarn;
 
 QUnit.module("Ember Router DSL", {
   setup: function() {
+    oldWarn = Ember.warn;
     Router = EmberRouter.extend();
   },
   teardown: function() {
+    Ember.warn = oldWarn;
     Router = null;
   }
 });
@@ -105,6 +107,25 @@ QUnit.test("should not add loading and error routes if _isRouterMapResult is fal
   ok(router.router.recognizer.names['blork'], 'main route was created');
   ok(!router.router.recognizer.names['blork_loading'], 'loading route was not added');
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
+});
+
+QUnit.test("should show warning if an explicit index route is defined with path different than '/' or ''", function() {
+  expect(1);
+  Ember.warn = function(msg, test) {
+    if (!test) {
+      equal(msg, "You are defining an 'index' route with a path different than '/'. Ember will not generate the default URL handler for the parent route. (You will probably get UnrecognizedURLError exceptions).");
+    }
+  };
+
+  Router.map(function() {
+    this.resource('posts', function() {
+      this.route('index');
+    });
+  });
+
+  var router = Router.create();
+  router._initRouterJs(false);
+
 });
 
 // jscs:enable validateIndentation

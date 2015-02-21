@@ -51,8 +51,12 @@ DSL.prototype = {
   },
 
   push: function(url, name, callback) {
-    var parts = name.split('.');
-    if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
+    var lastPart = name.slice(name.lastIndexOf('.') + 1);
+
+    Ember.warn("You are defining an 'index' route with a path different than '/'. Ember will not generate the default URL handler for the parent route. (You will probably get UnrecognizedURLError exceptions).",
+      url === "" || url === "/" || lastPart !== "index");
+
+    if (url === "" || url === "/" || lastPart === "index") { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
   },
@@ -116,4 +120,3 @@ DSL.map = function(callback) {
   callback.call(dsl);
   return dsl;
 };
-
