@@ -13,12 +13,13 @@ export default function getRoot(scope, key) {
   if (scope.locals[key]) {
     return scope.locals[key];
   } else {
-    return getKey(scope.self, key);
+    return getKey(scope, key);
   }
 }
 
-function getKey(self, key) {
-  var component = self['*component*'];
+function getKey(scope, key) {
+  var component = scope.component;
+  var self = scope.self;
 
   if (!component) {
     return self.getKey(key);

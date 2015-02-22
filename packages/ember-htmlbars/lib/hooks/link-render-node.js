@@ -6,7 +6,7 @@
 import { isStream } from "ember-metal/streams/utils";
 import run from "ember-metal/run_loop";
 
-export default function linkRenderNode(renderNode, params, hash) {
+export default function linkRenderNode(renderNode, scope, params, hash) {
   if (renderNode.state.unbound) {
     return true;
   }
@@ -15,13 +15,13 @@ export default function linkRenderNode(renderNode, params, hash) {
 
   if (params.length) {
     for (var i = 0; i < params.length; i++) {
-      subscribe(renderNode, params[i], unsubscribers);
+      subscribe(renderNode, scope, params[i], unsubscribers);
     }
   }
 
   if (hash) {
     for (var key in hash) {
-      subscribe(renderNode, hash[key], unsubscribers);
+      subscribe(renderNode, scope, hash[key], unsubscribers);
     }
   }
 
@@ -33,11 +33,19 @@ export default function linkRenderNode(renderNode, params, hash) {
   return true;
 }
 
-function subscribe(node, stream, unsubscribers) {
+function subscribe(node, scope, stream, unsubscribers) {
   if (!isStream(stream)) { return; }
+  var component = scope.component;
 
   unsubscribers.push(stream.subscribe(function() {
     node.isDirty = true;
+    // TODO: Make sure this flips to false somehow on non-components
+    node.state.shouldRerender = true;
+
+    if (component && component.renderNode) {
+      component.renderNode.isDirty = true;
+    }
+
     run.scheduleOnce('render', node.ownerNode.lastResult, 'revalidate');
   }));
 }

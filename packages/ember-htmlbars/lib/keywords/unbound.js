@@ -11,7 +11,7 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
   morph.state.unbound = true;
 
   if (params.length === 0) {
-    return env.hooks.range(morph, env, path);
+    return env.hooks.range(morph, env, scope, path);
   } else if (template === null) {
     return env.hooks.inline(morph, env, scope, path.key, params, hash);
   } else {

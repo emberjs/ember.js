@@ -6,8 +6,12 @@
 import SimpleStream from "ember-metal/streams/simple";
 
 export default function bindSelf(scope, self) {
-  if (self['*component*']) {
+  var component = self['*component*'];
+
+  if (component) {
     scope.self = self;
+    scope.component = component;
+    self['*component*'] = undefined;
     self.attrs = new AttrStream(self.attrs);
     return;
   }
@@ -55,7 +59,7 @@ merge(AttrStream.prototype, {
     }
   },
 
-  getKey: function(key)  {
+  getKey: function(key) {
     return this.attrs[key];
   }
 });

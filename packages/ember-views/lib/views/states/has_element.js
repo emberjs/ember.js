@@ -31,7 +31,12 @@ merge(hasElement, {
   // deferred to allow bindings to synchronize.
   rerender(view) {
     var renderNode = view.renderNode;
-    visitChildren([renderNode], function(node) { node.isDirty = true; });
+    renderNode.isDirty = true;
+
+    visitChildren(renderNode.childNodes, function(node) {
+      node.state.shouldRerender = true;
+      node.isDirty = true;
+    });
     run.scheduleOnce('render', renderNode.ownerNode.lastResult, 'revalidate');
   },
 

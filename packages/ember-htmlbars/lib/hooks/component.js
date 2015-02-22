@@ -1,62 +1,37 @@
 import { get } from "ember-metal/property_get";
 import Ember from "ember-metal/core";
-import { hooks as htmlbarsHooks } from "htmlbars-runtime";
+import { hooks as htmlbarsHooks, validateChildMorphs } from "htmlbars-runtime";
 import { readHash } from "ember-metal/streams/utils";
 
-export default function componentHook(morph, env, scope, tagName, attrs, template) {
-  var component;
-
+export default function componentHook(morph, env, scope, tagName, attrs, template, visitor) {
+  // Determine if this is an initial render or a re-render
   if (morph.state.didRenderComponent) {
-    component = morph.state.renderedComponent;
-
-    if (component) {
-      var snapshot = readHash(attrs);
-      if (component.willReceiveAttrs) { component.willReceiveAttrs(snapshot); }
-      component.attrs = readHash(attrs);
-    }
-
-    return;
+    return rerender(morph, env, attrs, visitor);
   }
 
-  var read = env.hooks.getValue;
-  var container = env.container;
-  var componentLookup = container.lookup('component-lookup:main');
-  var parentView = read(scope.locals.view);
+  var parentView = env.hooks.getValue(scope.locals.view);
 
-  var foundComponent = componentLookup.componentFor(tagName, container);
-  var foundLayout = componentLookup.layoutFor(tagName, container);
-  var contentMorph;
-  var layout;
-  var self;
+  var found = lookupComponent(env, tagName);
+  Ember.assert("Could not find component '" + tagName + "' (no component or template with that name was found)", !!found.component || !!found.layout);
 
-  Ember.assert("Could not find component '" + tagName + "' (no component or template with that name was found)", !!foundComponent || !!foundLayout);
+  var shadowRoot = createShadowRoot(morph, found, parentView);
+  var component = shadowRoot.component;
 
-  if (foundComponent) {
-    component = foundComponent.create();
-    parentView.linkChild(component);
-    morph.state.view = component;
-
-    contentMorph = component.renderer.contentMorphForView(component, morph);
-    self = component;
-    layout = get(component, 'layout') || foundLayout;
-  } else {
-    contentMorph = morph;
-    layout = foundLayout;
+  if (component) {
+    env.renderer.setAttrs(component, readHash(attrs));
   }
 
-  if (layout) {
-    var viewHash = { self:
-      { '*component*': component || true, attrs: attrs }, layout: layout };
-    htmlbarsHooks.block(contentMorph, env, scope, '@view', [], viewHash, template, null);
+  // This won't be true for a template-less component (like `<input>`)
+  if (shadowRoot.layout) {
+    morph.state.shadowRootMorph = shadowRoot.contentMorph;
+    renderShadowRoot(env, scope, shadowRoot, attrs, template, visitor);
   }
 
   if (component) {
-    component.attrs = readHash(attrs);
-
     if (parentView._state === 'inDOM') {
-      // TODO: Make sure this gets called once all descendents are also in DOM
       component.renderer.didInsertElement(component);
     } else {
+      // TODO: This should be on ownerNode, not ownerView
       component.ownerView.newlyCreated.push(component);
     }
     component.renderNode = morph;
@@ -64,4 +39,68 @@ export default function componentHook(morph, env, scope, tagName, attrs, templat
   }
 
   morph.state.didRenderComponent = true;
+}
+
+// TODO: This whole section of code should really be refactored into a single object
+function createComponent(foundComponent, parentView, morph) {
+  var component = foundComponent.create();
+  parentView.linkChild(component);
+  morph.state.view = component;
+  return component;
+}
+
+function lookupComponent(env, tagName) {
+  var container = env.container;
+  var componentLookup = container.lookup('component-lookup:main');
+
+  return {
+    component: componentLookup.componentFor(tagName, container),
+    layout: componentLookup.layoutFor(tagName, container)
+  };
+}
+
+function createShadowRoot(morph, found, parentView) {
+  var component, contentMorph, layout, self;
+
+  if (found.component) {
+    component = createComponent(found.component, parentView, morph);
+    contentMorph = component.renderer.contentMorphForView(component, morph);
+    self = component;
+    layout = get(component, 'layout') || found.layout;
+  } else {
+    contentMorph = morph;
+    layout = found.layout;
+  }
+
+  return { component: component, contentMorph: contentMorph, self: self, layout: layout };
+}
+
+function renderShadowRoot(env, scope, shadowRoot, attrs, template, visitor) {
+  var viewHash = {
+    self: { '*component*': shadowRoot.component || true, attrs: attrs },
+    layout: shadowRoot.layout
+  };
+
+  htmlbarsHooks.block(shadowRoot.contentMorph, env, scope, '@view', [], viewHash, template, null, visitor);
+}
+
+function rerender(morph, env, attrs, visitor) {
+  var component = morph.state.renderedComponent;
+
+  if (component) {
+    var snapshot = readHash(attrs);
+
+    if (morph.state.shouldRerender) {
+      morph.state.shouldRerender = false;
+      env.renderer.updateAttrs(component, snapshot);
+    }
+
+    env.renderer.willUpdate(component, snapshot);
+  }
+
+  validateChildMorphs(morph, visitor);
+
+  if (morph.state.shadowRootMorph) {
+    validateChildMorphs(morph.state.shadowRootMorph, visitor);
+  }
 }

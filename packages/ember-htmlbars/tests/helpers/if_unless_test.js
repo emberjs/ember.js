@@ -209,25 +209,6 @@ QUnit.test("The `unbound if` helper should work when its inverse is not present"
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `if` helper ignores a controller option", function() {
-  var lookupCalled = false;
-
-  view = EmberView.create({
-    container: {
-      lookup() {
-        lookupCalled = true;
-      }
-    },
-    truthy: true,
-
-    template: compile('{{#if view.truthy controller="foo"}}Yep{{/if}}')
-  });
-
-  runAppend(view);
-
-  equal(lookupCalled, false, 'controller option should NOT be used');
-});
-
 QUnit.test('should not rerender if truthiness does not change', function() {
   view = EmberView.create({
     template: compile('<h1 id="first">{{#if view.shouldDisplay}}{{view view.InnerViewClass}}{{/if}}</h1>'),
