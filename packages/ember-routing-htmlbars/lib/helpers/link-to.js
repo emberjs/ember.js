@@ -114,7 +114,7 @@ import 'ember-htmlbars';
 
   ```handlebars
   {{#link-to 'photoGallery.recent'}}
-    Great Hamster Photos from the last week
+    Great Hamster Photos
   {{/link-to}}
   ```
 
@@ -132,7 +132,7 @@ import 'ember-htmlbars';
 
   ```handlebars
   {{#link-to 'photoGallery.recent' activeClass="current-url"}}
-    Great Hamster Photos from the last week
+    Great Hamster Photos
   {{/link-to}}
   ```
 
