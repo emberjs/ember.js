@@ -664,50 +664,19 @@ test("It is possible to nest multiple templates into a manual element", function
 
       var elementTemplate = manualElement('aside', attributes);
 
-      function contentBlock(blockArguments, renderNode) {
-        if (renderNode.lastResult) {
-          renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
-        } else {
-          // TODO: createChildScope() && bindLocal() if block args
+      var contentBlock = blockFor(env, visitor, template, { scope: scope });
 
-          var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
-
-          simpleHostBlock(renderNode, env, options, null, visitor, function() {
-            options.renderState.clearMorph = null;
-            render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
-          });
-        }
-      }
-
-      var layoutScope;
-
-      function layoutBlock(blockArguments, renderNode) {
-        if (renderNode.lastResult) {
-          renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
-        } else {
-          layoutScope = env.hooks.createShadowScope(env, renderNode, elementScope);
-          env.hooks.bindSelf(env, layoutScope, { attrs: { foo: 'foo' } });
-          env.hooks.bindBlock(env, layoutScope, contentBlock);
-
-          var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
-
-          simpleHostBlock(renderNode, env, options, null, visitor, function() {
-            options.renderState.clearMorph = null;
-            render(layout.raw, env, layoutScope, { renderNode: renderNode, blockArguments: blockArguments });
-          });
-        }
-      }
-
-      var elementScope = env.hooks.createFreshScope();
-      env.hooks.bindSelf(env, elementScope, hash);
-      env.hooks.bindBlock(env, elementScope, layoutBlock);
-
-      var elementOptions = { renderState: { morphListStart: null, clearMorph: morph, shadowOptions: null } };
-
-      simpleHostBlock(morph, env, elementOptions, null, visitor, function() {
-        elementOptions.renderState.clearMorph = null;
-        render(elementTemplate, env, elementScope, { renderNode: morph });
+      var layoutBlock = blockFor(env, visitor, layout.raw, {
+        yieldTo: contentBlock,
+        self: { attrs: hash },
       });
+
+      var elementBlock = blockFor(env, visitor, elementTemplate, {
+        yieldTo: layoutBlock,
+        self: hash
+      });
+
+      elementBlock(null, morph);
     },
 
     isStable: function() { return true; }
@@ -719,3 +688,26 @@ test("It is possible to nest multiple templates into a manual element", function
 
   equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
 });
+
+function blockFor(env, visitor, template, blockOptions) {
+  return function(blockArguments, renderNode, parentScope) {
+    if (renderNode.lastResult) {
+      renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
+    } else {
+      var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
+
+      var childScope = blockOptions.scope;
+
+      if (!childScope) {
+        childScope = env.hooks.createShadowScope(env, renderNode, parentScope);
+        env.hooks.bindSelf(env, childScope, blockOptions.self);
+        env.hooks.bindBlock(env, childScope, blockOptions.yieldTo);
+      }
+
+      simpleHostBlock(renderNode, env, options, null, visitor, function() {
+        options.renderState.clearMorph = null;
+        render(template, env, childScope, { renderNode: renderNode, blockArguments: blockArguments });
+      });
+    }
+  };
+}
