@@ -3,45 +3,122 @@ import Ember from "ember-metal/core";
 import { hooks as htmlbarsHooks, validateChildMorphs } from "htmlbars-runtime";
 import { readHash } from "ember-metal/streams/utils";
 
-export default function componentHook(morph, env, scope, tagName, attrs, template, visitor) {
+// my-button template
+// <div class="bs-ui bs-button bs-active"><p>{{attrs.title}}</p>{{yield}}</div>
+//
+// app template
+// <my-button title="Hello">world</my-button>
+//
+// <app-template>
+//   <my-button> component
+//     <range>world</range> (app-template scope)
+//
+// <my-button> shadow root (scope={ attrs: { title: "Hello" } })
+//   <range>{{attrs.title}}</range>
+//   <range>{{yield}}</range>
+
+export default function componentHook(renderNode, env, scope, tagName, attrs, template, visitor) {
+  var state = renderNode.state;
   // Determine if this is an initial render or a re-render
-  if (morph.state.didRenderComponent) {
-    return rerender(morph, env, attrs, visitor);
+  if (state.componentNode) {
+    state.componentNode.rerender(env, attrs, visitor, state.shouldRerender);
+    state.shouldRerender = false;
+    return;
   }
 
   var parentView = env.hooks.getValue(scope.locals.view);
 
+  var componentNode = state.componentNode = ComponentNode.create(renderNode, env, parentView, tagName, scope, template);
+  componentNode.render(env, attrs, visitor, parentView._state === 'inDOM');
+}
+
+function ComponentNode(component, shadowRoot) {
+  this.component = component;
+  this.shadowRoot = shadowRoot;
+}
+
+ComponentNode.create = function(renderNode, env, parentView, tagName, contentScope, contentTemplate) {
   var found = lookupComponent(env, tagName);
   Ember.assert("Could not find component '" + tagName + "' (no component or template with that name was found)", !!found.component || !!found.layout);
 
-  var shadowRoot = createShadowRoot(morph, found, parentView);
-  var component = shadowRoot.component;
+  var component, layoutMorph, layoutTemplate;
 
-  if (component) {
-    env.renderer.setAttrs(component, readHash(attrs));
+  if (found.component) {
+    component = createComponent(found.component, parentView, renderNode);
+    component.renderNode = renderNode;
+    layoutMorph = component.renderer.contentMorphForView(component, renderNode);
+    layoutTemplate = get(component, 'layout') || found.layout;
+  } else {
+    layoutMorph = renderNode;
+    layoutTemplate = found.layout;
   }
 
-  // This won't be true for a template-less component (like `<input>`)
-  if (shadowRoot.layout) {
-    morph.state.shadowRootMorph = shadowRoot.contentMorph;
-    renderShadowRoot(env, scope, shadowRoot, attrs, template, visitor);
-  }
+  var shadowRoot = new ShadowRoot(env, layoutMorph, component, layoutTemplate,
+                                  contentScope, contentTemplate);
+
+  return new ComponentNode(component, shadowRoot);
+};
+
+ComponentNode.prototype.render = function(env, attrs, visitor, inDOM) {
+  var component = this.component;
 
   if (component) {
-    if (parentView._state === 'inDOM') {
+    env.renderer.setAttrs(this.component, readHash(attrs));
+  }
+
+  this.shadowRoot.render(attrs, visitor);
+
+  if (component) {
+    if (inDOM) {
       component.renderer.didInsertElement(component);
     } else {
       // TODO: This should be on ownerNode, not ownerView
       component.ownerView.newlyCreated.push(component);
     }
-    component.renderNode = morph;
-    morph.state.renderedComponent = component;
+  }
+};
+
+ComponentNode.prototype.rerender = function(env, attrs, visitor, shouldRerender) {
+  var component = this.component;
+
+  if (component) {
+    var snapshot = readHash(attrs);
+
+    if (shouldRerender) {
+      env.renderer.updateAttrs(component, snapshot);
+    }
+
+    env.renderer.willUpdate(component, snapshot);
   }
 
-  morph.state.didRenderComponent = true;
+  validateChildMorphs(this.shadowRoot.layoutMorph, visitor);
+};
+
+function ShadowRoot(env, layoutMorph, component, layoutTemplate, contentScope, contentTemplate) {
+  this.env = env;
+  this.layoutMorph = layoutMorph;
+  this.layoutTemplate = layoutTemplate;
+  this.hostComponent = component;
+
+  this.contentScope = contentScope;
+  this.contentTemplate = contentTemplate;
 }
 
-// TODO: This whole section of code should really be refactored into a single object
+ShadowRoot.prototype.render = function(attrs, visitor) {
+  if (!this.layoutTemplate) { return; }
+
+  var hash = {
+    self: { '*component*': this.hostComponent || true, attrs: attrs },
+    layout: this.layoutTemplate
+  };
+
+  // Invoke the `@view` helper. Tell it to render the layout template into the
+  // layout morph. When the layout template `{{yield}}`s, it should render the
+  // contentTemplate with the contentScope.
+  htmlbarsHooks.block(this.layoutMorph, this.env, this.contentScope, '@view',
+                      [], hash, this.contentTemplate, null, visitor);
+};
+
 function createComponent(foundComponent, parentView, morph) {
   var component = foundComponent.create();
   parentView.linkChild(component);
@@ -57,50 +134,4 @@ function lookupComponent(env, tagName) {
     component: componentLookup.componentFor(tagName, container),
     layout: componentLookup.layoutFor(tagName, container)
   };
-}
-
-function createShadowRoot(morph, found, parentView) {
-  var component, contentMorph, layout, self;
-
-  if (found.component) {
-    component = createComponent(found.component, parentView, morph);
-    contentMorph = component.renderer.contentMorphForView(component, morph);
-    self = component;
-    layout = get(component, 'layout') || found.layout;
-  } else {
-    contentMorph = morph;
-    layout = found.layout;
-  }
-
-  return { component: component, contentMorph: contentMorph, self: self, layout: layout };
-}
-
-function renderShadowRoot(env, scope, shadowRoot, attrs, template, visitor) {
-  var viewHash = {
-    self: { '*component*': shadowRoot.component || true, attrs: attrs },
-    layout: shadowRoot.layout
-  };
-
-  htmlbarsHooks.block(shadowRoot.contentMorph, env, scope, '@view', [], viewHash, template, null, visitor);
-}
-
-function rerender(morph, env, attrs, visitor) {
-  var component = morph.state.renderedComponent;
-
-  if (component) {
-    var snapshot = readHash(attrs);
-
-    if (morph.state.shouldRerender) {
-      morph.state.shouldRerender = false;
-      env.renderer.updateAttrs(component, snapshot);
-    }
-
-    env.renderer.willUpdate(component, snapshot);
-  }
-
-  validateChildMorphs(morph, visitor);
-
-  if (morph.state.shadowRootMorph) {
-    validateChildMorphs(morph.state.shadowRootMorph, visitor);
-  }
 }
