@@ -8,6 +8,7 @@ import merge from "ember-metal/merge";
 import subexpr from "ember-htmlbars/hooks/subexpr";
 import concat from "ember-htmlbars/hooks/concat";
 import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
+import createFreshScope from "ember-htmlbars/hooks/create-fresh-scope";
 import bindLocal from "ember-htmlbars/hooks/bind-local";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
 import getRoot from "ember-htmlbars/hooks/get-root";
@@ -25,6 +26,7 @@ var emberHooks = merge({}, hooks);
 
 merge(emberHooks, {
   linkRenderNode: linkRenderNode,
+  createFreshScope: createFreshScope,
   bindLocal: bindLocal,
   bindSelf: bindSelf,
   getRoot: getRoot,

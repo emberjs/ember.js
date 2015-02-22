@@ -87,7 +87,18 @@ QUnit.test('non-block with properties on attrs and component class', function() 
 });
 
 QUnit.test('rerendering component with attrs from parent', function() {
-  registry.register('component:non-block', Component.extend());
+  var willUpdate = 0;
+  var willReceiveAttrs = 0;
+
+  registry.register('component:non-block', Component.extend({
+    willReceiveAttrs: function() {
+      willReceiveAttrs++;
+    },
+
+    willUpdate: function() {
+      willUpdate++;
+    }
+  }));
   registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
 
   view = EmberView.extend({
@@ -105,17 +116,27 @@ QUnit.test('rerendering component with attrs from parent', function() {
   });
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+  equal(willReceiveAttrs, 0, "The willReceiveAttrs hook did not fire");
+  equal(willUpdate, 1, "The willUpdate hook fired once");
 
-  // TODO: Confirm that attribute lifecycle hooks were invoked
+  Ember.run(view, 'rerender');
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+  equal(willReceiveAttrs, 1, "The willReceiveAttrs hook fired once");
+  equal(willUpdate, 2, "The willUpdate hook fired again");
 });
 
-QUnit.test('rerendering component with attrs from parent', function() {
+QUnit.test('rerendering component with attrs from parent invokes willReceiveAttrs', function() {
   var component;
   var attrsReceived;
+  var attrsUpdated;
 
   registry.register('component:non-block', Component.extend({
     willReceiveAttrs: function(nextAttrs) {
       attrsReceived = nextAttrs;
+    },
+    willUpdate: function(attrs) {
+      attrsUpdated = attrs;
     },
     didInsertElement: function() {
       deepEqual(this.attrs, { someObj: { prop: "wycats" } }, "The attrs were set");
@@ -146,7 +167,8 @@ QUnit.test('rerendering component with attrs from parent', function() {
   });
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  deepEqual(attrsReceived, { someObj: { prop: "tomdale" } }, "The attrs were set again");
+  strictEqual(attrsReceived, undefined, "The attrs were not received");
+  deepEqual(attrsUpdated, { someObj: { prop: "tomdale" } }, "The attrs were updated");
 
   // TODO: Confirm that attribute lifecycle hooks were invoked
 });

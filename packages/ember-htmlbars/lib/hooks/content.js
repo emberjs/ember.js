@@ -1,16 +1,10 @@
 import { hooks as htmlbarsHooks } from "htmlbars-runtime";
+import isComponent from "ember-htmlbars/utils/is-component";
 
-export default function content(morph, env, scope, path) {
+export default function content(morph, env, scope, path, visitor) {
   if (isComponent(env, scope, path)) {
-    return env.hooks.component(morph, env, scope, path, {}, null);
+    return env.hooks.component(morph, env, scope, path, {}, null, null, visitor);
   }
 
-  return htmlbarsHooks.content(morph, env, scope, path);
-}
-
-function isComponent(env, scope, path) {
-  var container = env.container;
-  var componentLookup = container.lookup('component-lookup:main');
-
-  return componentLookup.isComponent(path, container);
+  return htmlbarsHooks.content(morph, env, scope, path, visitor);
 }

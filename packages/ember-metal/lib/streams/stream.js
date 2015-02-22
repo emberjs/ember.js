@@ -3,6 +3,7 @@ import {
   getFirstKey,
   getTailPath
 } from "ember-metal/path_cache";
+import Ember from "ember-metal/core";
 
 /**
 @module ember-metal
@@ -110,6 +111,80 @@ Stream.prototype = {
     // Ember.assert("Stream error: value was called in an invalid state: " + this.state);
   },
 
+  addDependency(stream, callback, context) {
+    Ember.assert("You tried to add a dependency to a stream, but the dependency stream did not exist.", !!stream);
+
+    if (!stream.isStream) {
+      return;
+    }
+
+    if (callback === undefined) {
+      callback = this.notify;
+      context = this;
+    }
+
+    var dependency = new Dependency(this, stream, callback, context);
+
+    if (this.isActive) {
+      dependency.subscribe();
+    }
+
+    if (this.dependencyHead === null) {
+      this.dependencyHead = this.dependencyTail = dependency;
+    } else {
+      var tail = this.dependencyTail;
+      tail.next = dependency;
+      dependency.prev = tail;
+      this.dependencyTail = dependency;
+    }
+
+    return dependency;
+  },
+
+  subscribeDependencies() {
+    var dependency = this.dependencyHead;
+    while (dependency) {
+      var next = dependency.next;
+      dependency.subscribe();
+      dependency = next;
+    }
+  },
+
+  unsubscribeDependencies() {
+    var dependency = this.dependencyHead;
+    while (dependency) {
+      var next = dependency.next;
+      dependency.unsubscribe();
+      dependency = next;
+    }
+  },
+
+  becameActive() {},
+  becameInactive() {},
+
+  // This method is invoked when the value function is called and when
+  // a stream becomes active. This allows changes to be made to a stream's
+  // input, and only do any work in response if the stream has subscribers
+  // or if someone actually gets the stream's value.
+  revalidate() {},
+
+  maybeActivate() {
+    if (this.subscriberHead && !this.isActive) {
+      this.isActive = true;
+      this.subscribeDependencies();
+      this.revalidate();
+      this.becameActive();
+    }
+  },
+
+  maybeDeactivate() {
+    if (!this.subscriberHead && this.isActive) {
+      this.isActive = false;
+      this.unsubscribeDependencies();
+      this.becameInactive();
+    }
+  },
+
   valueFn() {
     throw new Error("Stream error: valueFn not implemented");
   },
@@ -130,6 +205,8 @@ Stream.prototype = {
   },
 
   subscribe(callback, context) {
+    Ember.assert("You tried to subscribe to a stream but the callback provided was not a function.", typeof callback === 'function');
+
     var subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {
       this.subscriberHead = this.subscriberTail = subscriber;

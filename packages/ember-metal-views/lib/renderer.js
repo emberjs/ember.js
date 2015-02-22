@@ -21,11 +21,11 @@ Renderer.prototype.renderTopLevelView =
     var contentMorph = this.contentMorphForView(view, morph);
 
     var template = get(view, 'layout') || get(view, 'template');
-    var result = view.renderTemplate(view, contentMorph.contextualElement, template);
+    var result = view.renderTemplate(view, contentMorph.contextualElement, template, contentMorph);
 
     view.lastResult = result;
     view.renderNode = morph;
-    contentMorph.setNode(result.fragment);
+    morph.lastResult = result;
 
     for (var i=0, l=newlyCreated.length; i<l; i++) {
       this.didInsertElement(newlyCreated[i]);
@@ -38,6 +38,7 @@ Renderer.prototype.renderTopLevelView =
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
     var morph = this._dom.appendMorph(target);
+    morph.ownerNode = morph;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
   };
 
@@ -73,6 +74,10 @@ Renderer.prototype.willInsertElement = function (view) {
   if (view.trigger) { view.trigger('willInsertElement'); }
 }; // will place into DOM
 
+Renderer.prototype.setAttrs = function (view, attrs) {
+  view.attrs = attrs;
+}; // set attrs the first time
+
 Renderer.prototype.didInsertElement = function (view) {
   if (view._transitionTo) {
     view._transitionTo('inDOM');
@@ -80,6 +85,20 @@ Renderer.prototype.didInsertElement = function (view) {
 
   if (view.trigger) { view.trigger('didInsertElement'); }
 }; // inDOM // placed into DOM
+
+Renderer.prototype.updateAttrs = function (view, attrs) {
+  if (view.willReceiveAttrs) {
+    view.willReceiveAttrs(attrs);
+  }
+
+  view.attrs = attrs;
+}; // setting new attrs
+
+Renderer.prototype.willUpdate = function (view, attrs) {
+  if (view.willUpdate) {
+    view.willUpdate(attrs);
+  }
+};
 
 Renderer.prototype.willRemoveElement = function (view) {};
 
