@@ -105,3 +105,13 @@ AttrNode.prototype.destroy = function AttrNode_destroy() {
     this._renderer.remove(this, true);
   }
 };
+
+AttrNode.prototype.propertyDidChange = function render() {
+};
+
+AttrNode.prototype._notifyBecameHidden = function render() {
+};
+
+AttrNode.prototype._notifyBecameVisible = function render() {
+};
+
