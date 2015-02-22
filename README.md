@@ -1,5 +1,7 @@
 # Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js)
 
+[![Join the chat at https://gitter.im/emberjs/ember.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/emberjs/ember.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Ember.js is a JavaScript framework that does all of the heavy lifting
 that you'd normally have to do by hand. There are tasks that are common
 to every web app; Ember.js does those things for you, so you can focus
