@@ -68,16 +68,49 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
-  _initRouterJs: function(moduleBasedResolver) {
-    var router = this.router = new Router();
-    router.triggerEvent = triggerEvent;
+  _initRouterJs: function(isUsingModuleBasedResolver) {
+    var lastURL;
+    var location = get(this, 'location');
 
-    router._triggerWillChangeContext = K;
-    router._triggerWillLeave = K;
+    var emberRouter = this;
+
+    var doUpdateURL = function() {
+      location.setURL(lastURL);
+    };
+
+    var doReplaceURL = function() {
+      if (location.replaceURL) {
+        location.replaceURL(lastURL);
+      } else {
+        doUpdateURL();
+      }
+    };
+
+    var routerjs = this.router = new Router({
+      triggerEvent: triggerEvent,
+      getHandler: this._getHandlerFunction(),
+      updateURL: function(path) {
+        lastURL = path;
+        run.once(doUpdateURL);
+      },
+      replaceURL: function(path) {
+        lastURL = path;
+        run.once(doReplaceURL);
+      },
+      didTransition: function(infos) {
+        emberRouter.didTransition(infos);
+      },
+      willTransition: function(oldInfos, newInfos, transition) {
+        if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+          emberRouter.willTransition(oldInfos, newInfos, transition);
+        }
+      },
+      log: get(this, 'namespace.LOG_TRANSITIONS_INTERNAL') && Ember.Logger.debug
+    });
 
     var dslCallbacks = this.constructor.dslCallbacks || [K];
     var dsl = new EmberRouterDSL(null, {
-      enableLoadingSubstates: !!moduleBasedResolver
+      enableLoadingSubstates: isUsingModuleBasedResolver
     });
 
     function generateDSL() {
@@ -89,12 +122,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
 
     generateDSL.call(dsl);
-
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      router.log = Ember.Logger.debug;
-    }
-
-    router.map(dsl.generate());
+    routerjs.map(dsl.generate());
   },
 
   init: function() {
@@ -124,41 +152,30 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting: function(moduleBasedResolver) {
+  startRouting: function(isUsingModuleBasedResolver) {
     var initialURL = get(this, 'initialURL');
     var location = get(this, 'location');
-
-    if (this.setupRouter(moduleBasedResolver, location)) {
-      if (typeof initialURL === "undefined") {
-        initialURL = get(this, 'location').getURL();
-      }
-      var initialTransition = this.handleURL(initialURL);
-      if (initialTransition && initialTransition.error) {
-        throw initialTransition.error;
-      }
-    }
-  },
-
-  setupRouter: function(moduleBasedResolver) {
-    this._initRouterJs(moduleBasedResolver);
-
-    var router = this.router;
-    var location = get(this, 'location');
-    var self = this;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
     if (get(location, 'cancelRouterSetup')) {
-      return false;
+      return;
     }
 
-    this._setupRouter(router, location);
+    this._initRouterJs(isUsingModuleBasedResolver);
 
+    var emberRouter = this;
     location.onUpdateURL(function(url) {
-      self.handleURL(url);
+      emberRouter.handleURL(url);
     });
 
-    return true;
+    if (typeof initialURL === "undefined") {
+      initialURL = location.getURL();
+    }
+    var initialTransition = this.handleURL(initialURL);
+    if (initialTransition && initialTransition.error) {
+      throw initialTransition.error;
+    }
   },
 
   /**
@@ -417,11 +434,13 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _getHandlerFunction: function() {
     var seen = create(null);
-    var container = this.container;
-    var DefaultRoute = container.lookupFactory('route:basic');
+    var container, DefaultRoute;
     var self = this;
 
     return function(name) {
+      container = container || self.container;
+      DefaultRoute = DefaultRoute || container.lookupFactory('route:basic');
+
       var routeName = 'route:' + name;
       var handler = container.lookup(routeName);
 
@@ -443,43 +462,6 @@ var EmberRouter = EmberObject.extend(Evented, {
       handler.routeName = name;
       return handler;
     };
-  },
-
-  _setupRouter: function(router, location) {
-    var lastURL;
-    var emberRouter = this;
-
-    router.getHandler = this._getHandlerFunction();
-
-    var doUpdateURL = function() {
-      location.setURL(lastURL);
-    };
-
-    router.updateURL = function(path) {
-      lastURL = path;
-      run.once(doUpdateURL);
-    };
-
-    if (location.replaceURL) {
-      var doReplaceURL = function() {
-        location.replaceURL(lastURL);
-      };
-
-      router.replaceURL = function(path) {
-        lastURL = path;
-        run.once(doReplaceURL);
-      };
-    }
-
-    router.didTransition = function(infos) {
-      emberRouter.didTransition(infos);
-    };
-
-    if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
-      router.willTransition = function(oldInfos, newInfos, transition) {
-        emberRouter.willTransition(oldInfos, newInfos, transition);
-      };
-    }
   },
 
   _serializeQueryParams: function(targetRouteName, queryParams) {
