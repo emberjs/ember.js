@@ -81,4 +81,13 @@ AttrNode.prototype.destroy = function render() {
   }
 };
 
+AttrNode.prototype.propertyDidChange = function render() {
+};
+
+AttrNode.prototype._notifyBecameHidden = function render() {
+};
+
+AttrNode.prototype._notifyBecameVisible = function render() {
+};
+
 export default AttrNode;
