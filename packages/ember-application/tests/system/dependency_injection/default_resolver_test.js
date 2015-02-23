@@ -106,6 +106,12 @@ QUnit.test("the default resolver resolves container-registered helpers", functio
   equal(gooGazResolverTestHelper, locator.lookup('helper:goo-baz-resolver-test'), "looks up gooGazResolverTestHelper helper");
 });
 
+QUnit.test("the default resolver resolves to the same instance no matter the notation ", function() {
+  application.NestedPostController = Controller.extend({});
+
+  equal(locator.lookup('controller:nested-post'), locator.lookup('controller:nested_post'), "looks up NestedPost controller on application");
+});
+
 QUnit.test("the default resolver throws an error if the fullName to resolve is invalid", function() {
   throws(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
   throws(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
