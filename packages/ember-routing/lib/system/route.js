@@ -46,7 +46,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     Configuration hash for this route's queryParams. The possible
     configuration options and their defaults are as follows
-    (assuming a query param whose URL key is `page`):
+    (assuming a query param whose controller property is `page`):
 
     ```javascript
     queryParams: {
@@ -70,7 +70,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         // hash location equivalent), which causes no browser history
         // item to be added. This options name and default value are
         // the same as the `link-to` helper's `replace` option.
-        replace: false
+        replace: false,
+
+        // By default, the query param URL key is the same name as
+        // the controller property name. Use `as` to specify a
+        // different URL key.
+        as: 'page'
       }
     }
     ```
