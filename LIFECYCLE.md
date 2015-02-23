@@ -203,32 +203,39 @@ a series of functions, as the next section will describe.
 
 ```js
 export default {
-  render: function(node, env, scope, params, hash) {
+  willRender: function(node, env) {
+    // This function is always invoked before any other hooks,
+    // giving the keyword an opportunity to coordinate with
+    // the external environment regardless of whether this is
+    // the first or subsequent render, and regardless of
+    // stability.
+  },
+
+  render: function(node, env, scope, params, hash, template, inverse, visitor) {
     // This function is invoked on the first render, and any time the
     // isStable function returns false.
   },
 
-  isPaused: function(node, env, scope, params, hash) {
+  isPaused: function(state, env, scope, params, hash) {
     // This function is invoked on renders after the first render; if
     // it returns true, the entire subtree is assumed valid, and dirty
     // checking does not continue. This is useful during animations,
     // and in some cases, as a performance optimization.
   },
 
-  revalidate: function(node, env, scope, params, hash) {
-    // This function is invoked on renders after the first render; it is
-    // invoked before `isStable` so that it can update any internal
-    // state based on external changes.
+  setupState: function(state, env, scope, params, hash) {
+    // This function is invoked before `isStable` so that it can update any
+    // internal state based on external changes.
   },
 
-  isStable: function(node, env, scope, params, hash) {
+  isStable: function(state, env, scope, params, hash) {
     // This function is invoked after the first render; it checks to see
     // whether the node is "stable". If the node is unstable, its
     // existing content will be removed and the `render` function is
     // called again to produce new values.
   },
 
-  shouldPrune: function(node, env, scope, params, hash) {
+  shouldPrune: function(state, env, scope, params, hash) {
     // If `isStable` returns false, this function can return true to
     // clear the render node entirely instead of calling `render`.
   }
