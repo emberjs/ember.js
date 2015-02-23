@@ -2,7 +2,7 @@ import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
-import { visitChildren } from "../htmlbars-util/morph-utils";
+import { visitChildren, validateChildMorphs } from "../htmlbars-util/morph-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -406,8 +406,7 @@ export function bindBlock(env, scope, block) {
   appropriate arguments.
 */
 export function block(morph, env, scope, path, params, hash, template, inverse, visitor) {
-  var keyword = env.hooks.keywords[path];
-  if (keyword && !keyword(morph, env, scope, params, hash, template, inverse, visitor)) {
+  if (handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor)) {
     return;
   }
 
@@ -426,20 +425,69 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
   while (item) {
     var next = item.nextMorph;
     delete morphMap[item.key];
-    visitChildren([item], cleanup);
+    if (env.hooks.cleanup) { visitChildren([item], env.hooks.cleanup); }
     item.destroy();
     item = next;
   }
 
   if (toClear) {
-    visitChildren(toClear.childNodes, cleanup);
-    toClear.clear();
-    morph.lastResult = null;
-    morph.lastYielded = null;
+    pruneMorph(toClear, env.hooks.cleanup);
+  }
+}
+
+function pruneMorph(morph, cleanup) {
+  if (cleanup) {
+    visitChildren(morph.childNodes, cleanup);
   }
 
-  function cleanup(node) {
-    if (env.hooks.cleanup) { env.hooks.cleanup(node); }
+  // TODO: Deal with logical children that are not in the DOM tree
+  morph.clear();
+  morph.lastResult = null;
+  morph.lastYielded = null;
+}
+
+function handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor) {
+  var keyword = env.hooks.keywords[path];
+  if (!keyword) { return false; }
+
+  if (typeof keyword === 'function') {
+    return keyword(morph, env, scope, params, hash, template, inverse, visitor);
+  }
+
+  if (keyword.willRender) {
+    keyword.willRender(morph, env);
+  }
+
+  var firstTime = !morph.lastResult;
+
+  if (firstTime) {
+    keyword.render(morph, env, scope, params, hash);
+    return true;
+  }
+
+  if (keyword.setupState) {
+    keyword.setupState(morph.state, env, scope, params, hash);
+  }
+
+  if (keyword.isStable) {
+    var isStable = keyword.isStable(morph.state, env, scope, params, hash);
+    if (isStable) {
+      validateChildMorphs(morph, visitor);
+      return true;
+    }
+  }
+
+  if (keyword.shouldPrune) {
+    var shouldPrune = keyword.shouldPrune(morph.state, env, scope, params, hash);
+    if (shouldPrune) {
+      pruneMorph(morph, env.hooks.cleanup);
+      return true;
+    }
+  }
+
+  if (keyword.render) {
+    keyword.render(morph, env, scope, params, hash, template, inverse, visitor);
+    return true;
   }
 }
 
@@ -488,8 +536,7 @@ export function linkRenderNode(/* morph, scope, params, hash */) {
 export function inline(morph, env, scope, path, params, hash, visitor) {
   var value;
 
-  var keyword = env.hooks.keywords[path];
-  if (keyword && !keyword(morph, env, scope, params, hash, null, null, visitor)) {
+  if (handleKeyword(path, morph, env, scope, params, hash, null, null, visitor)) {
     return;
   }
 
@@ -532,10 +579,12 @@ export var keywords = {
   partial: function(morph, env, scope, params) {
     var value = env.hooks.partial(morph, env, scope, params[0]);
     morph.setContent(value);
+    return true;
   },
 
   yield: function(morph, env, scope, params) {
     scope.block(params, morph);
+    return true;
   }
 };
 

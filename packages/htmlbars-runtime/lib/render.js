@@ -30,8 +30,6 @@ export default function render(template, env, scope, options, blockArguments) {
     initializeNode(rootNode, ownerNode);
   }
 
-  // TODO Invoke disposal hook recursively on old rootNode.childNodes
-
   if (rootNode.childNodes && env.hooks.cleanup) {
     visitChildren(rootNode.childNodes, function(node) {
       env.hooks.cleanup(node);

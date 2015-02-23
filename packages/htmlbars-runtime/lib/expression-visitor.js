@@ -1,4 +1,5 @@
 import { merge, createObject } from "../htmlbars-util/object-utils";
+import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 
 /**
   Node classification:
@@ -147,26 +148,6 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
                         visitor);
   }
 });
-
-export function validateChildMorphs(morph, visitor) {
-  var morphList = morph.morphList;
-  if (morph.morphList) {
-    var current = morphList.firstChildMorph;
-
-    while (current) {
-      var next = current.nextMorph;
-      validateChildMorphs(current, visitor);
-      current = next;
-    }
-  } else if (morph.lastResult) {
-    morph.lastResult.revalidateWith(undefined, undefined, visitor);
-  } else if (morph.childNodes) {
-    // This means that the childNodes were wired up manually
-    for (var i=0, l=morph.childNodes.length; i<l; i++) {
-      validateChildMorphs(morph.childNodes[i], visitor);
-    }
-  }
-}
 
 export default merge(createObject(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
