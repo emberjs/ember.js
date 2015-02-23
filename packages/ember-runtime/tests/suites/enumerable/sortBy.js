@@ -21,4 +21,13 @@ suite.test('supports multiple propertyNames', function() {
   equal(get(sorted[1], 'b'), 2);
 });
 
+suite.test('supports asc/desc', function() {
+  var obj = this.newObject([{ a: 2, b: 3 }, { a: 1, b: 1 }, { a: 1, b: 2 }]);
+  var sorted = obj.sortBy('a', 'b:desc');
+
+  equal(get(sorted[0], 'b'), 2);
+  equal(get(sorted[1], 'b'), 1);
+  equal(get(sorted[2], 'b'), 3);
+});
+
 export default suite;
