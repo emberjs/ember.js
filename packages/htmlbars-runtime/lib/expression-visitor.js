@@ -134,7 +134,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
 
   // [ 'attribute', name, value ]
   attribute: function(node, morph, env, scope) {
-    env.hooks.attribute(morph, env, node[1],
+    env.hooks.attribute(morph, env, scope, node[1],
                         this.acceptParams([node[2]], morph, env, scope)[0]);
   },
 
