@@ -474,7 +474,7 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
   }
 
   if (firstTime) {
-    keyword.render(morph, env, scope, params, hash);
+    keyword.render(morph, env, scope, params, hash, template, inverse, visitor);
     return true;
   }
 
