@@ -514,7 +514,7 @@ RenderBuffer.prototype = {
     var content = this.innerContent();
     // No content means a text node buffer, with the content
     // in _element. Ember._BoundView is an example.
-    if (content === null) {
+    if (content === null && typeof(content) === "undefined") {
       return this._element;
     }
 
