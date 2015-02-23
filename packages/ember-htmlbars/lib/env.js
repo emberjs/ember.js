@@ -41,14 +41,16 @@ merge(emberHooks, {
   component: component
 });
 
-import unbound from "ember-htmlbars/keywords/unbound";
 import ifKeyword from "ember-htmlbars/keywords/if";
-import view from "ember-htmlbars/keywords/view";
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
+import outlet from "ember-htmlbars/keywords/outlet";
+import unbound from "ember-htmlbars/keywords/unbound";
+import view from "ember-htmlbars/keywords/view";
 
 merge(emberHooks.keywords, {
   "if": ifKeyword,
   "debugger": debuggerKeyword,
+  outlet: outlet,
   unbound: unbound,
   view: view
 });

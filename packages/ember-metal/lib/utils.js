@@ -105,6 +105,14 @@ function intern(str) {
   return str;
 }
 
+export function symbol(debugName) {
+  // TODO: Investigate using platform symbols, but we do not
+  // want to require non-enumerability for this API, which
+  // would introduce a large cost.
+
+  return intern(debugName + ' [id=' + GUID_KEY + Math.floor(Math.random() * new Date()) + ']');
+}
+
 /**
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.

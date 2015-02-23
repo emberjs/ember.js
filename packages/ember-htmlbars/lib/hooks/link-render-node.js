@@ -46,6 +46,6 @@ function subscribe(node, scope, stream, unsubscribers) {
       component.renderNode.isDirty = true;
     }
 
-    run.scheduleOnce('render', node.ownerNode.lastResult, 'revalidate');
+    run.scheduleOnce('render', node.ownerNode.state.view, 'revalidate');
   }));
 }

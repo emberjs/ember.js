@@ -212,7 +212,7 @@ QUnit.test("log which view is used with a template", function() {
   }
 
   App.register('template:application', compile('{{outlet}}'));
-  App.register('template:foo', function() { return 'Template with custom view'; });
+  App.register('template:foo', compile('Template with custom view'));
   App.register('view:posts', View.extend({ templateName: 'foo' }));
   run(App, 'advanceReadiness');
 

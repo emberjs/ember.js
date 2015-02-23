@@ -19,7 +19,6 @@ import ActionManager from "ember-views/system/action_manager";
 
 import { renderHelper } from "ember-routing-htmlbars/helpers/render";
 import { actionHelper } from "ember-routing-htmlbars/helpers/action";
-import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
 import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -30,13 +29,10 @@ function runSet(object, key, value) {
   });
 }
 
-var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
+var view, container, originalRenderHelper, originalActionHelper;
 
 QUnit.module("ember-routing-htmlbars: {{render}} helper", {
   setup() {
-    originalOutletHelper = helpers['outlet'];
-    registerHelper('outlet', outletHelper);
-
     originalRenderHelper = helpers['render'];
     registerHelper('render', renderHelper);
 
@@ -55,9 +51,6 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
 
     delete helpers['action'];
     helpers['action'] = originalActionHelper;
-
-    delete helpers['outlet'];
-    helpers['outlet'] = originalOutletHelper;
 
     runDestroy(container);
     runDestroy(view);

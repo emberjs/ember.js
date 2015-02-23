@@ -4,14 +4,16 @@
 */
 
 import SimpleStream from "ember-metal/streams/simple";
+import { componentSymbol } from "ember-htmlbars/hooks/component";
 
 export default function bindSelf(scope, self) {
-  var component = self['*component*'];
+  var component = self[componentSymbol];
 
   if (component) {
     scope.self = self;
     scope.component = component;
-    self['*component*'] = undefined;
+    scope.view = scope.locals.view = new SimpleStream(component);
+    self[componentSymbol] = undefined;
     self.attrs = new AttrStream(self.attrs);
     return;
   }
@@ -20,6 +22,7 @@ export default function bindSelf(scope, self) {
 
   if (self.isView) {
     scope.locals.view = selfStream;
+    scope.view = selfStream;
     scope.self = selfStream.getKey('context');
   }
 }

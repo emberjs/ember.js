@@ -5,23 +5,16 @@ import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
-import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
-
 import compile from "ember-template-compiler/system/compile";
-import { registerHelper } from "ember-htmlbars/helpers";
-import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
 
 var trim = jQuery.trim;
 
-var registry, container, originalOutletHelper, top;
+var registry, container, top;
 
 QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
   setup() {
-    originalOutletHelper = helpers['outlet'];
-    registerHelper('outlet', outletHelper);
-
     var namespace = Namespace.create();
     registry = buildRegistry(namespace);
     container = registry.container();
@@ -31,9 +24,6 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
   },
 
   teardown() {
-    delete helpers['outlet'];
-    helpers['outlet'] = originalOutletHelper;
-
     runDestroy(container);
     runDestroy(top);
     registry = container = top = null;
