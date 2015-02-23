@@ -11,10 +11,12 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
   morph.state.unbound = true;
 
   if (params.length === 0) {
-    return env.hooks.range(morph, env, scope, path);
+    env.hooks.range(morph, env, scope, path);
   } else if (template === null) {
-    return env.hooks.inline(morph, env, scope, path.key, params, hash);
+    env.hooks.inline(morph, env, scope, path.key, params, hash);
   } else {
-    return env.hooks.block(morph, env, scope, path.key, params, hash, template, inverse);
+    env.hooks.block(morph, env, scope, path.key, params, hash, template, inverse);
   }
+
+  return true;
 }

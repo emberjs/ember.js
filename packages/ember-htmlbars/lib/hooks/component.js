@@ -1,6 +1,7 @@
 import { get } from "ember-metal/property_get";
 import Ember from "ember-metal/core";
-import { hooks as htmlbarsHooks, validateChildMorphs } from "htmlbars-runtime";
+import { hooks as htmlbarsHooks } from "htmlbars-runtime";
+import { validateChildMorphs } from "htmlbars-util";
 import { readHash } from "ember-metal/streams/utils";
 import { symbol } from "ember-metal/utils";
 import merge from "ember-metal/merge";

@@ -38,6 +38,8 @@ export default function viewKeyword(morph, env, scope, params, hash, template, i
   } else {
     view.ownerView.newlyCreated.push(view);
   }
+
+  return true;
 }
 
 function getView(viewPath, container) {
