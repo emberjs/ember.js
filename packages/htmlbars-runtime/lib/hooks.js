@@ -85,7 +85,7 @@ export function wrap(template) {
     revision: template.revision,
     raw: template,
     render: function(self, env, options, blockArguments) {
-      var scope = env.hooks.createScope(null, template.arity);
+      var scope = env.hooks.createFreshScope();
       env.hooks.bindSelf(scope, self);
       return render(template, env, scope, options, blockArguments);
     }
@@ -128,7 +128,7 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor
     // a host hook, because the host's notion of scope may require a new
     // scope in more cases than the ones we can determine statically.
     if (self !== undefined || parentScope === null || template.arity) {
-      scope = env.hooks.createScope(parentScope, template.arity);
+      scope = env.hooks.createChildScope(parentScope);
     }
 
     if (self !== undefined) {
@@ -193,7 +193,7 @@ function isStableTemplate(template, lastYielded) {
 function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visitor) {
   return function(layout, self) {
     morphsToPrune.clearMorph = null;
-    var layoutScope = env.hooks.createScope(null, layout.arity);
+    var layoutScope = env.hooks.createFreshScope();
 
     if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
       return morph.lastResult.revalidateWith(self, [], visitor);
@@ -220,7 +220,7 @@ function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visit
       // Since a yielded template shares a `self` with its original context,
       // we only need to create a new scope if the template has block parameters
       if (template.arity) {
-        scope = env.hooks.createScope(parentScope, template.arity);
+        scope = env.hooks.createChildScope(parentScope);
       }
 
       renderNode.lastResult = render(template, env, scope, { renderNode: renderNode }, blockArguments);
@@ -252,8 +252,8 @@ function thisFor(options) {
   };
 }
 
-function linkParams(env, morph, params, hash) {
-  var isStable = env.hooks.linkRenderNode(morph, params, hash);
+function linkParams(env, scope, morph, params, hash) {
+  var isStable = env.hooks.linkRenderNode(morph, scope, params, hash);
 
   if (isStable) {
     morph.linkedParams = { params: params, hash: hash };
@@ -286,16 +286,21 @@ function linkParams(env, morph, params, hash) {
   hook uses the scope to retrieve a value for a given
   scope and variable name.
 */
-export function createScope(parentScope) {
-  var scope;
-
+export function createScope(env, parentScope) {
   if (parentScope) {
-    scope = createObject(parentScope);
-    scope.locals = createObject(parentScope.locals);
+    return env.hooks.createChildScope(parentScope);
   } else {
-    scope = { self: null, block: null, locals: {} };
+    return env.hooks.createFreshScope();
   }
+}
 
+export function createFreshScope() {
+  return { self: null, block: null, locals: {} };
+}
+
+export function createChildScope(parent) {
+  var scope = createObject(parent);
+  scope.locals = createObject(parent.locals);
   return scope;
 }
 
@@ -409,7 +414,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  linkParams(env, morph, params, hash);
+  linkParams(env, scope, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   helper.call(thisFor(options.templates), params, hash, options.templates);
@@ -438,7 +443,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
   }
 }
 
-export function linkRenderNode(/* morph, params, hash */) {
+export function linkRenderNode(/* morph, scope, params, hash */) {
   return;
 }
 
@@ -491,7 +496,7 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
   var options = optionsFor(null, null, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  linkParams(env, morph, params, hash);
+  linkParams(env, scope, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   value = helper.call(thisFor(options.templates), params, hash, options.templates);
@@ -600,7 +605,7 @@ export function content(morph, env, scope, path, visitor) {
     return env.hooks.inline(morph, env, scope, path, [], {}, visitor);
   } else {
     var value = env.hooks.get(env, scope, path);
-    return env.hooks.range(morph, env, value);
+    return env.hooks.range(morph, env, scope, value);
   }
 }
 
@@ -622,8 +627,8 @@ export function content(morph, env, scope, path, visitor) {
   This hook is responsible for updating a render node
   that represents a range of content with a value.
 */
-export function range(morph, env, value) {
-  linkParams(env, morph, [value], null);
+export function range(morph, env, scope, value) {
+  linkParams(env, scope, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -663,7 +668,7 @@ export function range(morph, env, value) {
 export function element(morph, env, scope, path, params, hash /*, visitor */) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
-    linkParams(env, morph, params, hash);
+    linkParams(env, scope, morph, params, hash);
     params = normalizeArray(env, params);
     hash = normalizeObject(env, hash);
     helper(params, hash, { element: morph.element });
@@ -691,8 +696,8 @@ export function element(morph, env, scope, path, params, hash /*, visitor */) {
   already-resolved value, and should update the render
   node with the value if appropriate.
 */
-export function attribute(morph, env, name, value) {
-  linkParams(env, morph, [value], null);
+export function attribute(morph, env, scope, name, value) {
+  linkParams(env, scope, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -778,7 +783,7 @@ export function concat(env, params) {
 
 function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
-  linkParams(env, morph, [], attrs);
+  linkParams(env, scope, morph, [], attrs);
   for (var name in attrs) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
@@ -799,6 +804,8 @@ export default {
   keywords: keywords,
   linkRenderNode: linkRenderNode,
   createScope: createScope,
+  createFreshScope: createFreshScope,
+  createChildScope: createChildScope,
   bindSelf: bindSelf,
   bindLocal: bindLocal,
   bindBlock: bindBlock,

@@ -17,6 +17,8 @@ test("hooks are present", function () {
     "keywords",
     "linkRenderNode",
     "createScope",
+    "createFreshScope",
+    "createChildScope",
     "bindSelf",
     "bindLocal",
     "bindBlock",
