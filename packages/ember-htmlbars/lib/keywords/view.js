@@ -3,43 +3,46 @@
 @submodule ember-htmlbars
 */
 
-import { get } from "ember-metal/property_get";
 import { readViewFactory } from "ember-views/streams/utils";
-import Ember from "ember-metal/core";
 import EmberView from "ember-views/views/view";
+import ComponentNode from "ember-htmlbars/system/component-node";
 
-export default function viewKeyword(morph, env, scope, params, hash, template, inverse) {
-  var read = env.hooks.getValue;
-  var parentView = read(scope.locals.view);
-  var view = hash.view = getView(read(params[0]), parentView.container);
-  parentView.linkChild(view);
+export default {
+  setupState: function(state, env, scope, params, hash) {
+    var read = env.hooks.getValue;
+    state.parentView = read(scope.locals.view);
 
-  morph.state.view = view;
+    debugger;
+    state.lastViewClassOrInstance = state.viewClassOrInstance;
+    state.viewClassOrInstance = getView(read(params[0]), env.container);
+  },
 
-  Ember.assert("Expected morph to have only a single node", morph.firstNode === morph.lastNode);
+  isStable: function(state, env, scope, params, hash) {
+    return state.lastViewClassOrInstance === state.viewClassOrInstance;
+  },
 
-  var dom = env.dom;
+  render: function(node, env, scope, params, hash, template, inverse, visitor) {
+    var state = node.state;
+    var parentView = state.parentView;
 
-  var contentMorph = view.renderer.contentMorphForView(view, morph, dom);
+    var view = hash.view = viewInstance(node.state.viewClassOrInstance);
+    parentView.linkChild(view);
 
-  var viewHasTemplate = get(view, 'template') || get(view, 'layout') || template;
-  var inDOM = parentView._state === 'inDOM';
+    state.view = view;
 
-  if (viewHasTemplate) {
-    var viewHash = { self: view, layout: get(view, 'template') };
-    env.hooks.block(contentMorph, env, scope, '@view', params, viewHash, template, null);
+    var options = { component: view, layout: null };
+    var componentNode = ComponentNode.create(node, env, options, parentView, null, scope, template);
+
+    componentNode.render(env, hash, visitor, parentView._state === 'inDOM');
   }
+};
 
-  view.renderer.didCreateElement(view);
-
-  if (inDOM) {
-    // TODO: Make sure this gets called once all descendents are also in DOM
-    view.renderer.didInsertElement(view);
+function viewInstance(viewClassOrInstance) {
+  if (viewClassOrInstance instanceof EmberView) {
+    return viewClassOrInstance;
   } else {
-    view.ownerView.newlyCreated.push(view);
+    return viewClassOrInstance.create();
   }
-
-  return true;
 }
 
 function getView(viewPath, container) {
@@ -55,9 +58,5 @@ function getView(viewPath, container) {
     viewClassOrInstance = readViewFactory(viewPath, container);
   }
 
-  if (viewClassOrInstance instanceof EmberView) {
-    return viewClassOrInstance;
-  } else {
-    return viewClassOrInstance.create();
-  }
+  return viewClassOrInstance;
 }

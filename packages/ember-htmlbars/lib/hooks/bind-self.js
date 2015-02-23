@@ -4,7 +4,7 @@
 */
 
 import SimpleStream from "ember-metal/streams/simple";
-import { componentSymbol } from "ember-htmlbars/hooks/component";
+import { componentSymbol } from "ember-htmlbars/system/component-node";
 
 export default function bindSelf(scope, self) {
   var component = self[componentSymbol];
