@@ -458,29 +458,30 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     keyword.willRender(morph, env);
   }
 
+  if (keyword.setupState) {
+    keyword.setupState(morph.state, env, scope, params, hash);
+  }
+
   var firstTime = !morph.lastResult;
+
+  if (keyword.isEmpty) {
+    var isEmpty = keyword.isEmpty(morph.state, env, scope, params, hash);
+
+    if (isEmpty) {
+      if (!firstTime) { pruneMorph(morph, env.hooks.cleanup); }
+      return true;
+    }
+  }
 
   if (firstTime) {
     keyword.render(morph, env, scope, params, hash);
     return true;
   }
 
-  if (keyword.setupState) {
-    keyword.setupState(morph.state, env, scope, params, hash);
-  }
-
   if (keyword.isStable) {
     var isStable = keyword.isStable(morph.state, env, scope, params, hash);
     if (isStable) {
       validateChildMorphs(morph, visitor);
-      return true;
-    }
-  }
-
-  if (keyword.shouldPrune) {
-    var shouldPrune = keyword.shouldPrune(morph.state, env, scope, params, hash);
-    if (shouldPrune) {
-      pruneMorph(morph, env.hooks.cleanup);
       return true;
     }
   }

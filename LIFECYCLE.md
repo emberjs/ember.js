@@ -235,9 +235,10 @@ export default {
     // called again to produce new values.
   },
 
-  shouldPrune: function(state, env, scope, params, hash) {
-    // If `isStable` returns false, this function can return true to
-    // clear the render node entirely instead of calling `render`.
+  isEmpty: function(state, env, scope, params, hash) {
+    // If `isStable` returns false, or this is the first render,
+    // this function can return true to indicate that the morph
+    // should be empty (and `render` should not be called).
   }
 }
 ```
