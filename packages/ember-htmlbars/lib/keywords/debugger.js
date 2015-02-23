@@ -54,4 +54,6 @@ export default function debuggerKeyword(morph, env, scope) {
   Logger.info('Use `view`, `context`, and `get(<path>)` to debug this template.');
 
   debugger;
+
+  return true;
 }

@@ -3,52 +3,62 @@
 @submodule ember-htmlbars
 */
 
-import { validateChildMorphs } from "htmlbars-runtime";
 import merge from "ember-metal/merge";
 import { componentClassSymbol, componentLayoutSymbol } from "ember-htmlbars/hooks/component";
 
-export default function outlet(morph, env, scope, params, hash, template, inverse, visitor) {
-  var outletState = env.outletState;
-  env.view.ownerView._outlets.push(morph);
+export default {
+  willRender: function(renderNode, env) {
+    env.view.ownerView._outlets.push(renderNode);
+  },
 
-  var read = env.hooks.getValue;
-  var outletName = read(params[0]) || 'main';
-  var selectedOutletState = outletState[outletName];
+  setupState: function(state, env, scope, params, hash) {
+    var outletState = env.outletState;
+    var read = env.hooks.getValue;
 
-  var newEnv = createOrUpdateChildEnv(morph, env, selectedOutletState);
+    var outletName = read(params[0]) || 'main';
+    var selectedOutletState = outletState[outletName];
 
-  var lastOutletState = morph.state.lastOutletState;
-  morph.state.lastOutletState = selectedOutletState;
+    state.lastOutletState = state.selectedOutletState;
+    state.selectedOutletState = selectedOutletState;
 
-  if (morph.lastResult && isStable(lastOutletState, selectedOutletState)) {
-    return validateChildMorphs(morph, visitor);
-  }
+    createOrUpdateChildEnv(state, env, selectedOutletState);
+  },
 
-  if (!selectedOutletState) { return; }
+  isStable: function(state, env, scope, params, hash) {
+    return isStable(state.lastOutletState, state.selectedOutletState);
+  },
 
-  var ViewClass = selectedOutletState.render.ViewClass;
-  var viewTemplate = selectedOutletState.render.template;
+  isEmpty: function(state) {
+    return isEmpty(state.selectedOutletState);
+  },
 
-  if (ViewClass || viewTemplate) {
+  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+    var selectedOutletState = morph.state.selectedOutletState;
+
+    var ViewClass = selectedOutletState.render.ViewClass;
+    var viewTemplate = selectedOutletState.render.template;
+
     var attrs = {};
     attrs[componentClassSymbol] = ViewClass;
     attrs[componentLayoutSymbol] = viewTemplate;
 
-    env.hooks.component(morph, newEnv, null, null, attrs, null, visitor);
+    env.hooks.component(morph, morph.state.childEnv, null, null, attrs, null, visitor);
   }
+};
+
+function isEmpty(outletState) {
+  return !outletState || (!outletState.render.ViewClass && !outletState.render.template);
 }
 
-function createOrUpdateChildEnv(morph, env, outletState) {
-  var newEnv = morph.state.childEnv;
+function createOrUpdateChildEnv(state, env, outletState) {
+  var newEnv = state.childEnv;
 
   if (!newEnv) {
     newEnv = merge({}, env);
-    morph.state.childEnv = newEnv;
+    state.childEnv = newEnv;
   }
 
   newEnv.outletState = outletState && outletState.outlets;
-
-  return newEnv;
 }
 
 function isStable(lastOutletState, newOutletState) {
