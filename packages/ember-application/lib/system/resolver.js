@@ -145,6 +145,12 @@ export default EmberObject.extend({
         });
       }
 
+      if (name.indexOf('-') > -1) {
+        result = result.replace(/-(.)/g, function(m) {
+          return m.charAt(1).toUpperCase();
+        });
+      }
+
       return type + ':' + result;
     } else {
       return fullName;
