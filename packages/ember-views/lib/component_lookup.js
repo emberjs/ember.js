@@ -26,11 +26,6 @@ export default EmberObject.extend({
     }
   },
 
-  isComponent: function(name, container) {
-    return container._registry.has('component:' + name) ||
-           container._registry.has('template:components/' + name);
-  },
-
   componentFor: function(name, container) {
     var fullName = 'component:' + name;
     return container.lookupFactory(fullName);

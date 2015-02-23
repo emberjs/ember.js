@@ -10,7 +10,6 @@ import Ember from "ember-metal/core";
 
 import { registerHelper } from "ember-htmlbars/helpers";
 
-import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 import { renderHelper } from "ember-routing-htmlbars/helpers/render";
 import {
   linkToHelper,
@@ -19,7 +18,6 @@ import {
 import { actionHelper } from "ember-routing-htmlbars/helpers/action";
 import { queryParamsHelper } from "ember-routing-htmlbars/helpers/query-params";
 
-registerHelper('outlet', outletHelper);
 registerHelper('render', renderHelper);
 registerHelper('link-to', linkToHelper);
 registerHelper('linkTo', deprecatedLinkToHelper);

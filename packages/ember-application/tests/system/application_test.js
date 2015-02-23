@@ -139,7 +139,7 @@ QUnit.test("initialize application via initialize call", function() {
     });
 
     app.ApplicationView = View.extend({
-      template() { return "<h1>Hello!</h1>"; }
+      template: compile("<h1>Hello!</h1>")
     });
   });
 
@@ -160,9 +160,7 @@ QUnit.test("initialize application with stateManager via initialize call from Ro
       location: 'none'
     });
 
-    app.register('template:application', function() {
-      return "<h1>Hello!</h1>";
-    });
+    app.register('template:application', compile("<h1>Hello!</h1>"));
   });
 
   var router = app.__container__.lookup('router:main');
@@ -177,9 +175,7 @@ QUnit.test("ApplicationView is inserted into the page", function() {
     });
 
     app.ApplicationView = View.extend({
-      render(buffer) {
-        buffer.push("<h1>Hello!</h1>");
-      }
+      template: compile("<h1>Hello!</h1>")
     });
 
     app.ApplicationController = Controller.extend();

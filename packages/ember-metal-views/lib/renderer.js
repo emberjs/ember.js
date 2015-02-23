@@ -16,16 +16,20 @@ function Renderer(_helper, _destinedForDOM) {
 
 Renderer.prototype.renderTopLevelView =
   function Renderer_renderTopLevelView(view, morph) {
+    view.ownerView = morph.state.view = view;
+    view.renderNode = morph;
+
     var newlyCreated = view.newlyCreated = [view];
 
     var contentMorph = this.contentMorphForView(view, morph);
 
     var template = get(view, 'layout') || get(view, 'template');
-    var result = view.renderTemplate(view, contentMorph.contextualElement, template, contentMorph);
 
-    view.lastResult = result;
-    view.renderNode = morph;
-    morph.lastResult = result;
+    if (template) {
+      var result = view.renderTemplate(view, contentMorph.contextualElement, template, contentMorph);
+
+      view.lastResult = morph.lastResult = result;
+    }
 
     for (var i=0, l=newlyCreated.length; i<l; i++) {
       this.didInsertElement(newlyCreated[i]);

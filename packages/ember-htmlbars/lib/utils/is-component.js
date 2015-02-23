@@ -11,8 +11,6 @@ export default function isComponent(env, scope, path) {
   var container = env.container;
   if (!container) { return false; }
 
-  var componentLookup = container.lookup('component-lookup:main');
-  if (!componentLookup) { return false; }
-
-  return componentLookup.isComponent(path, container);
+  return container._registry.has('component:' + path) ||
+         container._registry.has('template:components/' + path);
 }

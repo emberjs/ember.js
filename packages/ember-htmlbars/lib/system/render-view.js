@@ -32,6 +32,8 @@ export function renderHTMLBarsTemplate(view, contextualElement, template, morph)
   );
 
   var env = {
+    view: view,
+    outletState: view.outletState,
     container: view.container,
     renderer: view.renderer,
     dom: view.renderer._dom,
