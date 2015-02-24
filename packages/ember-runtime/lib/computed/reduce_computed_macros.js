@@ -27,8 +27,8 @@ var a_slice = [].slice;
  A computed property that returns the sum of the value
  in the dependent array.
 
- @method computed.sum
- @for Ember
+ @method sum
+ @for Ember.computed
  @param {String} dependentKey
  @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
  @since 1.4.0
@@ -76,8 +76,8 @@ export function sum(dependentKey){
   lordByron.get('maxChildAge'); // 8
   ```
 
-  @method computed.max
-  @for Ember
+  @method max
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the largest value in the dependentKey's array
 */
@@ -125,8 +125,8 @@ export function max(dependentKey) {
   lordByron.get('minChildAge'); // 5
   ```
 
-  @method computed.min
-  @for Ember
+  @method min
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the smallest value in the dependentKey's array
 */
@@ -173,8 +173,8 @@ export function min(dependentKey) {
   hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
-  @method computed.map
-  @for Ember
+  @method map
+  @for Ember.computed
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} an array mapped via the callback
@@ -218,8 +218,8 @@ export function map(dependentKey, callback) {
   lordByron.get('childAges'); // [7, 5, 8]
   ```
 
-  @method computed.mapBy
-  @for Ember
+  @method mapBy
+  @for Ember.computed
   @param {String} dependentKey
   @param {String} propertyKey
   @return {Ember.ComputedProperty} an array mapped to the specified key
@@ -230,8 +230,8 @@ export function mapBy (dependentKey, propertyKey) {
 }
 
 /**
-  @method computed.mapProperty
-  @for Ember
+  @method mapProperty
+  @for Ember.computed
   @deprecated Use `Ember.computed.mapBy` instead
   @param dependentKey
   @param propertyKey
@@ -268,8 +268,8 @@ export var mapProperty = mapBy;
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
   ```
 
-  @method computed.filter
-  @for Ember
+  @method filter
+  @for Ember.computed
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} the filtered array
@@ -324,8 +324,8 @@ export function filter(dependentKey, callback) {
   hamster.get('remainingChores'); // [{ name: 'write more unit tests', done: false }]
   ```
 
-  @method computed.filterBy
-  @for Ember
+  @method filterBy
+  @for Ember.computed
   @param {String} dependentKey
   @param {String} propertyKey
   @param {*} value
@@ -348,8 +348,8 @@ export function filterBy (dependentKey, propertyKey, value) {
 }
 
 /**
-  @method computed.filterProperty
-  @for Ember
+  @method filterProperty
+  @for Ember.computed
   @param dependentKey
   @param propertyKey
   @param value
@@ -380,8 +380,8 @@ export var filterProperty = filterBy;
   hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale']
   ```
 
-  @method computed.uniq
-  @for Ember
+  @method uniq
+  @for Ember.computed
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
@@ -424,8 +424,8 @@ export function uniq() {
 /**
   Alias for [Ember.computed.uniq](/api/#method_computed_uniq).
 
-  @method computed.union
-  @for Ember
+  @method union
+  @for Ember.computed
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
@@ -448,8 +448,8 @@ export var union = uniq;
   obj.get('friendsInCommon'); // ['William King', 'Mary Somerville']
   ```
 
-  @method computed.intersect
-  @for Ember
+  @method intersect
+  @for Ember.computed
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   duplicated elements from the dependent arrays
@@ -535,8 +535,8 @@ export function intersect() {
   hamster.get('wants'); // ['banana']
   ```
 
-  @method computed.setDiff
-  @for Ember
+  @method setDiff
+  @for Ember.computed
   @param {String} setAProperty
   @param {String} setBProperty
   @return {Ember.ComputedProperty} computes a new array with all the
@@ -679,8 +679,8 @@ function binarySearch(array, item, low, high) {
   todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
-  @method computed.sort
-  @for Ember
+  @method sort
+  @for Ember.computed
   @param {String} dependentKey
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting

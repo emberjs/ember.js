@@ -62,8 +62,8 @@ function registerComputedWithProperties(name, macro) {
   ```
 
   @since 1.6.0
-  @method computed.empty
-  @for Ember
+  @method empty
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which negate
   the original value for property
@@ -92,8 +92,8 @@ computed.empty = function (dependentKey) {
   hamster.get('hasStuff');         // false
   ```
 
-  @method computed.notEmpty
-  @for Ember
+  @method notEmpty
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
@@ -125,8 +125,8 @@ computed.notEmpty = function(dependentKey) {
   hamster.get('isHungry'); // true
   ```
 
-  @method computed.none
-  @for Ember
+  @method none
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which
   returns true if original value for property is null or undefined.
@@ -153,8 +153,8 @@ registerComputed('none', function(dependentKey) {
   user.get('isAnonymous'); // false
   ```
 
-  @method computed.not
-  @for Ember
+  @method not
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which returns
   inverse of the original value for property
@@ -183,8 +183,8 @@ registerComputed('not', function(dependentKey) {
   hamster.get('hasBananas'); // false
   ```
 
-  @method computed.bool
-  @for Ember
+  @method bool
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which converts
   to boolean the original value for property
@@ -214,8 +214,8 @@ registerComputed('bool', function(dependentKey) {
   user.get('hasValidEmail'); // true
   ```
 
-  @method computed.match
-  @for Ember
+  @method match
+  @for Ember.computed
   @param {String} dependentKey
   @param {RegExp} regexp
   @return {Ember.ComputedProperty} computed property which match
@@ -246,8 +246,8 @@ registerComputed('match', function(dependentKey, regexp) {
   hamster.get('napTime'); // false
   ```
 
-  @method computed.equal
-  @for Ember
+  @method equal
+  @for Ember.computed
   @param {String} dependentKey
   @param {String|Number|Object} value
   @return {Ember.ComputedProperty} computed property which returns true if
@@ -277,8 +277,8 @@ registerComputed('equal', function(dependentKey, value) {
   hamster.get('hasTooManyBananas'); // true
   ```
 
-  @method computed.gt
-  @for Ember
+  @method gt
+  @for Ember.computed
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
@@ -308,8 +308,8 @@ registerComputed('gt', function(dependentKey, value) {
   hamster.get('hasTooManyBananas'); // true
   ```
 
-  @method computed.gte
-  @for Ember
+  @method gte
+  @for Ember.computed
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
@@ -339,8 +339,8 @@ registerComputed('gte', function(dependentKey, value) {
   hamster.get('needsMoreBananas'); // true
   ```
 
-  @method computed.lt
-  @for Ember
+  @method lt
+  @for Ember.computed
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
@@ -370,8 +370,8 @@ registerComputed('lt', function(dependentKey, value) {
   hamster.get('needsMoreBananas'); // true
   ```
 
-  @method computed.lte
-  @for Ember
+  @method lte
+  @for Ember.computed
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
@@ -401,8 +401,8 @@ registerComputed('lte', function(dependentKey, value) {
   hamster.get('readyForCamp'); // true
   ```
 
-  @method computed.and
-  @for Ember
+  @method and
+  @for Ember.computed
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
@@ -434,8 +434,8 @@ registerComputedWithProperties('and', function(properties) {
   hamster.get('readyForRain'); // true
   ```
 
-  @method computed.or
-  @for Ember
+  @method or
+  @for Ember.computed
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
@@ -467,8 +467,8 @@ registerComputedWithProperties('or', function(properties) {
   hamster.get('hasClothes'); // 'Hawaiian Shirt'
   ```
 
-  @method computed.any
-  @for Ember
+  @method any
+  @for Ember.computed
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
@@ -501,8 +501,8 @@ registerComputedWithProperties('any', function(properties) {
   hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
   ```
 
-  @method computed.collect
-  @for Ember
+  @method collect
+  @for Ember.computed
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed in properties to an array.
@@ -541,8 +541,8 @@ registerComputedWithProperties('collect', function(properties) {
   alex.get('name');  // '@machty'
   ```
 
-  @method computed.alias
-  @for Ember
+  @method alias
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates an
   alias to the original value for property.
@@ -575,8 +575,8 @@ computed.alias = alias;
   teddy.get('firstName');             // 'Teddy'
   ```
 
-  @method computed.oneWay
-  @for Ember
+  @method oneWay
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
@@ -624,8 +624,8 @@ computed.reads = computed.oneWay;
   teddy.get('firstName');             // 'Teddy'
   ```
 
-  @method computed.readOnly
-  @for Ember
+  @method readOnly
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
@@ -654,8 +654,8 @@ computed.readOnly = function(dependentKey) {
   hamster.get('favoriteFood');                 // 'Banana'
   ```
 
-  @method computed.defaultTo
-  @for Ember
+  @method defaultTo
+  @for Ember.computed
   @param {String} defaultPath
   @return {Ember.ComputedProperty} computed property which acts like
   a standard getter and setter, but defaults to the value from `defaultPath`.
@@ -679,8 +679,8 @@ computed.defaultTo = function(defaultPath) {
   though they were called on the original property, but also
   print a deprecation warning.
 
-  @method computed.deprecatingAlias
-  @for Ember
+  @method deprecatingAlias
+  @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.

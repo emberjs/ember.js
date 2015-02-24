@@ -544,8 +544,10 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   }.property('firstName', 'lastName')
   ```
 
-  @method computed
-  @for Ember
+  @class computed
+  @namespace Ember
+  @constructor
+  @static
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
   @return {Ember.ComputedProperty} property descriptor instance
