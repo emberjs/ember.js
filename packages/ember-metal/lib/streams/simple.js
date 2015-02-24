@@ -30,21 +30,18 @@ merge(SimpleStream.prototype, {
   setSource(nextSource) {
     var prevSource = this.source;
     if (nextSource !== prevSource) {
-      if (isStream(prevSource)) {
-        prevSource.unsubscribe(this._didChange, this);
-      }
-
-      if (isStream(nextSource)) {
-        nextSource.subscribe(this._didChange, this);
-      }
-
+      this.replaceDependency(nextSource);
       this.source = nextSource;
       this.notify();
     }
   },
 
-  _didChange: function() {
-    this.notify();
+  replaceDependency: function(nextSource) {
+    if (this.dependency) {
+      this.dependency = this.dependency.replace(nextSource);
+    } else {
+      this.dependency = this.addDependency(nextSource);
+    }
   },
 
   _super$destroy: Stream.prototype.destroy,

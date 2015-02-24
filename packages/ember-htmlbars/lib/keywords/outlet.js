@@ -4,7 +4,7 @@
 */
 
 import merge from "ember-metal/merge";
-import { componentClassSymbol, componentLayoutSymbol } from "ember-htmlbars/hooks/component";
+import { componentClassSymbol, componentLayoutSymbol } from "ember-htmlbars/system/component-node";
 
 export default {
   willRender: function(renderNode, env) {

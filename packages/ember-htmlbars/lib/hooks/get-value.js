@@ -5,4 +5,6 @@
 
 import { read } from "ember-metal/streams/utils";
 
-export default read;
+export default function getValue(ref) {
+  return read(ref);
+}

@@ -18,13 +18,27 @@ export default function bindSelf(scope, self) {
     return;
   }
 
-  var selfStream = scope.self = new SimpleStream(self);
-
   if (self.isView) {
+    var selfStream = new SimpleStream(self);
     scope.locals.view = selfStream;
     scope.view = selfStream;
-    scope.self = selfStream.getKey('context');
+    updateSelf(scope, selfStream.getKey('context'));
+  } else {
+    updateSelf(scope, self);
   }
+}
+
+function updateSelf(scope, newSelf, key) {
+  var existing = scope.self;
+  var selfStream;
+
+  if (existing) {
+    selfStream = existing.setSource(newSelf);
+  } else {
+    selfStream = scope.self = new SimpleStream(newSelf);
+  }
+
+  return selfStream;
 }
 
 import merge from "ember-metal/merge";

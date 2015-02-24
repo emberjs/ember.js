@@ -31,6 +31,69 @@ Subscriber.prototype.removeFrom = function(stream) {
   } else {
     stream.subscriberTail = prev;
   }
+
+  stream.maybeDeactivate();
+};
+
+function Dependency(dependent, stream, callback, context) {
+  this.next = null;
+  this.prev = null;
+  this.dependent = dependent;
+  this.stream = stream;
+  this.callback = callback;
+  this.context = context;
+  this.unsubscription = null;
+}
+
+Dependency.prototype.subscribe = function() {
+  this.unsubscribe = this.stream.subscribe(this.callback, this.context);
+};
+
+Dependency.prototype.unsubscribe = function() {
+  this.unsubscription();
+  this.unsubscription = null;
+};
+
+Dependency.prototype.removeFrom = function(stream) {
+  var next = this.next;
+  var prev = this.prev;
+
+  if (prev) {
+    prev.next = next;
+  } else {
+    stream.dependencyHead = next;
+  }
+
+  if (next) {
+    next.prev = prev;
+  } else {
+    stream.dependencyTail = prev;
+  }
+
+  if (this.unsubscription) {
+    this.unsubscribe();
+  }
+};
+
+Dependency.prototype.replace = function(stream, callback, context) {
+  if (!stream.isStream) {
+    this.stream = null;
+    this.callback = null;
+    this.context = null;
+    this.removeFrom(this.dependent);
+    return null;
+  }
+
+  this.stream = stream;
+  this.callback = callback;
+  this.context = context;
+
+  if (this.unsubscription) {
+    this.unsubscribe();
+    this.subscribe();
+  }
+
+  return this;
 };
 
 /**
@@ -112,10 +175,8 @@ Stream.prototype = {
   },
 
   addDependency(stream, callback, context) {
-    Ember.assert("You tried to add a dependency to a stream, but the dependency stream did not exist.", !!stream);
-
-    if (!stream.isStream) {
-      return;
+    if (!stream || !stream.isStream) {
+      return null;
     }
 
     if (callback === undefined) {
@@ -289,6 +350,14 @@ Stream.prototype = {
       }
       stream = stream.source;
     }
+  }
+};
+
+Stream.wrap = function(value, Kind) {
+  if (value.isStream) {
+    return value;
+  } else {
+    return new Kind(value);
   }
 };
 

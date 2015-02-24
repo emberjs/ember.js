@@ -4,12 +4,15 @@
 */
 
 export default function cleanup(renderNode) {
-  if (renderNode.state.view) {
-    var view = renderNode.state.view;
+  var state = renderNode.state;
+  if (!state) { return; }
+
+  if (state.view) {
+    var view = state.view;
     view.destroy();
   }
 
-  var unsubscribers = renderNode.state.unsubscribers;
+  var unsubscribers = state.unsubscribers;
   if (!unsubscribers) { return; }
 
   for (var i=0, l=unsubscribers.length; i<l; i++) {
