@@ -314,7 +314,7 @@ if (!canDefineNonEnumerableProperties) {
 
   // Without non-enumerable properties, meta objects will be output in JSON
   // unless explicitly suppressed
-  Meta.prototype.toJSON = function () { };
+  Meta.prototype.toJSON = function() { };
 }
 
 // Placeholder for non-writable metas.
@@ -797,7 +797,7 @@ if (needsFinallyFix) {
 
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
-forEach.call(t, function(name) {
+forEach.call(t, (name) => {
   TYPE_MAP["[object " + name + "]"] = name.toLowerCase();
 });
 

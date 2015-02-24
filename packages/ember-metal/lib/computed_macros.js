@@ -60,7 +60,7 @@ function generateComputedWithProperties(macro) {
   the original value for property
 */
 export function empty(dependentKey) {
-  return computed(dependentKey + '.length', function () {
+  return computed(dependentKey + '.length', function() {
     return isEmpty(get(this, dependentKey));
   });
 }
@@ -90,7 +90,7 @@ export function empty(dependentKey) {
   original value for property is not empty.
 */
 export function notEmpty(dependentKey) {
-  return computed(dependentKey + '.length', function () {
+  return computed(dependentKey + '.length', function() {
     return !isEmpty(get(this, dependentKey));
   });
 }
@@ -123,7 +123,7 @@ export function notEmpty(dependentKey) {
   returns true if original value for property is null or undefined.
 */
 export function none(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return isNone(get(this, dependentKey));
   });
 }
@@ -153,7 +153,7 @@ export function none(dependentKey) {
   inverse of the original value for property
 */
 export function not(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return !get(this, dependentKey);
   });
 }
@@ -185,7 +185,7 @@ export function not(dependentKey) {
   to boolean the original value for property
 */
 export function bool(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return !!get(this, dependentKey);
   });
 }
@@ -219,7 +219,7 @@ export function bool(dependentKey) {
   the original value for property against a given RegExp
 */
 export function match(dependentKey, regexp) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     var value = get(this, dependentKey);
 
     return typeof value === 'string' ? regexp.test(value) : false;
@@ -254,7 +254,7 @@ export function match(dependentKey, regexp) {
   the original value for property is equal to the given value.
 */
 export function equal(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) === value;
   });
 }
@@ -287,7 +287,7 @@ export function equal(dependentKey, value) {
   the original value for property is greater than given value.
 */
 export function gt(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) > value;
   });
 }
@@ -320,7 +320,7 @@ export function gt(dependentKey, value) {
   the original value for property is greater or equal then given value.
 */
 export function gte(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) >= value;
   });
 }
@@ -353,7 +353,7 @@ export function gte(dependentKey, value) {
   the original value for property is less then given value.
 */
 export function lt(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) < value;
   });
 }
@@ -386,7 +386,7 @@ export function lt(dependentKey, value) {
   the original value for property is less or equal than given value.
 */
 export function lte(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) <= value;
   });
 }
@@ -703,7 +703,7 @@ export function defaultTo(defaultPath) {
 */
 export function deprecatingAlias(dependentKey) {
   return computed(dependentKey, function(key, value) {
-    Ember.deprecate('Usage of `' + key + '` is deprecated, use `' + dependentKey + '` instead.');
+    Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
 
     if (arguments.length > 1) {
       set(this, dependentKey, value);

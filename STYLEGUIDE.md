@@ -12,7 +12,9 @@
 + [Conditional Statements](#conditional-statements)
 + [Properties](#properties)
 + [Functions](#functions)
++ [Arrow Functions](#arrow-functions)
 + [Function Arguments](#function-arguments)
++ [Rest Parameters](#rest-parameters)
 + [Comments](#comments)
 
 ## Objects
@@ -272,6 +274,15 @@ foo[propertyName];
 function fooBar() {
 }
 ```
+## Arrow Functions
+
++ Make sure arrow functions are done on multiple lines.
+
+```javascript
+var foo = [1,2,3,4].map((item) => {
+  return item * 2;
+});
+```
 
 ## Function Arguments
 
@@ -311,6 +322,18 @@ function fooBar(opt) {
   var options = opt;
 
   options = 3;
+}
+```
+
+#Rest Parameters
+
+Since [Babel implements](https://babeljs.io/repl/#?experimental=true&playground=true&evaluate=true&loose=false&spec=false&code=function%20foo\(...args\)%20%7B%0A%20%20%0A%7D) Rest parameters in a non-leaking matter you should use them whenever applicable.
+
+```javascript
+function foo(...args) {
+  args.forEach((item) => {
+    console.log(item);
+  });
 }
 ```
 

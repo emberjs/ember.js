@@ -23,7 +23,6 @@ import {
 */
 
 var metaFor = meta;
-var a_slice = [].slice;
 
 function UNDEFINED() { }
 
@@ -250,7 +249,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 ComputedPropertyPrototype.property = function() {
   var args;
 
-  var addArg = function (property) {
+  var addArg = function(property) {
     args.push(property);
   };
 
@@ -448,7 +447,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   var cachedValue, ret;
 
   if (this._readOnly) {
-    throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
+    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
   if (cacheable && cache && cache[keyName] !== undefined) {
@@ -576,7 +575,7 @@ function computed(func) {
   var args;
 
   if (arguments.length > 1) {
-    args = a_slice.call(arguments);
+    args = [].slice.call(arguments);
     func = args.pop();
   }
 

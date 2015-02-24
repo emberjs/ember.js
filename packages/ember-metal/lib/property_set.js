@@ -27,13 +27,13 @@ import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 */
 export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
-    Ember.assert("Path '" + obj + "' must be global if no obj is given.", isGlobalPath(obj));
+    Ember.assert(`Path '${obj}' must be global if no obj is given.`, isGlobalPath(obj));
     value = keyName;
     keyName = obj;
     obj = Ember.lookup;
   }
 
-  Ember.assert("Cannot call set with "+ keyName +" key.", !!keyName);
+  Ember.assert(`Cannot call set with '${keyName}' key.`, !!keyName);
 
   if (obj === Ember.lookup) {
     return setPath(obj, keyName, value, tolerant);

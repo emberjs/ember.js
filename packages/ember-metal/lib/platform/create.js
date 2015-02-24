@@ -30,7 +30,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
   // in Opera Mini => not a reliable check
   // Object.prototype.__proto__ === null
   if (supportsProto || typeof document === 'undefined') {
-    createEmpty = function () {
+    createEmpty = function() {
       return { "__proto__": null };
     };
   } else {
@@ -39,7 +39,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
     // aside from Object.prototype itself. Instead, create a new global
     // object and *steal* its Object.prototype and strip it bare. This is
     // used as the prototype to create nullary objects.
-    createEmpty = function () {
+    createEmpty = function() {
       var iframe = document.createElement('iframe');
       var parent = document.body || document.documentElement;
       iframe.style.display = 'none';
@@ -59,7 +59,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
       function Empty() {}
       Empty.prototype = empty;
       // short-circuit future calls
-      createEmpty = function () {
+      createEmpty = function() {
         return new Empty();
       };
       return new Empty();

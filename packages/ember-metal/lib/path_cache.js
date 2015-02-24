@@ -4,12 +4,23 @@ var IS_GLOBAL      = /^[A-Z$]/;
 var IS_GLOBAL_PATH = /^[A-Z$].*[\.]/;
 var HAS_THIS       = 'this.';
 
-var isGlobalCache       = new Cache(1000, function(key) { return IS_GLOBAL.test(key);          });
-var isGlobalPathCache   = new Cache(1000, function(key) { return IS_GLOBAL_PATH.test(key);     });
-var hasThisCache        = new Cache(1000, function(key) { return key.lastIndexOf(HAS_THIS, 0) === 0; });
-var firstDotIndexCache  = new Cache(1000, function(key) { return key.indexOf('.');             });
+var isGlobalCache = new Cache(1000, (key) => {
+  return IS_GLOBAL.test(key);
+});
 
-var firstKeyCache = new Cache(1000, function(path) {
+var isGlobalPathCache = new Cache(1000, (key) => {
+  return IS_GLOBAL_PATH.test(key);
+});
+
+var hasThisCache = new Cache(1000, (key) => {
+  return key.lastIndexOf(HAS_THIS, 0) === 0;
+});
+
+var firstDotIndexCache = new Cache(1000, (key) => {
+  return key.indexOf('.');
+});
+
+var firstKeyCache = new Cache(1000, (path) => {
   var index = firstDotIndexCache.get(path);
   if (index === -1) {
     return path;
@@ -18,7 +29,7 @@ var firstKeyCache = new Cache(1000, function(path) {
   }
 });
 
-var tailPathCache = new Cache(1000, function(path) {
+var tailPathCache = new Cache(1000, (path) => {
   var index = firstDotIndexCache.get(path);
   if (index !== -1) {
     return path.slice(index + 1);

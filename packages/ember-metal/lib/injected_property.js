@@ -27,9 +27,7 @@ function injectedPropertyGet(keyName) {
   var possibleDesc = this[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-  Ember.assert("Attempting to lookup an injected property on an object " +
-               "without a container, ensure that the object was " +
-               "instantiated via a container.", this.container);
+  Ember.assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
 
   return this.container.lookup(desc.type + ':' + (desc.name || keyName));
 }

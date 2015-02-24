@@ -73,7 +73,7 @@ Binding.prototype = {
     @method copy
     @return {Ember.Binding} `this`
   */
-  copy: function () {
+  copy: function() {
     var copy = new Binding(this._to, this._from);
     if (this._oneWay) { copy._oneWay = true; }
     return copy;
@@ -139,7 +139,7 @@ Binding.prototype = {
   */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
-    return "Ember.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
+    return `Ember.Binding<${guidFor(this)}>(${this._from} -> ${this._to})${oneWay}`;
   },
 
   // ..........................................................

@@ -69,7 +69,9 @@ var time = (function() {
   var perf = 'undefined' !== typeof window ? window.performance || {} : {};
   var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
   // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-  return fn ? fn.bind(perf) : function() { return +new Date(); };
+  return fn ? fn.bind(perf) : () => {
+    return +new Date();
+  };
 })();
 
 /**

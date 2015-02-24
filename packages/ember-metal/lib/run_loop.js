@@ -31,7 +31,6 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   onErrorTarget: Ember,
   onErrorMethod: 'onerror'
 });
-var slice = [].slice;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees
@@ -159,10 +158,9 @@ run.join = function() {
   @return {Function} returns a new function that will always have a particular context
   @since 1.4.0
 */
-run.bind = function(target, method /* args */) {
-  var args = slice.call(arguments);
-  return function() {
-    return run.join.apply(run, args.concat(slice.call(arguments)));
+run.bind = function(...args) {
+  return function(...argz) {
+    return run.join.apply(run, args.concat(argz));
   };
 };
 
@@ -265,7 +263,7 @@ run.hasScheduledTimers = function() {
 };
 
 // Used by global test teardown
-run.cancelTimers = function () {
+run.cancelTimers = function() {
   backburner.cancelTimers();
 };
 
@@ -457,8 +455,7 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.next = function() {
-  var args = slice.call(arguments);
+run.next = function(...args) {
   args.push(1);
   return apply(backburner, backburner.later, args);
 };
@@ -632,8 +629,8 @@ run.throttle = function() {
 // Make sure it's not an autorun during testing
 function checkAutoRun() {
   if (!run.currentRunLoop) {
-    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun." +
-                 " You will need to wrap any code with asynchronous side-effects in a run", !Ember.testing);
+    Ember.assert(`You have turned on testing mode, which disabled the run-loop's autorun.
+                  You will need to wrap any code with asynchronous side-effects in a run`, !Ember.testing);
   }
 }
 
