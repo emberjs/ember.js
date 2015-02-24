@@ -1,11 +1,13 @@
+import isNative from "lodash/lang/isNative";
+import __map__ from "lodash/collection/map";
+import __forEach__ from "lodash/collection/forEach";
+import __filter__ from "lodash/collection/filter";
+import __indexOf__ from "lodash/array/indexOf";
+import __lastIndexOf__ from "lodash/array/lastIndexOf";
+
 /**
 @module ember-metal
 */
-import isNative from "lodash/internals/isNative";
-import map from "lodash/collections/map";
-import forEach from "lodash/collections/forEach";
-import indexOf from "lodash/arrays/indexOf";
-import filter from "lodash/collections/filter";
 
 var ArrayPrototype = Array.prototype;
 
@@ -13,14 +15,29 @@ var defineNativeShim = function(nativeFunc, shim) {
   if (isNative(nativeFunc)) {
     return nativeFunc;
   }
+
   return shim;
 };
 
-var map = defineNativeShim(ArrayPrototype.map, map);
-var forEach = defineNativeShim(ArrayPrototype.forEach, forEach);
-var indexOf = defineNativeShim(ArrayPrototype.indexOf, indexOf);
-var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, lastIndexOf);
-var filter = defineNativeShim(ArrayPrototype.filter, filter);
+var map = defineNativeShim(ArrayPrototype.map, function(fun) {
+  if (this === void 0 || this === null || typeof fun !== "function") {
+    throw new TypeError();
+  }
+
+  return __map__(fun);
+});
+
+var forEach = defineNativeShim(ArrayPrototype.forEach, function(fun) {
+  if (this === void 0 || this === null || typeof fun !== "function") {
+    throw new TypeError();
+  }
+
+  return __forEach__(fun);
+});
+
+var indexOf = defineNativeShim(ArrayPrototype.indexOf, __indexOf__);
+var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, __lastIndexOf__);
+var filter = defineNativeShim(ArrayPrototype.filter, __filter__);
 
 if (Ember.SHIM_ES5) {
   ArrayPrototype.map = ArrayPrototype.map || map;

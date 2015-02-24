@@ -1,8 +1,8 @@
 import { get } from 'ember-metal/property_get';
-import __isEmpty__ from 'lodash/objects/isEmpty';
-import isBoolean from 'lodash/objects/isBoolean';
-import isFunction from 'lodash/objects/isFunction';
-import isObject from 'lodash/objects/isObject';
+import __isEmpty__ from 'lodash/lang/isEmpty';
+import isBoolean from 'lodash/lang/isBoolean';
+import isFunction from 'lodash/lang/isFunction';
+import isObject from 'lodash/lang/isObject';
 
 /**
   Verifies that a value is `null` or an empty string, empty array,

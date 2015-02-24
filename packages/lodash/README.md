@@ -18,5 +18,5 @@ Replacing Ember's internal helper utilities with lodash's functions.
 
 From project root...
 
-    lodash modularize exports="es6" include=filter,forEach,indexOf,isBoolean,isEmpty,isFunction,isObject,map,merge -o ./packages/lodash/lib
+    lodash modularize exports=es include=filter,forEach,indexOf,lastIndexOf,isBoolean,isEmpty,isFunction,isObject,map,merge -o ./packages/lodash/lib
     touch ./packages/lodash/lib/main.js

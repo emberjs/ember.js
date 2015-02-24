@@ -1,4 +1,4 @@
-import merge from 'lodash/objects/merge';
+import merge from 'lodash/object/merge';
 
 /**
   Merge the contents of two objects together into the first object.
