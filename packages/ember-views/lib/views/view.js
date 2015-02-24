@@ -1289,6 +1289,8 @@ var View = CoreView.extend(
       this.elementId = guidFor(this);
     }
 
+    this.scheduledRevalidation = false;
+
     this._super(...arguments);
 
     if (!this._viewRegistry) {
@@ -1302,6 +1304,14 @@ var View = CoreView.extend(
 
   revalidate() {
     this.renderNode.lastResult.revalidate();
+    this.scheduledRevalidation = false;
+  },
+
+  scheduleRevalidate: function() {
+    if (!this.scheduledRevalidation) {
+      this.scheduledRevalidation = true;
+      run.scheduleOnce('render', this, this.revalidate);
+    }
   },
 
   appendAttr(node) {

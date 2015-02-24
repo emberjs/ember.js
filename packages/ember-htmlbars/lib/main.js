@@ -20,6 +20,7 @@ import {
 } from "ember-htmlbars/helpers/if_unless";
 import withHelper from "ember-htmlbars/helpers/with";
 import logHelper from "ember-htmlbars/helpers/log";
+import eachHelper from "ember-htmlbars/helpers/each";
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -34,6 +35,7 @@ registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('with', withHelper);
 registerHelper('log', logHelper);
+registerHelper('each', eachHelper);
 
 Ember.HTMLBars = {
   _registerHelper: registerHelper,

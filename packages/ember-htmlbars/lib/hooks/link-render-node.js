@@ -4,7 +4,6 @@
 */
 
 import { isStream } from "ember-metal/streams/utils";
-import run from "ember-metal/run_loop";
 
 export default function linkRenderNode(renderNode, scope, params, hash) {
   if (renderNode.state.unbound) {
@@ -46,6 +45,6 @@ function subscribe(node, scope, stream, unsubscribers) {
       component.renderNode.isDirty = true;
     }
 
-    run.scheduleOnce('render', node.ownerNode.state.view, 'revalidate');
+    node.ownerNode.state.view.scheduleRevalidate();
   }));
 }

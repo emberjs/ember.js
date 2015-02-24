@@ -9,8 +9,8 @@ import subexpr from "ember-htmlbars/hooks/subexpr";
 import concat from "ember-htmlbars/hooks/concat";
 import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
 import createFreshScope from "ember-htmlbars/hooks/create-fresh-scope";
-import bindLocal from "ember-htmlbars/hooks/bind-local";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
+import bindLocal from "ember-htmlbars/hooks/bind-local";
 import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
 import getValue from "ember-htmlbars/hooks/get-value";
@@ -27,8 +27,8 @@ var emberHooks = merge({}, hooks);
 merge(emberHooks, {
   linkRenderNode: linkRenderNode,
   createFreshScope: createFreshScope,
-  bindLocal: bindLocal,
   bindSelf: bindSelf,
+  bindLocal: bindLocal,
   getRoot: getRoot,
   getChild: getChild,
   getValue: getValue,
@@ -43,6 +43,7 @@ merge(emberHooks, {
 
 import ifKeyword from "ember-htmlbars/keywords/if";
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
+import eachKeyword from "ember-htmlbars/keywords/each";
 import outlet from "ember-htmlbars/keywords/outlet";
 import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
@@ -50,6 +51,7 @@ import view from "ember-htmlbars/keywords/view";
 merge(emberHooks.keywords, {
   "if": ifKeyword,
   "debugger": debuggerKeyword,
+  each: eachKeyword,
   outlet: outlet,
   unbound: unbound,
   view: view

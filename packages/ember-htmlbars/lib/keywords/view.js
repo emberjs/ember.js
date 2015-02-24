@@ -12,7 +12,6 @@ export default {
     var read = env.hooks.getValue;
     state.parentView = read(scope.locals.view);
 
-    debugger;
     state.lastViewClassOrInstance = state.viewClassOrInstance;
     state.viewClassOrInstance = getView(read(params[0]), env.container);
   },
