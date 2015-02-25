@@ -1,6 +1,6 @@
 import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 QUnit.module("EmberView#$", {
@@ -11,15 +11,11 @@ QUnit.module("EmberView#$", {
       }
     }).create();
 
-    run(function() {
-      view.append();
-    });
+    runAppend(view);
   },
 
   teardown: function() {
-    run(function() {
-      view.destroy();
-    });
+    runDestroy(view);
   }
 });
 
@@ -29,9 +25,7 @@ QUnit.test("returns undefined if no element", function() {
   equal(view.$(), undefined, 'should return undefined');
   equal(view.$('span'), undefined, 'should undefined if filter passed');
 
-  run(function() {
-    view.destroy();
-  });
+  runDestroy(view);
 });
 
 QUnit.test("returns jQuery object selecting element if provided", function() {
@@ -57,3 +51,16 @@ QUnit.test("returns empty jQuery object if filter passed that does not match ite
   equal(jquery.length, 0, 'view.$(body) should have no elements');
 });
 
+QUnit.test("asserts for tagless views", function() {
+  var view = EmberView.create({
+    tagName: ''
+  });
+
+  runAppend(view);
+
+  expectAssertion(function() {
+    view.$();
+  }, /You cannot access this.\$\(\) on a component with `tagName: \'\'` specified/);
+
+  runDestroy(view);
+});

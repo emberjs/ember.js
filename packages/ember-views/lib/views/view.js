@@ -938,6 +938,7 @@ var View = CoreView.extend(
     @return {jQuery} the jQuery object for the DOM node
   */
   $: function(sel) {
+    Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
     return this.currentState.$(this, sel);
   },
 
