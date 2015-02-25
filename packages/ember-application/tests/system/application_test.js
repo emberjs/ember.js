@@ -281,6 +281,18 @@ QUnit.test("can resolve custom router", function() {
   ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
 });
 
+QUnit.test("can specify custom router", function() {
+  var CustomRouter = Router.extend();
+
+  app = run(function() {
+    return Application.create({
+      Router: CustomRouter
+    });
+  });
+
+  ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
+});
+
 QUnit.test("throws helpful error if `app.then` is used", function() {
   run(function() {
     app = Application.create({
