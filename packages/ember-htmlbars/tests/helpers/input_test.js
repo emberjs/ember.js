@@ -81,6 +81,28 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
   equal(view.$('input').attr('tabindex'), "3", "updates text field after tabindex changes");
 });
 
+QUnit.test("cursor position is not lost when updating content", function() {
+  equal(view.$('input').val(), "hello", "precondition - renders text field with value");
+
+  var $input = view.$('input');
+  var input = $input[0];
+
+  // set the cursor position to 3 (no selection)
+  run(function() {
+    input.value = 'derp';
+    input.selectionStart = 3;
+    input.selectionEnd = 3;
+  });
+
+  run(null, set, controller, 'val', 'derp');
+
+  equal(view.$('input').val(), "derp", "updates text field after value changes");
+
+  equal(input.selectionStart, 3, 'cursor position was not lost');
+  equal(input.selectionEnd, 3, 'cursor position was not lost');
+});
+
+
 QUnit.module("{{input type='text'}} - static values", {
   setup: function() {
     controller = {};
