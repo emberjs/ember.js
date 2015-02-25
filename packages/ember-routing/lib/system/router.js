@@ -81,7 +81,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     });
 
     function generateDSL() {
-      this.resource('application', { path: "/" }, function() {
+      this.resource('application', { path: "/", overrideNameAssertion: true }, function() {
         for (var i=0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
