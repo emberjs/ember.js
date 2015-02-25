@@ -13,7 +13,7 @@ QUnit.module("Ember Router DSL", {
 });
 
 QUnit.test("should fail when using a reserved route name", function() {
-  var reservedNames = ['array', 'basic', 'object'];
+  var reservedNames = ['array', 'basic', 'object', 'application'];
 
   expect(reservedNames.length * 2);
 

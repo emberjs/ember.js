@@ -24,7 +24,14 @@ DSL.prototype = {
     }
 
     var type = options.resetNamespace === true ? 'resource' : 'route';
-    Ember.assert("'" + name + "' cannot be used as a " + type + " name.", name !== 'array' && name !== 'basic' && name !== 'object');
+    Ember.assert(
+      "'" + name + "' cannot be used as a " + type + " name.",
+      (function() {
+        if (options.overrideNameAssertion === true) { return true; }
+
+        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
+      })()
+    );
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       if (this.enableLoadingSubstates) {
