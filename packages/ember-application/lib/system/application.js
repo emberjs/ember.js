@@ -291,11 +291,11 @@ var Application = Namespace.extend(DeferredMixin, {
         // This is to ensure that someone reopening `App.Router` does not
         // tamper with the default `Ember.Router`.
         // 2.0TODO: Can we move this into a globals-mode-only library?
-        this.Router = Router.extend();
+        this.Router = (this.Router || Router).extend();
         this.waitForDOMReady(this.buildDefaultInstance());
       }
     } else {
-      this.Router = Router.extend();
+      this.Router = (this.Router || Router).extend();
       this.waitForDOMReady(this.buildDefaultInstance());
     }
   },
