@@ -105,6 +105,13 @@ var a_slice = Array.prototype.slice;
   @extends Ember.View
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+  /*
+    This is set so that the proto inspection in appendTemplatedView does not
+    think that it should set the components `context` to that of the parent view.
+  */
+  controller: null,
+  context: null,
+
   instrumentName: 'component',
   instrumentDisplay: computed(function() {
     if (this._debugContainerKey) {

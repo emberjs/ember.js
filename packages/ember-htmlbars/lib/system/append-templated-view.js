@@ -24,7 +24,7 @@ export default function appendTemplatedView(parentView, morph, viewClassOrInstan
   // no specified controller. See View#_context for more information.
 
   var noControllerInProto = !viewProto.controller;
-  if (viewProto.controller.isDescriptor) { noControllerInProto = true; }
+  if (viewProto.controller && viewProto.controller.isDescriptor) { noControllerInProto = true; }
   if (noControllerInProto &&
       !viewProto.controllerBinding &&
       !props.controller &&
