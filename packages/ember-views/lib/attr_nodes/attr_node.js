@@ -51,6 +51,11 @@ AttrNode.prototype.render = function render(buffer) {
     value = '';
   }
 
+  // If user is typing in a value we don't want to rerender and loose cursor position.
+  if (this.attrName === 'value' && this._morph.element.value === value) {
+    return;
+  }
+
   if (this.lastValue !== null || value !== null) {
     this._morph.setContent(value);
     this.lastValue = value;
