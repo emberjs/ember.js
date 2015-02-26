@@ -1,5 +1,4 @@
 import _default from "ember-views/views/states/default";
-import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
 import create from 'ember-metal/platform/create';
 import jQuery from "ember-views/system/jquery";
@@ -31,13 +30,12 @@ merge(hasElement, {
   // deferred to allow bindings to synchronize.
   rerender(view) {
     var renderNode = view.renderNode;
-    renderNode.isDirty = true;
 
+    renderNode.isDirty = true;
     visitChildren(renderNode.childNodes, function(node) {
-      node.state.shouldRerender = true;
       node.isDirty = true;
     });
-    run.scheduleOnce('render', renderNode.ownerNode.lastResult, 'revalidate');
+    renderNode.ownerNode.state.view.scheduleRevalidate();
   },
 
   // once the view is already in the DOM, destroying it removes it

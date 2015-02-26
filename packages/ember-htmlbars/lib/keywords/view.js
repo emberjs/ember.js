@@ -20,6 +20,10 @@ export default {
     return state.lastViewClassOrInstance === state.viewClassOrInstance;
   },
 
+  rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
+    return morph.state.componentNode.rerender(env, hash, visitor, true);
+  },
+
   render: function(node, env, scope, params, hash, template, inverse, visitor) {
     var state = node.state;
     var parentView = state.parentView;

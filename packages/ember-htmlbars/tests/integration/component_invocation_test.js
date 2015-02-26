@@ -116,13 +116,13 @@ QUnit.test('rerendering component with attrs from parent', function() {
   });
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(willReceiveAttrs, 0, "The willReceiveAttrs hook did not fire");
+  equal(willReceiveAttrs, 1, "The willReceiveAttrs hook fired");
   equal(willUpdate, 1, "The willUpdate hook fired once");
 
   Ember.run(view, 'rerender');
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(willReceiveAttrs, 1, "The willReceiveAttrs hook fired once");
+  equal(willReceiveAttrs, 2, "The willReceiveAttrs hook fired again");
   equal(willUpdate, 2, "The willUpdate hook fired again");
 });
 
@@ -169,8 +169,6 @@ QUnit.test('rerendering component with attrs from parent invokes willReceiveAttr
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
   strictEqual(attrsReceived, undefined, "The attrs were not received");
   deepEqual(attrsUpdated, { someObj: { prop: "tomdale" } }, "The attrs were updated");
-
-  // TODO: Confirm that attribute lifecycle hooks were invoked
 });
 
 

@@ -3,6 +3,7 @@ import environment from "ember-metal/environment";
 import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import {
   _instrumentStart,
   subscribers
@@ -29,6 +30,7 @@ Renderer.prototype.renderTopLevelView =
       var result = view.renderTemplate(view, contentMorph.contextualElement, template, contentMorph);
 
       view.lastResult = morph.lastResult = result;
+      window.lastMorph = morph;
     }
 
     for (var i=0, l=newlyCreated.length; i<l; i++) {
@@ -79,7 +81,7 @@ Renderer.prototype.willInsertElement = function (view) {
 }; // will place into DOM
 
 Renderer.prototype.setAttrs = function (view, attrs) {
-  view.attrs = attrs;
+  set(view, 'attrs', attrs);
 }; // set attrs the first time
 
 Renderer.prototype.didInsertElement = function (view) {
@@ -95,7 +97,7 @@ Renderer.prototype.updateAttrs = function (view, attrs) {
     view.willReceiveAttrs(attrs);
   }
 
-  view.attrs = attrs;
+  set(view, 'attrs', attrs);
 }; // setting new attrs
 
 Renderer.prototype.willUpdate = function (view, attrs) {

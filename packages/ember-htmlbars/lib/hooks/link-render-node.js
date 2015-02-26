@@ -3,28 +3,32 @@
 @submodule ember-htmlbars
 */
 
-import { isStream } from "ember-metal/streams/utils";
+import subscribe from "ember-htmlbars/utils/subscribe";
+import shouldDisplay from "ember-views/streams/should_display";
+import { chain, read } from "ember-metal/streams/utils";
 
-export default function linkRenderNode(renderNode, scope, params, hash) {
-  if (renderNode.state.unbound) {
+export default function linkRenderNode(renderNode, scope, path, params, hash) {
+  if (renderNode.state.unsubscribers) {
     return true;
   }
 
-  var unsubscribers = [];
+  switch (path) {
+    case 'unbound': return true;
+    case 'if': params[0] = shouldDisplay(params[0]); break;
+    case 'each': params[0] = eachParam(params[0]); break;
+  }
 
   if (params.length) {
     for (var i = 0; i < params.length; i++) {
-      subscribe(renderNode, scope, params[i], unsubscribers);
+      subscribe(renderNode, scope, params[i]);
     }
   }
 
   if (hash) {
     for (var key in hash) {
-      subscribe(renderNode, scope, hash[key], unsubscribers);
+      subscribe(renderNode, scope, hash[key]);
     }
   }
-
-  renderNode.state.unsubscribers = unsubscribers;
 
   // The params and hash can be reused; they don't need to be
   // recomputed on subsequent re-renders because they are
@@ -32,19 +36,14 @@ export default function linkRenderNode(renderNode, scope, params, hash) {
   return true;
 }
 
-function subscribe(node, scope, stream, unsubscribers) {
-  if (!isStream(stream)) { return; }
-  var component = scope.component;
+function eachParam(list) {
+  var listChange = list.getKey('[]');
 
-  unsubscribers.push(stream.subscribe(function() {
-    node.isDirty = true;
-    // TODO: Make sure this flips to false somehow on non-components
-    node.state.shouldRerender = true;
+  var stream = chain(list, function() {
+    read(listChange);
+    return read(list);
+  });
 
-    if (component && component.renderNode) {
-      component.renderNode.isDirty = true;
-    }
-
-    node.ownerNode.state.view.scheduleRevalidate();
-  }));
+  stream.addDependency(listChange);
+  return stream;
 }

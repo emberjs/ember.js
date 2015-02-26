@@ -4,41 +4,43 @@
 */
 
 import SimpleStream from "ember-metal/streams/simple";
-import { componentSymbol } from "ember-htmlbars/system/component-node";
+import { readHash } from "ember-metal/streams/utils";
+import { selfSymbol, componentSymbol } from "ember-htmlbars/system/symbols";
+import { get } from "ember-metal/property_get";
+import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function bindSelf(scope, self) {
+  var innerSelf = self[selfSymbol];
   var component = self[componentSymbol];
 
   if (component) {
-    scope.self = self;
     scope.component = component;
-    scope.view = scope.locals.view = new SimpleStream(component);
-    self[componentSymbol] = undefined;
-    self.attrs = new AttrStream(self.attrs);
-    return;
+    scope.view = component;
+    updateScope(scope.locals, 'view', component, component.renderNode);
+    updateScope(scope, 'attrs', readHash(innerSelf.attrs), component.renderNode);
   }
 
+  self = innerSelf || self;
+
   if (self.isView) {
-    var selfStream = new SimpleStream(self);
-    scope.locals.view = selfStream;
-    scope.view = selfStream;
-    updateSelf(scope, selfStream.getKey('context'));
+    scope.view = self;
+    updateScope(scope.locals, 'view', self, null);
+    updateScope(scope, 'self', get(self, 'context'), null);
   } else {
-    updateSelf(scope, self);
+    updateScope(scope, 'self', self, null);
   }
 }
 
-function updateSelf(scope, newSelf, key) {
-  var existing = scope.self;
-  var selfStream;
+function updateScope(scope, key, newValue, renderNode) {
+  var existing = scope[key];
 
   if (existing) {
-    selfStream = existing.setSource(newSelf);
+    existing.setSource(newValue);
   } else {
-    selfStream = scope.self = new SimpleStream(newSelf);
+    var stream = new SimpleStream(newValue);
+    if (renderNode) { subscribe(renderNode, scope, stream); }
+    scope[key] = stream;
   }
-
-  return selfStream;
 }
 
 import merge from "ember-metal/merge";
