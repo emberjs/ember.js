@@ -143,7 +143,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     }
 
     linkParams(env, scope, morph, '@range', params, null);
-    env.hooks.range(morph, env, scope, params[0]);
+    env.hooks.range(morph, env, scope, path, params[0], visitor);
   },
 
   // [ 'element', path, params, hash ]
@@ -200,12 +200,14 @@ export default merge(createObject(base), {
   // [ 'content', path ]
   content: function(node, morph, env, scope, visitor) {
     if (morph.isDirty) {
-      env.hooks.content(morph, env, scope, node[1], visitor);
+      this.dirtyContent(node, morph, env, scope, visitor);
       morph.isDirty = false;
     } else {
       validateChildMorphs(env, morph, visitor);
     }
   },
+
+  dirtyContent: AlwaysDirtyVisitor.content,
 
   // [ 'element', path, params, hash ]
   element: function(node, morph, env, scope, template, visitor) {
