@@ -1,5 +1,5 @@
 import { merge, createObject } from "../htmlbars-util/object-utils";
-import { validateChildMorphs } from "../htmlbars-util/morph-utils";
+import { validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 
 /**
   Node classification:
@@ -49,6 +49,14 @@ var base = {
       case 'attribute': return this.attribute(node, morph, env, scope);
       case 'component': return this.component(node, morph, env, scope, template, visitor);
     }
+  },
+
+  acceptParamsAndHash: function(env, scope, morph, path, params, hash) {
+    params = params && this.acceptParams(params, morph, env, scope);
+    hash = hash && this.acceptHash(hash, morph, env, scope);
+
+    linkParams(env, scope, morph, path, params, hash);
+    return [params, hash];
   },
 
   acceptParams: function(nodes, morph, env, scope) {
@@ -102,9 +110,9 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template, visitor) {
     var path = node[1], params = node[2], hash = node[3], templateId = node[4], inverseId = node[5];
-    env.hooks.block(morph, env, scope, path,
-                           this.acceptParams(params, morph, env, scope, template),
-                           this.acceptHash(hash, morph, env, scope, template),
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
+
+    env.hooks.block(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1],
                            templateId === null ? null : template.templates[templateId],
                            inverseId === null ? null : template.templates[inverseId],
                            visitor);
@@ -113,10 +121,9 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   // [ 'inline', path, params, hash ]
   inline: function(node, morph, env, scope, visitor) {
     var path = node[1], params = node[2], hash = node[3];
-    env.hooks.inline(morph, env, scope, path,
-                            this.acceptParams(params, morph, env, scope),
-                            this.acceptHash(hash, morph, env, scope),
-                            visitor);
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
+
+    env.hooks.inline(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1], visitor);
   },
 
   // [ 'content', path ]
@@ -127,25 +134,26 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   // [ 'element', path, params, hash ]
   element: function(node, morph, env, scope, visitor) {
     var path = node[1], params = node[2], hash = node[3];
-    env.hooks.element(morph, env, scope, path,
-                      this.acceptParams(params, morph, env, scope),
-                      this.acceptHash(hash, morph, env, scope),
-                      visitor);
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, params, hash);
+
+    env.hooks.element(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1], visitor);
   },
 
   // [ 'attribute', name, value ]
   attribute: function(node, morph, env, scope) {
-    env.hooks.attribute(morph, env, scope, node[1],
-                        this.acceptParams([node[2]], morph, env, scope)[0]);
+    var name = node[1], value = node[2];
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, '@attribute', [value], null);
+
+    env.hooks.attribute(morph, env, scope, name, paramsAndHash[0][0]);
   },
 
   // [ 'component', path, attrs, templateId ]
   component: function(node, morph, env, scope, template, visitor) {
     var path = node[1], attrs = node[2], templateId = node[3];
-    env.hooks.component(morph, env, scope, path,
-                        this.acceptHash(attrs, morph, env, scope, template),
-                        template.templates[templateId],
-                        visitor);
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, null, attrs);
+
+    env.hooks.component(morph, env, scope, path, paramsAndHash[1],
+                        template.templates[templateId], visitor);
   }
 });
 
@@ -156,7 +164,7 @@ export default merge(createObject(base), {
       this.dirtyBlock(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
     } else {
-      validateChildMorphs(morph, visitor);
+      validateChildMorphs(env, morph, visitor);
     }
   },
 
@@ -168,7 +176,7 @@ export default merge(createObject(base), {
       this.dirtyInline(node, morph, env, scope, visitor);
       morph.isDirty = false;
     } else {
-      validateChildMorphs(morph, visitor);
+      validateChildMorphs(env, morph, visitor);
     }
   },
 
@@ -180,7 +188,7 @@ export default merge(createObject(base), {
       env.hooks.content(morph, env, scope, node[1], visitor);
       morph.isDirty = false;
     } else {
-      validateChildMorphs(morph, visitor);
+      validateChildMorphs(env, morph, visitor);
     }
   },
 
@@ -190,7 +198,7 @@ export default merge(createObject(base), {
       this.dirtyElement(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
     } else {
-      validateChildMorphs(morph, visitor);
+      validateChildMorphs(env, morph, visitor);
     }
   },
 
@@ -212,7 +220,7 @@ export default merge(createObject(base), {
       this.dirtyComponent(node, morph, env, scope, template, visitor);
       morph.isDirty = false;
     } else {
-      validateChildMorphs(morph, visitor);
+      validateChildMorphs(env, morph, visitor);
     }
   },
 

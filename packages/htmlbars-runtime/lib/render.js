@@ -4,14 +4,19 @@ import ExpressionVisitor from "./expression-visitor";
 import { AlwaysDirtyVisitor } from "./expression-visitor";
 import Morph from "./morph";
 
-export default function render(template, env, scope, options, blockArguments) {
+export default function render(template, env, scope, options) {
   var dom = env.dom;
-  var contextualElement;
+  var contextualElement, self, blockArguments;
 
-  if (options && options.renderNode) {
-    contextualElement = options.renderNode.contextualElement;
-  } else if (options && options.contextualElement) {
-    contextualElement = options.contextualElement;
+  if (options) {
+    if (options.renderNode) {
+      contextualElement = options.renderNode.contextualElement;
+    } else if (options.contextualElement) {
+      contextualElement = options.contextualElement;
+    }
+
+    self = options.self;
+    blockArguments = options.blockArguments;
   }
 
   dom.detectNamespace(contextualElement);
@@ -45,7 +50,7 @@ export default function render(template, env, scope, options, blockArguments) {
   var statements = template.statements;
   var locals = template.locals;
 
-  populateNodes(scope, blockArguments, AlwaysDirtyVisitor);
+  populateNodes(env, scope, self, blockArguments, AlwaysDirtyVisitor);
 
   if (options && options.renderNode) {
     rootNode.setContent(fragment);
@@ -65,15 +70,19 @@ export default function render(template, env, scope, options, blockArguments) {
       }
       rootNode.clear();
     },
-    revalidate: function(scope, blockArguments) {
-      lastResult.revalidateWith(scope, blockArguments, ExpressionVisitor);
+    revalidate: function(env, self, blockArguments, scope) {
+      lastResult.revalidateWith(env, scope, self, blockArguments, ExpressionVisitor);
     },
-    rerender: function(scope, blockArguments) {
-      lastResult.revalidateWith(scope, blockArguments, AlwaysDirtyVisitor);
+    rerender: function(env, self, blockArguments, scope) {
+      lastResult.revalidateWith(env, scope, self, blockArguments, AlwaysDirtyVisitor);
     },
-    revalidateWith: function(newScope, newBlockArguments, visitor) {
-      if (newScope !== undefined) { scope.self = newScope; }
-      populateNodes(scope, newBlockArguments || blockArguments, visitor);
+    revalidateWith: function(newEnv, newScope, newSelf, newBlockArguments, visitor) {
+      if (newSelf !== undefined) { self = newSelf; }
+      if (newEnv !== undefined) { env = newEnv; }
+      if (newScope !== undefined) { scope = newScope; }
+      if (newBlockArguments !== undefined) { blockArguments = newBlockArguments; }
+
+      populateNodes(env, scope, self, blockArguments, visitor);
     },
   };
 
@@ -81,8 +90,12 @@ export default function render(template, env, scope, options, blockArguments) {
 
   return lastResult;
 
-  function populateNodes(scope, blockArguments, visitor) {
+  function populateNodes(env, scope, self, blockArguments, visitor) {
     var i, l;
+
+    if (self !== undefined) {
+      env.hooks.bindSelf(scope, self);
+    }
 
     for (i=0, l=locals.length; i<l; i++) {
       env.hooks.bindLocal(env, scope, locals[i], blockArguments[i]);

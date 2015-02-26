@@ -455,7 +455,7 @@ test("An implementation of #each", function() {
   equalTokens(result.fragment, "<ul><!----></ul>", "After removing the remaining entries");
 
   function rerender(context) {
-    result.rerender(context);
+    result.rerender(env, context);
   }
 
   function assertStableNodes(className, message) {
