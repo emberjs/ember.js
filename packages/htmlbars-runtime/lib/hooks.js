@@ -2,7 +2,7 @@ import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
-import { visitChildren, validateChildMorphs } from "../htmlbars-util/morph-utils";
+import { visitChildren, validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -86,8 +86,12 @@ export function wrap(template) {
     raw: template,
     render: function(self, env, options, blockArguments) {
       var scope = env.hooks.createFreshScope();
-      env.hooks.bindSelf(scope, self);
-      return render(template, env, scope, options, blockArguments);
+
+      options = options || {};
+      options.self = self;
+      options.blockArguments = blockArguments;
+
+      return render(template, env, scope, options);
     }
   };
 }
@@ -120,7 +124,7 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
-      return morph.lastResult.revalidateWith(self, blockArguments, visitor);
+      return morph.lastResult.revalidateWith(env, scope, self, blockArguments, visitor);
     }
 
     // Check to make sure that we actually **need** a new scope, and can't
@@ -131,14 +135,10 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor
       scope = env.hooks.createChildScope(parentScope);
     }
 
-    if (self !== undefined) {
-      env.hooks.bindSelf(scope, self);
-    }
-
     morph.lastYielded = { self: self, template: template, layout: null };
 
     // Render the template that was selected by the helper
-    morph.lastResult = render(template, env, scope, { renderNode: morph }, blockArguments);
+    morph.lastResult = render(template, env, scope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 }
 
@@ -193,27 +193,23 @@ function isStableTemplate(template, lastYielded) {
 function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visitor) {
   return function(layout, self) {
     morphsToPrune.clearMorph = null;
-    var layoutScope = env.hooks.createFreshScope();
 
     if (morph.lastYielded && isStableLayout(template, layout, morph.lastYielded)) {
-      return morph.lastResult.revalidateWith(self, [], visitor);
+      return morph.lastResult.revalidateWith(env, undefined, self, [], visitor);
     }
 
-    if (self !== undefined) {
-      env.hooks.bindSelf(layoutScope, self);
-    }
-
+    var layoutScope = env.hooks.createFreshScope();
     env.hooks.bindBlock(env, layoutScope, blockToYield);
 
     morph.lastYielded = { self: self, template: template, layout: layout };
 
     // Render the layout with the block available
-    morph.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph });
+    morph.lastResult = render(layout.raw, env, layoutScope, { renderNode: morph, self: self });
   };
 
   function blockToYield(blockArguments, renderNode) {
     if (renderNode.lastResult) {
-      renderNode.lastResult.revalidateWith(parentScope.self, blockArguments, visitor);
+      renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
     } else {
       var scope = parentScope;
 
@@ -223,7 +219,7 @@ function yieldWithLayout(template, env, parentScope, morph, morphsToPrune, visit
         scope = env.hooks.createChildScope(parentScope);
       }
 
-      renderNode.lastResult = render(template, env, scope, { renderNode: renderNode }, blockArguments);
+      renderNode.lastResult = render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
     }
   }
 }
@@ -250,14 +246,6 @@ function thisFor(options) {
     yieldItem: options.template.yieldItem,
     withLayout: options.template.withLayout
   };
-}
-
-function linkParams(env, scope, morph, params, hash) {
-  var isStable = env.hooks.linkRenderNode(morph, scope, params, hash);
-
-  if (isStable) {
-    morph.linkedParams = { params: params, hash: hash };
-  }
 }
 
 /**
@@ -413,7 +401,6 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  linkParams(env, scope, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   helper.call(thisFor(options.templates), params, hash, options.templates);
@@ -462,6 +449,10 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     keyword.setupState(morph.state, env, scope, params, hash);
   }
 
+  if (keyword.updateEnv) {
+    env = keyword.updateEnv(morph.state, env, scope, params, hash);
+  }
+
   var firstTime = !morph.lastResult;
 
   if (keyword.isEmpty) {
@@ -481,7 +472,11 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
   if (keyword.isStable) {
     var isStable = keyword.isStable(morph.state, env, scope, params, hash);
     if (isStable) {
-      validateChildMorphs(morph, visitor);
+      if (keyword.rerender) {
+        var newEnv = keyword.rerender(morph, env, scope, params, hash, template, inverse, visitor);
+        env = newEnv || env;
+      }
+      validateChildMorphs(env, morph, visitor);
       return true;
     }
   }
@@ -544,7 +539,6 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
   var options = optionsFor(null, null, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  linkParams(env, scope, morph, params, hash);
   params = normalizeArray(env, params);
   hash = normalizeObject(env, hash);
   value = helper.call(thisFor(options.templates), params, hash, options.templates);
@@ -654,8 +648,16 @@ export function content(morph, env, scope, path, visitor) {
   if (isHelper(env, scope, path)) {
     return env.hooks.inline(morph, env, scope, path, [], {}, visitor);
   } else {
-    var value = env.hooks.get(env, scope, path);
-    return env.hooks.range(morph, env, scope, value);
+    var params;
+    if (morph.linkedParams) {
+      params = morph.linkedParams.params;
+    } else {
+      params = [env.hooks.get(env, scope, path)];
+    }
+
+    linkParams(env, scope, morph, '@range', params, null);
+
+    return env.hooks.range(morph, env, scope, params[0]);
   }
 }
 
@@ -678,7 +680,6 @@ export function content(morph, env, scope, path, visitor) {
   that represents a range of content with a value.
 */
 export function range(morph, env, scope, value) {
-  linkParams(env, scope, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -718,7 +719,6 @@ export function range(morph, env, scope, value) {
 export function element(morph, env, scope, path, params, hash /*, visitor */) {
   var helper = lookupHelper(env, scope, path);
   if (helper) {
-    linkParams(env, scope, morph, params, hash);
     params = normalizeArray(env, params);
     hash = normalizeObject(env, hash);
     helper(params, hash, { element: morph.element });
@@ -747,7 +747,6 @@ export function element(morph, env, scope, path, params, hash /*, visitor */) {
   node with the value if appropriate.
 */
 export function attribute(morph, env, scope, name, value) {
-  linkParams(env, scope, morph, [value], null);
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
@@ -833,7 +832,6 @@ export function concat(env, params) {
 
 function componentFallback(morph, env, scope, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
-  linkParams(env, scope, morph, [], attrs);
   for (var name in attrs) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
