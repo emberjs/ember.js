@@ -42,6 +42,8 @@ export function renderHTMLBarsTemplate(view, contextualElement, template, morph)
     useFragmentCache: defaultEnv.useFragmentCache
   };
 
+  view.env = env;
+
   return template.render(view, env, { contextualElement: contextualElement, renderNode: morph });
 }
 

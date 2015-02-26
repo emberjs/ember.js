@@ -5,8 +5,7 @@ export default function componentHook(renderNode, env, scope, tagName, attrs, te
   var state = renderNode.state;
   // Determine if this is an initial render or a re-render
   if (state.componentNode) {
-    state.componentNode.rerender(env, attrs, visitor, state.shouldRerender);
-    state.shouldRerender = false;
+    state.componentNode.rerender(env, attrs, visitor);
     return;
   }
 

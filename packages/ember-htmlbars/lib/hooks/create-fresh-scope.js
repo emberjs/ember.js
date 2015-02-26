@@ -4,6 +4,7 @@ export default function createFreshScope() {
     block: null,
     component: null,
     view: null,
+    attrs: null,
     locals: {}
   };
 }

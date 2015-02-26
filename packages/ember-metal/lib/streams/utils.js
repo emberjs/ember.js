@@ -188,6 +188,17 @@ export function concat(array, separator) {
   }
 }
 
+export function or(first, second) {
+  var stream = new Stream(function() {
+    return first.value() || second.value();
+  });
+
+  stream.addDependency(first);
+  stream.addDependency(second);
+
+  return stream;
+}
+
 export function addDependency(stream, dependency) {
   if (dependency) {
     stream.addDependency(dependency);

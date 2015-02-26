@@ -3,12 +3,12 @@
 @submodule ember-htmlbars
 */
 
-import { readArray } from "ember-metal/streams/utils";
-
 export default function unbound(morph, env, scope, originalParams, hash, template, inverse) {
-  var path = originalParams.shift();
-  var params = readArray(originalParams);
-  morph.state.unbound = true;
+  // Since we already got the params as a set of streams, we need to extract the key from
+  // the first param instead of (incorrectly) trying to read from it. If this was a call
+  // to `{{unbound foo.bar}}`, then we pass along the original stream to `hooks.range`.
+  var params = originalParams.slice();
+  var path = params.shift();
 
   if (params.length === 0) {
     env.hooks.range(morph, env, scope, path);

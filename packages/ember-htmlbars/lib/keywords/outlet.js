@@ -4,7 +4,7 @@
 */
 
 import merge from "ember-metal/merge";
-import { componentClassSymbol, componentLayoutSymbol } from "ember-htmlbars/system/component-node";
+import ShadowRoot from "ember-htmlbars/system/shadow-root";
 
 export default {
   willRender: function(renderNode, env) {
@@ -18,52 +18,84 @@ export default {
     var outletName = read(params[0]) || 'main';
     var selectedOutletState = outletState[outletName];
 
-    state.lastOutletState = state.selectedOutletState;
-    state.selectedOutletState = selectedOutletState;
+    state.lastOutletState = state.outletState;
+    state.outletState = selectedOutletState;
+  },
 
-    createOrUpdateChildEnv(state, env, selectedOutletState);
+  updateEnv: function(state, env) {
+    var outletState = state.outletState;
+    var newEnv = merge({ outletState: null }, env);
+
+    newEnv.outletState = outletState && outletState.outlets;
+    return newEnv;
   },
 
   isStable: function(state, env, scope, params, hash) {
-    return isStable(state.lastOutletState, state.selectedOutletState);
+    return isStable(state.lastOutletState, state.outletState);
   },
 
   isEmpty: function(state) {
-    return isEmpty(state.selectedOutletState);
+    return isEmpty(state.outletState);
+  },
+
+  rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
+    return morph.state.shadowRoot.rerender(env);
   },
 
   render: function(morph, env, scope, params, hash, template, inverse, visitor) {
-    var selectedOutletState = morph.state.selectedOutletState;
+    var state = morph.state;
+    var outletState = state.outletState;
+    var toRender = outletState.render;
 
-    var ViewClass = selectedOutletState.render.ViewClass;
-    var viewTemplate = selectedOutletState.render.template;
+    var ViewClass = outletState.render.ViewClass;
+    var parentView = env.view;
+    var view;
 
-    var attrs = {};
-    attrs[componentClassSymbol] = ViewClass;
-    attrs[componentLayoutSymbol] = viewTemplate;
+    if (ViewClass) {
+      view = ViewClass.create();
+      if (parentView) { parentView.linkChild(view); }
+      state.view = view;
+    }
 
-    env.hooks.component(morph, morph.state.childEnv, null, null, attrs, null, visitor);
+    var layoutMorph = layoutMorphFor(env, view, morph);
+    state.shadowRoot = new ShadowRoot(layoutMorph, view, toRender.template, null, null);
+    state.shadowRoot.render(env, toRender.controller || {}, visitor);
+
+    // TODO: Do we need to copy lastResult?
   }
 };
+
+function layoutMorphFor(env, view, morph) {
+  var layoutMorph = morph;
+  if (view) {
+    view.renderNode = morph;
+    layoutMorph = env.renderer.contentMorphForView(view, morph);
+  }
+  return layoutMorph;
+}
 
 function isEmpty(outletState) {
   return !outletState || (!outletState.render.ViewClass && !outletState.render.template);
 }
 
-function createOrUpdateChildEnv(state, env, outletState) {
-  var newEnv = state.childEnv;
-
-  if (!newEnv) {
-    newEnv = merge({}, env);
-    state.childEnv = newEnv;
+function isStable(a, b) {
+  if (!a && !b) {
+    return true;
   }
-
-  newEnv.outletState = outletState && outletState.outlets;
-}
-
-function isStable(lastOutletState, newOutletState) {
-  var last = lastOutletState.render;
-  var next = newOutletState.render;
-
-  return last.ViewClass === next.ViewClass && last.template === next.template;
+  if (!a || !b) {
+    return false;
+  }
+  a = a.render;
+  b = b.render;
+  for (var key in a) {
+    if (a.hasOwnProperty(key)) {
+      // name is only here for logging & debugging. If two different
+      // names result in otherwise identical states, they're still
+      // identical.
+      if (a[key] !== b[key] && key !== 'name') {
+        return false;
+      }
+    }
+  }
+  return true;
 }
