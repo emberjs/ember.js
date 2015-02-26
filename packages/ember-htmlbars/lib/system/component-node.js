@@ -1,4 +1,5 @@
 import { get } from "ember-metal/property_get";
+import merge from "ember-metal/merge";
 import Ember from "ember-metal/core";
 import { validateChildMorphs } from "htmlbars-util";
 import { readHash } from "ember-metal/streams/utils";
@@ -21,6 +22,7 @@ ComponentNode.create = function(renderNode, env, found, parentView, tagName, con
   if (found.component) {
     component = createComponent(found.component, parentView, renderNode);
     component.renderNode = renderNode;
+    renderNode.state.component = component;
     layoutMorph = component.renderer.contentMorphForView(component, renderNode);
     layoutTemplate = get(component, 'layout') || get(component, 'template') || found.layout;
   } else {
@@ -28,9 +30,7 @@ ComponentNode.create = function(renderNode, env, found, parentView, tagName, con
     layoutTemplate = found.layout;
   }
 
-  var shadowRoot = new ShadowRoot(layoutMorph, component, layoutTemplate,
-                                  contentScope, contentTemplate);
-
+  var shadowRoot = new ShadowRoot(layoutMorph, layoutTemplate, contentScope, contentTemplate);
   return new ComponentNode(component, shadowRoot);
 };
 
@@ -43,7 +43,18 @@ ComponentNode.prototype.render = function(env, attrs, visitor, inDOM) {
 
   var self = { attrs: attrs };
 
-  this.shadowRoot.render(env, self, visitor);
+  var newEnv = env;
+  if (this.component) {
+    newEnv = merge({}, env);
+    newEnv.view = this.component;
+  }
+
+  var options = {
+    view: this.component,
+    renderNode: this.component && this.component.renderNode
+  };
+
+  this.shadowRoot.render(newEnv, self, options, visitor);
 
   if (component) {
     if (inDOM) {
@@ -56,25 +67,30 @@ ComponentNode.prototype.render = function(env, attrs, visitor, inDOM) {
 };
 
 ComponentNode.prototype.rerender = function(env, attrs, visitor) {
-  env = this.shadowRoot.rerender(env);
+  var newEnv = env;
+  if (this.component) {
+    newEnv = merge({}, env);
+    newEnv.view = this.component;
+  }
+
   var component = this.component;
 
   if (component) {
     var snapshot = readHash(attrs);
 
     if (component.renderNode.state.shouldReceiveAttrs) {
-      env.renderer.updateAttrs(component, snapshot);
+      newEnv.renderer.updateAttrs(component, snapshot);
       component.renderNode.state.shouldReceiveAttrs = false;
     }
 
     // TODO: Trigger this on re-renders, even though the component will
     // not (atm) have been dirtied
-    env.renderer.willUpdate(component, snapshot);
+    newEnv.renderer.willUpdate(component, snapshot);
   }
 
-  validateChildMorphs(env, this.shadowRoot.layoutMorph, visitor);
+  validateChildMorphs(newEnv, this.shadowRoot.layoutMorph, visitor);
 
-  return env;
+  return newEnv;
 };
 
 function lookupComponent(env, tagName) {

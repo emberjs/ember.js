@@ -9,7 +9,7 @@ import jQuery from "ember-views/system/jquery";
 */
 
 import { get } from "ember-metal/property_get";
-import { visitChildren } from "htmlbars-runtime";
+import { internal } from "htmlbars-runtime";
 
 var hasElement = create(_default);
 
@@ -32,7 +32,7 @@ merge(hasElement, {
     var renderNode = view.renderNode;
 
     renderNode.isDirty = true;
-    visitChildren(renderNode.childNodes, function(node) {
+    internal.visitChildren(renderNode.childNodes, function(node) {
       node.isDirty = true;
     });
     renderNode.ownerNode.state.view.scheduleRevalidate();

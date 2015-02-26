@@ -5,30 +5,25 @@
 
 import SimpleStream from "ember-metal/streams/simple";
 import { readHash } from "ember-metal/streams/utils";
-import { selfSymbol, componentSymbol } from "ember-htmlbars/system/symbols";
 import { get } from "ember-metal/property_get";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function bindSelf(scope, self) {
-  var innerSelf = self[selfSymbol];
-  var component = self[componentSymbol];
+  Ember.assert("BUG: scope.attrs and self.isView should not both be true", !(scope.attrs && self.isView));
 
-  if (component) {
-    scope.component = component;
-    scope.view = component;
-    updateScope(scope.locals, 'view', component, component.renderNode);
-    updateScope(scope, 'attrs', readHash(innerSelf.attrs), component.renderNode);
-  }
-
-  self = innerSelf || self;
-
-  if (self.isView) {
+  if (scope.attrs) {
+    updateScope(scope, 'attrsStream', readHash(scope.attrs), scope.renderNode);
+    updateScope(scope.locals, 'view', scope.view, null);
+  } else if (self.isView) {
     scope.view = self;
     updateScope(scope.locals, 'view', self, null);
     updateScope(scope, 'self', get(self, 'context'), null);
-  } else {
-    updateScope(scope, 'self', self, null);
+    return;
+  } else if (scope.view) {
+    updateScope(scope.locals, 'view', scope.view, null);
   }
+
+  updateScope(scope, 'self', self, null);
 }
 
 function updateScope(scope, key, newValue, renderNode) {

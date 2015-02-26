@@ -39,7 +39,11 @@ export default {
   },
 
   rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
-    return morph.state.shadowRoot.rerender(env);
+    var newEnv = env;
+    if (morph.state.view) {
+      newEnv = merge({}, env);
+      newEnv.view = morph.state.view;
+    }
   },
 
   render: function(morph, env, scope, params, hash, template, inverse, visitor) {
@@ -58,8 +62,9 @@ export default {
     }
 
     var layoutMorph = layoutMorphFor(env, view, morph);
-    state.shadowRoot = new ShadowRoot(layoutMorph, view, toRender.template, null, null);
-    state.shadowRoot.render(env, toRender.controller || {}, visitor);
+    var options = { renderNode: view && view.renderNode, view: view };
+    state.shadowRoot = new ShadowRoot(layoutMorph, toRender.template, null, null);
+    state.shadowRoot.render(env, toRender.controller || {}, options, visitor);
 
     // TODO: Do we need to copy lastResult?
   }
