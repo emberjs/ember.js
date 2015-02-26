@@ -267,7 +267,7 @@ QUnit.test('calling readOnly() on a computed property with arguments raises a de
 QUnit.test('passing readOnly in a the options to the CP constructor raises a deprecation', function() {
   expectDeprecation(function() {
     new ComputedProperty(function() {}, { readOnly: false });
-  }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.");
+  }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. You can invoke `readOnly()` on the CP to change this.");
 });
 
 testBoth('inherited property should not pick up cache', function(get, set) {
