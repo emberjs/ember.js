@@ -8,9 +8,9 @@ import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import EmberError from "ember-metal/error";
+import helpers from "ember-htmlbars/helpers";
 import {
-  registerHelper,
-  default as helpers
+  registerHelper
 } from "ember-htmlbars/helpers";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 

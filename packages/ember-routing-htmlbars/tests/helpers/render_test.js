@@ -6,7 +6,7 @@ import { observer } from 'ember-metal/mixin';
 
 import Namespace from "ember-runtime/system/namespace";
 
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import { registerHelper } from "ember-htmlbars/helpers";

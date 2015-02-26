@@ -7,14 +7,12 @@ import Registry from 'container/registry';
 import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
-import {
-  default as ObjectController
-} from "ember-runtime/controllers/object_controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
+import generateController from "ember-routing/system/generate_controller";
 import {
-  generateControllerFactory,
-  default as generateController
+  generateControllerFactory
 } from "ember-routing/system/generate_controller";
 
 var buildContainer = function(namespace) {

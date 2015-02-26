@@ -1,5 +1,5 @@
+import ObjectController from "ember-runtime/controllers/object_controller";
 import {
-  default as ObjectController,
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
 import { observer } from 'ember-metal/mixin';

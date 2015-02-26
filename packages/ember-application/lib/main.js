@@ -9,9 +9,9 @@ Ember Application
 @requires ember-views, ember-routing
 */
 
+import DefaultResolver from 'ember-application/system/resolver';
 import {
-  Resolver,
-  default as DefaultResolver
+  Resolver
 } from 'ember-application/system/resolver';
 import Application from 'ember-application/system/application';
 import 'ember-application/ext/controller'; // side effect of extending ControllerMixin
