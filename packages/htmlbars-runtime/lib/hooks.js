@@ -96,21 +96,21 @@ export function wrap(template) {
   };
 }
 
-export function wrapForHelper(template, env, scope, morph, morphsToPrune, visitor) {
+export function wrapForHelper(template, env, scope, morph, renderState, visitor) {
   if (template === null) {
     return {
-      yieldIn: yieldInShadowTemplate(null, env, scope, morph, morphsToPrune, visitor)
+      yieldIn: yieldInShadowTemplate(null, env, scope, morph, renderState, visitor)
     };
   }
 
-  var yieldArgs = yieldTemplate(template, env, scope, morph, morphsToPrune, visitor);
+  var yieldArgs = yieldTemplate(template, env, scope, morph, renderState, visitor);
 
   return {
     arity: template.arity,
     revision: template.revision,
     yield: yieldArgs,
-    yieldItem: yieldItem(template, env, scope, morph, morphsToPrune, visitor),
-    yieldIn: yieldInShadowTemplate(template, env, scope, morph, morphsToPrune, visitor),
+    yieldItem: yieldItem(template, env, scope, morph, renderState, visitor),
+    yieldIn: yieldInShadowTemplate(template, env, scope, morph, renderState, visitor),
 
     render: function(self, blockArguments) {
       yieldArgs(blockArguments, self);
@@ -118,9 +118,9 @@ export function wrapForHelper(template, env, scope, morph, morphsToPrune, visito
   };
 }
 
-function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
+function yieldTemplate(template, env, parentScope, morph, renderState, visitor) {
   return function(blockArguments, self) {
-    morphsToPrune.clearMorph = null;
+    renderState.clearMorph = null;
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
@@ -142,12 +142,12 @@ function yieldTemplate(template, env, parentScope, morph, morphsToPrune, visitor
   };
 }
 
-function yieldItem(template, env, parentScope, morph, morphsToPrune, visitor) {
+function yieldItem(template, env, parentScope, morph, renderState, visitor) {
   var currentMorph = null;
   var morphList = morph.morphList;
   if (morphList) {
     currentMorph = morphList.firstChildMorph;
-    morphsToPrune.morphListStart = currentMorph;
+    renderState.morphListStart = currentMorph;
   }
 
   return function(key, blockArguments) {
@@ -167,22 +167,22 @@ function yieldItem(template, env, parentScope, morph, morphsToPrune, visitor) {
     morphMap = morph.morphMap;
 
     if (currentMorph && currentMorph.key === key) {
-      yieldTemplate(template, env, parentScope, currentMorph, morphsToPrune, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, currentMorph, renderState, visitor)(blockArguments);
       currentMorph = currentMorph.nextMorph;
     } else if (currentMorph && morphMap[key] !== undefined) {
       var foundMorph = morphMap[key];
-      yieldTemplate(template, env, parentScope, foundMorph, morphsToPrune, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, foundMorph, renderState, visitor)(blockArguments);
       morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
       childMorph.key = key;
       morphMap[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
-      yieldTemplate(template, env, parentScope, childMorph, morphsToPrune, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, childMorph, renderState, visitor)(blockArguments);
     }
 
-    morphsToPrune.morphListStart = currentMorph;
-    morphsToPrune.clearMorph = null;
+    renderState.morphListStart = currentMorph;
+    renderState.clearMorph = null;
   };
 }
 
@@ -190,23 +190,23 @@ function isStableTemplate(template, lastYielded) {
   return !lastYielded.shadowTemplate && template === lastYielded.template;
 }
 
-function yieldInShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
-  var hostYield = hostYieldWithShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor);
+function yieldInShadowTemplate(template, env, parentScope, morph, renderState, visitor) {
+  var hostYield = hostYieldWithShadowTemplate(template, env, parentScope, morph, renderState, visitor);
 
   return function(shadowTemplate, self) {
     hostYield(shadowTemplate, env, self, []);
   };
 }
 
-export function hostYieldWithShadowTemplate(template, env, parentScope, morph, morphsToPrune, visitor) {
+export function hostYieldWithShadowTemplate(template, env, parentScope, morph, renderState, visitor) {
   return function(shadowTemplate, env, self, blockArguments) {
-    morphsToPrune.clearMorph = null;
+    renderState.clearMorph = null;
 
     if (morph.lastYielded && isStableShadowRoot(template, shadowTemplate, morph.lastYielded)) {
       return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     }
 
-    var shadowScope = env.hooks.createShadowScope(env, morph, parentScope);
+    var shadowScope = env.hooks.createShadowScope(env, parentScope, renderState.shadowOptions);
     env.hooks.bindBlock(env, shadowScope, blockToYield);
 
     morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };
@@ -237,14 +237,14 @@ function isStableShadowRoot(template, shadowTemplate, lastYielded) {
 }
 
 function optionsFor(template, inverse, env, scope, morph, visitor) {
-  var morphsToPrune = { morphListStart: null, clearMorph: morph };
+  var renderState = { morphListStart: null, clearMorph: morph, shadowOptions: null };
 
   return {
     templates: {
-      template: wrapForHelper(template, env, scope, morph, morphsToPrune, visitor),
-      inverse: wrapForHelper(inverse, env, scope, morph, morphsToPrune, visitor)
+      template: wrapForHelper(template, env, scope, morph, renderState, visitor),
+      inverse: wrapForHelper(inverse, env, scope, morph, renderState, visitor)
     },
-    morphsToPrune: morphsToPrune
+    renderState: renderState
   };
 }
 
@@ -462,7 +462,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
     return;
   }
 
-  hostBlock(morph, env, scope, template, inverse, visitor, function(options) {
+  hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
     var helper = env.hooks.lookupHelper(env, scope, path);
     params = normalizeArray(env, params);
     hash = normalizeObject(env, hash);
@@ -470,12 +470,13 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
   });
 }
 
-export function hostBlock(morph, env, scope, template, inverse, visitor, callback) {
+export function hostBlock(morph, env, scope, template, inverse, shadowOptions, visitor, callback) {
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
+  options.renderState.shadowOptions = shadowOptions;
   callback(options);
 
-  var item = options.morphsToPrune.morphListStart;
-  var toClear = options.morphsToPrune.clearMorph;
+  var item = options.renderState.morphListStart;
+  var toClear = options.renderState.clearMorph;
   var morphMap = morph.morphMap;
 
   while (item) {
