@@ -206,7 +206,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, m
       return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     }
 
-    var shadowScope = env.hooks.createShadowScope(parentScope);
+    var shadowScope = env.hooks.createShadowScope(env, morph, parentScope);
     env.hooks.bindBlock(env, shadowScope, blockToYield);
 
     morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };
@@ -346,8 +346,8 @@ export function createFreshScope() {
   provided template and renders it, making the original block
   available to `{{yield}}` in that template.
 */
-export function createShadowScope(/* parentScope */) {
-  return createFreshScope();
+export function createShadowScope(env /*, shadowMorph, parentScope */) {
+  return env.hooks.createFreshScope();
 }
 
 export function createChildScope(parent) {
@@ -506,7 +506,12 @@ function pruneMorph(morph, cleanup) {
 function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
   var redirect = env.hooks.classify(env, scope, path);
   if (redirect) {
-    env.hooks[redirect](morph, env, scope, path, hash, template, inverse, visitor);
+    switch(redirect) {
+      case 'component': env.hooks.component(morph, env, scope, path, hash, template, visitor); break;
+      case 'inline': env.hooks.inline(morph, env, scope, path, params, hash, visitor); break;
+      case 'block': env.hooks.block(morph, env, scope, path, params, hash, template, inverse, visitor); break;
+      default: throw new Error("Internal HTMLBars redirection to " + redirect + " not supported");
+    }
     return true;
   }
 
@@ -719,7 +724,11 @@ export function partial(renderNode, env, scope, path) {
   This hook is responsible for updating a render node
   that represents a range of content with a value.
 */
-export function range(morph, env, scope, value) {
+export function range(morph, env, scope, path, value, visitor) {
+  if (handleRedirect(morph, env, scope, path, [value], {}, null, null, visitor)) {
+    return;
+  }
+
   value = env.hooks.getValue(value);
 
   if (morph.lastValue !== value) {
