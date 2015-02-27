@@ -240,7 +240,7 @@ export function addDependency(stream, dependency) {
 export function chain(value, fn) {
   if (isStream(value)) {
     var stream = new Stream(fn);
-    subscribe(value, stream.notify, stream);
+    stream.addDependency(value);
     return stream;
   } else {
     return fn();

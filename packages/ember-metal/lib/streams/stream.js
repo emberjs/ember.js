@@ -331,13 +331,17 @@ Stream.prototype = {
       this.state = 'destroyed';
 
       this.subscriberHead = this.subscriberTail = null;
+      this.maybeDeactivate();
 
       var dependencies = this.dependencies;
 
-      for (var i=0, l=dependencies.length; i<l; i++) {
-        dependencies[i](prune);
+      if (dependencies) {
+        for (var i=0, l=dependencies.length; i<l; i++) {
+          dependencies[i](prune);
+        }
       }
 
+      this.dependencies = null;
       return true;
     }
   },
