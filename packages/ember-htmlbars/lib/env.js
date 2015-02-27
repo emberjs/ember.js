@@ -11,6 +11,7 @@ import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
 import createFreshScope from "ember-htmlbars/hooks/create-fresh-scope";
 import createShadowScope from "ember-htmlbars/hooks/create-shadow-scope";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
+import bindScope from "ember-htmlbars/hooks/bind-scope";
 import bindLocal from "ember-htmlbars/hooks/bind-local";
 import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
@@ -28,6 +29,7 @@ merge(emberHooks, {
   createFreshScope: createFreshScope,
   createShadowScope: createShadowScope,
   bindSelf: bindSelf,
+  bindScope: bindScope,
   bindLocal: bindLocal,
   getRoot: getRoot,
   getChild: getChild,

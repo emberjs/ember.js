@@ -1,5 +1,4 @@
 import ComponentNode from "ember-htmlbars/system/component-node";
-import { componentClassSymbol, componentLayoutSymbol } from "ember-htmlbars/system/component-node";
 
 export default function componentHook(renderNode, env, scope, tagName, attrs, template, visitor) {
   var state = renderNode.state;
@@ -11,17 +10,9 @@ export default function componentHook(renderNode, env, scope, tagName, attrs, te
 
   var read = env.hooks.getValue;
   var parentView = read(env.view);
-  var found;
-
-  if (attrs[componentClassSymbol] || attrs[componentLayoutSymbol]) {
-    found = {
-      component: read(attrs[componentClassSymbol]),
-      layout: read(attrs[componentLayoutSymbol])
-    };
-  }
 
   var componentNode = state.componentNode =
-    ComponentNode.create(renderNode, env, found, parentView, tagName,
+    ComponentNode.create(renderNode, env, undefined, parentView, tagName,
                          scope, template);
 
   componentNode.render(env, attrs, visitor, parentView._state === 'inDOM');

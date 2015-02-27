@@ -10,13 +10,13 @@ import { get } from "ember-metal/property_get";
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
-    return scope.self;
+    return [scope.self];
   }
 
   if (scope.locals[key]) {
-    return scope.locals[key];
+    return [scope.locals[key]];
   } else {
-    return getKey(scope, key);
+    return [getKey(scope, key)];
   }
 }
 
