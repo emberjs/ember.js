@@ -288,7 +288,7 @@ export function createScope(env, parentScope) {
 }
 
 export function createFreshScope() {
-  return { self: null, block: null, locals: {} };
+  return { self: null, block: null, locals: {}, localPresent: {} };
 }
 
 /**
@@ -389,6 +389,7 @@ export function bindSelf(scope, self) {
   to the `get` hook.
 */
 export function bindLocal(env, scope, name, value) {
+  scope.localPresent[name] = true;
   scope.locals[name] = value;
 }
 
@@ -843,7 +844,7 @@ export function get(env, scope, path) {
   }
 
   var keys = path.split('.');
-  var value = env.hooks.getRoot(scope, keys[0]);
+  var value = env.hooks.getRoot(scope, keys[0])[0];
 
   for (var i = 1; i < keys.length; i++) {
     if (value) {
@@ -857,7 +858,11 @@ export function get(env, scope, path) {
 }
 
 export function getRoot(scope, key) {
-  return key in scope.locals ? scope.locals[key] : scope.self[key];
+  if (scope.localPresent[key]) {
+    return [scope.locals[key]];
+  } else {
+    return [scope.self[key]];
+  }
 }
 
 export function getChild(value, key) {

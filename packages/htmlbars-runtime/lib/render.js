@@ -123,7 +123,17 @@ RenderResult.prototype.populateNodes = function(visitor) {
   var i, l;
 
   for (i=0, l=statements.length; i<l; i++) {
-    visitor.accept(statements[i], nodes[i], env, scope, template, visitor);
+    var statement = statements[i];
+    var morph = nodes[i];
+
+    switch (statement[0]) {
+      case 'block': visitor.block(statement, morph, env, scope, template, visitor); break;
+      case 'inline': visitor.inline(statement, morph, env, scope, visitor); break;
+      case 'content': visitor.content(statement, morph, env, scope, visitor); break;
+      case 'element': visitor.element(statement, morph, env, scope, template, visitor); break;
+      case 'attribute': visitor.attribute(statement, morph, env, scope); break;
+      case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
+    }
   }
 };
 

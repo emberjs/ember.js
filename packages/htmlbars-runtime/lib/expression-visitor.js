@@ -31,24 +31,23 @@ import { validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 */
 
 var base = {
-  accept: function(node, morph, env, scope, template, visitor) {
+  acceptExpression: function(node, morph, env, scope) {
+    var ret = { value: null };
+
     // Primitive literals are unambiguously non-array representations of
     // themselves.
     if (typeof node !== 'object') {
-      return node;
+      ret.value = node;
+      return ret;
     }
 
     switch(node[0]) {
-      case 'get': return this.get(node, morph, env, scope);
-      case 'subexpr': return this.subexpr(node, morph, env, scope);
-      case 'concat': return this.concat(node, morph, env, scope);
-      case 'block': return this.block(node, morph, env, scope, template, visitor);
-      case 'inline': return this.inline(node, morph, env, scope, visitor);
-      case 'content': return this.content(node, morph, env, scope, visitor);
-      case 'element': return this.element(node, morph, env, scope, template, visitor);
-      case 'attribute': return this.attribute(node, morph, env, scope);
-      case 'component': return this.component(node, morph, env, scope, template, visitor);
+      case 'get': ret.value = this.get(node, morph, env, scope); break;
+      case 'subexpr': ret.value = this.subexpr(node, morph, env, scope); break;
+      case 'concat': ret.value = this.concat(node, morph, env, scope); break;
     }
+
+    return ret;
   },
 
   acceptParamsAndHash: function(env, scope, morph, path, params, hash) {
@@ -67,7 +66,7 @@ var base = {
     var arr = new Array(nodes.length);
 
     for (var i=0, l=nodes.length; i<l; i++) {
-      arr[i] =  this.accept(nodes[i], morph, env, scope, null, null);
+      arr[i] =  this.acceptExpression(nodes[i], morph, env, scope, null, null).value;
     }
 
     return arr;
@@ -81,7 +80,7 @@ var base = {
     var object = {};
 
     for (var i=0, l=pairs.length; i<l; i += 2) {
-      object[pairs[i]] = this.accept(pairs[i+1], morph, env, scope, null, null);
+      object[pairs[i]] = this.acceptExpression(pairs[i+1], morph, env, scope, null, null).value;
     }
 
     return object;
