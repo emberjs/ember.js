@@ -5,8 +5,8 @@ import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
+import ObjectController from "ember-runtime/controllers/object_controller";
 import {
-  default as ObjectController,
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
 import EmberController from 'ember-runtime/controllers/controller';

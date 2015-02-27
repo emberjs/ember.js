@@ -39,8 +39,8 @@ import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
 import SimpleBoundView from "ember-views/views/simple_bound_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
-  default as _MetamorphView,
   _Metamorph
 } from "ember-views/views/metamorph_view";
 import {

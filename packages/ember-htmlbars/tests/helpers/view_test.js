@@ -1,5 +1,4 @@
 /*globals EmberDev */
-import { set } from "ember-metal/property_set";
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 import run from "ember-metal/run_loop";

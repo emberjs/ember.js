@@ -66,6 +66,10 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   };
 }
 
+// This is super annoying, but required until
+// https://github.com/babel/babel/issues/906 is resolved
+; // jshint ignore:line
+
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
   var watching = m.watching;

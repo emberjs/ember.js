@@ -30,7 +30,10 @@ import CoreView from "ember-views/views/core_view";
 import ViewStreamSupport from "ember-views/mixins/view_stream_support";
 import ViewKeywordSupport from "ember-views/mixins/view_keyword_support";
 import ViewContextSupport from "ember-views/mixins/view_context_support";
-import { default as ViewChildViewsSupport, childViewsProperty } from "ember-views/mixins/view_child_views_support";
+import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
+import {
+  childViewsProperty
+} from "ember-views/mixins/view_child_views_support";
 import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";

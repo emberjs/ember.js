@@ -7,7 +7,7 @@ import _MetamorphView from "ember-views/views/metamorph_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import { Registry } from "ember-runtime/system/container";
 

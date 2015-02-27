@@ -1,5 +1,5 @@
+import plugins from "ember-template-compiler/plugins";
 import {
-  default as plugins,
   registerPlugin
 } from "ember-template-compiler/plugins";
 import compile from "ember-template-compiler/system/compile";

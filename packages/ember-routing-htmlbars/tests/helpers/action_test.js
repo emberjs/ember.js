@@ -6,7 +6,7 @@ import ActionManager from "ember-views/system/action_manager";
 
 import { Registry } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import compile from "ember-template-compiler/system/compile";
@@ -14,9 +14,9 @@ import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
+import helpers from "ember-htmlbars/helpers";
 import {
-  registerHelper,
-  default as helpers
+  registerHelper
 } from "ember-htmlbars/helpers";
 
 import {
