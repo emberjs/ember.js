@@ -21,6 +21,7 @@ test("hooks are present", function () {
     "createShadowScope",
     "createFreshScope",
     "createChildScope",
+    "bindScope",
     "bindSelf",
     "bindLocal",
     "bindBlock",

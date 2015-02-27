@@ -910,10 +910,16 @@ export function lookupHelper(env, scope, helperName) {
   return env.helpers[helperName];
 }
 
+export function bindScope(/* scope */) {
+  // this function is used to handle host-specified extensions to scope
+  // other than `self`, `locals` and `block`.
+}
+
 export default {
   // fundamental hooks that you will likely want to override
   bindLocal: bindLocal,
   bindSelf: bindSelf,
+  bindScope: bindScope,
   classify: classify,
   cleanup: null,
   component: component,

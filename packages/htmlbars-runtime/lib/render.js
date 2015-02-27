@@ -95,6 +95,7 @@ RenderResult.prototype.rerender = function(env, self, blockArguments, scope) {
 RenderResult.prototype.revalidateWith = function(env, scope, self, blockArguments, visitor) {
   if (env !== undefined) { this.env = env; }
   if (scope !== undefined) { this.scope = scope; }
+  this.bindScope();
 
   if (self !== undefined) { this.bindSelf(self); }
   if (blockArguments !== undefined) { this.bindLocals(blockArguments); }
@@ -135,6 +136,10 @@ RenderResult.prototype.populateNodes = function(visitor) {
       case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
     }
   }
+};
+
+RenderResult.prototype.bindScope = function() {
+  this.env.hooks.bindScope(this.scope);
 };
 
 RenderResult.prototype.bindSelf = function(self) {
