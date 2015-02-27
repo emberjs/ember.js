@@ -40,12 +40,14 @@ merge(emberHooks, {
 });
 
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
+import withKeyword from "ember-htmlbars/keywords/with";
 import outlet from "ember-htmlbars/keywords/outlet";
 import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
 
 merge(emberHooks.keywords, {
   "debugger": debuggerKeyword,
+  "with": withKeyword,
   outlet: outlet,
   unbound: unbound,
   view: view

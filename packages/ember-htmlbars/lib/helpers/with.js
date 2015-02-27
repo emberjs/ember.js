@@ -42,29 +42,10 @@
 */
 
 export default function withHelper(params, hash, options) {
-  var preserveContext;
-
-  Ember.assert(
-    "{{#with foo}} must be called with a single argument or the use the " +
-    "{{#with foo as bar}} syntax",
-    params.length === 1
-  );
-
-  Ember.assert(
-    "The {{#with}} helper must be called with a block",
-    !!options.template.yield
-  );
+  var preserveContext = false;
 
   if (options.template.arity !== 0) {
     preserveContext = true;
-  } else {
-    Ember.deprecate(
-      "Using the context switching form of `{{with}}` is deprecated. " +
-      "Please use the keyword form (`{{with foo as bar}}`) instead.",
-      false,
-      { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
-    );
-    preserveContext = false;
   }
 
   if (preserveContext) {
