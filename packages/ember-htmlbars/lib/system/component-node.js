@@ -15,7 +15,13 @@ export default ComponentNode;
 
 ComponentNode.create = function(renderNode, env, found, parentView, tagName, contentScope, contentTemplate) {
   found = found || lookupComponent(env, tagName);
-  Ember.assert("Could not find component '" + tagName + "' (no component or template with that name was found)", !!found.component || !!found.layout || contentTemplate);
+  Ember.assert('HTMLBars error: Could not find component named "' + tagName + '" (no component or template with that name was found)', function() {
+    if (tagName) {
+      return found.component || found.layout;
+    } else {
+      return found.component || found.layout || contentTemplate;
+    }
+  });
 
   var component, layoutMorph, layoutTemplate;
 

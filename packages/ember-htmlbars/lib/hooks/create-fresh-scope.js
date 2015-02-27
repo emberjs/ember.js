@@ -5,6 +5,7 @@ export default function createFreshScope() {
     component: null,
     view: null,
     attrs: null,
-    locals: {}
+    locals: {},
+    localPresent: {}
   };
 }

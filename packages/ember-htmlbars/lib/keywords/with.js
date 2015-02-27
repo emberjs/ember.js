@@ -31,7 +31,7 @@ export default {
     return false;
   },
 
-  render: function(morph, env, scope, params, hash, template, inverse, visitor)  {
+  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
     Ember.assert(
       "{{#with foo}} must be called with a single argument or the use the " +
       "{{#with foo as bar}} syntax",
