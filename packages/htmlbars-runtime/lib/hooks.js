@@ -124,7 +124,7 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
-      return morph.lastResult.revalidateWith(env, scope, self, blockArguments, visitor);
+      return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     }
 
     // Check to make sure that we actually **need** a new scope, and can't
