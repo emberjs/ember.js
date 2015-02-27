@@ -4,12 +4,14 @@ import { visitChildren } from "../htmlbars-util/morph-utils";
 import { validateChildMorphs } from "htmlbars-runtime/expression-visitor";
 import {
   hostBlock,
+  continueBlock,
   hostYieldWithShadowTemplate
 } from 'htmlbars-runtime/hooks';
 
 
 var internal = {
   hostBlock: hostBlock,
+  continueBlock: continueBlock,
   hostYieldWithShadowTemplate: hostYieldWithShadowTemplate,
   visitChildren: visitChildren,
   validateChildMorphs: validateChildMorphs
