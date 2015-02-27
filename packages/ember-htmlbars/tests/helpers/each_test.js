@@ -1001,6 +1001,34 @@ function testEachWithItem(moduleName, useBlockParams) {
     equal(view.$().text(), "controller:people - controller:Steve Holt of Yapp - controller:people - controller:Annabelle of Yapp - ");
   });
 
+
+  QUnit.test("locals in stable loops update when the list is updated", function() {
+    expect(3);
+
+    var list = [{ key: "adam", name: "Adam" }, { key: "steve", name: "Steve" }];
+    view = EmberView.create({
+      queries: list,
+      template: templateFor('{{#each view.queries key="key" as |query|}}{{query.name}}{{/each}}', true)
+    });
+    runAppend(view);
+    equal(view.$().text(), "AdamSteve");
+
+    run(function() {
+      list.unshift({ key: "bob", name: "Bob" });
+      view.set('queries', list);
+      view.notifyPropertyChange('queries');
+    });
+
+    equal(view.$().text(), "BobAdamSteve");
+
+    run(function() {
+      view.set('queries', [{ key: 'bob', name: "Bob" }, { key: 'steve', name: "Steve" }]);
+      view.notifyPropertyChange('queries');
+    });
+
+    equal(view.$().text(), "BobSteve");
+  });
+
   if (!useBlockParams) {
     QUnit.test("{{each}} without arguments [DEPRECATED]", function() {
       expect(2);
