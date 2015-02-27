@@ -288,6 +288,9 @@ export function createScope(env, parentScope) {
 }
 
 export function createFreshScope() {
+  // because `in` checks have unpredictable performance, keep a
+  // separate dictionary to track whether a local was bound.
+  // See `bindLocal` for more information.
   return { self: null, block: null, locals: {}, localPresent: {} };
 }
 
