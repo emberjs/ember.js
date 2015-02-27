@@ -216,12 +216,17 @@ QUnit.test("it should support #with this as qux", function() {
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
 QUnit.test("it should wrap context with object controller [DEPRECATED]", function() {
-  expectDeprecation(objectControllerDeprecation);
+  var childController;
 
   var Controller = ObjectController.extend({
+    init: function() {
+      if (childController) { throw new Error("Did not expect controller.init to be invoked twice"); }
+      childController = this;
+      this._super();
+    },
     controllerName: computed(function() {
       return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
-    })
+    }).property('model.name', 'parentController.name')
   });
 
   var person = EmberObject.create({ name: 'Steve Holt' });
@@ -242,6 +247,7 @@ QUnit.test("it should wrap context with object controller [DEPRECATED]", functio
 
   registry.register('controller:person', Controller);
 
+  expectDeprecation(objectControllerDeprecation);
   expectDeprecation(function() {
     runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
@@ -268,7 +274,7 @@ QUnit.test("it should wrap context with object controller [DEPRECATED]", functio
 
   equal(view.$().text(), "controller:Gob and Carl Weathers");
 
-  strictEqual(view._childViews[0].get('controller.target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(childController.get('target'), parentController, "the target property of the child controllers are set correctly");
 
   runDestroy(view);
 });

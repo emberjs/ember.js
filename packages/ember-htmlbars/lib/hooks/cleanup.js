@@ -12,10 +12,22 @@ export default function cleanup(renderNode) {
     view.destroy();
   }
 
+  var i, l;
+
+  if (state.toDestroy) {
+    var toDestroy = state.toDestroy;
+
+    for (i=0, l=toDestroy.length; i<l; i++) {
+      toDestroy[i].destroy();
+    }
+
+    state.toDestroy = null;
+  }
+
   var unsubscribers = state.unsubscribers;
   if (!unsubscribers) { return; }
 
-  for (var i=0, l=unsubscribers.length; i<l; i++) {
+  for (i=0, l=unsubscribers.length; i<l; i++) {
     unsubscribers[i]();
   }
 }
