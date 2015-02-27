@@ -462,6 +462,10 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
     return;
   }
 
+  continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor);
+}
+
+export function continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor) {
   hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
     var helper = env.hooks.lookupHelper(env, scope, path);
     params = normalizeArray(env, params);
