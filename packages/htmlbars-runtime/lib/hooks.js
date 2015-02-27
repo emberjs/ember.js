@@ -496,11 +496,11 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
   }
 
   if (toClear) {
-    pruneMorph(toClear, env.hooks.cleanup);
+    clearMorph(toClear, env.hooks.cleanup);
   }
 }
 
-function pruneMorph(morph, cleanup) {
+function clearMorph(morph, cleanup) {
   if (cleanup) {
     visitChildren(morph.childNodes, cleanup);
   }
@@ -557,7 +557,7 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     var isEmpty = keyword.isEmpty(morph.state, env, scope, params, hash);
 
     if (isEmpty) {
-      if (!firstTime) { pruneMorph(morph, env.hooks.cleanup); }
+      if (!firstTime) { clearMorph(morph, env.hooks.cleanup); }
       return true;
     }
   }
@@ -576,6 +576,8 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
       }
       validateChildMorphs(env, morph, visitor);
       return true;
+    } else {
+      clearMorph(morph, env.hooks.cleanup);
     }
   }
 
