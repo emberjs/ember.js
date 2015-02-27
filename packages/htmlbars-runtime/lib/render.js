@@ -34,6 +34,8 @@ function RenderResult(env, scope, options, rootNode, nodes, fragment, template, 
   this.scope = scope;
   this.shouldSetContent = shouldSetContent;
 
+  this.bindScope();
+
   if (options.self !== undefined) { this.bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
 }
