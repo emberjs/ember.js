@@ -46,13 +46,15 @@ import withKeyword from "ember-htmlbars/keywords/with";
 import outlet from "ember-htmlbars/keywords/outlet";
 import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
+import componentKeyword from "ember-htmlbars/keywords/component";
 
 merge(emberHooks.keywords, {
   "debugger": debuggerKeyword,
   "with": withKeyword,
   outlet: outlet,
   unbound: unbound,
-  view: view
+  view: view,
+  component: componentKeyword
 });
 
 export default {
