@@ -339,8 +339,17 @@ var Select = View.extend({
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: defaultTemplate,
-  attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
-                      'form', 'size'],
+  attributeBindings: [
+    'autofocus',
+    'autocomplete',
+    'disabled',
+    'form',
+    'multiple',
+    'name',
+    'required',
+    'size',
+    'tabindex'
+  ],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
