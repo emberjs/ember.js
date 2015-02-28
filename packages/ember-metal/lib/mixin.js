@@ -61,23 +61,19 @@ function superFunction() {
     } else if (length === 2) {
       ret = func.call(this, arguments[0], arguments[1]);
     } else {
-      ret = func.apply(this, arguments);
+      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+      // we may want to keep this around till this ages out on mobile
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+
+      ret = func.apply(this, args);
     }
     this.__nextSuper = func;
     return ret;
   }
 }
-
-// ensure we prime superFunction to mitigate
-// v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
-var primer = {
-  __nextSuper: function(a, b, c, d ) { }
-};
-
-superFunction.call(primer);
-superFunction.call(primer, 1);
-superFunction.call(primer, 1, 2);
-superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
   var m = metaFor(obj, true);
