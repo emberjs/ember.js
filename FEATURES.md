@@ -98,28 +98,6 @@ for a detailed explanation.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
 
-* `composable-computed-properties`
-
-  This feature allows you to combine (compose) different computed
-  properties together. So it gives you a really nice "functional
-  programming" like syntax to deal with complex expressions.
-
-  Added in [#3696](https://github.com/emberjs/ember.js/pull/3696).
-
-* `ember-metal-is-present`
-
-  Adds `Ember.isPresent` as the inverse of `Ember.isBlank`. This convenience
-  method can lead to more semantic and clearer code.
-
-  Added in [#5136](https://github.com/emberjs/ember.js/pull/5136)
-
-* `property-brace-expansion-improvement`
-
-  Property brace expansion now allows multiple sets of braces to be used,
-  as well as not restricting their location in the string.
-
-  Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)
-
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
