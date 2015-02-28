@@ -25,6 +25,7 @@ AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isDirty = true;
   this.isDestroying = false;
   this.lastValue = null;
+  this.hasRenderedInitially = false;
 
   subscribe(this.attrValue, this.rerender, this);
 };
@@ -52,7 +53,7 @@ AttrNode.prototype.render = function render(buffer) {
   }
 
   // If user is typing in a value we don't want to rerender and loose cursor position.
-  if (this.attrName === 'value' && this._morph.element.value === value) {
+  if (this.hasRenderedInitially && this.attrName === 'value' && this._morph.element.value === value) {
     this.lastValue = value;
     return;
   }
@@ -60,6 +61,7 @@ AttrNode.prototype.render = function render(buffer) {
   if (this.lastValue !== null || value !== null) {
     this._morph.setContent(value);
     this.lastValue = value;
+    this.hasRenderedInitially = true;
   }
 };
 
