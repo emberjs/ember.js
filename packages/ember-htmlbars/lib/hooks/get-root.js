@@ -6,7 +6,6 @@
 //import Ember from "ember-metal/core";
 import Stream from "ember-metal/streams/stream";
 import { read } from "ember-metal/streams/utils";
-import { get } from "ember-metal/property_get";
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
@@ -34,8 +33,9 @@ function getKey(scope, key) {
   var value = self[key];
   if (value !== undefined) { return value; }
 
+  var viewKey = scope.locals.view.getKey(key);
+
   var stream = new Stream(function() {
-    var view = read(scope.locals.view);
     var attrs = scope.attrs;
 
     if (key in attrs) {
@@ -43,12 +43,10 @@ function getKey(scope, key) {
       return read(attrs[key]);
     }
 
-    if (typeof view === 'object' && view !== null) {
-      return get(view, key);
-    }
+    return read(viewKey);
   });
 
-  stream.addDependency(scope.locals.view);
+  stream.addDependency(viewKey);
   stream.addDependency(scope.attrs[key]);
 
   return stream;
