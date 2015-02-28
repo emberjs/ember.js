@@ -43,5 +43,17 @@ QUnit.test("string property is output", function() {
         'property is set true');
 });
 
+QUnit.test("blank property is output", function() {
+  view = EmberView.create({
+    context: { name: '' },
+    template: compile("<input value={{name}}>")
+  });
+  appendView(view);
+
+  equal(view.element.firstChild.tagName, 'INPUT', "input element is created");
+  equal(view.element.firstChild.value, "",
+        'property is set true');
+});
+
 // jscs:enable validateIndentation
 }
