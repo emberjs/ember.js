@@ -20,8 +20,6 @@ Renderer.prototype.renderTopLevelView =
     view.ownerView = morph.state.view = view;
     view.renderNode = morph;
 
-    var newlyCreated = view.newlyCreated = [view];
-
     var contentMorph = this.contentMorphForView(view, morph);
 
     var template = get(view, 'layout') || get(view, 'template');
@@ -31,13 +29,34 @@ Renderer.prototype.renderTopLevelView =
 
       view.lastResult = morph.lastResult = result;
       window.lastMorph = morph;
+
+      this.dispatchLifecycleHooks(view.env);
+    }
+  };
+
+Renderer.prototype.revalidateTopLevelView =
+  function Renderer_revalidateTopLevelView(view) {
+    view.renderNode.lastResult.revalidate();
+    this.dispatchLifecycleHooks(view.env);
+  };
+
+Renderer.prototype.dispatchLifecycleHooks =
+  function Renderer_dispatchLifecycleHooks(env) {
+    var lifecycleHooks = env.lifecycleHooks;
+    var i, hook;
+
+    for (i=0; i<lifecycleHooks.length; i++) {
+      hook = lifecycleHooks[i];
+
+      switch (hook.type) {
+        case 'didInsertElement': this.didInsertElement(hook.view); break;
+        case 'didUpdate': this.didUpdate(hook.view); break;
+      }
+
+      this.didRender(hook.view);
     }
 
-    for (var i=0, l=newlyCreated.length; i<l; i++) {
-      this.didInsertElement(newlyCreated[i]);
-    }
-
-    view.newlyCreated = null;
+    env.lifecycleHooks = [];
   };
 
 // This entry point is called from top-level `view.appendTo`
@@ -92,6 +111,14 @@ Renderer.prototype.didInsertElement = function (view) {
   if (view.trigger) { view.trigger('didInsertElement'); }
 }; // inDOM // placed into DOM
 
+Renderer.prototype.didUpdate = function (view) {
+  if (view.trigger) { view.trigger('didUpdate'); }
+};
+
+Renderer.prototype.didRender = function (view) {
+  if (view.trigger) { view.trigger('didRender'); }
+};
+
 Renderer.prototype.updateAttrs = function (view, attrs) {
   if (view.willReceiveAttrs) {
     view.willReceiveAttrs(attrs);
@@ -103,6 +130,12 @@ Renderer.prototype.updateAttrs = function (view, attrs) {
 Renderer.prototype.willUpdate = function (view, attrs) {
   if (view.willUpdate) {
     view.willUpdate(attrs);
+  }
+};
+
+Renderer.prototype.willRender = function (view) {
+  if (view.willRender) {
+    view.willRender();
   }
 };
 

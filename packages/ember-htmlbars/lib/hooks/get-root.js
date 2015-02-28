@@ -21,13 +21,13 @@ export default function getRoot(scope, key) {
 }
 
 function getKey(scope, key) {
-  if (key === 'attrs' && scope.attrsStream) {
-    return scope.attrsStream;
+  if (key === 'attrs' && scope.attrs) {
+    return scope.attrs;
   }
 
   var self = scope.self;
 
-  if (!scope.attrsStream) {
+  if (!scope.attrs) {
     return self.getKey(key);
   }
 
@@ -36,7 +36,7 @@ function getKey(scope, key) {
 
   var stream = new Stream(function() {
     var view = read(scope.locals.view);
-    var attrs = read(scope.attrsStream);
+    var attrs = scope.attrs;
 
     if (key in attrs) {
       Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
@@ -49,7 +49,7 @@ function getKey(scope, key) {
   });
 
   stream.addDependency(scope.locals.view);
-  stream.addDependency(scope.attrsStream);
+  stream.addDependency(scope.attrs[key]);
 
   return stream;
 }

@@ -126,51 +126,6 @@ QUnit.test('rerendering component with attrs from parent', function() {
   equal(willUpdate, 2, "The willUpdate hook fired again");
 });
 
-QUnit.test('rerendering component with attrs from parent invokes willReceiveAttrs', function() {
-  var component;
-  var attrsReceived;
-  var attrsUpdated;
-
-  registry.register('component:non-block', Component.extend({
-    willReceiveAttrs: function(nextAttrs) {
-      attrsReceived = nextAttrs;
-    },
-    willUpdate: function(attrs) {
-      attrsUpdated = attrs;
-    },
-    didInsertElement: function() {
-      deepEqual(this.attrs, { someObj: { prop: "wycats" } }, "The attrs were set");
-      component = this;
-    }
-  }));
-  registry.register('template:components/non-block', compile('In layout - someProp: {{unbound attrs.someObj.prop}}'));
-
-  view = EmberView.extend({
-    template: compile('{{non-block someObj=view.someObj}}'),
-    container: container,
-    someObj: { prop: "wycats" }
-  }).create();
-
-  runAppend(view);
-
-  ok(component, "The component was inserted");
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
-
-  run(function() {
-    view.set('someObj.prop', 'tomdale');
-  });
-
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats', "precond - unbound attributes do not observe changes");
-
-  run(function() {
-    component.rerender();
-  });
-
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  strictEqual(attrsReceived, undefined, "The attrs were not received");
-  deepEqual(attrsUpdated, { someObj: { prop: "tomdale" } }, "The attrs were updated");
-});
-
 
 QUnit.test('[DEPRECATED] non-block with properties on self', function() {
   expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");

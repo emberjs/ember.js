@@ -26,7 +26,7 @@ ComponentNode.create = function(renderNode, env, found, parentView, tagName, con
   var component, layoutMorph, layoutTemplate;
 
   if (found.component) {
-    component = createComponent(found.component, parentView, renderNode);
+    component = createComponent(env, found.component, parentView, renderNode);
     component.renderNode = renderNode;
     renderNode.state.component = component;
     layoutMorph = component.renderer.contentMorphForView(component, renderNode);
@@ -63,12 +63,7 @@ ComponentNode.prototype.render = function(env, attrs, visitor, inDOM) {
   this.shadowRoot.render(newEnv, self, options, visitor);
 
   if (component) {
-    if (inDOM) {
-      component.renderer.didInsertElement(component);
-    } else {
-      // TODO: This should be on ownerNode, not ownerView
-      component.ownerView.newlyCreated.push(component);
-    }
+    env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
   }
 };
 
@@ -84,17 +79,21 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
   if (component) {
     var snapshot = readHash(attrs);
 
+    // Notify component that it has become dirty and is about to change.
+    env.renderer.willUpdate(component, snapshot);
+    env.renderer.willRender(component);
+
     if (component.renderNode.state.shouldReceiveAttrs) {
-      newEnv.renderer.updateAttrs(component, snapshot);
+      env.renderer.updateAttrs(component, snapshot);
       component.renderNode.state.shouldReceiveAttrs = false;
     }
-
-    // TODO: Trigger this on re-renders, even though the component will
-    // not (atm) have been dirtied
-    newEnv.renderer.willUpdate(component, snapshot);
   }
 
   validateChildMorphs(newEnv, this.shadowRoot.layoutMorph, visitor);
+
+  if (component) {
+    env.lifecycleHooks.push({ type: 'didUpdate', view: component });
+  }
 
   return newEnv;
 };
@@ -109,10 +108,11 @@ function lookupComponent(env, tagName) {
   };
 }
 
-function createComponent(component, parentView, morph) {
+function createComponent(env, component, parentView, morph) {
   if (component.create) {
     component = component.create();
   }
+  env.renderer.willRender(component);
 
   parentView.linkChild(component);
   morph.state.view = component;
