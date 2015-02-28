@@ -33,6 +33,9 @@ merge(hasElement, {
 
     renderNode.isDirty = true;
     internal.visitChildren(renderNode.childNodes, function(node) {
+      if (node.state.componentNode) {
+        node.state.shouldReceiveAttrs = true;
+      }
       node.isDirty = true;
     });
     renderNode.ownerNode.state.view.scheduleRevalidate();

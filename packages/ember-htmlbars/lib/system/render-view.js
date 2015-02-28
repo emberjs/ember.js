@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
 import defaultEnv from "ember-htmlbars/env";
+import { get } from "ember-metal/property_get";
 
 export default function renderView(view, buffer, template) {
   if (!template) {
@@ -31,7 +31,10 @@ export function renderHTMLBarsTemplate(view, contextualElement, template, morph)
     template.revision === 'Ember@VERSION_STRING_PLACEHOLDER'
   );
 
+  var lifecycleHooks = [{ type: 'didInsertElement', view: view }];
+
   var env = {
+    lifecycleHooks: lifecycleHooks,
     view: view,
     outletState: view.outletState,
     container: view.container,
@@ -44,7 +47,7 @@ export function renderHTMLBarsTemplate(view, contextualElement, template, morph)
 
   view.env = env;
 
-  return template.render(view, env, { contextualElement: contextualElement, renderNode: morph });
+  return template.render(view, view.env, { contextualElement: contextualElement, renderNode: morph });
 }
 
 function renderLegacyTemplate(view, buffer, template) {
