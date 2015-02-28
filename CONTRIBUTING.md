@@ -107,8 +107,7 @@ If your pull request fixes an issue specify it in the commit message. Some examp
   [SECURITY CVE-111-1111] Message
   ```
 
-  For more information about commit prefixes see
-  [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
+  For more information about commit prefixes see [the appendix](#commit-tagging).
 
 
 7. Push to your fork and submit a pull request. Please provide us with some
@@ -162,3 +161,33 @@ Code words are:
 And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md
+
+
+# Appendix
+
+## Commit Tagging
+
+All commits should be tagged. Tags are denoted by square brackets (`[]`) and come at the start of the commit message.
+
+### Bug Fixes
+
+In general bug fixes are pulled into the beta branch. As such, the prefix is: `[BUGFIX beta]`. If a bug fix is a serious regression that requires a new patch relese, `[BUGFIX release]` can be used instead.
+
+For bugs releated to canary features, follow the prefixing rules for features.
+
+### Features
+
+All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature.
+
+### Documentation
+
+Documentation commits are tagged as `[DOC channel]` where channel is `canary`,
+`beta`, or `release`. If no release is provided `canary` is assumed. The channel should be the most stable release that this documentation change applies to.
+
+### Security
+
+Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](http://emberjs.com/security/) for more information.
+
+### Other
+
+In general almost all commits should fall into one of these categories. In the cases where they don't please submit your PR untagged. An Ember contributor will let you know if tagging is required.
