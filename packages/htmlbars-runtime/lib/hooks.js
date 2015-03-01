@@ -372,7 +372,7 @@ export function createChildScope(parent) {
   The host must ensure that child scopes reflect the change to the `self` in
   future calls to the `get` hook.
 */
-export function bindSelf(scope, self) {
+export function bindSelf(env, scope, self) {
   scope.self = self;
 }
 
@@ -912,7 +912,7 @@ export function lookupHelper(env, scope, helperName) {
   return env.helpers[helperName];
 }
 
-export function bindScope(/* scope */) {
+export function bindScope(/* env, scope */) {
   // this function is used to handle host-specified extensions to scope
   // other than `self`, `locals` and `block`.
 }
