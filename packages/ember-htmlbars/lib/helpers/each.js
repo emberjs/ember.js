@@ -157,8 +157,9 @@ import EachView from "ember-views/views/each";
   @param [options.itemController] {String} name of a controller to be created for each item
 */
 function eachHelper(params, hash, options, env) {
+  var view = env.data.view;
   var helperName = 'each';
-  var path = params[0] || this.getStream('');
+  var path = params[0] || view.getStream('');
 
   Ember.assert(
     "If you pass more than one argument to the each helper, " +

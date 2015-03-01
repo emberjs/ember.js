@@ -65,8 +65,9 @@ export function componentHelper(params, hash, options, env) {
     params.length === 1
   );
 
+  var view = env.data.view;
   var componentNameParam = params[0];
-  var container = this.container || read(this._keywords.view).container;
+  var container = view.container || read(view._keywords.view).container;
 
   var props = {
     helperName: options.helperName || 'component'
@@ -85,8 +86,8 @@ export function componentHelper(params, hash, options, env) {
     if (!viewClass) {
       throw new EmberError('HTMLBars error: Could not find component named "' + componentNameParam + '".');
     }
-    mergeViewBindings(this, props, hash);
+    mergeViewBindings(view, props, hash);
   }
 
-  appendTemplatedView(this, options.morph, viewClass, props);
+  appendTemplatedView(view, options.morph, viewClass, props);
 }

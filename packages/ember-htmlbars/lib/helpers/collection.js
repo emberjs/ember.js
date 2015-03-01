@@ -228,7 +228,7 @@ export function collectionHelper(params, hash, options, env) {
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  var viewOptions = mergeViewBindings(this, {}, itemHash);
+  var viewOptions = mergeViewBindings(view, {}, itemHash);
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');

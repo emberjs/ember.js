@@ -147,7 +147,7 @@ function bindAttrHelper(params, hash, options, env) {
 
   Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(hash).length);
 
-  var view = this;
+  var view = env.data.view;
 
   // Handle classes differently, as we can bind multiple classes
   var classNameBindings = hash['class'];
