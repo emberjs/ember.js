@@ -65,6 +65,7 @@ export function withHelper(params, hash, options, env) {
     !!options.template
   );
 
+  var view = env.data.view;
   var preserveContext;
 
   if (options.template.blockParams) {
@@ -79,11 +80,11 @@ export function withHelper(params, hash, options, env) {
     preserveContext = false;
   }
 
-  this.appendChild(WithView, {
+  view.appendChild(WithView, {
     _morph: options.morph,
     withValue: params[0],
     preserveContext: preserveContext,
-    previousContext: this.get('context'),
+    previousContext: view.get('context'),
     controllerName: hash.controller,
     mainTemplate: options.template,
     inverseTemplate: options.inverse,

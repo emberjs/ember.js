@@ -191,7 +191,8 @@ export function viewHelper(params, hash, options, env) {
     params.length <= 2
   );
 
-  var container = this.container || read(this._keywords.view).container;
+  var view = env.data.view;
+  var container = view.container || read(view._keywords.view).container;
   var viewClassOrInstance;
   if (params.length === 0) {
     if (container) {
@@ -211,6 +212,6 @@ export function viewHelper(params, hash, options, env) {
     props.template = options.template;
   }
 
-  mergeViewBindings(this, props, hash);
-  appendTemplatedView(this, options.morph, viewClassOrInstance, props);
+  mergeViewBindings(view, props, hash);
+  appendTemplatedView(view, options.morph, viewClassOrInstance, props);
 }

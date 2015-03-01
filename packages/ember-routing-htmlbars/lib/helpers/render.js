@@ -85,12 +85,13 @@ You could render it inside the `post` template using the `render` helper.
   @return {String} HTML string
 */
 export function renderHelper(params, hash, options, env) {
+  var currentView = env.data.view;
   var container, router, controller, view, initialContext;
 
   var name = params[0];
   var context = params[1];
 
-  container = this._keywords.controller.value().container;
+  container = currentView._keywords.controller.value().container;
   router = container.lookup('router:main');
 
   Ember.assert(
@@ -144,7 +145,7 @@ export function renderHelper(params, hash, options, env) {
     controllerFullName = 'controller:' + controllerName;
   }
 
-  var parentController = this._keywords.controller.value();
+  var parentController = currentView._keywords.controller.value();
 
   // choose name
   if (params.length > 1) {
@@ -190,6 +191,6 @@ export function renderHelper(params, hash, options, env) {
     helperName: 'render "' + name + '"'
   };
 
-  mergeViewBindings(this, props, hash);
-  appendTemplatedView(this, options.morph, view, props);
+  mergeViewBindings(currentView, props, hash);
+  appendTemplatedView(currentView, options.morph, view, props);
 }

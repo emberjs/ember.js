@@ -49,5 +49,5 @@ export function locHelper(params, hash, options, env) {
     return true;
   })());
 
-  return loc.apply(this, params);
+  return loc.apply(env.data.view, params);
 }

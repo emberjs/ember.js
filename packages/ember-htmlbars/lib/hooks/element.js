@@ -15,7 +15,7 @@ export default function element(env, domElement, view, path, params, hash) { //j
     var options = {
       element: domElement
     };
-    valueOrLazyValue = helper.helperFunction.call(view, params, hash, options, env);
+    valueOrLazyValue = helper.helperFunction.call(undefined, params, hash, options, env);
   } else {
     valueOrLazyValue = view.getStream(path);
   }

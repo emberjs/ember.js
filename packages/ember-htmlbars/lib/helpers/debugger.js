@@ -49,10 +49,10 @@ import Logger from "ember-metal/logger";
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-export function debuggerHelper() {
+export function debuggerHelper(params, hash, options, env) {
 
   /* jshint unused: false */
-  var view = this;
+  var view = env.data.view;
 
   /* jshint unused: false */
   var context = view.get('context');

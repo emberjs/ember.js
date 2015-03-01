@@ -18,7 +18,7 @@ export default function block(env, morph, view, path, params, hash, template, in
     inverse: inverse,
     isBlock: true
   };
-  var result = helper.helperFunction.call(view, params, hash, options, env);
+  var result = helper.helperFunction.call(undefined, params, hash, options, env);
 
   if (isStream(result)) {
     appendSimpleBoundView(view, morph, result);
