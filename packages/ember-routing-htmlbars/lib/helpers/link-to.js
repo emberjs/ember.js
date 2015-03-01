@@ -288,6 +288,7 @@ import 'ember-htmlbars';
 */
 function linkToHelper(params, hash, options, env) {
   var queryParamsObject;
+  var view = env.data.view;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
@@ -321,6 +322,8 @@ function linkToHelper(params, hash, options, env) {
 
       if (!lazyValue._isController) {
         while (ControllerMixin.detect(lazyValue.value())) {
+          Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + view + '` to use `{{link-to "post" someController.model}}` instead.');
+
           lazyValue = lazyValue.get('model');
         }
       }
