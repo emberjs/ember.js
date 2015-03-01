@@ -193,7 +193,7 @@ import 'ember-htmlbars';
   ```
 
   ```html
-  <a href="/hamster-photos/42/comment/718">
+  <a href="/hamster-photos/42/comments/718">
     A+++ would snuggle again.
   </a>
   ```
