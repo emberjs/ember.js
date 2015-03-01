@@ -19,6 +19,8 @@ import getValue from "ember-htmlbars/hooks/get-value";
 import cleanup from "ember-htmlbars/hooks/cleanup";
 import classify from "ember-htmlbars/hooks/classify";
 import component from "ember-htmlbars/hooks/component";
+import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
+import hasHelper from "ember-htmlbars/hooks/has-helper";
 
 import helpers from "ember-htmlbars/helpers";
 
@@ -38,7 +40,9 @@ merge(emberHooks, {
   concat: concat,
   cleanup: cleanup,
   classify: classify,
-  component: component
+  component: component,
+  lookupHelper: lookupHelper,
+  hasHelper: hasHelper
 });
 
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
@@ -47,6 +51,7 @@ import outlet from "ember-htmlbars/keywords/outlet";
 import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
+import partial from "ember-htmlbars/keywords/partial";
 
 merge(emberHooks.keywords, {
   "debugger": debuggerKeyword,
@@ -54,7 +59,8 @@ merge(emberHooks.keywords, {
   outlet: outlet,
   unbound: unbound,
   view: view,
-  component: componentKeyword
+  component: componentKeyword,
+  partial: partial
 });
 
 export default {

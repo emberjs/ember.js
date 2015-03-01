@@ -5,6 +5,7 @@
 
 export default function createShadowScope(env, parentScope, options) {
   var shadowScope = env.hooks.createFreshScope();
+  if (!options) { return shadowScope; }
 
   if (options.view) {
     shadowScope.renderNode = options.renderNode;

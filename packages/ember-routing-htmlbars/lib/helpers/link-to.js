@@ -4,11 +4,12 @@
 */
 
 import Ember from "ember-metal/core"; // assert
-import { LinkView } from "ember-routing-views/views/link";
-import { isStream, read } from "ember-metal/streams/utils";
-import ControllerMixin from "ember-runtime/mixins/controller";
-import inlineEscapedLinkTo from "ember-htmlbars/templates/link-to-escaped";
-import inlineUnescapedLinkTo from "ember-htmlbars/templates/link-to-unescaped";
+//import { LinkView } from "ember-routing-views/views/link";
+//import { read, isStream } from "ember-metal/streams/utils";
+//import ControllerMixin from "ember-runtime/mixins/controller";
+
+import linkToTemplate from "ember-htmlbars/templates/link-to";
+linkToTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
 // This ensures it is loaded first:
@@ -286,70 +287,9 @@ import 'ember-htmlbars';
   @return {String} HTML string
   @see {Ember.LinkView}
 */
-function linkToHelper(params, hash, options, env) {
-  var queryParamsObject;
-  var view = env.data.view;
-
-  Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
-
-  var lastParam = params[params.length - 1];
-
-  if (lastParam && lastParam.isQueryParams) {
-    hash.queryParamsObject = queryParamsObject = params.pop();
-  }
-
-  if (hash.disabledWhen) {
-    hash.disabled = hash.disabledWhen;
-    delete hash.disabledWhen;
-  }
-
-  if (!options.template) {
-    var linkTitle = params.shift();
-    var parseTextAsHTML = options.morph.parseTextAsHTML;
-
-    if (parseTextAsHTML) {
-      hash.layout = inlineUnescapedLinkTo;
-    } else {
-      hash.layout = inlineEscapedLinkTo;
-    }
-
-    hash.linkTitle = linkTitle;
-
-    options.template = {
-      isHTMLBars: true,
-      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
-      render: function(view, env) {
-        var value = read(hash.linkTitle) || "";
-        if (!parseTextAsHTML) {
-          value =  env.dom.createTextNode(value);
-        }
-
-        return { fragment: value };
-      }
-    };
-  }
-
-  for (var i = 0; i < params.length; i++) {
-    if (isStream(params[i])) {
-      var lazyValue = params[i];
-
-      if (!lazyValue._isController) {
-        while (ControllerMixin.detect(lazyValue.value())) {
-          Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + view + '` to use `{{link-to "post" someController.model}}` instead.');
-
-          lazyValue = lazyValue.get('model');
-        }
-      }
-
-      params[i] = lazyValue;
-    }
-  }
-
-  hash.params = params;
-
-  options.helperName = options.helperName || 'link-to';
-
-  return env.helpers.view.helperFunction.call(this, [LinkView], hash, options, env);
+function linkToHelper(params, hash) {
+  // TODO: Implement more than just stub functionality here
+  this.yieldIn(linkToTemplate, { href: "#" });
 }
 
 /**

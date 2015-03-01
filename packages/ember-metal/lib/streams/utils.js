@@ -205,6 +205,18 @@ export function addDependency(stream, dependency) {
   }
 }
 
+export function zip(streams, callback) {
+  var stream = new Stream(function() {
+    return callback(readArray(streams));
+  });
+
+  for (var i=0, l=streams.length; i<l; i++) {
+    stream.addDependency(streams[i]);
+  }
+
+  return stream;
+}
+
 /**
  Generate a new stream by providing a source stream and a function that can
  be used to transform the stream's value. In the case of a non-stream object,

@@ -3,9 +3,7 @@
 @submodule ember-htmlbars
 */
 
-//import Ember from "ember-metal/core";
-import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/utils";
+import Ember from "ember-metal/core";
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
@@ -33,21 +31,10 @@ function getKey(scope, key) {
   var value = self[key];
   if (value !== undefined) { return value; }
 
-  var viewKey = scope.locals.view.getKey(key);
-
-  var stream = new Stream(function() {
-    var attrs = scope.attrs;
-
-    if (key in attrs) {
-      Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
-      return read(attrs[key]);
-    }
-
-    return read(viewKey);
-  });
-
-  stream.addDependency(viewKey);
-  stream.addDependency(scope.attrs[key]);
-
-  return stream;
+  if (key in scope.attrs) {
+    Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
+    return scope.attrs[key];
+  } else {
+    return scope.locals.view.getKey(key);
+  }
 }

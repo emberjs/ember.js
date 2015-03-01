@@ -6,6 +6,9 @@
 import merge from "ember-metal/merge";
 import ShadowRoot from "ember-htmlbars/system/shadow-root";
 
+import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
+topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+
 export default {
   willRender: function(renderNode, env) {
     env.view.ownerView._outlets.push(renderNode);
@@ -17,6 +20,11 @@ export default {
 
     var outletName = read(params[0]) || 'main';
     var selectedOutletState = outletState[outletName];
+
+    var toRender = selectedOutletState && selectedOutletState.render;
+    if (toRender && !toRender.template && !toRender.ViewClass) {
+      toRender.template = topLevelViewTemplate;
+    }
 
     state.lastOutletState = state.outletState;
     state.outletState = selectedOutletState;
