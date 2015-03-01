@@ -5,11 +5,10 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { read, isStream } from "ember-metal/streams/utils";
+import { isStream } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
-import {
-  escapeExpression
-} from "ember-htmlbars/utils/string";
+import inlineEscapedLinkTo from "ember-htmlbars/templates/link-to-escaped";
+import inlineUnescapedLinkTo from "ember-htmlbars/templates/link-to-unescaped";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
 // This ensures it is loaded first:
@@ -307,21 +306,13 @@ function linkToHelper(params, hash, options, env) {
   if (!options.template) {
     var linkTitle = params.shift();
 
-    if (isStream(linkTitle)) {
-      hash.linkTitle = { stream: linkTitle };
+    if (shouldEscape) {
+      hash.layout = inlineEscapedLinkTo;
+    } else {
+      hash.layout = inlineUnescapedLinkTo;
     }
 
-    options.template = {
-      isHTMLBars: true,
-      render: function() {
-        var value = read(linkTitle);
-        if (value) {
-          return shouldEscape ? escapeExpression(value) : value;
-        } else {
-          return "";
-        }
-      }
-    };
+    hash.linkTitle = linkTitle;
   }
 
   for (var i = 0; i < params.length; i++) {
