@@ -48,15 +48,13 @@ merge(inBuffer, {
     return childView;
   },
 
-  appendAttr(view, attrNode) {
-    var buffer = view.buffer;
-    var _attrNodes = view._attrNodes;
+  appendAttr(view, attrNode, buffer) {
+    var _childViews = view._childViews;
 
     if (!_attrNodes.length) { _attrNodes = view._attrNodes = _attrNodes.slice(); }
     _attrNodes.push(attrNode);
 
     if (!attrNode._morph) {
-      Ember.assert("bound attributes that do not have a morph must have a buffer", !!buffer);
       buffer.pushAttrNode(attrNode);
     }
 

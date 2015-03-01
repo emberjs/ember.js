@@ -84,7 +84,7 @@ var AttributeBindingsSupport = Mixin.create({
       if (property in this) {
         attrValue = this.getStream('view.'+property);
         attrNode = new AttrNode(attrName, attrValue);
-        this.appendAttr(attrNode);
+        this.appendAttr(attrNode, buffer);
         if (!canSetNameOnInputs && attrName === 'name') {
           buffer.attr('name', read(attrValue));
         }

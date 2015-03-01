@@ -97,10 +97,3 @@ merge(KeyStream.prototype, {
 });
 
 export default KeyStream;
-
-// The transpiler does not resolve cycles, so we export
-// the `_makeChildStream` method onto `Stream` here.
-
-Stream.prototype._makeChildStream = function(key) {
-  return new KeyStream(this, key);
-};

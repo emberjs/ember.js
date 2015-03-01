@@ -34,6 +34,8 @@ var ClassNamesSupport = Mixin.create({
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
 
+    this._classNameUnsubscribers = [];
+
     Ember.assert("Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.", typeOf(this.classNames) === 'array');
     this.classNames = emberA(this.classNames.slice());
   },
@@ -165,17 +167,18 @@ var ClassNamesSupport = Mixin.create({
         oldClass = dasherizedClass;
       }
 
-      subscribe(boundBinding, observer, this);
-      // Remove className so when the view is rerendered,
-      // the className is added based on binding reevaluation
-      this.one('willClearRender', function() {
-        if (oldClass) {
-          classNames.removeObject(oldClass);
-          oldClass = null;
-        }
-      });
-
+      this._classNameUnsubscribers.push(subscribe(boundBinding, observer, this));
     }, this);
+  },
+
+  willDestroyElement: function() {
+    var unsubscribers = this._classNameUnsubscribers;
+
+    for (var i=0, l=unsubscribers.length; i<l; i++) {
+      unsubscribers[i]();
+    }
+
+    this._super.apply(this, arguments);
   }
 });
 

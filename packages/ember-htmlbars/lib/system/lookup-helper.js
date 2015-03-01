@@ -33,7 +33,7 @@ export default function lookupHelper(name, view, env) {
     return helper;
   }
 
-  var container = view.container;
+  var container = env.container;
 
   if (!container || ISNT_HELPER_CACHE.get(name)) {
     return;
@@ -59,5 +59,5 @@ export default function lookupHelper(name, view, env) {
     container._registry.register(helperName, helper);
   }
 
-  return helper;
+  return helper.helperFunction;
 }
