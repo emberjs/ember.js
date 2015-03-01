@@ -49,17 +49,18 @@ import lookupPartial from "ember-views/system/lookup_partial";
 */
 
 export function partialHelper(params, hash, options, env) {
+  var view = env.data.view;
   var templateName = params[0];
 
   if (isStream(templateName)) {
-    this.appendChild(BoundPartialView, {
+    view.appendChild(BoundPartialView, {
       _morph: options.morph,
-      _context: get(this, 'context'),
+      _context: get(view, 'context'),
       templateNameStream: templateName,
       helperName: options.helperName || 'partial'
     });
   } else {
-    var template = lookupPartial(this, templateName);
-    return template.render(this, env, options.morph.contextualElement);
+    var template = lookupPartial(view, templateName);
+    return template.render(view, env, options.morph.contextualElement);
   }
 }

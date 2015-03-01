@@ -72,6 +72,7 @@ export function outletHelper(params, hash, options, env) {
   var viewName;
   var viewClass;
   var viewFullName;
+  var view = env.data.view;
 
   Ember.assert(
     "Using {{outlet}} with an unquoted name is not supported.",
@@ -93,11 +94,11 @@ export function outletHelper(params, hash, options, env) {
     );
     Ember.assert(
       "The view name you supplied '" + viewName + "' did not resolve to a view.",
-      this.container._registry.has(viewFullName)
+      view.container._registry.has(viewFullName)
     );
   }
 
-  viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || this.container.lookupFactory('view:-outlet');
+  viewClass = viewName ? view.container.lookupFactory(viewFullName) : hash.viewClass || view.container.lookupFactory('view:-outlet');
   hash._outletName = property;
   options.helperName = options.helperName || 'outlet';
   return env.helpers.view.helperFunction.call(this, [viewClass], hash, options, env);

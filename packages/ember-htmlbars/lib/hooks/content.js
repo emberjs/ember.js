@@ -16,7 +16,7 @@ export default function content(env, morph, view, path) {
       morph: morph,
       isInline: true
     };
-    result = helper.helperFunction.call(view, [], {}, options, env);
+    result = helper.helperFunction.call(undefined, [], {}, options, env);
   } else {
     result = view.getStream(path);
   }

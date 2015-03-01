@@ -10,7 +10,9 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var registry, container, view;
 
 function aliasHelper(params, hash, options, env) {
-  this.appendChild(View, {
+  var view = env.data.view;
+
+  view.appendChild(View, {
     isVirtual: true,
     _morph: options.morph,
     template: options.template,
