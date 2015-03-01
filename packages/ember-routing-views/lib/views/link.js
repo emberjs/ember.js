@@ -238,13 +238,7 @@ var LinkView = EmberComponent.extend({
   _setupPathObservers: function() {
     var params = this.params;
 
-    var scheduledRerender = this._wrapAsScheduled(this.rerender);
     var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
-
-    if (this.linkTitle) {
-      var linkTitle = this.linkTitle.stream || this.linkTitle;
-      subscribe(linkTitle, scheduledRerender, this);
-    }
 
     for (var i = 0; i < params.length; i++) {
       subscribe(params[i], scheduledParamsChanged, this);

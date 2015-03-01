@@ -5,8 +5,10 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { read, isStream } from "ember-metal/streams/utils";
+import { isStream } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
+import inlineEscapedLinkTo from "ember-htmlbars/templates/link-to-escaped";
+import inlineUnescapedLinkTo from "ember-htmlbars/templates/link-to-unescaped";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
 // This ensures it is loaded first:
@@ -304,22 +306,13 @@ function linkToHelper(params, hash, options, env) {
     var linkTitle = params.shift();
     var parseTextAsHTML = options.morph.parseTextAsHTML;
 
-    if (isStream(linkTitle)) {
-      hash.linkTitle = { stream: linkTitle };
+    if (parseTextAsHTML) {
+      hash.layout = inlineUnescapedLinkTo;
+    } else {
+      hash.layout = inlineEscapedLinkTo;
     }
 
-    options.template = {
-      isHTMLBars: true,
-      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
-      render: function(view, env) {
-        var value = read(linkTitle) || "";
-        if (parseTextAsHTML) {
-          return value;
-        } else {
-          return env.dom.createTextNode(value);
-        }
-      }
-    };
+    hash.linkTitle = linkTitle;
   }
 
   for (var i = 0; i < params.length; i++) {
