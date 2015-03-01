@@ -141,11 +141,11 @@ RenderResult.prototype.populateNodes = function(visitor) {
 };
 
 RenderResult.prototype.bindScope = function() {
-  this.env.hooks.bindScope(this.scope);
+  this.env.hooks.bindScope(this.env, this.scope);
 };
 
 RenderResult.prototype.bindSelf = function(self) {
-  this.env.hooks.bindSelf(this.scope, self);
+  this.env.hooks.bindSelf(this.env, this.scope, self);
 };
 
 RenderResult.prototype.bindLocals = function(blockArguments) {
