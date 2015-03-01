@@ -628,9 +628,9 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
 QUnit.test("The {{link-to}} helper unwraps controllers", function() {
 
   if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
-    expect(4);
-  } else {
     expect(5);
+  } else {
+    expect(6);
   }
 
   Router.map(function() {
@@ -659,7 +659,9 @@ QUnit.test("The {{link-to}} helper unwraps controllers", function() {
   Ember.TEMPLATES.filter = compile('<p>{{model.filter}}</p>');
   Ember.TEMPLATES.index = compile('{{#link-to "filter" this id="link"}}Filter{{/link-to}}');
 
-  bootApplication();
+  expectDeprecation(function() {
+    bootApplication();
+  }, /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./);
 
   Ember.run(function() { router.handleURL("/"); });
 
