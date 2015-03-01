@@ -13,7 +13,6 @@ import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import {
   registerHelper
 } from "ember-htmlbars/helpers";
-import viewHelper from "ember-htmlbars/helpers/view";
 import {
   ifHelper,
   unlessHelper
@@ -30,7 +29,6 @@ import "ember-htmlbars/system/bootstrap";
 // Ember.Handlebars global if htmlbars is enabled
 import "ember-htmlbars/compat";
 
-registerHelper('@view', viewHelper);
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('with', withHelper);
