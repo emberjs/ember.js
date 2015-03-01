@@ -17,7 +17,7 @@ import emptyTemplate from "ember-htmlbars/templates/empty";
 */
 function ifHelper(params, hash, options, env) {
   var helperName = options.helperName || 'if';
-  return appendConditional(this, false, helperName, params, hash, options, env);
+  return appendConditional(false, helperName, params, hash, options, env);
 }
 
 /**
@@ -26,7 +26,7 @@ function ifHelper(params, hash, options, env) {
 */
 function unlessHelper(params, hash, options, env) {
   var helperName = options.helperName || 'unless';
-  return appendConditional(this, true, helperName, params, hash, options, env);
+  return appendConditional(true, helperName, params, hash, options, env);
 }
 
 
@@ -37,7 +37,9 @@ function assertInlineIfNotEnabled() {
   );
 }
 
-function appendConditional(view, inverted, helperName, params, hash, options, env) {
+function appendConditional(inverted, helperName, params, hash, options, env) {
+  var view = env.data.view;
+
   if (options.isBlock) {
     return appendBlockConditional(view, inverted, helperName, params, hash, options, env);
   } else {

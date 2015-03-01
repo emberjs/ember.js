@@ -40,14 +40,15 @@ export function unboundHelper(params, hash, options, env) {
   } else {
     options.helperName = options.helperName || 'unbound';
 
+    var view = env.data.view;
     var helperName = params[0]._label;
-    var helper = lookupHelper(helperName, this, env);
+    var helper = lookupHelper(helperName, view, env);
 
     if (!helper) {
       throw new EmberError('HTMLBars error: Could not find component or helper named ' + helperName + '.');
     }
 
-    return helper.helperFunction.call(this, readParams(params), readHash(hash, this), options, env);
+    return helper.helperFunction.call(this, readParams(params), readHash(hash, view), options, env);
   }
 }
 

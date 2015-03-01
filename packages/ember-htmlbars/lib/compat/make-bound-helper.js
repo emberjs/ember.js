@@ -49,7 +49,7 @@ export default function makeBoundHelper(fn, compatMode) {
   }
 
   function helperFunc(params, hash, options, env) {
-    var view = this;
+    var view = env.data.view;
     var numParams = params.length;
     var param;
 

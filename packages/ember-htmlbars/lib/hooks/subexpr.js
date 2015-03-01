@@ -13,6 +13,6 @@ export default function subexpr(env, view, path, params, hash) {
   var options = {
     isInline: true
   };
-  return helper.helperFunction.call(view, params, hash, options, env);
+  return helper.helperFunction.call(undefined, params, hash, options, env);
 }
 
