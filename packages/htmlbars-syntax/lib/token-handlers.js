@@ -32,7 +32,7 @@ var tokenHandlers = {
   },
 
   StartTag: function(tag) {
-    var element = buildElement(tag.tagName, tag.attributes, tag.helpers || [], []);
+    var element = buildElement(tag.tagName, tag.attributes, tag.modifiers || [], []);
     element.loc = {
       start: { line: tag.firstLine, column: tag.firstColumn},
       end: { line: null, column: null}
@@ -58,20 +58,20 @@ var tokenHandlers = {
     switch(tokenizer.state) {
       // Tag helpers
       case "tagName":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addElementModifier(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
       case "beforeAttributeName":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addElementModifier(mustache);
         return;
       case "attributeName":
       case "afterAttributeName":
         tokenizer.finalizeAttributeValue();
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addElementModifier(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
       case "afterAttributeValueQuoted":
-        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.addElementModifier(mustache);
         tokenizer.state = "beforeAttributeName";
         return;
 
