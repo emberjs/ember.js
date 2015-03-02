@@ -7,17 +7,20 @@ export function blockFor(render, template, blockOptions) {
     } else {
       var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
 
-      var childScope = blockOptions.scope;
+      var scope = blockOptions.scope;
+      var shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
 
-      if (!childScope) {
-        childScope = env.hooks.createShadowScope(env, parentScope, blockOptions.options);
-        env.hooks.bindSelf(env, childScope, blockOptions.self);
-        env.hooks.bindBlock(env, childScope, blockOptions.yieldTo);
+      env.hooks.bindShadowScope(env, parentScope, shadowScope, blockOptions.options);
+
+      if (blockOptions.self !== undefined) {
+        env.hooks.bindSelf(env, shadowScope, blockOptions.self);
       }
+
+      env.hooks.bindBlock(env, shadowScope, blockOptions.yieldTo);
 
       renderAndCleanup(renderNode, env, options, null, visitor, function() {
         options.renderState.clearMorph = null;
-        render(template, env, childScope, { renderNode: renderNode, blockArguments: blockArguments });
+        render(template, env, shadowScope, { renderNode: renderNode, blockArguments: blockArguments });
       });
     }
   };

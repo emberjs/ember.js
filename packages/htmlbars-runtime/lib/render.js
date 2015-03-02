@@ -81,7 +81,7 @@ export function manualElement(tagName, attributes) {
     statements.push(["attribute", key, attributes[key]]);
   }
 
-  statements.push(['inline', 'yield']);
+  statements.push(['content', 'yield']);
 
   var template = {
     isHTMLBars: true,

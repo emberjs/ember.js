@@ -207,7 +207,8 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
       return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     }
 
-    var shadowScope = env.hooks.createShadowScope(env, parentScope, renderState.shadowOptions);
+    var shadowScope = env.hooks.createFreshScope();
+    env.hooks.bindShadowScope(env, parentScope, shadowScope, renderState.shadowOptions);
     env.hooks.bindBlock(env, shadowScope, blockToYield);
 
     morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };
@@ -350,7 +351,7 @@ export function createFreshScope() {
   provided template and renders it, making the original block
   available to `{{yield}}` in that template.
 */
-export function createShadowScope(env /*, shadowMorph, parentScope */) {
+export function bindShadowScope(env /*, parentScope, shadowScope */) {
   return env.hooks.createFreshScope();
 }
 
@@ -930,8 +931,8 @@ export default {
 
   // fundamental hooks with good default behavior
   bindBlock: bindBlock,
+  bindShadowScope: bindShadowScope,
   createChildScope: createChildScope,
-  createShadowScope: createShadowScope,
   hasHelper: hasHelper,
   lookupHelper: lookupHelper,
 
