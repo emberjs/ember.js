@@ -12,9 +12,9 @@ export default function componentHook(renderNode, env, scope, tagName, attrs, te
   var parentView = read(env.view);
 
   var componentNode = state.componentNode =
-    ComponentNode.create(renderNode, env, undefined, parentView, tagName,
-                         scope, template);
+    ComponentNode.create(renderNode, env, attrs, undefined, parentView, tagName,
+                         scope, template, visitor);
 
-  componentNode.render(env, attrs, visitor, parentView._state === 'inDOM');
+  componentNode.render(env, attrs, visitor);
 }
 

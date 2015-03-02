@@ -69,8 +69,8 @@ Renderer.prototype.appendTo =
 
 // This entry point is called by the `#view` keyword in templates
 Renderer.prototype.contentMorphForView =
-  function Renderer_contentMorphForView(view, morph) {
-    return contentMorphForView(view, morph, this._dom);
+  function Renderer_contentMorphForView(view, morph, options) {
+    return contentMorphForView(view, morph, this._dom, options);
   };
 
 Renderer.prototype.willCreateElement = function (view) {
@@ -86,7 +86,11 @@ Renderer.prototype.willCreateElement = function (view) {
   }
 }; // inBuffer
 
-Renderer.prototype.didCreateElement = function (view) {
+Renderer.prototype.didCreateElement = function (view, element) {
+  if (element) {
+    view.element = element;
+  }
+
   if (view._transitionTo) {
     view._transitionTo('hasElement');
   }
@@ -160,10 +164,18 @@ Renderer.prototype.didDestroyElement = function (view) {
 
 export default Renderer;
 
-function contentMorphForView(view, morph, dom) {
+function contentMorphForView(view, morph, dom, options) {
   var buffer = new RenderBuffer(dom);
   var contextualElement = morph.contextualElement;
   var contentMorph;
+
+  if (options && options.class) {
+    view.classNames.push(options.class);
+  }
+
+  if (options && options.id) {
+    view.elementId = options.id;
+  }
 
   view.renderer.willCreateElement(view);
 
