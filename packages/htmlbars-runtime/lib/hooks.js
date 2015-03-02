@@ -216,7 +216,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
     morph.lastResult = render(shadowTemplate.raw, env, shadowScope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 
-  function blockToYield(blockArguments, renderNode) {
+  function blockToYield(env, blockArguments, renderNode, shadowParent, visitor) {
     if (renderNode.lastResult) {
       renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
     } else {
@@ -669,10 +669,10 @@ export var keywords = {
     return true;
   },
 
-  yield: function(morph, env, scope, params) {
+  yield: function(morph, env, scope, params, hash, template, inverse, visitor) {
     // the current scope is provided purely for the creation of shadow
     // scopes; it should not be provided to user code.
-    scope.block(params, morph, scope);
+    scope.block(env, params, morph, scope, visitor);
     return true;
   }
 };
@@ -856,8 +856,10 @@ export function get(env, scope, path) {
 export function getRoot(scope, key) {
   if (scope.localPresent[key]) {
     return [scope.locals[key]];
-  } else {
+  } else if (scope.self) {
     return [scope.self[key]];
+  } else {
+    return [undefined];
   }
 }
 
