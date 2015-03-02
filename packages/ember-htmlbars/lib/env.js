@@ -9,7 +9,7 @@ import subexpr from "ember-htmlbars/hooks/subexpr";
 import concat from "ember-htmlbars/hooks/concat";
 import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
 import createFreshScope from "ember-htmlbars/hooks/create-fresh-scope";
-import createShadowScope from "ember-htmlbars/hooks/create-shadow-scope";
+import bindShadowScope from "ember-htmlbars/hooks/bind-shadow-scope";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
 import bindScope from "ember-htmlbars/hooks/bind-scope";
 import bindLocal from "ember-htmlbars/hooks/bind-local";
@@ -29,7 +29,7 @@ var emberHooks = merge({}, hooks);
 merge(emberHooks, {
   linkRenderNode: linkRenderNode,
   createFreshScope: createFreshScope,
-  createShadowScope: createShadowScope,
+  bindShadowScope: bindShadowScope,
   bindSelf: bindSelf,
   bindScope: bindScope,
   bindLocal: bindLocal,

@@ -3,12 +3,10 @@
 @submodule ember-htmlbars
 */
 
-export default function createShadowScope(env, parentScope, options) {
-  var shadowScope = env.hooks.createFreshScope();
-  if (!options) { return shadowScope; }
+export default function bindShadowScope(env, parentScope, shadowScope, options) {
+  if (!options) { return; }
 
   if (options.view) {
-    shadowScope.renderNode = options.renderNode;
     shadowScope.view = options.view;
   } else if (parentScope) {
     shadowScope.view = parentScope.view;

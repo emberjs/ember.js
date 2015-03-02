@@ -5,6 +5,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
@@ -114,6 +115,12 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       return '{{' + this._debugContainerKey.split(':')[1] + '}}';
     }
   }),
+
+  init: function() {
+    this._super.apply(this, arguments);
+    set(this, 'context', this);
+    set(this, 'controller', this);
+  },
 
   /**
   A components template property is set by passing a block

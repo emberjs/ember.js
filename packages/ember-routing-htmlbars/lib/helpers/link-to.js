@@ -289,7 +289,7 @@ import 'ember-htmlbars';
 */
 function linkToHelper(params, hash) {
   // TODO: Implement more than just stub functionality here
-  this.yieldIn(linkToTemplate, { href: "#" });
+  this.yieldIn(linkToTemplate, { href: "#", classes: hash.class });
 }
 
 /**

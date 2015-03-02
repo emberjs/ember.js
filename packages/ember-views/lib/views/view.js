@@ -37,7 +37,6 @@ import {
 import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
-import AttributeBindingsSupport from "ember-views/mixins/attribute_bindings_support";
 import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
 import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
 import VisibilitySupport from "ember-views/mixins/visibility_support";
@@ -684,7 +683,6 @@ var View = CoreView.extend(
   ViewStateSupport,
   TemplateRenderingSupport,
   ClassNamesSupport,
-  AttributeBindingsSupport,
   LegacyViewSupport,
   InstrumentationSupport,
   VisibilitySupport, {
@@ -1211,30 +1209,6 @@ var View = CoreView.extend(
   */
   parentViewDidChange: K,
 
-  applyAttributesToBuffer(buffer) {
-    // Creates observers for all registered class name and attribute bindings,
-    // then adds them to the element.
-
-    this._applyClassNameBindings();
-
-    // Pass the render buffer so the method can apply attributes directly.
-    // This isn't needed for class name bindings because they use the
-    // existing classNames infrastructure.
-    this._applyAttributeBindings(buffer);
-
-    buffer.setClasses(this.classNames);
-    buffer.id(this.elementId);
-
-    var role = get(this, 'ariaRole');
-    if (role) {
-      buffer.attr('role', role);
-    }
-
-    if (get(this, 'isVisible') === false) {
-      buffer.style('display', 'none');
-    }
-  },
-
   // ..........................................................
   // STANDARD RENDER PROPERTIES
   //
@@ -1503,4 +1477,4 @@ View.childViewsProperty = childViewsProperty;
 
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, AttributeBindingsSupport };
+export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
