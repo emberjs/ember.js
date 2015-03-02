@@ -3,6 +3,7 @@ import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
 import { visitChildren, validateChildMorphs } from "../htmlbars-util/morph-utils";
+import { clearMorph } from "../htmlbars-util/template-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -478,27 +479,6 @@ export function continueBlock(morph, env, scope, path, params, hash, template, i
   });
 }
 
-export function simpleHostBlock(morph, env, options, shadowOptions, visitor, callback) {
-  options.renderState.shadowOptions = shadowOptions;
-  callback(options);
-
-  var item = options.renderState.morphListStart;
-  var toClear = options.renderState.clearMorph;
-  var morphMap = morph.morphMap;
-
-  while (item) {
-    var next = item.nextMorph;
-    delete morphMap[item.key];
-    if (env.hooks.cleanup) { visitChildren([item], env.hooks.cleanup); }
-    item.destroy();
-    item = next;
-  }
-
-  if (toClear) {
-    clearMorph(toClear, env.hooks.cleanup);
-  }
-}
-
 export function hostBlock(morph, env, scope, template, inverse, shadowOptions, visitor, callback) {
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
   options.renderState.shadowOptions = shadowOptions;
@@ -519,18 +499,6 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
   if (toClear) {
     clearMorph(toClear, env.hooks.cleanup);
   }
-}
-
-function clearMorph(morph, cleanup) {
-  if (cleanup) {
-    visitChildren(morph.childNodes, cleanup);
-  }
-
-  // TODO: Deal with logical children that are not in the DOM tree
-  morph.clear();
-  morph.lastResult = null;
-  morph.lastYielded = null;
-  morph.childNodes = null;
 }
 
 function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
