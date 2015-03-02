@@ -478,6 +478,27 @@ export function continueBlock(morph, env, scope, path, params, hash, template, i
   });
 }
 
+export function simpleHostBlock(morph, env, options, shadowOptions, visitor, callback) {
+  options.renderState.shadowOptions = shadowOptions;
+  callback(options);
+
+  var item = options.renderState.morphListStart;
+  var toClear = options.renderState.clearMorph;
+  var morphMap = morph.morphMap;
+
+  while (item) {
+    var next = item.nextMorph;
+    delete morphMap[item.key];
+    if (env.hooks.cleanup) { visitChildren([item], env.hooks.cleanup); }
+    item.destroy();
+    item = next;
+  }
+
+  if (toClear) {
+    clearMorph(toClear, env.hooks.cleanup);
+  }
+}
+
 export function hostBlock(morph, env, scope, template, inverse, shadowOptions, visitor, callback) {
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
   options.renderState.shadowOptions = shadowOptions;
