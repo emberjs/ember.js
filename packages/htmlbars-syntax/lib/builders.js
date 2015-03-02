@@ -32,7 +32,6 @@ export function buildComment(value) {
   };
 }
 
-
 export function buildConcat(parts) {
   return {
     type: "ConcatStatement",
@@ -40,14 +39,21 @@ export function buildConcat(parts) {
   };
 }
 
+export function buildElementModifier(sexpr) {
+  return {
+    type: "ElementModifierStatement",
+    sexpr: sexpr
+  };
+}
+
 // Nodes
 
-export function buildElement(tag, attributes, helpers, children) {
+export function buildElement(tag, attributes, modifiers, children) {
   return {
     type: "ElementNode",
     tag: tag,
     attributes: attributes || [],
-    helpers: helpers || [],
+    modifiers: modifiers || [],
     children: children || []
   };
 }
@@ -150,6 +156,7 @@ export default {
   partial: buildPartial,
   comment: buildComment,
   element: buildElement,
+  elementModifier: buildElementModifier,
   component: buildComponent,
   attr: buildAttr,
   text: buildText,

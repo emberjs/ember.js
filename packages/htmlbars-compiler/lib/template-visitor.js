@@ -109,7 +109,7 @@ TemplateVisitor.prototype.ElementNode = function(element) {
   elementFrame.parentNode = element;
   elementFrame.children = element.children;
   elementFrame.childCount = element.children.length;
-  elementFrame.mustacheCount += element.helpers.length;
+  elementFrame.mustacheCount += element.modifiers.length;
   elementFrame.blankChildTextNodes = [];
 
   var actionArgs = [

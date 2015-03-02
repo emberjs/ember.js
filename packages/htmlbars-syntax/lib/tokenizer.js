@@ -55,9 +55,13 @@ Tokenizer.prototype.finalizeAttributeValue = function() {
   }
 };
 
-Tokenizer.prototype.addTagHelper = function(helper) {
-  var helpers = this.token.helpers = this.token.helpers || [];
-  helpers.push(helper);
+Tokenizer.prototype.addElementModifier = function(mustache) {
+  if (!this.token.modifiers) {
+    this.token.modifiers = [];
+  }
+
+  var modifier = builders.elementModifier(mustache.sexpr);
+  this.token.modifiers.push(modifier);
 };
 
 function prepareAttributeValue(attr) {

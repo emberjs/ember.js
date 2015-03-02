@@ -110,7 +110,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, must
   this.currentDOMChildIndex = -1;
 
   forEach(element.attributes, this.attribute, this);
-  forEach(element.helpers, this.elementHelper, this);
+  forEach(element.modifiers, this.elementModifier, this);
 };
 
 HydrationOpcodeCompiler.prototype.closeElement = function() {
@@ -217,8 +217,8 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   this.opcode('printAttributeHook', attrMorphNum, this.elementNum);
 };
 
-HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
-  prepareSexpr(this, sexpr);
+HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
+  prepareSexpr(this, modifier.sexpr);
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
