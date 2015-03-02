@@ -42,6 +42,8 @@ var base = {
     }
 
     switch(node[0]) {
+      // can be used by manualElement
+      case 'value': ret.value = node[1]; break;
       case 'get': ret.value = this.get(node, morph, env, scope); break;
       case 'subexpr': ret.value = this.subexpr(node, morph, env, scope); break;
       case 'concat': ret.value = this.concat(node, morph, env, scope); break;
