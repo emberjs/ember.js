@@ -1,4 +1,7 @@
 import { compile } from "../htmlbars-compiler/compiler";
+import { manualElement } from "../htmlbars-runtime/render";
+import render from "../htmlbars-runtime/render";
+import { hostBlock, simpleHostBlock } from "../htmlbars-runtime/hooks";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
@@ -12,6 +15,7 @@ function registerHelper(name, callback) {
 
 function commonSetup() {
   hooks = merge({}, defaultHooks);
+  hooks.keywords = merge({}, defaultHooks.keywords);
   helpers = {};
   partials = {};
 
@@ -616,4 +620,102 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
 
   strictEqual(cleanedUpCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
+});
+
+QUnit.module("Manual elements", {
+  beforeEach: commonSetup
+});
+
+test("Setting up a manual element renders and revalidates", function() {
+  hooks.keywords['manual-element'] = {
+    render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+      var attributes = {
+        title: "Tom Dale",
+        disabled: ['get', 'isDisabled'],
+        href: ['concat', ['http://tomdale.', ['get', 'tld']]]
+      };
+
+      var layout = manualElement('aside', attributes);
+
+      hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
+        options.templates.template.yieldIn({ raw: layout }, hash);
+      });
+
+      manualElement(env, scope, 'aside', attributes, morph);
+    },
+
+    isStable: function() { return true; }
+  };
+
+  var template = compile("{{#manual-element isDisabled=true tld='net'}}Hello {{world}}!{{/manual-element}}");
+  var result = template.render({ world: "world" }, env);
+
+  equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'>Hello world!</aside>");
+});
+
+test("It is possible to nest multiple templates into a manual element", function() {
+  hooks.keywords['manual-element'] = {
+    render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+      var attributes = {
+        title: "Tom Dale",
+        disabled: ['get', 'isDisabled'],
+        href: ['concat', ['http://tomdale.', ['get', 'tld']]]
+      };
+
+      var elementTemplate = manualElement('aside', attributes);
+
+      function contentBlock(blockArguments, renderNode) {
+        if (renderNode.lastResult) {
+          renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
+        } else {
+          // TODO: createChildScope() && bindLocal() if block args
+
+          var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
+
+          simpleHostBlock(renderNode, env, options, null, visitor, function() {
+            options.renderState.clearMorph = null;
+            render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
+          });
+        }
+      }
+
+      var layoutScope;
+
+      function layoutBlock(blockArguments, renderNode) {
+        if (renderNode.lastResult) {
+          renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
+        } else {
+          layoutScope = env.hooks.createShadowScope(env, renderNode, elementScope);
+          env.hooks.bindSelf(env, layoutScope, { attrs: { foo: 'foo' } });
+          env.hooks.bindBlock(env, layoutScope, contentBlock);
+
+          var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
+
+          simpleHostBlock(renderNode, env, options, null, visitor, function() {
+            options.renderState.clearMorph = null;
+            render(layout.raw, env, layoutScope, { renderNode: renderNode, blockArguments: blockArguments });
+          });
+        }
+      }
+
+      var elementScope = env.hooks.createFreshScope();
+      env.hooks.bindSelf(env, elementScope, hash);
+      env.hooks.bindBlock(env, elementScope, layoutBlock);
+
+      var elementOptions = { renderState: { morphListStart: null, clearMorph: morph, shadowOptions: null } };
+
+      simpleHostBlock(morph, env, elementOptions, null, visitor, function() {
+        elementOptions.renderState.clearMorph = null;
+        render(elementTemplate, env, elementScope, { renderNode: morph });
+      });
+    },
+
+    isStable: function() { return true; }
+  };
+
+  var layout = compile("<manual-element>{{attrs.foo}}. {{yield}}</manual-element>");
+  var template = compile("{{#manual-element foo='foo' isDisabled=true tld='net'}}Hello {{world}}!{{/manual-element}}");
+  var result = template.render({ world: "world" }, env);
+
+  equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
 });

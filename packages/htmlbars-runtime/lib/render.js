@@ -73,6 +73,56 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
   return new RenderResult(env, scope, options, rootNode, nodes, fragment, template, shouldSetContent);
 };
 
+export function manualElement(tagName, attributes) {
+  var statements = [];
+
+  for (var key in attributes) {
+    if (typeof attributes[key] === 'string') { continue; }
+    statements.push(["attribute", key, attributes[key]]);
+  }
+
+  statements.push(['inline', 'yield']);
+
+  var template = {
+    isHTMLBars: true,
+    revision: "HTMLBars@VERSION_STRING_PLACEHOLDER",
+    arity: 0,
+    cachedFragment: null,
+    hasRendered: false,
+    buildFragment: function buildFragment(dom) {
+      var el0 = dom.createDocumentFragment();
+      var el1 = dom.createElement(tagName);
+
+      for (var key in attributes) {
+        if (typeof attributes[key] !== 'string') { continue; }
+        dom.setAttribute(el1, key, attributes[key]);
+      }
+
+      var el2 = dom.createComment("");
+      dom.appendChild(el1, el2);
+      dom.appendChild(el0, el1);
+      return el0;
+    },
+    buildRenderNodes: function buildRenderNodes(dom, fragment) {
+      var element = dom.childAt(fragment, [0]);
+      var morphs = [];
+
+      for (var key in attributes) {
+        if (typeof attributes[key] === 'string') { continue; }
+        morphs.push(dom.createAttrMorph(element, key));
+      }
+
+      morphs.push(dom.createMorphAt(element, 0, 0));
+      return morphs;
+    },
+    statements: statements,
+    locals: [],
+    templates: []
+  };
+
+  return template;
+}
+
 RenderResult.prototype.render = function() {
   this.root.lastResult = this;
   this.populateNodes(AlwaysDirtyVisitor);
