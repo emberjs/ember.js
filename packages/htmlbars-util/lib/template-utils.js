@@ -1,7 +1,7 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
 
-export function blockFor(env, visitor, render, template, blockOptions) {
-  return function(blockArguments, renderNode, parentScope) {
+export function blockFor(render, template, blockOptions) {
+  return function(env, blockArguments, renderNode, parentScope, visitor) {
     if (renderNode.lastResult) {
       renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
     } else {
@@ -10,7 +10,7 @@ export function blockFor(env, visitor, render, template, blockOptions) {
       var childScope = blockOptions.scope;
 
       if (!childScope) {
-        childScope = env.hooks.createShadowScope(env, renderNode, parentScope);
+        childScope = env.hooks.createShadowScope(env, parentScope, blockOptions.options);
         env.hooks.bindSelf(env, childScope, blockOptions.self);
         env.hooks.bindBlock(env, childScope, blockOptions.yieldTo);
       }

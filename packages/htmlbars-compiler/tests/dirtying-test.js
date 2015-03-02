@@ -665,19 +665,19 @@ test("It is possible to nest multiple templates into a manual element", function
 
       var elementTemplate = manualElement('aside', attributes);
 
-      var contentBlock = blockFor(env, visitor, render, template, { scope: scope });
+      var contentBlock = blockFor(render, template, { scope: scope });
 
-      var layoutBlock = blockFor(env, visitor, render, layout.raw, {
+      var layoutBlock = blockFor(render, layout.raw, {
         yieldTo: contentBlock,
         self: { attrs: hash },
       });
 
-      var elementBlock = blockFor(env, visitor,  render, elementTemplate, {
+      var elementBlock = blockFor(render, elementTemplate, {
         yieldTo: layoutBlock,
         self: hash
       });
 
-      elementBlock(null, morph);
+      elementBlock(env, null, morph, null, visitor);
     },
 
     isStable: function() { return true; }
