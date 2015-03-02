@@ -1,7 +1,8 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import { manualElement } from "../htmlbars-runtime/render";
+import { hostBlock } from "../htmlbars-runtime/hooks";
 import render from "../htmlbars-runtime/render";
-import { hostBlock, simpleHostBlock } from "../htmlbars-runtime/hooks";
+import { blockFor } from "../htmlbars-util/template-utils";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
@@ -664,14 +665,14 @@ test("It is possible to nest multiple templates into a manual element", function
 
       var elementTemplate = manualElement('aside', attributes);
 
-      var contentBlock = blockFor(env, visitor, template, { scope: scope });
+      var contentBlock = blockFor(env, visitor, render, template, { scope: scope });
 
-      var layoutBlock = blockFor(env, visitor, layout.raw, {
+      var layoutBlock = blockFor(env, visitor, render, layout.raw, {
         yieldTo: contentBlock,
         self: { attrs: hash },
       });
 
-      var elementBlock = blockFor(env, visitor, elementTemplate, {
+      var elementBlock = blockFor(env, visitor,  render, elementTemplate, {
         yieldTo: layoutBlock,
         self: hash
       });
@@ -689,25 +690,3 @@ test("It is possible to nest multiple templates into a manual element", function
   equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
 });
 
-function blockFor(env, visitor, template, blockOptions) {
-  return function(blockArguments, renderNode, parentScope) {
-    if (renderNode.lastResult) {
-      renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
-    } else {
-      var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
-
-      var childScope = blockOptions.scope;
-
-      if (!childScope) {
-        childScope = env.hooks.createShadowScope(env, renderNode, parentScope);
-        env.hooks.bindSelf(env, childScope, blockOptions.self);
-        env.hooks.bindBlock(env, childScope, blockOptions.yieldTo);
-      }
-
-      simpleHostBlock(renderNode, env, options, null, visitor, function() {
-        options.renderState.clearMorph = null;
-        render(template, env, childScope, { renderNode: renderNode, blockArguments: blockArguments });
-      });
-    }
-  };
-}
