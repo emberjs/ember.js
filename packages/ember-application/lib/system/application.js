@@ -817,7 +817,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
         };
       });
 
-      instance.setupRouter({ location: 'none' });
+      instance.overrideRouterLocation({ location: 'none' });
 
       return instance.handleURL(url).then(function() {
         return renderPromise;
