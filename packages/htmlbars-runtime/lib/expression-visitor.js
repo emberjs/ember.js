@@ -212,7 +212,7 @@ export default merge(createObject(base), {
   // [ 'attribute', name, value ]
   attribute: function(node, morph, env, scope, template) {
     dirtyCheck(env, morph, null, function() {
-      AlwaysDirtyVisitor.dirtyAttribute(node, morph, env, scope, template);
+      AlwaysDirtyVisitor.attribute(node, morph, env, scope, template);
     });
   },
 
