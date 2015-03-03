@@ -305,13 +305,14 @@ function Meta(obj) {
   this.mixins = undefined;
   this.bindings = undefined;
   this.chains = undefined;
+  this.chainWatchers = undefined;
   this.values = undefined;
   this.proto = undefined;
 }
 
-Meta.prototype = {
-  chainWatchers: null // FIXME
-};
+// Meta.prototype = {
+//   chainWatchers: null // FIXME
+// };
 
 if (!canDefineNonEnumerableProperties) {
   // on platforms that don't support enumerable false
@@ -334,6 +335,10 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   }
 }
 
+function readonlyMeta(obj) {
+  return obj.__ember_meta__;
+}
+
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -353,51 +358,56 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-  var ret = obj.__ember_meta__;
   if (writable===false) {
-    return ret || EMPTY_META;
+    return readonlyMeta(obj) || EMPTY_META;
+  }
+  return writableMeta(obj);
+}
+
+function createMeta(obj) {
+  var meta = new Meta(obj);
+
+  if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (hasPropertyAccessors) {
+      meta.values = {};
+    }
   }
 
-  if (!ret) {
-    if (canDefineNonEnumerableProperties) {
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-      } else {
-        o_defineProperty(obj, '__ember_meta__', META_DESC);
-      }
-    }
+  return meta;
+}
 
-    ret = new Meta(obj);
-
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = {};
-      }
-    }
-
-    obj.__ember_meta__ = ret;
-  } else if (ret.source !== obj) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      o_defineProperty(obj, '__ember_meta__', META_DESC);
-    }
-
-    ret = o_create(ret);
-    ret.watching  = o_create(ret.watching);
-    ret.cache     = undefined;
-    ret.cacheMeta = undefined;
-    ret.source    = obj;
-
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = o_create(ret.values);
-      }
-    }
-
-    obj['__ember_meta__'] = ret;
+function defineMetaProperty(obj, meta) {
+  if (obj.__defineNonEnumerable) {
+    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+  } else {
+    o_defineProperty(obj, '__ember_meta__', META_DESC);
   }
-  return ret;
+  obj.__ember_meta__ = meta;
+}
+
+function inheritMeta(obj, parent) {
+  var meta = o_create(parent);
+  meta.watching  = o_create(meta.watching);
+  meta.cache     = undefined;
+  meta.cacheMeta = undefined;
+  meta.source    = obj;
+
+  if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (hasPropertyAccessors) {
+      meta.values = o_create(meta.values);
+    }
+  }
+
+  return meta;
+}
+
+function writableMeta(obj) {
+  if (!obj.__ember_meta__) {
+    defineMetaProperty(obj, createMeta(obj));
+  } else if (obj.__ember_meta__.source !== obj) {
+    defineMetaProperty(obj, inheritMeta(obj, obj.__ember_meta__));
+  }
+  return obj.__ember_meta__;
 }
 
 export function getMeta(obj, property) {
