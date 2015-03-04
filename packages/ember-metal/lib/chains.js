@@ -44,7 +44,7 @@ function addChainWatcher(obj, keyName, node) {
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
 
-  if (!m.chainWatchers || !m.hasOwnProperty('chainWatchers')) { // FIXME?!
+  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
     nodes = m.chainWatchers = {};
   }
 
@@ -61,7 +61,7 @@ function removeChainWatcher(obj, keyName, node) {
   }
 
   var m = obj['__ember_meta__'];
-  if (m && (!m.chainWatchers || !m.hasOwnProperty('chainWatchers'))) { return; } // nothing to do
+  if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
   var nodes = m && m.chainWatchers;
 
