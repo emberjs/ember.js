@@ -113,7 +113,7 @@ Stream.prototype = {
   isStream: true,
 
   init() {
-    this.state = 'dirty';
+    this.state = 'inactive';
     this.cache = undefined;
     this.subscriberHead = null;
     this.subscriberTail = null;
@@ -169,9 +169,12 @@ Stream.prototype = {
   },
 
   value() {
-    if (this.state === 'clean') {
+    if (this.state === 'inactive') {
+      return this.valueFn();
+    } else if (this.state === 'clean') {
       return this.cache;
     } else if (this.state === 'dirty') {
+      var value = this.valueFn();
       this.state = 'clean';
       return this.cache = this.valueFn();
     }
@@ -230,17 +233,10 @@ Stream.prototype = {
   becameActive() {},
   becameInactive() {},
 
-  // This method is invoked when the value function is called and when
-  // a stream becomes active. This allows changes to be made to a stream's
-  // input, and only do any work in response if the stream has subscribers
-  // or if someone actually gets the stream's value.
-  revalidate() {},
-
   maybeActivate() {
     if (this.subscriberHead && !this.isActive) {
-      this.isActive = true;
       this.subscribeDependencies();
-      this.revalidate();
+      this.state = 'dirty';
       this.becameActive();
     }
   },
@@ -249,6 +245,7 @@ Stream.prototype = {
     if (!this.subscriberHead && this.isActive) {
       this.isActive = false;
       this.unsubscribeDependencies();
+      this.state = 'inactive';
       this.becameInactive();
     }
   },
