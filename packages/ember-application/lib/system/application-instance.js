@@ -4,9 +4,11 @@
 @private
 */
 
+import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
+import { computed } from "ember-metal/computed";
 import Registry from 'container/registry';
 
 /**
@@ -103,8 +105,12 @@ export default EmberObject.extend({
     this.registry.register('-application-instance:main', this, { instantiate: false });
   },
 
+  router: computed(function() {
+    return this.container.lookup('router:main');
+  }).readOnly(),
+
   /**
-    Instantiates and sets up the router, optionally overriding the default
+    Instantiates and sets up the router, specifically overriding the default
     location. This is useful for manually starting the app in FastBoot or
     testing environments, where trying to modify the URL would be
     inappropriate.
@@ -112,14 +118,11 @@ export default EmberObject.extend({
     @param options
     @private
   */
-  setupRouter: function(options) {
-    var router = this.container.lookup('router:main');
+  overrideRouterLocation: function(options) {
+    var location = options && options.location;
+    var router = get(this, 'router');
 
-    var location = options.location;
     if (location) { set(router, 'location', location); }
-
-    router._setupLocation();
-    router.setupRouter(true);
   },
 
   /**
@@ -143,17 +146,30 @@ export default EmberObject.extend({
     current URL of the page to determine the initial URL to start routing to.
     To start the app at a specific URL, call `handleURL` instead.
 
-    Ensure that you have called `setupRouter()` on the instance before using
-    this method.
-
     @private
   */
   startRouting: function() {
-    var router = this.container.lookup('router:main');
-    if (!router) { return; }
-
+    var router = get(this, 'router');
     var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
+
     router.startRouting(isModuleBasedResolver);
+    this._didSetupRouter = true;
+  },
+
+  /** @private
+    Sets up the router, initializing the child router and configuring the
+    location before routing begins.
+
+    Because setup should only occur once, multiple calls to `setupRouter`
+    beyond the first call have no effect.
+  */
+  setupRouter: function() {
+    if (this._didSetupRouter) { return; }
+    this._didSetupRouter = true;
+
+    var router = get(this, 'router');
+    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
+    router.setupRouter(isModuleBasedResolver);
   },
 
   /**
@@ -165,8 +181,9 @@ export default EmberObject.extend({
     @private
   */
   handleURL: function(url) {
-    var router = this.container.lookup('router:main');
+    var router = get(this, 'router');
 
+    this.setupRouter();
     return router.handleURL(url);
   },
 
@@ -175,7 +192,6 @@ export default EmberObject.extend({
   */
   setupEventDispatcher: function() {
     var dispatcher = this.container.lookup('event_dispatcher:main');
-
     dispatcher.setup(this.customEvents, this.rootElement);
 
     return dispatcher;
