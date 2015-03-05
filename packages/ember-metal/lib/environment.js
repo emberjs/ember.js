@@ -35,7 +35,7 @@ if (hasDOM) {
   environment = {
     hasDOM: false,
     isChrome: false,
-    isFirefox: false
+    isFirefox: false,
     location: null,
     history: null,
     userAgent: "Lynx (textmode)",
