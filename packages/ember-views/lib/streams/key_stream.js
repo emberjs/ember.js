@@ -38,10 +38,10 @@ merge(KeyStream.prototype, {
     if (nextObj !== prevObj) {
       if (prevObj && typeof prevObj === 'object') {
         removeObserver(prevObj, this.key, this, this.notify);
+      }
 
-        if (nextObj && typeof nextObj === 'object') {
-          addObserver(nextObj, this.key, this, this.notify);
-        }
+      if (nextObj && typeof nextObj === 'object' && this.isActive) {
+        addObserver(nextObj, this.key, this, this.notify);
       }
 
       this.obj = nextObj;
