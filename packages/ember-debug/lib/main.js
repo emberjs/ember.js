@@ -230,7 +230,7 @@ if (!Ember.testing) {
   _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
-  var isFirefox = typeof InstallTrigger !== 'undefined';
+  var isFirefox = environment.isFirefox;
   var isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
