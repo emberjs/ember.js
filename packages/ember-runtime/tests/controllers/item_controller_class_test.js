@@ -9,6 +9,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import Controller from "ember-runtime/controllers/controller";
 import {sort} from "ember-runtime/computed/reduce_computed_macros";
 import Registry from "container/registry";
+import { map } from "ember-metal/enumerable_utils";
 
 var lannisters, arrayController, controllerClass, otherControllerClass, registry, container, itemControllerCount,
     tywin, jaime, cersei, tyrion;
@@ -374,5 +375,9 @@ QUnit.test("item controllers can be used to provide properties for array compute
     sorted: sort('@this', 'sortProperties')
   });
 
-  deepEqual(arrayController.get('sorted').mapProperty('model.name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
+  var sortedNames = map(arrayController.get('sorted'), function(item) {
+    return get(item, 'model.name');
+  });
+
+  deepEqual(sortedNames, ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
 });

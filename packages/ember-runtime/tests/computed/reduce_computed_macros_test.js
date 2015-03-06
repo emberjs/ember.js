@@ -11,7 +11,7 @@ import {
   endPropertyChanges
 } from "ember-metal/property_events";
 import { forEach } from "ember-metal/array";
-import { observer, Mixin } from 'ember-metal/mixin';
+import { observer } from 'ember-metal/mixin';
 import {
   sum as computedSum,
   min as computedMin,
@@ -26,18 +26,26 @@ import {
   union as computedUnion,
   intersect as computedIntersect
 } from 'ember-runtime/computed/reduce_computed_macros';
+import * as enumUtils from 'ember-metal/enumerable_utils';
 
-var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
+var obj, sortProps, items, userFnCalls, union;
+
+function mappedGet(obj, propKey, mapKey) {
+  return enumUtils.map(get(obj, propKey), function(val) { return get(val, mapKey); });
+}
+
+// we don't guarantee sorting. This makes it easier for comparisons
+function sortedGet(obj, key) {
+  return get(obj, key).sort(function(a, b) { return a - b; });
+}
 
 QUnit.module('computedMap', {
   setup() {
     run(function() {
-      userFnCalls = 0;
       obj = EmberObject.createWithMixins({
         array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
 
         mapped: computedMap('array.@each.v', function(item) {
-          ++userFnCalls;
           return item.v;
         }),
 
@@ -73,23 +81,6 @@ QUnit.test("it maps simple properties", function() {
   });
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
-});
-
-QUnit.test("it caches properly", function() {
-  var array = get(obj, 'array');
-  get(obj, 'mapped');
-
-  equal(userFnCalls, 4, "precond - mapper called expected number of times");
-
-  run(function() {
-    array.addObject({ v: 7 });
-  });
-
-  equal(userFnCalls, 5, "precond - mapper called expected number of times");
-
-  get(obj, 'mapped');
-
-  equal(userFnCalls, 5, "computedMap caches properly");
 });
 
 QUnit.test("it maps simple unshifted properties", function() {
@@ -231,11 +222,9 @@ QUnit.test("it is observable", function() {
 QUnit.module('computedFilter', {
   setup() {
     run(function() {
-      userFnCalls = 0;
       obj = EmberObject.createWithMixins({
         array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8]),
         filtered: computedFilter('array', function(item) {
-          ++userFnCalls;
           return item % 2 === 0;
         })
       });
@@ -282,51 +271,32 @@ QUnit.test("it passes the array to the callback", function() {
   deepEqual(get(obj, 'filtered'), ['b'], "array is passed to callback correctly");
 });
 
-QUnit.test("it caches properly", function() {
-  var array = get(obj, 'array');
-  get(obj, 'filtered');
-
-  equal(userFnCalls, 8, "precond - filter called expected number of times");
-
-  run(function() {
-    array.addObject(11);
-  });
-
-  equal(userFnCalls, 9, "precond - filter called expected number of times");
-
-  get(obj, 'filtered');
-
-  equal(userFnCalls, 9, "computedFilter caches properly");
-});
-
 QUnit.test("it updates as the array is modified", function() {
   var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
 
-  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8], "precond - filtered array is initially correct");
 
   run(function() {
     array.addObject(11);
   });
-  deepEqual(filtered, [2,4,6,8], "objects not passing the filter are not added");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8], "objects not passing the filter are not added");
 
   run(function() {
     array.addObject(12);
   });
-  deepEqual(filtered, [2,4,6,8,12], "objects passing the filter are added");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8,12], "objects passing the filter are added");
 
   run(function() {
     array.removeObject(3);
     array.removeObject(4);
   });
-  deepEqual(filtered, [2,6,8,12], "objects removed from the dependent array are removed from the computed array");
+  deepEqual(get(obj, 'filtered'), [2,6,8,12], "objects removed from the dependent array are removed from the computed array");
 });
 
 QUnit.test("the dependent array can be cleared one at a time", function() {
   var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
 
-  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8], "precond - filtered array is initially correct");
 
   run(function() {
     // clear 1-8 but in a random order
@@ -340,32 +310,30 @@ QUnit.test("the dependent array can be cleared one at a time", function() {
     array.removeObject(7);
   });
 
-  deepEqual(filtered, [], "filtered array cleared correctly");
+  deepEqual(get(obj, 'filtered'), [], "filtered array cleared correctly");
 });
 
 QUnit.test("the dependent array can be `clear`ed directly (#3272)", function() {
   var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
 
-  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8], "precond - filtered array is initially correct");
 
   run(function() {
     array.clear();
   });
 
-  deepEqual(filtered, [], "filtered array cleared correctly");
+  deepEqual(get(obj, 'filtered'), [], "filtered array cleared correctly");
 });
 
 QUnit.test("it updates as the array is replaced", function() {
   get(obj, 'array');
-  var filtered = get(obj, 'filtered');
 
-  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+  deepEqual(get(obj, 'filtered'), [2,4,6,8], "precond - filtered array is initially correct");
 
   run(function() {
     set(obj, 'array', Ember.A([20,21,22,23,24]));
   });
-  deepEqual(filtered, [20,22,24], "computed array is updated when array is changed");
+  deepEqual(get(obj, 'filtered'), [20,22,24], "computed array is updated when array is changed");
 });
 
 QUnit.module('computedFilterBy', {
@@ -391,11 +359,9 @@ QUnit.module('computedFilterBy', {
 
 QUnit.test("properties can be filtered by truthiness", function() {
   var array = get(obj, 'array');
-  var as = get(obj, 'as');
-  var bs = get(obj, 'bs');
 
-  deepEqual(as.mapBy('name'), ['one', 'two', 'three'], "properties can be filtered by existence");
-  deepEqual(bs.mapBy('name'), ['three', 'four'], "booleans can be filtered");
+  deepEqual(mappedGet(obj, 'as', 'name'), ['one', 'two', 'three'], "properties can be filtered by existence");
+  deepEqual(mappedGet(obj, 'bs', 'name'), ['three', 'four'], "booleans can be filtered");
 
   run(function() {
     set(array.objectAt(0), 'a', undefined);
@@ -404,49 +370,48 @@ QUnit.test("properties can be filtered by truthiness", function() {
     set(array.objectAt(0), 'b', true);
     set(array.objectAt(3), 'b', false);
   });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to property changes");
-  deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
+  deepEqual(mappedGet(obj, 'as', 'name'), ['two', 'three', 'four'], "arrays computed by filter property respond to property changes");
+  deepEqual(mappedGet(obj, 'bs', 'name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
 
   run(function() {
     array.pushObject({ name: "five", a: 6, b: true });
   });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
-  deepEqual(bs.mapBy('name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
+  deepEqual(mappedGet(obj, 'as', 'name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
+  deepEqual(mappedGet(obj, 'bs', 'name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
 
   run(function() {
     array.popObject();
   });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to removed objects");
-  deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
+  deepEqual(mappedGet(obj, 'as', 'name'), ['two', 'three', 'four'], "arrays computed by filter property respond to removed objects");
+  deepEqual(mappedGet(obj, 'bs', 'name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
 
   run(function() {
     set(obj, 'array', Ember.A([{ name: "six", a: 12, b: true }]));
   });
-  deepEqual(as.mapBy('name'), ['six'], "arrays computed by filter property respond to array changes");
-  deepEqual(bs.mapBy('name'), ['six'], "arrays computed by filtered property respond to array changes");
+  deepEqual(mappedGet(obj, 'as', 'name'), ['six'], "arrays computed by filter property respond to array changes");
+  deepEqual(mappedGet(obj, 'bs', 'name'), ['six'], "arrays computed by filtered property respond to array changes");
 });
 
 QUnit.test("properties can be filtered by values", function() {
   var array = get(obj, 'array');
-  var a1s = get(obj, 'a1s');
 
-  deepEqual(a1s.mapBy('name'), ['one', 'three'], "properties can be filtered by matching value");
+  deepEqual(mappedGet(obj, 'a1s', 'name'), ['one', 'three'], "properties can be filtered by matching value");
 
   run(function() {
     array.pushObject({ name: "five", a: 1 });
   });
-  deepEqual(a1s.mapBy('name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
+  deepEqual(mappedGet(obj, 'a1s', 'name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
 
   run(function() {
     array.popObject();
   });
-  deepEqual(a1s.mapBy('name'), ['one', 'three'], "arrays computed by matching value respond to removed objects");
+  deepEqual(mappedGet(obj, 'a1s', 'name'), ['one', 'three'], "arrays computed by matching value respond to removed objects");
 
   run(function() {
     set(array.objectAt(1), 'a', 1);
     set(array.objectAt(2), 'a', 2);
   });
-  deepEqual(a1s.mapBy('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
+  deepEqual(mappedGet(obj, 'a1s', 'name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
 QUnit.test("properties values can be replaced", function() {
@@ -456,15 +421,13 @@ QUnit.test("properties values can be replaced", function() {
       a1bs: computedFilterBy('a1s', 'b')
     });
 
-  var a1bs = get(obj, 'a1bs');
-  deepEqual(a1bs.mapBy('name'), [], "properties can be filtered by matching value");
+  deepEqual(mappedGet(obj, 'a1bs', 'name'), [], "properties can be filtered by matching value");
 
   run(function() {
     set(obj, 'array', Ember.A([{ name: 'item1', a: 1, b: true }]));
   });
 
-  a1bs = get(obj, 'a1bs');
-  deepEqual(a1bs.mapBy('name'), ['item1'], "properties can be filtered by matching value");
+  deepEqual(mappedGet(obj, 'a1bs', 'name'), ['item1'], "properties can be filtered by matching value");
 });
 
 forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple) {
@@ -493,70 +456,53 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   QUnit.test("does not include duplicates", function() {
     var array = get(obj, 'array');
     var array2 = get(obj, 'array2');
-    get(obj, 'array3');
-    var union = get(obj, 'union');
+    //get(obj, 'array3');
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not include duplicates");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10], alias + " does not include duplicates");
 
     run(function() {
       array.pushObject(8);
     });
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not add existing items");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10], alias + " does not add existing items");
 
     run(function() {
       array.pushObject(11);
     });
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " adds new items");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10,11], alias + " adds new items");
 
     run(function() {
       array2.removeAt(6); // remove 7
     });
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " does not remove items that are still in the dependent array");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10,11], alias + " does not remove items that are still in the dependent array");
 
     run(function() {
       array2.removeObject(7);
     });
 
-    deepEqual(union, [1,2,3,4,5,6,8,9,10,11], alias + " removes items when their last instance is gone");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,8,9,10,11], alias + " removes items when their last instance is gone");
   });
 
   QUnit.test("has set-union semantics", function() {
     var array = get(obj, 'array');
-    get(obj, 'array2');
-    get(obj, 'array3');
-    var union = get(obj, 'union');
+    // get(obj, 'array2');
+    // get(obj, 'array3');
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " is initially correct");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10], alias + " is initially correct");
 
     run(function() {
       array.removeObject(6);
     });
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], "objects are not removed if they exist in other dependent arrays");
+    deepEqual(sortedGet(obj, 'union'), [1,2,3,4,5,6,7,8,9,10], "objects are not removed if they exist in other dependent arrays");
 
     run(function() {
       array.clear();
     });
 
-    deepEqual(union, [1,4,5,6,7,8,9,10], "objects are removed when they are no longer in any dependent array");
-  });
-
-  QUnit.test("does not need to query the accumulated array while building it", function() {
-    var indexOfCalls = [];
-    var CountIndexOfCalls = Mixin.create({
-      indexOf() {
-        indexOfCalls.push(arguments);
-        return this._super.apply(this, arguments);
-      }
-    });
-    union.initialValue = function() {
-      return CountIndexOfCalls.apply(Ember.A([]));
-    };
-    get(obj, 'union');
-    ok(indexOfCalls.length === 0, "Ember.computed." + alias + " should not need to query the union as it is being built");
+    deepEqual(sortedGet(obj, 'union'), [1,4,5,6,7,8,9,10], "objects are removed when they are no longer in any dependent array");
   });
 
 });
@@ -580,37 +526,35 @@ QUnit.module('computed.intersect', {
 });
 
 QUnit.test("it has set-intersection semantics", function() {
-  get(obj, 'array');
   var array2 = get(obj, 'array2');
   var array3 = get(obj, 'array3');
-  var intersection = get(obj, 'intersection');
 
-  deepEqual(intersection, [3,5], "intersection is initially correct");
-
-  run(function() {
-    array2.shiftObject();
-  });
-  deepEqual(intersection, [3,5], "objects are not removed when they are still in all dependent arrays");
+  deepEqual(get(obj, 'intersection'), [3,5], "intersection is initially correct");
 
   run(function() {
     array2.shiftObject();
   });
-  deepEqual(intersection, [3,5], "objects are not removed when they are still in all dependent arrays");
+  deepEqual(get(obj, 'intersection'), [3,5], "objects are not removed when they are still in all dependent arrays");
 
   run(function() {
     array2.shiftObject();
   });
-  deepEqual(intersection, [5], "objects are removed once they are gone from all dependent arrays");
+  deepEqual(get(obj, 'intersection'), [3,5], "objects are not removed when they are still in all dependent arrays");
+
+  run(function() {
+    array2.shiftObject();
+  });
+  deepEqual(get(obj, 'intersection'), [5], "objects are removed once they are gone from all dependent arrays");
 
   run(function() {
     array2.pushObject(1);
   });
-  deepEqual(intersection, [5], "objects are not added as long as they are missing from any dependent array");
+  deepEqual(get(obj, 'intersection'), [5], "objects are not added as long as they are missing from any dependent array");
 
   run(function() {
     array3.pushObject(1);
   });
-  deepEqual(intersection, [5,1], "objects added once they belong to all dependent arrays");
+  deepEqual(get(obj, 'intersection'), [1,5], "objects added once they belong to all dependent arrays");
 });
 
 
@@ -654,52 +598,43 @@ QUnit.test("it throws an error if given fewer or more than two dependent propert
 QUnit.test("it has set-diff semantics", function() {
   var array1 = get(obj, 'array');
   var array2 = get(obj, 'array2');
-  var diff = get(obj, 'diff');
 
-  deepEqual(diff, [1, 2, 6, 7], "set-diff is initially correct");
+  deepEqual(sortedGet(obj, 'diff'), [1, 2, 6, 7], "set-diff is initially correct");
 
   run(function() {
     array2.popObject();
   });
-  deepEqual(diff, [1,2,6,7], "removing objects from the remove set has no effect if the object is not in the keep set");
+  deepEqual(sortedGet(obj, 'diff'), [1,2,6,7], "removing objects from the remove set has no effect if the object is not in the keep set");
 
   run(function() {
     array2.shiftObject();
   });
-  deepEqual(diff, [1, 2, 6, 7, 3], "removing objects from the remove set adds them if they're in the keep set");
+  deepEqual(sortedGet(obj, 'diff'), [1, 2, 3, 6, 7], "removing objects from the remove set adds them if they're in the keep set");
 
   run(function() {
     array1.removeObject(3);
   });
-  deepEqual(diff, [1, 2, 6, 7], "removing objects from the keep array removes them from the computed array");
+  deepEqual(sortedGet(obj, 'diff'), [1, 2, 6, 7], "removing objects from the keep array removes them from the computed array");
 
   run(function() {
     array1.pushObject(5);
   });
-  deepEqual(diff, [1, 2, 6, 7], "objects added to the keep array that are in the remove array are not added to the computed array");
+  deepEqual(sortedGet(obj, 'diff'), [1, 2, 6, 7], "objects added to the keep array that are in the remove array are not added to the computed array");
 
   run(function() {
     array1.pushObject(22);
   });
-  deepEqual(diff, [1, 2, 6, 7, 22], "objects added to the keep array not in the remove array are added to the computed array");
+  deepEqual(sortedGet(obj, 'diff'), [1, 2, 6, 7, 22], "objects added to the keep array not in the remove array are added to the computed array");
 });
 
 
 function commonSortTests() {
   QUnit.test("arrays are initially sorted", function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-    });
-
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "array is initially sorted");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "array is initially sorted");
   });
 
   QUnit.test("changing the dependent array updates the sorted array", function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-    });
-
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
       set(obj, 'items', Ember.A([{
@@ -713,37 +648,31 @@ function commonSortTests() {
       }]));
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], "changing dependent array updates sorted array");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], "changing dependent array updates sorted array");
   });
 
   QUnit.test("adding to the dependent array updates the sorted array", function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-      items = get(obj, 'items');
-    });
+    items = get(obj, 'items');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
       items.pushObject({ fname: 'Tyrion', lname: 'Lannister' });
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
   });
 
   QUnit.test("removing from the dependent array updates the sorted array", function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-      items = get(obj, 'items');
-    });
+    items = get(obj, 'items');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
       items.popObject();
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
   });
 
   QUnit.test("distinct items may be sort-equal, although their relative order will not be guaranteed", function() {
@@ -762,10 +691,9 @@ function commonSortTests() {
 
       items.replace(0, 1, jaime);
       items.replace(1, 1, jaimeInDisguise);
-      sorted = get(obj, 'sortedItems');
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
       // comparator will now return 0.
@@ -773,7 +701,7 @@ function commonSortTests() {
       jaimeInDisguise.set('fname', 'Jaime');
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Jaime', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Jaime', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
 
     run(function() {
       // comparator will again return non-zero
@@ -781,7 +709,7 @@ function commonSortTests() {
     });
 
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
   });
 
   QUnit.test("guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys", function() {
@@ -795,17 +723,16 @@ function commonSortTests() {
     items = get(obj, 'items');
 
     run(function() {
-      sorted = get(obj, 'sortedItems');
       items.pushObject(tyrion);
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
 
     run(function() {
       items.pushObject(tyrionInDisguise);
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+    deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
   });
 }
 
@@ -838,47 +765,36 @@ QUnit.module('computedSort - sortProperties', {
 commonSortTests();
 
 QUnit.test("updating sort properties updates the sorted array", function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(obj, 'itemSorting', Ember.A(['fname:desc']));
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
 });
 
 QUnit.test("updating sort properties in place updates the sorted array", function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    sortProps = get(obj, 'itemSorting');
-  });
+  sortProps = get(obj, 'itemSorting');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     sortProps.clear();
     sortProps.pushObject('fname');
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
 });
 
 QUnit.test("updating new sort properties in place updates the sorted array", function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(obj, 'itemSorting', Ember.A(['age:desc', 'fname:asc']));
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb', 'Bran'], "precond - array is correct after item sorting is changed");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Robb', 'Bran'], "precond - array is correct after item sorting is changed");
 
   run(function() {
     items = get(obj, 'items');
@@ -887,53 +803,47 @@ QUnit.test("updating new sort properties in place updates the sorted array", fun
     set(cersei, 'age', 29); // how vain
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], "after updating sort properties array is updated");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], "after updating sort properties array is updated");
 });
 
 QUnit.test("sort direction defaults to ascending", function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(obj, 'itemSorting', Ember.A(['fname']));
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "sort direction defaults to ascending");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "sort direction defaults to ascending");
 });
 
 QUnit.test("updating an item's sort properties updates the sorted array", function() {
   var tyrionInDisguise;
 
   run(function() {
-    sorted = get(obj, 'sortedItems');
     items = get(obj, 'items');
   });
 
   tyrionInDisguise = items.objectAt(1);
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(tyrionInDisguise, 'fname', 'Tyrion');
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
 });
 
 QUnit.test("updating several of an item's sort properties updated the sorted array", function() {
   var sansaInDisguise;
 
   run(function() {
-    sorted = get(obj, 'sortedItems');
     items = get(obj, 'items');
   });
 
   sansaInDisguise = items.objectAt(1);
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     setProperties(sansaInDisguise, {
@@ -942,7 +852,7 @@ QUnit.test("updating several of an item's sort properties updated the sorted arr
     });
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Bran', 'Robb', 'Sansa'], "updating an item's sort properties updates the sorted array");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Jaime', 'Bran', 'Robb', 'Sansa'], "updating an item's sort properties updates the sorted array");
 });
 
 QUnit.test("updating an item's sort properties does not error when binary search does a self compare (#3273)", function() {
@@ -1080,32 +990,30 @@ QUnit.test("changing item properties specified via @each triggers a resort of th
   var tyrionInDisguise;
 
   run(function() {
-    sorted = get(obj, 'sortedItems');
     items = get(obj, 'items');
   });
 
   tyrionInDisguise = items.objectAt(1);
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(tyrionInDisguise, 'fname', 'Tyrion');
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating a specified property on an item resorts it");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating a specified property on an item resorts it");
 });
 
 QUnit.test("changing item properties not specified via @each does not trigger a resort", function() {
   var cersei;
 
   run(function() {
-    sorted = get(obj, 'sortedItems');
     items = get(obj, 'items');
   });
 
   cersei = items.objectAt(1);
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   run(function() {
     set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
@@ -1114,7 +1022,7 @@ QUnit.test("changing item properties not specified via @each does not trigger a 
   // The array has become unsorted.  If your sort function is sensitive to
   // properties, they *must* be specified as dependent item property keys or
   // we'll be doing binary searches on unsorted arrays.
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
+  deepEqual(mappedGet(obj, 'sortedItems', 'fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
 });
 
 QUnit.module('computedSort - stability', {
@@ -1146,16 +1054,9 @@ QUnit.module('computedSort - stability', {
 });
 
 QUnit.test("sorts correctly as only one property changes", function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'B', 'C', 'D'], "initial");
   obj.get('items').objectAt(3).set('count', 2);
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "final");
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'B', 'C', 'D'], "final");
 });
 
 QUnit.module('computedSort - concurrency', {
@@ -1190,36 +1091,25 @@ QUnit.module('computedSort - concurrency', {
 });
 
 QUnit.test("sorts correctly when there are concurrent changes", function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'B', 'C', 'D'], "initial");
   Ember.changeProperties(function() {
     obj.get('items').objectAt(1).set('count', 5);
     obj.get('items').objectAt(2).set('count', 6);
   });
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'D', 'B', 'C'], "final");
 });
 
 QUnit.test("sorts correctly with a user-provided comparator when there are concurrent changes", function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('customSortedItems');
-    deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
-  });
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'B', 'C', 'D'], "initial");
 
   run(function() {
     Ember.changeProperties(function() {
       obj.get('items').objectAt(1).set('count', 5);
       obj.get('items').objectAt(2).set('count', 6);
     });
-    sorted = obj.get('customSortedItems');
-    deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
   });
+
+  deepEqual(mappedGet(obj, 'sortedItems', 'name'), ['A', 'D', 'B', 'C'], "final");
 });
 
 
@@ -1365,10 +1255,9 @@ QUnit.module('Ember.arrayComputed - mixed sugar', {
 QUnit.test("filtering and sorting can be combined", function() {
   run(function() {
     items = get(obj, 'items');
-    sorted = get(obj, 'sortedLannisters');
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime'], "precond - array is initially filtered and sorted");
+  deepEqual(mappedGet(obj, 'sortedLannisters', 'fname'), ['Cersei', 'Jaime'], "precond - array is initially filtered and sorted");
 
   run(function() {
     items.pushObject({ fname: 'Tywin',   lname: 'Lannister' });
@@ -1376,7 +1265,7 @@ QUnit.test("filtering and sorting can be combined", function() {
     items.pushObject({ fname: 'Gerion',  lname: 'Lannister' });
   });
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
+  deepEqual(mappedGet(obj, 'sortedLannisters', 'fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
 });
 
 QUnit.test("filtering, sorting and reduce (max) can be combined", function() {
@@ -1432,15 +1321,9 @@ QUnit.module('Ember.arrayComputed - chains', {
 });
 
 QUnit.test("it can filter and sort when both depend on the same item property", function() {
-  run(function() {
-    filtered = get(obj, 'filtered');
-    sorted = get(obj, 'sorted');
-    todos = get(obj, 'todos');
-  });
-
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos initially correct");
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'D', 'E'], "precond - sorted initially correct");
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E'], "precond - filtered initially correct");
+  deepEqual(mappedGet(obj, 'todos', 'name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos initially correct");
+  deepEqual(mappedGet(obj, 'sorted', 'name'), ['A', 'B', 'C', 'D', 'E'], "precond - sorted initially correct");
+  deepEqual(mappedGet(obj, 'filtered', 'name'), ['A', 'C', 'E'], "precond - filtered initially correct");
 
   run(function() {
     beginPropertyChanges();
@@ -1452,13 +1335,13 @@ QUnit.test("it can filter and sort when both depend on the same item property", 
     //    2. update filtered from item property change
     //
     // If 1.b happens before 2 it should invalidate 2
-    todos.objectAt(1).set('priority', 6);
+    get(obj, 'todos').objectAt(1).set('priority', 6);
     endPropertyChanges();
   });
 
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos remain correct");
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
+  deepEqual(mappedGet(obj, 'todos', 'name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos remain correct");
+  deepEqual(mappedGet(obj, 'sorted', 'name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
+  deepEqual(mappedGet(obj, 'filtered', 'name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
 });
 
 QUnit.module('Chaining array and reduced CPs', {
