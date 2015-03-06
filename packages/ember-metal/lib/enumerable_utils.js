@@ -66,7 +66,7 @@ export function filter(obj, callback, thisArg) {
  * uses `Ember.ArrayPolyfill`'s-indexOf method when necessary.
  *
  * @method indexOf
- * @param {Object} obj The object to call indexOn on
+ * @param {Object} obj The object to call indexOf on
  * @param {Function} callback The callback to execute
  * @param {Object} index The index to start searching from
  *
