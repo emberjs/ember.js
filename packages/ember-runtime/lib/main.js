@@ -44,15 +44,6 @@ import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import Evented from 'ember-runtime/mixins/evented';
 import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
 import SortableMixin from 'ember-runtime/mixins/sortable';
-import {
-  arrayComputed,
-  ArrayComputedProperty
-} from 'ember-runtime/computed/array_computed';
-
-import {
-  reduceComputed,
-  ReduceComputedProperty
-} from 'ember-runtime/computed/reduce_computed';
 
 import {
   sum,
@@ -111,11 +102,6 @@ Ember.Evented = Evented;
 Ember.PromiseProxyMixin = PromiseProxyMixin;
 
 Ember.Observable = Observable;
-
-Ember.arrayComputed = arrayComputed;
-Ember.ArrayComputedProperty = ArrayComputedProperty;
-Ember.reduceComputed = reduceComputed;
-Ember.ReduceComputedProperty = ReduceComputedProperty;
 
 Ember.typeOf = typeOf;
 Ember.isArray = Array.isArray;
