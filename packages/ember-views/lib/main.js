@@ -24,7 +24,7 @@ import {
   states
 } from "ember-views/views/states";
 
-import CoreView from "ember-views/views/core_view";
+import { DeprecatedCoreView } from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
@@ -68,7 +68,7 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-Ember.CoreView = CoreView;
+Ember.CoreView = DeprecatedCoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
