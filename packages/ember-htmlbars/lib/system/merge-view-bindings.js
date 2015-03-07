@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
 import { IS_BINDING } from "ember-metal/mixin";
-import SimpleStream from "ember-metal/streams/simple";
+import SimpleStream from "ember-metal/streams/simple-stream";
 import { read, isStream } from "ember-metal/streams/utils";
 import {
   streamifyClassNameBinding

@@ -1,4 +1,4 @@
-import SimpleStream from "ember-metal/streams/simple";
+import SimpleStream from "ember-metal/streams/simple-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function updateScope(scope, key, newValue, renderNode) {

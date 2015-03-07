@@ -56,6 +56,7 @@ ShouldDisplayStream.prototype.valueFn = function() {
     this.oldPredicate = newPredicate;
   }
 
+ShouldDisplayStream.prototype.compute = function() {
   var truthy = read(this.isTruthyStream);
   if (typeof truthy === 'boolean') {
     return truthy;

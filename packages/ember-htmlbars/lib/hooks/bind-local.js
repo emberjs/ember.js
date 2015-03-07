@@ -4,7 +4,7 @@
 */
 
 import Stream from "ember-metal/streams/stream";
-import SimpleStream from "ember-metal/streams/simple";
+import SimpleStream from "ember-metal/streams/simple-stream";
 
 export default function bindLocal(env, scope, key, value) {
   var existing = scope.locals[key];
