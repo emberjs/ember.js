@@ -39,7 +39,7 @@ import EmberError from 'ember-metal/error';
   Then, create a view that binds to your new controller:
 
   ```handlebars
-  {{#each person in MyApp.listController}}
+  {{#each MyApp.listController as |person|}}
     {{person.firstName}} {{person.lastName}}
   {{/each}}
   ```
@@ -56,7 +56,7 @@ import EmberError from 'ember-metal/error';
   For example:
 
   ```handlebars
-  {{#each post in controller}}
+  {{#each controller as |post|}}
     <li>{{post.title}} ({{post.titleLength}} characters)</li>
   {{/each}}
   ```

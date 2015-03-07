@@ -53,7 +53,7 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
 });
 
 QUnit.test("primitives should work correctly [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
   view = EmberView.create({
@@ -448,12 +448,12 @@ QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATE
     controller: EmberObject.create({
       things: A([null, 0, undefined, false, "OMG"])
     }),
-    template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
+    template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each things as |thing|}}{{thing}}|{{reverse thing}} {{/each}}")
   });
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
@@ -476,12 +476,12 @@ QUnit.test("bound helpers can handle nulls in array (with objects)", function() 
     controller: EmberObject.create({
       things: A([null, { foo: 5 }])
     }),
-    template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
+    template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each things as |thing|}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
   });
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 

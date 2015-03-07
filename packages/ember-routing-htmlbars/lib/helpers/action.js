@@ -262,7 +262,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   implementing the action.
 
   ```handlebars
-  {{#each person in people}}
+  {{#each people as |person|}}
     <div {{action "edit" person}}>
       click me
     </div>

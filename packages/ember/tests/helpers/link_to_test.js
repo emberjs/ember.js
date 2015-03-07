@@ -449,7 +449,7 @@ QUnit.test("The {{link-to}} helper moves into the named route with context", fun
     this.resource("item", { path: "/item/:id" });
   });
 
-  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in model}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each model as |person|}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
     model() {
@@ -934,12 +934,12 @@ QUnit.test("The {{link-to}} helper works in an #each'd array of string route nam
   });
 
   Ember.TEMPLATES = {
-    index: compile('{{#each routeName in routeNames}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
+    index: compile('{{#each routeNames as |routeName|}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
   };
 
   expectDeprecation(function() {
     bootApplication();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");
@@ -1054,7 +1054,7 @@ QUnit.test("The non-block form {{link-to}} helper moves into the named route wit
     }
   });
 
-  Ember.TEMPLATES.index = compile("<h3>Home</h3><ul>{{#each person in controller}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
+  Ember.TEMPLATES.index = compile("<h3>Home</h3><ul>{{#each controller as |person|}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
   Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   bootApplication();

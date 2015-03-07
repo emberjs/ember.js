@@ -481,7 +481,7 @@ QUnit.test("should pass content as context when using {{#each}} helper [DEPRECAT
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });

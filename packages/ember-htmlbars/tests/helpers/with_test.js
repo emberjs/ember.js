@@ -293,7 +293,7 @@ QUnit.test("it should still have access to original parentController within an {
 
   view = EmberView.create({
     container: container,
-    template: compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
+    template: compile('{{#each people as |person|}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
     controller: parentController
   });
 

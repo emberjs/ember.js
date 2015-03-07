@@ -170,7 +170,7 @@ QUnit.test("should target the current controller inside an {{each}} loop [DEPREC
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   equal(registeredTarget, itemController, "the item controller is the target of action");
 });
@@ -206,7 +206,7 @@ QUnit.test("should target the with-controller inside an {{#with controller='pers
 });
 
 QUnit.test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
   var eventsCalled = [];
@@ -463,7 +463,7 @@ QUnit.test("should work properly in an #each block", function() {
   view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: compile('{{#each item in view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: compile('{{#each view.items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   runAppend(view);
@@ -545,7 +545,7 @@ QUnit.test("should unregister event handlers on inside virtual views", function(
     }
   ]);
   view = EmberView.create({
-    template: compile('{{#each thing in view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: compile('{{#each view.things as |thing|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 
@@ -939,7 +939,7 @@ QUnit.test("a quoteless parameter should lookup actionName in context [DEPRECATE
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   var testBoundAction = function(propertyValue) {
     run(function() {
@@ -962,7 +962,7 @@ QUnit.test("a quoteless parameter should resolve actionName, including path", fu
   var actionOrder = [];
 
   view = EmberView.create({
-    template: compile("{{#each item in allactions}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")
+    template: compile("{{#each allactions as |item|}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")
   });
 
   var controller = EmberController.extend({

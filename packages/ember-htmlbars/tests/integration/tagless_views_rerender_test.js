@@ -17,7 +17,7 @@ QUnit.test("can insert new child views after initial tagless view rendering", fu
     shouldShow: false,
     array: Ember.A([1]),
 
-    template: compile('{{#if view.shouldShow}}{{#each item in view.array}}{{item}}{{/each}}{{/if}}')
+    template: compile('{{#if view.shouldShow}}{{#each view.array as |item|}}{{item}}{{/each}}{{/if}}')
   });
 
   runAppend(view);
@@ -43,7 +43,7 @@ QUnit.test("can remove child views after initial tagless view rendering", functi
     shouldShow: false,
     array: Ember.A([]),
 
-    template: compile('{{#if view.shouldShow}}{{#each item in view.array}}{{item}}{{/each}}{{/if}}')
+    template: compile('{{#if view.shouldShow}}{{#each view.array as |item|}}{{item}}{{/each}}{{/if}}')
   });
 
   runAppend(view);
