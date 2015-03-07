@@ -27,8 +27,6 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
-import ViewStreamSupport from "ember-views/mixins/view_stream_support";
-import ViewKeywordSupport from "ember-views/mixins/view_keyword_support";
 import ViewContextSupport from "ember-views/mixins/view_context_support";
 import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
 import {
@@ -676,8 +674,6 @@ var EMPTY_ARRAY = [];
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
-  ViewStreamSupport,
-  ViewKeywordSupport,
   ViewContextSupport,
   ViewChildViewsSupport,
   ViewStateSupport,
@@ -1477,4 +1473,4 @@ View.childViewsProperty = childViewsProperty;
 
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
+export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
