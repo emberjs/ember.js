@@ -28,7 +28,7 @@ function SubexprStream(params, hash, helper) {
 SubexprStream.prototype = create(Stream.prototype);
 
 merge(SubexprStream.prototype, {
-  valueFn: function() {
+  compute: function() {
     var sourceParams = this.source.params;
     var sourceHash = this.source.hash;
 
