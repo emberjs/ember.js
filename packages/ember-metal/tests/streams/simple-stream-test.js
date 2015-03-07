@@ -3,7 +3,7 @@ import SimpleStream from "ember-metal/streams/simple-stream";
 
 var source, value;
 
-QUnit.module('Simple Stream', {
+QUnit.module('SimpleStream', {
   setup() {
     value = "zlurp";
 
