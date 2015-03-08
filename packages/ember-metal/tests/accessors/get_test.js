@@ -60,6 +60,14 @@ QUnit.test('warn on attempts to get a property path of undefined', function() {
   }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
+QUnit.test('returns null when fetching a complex local path on a null context', function() {
+  equal(get(null, 'aProperty.on.aPath'), null);
+});
+
+QUnit.test('returns null when fetching a simple local path on a null context', function() {
+  equal(get(null, 'aProperty'), null);
+});
+
 QUnit.test('warn on attempts to get a falsy property', function() {
   var obj = {};
   expectAssertion(function() {
