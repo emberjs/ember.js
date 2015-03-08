@@ -34,6 +34,7 @@ var renderer;
   @class CoreView
   @namespace Ember
   @extends Ember.Object
+  @deprecated Use `Ember.View` instead.
   @uses Ember.Evented
   @uses Ember.ActionHandler
 */
@@ -151,6 +152,13 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
 CoreView.reopenClass({
   isViewClass: true
+});
+
+export var DeprecatedCoreView = CoreView.extend({
+  init: function() {
+    Ember.deprecate('Ember.CoreView is deprecated. Please use Ember.View.', false);
+    this._super.apply(this, arguments);
+  }
 });
 
 export default CoreView;
