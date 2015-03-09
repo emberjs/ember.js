@@ -877,12 +877,14 @@ function updatePaths(router) {
   }
 
   set(appController, 'currentPath', path);
+  set(router, 'currentPath', path);
 
   if (!('currentRouteName' in appController)) {
     defineProperty(appController, 'currentRouteName');
   }
 
   set(appController, 'currentRouteName', infos[infos.length - 1].name);
+  set(router, 'currentRouteName', infos[infos.length - 1].name);
 }
 
 EmberRouter.reopenClass({
