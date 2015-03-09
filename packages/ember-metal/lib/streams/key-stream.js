@@ -18,7 +18,8 @@ function KeyStream(source, key) {
 
   this.init();
   this.source = source;
-  this.obj = undefined;
+  this.dependency = this.addDependency(source);
+  this.observedObject = undefined;
   this.key = key;
 }
 
@@ -26,25 +27,30 @@ KeyStream.prototype = create(Stream.prototype);
 
 merge(KeyStream.prototype, {
   compute() {
-    var obj = read(this.source);
-    if (obj) {
-      return get(obj, this.key);
+    var object = read(this.source);
+    if (object) {
+      return get(object, this.key);
     }
   },
 
   becameActive() {
-    if (this.obj && typeof this.obj === 'object') {
-      addObserver(this.obj, this.key, this, this.notify);
+    var object = read(this.source);
+    if (object && typeof object === 'object') {
+      addObserver(object, this.key, this, this.notify);
+      this.observedObject = object;
     }
 
-    if (nextObj) {
-      return get(nextObj, this.key);
+  becameInactive() {
+    if (this.observedObject) {
+      removeObserver(this.observedObject, this.key, this, this.notify);
+      this.observedObject = undefined;
     }
   },
 
   setValue(value) {
-    if (this.obj) {
-      set(this.obj, this.key, value);
+    var object = read(this.source);
+    if (object) {
+      set(object, this.key, value);
     }
   },
 
@@ -57,7 +63,6 @@ merge(KeyStream.prototype, {
       this.update(function() {
         this.dependency.replace(nextSource);
         this.source = nextSource;
-        this.obj = read(nextSource);
       });
     }
 
@@ -81,7 +86,6 @@ merge(KeyStream.prototype, {
       }
 
       this.source = undefined;
-      this.obj = undefined;
       return true;
     }
   }
