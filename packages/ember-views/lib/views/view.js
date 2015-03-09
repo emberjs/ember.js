@@ -993,6 +993,58 @@ var View = CoreView.extend(
   },
 
   /**
+    @private
+
+    Creates a new DOM element, renders the view into it, then returns the
+    element.
+
+    By default, the element created and rendered into will be a `BODY` element,
+    since this is the default context that views are rendered into when being
+    inserted directly into the DOM.
+
+    ```js
+    var element = view.renderToElement();
+    element.tagName; // => "BODY"
+    ```
+
+    You can override the kind of element rendered into and returned by
+    specifying an optional tag name as the first argument.
+
+    ```js
+    var element = view.renderToElement('table');
+    element.tagName; // => "TABLE"
+    ```
+
+    This method is useful if you want to render the view into an element that
+    is not in the document's body. Instead, a new `body` element, detached from
+    the DOM is returned. FastBoot uses this to serialize the rendered view into
+    a string for transmission over the network.
+
+    ```js
+    app.visit('/').then(function(instance) {
+      var element;
+      Ember.run(function() {
+        element = renderToElement(instance);
+      });
+
+      res.send(serialize(element));
+    });
+    ```
+
+    @method renderToElement
+    @param {String} tagName The tag of the element to create and render into. Defaults to "body".
+    @return {HTMLBodyElement} element
+  */
+  renderToElement: function(tagName) {
+    tagName = tagName || 'body';
+
+    var element = this.renderer._dom.createElement(tagName);
+
+    this.renderer.appendTo(this, element);
+    return element;
+  },
+
+  /**
     Replaces the content of the specified parent element with this view's
     element. If the view does not have an HTML representation yet,
     the element will be generated automatically.
@@ -1087,7 +1139,8 @@ var View = CoreView.extend(
 
   /**
     Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method.
+    recursively calling the `render()` method. Once the element is created,
+    it sets the `element` property of the view to the rendered element.
 
     After the element has been inserted into the DOM, `didInsertElement` will
     be called on this view and all of its child views.
