@@ -577,7 +577,7 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
   }
 }
 
-export function linkRenderNode(/* morph, scope, params, hash */) {
+export function linkRenderNode(/* morph, env, scope, params, hash */) {
   return;
 }
 
