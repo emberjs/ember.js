@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 1.11.0-beta.5 (March 8, 2015)
+
+- [#10556](https://github.com/emberjs/ember.js/pull/10556) [BUGFIX] Deprecate `{{link-to}}` unwrapping a controllers model.
+
 ### 1.11.0-beta.4 (March 1, 2015)
 
 - [#10528](https://github.com/emberjs/ember.js/pull/10528) [BUGFIX] Ensure custom Router can be passed to Ember.Application.
