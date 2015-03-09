@@ -49,7 +49,7 @@ export function linkParams(env, scope, morph, path, params, hash) {
     return;
   }
 
-  if (env.hooks.linkRenderNode(morph, scope, path, params, hash)) {
+  if (env.hooks.linkRenderNode(morph, env, scope, path, params, hash)) {
     morph.linkedParams = { params: params, hash: hash };
   }
 }
