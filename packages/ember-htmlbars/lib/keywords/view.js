@@ -10,14 +10,11 @@ import ComponentNode from "ember-htmlbars/system/component-node";
 export default {
   setupState: function(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
-    state.parentView = read(scope.locals.view);
 
-    state.lastViewClassOrInstance = state.viewClassOrInstance;
-    state.viewClassOrInstance = getView(read(params[0]), env.container);
-  },
-
-  isStable: function(state, env, scope, params, hash) {
-    return state.lastViewClassOrInstance === state.viewClassOrInstance;
+    return {
+      parentView: read(scope.locals.view),
+      viewClassOrInstance: getView(read(params[0]), env.container)
+    };
   },
 
   rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {

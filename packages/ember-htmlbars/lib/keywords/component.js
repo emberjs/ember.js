@@ -1,11 +1,9 @@
 export default {
-  setupState: function(state, env, scope, params, hash) {
-    state.lastComponentPath = state.componentPath;
-    state.componentPath = env.hooks.getValue(params[0]);
-  },
-
-  isStable: function(state, env, scope, params, hash) {
-    return state.componentPath === state.lastComponentPath;
+  setupState: function(lastState, env, scope, params, hash) {
+    return {
+      componentPath: env.hooks.getValue(params[0]),
+      componentNode: lastState && lastState.componentNode
+    };
   },
 
   render: function(morph, env, scope, params, hash, template, inverse, visitor) {

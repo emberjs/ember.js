@@ -17,8 +17,10 @@ export default {
       });
 
       params[0] = controllerInstance;
-      state.controller = controllerInstance;
+      return { controller: controllerInstance };
     }
+
+    return { controller: null };
   },
 
   isStable: function() {
