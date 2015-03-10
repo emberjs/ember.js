@@ -1,7 +1,7 @@
 import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
-import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
+import { createObject, keyLength, shallowCopy, merge } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 import { clearMorph } from "../htmlbars-util/template-utils";
 
@@ -546,8 +546,8 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     newState = morph.state = keyword.setupState(lastState, env, scope, params, hash);
   }
 
-  if (keyword.updateEnv) {
-    env = keyword.updateEnv(morph.state, env, scope, params, hash);
+  if (keyword.childEnv) {
+    env = merge(keyword.childEnv(morph.state), env);
   }
 
   var firstTime = !morph.rendered;
