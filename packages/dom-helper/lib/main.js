@@ -351,12 +351,16 @@ prototype.cloneNode = function(element, deep){
   return clone;
 };
 
+prototype.AttrMorphClass = AttrMorph;
+
 prototype.createAttrMorph = function(element, attrName, namespace){
-  return new AttrMorph(element, attrName, this, namespace);
+  return new this.AttrMorphClass(element, attrName, this, namespace);
 };
 
+prototype.ElementMorphClass = ElementMorph;
+
 prototype.createElementMorph = function(element, namespace){
-  return new ElementMorph(element, this, namespace);
+  return new this.ElementMorphClass(element, this, namespace);
 };
 
 prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
@@ -364,6 +368,8 @@ prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
   morph.escaped = false;
   return morph;
 };
+
+prototype.MorphClass = Morph;
 
 prototype.createMorph = function(parent, start, end, contextualElement){
   if (contextualElement && contextualElement.nodeType === 11) {
@@ -373,7 +379,7 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   if (!contextualElement && parent && parent.nodeType === 1) {
     contextualElement = parent;
   }
-  var morph = new Morph(this, contextualElement);
+  var morph = new this.MorphClass(this, contextualElement);
   morph.firstNode = start;
   morph.lastNode = end;
   return morph;
