@@ -331,6 +331,10 @@ var Application = Namespace.extend(DeferredMixin, {
   buildDefaultInstance: function() {
     var instance = this.buildInstance();
 
+    // For the default instance only, set the view registry to the global
+    // Ember.View.views hash for backwards-compatibility.
+    EmberView.views = instance.container.lookup('-view-registry:main');
+
     // TODO2.0: Legacy support for App.__container__
     // and global methods on App that rely on a single,
     // default instance.
@@ -1005,6 +1009,10 @@ Application.reopenClass({
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
     registry.register('view:-outlet', OutletView);
+
+    registry.register('-view-registry:main', { create: function() { return {}; } });
+
+    registry.injection('view', '_viewRegistry', '-view-registry:main');
 
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
