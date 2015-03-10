@@ -29,16 +29,12 @@ export default {
     return { outletState: selectedOutletState };
   },
 
-  updateEnv: function(state, env) {
-    var outletState = state.outletState;
-    var newEnv = merge({ outletState: null }, env);
-
-    newEnv.outletState = outletState && outletState.outlets;
-    return newEnv;
+  childEnv: function(state) {
+    return { outletState: state.outletState && state.outletState.outlets };
   },
 
-  isStable: function(state, env, scope, params, hash) {
-    return isStable(state.lastOutletState, state.outletState);
+  isStable: function(lastState, nextState) {
+    return isStable(lastState.outletState, nextState.outletState);
   },
 
   isEmpty: function(state) {
