@@ -2,6 +2,7 @@ import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import ApplicationInstance from "ember-application/system/application-instance";
 import Router from "ember-routing/system/router";
+import View from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 
 function createApplication() {
@@ -75,6 +76,47 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
 
       run(instance.view, 'appendTo', '#qunit-fixture');
       assert.equal(Ember.$("#qunit-fixture > .ember-view h1").text(), "Hello world", "the application was rendered once the promise resolves");
+
+      instance.destroy();
+    }, function(error) {
+      QUnit.start();
+      assert.ok(false, "The visit() promise was rejected: " + error);
+    });
+  });
+
+  QUnit.test("Views created via visit() are not added to the global views hash", function(assert) {
+    QUnit.expect(6);
+    QUnit.stop();
+
+    var app;
+
+    run(function() {
+      app = createApplication();
+      app.instanceInitializer({
+        name: 'register-application-template',
+        initialize: function(app) {
+          app.registry.register('template:application', compile('<h1>Hello world</h1> {{view "child"}}'));
+          app.registry.register('view:application', View.extend({
+            elementId: 'my-cool-app'
+          }));
+          app.registry.register('view:child', View.extend({
+            elementId: 'child-view'
+          }));
+        }
+      });
+    });
+
+    assert.equal(Ember.$('#qunit-fixture').children().length, 0, "there are no elements in the fixture element");
+
+    app.visit('/').then(function(instance) {
+      QUnit.start();
+      assert.ok(instance instanceof ApplicationInstance, "promise is resolved with an ApplicationInstance");
+
+      run(instance.view, 'appendTo', '#qunit-fixture');
+      assert.equal(Ember.$("#qunit-fixture > #my-cool-app h1").text(), "Hello world", "the application was rendered once the promise resolves");
+      assert.strictEqual(View.views['my-cool-app'], undefined, "view was not registered globally");
+      ok(instance.container.lookup('-view-registry:main')['my-cool-app'] instanceof View, "view was registered on the instance's view registry");
+      ok(instance.container.lookup('-view-registry:main')['child-view'] instanceof View, "child view was registered on the instance's view registry");
 
       instance.destroy();
     }, function(error) {

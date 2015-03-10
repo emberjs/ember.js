@@ -21,8 +21,8 @@ merge(inDOM, {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     if (!view.isVirtual) {
-      Ember.assert("Attempted to register a view with an id already in use: "+view.elementId, !View.views[view.elementId]);
-      View.views[view.elementId] = view;
+      Ember.assert("Attempted to register a view with an id already in use: "+view.elementId, !view._viewRegistry[view.elementId]);
+      view._register();
     }
 
     Ember.runInDebug(function() {
@@ -36,7 +36,7 @@ merge(inDOM, {
     if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
     if (!this.isVirtual) {
-      delete View.views[view.elementId];
+      view._unregister();
     }
   },
 

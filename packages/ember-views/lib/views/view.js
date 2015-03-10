@@ -1305,6 +1305,10 @@ var View = CoreView.extend(
     }
 
     this._super.apply(this, arguments);
+
+    if (!this._viewRegistry) {
+      this._viewRegistry = View.views;
+    }
   },
 
   __defineNonEnumerable: function(property) {
@@ -1369,6 +1373,32 @@ var View = CoreView.extend(
   */
   handleEvent: function(eventName, evt) {
     return this.currentState.handleEvent(this, eventName, evt);
+  },
+
+  /**
+    Registers the view in the view registry, keyed on the view's `elementId`.
+    This is used by the EventDispatcher to locate the view in response to
+    events.
+
+    This method should only be called once the view has been inserted into the
+    DOM.
+
+    @method _register
+    @private
+  */
+  _register: function() {
+    this._viewRegistry[this.elementId] = this;
+  },
+
+  /**
+    Removes the view from the view registry. This should be called when the
+    view is removed from DOM.
+
+    @method _unregister
+    @private
+  */
+  _unregister: function() {
+    delete this._viewRegistry[this.elementId];
   },
 
   registerObserver: function(root, path, target, observer) {
