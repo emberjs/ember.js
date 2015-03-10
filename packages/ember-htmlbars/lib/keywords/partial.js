@@ -8,12 +8,7 @@ import { internal } from "htmlbars-runtime";
 
 export default {
   setupState: function(state, env, scope, params, hash) {
-    state.lastPartialName = state.partialName;
-    state.partialName = env.hooks.getValue(params[0]);
-  },
-
-  isStable: function(state, env) {
-    return state.lastPartialName === state.partialName;
+    return { partialName: env.hooks.getValue(params[0]) };
   },
 
   render: function(renderNode, env, scope, params, hash, template, inverse, visitor) {

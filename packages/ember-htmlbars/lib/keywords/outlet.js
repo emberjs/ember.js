@@ -26,8 +26,7 @@ export default {
       toRender.template = topLevelViewTemplate;
     }
 
-    state.lastOutletState = state.outletState;
-    state.outletState = selectedOutletState;
+    return { outletState: selectedOutletState };
   },
 
   updateEnv: function(state, env) {
