@@ -581,6 +581,19 @@ export function setDiff(setAProperty, setBProperty) {
   });
 }
 
+/**
+  Alias for [Ember.computed.setDiff](/api/#method_computed_setDiff).
+
+  @method difference
+  @for Ember.computed
+  @param {String} setAProperty
+  @param {String} setBProperty
+  @return {Ember.ComputedProperty} computes a new array with all the
+  items from the first dependent array that are not in the second
+  dependent array
+*/
+export var difference = setDiff;
+
 function binarySearch(array, item, low, high) {
   var mid, midItem, res, guidMid, guidItem;
 

@@ -19,6 +19,7 @@ import {
   map as computedMap,
   sort as computedSort,
   setDiff as computedSetDiff,
+  difference as computedDifference,
   mapBy as computedMapBy,
   filter as computedFilter,
   filterBy as computedFilterBy,
@@ -614,40 +615,45 @@ QUnit.test("it has set-intersection semantics", function() {
 });
 
 
-QUnit.module('computedSetDiff', {
-  setup: function() {
-    run(function() {
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5,10]),
-        diff: computedSetDiff('array', 'array2')
+forEach.call([['difference', computedDifference], ['setDiff', computedSetDiff]], function (tuple) {
+  var alias  = tuple[0];
+  var testedFunc = tuple[1];
+
+  QUnit.module('computed.' + alias, {
+    setup: function() {
+      run(function() {
+        obj = EmberObject.createWithMixins({
+          array: Ember.A([1,2,3,4,5,6,7]),
+          array2: Ember.A([3,4,5,10]),
+          diff: testedFunc('array', 'array2')
+        });
       });
-    });
-  },
-  teardown: function() {
-    run(function() {
-      obj.destroy();
-    });
-  }
-});
+    },
+    teardown: function() {
+      run(function() {
+        obj.destroy();
+      });
+    }
+  });
 
-QUnit.test("it throws an error if given fewer or more than two dependent properties", function() {
-  throws(function () {
-    EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5]),
-        diff: computedSetDiff('array')
-    });
-  }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
+  QUnit.test("it throws an error if given fewer or more than two dependent properties", function() {
+    throws(function () {
+      EmberObject.createWithMixins({
+          array: Ember.A([1,2,3,4,5,6,7]),
+          array2: Ember.A([3,4,5]),
+          diff: testedFunc('array')
+      });
+    }, /requires exactly two dependent arrays/, alias + " requires two dependent arrays");
 
-  throws(function () {
-    EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5]),
-        array3: Ember.A([7]),
-        diff: computedSetDiff('array', 'array2', 'array3')
-    });
-  }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
+    throws(function () {
+      EmberObject.createWithMixins({
+          array: Ember.A([1,2,3,4,5,6,7]),
+          array2: Ember.A([3,4,5]),
+          array3: Ember.A([7]),
+          diff: computedSetDiff('array', 'array2', 'array3')
+      });
+    }, /requires exactly two dependent arrays/, alias + " requires two dependent arrays");
+  });
 });
 
 
