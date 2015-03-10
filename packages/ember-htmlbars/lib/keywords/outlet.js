@@ -48,9 +48,9 @@ export default {
 
   rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
     var newEnv = env;
-    if (morph.state.view) {
+    if (morph.emberView) {
       newEnv = merge({}, env);
-      newEnv.view = morph.state.view;
+      newEnv.view = morph.emberView;
     }
   },
 

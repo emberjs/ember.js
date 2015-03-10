@@ -1,5 +1,3 @@
-import DOMHelper from "dom-helper";
-import environment from "ember-metal/environment";
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -9,15 +7,13 @@ import {
 } from "ember-metal/instrumentation";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 
-var domHelper = environment.hasDOM ? new DOMHelper() : null;
-
-function Renderer(_helper, _destinedForDOM) {
-  this._dom = _helper || domHelper;
+function Renderer(_helper) {
+  this._dom = _helper;
 }
 
 Renderer.prototype.renderTopLevelView =
   function Renderer_renderTopLevelView(view, renderNode) {
-    view.ownerView = renderNode.state.view = view;
+    view.ownerView = renderNode.emberView = view;
     view.renderNode = renderNode;
 
     var template = get(view, 'layout') || get(view, 'template');

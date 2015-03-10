@@ -16,7 +16,6 @@ import {
   getViewBoundingClientRect
 } from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
-import DOMHelper from "dom-helper";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
@@ -71,7 +70,6 @@ Ember.CoreView = DeprecatedCoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
-Ember.View.DOMHelper = DOMHelper;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;

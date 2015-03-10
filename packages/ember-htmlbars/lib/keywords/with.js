@@ -18,8 +18,6 @@ export default {
 
       params[0] = controllerInstance;
       state.controller = controllerInstance;
-      state.toDestroy = [state.controller];
-
     }
   },
 
@@ -32,6 +30,8 @@ export default {
   },
 
   render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+    if (morph.state.controller) { morph.addDestruction(morph.state.controller); }
+
     Ember.assert(
       "{{#with foo}} must be called with a single argument or the use the " +
       "{{#with foo as bar}} syntax",

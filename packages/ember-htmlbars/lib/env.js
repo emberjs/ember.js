@@ -1,7 +1,5 @@
 import environment from "ember-metal/environment";
 
-import DOMHelper from "dom-helper";
-
 import { hooks } from "htmlbars-runtime";
 import merge from "ember-metal/merge";
 
@@ -27,6 +25,8 @@ import invokeHelper from "ember-htmlbars/hooks/invoke-helper";
 
 import helpers from "ember-htmlbars/helpers";
 import keywords, { registerKeyword } from "ember-htmlbars/keywords";
+
+import DOMHelper from "ember-htmlbars/system/dom-helper";
 
 var emberHooks = merge({}, hooks);
 emberHooks.keywords = keywords;
