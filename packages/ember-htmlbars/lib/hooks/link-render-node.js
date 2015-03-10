@@ -8,7 +8,7 @@ import { isArray } from "ember-metal/utils";
 import { chain, read, isStream, addDependency } from "ember-metal/streams/utils";
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
-  if (renderNode.state.unsubscribers) {
+  if (renderNode.streamUnsubscribers) {
     return true;
   }
 

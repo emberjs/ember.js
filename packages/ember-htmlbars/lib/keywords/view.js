@@ -31,7 +31,7 @@ export default {
     var view = hash.view = viewInstance(node.state.viewClassOrInstance);
     parentView.linkChild(view);
 
-    state.view = view;
+    node.emberView = view;
 
     var options = { component: view, layout: null };
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);

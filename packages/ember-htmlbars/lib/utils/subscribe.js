@@ -3,7 +3,7 @@ import { isStream } from "ember-metal/streams/utils";
 export default function subscribe(node, scope, stream) {
   if (!isStream(stream)) { return; }
   var component = scope.component;
-  var unsubscribers = node.state.unsubscribers = node.state.unsubscribers || [];
+  var unsubscribers = node.streamUnsubscribers = node.streamUnsubscribers || [];
 
   unsubscribers.push(stream.subscribe(function() {
     node.isDirty = true;
@@ -17,9 +17,9 @@ export default function subscribe(node, scope, stream) {
     }
 
     if (node.state.componentNode) {
-      node.state.shouldReceiveAttrs = true;
+      node.shouldReceiveAttrs = true;
     }
 
-    node.ownerNode.state.view.scheduleRevalidate();
+    node.ownerNode.emberView.scheduleRevalidate();
   }));
 }

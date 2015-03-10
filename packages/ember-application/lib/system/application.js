@@ -20,7 +20,7 @@ import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-metal-views/renderer";
-import DOMHelper from "dom-helper";
+import DOMHelper from "ember-htmlbars/system/dom-helper";
 import SelectView from "ember-views/views/select";
 import { OutletView } from "ember-routing-views/views/outlet";
 import EmberView from "ember-views/views/view";

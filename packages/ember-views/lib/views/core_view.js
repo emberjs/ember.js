@@ -1,5 +1,4 @@
 import Renderer from "ember-metal-views/renderer";
-import DOMHelper from "dom-helper";
 
 import {
   cloneStates,
@@ -53,6 +52,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     // Fallback for legacy cases where the view was created directly
     // via `create()` instead of going through the container.
     if (!this.renderer) {
+      var DOMHelper = domHelper();
       renderer = renderer || new Renderer(new DOMHelper());
       this.renderer = renderer;
     }
@@ -160,5 +160,10 @@ export var DeprecatedCoreView = CoreView.extend({
     this._super.apply(this, arguments);
   }
 });
+
+var _domHelper;
+function domHelper() {
+  return _domHelper = _domHelper || Ember.__loader.require("ember-htmlbars/system/dom-helper")['default'];
+}
 
 export default CoreView;
