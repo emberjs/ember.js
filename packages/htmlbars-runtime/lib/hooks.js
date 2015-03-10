@@ -1,7 +1,7 @@
 import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
-import { createObject } from "../htmlbars-util/object-utils";
+import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 import { clearMorph } from "../htmlbars-util/template-utils";
 
@@ -540,8 +540,10 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     keyword.willRender(morph, env);
   }
 
+  var lastState, newState;
   if (keyword.setupState) {
-    keyword.setupState(morph.state, env, scope, params, hash);
+    lastState = shallowCopy(morph.state);
+    newState = morph.state = keyword.setupState(lastState, env, scope, params, hash);
   }
 
   if (keyword.updateEnv) {
@@ -567,18 +569,22 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     return true;
   }
 
+  var isStable;
   if (keyword.isStable) {
-    var isStable = keyword.isStable(morph.state, env, scope, params, hash);
-    if (isStable) {
-      if (keyword.rerender) {
-        var newEnv = keyword.rerender(morph, env, scope, params, hash, template, inverse, visitor);
-        env = newEnv || env;
-      }
-      validateChildMorphs(env, morph, visitor);
-      return true;
-    } else {
-      clearMorph(morph, env, false);
+    isStable = keyword.isStable(lastState, newState);
+  } else {
+    isStable = stableState(lastState, newState);
+  }
+
+  if (isStable) {
+    if (keyword.rerender) {
+      var newEnv = keyword.rerender(morph, env, scope, params, hash, template, inverse, visitor);
+      env = newEnv || env;
     }
+    validateChildMorphs(env, morph, visitor);
+    return true;
+  } else {
+    clearMorph(morph, env, false);
   }
 
   // If the node is unstable, re-render from scratch
@@ -587,6 +593,16 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     morph.rendered = true;
     return true;
   }
+}
+
+function stableState(oldState, newState) {
+  if (keyLength(oldState) !== keyLength(newState)) { return false; }
+
+  for (var prop in oldState) {
+    if (oldState[prop] !== newState[prop]) { return false; }
+  }
+
+  return true;
 }
 
 export function linkRenderNode(/* morph, env, scope, params, hash */) {
