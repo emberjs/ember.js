@@ -1387,6 +1387,7 @@ var View = CoreView.extend(
     @private
   */
   _register: function() {
+    Ember.assert("Attempted to register a view with an id already in use: "+this.elementId, !this._viewRegistry[this.elementId]);
     this._viewRegistry[this.elementId] = this;
   },
 
