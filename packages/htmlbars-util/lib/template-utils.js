@@ -18,7 +18,7 @@ export function blockFor(render, template, blockOptions) {
 
       env.hooks.bindBlock(env, shadowScope, blockOptions.yieldTo);
 
-      renderAndCleanup(renderNode, env, options, null, visitor, function() {
+      renderAndCleanup(renderNode, env, options, null, function() {
         options.renderState.clearMorph = null;
         render(template, env, shadowScope, { renderNode: renderNode, blockArguments: blockArguments });
       });
@@ -26,7 +26,7 @@ export function blockFor(render, template, blockOptions) {
   };
 }
 
-export function renderAndCleanup(morph, env, options, shadowOptions, visitor, callback) {
+export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
   options.renderState.shadowOptions = shadowOptions;
   callback(options);
 
@@ -47,9 +47,9 @@ export function renderAndCleanup(morph, env, options, shadowOptions, visitor, ca
   }
 }
 
-export function clearMorph(morph, cleanup) {
+export function clearMorph(morph, cleanup, includeSelf) {
   if (cleanup) {
-    visitChildren(morph.childNodes, cleanup);
+    visitChildren(includeSelf ? [morph] : morph.childNodes, cleanup);
   }
 
   // TODO: Deal with logical children that are not in the DOM tree
