@@ -1,4 +1,5 @@
 import { forEach } from "ember-metal/enumerable_utils";
+import { isArray, typeOf } from "ember-metal/utils";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import {Mixin, required} from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
@@ -66,13 +67,17 @@ export default Mixin.create(Enumerable, {
   addObject: required(Function),
 
   /**
-    Adds each object in the passed enumerable to the receiver.
+    Adds each object in the passed array to the receiver.
 
     @method addObjects
-    @param {Ember.Enumerable} objects the objects to add.
+    @param {Array} objects the objects to add.
     @return {Object} receiver
   */
   addObjects: function(objects) {
+    if (!(Enumerable.detect(objects) || isArray(objects))) {
+      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableEnumerable#addObjects");
+    }
+    Ember.deprecate("Passing an array-like object that is not a native Array to addObjects() is deprecated. Please convert to a native Array, e.g. by calling .toArray().", typeOf(objects) === 'array');
     beginPropertyChanges(this);
     forEach(objects, function(obj) { this.addObject(obj); }, this);
     endPropertyChanges(this);
@@ -97,10 +102,10 @@ export default Mixin.create(Enumerable, {
 
 
   /**
-    Removes each object in the passed enumerable from the receiver.
+    Removes each object in the passed array from the receiver.
 
     @method removeObjects
-    @param {Ember.Enumerable} objects the objects to remove
+    @param {Array} objects the objects to remove
     @return {Object} receiver
   */
   removeObjects: function(objects) {

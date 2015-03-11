@@ -2,7 +2,8 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import {
   isArray,
-  apply
+  apply,
+  typeOf
 } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import {
@@ -336,6 +337,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
+    Ember.deprecate("Passing an array-like object that is not a native Array to pushObjects() is deprecated. Please convert to a native Array, e.g. by calling .toArray().", typeOf(objects) === 'array');
     this._replace(get(this, 'length'), 0, objects);
     return this;
   },
