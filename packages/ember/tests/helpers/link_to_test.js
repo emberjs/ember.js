@@ -193,10 +193,7 @@ QUnit.test("the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is 
 });
 
 QUnit.test("the {{link-to}} helper supports a custom disabledClass", function () {
-  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable" disabledClass="do-not-want"}}About{{/link-to}}');
-  App.IndexController = Ember.Controller.extend({
-    shouldDisable: true
-  });
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}');
 
   Router.map(function() {
     this.route("about");
@@ -213,10 +210,7 @@ QUnit.test("the {{link-to}} helper supports a custom disabledClass", function ()
 });
 
 QUnit.test("the {{link-to}} helper does not respond to clicks when disabled", function () {
-  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable"}}About{{/link-to}}');
-  App.IndexController = Ember.Controller.extend({
-    shouldDisable: true
-  });
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}');
 
   Router.map(function() {
     this.route("about");
@@ -449,7 +443,7 @@ QUnit.test("The {{link-to}} helper moves into the named route with context", fun
     this.resource("item", { path: "/item/:id" });
   });
 
-  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in model}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each model as |person|}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
     model() {

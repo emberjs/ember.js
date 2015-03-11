@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 import defaultEnv from "ember-htmlbars/env";
 import { get } from "ember-metal/property_get";
+import ComponentNode from "ember-htmlbars/system/component-node";
 
 export default function renderView(view, buffer, template) {
   if (!template) {
@@ -9,13 +10,8 @@ export default function renderView(view, buffer, template) {
 
   var output;
 
-  if (template.isHTMLBars) {
-    Ember.assert('template must be an object. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'object');
-    output = renderHTMLBarsTemplate(view, buffer, template);
-  } else {
-    Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
-    output = renderLegacyTemplate(view, buffer, template);
-  }
+  Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
+  output = renderLegacyTemplate(view, buffer, template);
 
   if (output !== undefined) {
     buffer.push(output);
@@ -24,17 +20,9 @@ export default function renderView(view, buffer, template) {
 
 // This function only gets called once per render of a "root view" (`appendTo`). Otherwise,
 // HTMLBars propagates the existing env and renders templates for a given render node.
-export function renderHTMLBarsTemplate(view, contextualElement, template, morph) {
-  Ember.assert(
-    'The template being rendered by `' + view + '` was compiled with `' + template.revision +
-    '` which does not match `Ember@VERSION_STRING_PLACEHOLDER` (this revision).',
-    template.revision === 'Ember@VERSION_STRING_PLACEHOLDER'
-  );
-
-  var lifecycleHooks = [{ type: 'didInsertElement', view: view }];
-
+export function renderHTMLBarsBlock(view, block, renderNode) {
   var env = {
-    lifecycleHooks: lifecycleHooks,
+    lifecycleHooks: [],
     view: view,
     outletState: view.outletState,
     container: view.container,
@@ -47,7 +35,9 @@ export function renderHTMLBarsTemplate(view, contextualElement, template, morph)
 
   view.env = env;
 
-  return template.render(view, view.env, { contextualElement: contextualElement, renderNode: morph });
+  var componentNode = new ComponentNode(view, null, renderNode, block, true);
+
+  componentNode.render(env, {});
 }
 
 function renderLegacyTemplate(view, buffer, template) {

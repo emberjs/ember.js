@@ -7,6 +7,7 @@ Ember Routing Views
 */
 
 import Ember from "ember-metal/core";
+import "ember-routing-views/initializers/link-to-component";
 
 import { LinkView } from "ember-routing-views/views/link";
 import {

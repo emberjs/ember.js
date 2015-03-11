@@ -20,12 +20,12 @@ var TemplateRenderingSupport = Mixin.create({
     // TODO: Legacy string render function support
   },
 
-  renderTemplate() {
+  renderBlock(block, renderNode) {
     if (_renderView === undefined) {
       _renderView = require('ember-htmlbars/system/render-view');
     }
 
-    return _renderView.renderHTMLBarsTemplate.apply(this, arguments);
+    return _renderView.renderHTMLBarsBlock(this, block, renderNode);
   }
 });
 

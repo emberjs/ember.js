@@ -4,18 +4,23 @@
 */
 
 import subscribe from "ember-htmlbars/utils/subscribe";
-import shouldDisplay from "ember-views/streams/should_display";
-import { chain, read } from "ember-metal/streams/utils";
+import { isArray } from "ember-metal/utils";
+import { chain, read, isStream, addDependency } from "ember-metal/streams/utils";
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.state.unsubscribers) {
     return true;
   }
 
-  switch (path) {
-    case 'unbound': return true;
-    case 'if': params[0] = shouldDisplay(params[0]); break;
-    case 'each': params[0] = eachParam(params[0]); break;
+  var keyword = env.hooks.keywords[path];
+  if (keyword && keyword.link) {
+    keyword.link(renderNode.state, params, hash);
+  } else {
+    switch (path) {
+      case 'unbound': return true;
+      case 'if': params[0] = shouldDisplay(params[0]); break;
+      case 'each': params[0] = eachParam(params[0]); break;
+    }
   }
 
   if (params.length) {
@@ -37,7 +42,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
 }
 
 function eachParam(list) {
-  var listChange = list.getKey('[]');
+  var listChange = getKey(list, '[]');
 
   var stream = chain(list, function() {
     read(listChange);
@@ -46,4 +51,38 @@ function eachParam(list) {
 
   stream.addDependency(listChange);
   return stream;
+}
+
+function shouldDisplay(predicate) {
+  var length = getKey(predicate, 'length');
+  var isTruthy = getKey(predicate, 'isTruthy');
+
+  var stream = chain(predicate, function() {
+    var predicateVal = read(predicate);
+    var lengthVal = read(length);
+    var isTruthyVal = read(isTruthy);
+
+    if (isArray(predicateVal)) {
+      return lengthVal > 0;
+    }
+
+    if (typeof isTruthyVal === 'boolean') {
+      return isTruthyVal;
+    }
+
+    return !!predicateVal;
+  });
+
+  addDependency(stream, length);
+  addDependency(stream, isTruthy);
+
+  return stream;
+}
+
+function getKey(obj, key) {
+  if (isStream(obj)) {
+    return obj.getKey(key);
+  } else {
+    return obj && obj[key];
+  }
 }

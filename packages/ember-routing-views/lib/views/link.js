@@ -7,11 +7,13 @@ import Ember from "ember-metal/core"; // FEATURES, Logger, assert
 
 import { get } from "ember-metal/property_get";
 import { computed } from "ember-metal/computed";
-import { fmt } from "ember-runtime/system/string";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
-import { read, subscribe } from "ember-metal/streams/utils";
 import inject from "ember-runtime/inject";
+import ControllerMixin from "ember-runtime/mixins/controller";
+
+import linkToTemplate from "ember-htmlbars/templates/link-to";
+linkToTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 var linkViewClassNameBindings = ['active', 'loading', 'disabled'];
 if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
@@ -32,7 +34,9 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
   @extends Ember.View
   @see {Handlebars.helpers.link-to}
 **/
-var LinkView = EmberComponent.extend({
+var LinkComponent = EmberComponent.extend({
+  defaultLayout: linkToTemplate,
+
   tagName: 'a',
 
   /**
@@ -129,7 +133,7 @@ var LinkView = EmberComponent.extend({
 
     @property attributeBindings
     @type Array | String
-    @default ['href', 'title', 'rel', 'tabindex', 'target']
+    @default ['title', 'rel', 'tabindex', 'target']
    **/
   attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
@@ -204,53 +208,6 @@ var LinkView = EmberComponent.extend({
   _routing: inject.service('-routing'),
 
   /**
-    This method is invoked by observers installed during `init` that fire
-    whenever the params change
-
-    @private
-    @method _paramsChanged
-    @since 1.3.0
-   */
-  _paramsChanged() {
-    this.notifyPropertyChange('resolvedParams');
-  },
-
-  /**
-   This is called to setup observers that will trigger a rerender.
-
-   @private
-   @method _setupPathObservers
-   @since 1.3.0
-  **/
-  _setupPathObservers() {
-    var params = this.params;
-
-    var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
-
-    for (var i = 0; i < params.length; i++) {
-      subscribe(params[i], scheduledParamsChanged, this);
-    }
-
-    var queryParamsObject = this.queryParamsObject;
-    if (queryParamsObject) {
-      var values = queryParamsObject.values;
-      for (var k in values) {
-        if (!values.hasOwnProperty(k)) {
-          continue;
-        }
-
-        subscribe(values[k], scheduledParamsChanged, this);
-      }
-    }
-  },
-
-  afterRender() {
-    this._super(...arguments);
-    this._setupPathObservers();
-  },
-
-  /**
-
     Accessed as a classname binding to apply the `LinkView`'s `disabledClass`
     CSS `class` to the element when the link is disabled.
 
@@ -281,7 +238,7 @@ var LinkView = EmberComponent.extend({
 
     @property active
   **/
-  active: computed('loadedParams', function computeLinkViewActive() {
+  active: computed('attrs.params', function computeLinkViewActive() {
     var currentState = get(this, '_routing.currentState');
     return computeActive(this, currentState);
   }),
@@ -309,21 +266,6 @@ var LinkView = EmberComponent.extend({
   }),
 
   /**
-    Accessed as a classname binding to apply the `LinkView`'s `loadingClass`
-    CSS `class` to the element when the link is loading.
-
-    A `LinkView` is considered loading when it has at least one
-    parameter whose value is currently null or undefined. During
-    this time, clicking the link will perform no transition and
-    emit a warning that the link is still in a loading state.
-
-    @property loading
-  **/
-  loading: computed('loadedParams', function computeLinkViewLoading() {
-    if (!get(this, 'loadedParams')) { return get(this, 'loadingClass'); }
-  }),
-
-  /**
     Event handler that invokes the link, activating the associated route.
 
     @private
@@ -334,7 +276,7 @@ var LinkView = EmberComponent.extend({
     if (!isSimpleClick(event)) { return true; }
 
     if (this.preventDefault !== false) {
-      var targetAttribute = get(this, 'target');
+      var targetAttribute = this.attrs.target;
       if (!targetAttribute || targetAttribute === '_self') {
         event.preventDefault();
       }
@@ -349,89 +291,15 @@ var LinkView = EmberComponent.extend({
       return false;
     }
 
-    var targetAttribute2 = get(this, 'target');
+    var targetAttribute2 = this.attrs.target;
     if (targetAttribute2 && targetAttribute2 !== '_self') {
       return false;
     }
 
-    var params = get(this, 'loadedParams');
-    get(this, '_routing').transitionTo(params.targetRouteName, params.models, params.queryParams, get(this, 'replace'));
+    get(this, '_routing').transitionTo(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams'), get(this, 'attrs.replace'));
   },
 
-  /**
-    Computed property that returns an array of the
-    resolved parameters passed to the `link-to` helper,
-    e.g.:
-
-    ```hbs
-    {{link-to a b '123' c}}
-    ```
-
-    will generate a `resolvedParams` of:
-
-    ```js
-    [aObject, bObject, '123', cObject]
-    ```
-
-    @private
-    @property
-    @return {Array}
-   */
-  resolvedParams: computed('_routing.currentState', function() {
-    var params = this.params;
-    var targetRouteName;
-    var models = [];
-    var onlyQueryParamsSupplied = (params.length === 0);
-
-    if (onlyQueryParamsSupplied) {
-      targetRouteName = get(this, '_routing.currentRouteName');
-    } else {
-      targetRouteName = read(params[0]);
-
-      for (var i = 1; i < params.length; i++) {
-        models.push(read(params[i]));
-      }
-    }
-
-    var suppliedQueryParams = getResolvedQueryParams(this, targetRouteName);
-
-    return {
-      targetRouteName: targetRouteName,
-      models: models,
-      queryParams: suppliedQueryParams
-    };
-  }),
-
-  /**
-    Computed property that returns the current route name,
-    dynamic segments, and query params. Returns falsy if
-    for null/undefined params to indicate that the link view
-    is still in a loading state.
-
-    @private
-    @property
-    @return {Array} An array with the route name and any dynamic segments
-  **/
-  loadedParams: computed('resolvedParams', function computeLinkViewRouteArgs() {
-    var routing = get(this, '_routing');
-    if (!routing) { return; }
-
-    var resolvedParams = get(this, 'resolvedParams');
-    var namedRoute = resolvedParams.targetRouteName;
-
-    if (!namedRoute) { return; }
-
-    Ember.assert(fmt("The attempt to link-to route '%@' failed. " +
-                     "The router did not find '%@' in its possible routes: '%@'",
-                     [namedRoute, namedRoute, routing.availableRoutes().join("', '")]),
-                     routing.hasRoute(namedRoute));
-
-    if (!paramsAreLoaded(resolvedParams.models)) { return; }
-
-    return resolvedParams;
-  }),
-
-  queryParamsObject: null,
+  queryParams: null,
 
   /**
     Sets the element's `href` attribute to the url for
@@ -442,17 +310,11 @@ var LinkView = EmberComponent.extend({
 
     @property href
   **/
-  href: computed('loadedParams', function computeLinkViewHref() {
+  href: computed('models', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
     var routing = get(this, '_routing');
-    var params = get(this, 'loadedParams');
-
-    if (!params) {
-      return get(this, 'loadingHref');
-    }
-
-    return routing.generateURL(params.targetRouteName, params.models, params.queryParams);
+    return routing.generateURL(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams'));
   }),
 
   /**
@@ -463,42 +325,80 @@ var LinkView = EmberComponent.extend({
     @type String
     @default #
   */
-  loadingHref: '#'
+  loadingHref: '#',
+
+  willRender: function() {
+    var queryParams;
+
+    var attrs = this.attrs;
+
+    // Do not mutate params in place
+    var params = attrs.params.slice();
+
+    Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
+
+    var lastParam = params[params.length - 1];
+
+    if (lastParam && lastParam.isQueryParams) {
+      queryParams = params.pop();
+    }
+    this.set('queryParams', queryParams || {});
+
+    if (attrs.disabledClass) {
+      this.set('disabledClass', attrs.disabledClass);
+    }
+
+    if (attrs.activeClass) {
+      this.set('activeClass', attrs.activeClass);
+    }
+
+    if (attrs.disabledWhen) {
+      this.set('disabled', attrs.disabledWhen);
+    }
+
+    var currentWhen = attrs['current-when'];
+
+    if (attrs.currentWhen) {
+      Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !attrs.currentWhen);
+      currentWhen = attrs.currentWhen;
+    }
+
+    if (currentWhen) {
+      this.set('currentWhen', currentWhen);
+    }
+
+    // TODO: Change to built-in hasBlock once it's available
+    if (!attrs.hasBlock) {
+      this.set('linkTitle', params.shift());
+    }
+
+    for (var i = 0; i < params.length; i++) {
+      var value = params[i];
+
+      while (ControllerMixin.detect(value)) {
+        Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + attrs.view + '` to use `{{link-to "post" someController.model}}` instead.');
+        value = value.get('model');
+      }
+
+      params[i] = value;
+    }
+
+    if (params.length !== 0) {
+      this.set('targetRouteName', params.shift());
+    }
+
+    this.set('models', params);
+  }
 });
 
-LinkView.toString = function() { return "LinkView"; };
-
-function getResolvedQueryParams(linkView, targetRouteName) {
-  var queryParamsObject = linkView.queryParamsObject;
-  var resolvedQueryParams = {};
-
-  if (!queryParamsObject) { return resolvedQueryParams; }
-
-  var values = queryParamsObject.values;
-  for (var key in values) {
-    if (!values.hasOwnProperty(key)) { continue; }
-    resolvedQueryParams[key] = read(values[key]);
-  }
-
-  return resolvedQueryParams;
-}
-
-function paramsAreLoaded(params) {
-  for (var i = 0, len = params.length; i < len; ++i) {
-    var param = params[i];
-    if (param === null || typeof param === 'undefined') {
-      return false;
-    }
-  }
-  return true;
-}
+LinkComponent.toString = function() { return "LinkComponent"; };
 
 function computeActive(view, routerState) {
   if (get(view, 'loading')) { return false; }
 
-  var currentWhen = view['current-when'] || view.currentWhen;
+  var currentWhen = get(view, 'currentWhen');
   var isCurrentWhenSpecified = !!currentWhen;
-  currentWhen = currentWhen || get(view, 'loadedParams').targetRouteName;
+  currentWhen = currentWhen || get(view, 'targetRouteName');
   currentWhen = currentWhen.split(' ');
   for (var i = 0, len = currentWhen.length; i < len; i++) {
     if (isActiveForRoute(view, currentWhen[i], isCurrentWhenSpecified, routerState)) {
@@ -510,11 +410,8 @@ function computeActive(view, routerState) {
 }
 
 function isActiveForRoute(view, routeName, isCurrentWhenSpecified, routerState) {
-  var params = get(view, 'loadedParams');
   var service = get(view, '_routing');
-  return service.isActiveForRoute(params, routeName, routerState, isCurrentWhenSpecified);
+  return service.isActiveForRoute(get(view, 'models'), get(view, 'queryParams'), routeName, routerState, isCurrentWhenSpecified);
 }
 
-export {
-  LinkView
-};
+export default LinkComponent;

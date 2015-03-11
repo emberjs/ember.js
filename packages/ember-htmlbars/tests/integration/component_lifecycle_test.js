@@ -117,9 +117,11 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
 
   deepEqual(hooks, [
     hook('middle', 'willUpdate'), hook('middle', 'willRender'),
-    hook('bottom', 'willUpdate'), hook('bottom', 'willRender'),
+    hook('bottom', 'willUpdate'),
 
     hook('bottom', 'willReceiveAttrs', { website: "tomdale.net" }),
+
+    hook('bottom', 'willRender'),
 
     hook('bottom', 'didUpdate'), hook('bottom', 'didRender'),
     hook('middle', 'didUpdate'), hook('middle', 'didRender')
@@ -134,11 +136,13 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
   deepEqual(hooks, [
     hook('top', 'willUpdate'), hook('top', 'willRender'),
 
-    hook('middle', 'willUpdate'), hook('middle', 'willRender'),
+    hook('middle', 'willUpdate'),
     hook('middle', 'willReceiveAttrs', { name: "Tom Dale" }),
+    hook('middle', 'willRender'),
 
-    hook('bottom', 'willUpdate'), hook('bottom', 'willRender'),
+    hook('bottom', 'willUpdate'),
     hook('bottom', 'willReceiveAttrs', { website: "tomdale.net" }),
+    hook('bottom', 'willRender'),
 
     hook('bottom', 'didUpdate'), hook('bottom', 'didRender'),
     hook('middle', 'didUpdate'), hook('middle', 'didRender'),
@@ -158,8 +162,9 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
   // in lifecycle hooks being invoked for the child.
 
   deepEqual(hooks, [
-    hook('top', 'willUpdate'), hook('top', 'willRender'),
+    hook('top', 'willUpdate'),
     hook('top', 'willReceiveAttrs', { twitter: "@hipstertomdale" }),
+    hook('top', 'willRender'),
     hook('top', 'didUpdate'), hook('top', 'didRender')
   ]);
 });
@@ -234,14 +239,17 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   // the lifecycle hooks are invoked for all components.
 
   deepEqual(hooks, [
-    hook('top', 'willUpdate'), hook('top', 'willRender'),
+    hook('top', 'willUpdate'),
     hook('top', 'willReceiveAttrs', { twitter: "@hipstertomdale" }),
+    hook('top', 'willRender'),
 
-    hook('middle', 'willUpdate'), hook('middle', 'willRender'),
+    hook('middle', 'willUpdate'),
     hook('middle', 'willReceiveAttrs', { twitterTop: "@hipstertomdale" }),
+    hook('middle', 'willRender'),
 
-    hook('bottom', 'willUpdate'), hook('bottom', 'willRender'),
+    hook('bottom', 'willUpdate'),
     hook('bottom', 'willReceiveAttrs', { twitterMiddle: "@hipstertomdale" }),
+    hook('bottom', 'willRender'),
 
     hook('bottom', 'didUpdate'), hook('bottom', 'didRender'),
     hook('middle', 'didUpdate'), hook('middle', 'didRender'),
@@ -320,14 +328,17 @@ QUnit.test('manually re-rendering in `willReceiveAttrs` triggers lifecycle hooks
   // rerender, lifecycle hooks are invoked on all child components.
 
   deepEqual(hooks, [
-    hook('top', 'willUpdate'), hook('top', 'willRender'),
+    hook('top', 'willUpdate'),
     hook('top', 'willReceiveAttrs', { twitter: "@hipstertomdale" }),
+    hook('top', 'willRender'),
 
-    hook('middle', 'willUpdate'), hook('middle', 'willRender'),
+    hook('middle', 'willUpdate'),
     hook('middle', 'willReceiveAttrs', { name: "Tom Dale" }),
+    hook('middle', 'willRender'),
 
-    hook('bottom', 'willUpdate'), hook('bottom', 'willRender'),
+    hook('bottom', 'willUpdate'),
     hook('bottom', 'willReceiveAttrs', { website: "tomdale.net" }),
+    hook('bottom', 'willRender'),
 
     hook('bottom', 'didUpdate'), hook('bottom', 'didRender'),
     hook('middle', 'didUpdate'), hook('middle', 'didRender'),

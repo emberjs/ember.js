@@ -28,6 +28,8 @@ export var CoreOutletView = View.extend({
       this.dirtyOutlets();
       this._outlets = [];
 
+      this._outlets = [];
+
       this.scheduleRevalidate();
     }
   },

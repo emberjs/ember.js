@@ -1,6 +1,5 @@
 import DOMHelper from "dom-helper";
 import environment from "ember-metal/environment";
-import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -8,6 +7,7 @@ import {
   _instrumentStart,
   subscribers
 } from "ember-metal/instrumentation";
+import buildComponentTemplate from "ember-views/system/build-component-template";
 
 var domHelper = environment.hasDOM ? new DOMHelper() : null;
 
@@ -16,27 +16,27 @@ function Renderer(_helper, _destinedForDOM) {
 }
 
 Renderer.prototype.renderTopLevelView =
-  function Renderer_renderTopLevelView(view, morph) {
-    view.ownerView = morph.state.view = view;
-    view.renderNode = morph;
-
-    var contentMorph = this.contentMorphForView(view, morph);
+  function Renderer_renderTopLevelView(view, renderNode) {
+    view.ownerView = renderNode.state.view = view;
+    view.renderNode = renderNode;
 
     var template = get(view, 'layout') || get(view, 'template');
+    var componentInfo = { component: view };
 
-    if (template) {
-      var result = view.renderTemplate(view, contentMorph.contextualElement, template, contentMorph);
+    var block = buildComponentTemplate(componentInfo, {}, {
+      self: view,
+      template: template.raw
+    }).block;
 
-      view.lastResult = morph.lastResult = result;
-      window.lastMorph = morph;
+    view.renderBlock(block, renderNode);
+    view.lastResult = renderNode.lastResult;
 
-      this.dispatchLifecycleHooks(view.env);
-    }
+    this.dispatchLifecycleHooks(view.env);
   };
 
 Renderer.prototype.revalidateTopLevelView =
   function Renderer_revalidateTopLevelView(view) {
-    view.renderNode.lastResult.revalidate();
+    view.renderNode.lastResult.revalidate(view.env);
     this.dispatchLifecycleHooks(view.env);
   };
 
@@ -65,12 +65,6 @@ Renderer.prototype.appendTo =
     var morph = this._dom.appendMorph(target);
     morph.ownerNode = morph;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
-  };
-
-// This entry point is called by the `#view` keyword in templates
-Renderer.prototype.contentMorphForView =
-  function Renderer_contentMorphForView(view, morph, options) {
-    return contentMorphForView(view, morph, this._dom, options);
   };
 
 Renderer.prototype.willCreateElement = function (view) {
@@ -163,60 +157,3 @@ Renderer.prototype.didDestroyElement = function (view) {
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 
 export default Renderer;
-
-function contentMorphForView(view, morph, dom, options) {
-  var buffer = new RenderBuffer(dom);
-  var contextualElement = morph.contextualElement;
-  var contentMorph;
-
-  if (options && options.class) {
-    view.classNames.push(options.class);
-  }
-
-  if (options && options.id) {
-    view.elementId = options.id;
-  }
-
-  view.renderer.willCreateElement(view);
-
-  var tagName = view.tagName;
-
-  if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
-    tagName = get(view, 'tagName');
-    Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
-  }
-
-  var classNameBindings = view.classNameBindings;
-  var taglessViewWithClassBindings = tagName === '' && (classNameBindings && classNameBindings.length > 0);
-
-  if (tagName === null || tagName === undefined) {
-    tagName = 'div';
-  }
-
-  Ember.assert('You cannot use `classNameBindings` on a tag-less view: ' + view.toString(), !taglessViewWithClassBindings);
-
-  buffer.reset(tagName, contextualElement);
-
-  var element;
-
-  if (tagName !== '') {
-    if (view.applyAttributesToBuffer) {
-      view.applyAttributesToBuffer(buffer);
-    }
-    element = buffer.generateElement();
-  }
-
-  if (element && element.nodeType === 1) {
-    view.element = element;
-    contentMorph = dom.insertMorphBefore(element, null);
-    contentMorph.ownerNode = morph.ownerNode;
-    morph.childNodes = [contentMorph];
-    morph.setContent(element);
-  } else {
-    contentMorph = morph;
-  }
-
-  view.renderer.didCreateElement(view);
-
-  return contentMorph;
-}
