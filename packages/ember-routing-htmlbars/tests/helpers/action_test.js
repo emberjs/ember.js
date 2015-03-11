@@ -910,8 +910,10 @@ QUnit.test("a quoteless parameter should lookup actionName in context [DEPRECATE
   var lastAction;
   var actionOrder = [];
 
-  view = EmberView.create({
-    template: compile("{{#each allactions}}<a {{bind-attr id='name'}} {{action name}}>{{title}}</a>{{/each}}")
+  ignoreDeprecation(function() {
+    view = EmberView.create({
+      template: compile("{{#each allactions}}<a {{bind-attr id='name'}} {{action name}}>{{title}}</a>{{/each}}")
+    });
   });
 
   var controller = EmberController.extend({
@@ -961,8 +963,10 @@ QUnit.test("a quoteless parameter should resolve actionName, including path", fu
   var lastAction;
   var actionOrder = [];
 
-  view = EmberView.create({
-    template: compile("{{#each item in allactions}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")
+  ignoreDeprecation(function() {
+    view = EmberView.create({
+      template: compile("{{#each item in allactions}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")
+    });
   });
 
   var controller = EmberController.extend({
