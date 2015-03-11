@@ -3,22 +3,6 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
-
-import { fmt } from "ember-runtime/system/string";
-import AttrNode from "ember-views/attr_nodes/attr_node";
-import LegacyBindAttrNode from "ember-views/attr_nodes/legacy_bind";
-import keys from "ember-metal/keys";
-import helpers from "ember-htmlbars/helpers";
-import { map } from 'ember-metal/enumerable_utils';
-import {
-  isStream,
-  concat
-} from "ember-metal/streams/utils";
-import {
-  streamifyClassNameBinding
-} from "ember-views/streams/class_name_binding";
-
 /**
   `bind-attr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
@@ -139,75 +123,10 @@ import {
 
   @method bind-attr
   @for Ember.Handlebars.helpers
+  @deprecated
   @param {Hash} options
   @return {String} HTML string
 */
-function bindAttrHelper(params, hash, options, env) {
-  var element = options.element;
-
-  Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(hash).length);
-
-  var view = env.data.view;
-
-  // Handle classes differently, as we can bind multiple classes
-  var classNameBindings = hash['class'];
-  if (classNameBindings !== null && classNameBindings !== undefined) {
-    if (!isStream(classNameBindings)) {
-      classNameBindings = applyClassNameBindings(classNameBindings, view);
-    }
-
-    var classView = new AttrNode('class', classNameBindings);
-    classView._morph = env.dom.createAttrMorph(element, 'class');
-
-    Ember.assert(
-      'You cannot set `class` manually and via `{{bind-attr}}` helper on the same element. ' +
-      'Please use `{{bind-attr}}`\'s `:static-class` syntax instead.',
-      !element.getAttribute('class')
-    );
-
-    view.appendChild(classView);
-  }
-
-  var attrKeys = keys(hash);
-
-  var attr, path, lazyValue, attrView;
-  for (var i=0, l=attrKeys.length;i<l;i++) {
-    attr = attrKeys[i];
-    if (attr === 'class') {
-      continue;
-    }
-    path = hash[attr];
-    if (isStream(path)) {
-      lazyValue = path;
-    } else {
-      Ember.assert(
-        fmt("You must provide an expression as the value of bound attribute." +
-            " You specified: %@=%@", [attr, path]),
-        typeof path === 'string'
-      );
-      lazyValue = view.getStream(path);
-    }
-
-    attrView = new LegacyBindAttrNode(attr, lazyValue);
-    attrView._morph = env.dom.createAttrMorph(element, attr);
-
-    Ember.assert(
-      'You cannot set `' + attr + '` manually and via `{{bind-attr}}` helper on the same element.',
-      !element.getAttribute(attr)
-    );
-
-    view.appendChild(attrView);
-  }
-}
-
-function applyClassNameBindings(classNameBindings, view) {
-  var arrayOfClassNameBindings = classNameBindings.split(' ');
-  var boundClassNameBindings = map(arrayOfClassNameBindings, function(classNameBinding) {
-    return streamifyClassNameBinding(view, classNameBinding);
-  });
-  var concatenatedClassNames = concat(boundClassNameBindings, ' ');
-  return concatenatedClassNames;
-}
 
 /**
   See `bind-attr`
@@ -219,15 +138,3 @@ function applyClassNameBindings(classNameBindings, view) {
   @param {Hash} options
   @return {String} HTML string
 */
-function bindAttrHelperDeprecated() {
-  Ember.deprecate("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
-
-  return helpers['bind-attr'].helperFunction.apply(this, arguments);
-}
-
-export default bindAttrHelper;
-
-export {
-  bindAttrHelper,
-  bindAttrHelperDeprecated
-};

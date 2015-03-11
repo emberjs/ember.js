@@ -97,9 +97,11 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
     return dasherize(value);
   });
 
-  view = EmberView.create({
-    controller: { prop: "isThing" },
-    template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
+  ignoreDeprecation(function() {
+    view = EmberView.create({
+      controller: { prop: "isThing" },
+      template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
+    });
   });
 
   runAppend(view);
