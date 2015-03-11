@@ -86,7 +86,7 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
 
   nameStream.value(); // Prime the stream to notify subscribers
   nameStream.setSource(new Stream(function() {
-      return { name: "wycats" };
+    return { name: "wycats" };
   }));
 
   equal(count, 1, "Subscribers called correct number of times");
@@ -101,7 +101,7 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
 
   nameStream.value(); // Prime the stream to notify subscribers
   nameStream.setSource(new Stream(function() {
-      return object;
+    return object;
   }));
 
   equal(count, 1, "Subscribers called correct number of times");

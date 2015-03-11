@@ -200,18 +200,33 @@ export function or(first, second) {
 }
 
 export function addDependency(stream, dependency) {
-  if (dependency) {
+  Ember.assert("Cannot add a stream as a dependency to a non-stream", isStream(stream) || !isStream(dependency));
+  if (isStream(stream)) {
     stream.addDependency(dependency);
   }
 }
 
 export function zip(streams, callback) {
   var stream = new Stream(function() {
-    return callback(readArray(streams));
+    var array = readArray(streams);
+    return callback ? callback(array) : array;
   });
 
   for (var i=0, l=streams.length; i<l; i++) {
     stream.addDependency(streams[i]);
+  }
+
+  return stream;
+}
+
+export function zipHash(object, callback) {
+  var stream = new Stream(function() {
+    var hash = readHash(object);
+    return callback ? callback(hash) : hash;
+  });
+
+  for (var prop in object) {
+    stream.addDependency(object[prop]);
   }
 
   return stream;

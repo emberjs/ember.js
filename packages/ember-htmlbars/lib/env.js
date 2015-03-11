@@ -23,8 +23,10 @@ import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
 import hasHelper from "ember-htmlbars/hooks/has-helper";
 
 import helpers from "ember-htmlbars/helpers";
+import keywords, { registerKeyword } from "ember-htmlbars/keywords";
 
 var emberHooks = merge({}, hooks);
+emberHooks.keywords = keywords;
 
 merge(emberHooks, {
   linkRenderNode: linkRenderNode,
@@ -53,15 +55,13 @@ import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
 import partial from "ember-htmlbars/keywords/partial";
 
-merge(emberHooks.keywords, {
-  "debugger": debuggerKeyword,
-  "with": withKeyword,
-  outlet: outlet,
-  unbound: unbound,
-  view: view,
-  component: componentKeyword,
-  partial: partial
-});
+registerKeyword('debugger', debuggerKeyword);
+registerKeyword('with', withKeyword);
+registerKeyword('outlet', outlet);
+registerKeyword('unbound', unbound);
+registerKeyword('view', view);
+registerKeyword('component', componentKeyword);
+registerKeyword('partial', partial);
 
 export default {
   hooks: emberHooks,

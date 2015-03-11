@@ -61,9 +61,8 @@ var RoutingService = Service.extend({
     return router.generate.apply(router, args);
   },
 
-  isActiveForRoute: function(params, routeName, routerState, isCurrentWhenSpecified) {
+  isActiveForRoute: function(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     var router = get(this, 'router');
-    var contexts = params.models;
 
     var handlers = router.router.recognizer.handlersFor(routeName);
     var leafName = handlers[handlers.length-1].handler;
@@ -83,7 +82,7 @@ var RoutingService = Service.extend({
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(routeName, contexts, params.queryParams, !isCurrentWhenSpecified);
+    return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
   }
 });
 

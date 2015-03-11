@@ -37,7 +37,7 @@ export default {
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
     state.componentNode = componentNode;
 
-    componentNode.render(env, hash, visitor, parentView._state === 'inDOM');
+    componentNode.render(env, hash, visitor);
   }
 };
 

@@ -21,6 +21,7 @@ import withHelper from "ember-htmlbars/helpers/with";
 import logHelper from "ember-htmlbars/helpers/log";
 import eachHelper from "ember-htmlbars/helpers/each";
 import bindAttrClassHelper from "ember-htmlbars/helpers/bind-attr-class";
+import normalizeClassHelper from "ember-htmlbars/helpers/-normalize-class";
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -36,6 +37,7 @@ registerHelper('with', withHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
 registerHelper('bind-attr-class', bindAttrClassHelper);
+registerHelper('-normalize-class', normalizeClassHelper);
 
 Ember.HTMLBars = {
   _registerHelper: registerHelper,

@@ -1,1 +1,1 @@
-<a class="ember-view {{classes}}" href={{href}}>{{yield}}</a>
+{{#if linkTitle}}{{#if attrs.escaped}}{{linkTitle}}{{else}}{{{linkTitle}}}{{/if}}{{else}}{{yield}}{{/if}}

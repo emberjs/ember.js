@@ -4,7 +4,7 @@
 */
 
 import merge from "ember-metal/merge";
-import ShadowRoot from "ember-htmlbars/system/shadow-root";
+import ComponentNode from "ember-htmlbars/system/component-node";
 
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
 topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -54,38 +54,26 @@ export default {
     }
   },
 
-  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
-    var state = morph.state;
+  render: function(renderNode, env, scope, params, hash, template, inverse, visitor) {
+    var state = renderNode.state;
+    var parentView = state.parentView;
     var outletState = state.outletState;
     var toRender = outletState.render;
 
     var ViewClass = outletState.render.ViewClass;
-    var parentView = env.view;
-    var view;
 
-    if (ViewClass) {
-      view = ViewClass.create();
-      if (parentView) { parentView.linkChild(view); }
-      state.view = view;
-    }
+    var options = {
+      component: ViewClass,
+      layout: toRender.template,
+      self: toRender.controller
+    };
 
-    var layoutMorph = layoutMorphFor(env, view, morph);
-    var options = { renderNode: view && view.renderNode, view: view };
-    state.shadowRoot = new ShadowRoot(layoutMorph, toRender.template, null, null);
-    state.shadowRoot.render(env, toRender.controller || {}, options, visitor);
+    var componentNode = ComponentNode.create(renderNode, env, hash, options, parentView, null, scope, template);
+    state.componentNode = componentNode;
 
-    // TODO: Do we need to copy lastResult?
+    componentNode.render(env, hash, visitor);
   }
 };
-
-function layoutMorphFor(env, view, morph) {
-  var layoutMorph = morph;
-  if (view) {
-    view.renderNode = morph;
-    layoutMorph = env.renderer.contentMorphForView(view, morph);
-  }
-  return layoutMorph;
-}
 
 function isEmpty(outletState) {
   return !outletState || (!outletState.render.ViewClass && !outletState.render.template);
