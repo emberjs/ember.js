@@ -139,7 +139,7 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
-    morph.lastResult = render(template, env, scope, { renderNode: morph, self: self, blockArguments: blockArguments });
+    render(template, env, scope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 }
 
@@ -214,7 +214,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
     morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };
 
     // Render the shadow template with the block available
-    morph.lastResult = render(shadowTemplate.raw, env, shadowScope, { renderNode: morph, self: self, blockArguments: blockArguments });
+    render(shadowTemplate.raw, env, shadowScope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 
   function blockToYield(env, blockArguments, renderNode, shadowParent, visitor) {
@@ -229,7 +229,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
         scope = env.hooks.createChildScope(parentScope);
       }
 
-      renderNode.lastResult = render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
+      render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
     }
   }
 }
@@ -498,7 +498,7 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
   }
 
   if (toClear) {
-    clearMorph(toClear, env.hooks.cleanup);
+    clearMorph(toClear, env.hooks.cleanup, false);
   }
 }
 
@@ -541,19 +541,22 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     env = keyword.updateEnv(morph.state, env, scope, params, hash);
   }
 
-  var firstTime = !morph.lastResult;
+  var firstTime = !morph.rendered;
 
   if (keyword.isEmpty) {
     var isEmpty = keyword.isEmpty(morph.state, env, scope, params, hash);
 
     if (isEmpty) {
-      if (!firstTime) { clearMorph(morph, env.hooks.cleanup); }
+      if (!firstTime) { clearMorph(morph, env.hooks.cleanup, false); }
       return true;
     }
   }
 
   if (firstTime) {
-    keyword.render(morph, env, scope, params, hash, template, inverse, visitor);
+    if (keyword.render) {
+      keyword.render(morph, env, scope, params, hash, template, inverse, visitor);
+    }
+    morph.rendered = true;
     return true;
   }
 
@@ -567,12 +570,14 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
       validateChildMorphs(env, morph, visitor);
       return true;
     } else {
-      clearMorph(morph, env.hooks.cleanup);
+      clearMorph(morph, env.hooks.cleanup, true);
     }
   }
 
+  // If the node is unstable, re-render from scratch
   if (keyword.render) {
     keyword.render(morph, env, scope, params, hash, template, inverse, visitor);
+    morph.rendered = true;
     return true;
   }
 }

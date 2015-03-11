@@ -125,6 +125,7 @@ export function manualElement(tagName, attributes) {
 
 RenderResult.prototype.render = function() {
   this.root.lastResult = this;
+  this.root.rendered = true;
   this.populateNodes(AlwaysDirtyVisitor);
 
   if (this.shouldSetContent) {

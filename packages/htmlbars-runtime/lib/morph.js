@@ -15,6 +15,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.morphMap = null;
   this.key = null;
   this.linkedParams = null;
+  this.rendered = false;
 }
 
 HTMLBarsMorph.empty = function(domHelper, contextualElement) {
