@@ -7,7 +7,7 @@ import subscribe from "ember-htmlbars/utils/subscribe";
 import shouldDisplay from "ember-views/streams/should_display";
 import { chain, read } from "ember-metal/streams/utils";
 
-export default function linkRenderNode(renderNode, scope, path, params, hash) {
+export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.state.unsubscribers) {
     return true;
   }
