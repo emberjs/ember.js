@@ -928,12 +928,10 @@ QUnit.test("The {{link-to}} helper works in an #each'd array of string route nam
   });
 
   Ember.TEMPLATES = {
-    index: compile('{{#each routeName in routeNames}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
+    index: compile('{{#each routeNames as |routeName|}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames as |r|}}{{#link-to r}}{{r}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
   };
 
-  expectDeprecation(function() {
-    bootApplication();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  bootApplication();
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");
