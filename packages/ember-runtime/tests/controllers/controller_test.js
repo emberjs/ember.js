@@ -3,6 +3,7 @@
 import Controller from "ember-runtime/controllers/controller";
 import Service from "ember-runtime/system/service";
 import ObjectController from "ember-runtime/controllers/object_controller";
+import ArrayController from "ember-runtime/controllers/array_controller";
 import {
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
@@ -221,6 +222,42 @@ QUnit.test("controllers can be injected into controllers", function() {
 
   equal(postsController, postController.get('postsController'), "controller.posts is injected");
 });
+
+QUnit.test("controllers can be injected into ObjectControllers", function() {
+  var registry = new Registry();
+  var container = registry.container();
+
+  registry.register('controller:post', Controller.extend({
+    postsController: inject.controller('posts')
+  }));
+
+  registry.register('controller:posts', ObjectController.extend());
+
+  var postController = container.lookup('controller:post');
+  var postsController;
+  expectDeprecation(function() {
+    postsController = container.lookup('controller:posts');
+  }, objectControllerDeprecation);
+
+  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+});
+
+QUnit.test("controllers can be injected into ArrayControllers", function() {
+  var registry = new Registry();
+  var container = registry.container();
+
+  registry.register('controller:post', Controller.extend({
+    postsController: inject.controller('posts')
+  }));
+
+  registry.register('controller:posts', ArrayController.extend());
+
+  var postController = container.lookup('controller:post');
+  var postsController = container.lookup('controller:posts');
+
+  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+});
+
 
 QUnit.test("services can be injected into controllers", function() {
   var registry = new Registry();
