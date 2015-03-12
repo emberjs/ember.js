@@ -1294,3 +1294,41 @@ QUnit.test("{{view}} asserts that a view subclass instance is present off contro
     runAppend(view);
   }, /must be a subclass or an instance of Ember.View/);
 });
+
+QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
+  registry.register('view:derp', EmberView.extend({
+    template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
+  }));
+
+  view = EmberView.create({
+    container: container,
+    foo: 'bar',
+    template: compile('{{view "derp" id=view.foo}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$('#bar').length, 1, 'it uses the provided id for the views elementId');
+  equal(view.$('#view-id').text(), 'bar', 'the views id property is set');
+  equal(view.$('#view-elementId').text(), 'bar', 'the views elementId property is set');
+});
+
+QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', function() {
+  registry.register('view:derp', EmberView.extend({
+    template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
+  }));
+
+  view = EmberView.create({
+    container: container,
+    foo: 'bar',
+    template: compile('{{view "derp" id=view.foo}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$('#view-id').text(), 'bar', 'the views id property is set');
+
+  run(view, set, view, 'foo', 'baz');
+
+  equal(view.$('#view-id').text(), 'bar', 'the views id property is not changed');
+});
