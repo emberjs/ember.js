@@ -25,7 +25,7 @@ Renderer.prototype.renderTopLevelView =
 
     var block = buildComponentTemplate(componentInfo, {}, {
       self: view,
-      template: template.raw
+      template: template && template.raw
     }).block;
 
     view.renderBlock(block, renderNode);
@@ -65,6 +65,20 @@ Renderer.prototype.appendTo =
     var morph = this._dom.appendMorph(target);
     morph.ownerNode = morph;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
+  };
+
+Renderer.prototype.replaceIn =
+  function Renderer_replaceIn(view, target) {
+    var morph = this._dom.replaceContentWithMorph(target);
+    morph.ownerNode = morph;
+    run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
+  };
+
+Renderer.prototype.createElement =
+  function Renderer_createElement(view) {
+    var morph = this._dom.createFragmentMorph();
+    morph.ownerNode = morph;
+    this.renderTopLevelView(view, morph);
   };
 
 Renderer.prototype.willCreateElement = function (view) {
