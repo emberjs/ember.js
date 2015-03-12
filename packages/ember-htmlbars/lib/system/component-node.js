@@ -2,6 +2,7 @@ import merge from "ember-metal/merge";
 import Ember from "ember-metal/core";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 import { readHash } from "ember-metal/streams/utils";
+import { get } from "ember-metal/property_get";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -32,7 +33,10 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     if (attrs.tagName) { options.tagName = attrs.tagName; }
 
     component = componentInfo.component = createComponent(found.component, options, renderNode);
+    componentInfo.layout = get(component, 'layout') || componentInfo.layout;
   }
+
+  Ember.assert("BUG: ComponentNode.create can take a scope or a self, but not both", !(contentScope && found.self));
 
   var results = buildComponentTemplate(componentInfo, attrs, {
     template: contentTemplate,

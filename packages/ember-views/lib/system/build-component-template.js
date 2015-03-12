@@ -10,57 +10,77 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
 
   if (component) {
     var tagName = tagNameFor(component);
+    layoutTemplate = componentInfo.layout;
 
-    layoutTemplate = get(component, 'layout') || componentInfo.layout;
+    // Case 1: We are building a component without a template, either because
+    // it's a top-level component without a template, or because it's an
+    // in-template component without a block. If the layout `yields`, it does
+    // nothing.
+    blockToRender = function() {};
 
-    var layoutBlock;
-
+    // Case 2: We are building a component with a template, either because
+    // it's a top-level component with a template, or because it's an
+    // in-template component with a block;
     if (content.template) {
-      contentBlock = internal.blockFor(render, content.template, {
-        scope: content.scope,
-        self: content.scope ? undefined : content.self || {},
-        options: { view: component }
-      });
-    } else {
-      contentBlock = function() {};
+      blockToRender = createContentBlock(content.template, content.scope, content.self, component);
     }
 
+    // If there is a layout, it means that the component that we are rendering
+    // has a defined template. If that template yields, it will yield to the
+    // contentBlock defined above.
     if (layoutTemplate) {
-      layoutBlock = internal.blockFor(render, layoutTemplate.raw, {
-        yieldTo: contentBlock,
-        self: content.self || {},
-        options: { view: component, attrs: attrs }
-      });
+      blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self || {}, component, attrs);
     }
 
+    // If this is not a tagless component, we need to create the wrapping
+    // element. We use `manualElement` to create a template that represents
+    // the wrapping element and yields to the previous block.
     if (tagName !== '') {
       var attributes = normalizeComponentAttributes(component, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
 
       createdElementBlock = true;
 
-      blockToRender = internal.blockFor(render, elementTemplate, {
-        yieldTo: layoutBlock || contentBlock,
-        self: { view: component },
-        options: { view: component }
-      });
-    } else {
-      blockToRender = layoutBlock || contentBlock;
+      blockToRender = createElementBlock(elementTemplate, blockToRender, component);
     }
-  } else {
-    contentBlock = internal.blockFor(render, content.template, {
-      scope: content.scope,
-      self: content.scope ? undefined : {}
-    });
 
-    blockToRender = internal.blockFor(render, componentInfo.layout.raw, {
-      yieldTo: contentBlock,
-      self: {},
-      options: { view: component, attrs: attrs }
-    });
+    return { createdElement: tagName !== '', block: blockToRender };
   }
 
-  return { createdElement: createdElementBlock, block: blockToRender };
+  contentBlock = createContentBlock(content.template, content.scope, content.self, null);
+  blockToRender = createLayoutBlock(componentInfo.layout.raw, contentBlock, content.self || {}, null, attrs);
+
+  return { createdElement: false, block: blockToRender };
+}
+
+function blockFor(template, options) {
+  return internal.blockFor(render, template, options);
+}
+
+function createContentBlock(template, scope, self, component) {
+  Ember.assert("BUG: buildComponentTemplate can take a scope or a self, but not both", !(scope && self));
+
+  return blockFor(template, {
+    scope: scope,
+    self: self,
+    options: { view: component }
+  });
+}
+
+function createLayoutBlock(template, yieldTo, self, component, attrs) {
+  return blockFor(template, {
+    yieldTo: yieldTo,
+    self: self,
+    options: { view: component, attrs: attrs }
+  });
+}
+
+function createElementBlock(template, yieldTo, component) {
+  return blockFor(template, {
+    yieldTo: yieldTo,
+    self: { view: component },
+    options: { view: component }
+  });
 }
 
 function tagNameFor(view) {

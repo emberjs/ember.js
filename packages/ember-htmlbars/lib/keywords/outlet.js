@@ -68,7 +68,7 @@ export default {
       self: toRender.controller
     };
 
-    var componentNode = ComponentNode.create(renderNode, env, hash, options, parentView, null, scope, template);
+    var componentNode = ComponentNode.create(renderNode, env, null, options, parentView, null, null, template);
     state.componentNode = componentNode;
 
     componentNode.render(env, hash, visitor);
