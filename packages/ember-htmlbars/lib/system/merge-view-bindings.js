@@ -60,7 +60,7 @@ function mergeDOMViewBindings(view, props, hash) {
   );
 
   if (hash.id) {
-    props.elementId = read(hash.id);
+    props.id = props.elementId = read(hash.id);
   }
 
   if (hash.tag) {
