@@ -239,7 +239,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property active
   **/
-  active: computed('attrs.params', function computeLinkViewActive() {
+  active: computed('attrs.params', '_routing.currentState', function computeLinkViewActive() {
     var currentState = get(this, '_routing.currentState');
     return computeActive(this, currentState);
   }),
