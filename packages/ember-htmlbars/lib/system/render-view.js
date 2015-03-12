@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import defaultEnv from "ember-htmlbars/env";
 import { get } from "ember-metal/property_get";
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ComponentNode, { createOrUpdateComponent } from "ember-htmlbars/system/component-node";
 
 export default function renderView(view, buffer, template) {
   if (!template) {
@@ -34,7 +34,7 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
   };
 
   view.env = env;
-
+  createOrUpdateComponent(view, {}, renderNode);
   var componentNode = new ComponentNode(view, null, renderNode, block, true);
 
   componentNode.render(env, {});

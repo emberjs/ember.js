@@ -56,7 +56,7 @@ export default {
 
   render: function(renderNode, env, scope, params, hash, template, inverse, visitor) {
     var state = renderNode.state;
-    var parentView = state.parentView;
+    var parentView = env.view;
     var outletState = state.outletState;
     var toRender = outletState.render;
 
@@ -65,7 +65,8 @@ export default {
     var options = {
       component: ViewClass,
       layout: toRender.template,
-      self: toRender.controller
+      self: toRender.controller,
+      isOutlet: true
     };
 
     var componentNode = ComponentNode.create(renderNode, env, {}, options, parentView, null, null, template);

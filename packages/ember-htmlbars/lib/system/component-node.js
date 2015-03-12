@@ -28,11 +28,11 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
   var componentInfo = { layout: found.layout };
 
   if (found.component) {
-    var options = { parentView: parentView };
-    if (attrs.id) { options.elementId = attrs.id; }
-    if (attrs.tagName) { options.tagName = attrs.tagName; }
+    var options = { parentView: parentView, isOutlet: found.isOutlet };
+    if (attrs && attrs.id) { options.elementId = attrs.id; }
+    if (attrs && attrs.tagName) { options.tagName = attrs.tagName; }
 
-    component = componentInfo.component = createComponent(found.component, options, renderNode);
+    component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
     componentInfo.layout = get(component, 'layout') || componentInfo.layout;
   }
 
@@ -110,7 +110,7 @@ function lookupComponent(env, tagName) {
   };
 }
 
-function createComponent(component, options, renderNode) {
+export function createOrUpdateComponent(component, options, renderNode) {
   if (component.create) {
     component = component.create(options);
   }
