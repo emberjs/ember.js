@@ -24,6 +24,18 @@ HTMLBarsMorph.empty = function(domHelper, contextualElement) {
   return morph;
 };
 
+HTMLBarsMorph.create = function (domHelper, contextualElement, node) {
+  var morph = new HTMLBarsMorph(domHelper, contextualElement);
+  morph.setNode(node);
+  return morph;
+};
+
+HTMLBarsMorph.attach = function (domHelper, contextualElement, firstNode, lastNode) {
+  var morph = new HTMLBarsMorph(domHelper, contextualElement);
+  morph.setRange(firstNode, lastNode);
+  return morph;
+};
+
 var prototype = HTMLBarsMorph.prototype = createObject(MorphBase.prototype);
 prototype.constructor = HTMLBarsMorph;
 prototype.super$constructor = MorphBase;

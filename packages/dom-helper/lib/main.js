@@ -379,6 +379,29 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   return morph;
 };
 
+prototype.createFragmentMorph = function(contextualElement) {
+  if (contextualElement && contextualElement.nodeType === 11) {
+    throw new Error("Cannot pass a fragment as the contextual element to createMorph");
+  }
+
+  var fragment = this.createDocumentFragment();
+  return Morph.create(this, contextualElement, fragment);
+};
+
+prototype.replaceContentWithMorph = function(element)  {
+  var firstChild = element.firstChild;
+
+  if (!firstChild) {
+    var comment = this.createComment('');
+    this.appendChild(element, comment);
+    return Morph.create(this, element, comment);
+  } else {
+    var morph = Morph.attach(this, element, firstChild, element.lastChild);
+    morph.clear();
+    return morph;
+  }
+};
+
 prototype.createUnsafeMorph = function(parent, start, end, contextualElement){
   var morph = this.createMorph(parent, start, end, contextualElement);
   morph.parseTextAsHTML = true;
