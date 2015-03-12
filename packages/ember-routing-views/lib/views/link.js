@@ -6,6 +6,7 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
 
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
@@ -310,11 +311,25 @@ var LinkComponent = EmberComponent.extend({
 
     @property href
   **/
-  href: computed('models', function computeLinkViewHref() {
+  href: computed('models', 'targetRouteName', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
+    var targetRouteName = get(this, 'targetRouteName');
+    var models = get(this, 'models');
+
+    if (get(this, 'loading')) { return get(this, 'loadingHref'); }
+
     var routing = get(this, '_routing');
-    return routing.generateURL(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams'));
+    return routing.generateURL(targetRouteName, models, get(this, 'queryParams'));
+  }),
+
+  loading: computed('models', 'targetRouteName', function() {
+    var targetRouteName = get(this, 'targetRouteName');
+    var models = get(this, 'models');
+
+    if (!modelsAreLoaded(models) || targetRouteName == null) {
+      return get(this, 'loadingClass');
+    }
   }),
 
   /**
@@ -372,6 +387,10 @@ var LinkComponent = EmberComponent.extend({
       this.set('linkTitle', params.shift());
     }
 
+    if (attrs.loadingClass) {
+      set(this, 'loadingClass', attrs.loadingClass);
+    }
+
     for (var i = 0; i < params.length; i++) {
       var value = params[i];
 
@@ -407,6 +426,14 @@ function computeActive(view, routerState) {
   }
 
   return false;
+}
+
+function modelsAreLoaded(models) {
+  for (var i=0, l=models.length; i<l; i++) {
+    if (models[i] == null) { return false; }
+  }
+
+  return true;
 }
 
 function isActiveForRoute(view, routeName, isCurrentWhenSpecified, routerState) {

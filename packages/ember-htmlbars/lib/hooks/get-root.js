@@ -24,13 +24,11 @@ function getKey(scope, key) {
 
   var self = scope.self;
 
-  if (!scope.attrs) {
-    return self.getKey(key);
-  }
-
-  if (key in scope.attrs) {
+  if (scope.attrs && key in scope.attrs) {
     Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
     return scope.attrs[key];
+  } else if (self) {
+    return self.getKey(key);
   } else {
     return scope.locals.view.getKey(key);
   }
