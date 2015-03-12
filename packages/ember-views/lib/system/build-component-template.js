@@ -62,8 +62,7 @@ function createContentBlock(template, scope, self, component) {
 
   return blockFor(template, {
     scope: scope,
-    self: self,
-    options: { view: component }
+    self: self
   });
 }
 
