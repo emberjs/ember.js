@@ -1,5 +1,11 @@
+import Ember from "ember-metal/core";
 import merge from "ember-metal/merge";
-import { isStream } from 'ember-metal/streams/utils';
+import {
+  read,
+  setValue,
+  isStream,
+  subscribe
+} from 'ember-metal/streams/utils';
 
 /**
   @module ember-metal
@@ -11,67 +17,68 @@ import { isStream } from 'ember-metal/streams/utils';
   @namespace Ember.streams
   @constructor
 */
-function Dependency(dependent, stream, callback, context) {
+function Dependency(depender, dependee) {
+  Ember.assert("Dependency error: Depender must be a stream", isStream(depender));
+
+  this.isStream = true; // TODO: Dependency should extend Stream
   this.next = null;
   this.prev = null;
-  this.dependent = dependent;
-  this.stream = stream;
-  this.callback = callback;
-  this.context = context;
+  this.depender = depender;
+  this.dependee = dependee;
   this.unsubscription = null;
 }
 
 merge(Dependency.prototype, {
   subscribe() {
-    this.unsubscribe = this.stream.subscribe(this.callback, this.context);
+    Ember.assert("Dependency error: Dependency tried to subscribe while already subscribed", !this.unsubscription);
+
+    this.unsubscription = subscribe(this.dependee, this.depender.notify, this.depender);
   },
 
   unsubscribe() {
-    this.unsubscription();
-    this.unsubscription = null;
-  },
-
-  removeFrom(stream) {
-    var next = this.next;
-    var prev = this.prev;
-
-    if (prev) {
-      prev.next = next;
-    } else {
-      stream.dependencyHead = next;
-    }
-
-    if (next) {
-      next.prev = prev;
-    } else {
-      stream.dependencyTail = prev;
-    }
-
     if (this.unsubscription) {
-      this.unsubscribe();
+      this.unsubscription();
+      this.unsubscription = null;
     }
   },
 
-  replace(stream, callback, context) {
-    if (!isStream(stream)) {
-      this.stream = null;
-      this.callback = null;
-      this.context = null;
-      this.removeFrom(this.dependent);
-      return null;
+  replace(dependee) {
+    if (this.dependee !== dependee) {
+      this.dependee = dependee;
+
+      if (this.unsubscription) {
+        this.unsubscribe();
+        this.subscribe();
+      }
     }
+  },
 
-    this.stream = stream;
-    this.callback = callback;
-    this.context = context;
+  value() {
+    return read(this.dependee);
+  },
 
-    if (this.unsubscription) {
-      this.unsubscribe();
-      this.subscribe();
-    }
-
-    return this;
+  setValue(value) {
+    return setValue(this.dependee, value);
   }
+
+  // destroy() {
+  //   var next = this.next;
+  //   var prev = this.prev;
+
+  //   if (prev) {
+  //     prev.next = next;
+  //   } else {
+  //     this.depender.dependencyHead = next;
+  //   }
+
+  //   if (next) {
+  //     next.prev = prev;
+  //   } else {
+  //     this.depender.dependencyTail = prev;
+  //   }
+
+  //   this.unsubscribe();
+  // }
 });
 
 export default Dependency;

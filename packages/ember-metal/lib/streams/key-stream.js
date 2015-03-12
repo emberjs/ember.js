@@ -9,20 +9,20 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import Stream from "ember-metal/streams/stream";
-import { isStream, read } from "ember-metal/streams/utils";
+import { read, isStream  } from "ember-metal/streams/utils";
 
 function KeyStream(source, key) {
-  Ember.assert("KeyStream error: source must be a stream", isStream(source));
+  Ember.assert("KeyStream error: source must be a stream", isStream(source)); // TODO: This isn't necessary.
   Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);
   Ember.assert("KeyStream error: key must not have a '.'", key.indexOf('.') === -1);
 
   // used to get the original path for debugging and legacy purposes
-  var label = this.path = labelFor(source, key);
+  var label = labelFor(source, key);
 
   this.init(label);
-  this.source = source;
-  this.dependency = this.addDependency(source);
-  this.observedObject = undefined;
+  this.path = label;
+  this.source = this.addDependency(source);
+  this.observedObject = null;
   this.key = key;
 }
 
@@ -40,21 +40,6 @@ merge(KeyStream.prototype, {
     }
   },
 
-  becameActive() {
-    var object = read(this.source);
-    if (object && typeof object === 'object') {
-      addObserver(object, this.key, this, this.notify);
-      this.observedObject = object;
-    }
-  },
-
-  becameInactive() {
-    if (this.observedObject) {
-      removeObserver(this.observedObject, this.key, this, this.notify);
-      this.observedObject = undefined;
-    }
-  },
-
   setValue(value) {
     var object = read(this.source);
     if (object) {
@@ -62,40 +47,27 @@ merge(KeyStream.prototype, {
     }
   },
 
-  setSource(nextSource) {
-    Ember.assert("KeyStream error: source must be a stream", isStream(nextSource));
+  setSource(source) {
+    this.source.replace(source);
+    this.notify();
+  },
 
-    var prevSource = this.source;
+  revalidate() {
+    var object = this.source.value();
+    if (object !== this.observedObject) {
+      this.deactivate();
 
-    if (nextSource !== prevSource) {
-      this.update(function() {
-        this.dependency.replace(nextSource);
-        this.source = nextSource;
-        this.label = labelFor(nextSource, this.key);
-      });
+      if (object && typeof object === 'object') {
+        addObserver(object, this.key, this, this.notify);
+        this.observedObject = object;
+      }
     }
-
-    this.notify();
   },
 
-  _didChange: function() {
-    this.notify();
-  },
-
-  _super$destroy: Stream.prototype.destroy,
-
-  destroy() {
-    if (this._super$destroy()) {
-      if (isStream(this.source)) {
-        this.source.unsubscribe(this._didChange, this);
-      }
-
-      if (this.obj && typeof this.obj === 'object') {
-        removeObserver(this.obj, this.key, this, this._didChange);
-      }
-
-      this.source = undefined;
-      return true;
+  deactivate() {
+    if (this.observedObject) {
+      removeObserver(this.observedObject, this.key, this, this.notify);
+      this.observedObject = null;
     }
   }
 });

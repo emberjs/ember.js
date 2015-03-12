@@ -326,3 +326,9 @@ export function chain(value, fn, label) {
     return fn();
   }
 }
+
+export function setValue(object, value) {
+  if (object && object.isStream) {
+    object.setValue(value);
+  }
+}

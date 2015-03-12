@@ -1,9 +1,6 @@
 import Ember from "ember-metal/core";
 import create from "ember-metal/platform/create";
-import {
-  getFirstKey,
-  getTailPath
-} from "ember-metal/path_cache";
+import { getFirstKey, getTailPath } from "ember-metal/path_cache";
 import { isStream } from 'ember-metal/streams/utils';
 import Subscriber from "ember-metal/streams/subscriber";
 import Dependency from "ember-metal/streams/dependency";
@@ -29,18 +26,16 @@ Stream.prototype = {
   isStream: true,
 
   init(label) {
-    Ember.assert("Must initialize a stream with a label", label !== undefined);
-
-    this.state = 'inactive';
+    this.label = makeLabel(label);
+    this.isActive = false;
+    this.isDirty = true;
+    this.isDestroyed = false;
     this.cache = undefined;
+    this.children = undefined;
     this.subscriberHead = null;
     this.subscriberTail = null;
     this.dependencyHead = null;
     this.dependencyTail = null;
-    this.dependency = null;
-    this.children = undefined;
-    this.dependencies = undefined;
-    this.label = label;
   },
 
   _makeChildStream(key) {
@@ -90,33 +85,40 @@ Stream.prototype = {
   },
 
   value() {
-    if (this.state === 'inactive') {
-      return this.compute();
-    } else if (this.state === 'clean') {
-      return this.cache;
-    } else if (this.state === 'dirty') {
-      var value = this.compute();
-      this.state = 'clean';
-      this.cache = value;
-      return value;
-    }
     // TODO: Ensure value is never called on a destroyed stream
     // so that we can uncomment this assertion.
     //
-    // Ember.assert("Stream error: value was called in an invalid state: " + this.state);
+    // Ember.assert("Stream error: value was called after the stream was destroyed", !this.isDestroyed);
+
+    // TODO: Remove this block. This will require ensuring we are
+    // not treating streams as "volatile" anywhere.
+    if (!this.isActive) {
+      this.isDirty = true;
+    }
+
+    if (!this.isActive && this.subscriberHead) {
+      this.activate();
+
+
+      if (!this.isDirty) {
+        this.revalidate();
+      }
+    }
+
+    if (this.isDirty) {
+      if (this.isActive) {
+        this.revalidate();
+      }
+
+      this.cache = this.compute();
+      this.isDirty = false;
+    }
+
+    return this.cache;
   },
 
-  addDependency(stream, callback, context) {
-    if (!isStream(stream)) {
-      return null;
-    }
-
-    if (callback === undefined) {
-      callback = this.notify;
-      context = this;
-    }
-
-    var dependency = new Dependency(this, stream, callback, context);
+  addDependency(stream) {
+    var dependency = new Dependency(this, stream);
 
     if (this.isActive) {
       dependency.subscribe();
@@ -152,37 +154,19 @@ Stream.prototype = {
     }
   },
 
-  becameActive() {},
-  becameInactive() {},
-
-  maybeActivate() {
-    if (this.subscriberHead && !this.isActive) {
-      this.subscribeDependencies();
-      this.state = 'dirty';
-      this.becameActive();
-    }
-  },
-
   maybeDeactivate() {
     if (!this.subscriberHead && this.isActive) {
       this.isActive = false;
       this.unsubscribeDependencies();
-      this.state = 'inactive';
-      this.becameInactive();
     }
   },
 
-  update(callback) {
-    if (this.state !== 'inactive') {
-      this.becameInactive();
-    }
-
-    callback.call(this);
-
-    if (this.state !== 'inactive') {
-      this.becameActive();
-    }
+  activate() {
+    this.isActive = true;
+    this.subscribeDependencies();
   },
+
+  revalidate() {},
 
   compute() {
     throw new Error("Stream error: compute not implemented");
@@ -197,9 +181,9 @@ Stream.prototype = {
   },
 
   notifyExcept(callbackToSkip, contextToSkip) {
-    if (this.state === 'clean') {
-      this.state = 'dirty';
-      this._notifySubscribers(callbackToSkip, contextToSkip);
+    if (!this.isDirty) {
+      this.isDirty = true;
+      this.notifySubscribers(callbackToSkip, contextToSkip);
     }
   },
 
@@ -209,7 +193,6 @@ Stream.prototype = {
     var subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {
       this.subscriberHead = this.subscriberTail = subscriber;
-      this.maybeActivate();
     } else {
       var tail = this.subscriberTail;
       tail.next = subscriber;
@@ -242,7 +225,7 @@ Stream.prototype = {
     }
   },
 
-  _notifySubscribers(callbackToSkip, contextToSkip) {
+  notifySubscribers(callbackToSkip, contextToSkip) {
     var subscriber = this.subscriberHead;
 
     while (subscriber) {
@@ -266,8 +249,8 @@ Stream.prototype = {
   },
 
   destroy(prune) {
-    if (this.state !== 'destroyed') {
-      this.state = 'destroyed';
+    if (!this.isDestroyed) {
+      this.isDestroyed = true;
 
       this.subscriberHead = this.subscriberTail = null;
       this.maybeDeactivate();
@@ -293,5 +276,14 @@ Stream.wrap = function(value, Kind, param) {
     return new Kind(value, param);
   }
 };
+
+function makeLabel(label) {
+  if (label === undefined) {
+    return "(no label)";
+  } else {
+    return label;
+  }
+}
+
 
 export default Stream;

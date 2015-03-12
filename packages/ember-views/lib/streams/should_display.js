@@ -1,14 +1,9 @@
-import Stream from "ember-metal/streams/stream";
-import {
-  read,
-  subscribe,
-  unsubscribe,
-  isStream
-} from "ember-metal/streams/utils";
 import create from 'ember-metal/platform/create';
+import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
-import { addDependency } from "ember-metal/streams/utils";
+import Stream from "ember-metal/streams/stream";
+import { isStream } from "ember-metal/streams/utils";
 
 export default function shouldDisplay(predicate) {
   if (isStream(predicate)) {
@@ -25,60 +20,42 @@ export default function shouldDisplay(predicate) {
   }
 }
 
-function ShouldDisplayStream(predicateStream) {
+function ShouldDisplayStream(predicate) {
+  Ember.assert("ShouldDisplayStream error: predicate must be a stream", isStream(predicate));
+
   this.init();
-  this.oldPredicate = undefined;
-  this.predicateStream = predicateStream;
-  this.isTruthyStream = predicateStream.get('isTruthy');
-  this.lengthStream = undefined;
-  subscribe(this.predicateStream, this.notify, this);
-  subscribe(this.isTruthyStream, this.notify, this);
+  this.predicate = this.addDependency(predicate);
+  this.isTruthy = this.addDependency(predicate.get('isTruthy'));
+  this.length = null;
 }
 
 ShouldDisplayStream.prototype = create(Stream.prototype);
 
-ShouldDisplayStream.prototype.valueFn = function() {
-  var oldPredicate = this.oldPredicate;
-  var newPredicate = read(this.predicateStream);
-  var newIsArray = isArray(newPredicate);
+merge(ShouldDisplayStream.prototype, {
+  compute() {
+    var truthy = this.isTruthy.value();
 
-  if (newPredicate !== oldPredicate) {
-
-    if (this.lengthStream && !newIsArray) {
-      unsubscribe(this.lengthStream, this.notify, this);
-      this.lengthStream = undefined;
+    if (typeof truthy === 'boolean') {
+      return truthy;
     }
 
-    if (!this.lengthStream && newIsArray) {
-      this.lengthStream = this.predicateStream.get('length');
-      subscribe(this.lengthStream, this.notify, this);
+    if (this.length) {
+      return this.length.value() !== 0;
+    } else {
+      return !!this.predicate.value();
     }
-    this.oldPredicate = newPredicate;
+  },
+
+  revalidate() {
+    if (isArray(this.predicate.value())) {
+      if (!this.length) {
+        this.length = this.addDependency(this.predicate.dependee.get('length'));
+      }
+    } else {
+      if (this.length) {
+        this.length.destroy();
+        this.length = null;
+      }
+    }
   }
-};
-
-ShouldDisplayStream.prototype.compute = function() {
-  var truthy = read(this.isTruthyStream);
-  if (typeof truthy === 'boolean') {
-    return truthy;
-  }
-
-  if (this.lengthStream) {
-    var length = read(this.lengthStream);
-    return length !== 0;
-  }
-
-  return !!read(this.predicateStream);
-};
-
-ShouldDisplayStream.prototype._super$destroy = Stream.prototype.destroy;
-
-ShouldDisplayStream.prototype.destroy = function(prune) {
-  if (this.state !== 'destroyed') {
-    addDependency(this, this.predicateUnsubscribe);
-    addDependency(this, this.truthyUnsubscribe);
-    addDependency(this, this.lengthUnsubscribe);
-
-    return this._super$destroy(prune);
-  }
-};
+});
