@@ -44,8 +44,8 @@ QUnit.test("is notified when the observed object's property is mutated", functio
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, "Subscribers called correct number of times");
+  equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  nameStream.value(); // Prime the stream to notify subscribers
   set(object, 'name', "wycats");
 
   equal(count, 1, "Subscribers called correct number of times");
@@ -57,12 +57,18 @@ QUnit.test("is notified when the source stream's value changes to a new object",
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, "Subscribers called correct number of times");
+  equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  nameStream.value(); // Prime the stream to notify subscribers
-  source.setValue({ name: "wycats" });
+  object = { name: "wycats" };
+  source.setValue(object);
 
   equal(count, 1, "Subscribers called correct number of times");
   equal(nameStream.value(), "wycats", "Stream value is correct");
+
+  set(object, 'name', "kris");
+
+  equal(count, 2, "Subscribers called correct number of times");
+  equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
 QUnit.test("is notified when the source stream's value changes to the same object", function() {
@@ -70,12 +76,17 @@ QUnit.test("is notified when the source stream's value changes to the same objec
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, "Subscribers called correct number of times");
+  equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  nameStream.value(); // Prime the stream to notify subscribers
   source.setValue(object);
 
   equal(count, 1, "Subscribers called correct number of times");
   equal(nameStream.value(), "mmun", "Stream value is correct");
+
+  set(object, 'name', "kris");
+
+  equal(count, 2, "Subscribers called correct number of times");
+  equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
 QUnit.test("is notified when setSource is called with a new stream whose value is a new object", function() {
@@ -83,14 +94,20 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, "Subscribers called correct number of times");
+  equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  nameStream.value(); // Prime the stream to notify subscribers
+  object = { name: "wycats" }
   nameStream.setSource(new Stream(function() {
-    return { name: "wycats" };
+    return object;
   }));
 
   equal(count, 1, "Subscribers called correct number of times");
   equal(nameStream.value(), "wycats", "Stream value is correct");
+
+  set(object, 'name', "kris");
+
+  equal(count, 2, "Subscribers called correct number of times");
+  equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
 QUnit.test("is notified when setSource is called with a new stream whose value is the same object", function() {
@@ -98,12 +115,17 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, "Subscribers called correct number of times");
+  equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  nameStream.value(); // Prime the stream to notify subscribers
   nameStream.setSource(new Stream(function() {
     return object;
   }));
 
   equal(count, 1, "Subscribers called correct number of times");
   equal(nameStream.value(), "mmun", "Stream value is correct");
+
+  set(object, 'name', "kris");
+
+  equal(count, 2, "Subscribers called correct number of times");
+  equal(nameStream.value(), "kris", "Stream value is correct");
 });
