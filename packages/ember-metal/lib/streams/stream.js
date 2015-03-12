@@ -1,106 +1,19 @@
+import Ember from "ember-metal/core";
 import create from "ember-metal/platform/create";
 import {
   getFirstKey,
   getTailPath
 } from "ember-metal/path_cache";
-import Ember from "ember-metal/core";
-import {
-  isStream
-} from 'ember-metal/streams/utils';
+import { isStream } from 'ember-metal/streams/utils';
+import Subscriber from "ember-metal/streams/subscriber";
+import Dependency from "ember-metal/streams/dependency";
 
 /**
-@module ember-metal
+  @module ember-metal
 */
 
-function Subscriber(callback, context) {
-  this.next = null;
-  this.prev = null;
-  this.callback = callback;
-  this.context = context;
-}
-
-Subscriber.prototype.removeFrom = function(stream) {
-  var next = this.next;
-  var prev = this.prev;
-
-  if (prev) {
-    prev.next = next;
-  } else {
-    stream.subscriberHead = next;
-  }
-
-  if (next) {
-    next.prev = prev;
-  } else {
-    stream.subscriberTail = prev;
-  }
-
-  stream.maybeDeactivate();
-};
-
-function Dependency(dependent, stream, callback, context) {
-  this.next = null;
-  this.prev = null;
-  this.dependent = dependent;
-  this.stream = stream;
-  this.callback = callback;
-  this.context = context;
-  this.unsubscription = null;
-}
-
-Dependency.prototype.subscribe = function() {
-  this.unsubscribe = this.stream.subscribe(this.callback, this.context);
-};
-
-Dependency.prototype.unsubscribe = function() {
-  this.unsubscription();
-  this.unsubscription = null;
-};
-
-Dependency.prototype.removeFrom = function(stream) {
-  var next = this.next;
-  var prev = this.prev;
-
-  if (prev) {
-    prev.next = next;
-  } else {
-    stream.dependencyHead = next;
-  }
-
-  if (next) {
-    next.prev = prev;
-  } else {
-    stream.dependencyTail = prev;
-  }
-
-  if (this.unsubscription) {
-    this.unsubscribe();
-  }
-};
-
-Dependency.prototype.replace = function(stream, callback, context) {
-  if (!isStream(stream)) {
-    this.stream = null;
-    this.callback = null;
-    this.context = null;
-    this.removeFrom(this.dependent);
-    return null;
-  }
-
-  this.stream = stream;
-  this.callback = callback;
-  this.context = context;
-
-  if (this.unsubscription) {
-    this.unsubscribe();
-    this.subscribe();
-  }
-
-  return this;
-};
-
 /**
-  @public
+  @private
   @class Stream
   @namespace Ember.stream
   @constructor
