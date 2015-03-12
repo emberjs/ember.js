@@ -151,7 +151,7 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     renderState.morphListStart = currentMorph;
   }
 
-  return function(key, blockArguments) {
+  return function(key, blockArguments, self) {
     if (typeof key !== 'string') {
       throw new Error("You must provide a string key when calling `yieldItem`; you provided " + key);
     }
@@ -168,18 +168,18 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     morphMap = morph.morphMap;
 
     if (currentMorph && currentMorph.key === key) {
-      yieldTemplate(template, env, parentScope, currentMorph, renderState, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, currentMorph, renderState, visitor)(blockArguments, self);
       currentMorph = currentMorph.nextMorph;
     } else if (currentMorph && morphMap[key] !== undefined) {
       var foundMorph = morphMap[key];
-      yieldTemplate(template, env, parentScope, foundMorph, renderState, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, foundMorph, renderState, visitor)(blockArguments, self);
       morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
       childMorph.key = key;
       morphMap[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
-      yieldTemplate(template, env, parentScope, childMorph, renderState, visitor)(blockArguments);
+      yieldTemplate(template, env, parentScope, childMorph, renderState, visitor)(blockArguments, self);
     }
 
     renderState.morphListStart = currentMorph;
@@ -252,6 +252,7 @@ function optionsFor(template, inverse, env, scope, morph, visitor) {
 
 function thisFor(options) {
   return {
+    arity: options.template.arity,
     yield: options.template.yield,
     yieldItem: options.template.yieldItem,
     yieldIn: options.template.yieldIn
