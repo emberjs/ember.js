@@ -34,18 +34,10 @@ function getKey(scope, key) {
   }
 }
 
-var globalStreams = {};
-
 function getGlobal(name) {
   Ember.deprecate("Global lookup of " + name + " from a Handlebars template is deprecated")
 
-  var globalStream = globalStreams[name];
-
-  if (globalStream === undefined) {
-    var global = Ember.lookup[name];
-    globalStream = new SimpleStream(global, name);
-    globalStreams[name] = globalStream;
-  }
-
-  return globalStream;
+  // This stream should be memoized, but this path is deprecated and
+  // will be removed soon so it's not worth the trouble.
+  return new SimpleStream(Ember.lookup[name], name);
 }
