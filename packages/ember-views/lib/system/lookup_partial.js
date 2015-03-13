@@ -2,6 +2,8 @@ import Ember from "ember-metal/core"; // Ember.assert
 import EmberError from "ember-metal/error";
 
 export default function lookupPartial(env, templateName) {
+  if (templateName == null) { return; }
+
   var nameParts = templateName.split("/");
   var lastPart = nameParts[nameParts.length - 1];
 

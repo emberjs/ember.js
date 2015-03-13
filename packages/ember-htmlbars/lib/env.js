@@ -17,7 +17,8 @@ import updateSelf from "ember-htmlbars/hooks/update-self";
 import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
 import getValue from "ember-htmlbars/hooks/get-value";
-import cleanup from "ember-htmlbars/hooks/cleanup";
+import cleanupRenderNode from "ember-htmlbars/hooks/cleanup-render-node";
+import destroyRenderNode from "ember-htmlbars/hooks/destroy-render-node";
 import classify from "ember-htmlbars/hooks/classify";
 import component from "ember-htmlbars/hooks/component";
 import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
@@ -43,7 +44,8 @@ merge(emberHooks, {
   getValue: getValue,
   subexpr: subexpr,
   concat: concat,
-  cleanup: cleanup,
+  cleanupRenderNode: cleanupRenderNode,
+  destroyRenderNode: destroyRenderNode,
   classify: classify,
   component: component,
   lookupHelper: lookupHelper,
