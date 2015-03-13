@@ -144,7 +144,7 @@ QUnit.test("View lookup - App.FuView (DEPRECATED)", function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  }, /Global lookup of App.FuView from a Handlebars template is deprecated./);
+  }, /Global lookup of App from a Handlebars template is deprecated./);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -986,7 +986,7 @@ QUnit.test('{{view}} should evaluate other attribute bindings set to global path
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Global lookup of App.name from a Handlebars template is deprecated.');
+  }, 'Global lookup of App from a Handlebars template is deprecated.');
 
   equal(view.$('input').val(), 'myApp', 'evaluates attributes bound to global paths');
 
