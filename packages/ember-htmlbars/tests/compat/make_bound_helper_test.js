@@ -15,6 +15,7 @@ import {
 } from 'ember-runtime/system/string';
 
 import EmberHandlebars from "ember-htmlbars/compat";
+import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
 
 var compile, helpers, helper;
 compile = EmberHandlebars.compile;
@@ -53,7 +54,7 @@ QUnit.module("ember-htmlbars: compat - makeBoundHelper", {
 });
 
 QUnit.test("primitives should work correctly [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation(eachDeprecation);
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
   view = EmberView.create({

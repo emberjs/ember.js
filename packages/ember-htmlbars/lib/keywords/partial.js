@@ -6,12 +6,24 @@
 import lookupPartial from "ember-views/system/lookup_partial";
 import { internal } from "htmlbars-runtime";
 
-export default function partialKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
-  var found = lookupPartial(env, env.hooks.getValue(params[0])).raw;
+export default {
+  setupState: function(state, env, scope, params, hash) {
+    state.lastPartialName = state.partialName;
+    state.partialName = env.hooks.getValue(params[0]);
+  },
 
-  internal.hostBlock(morph, env, scope, found, null, null, visitor, function(options) {
-    options.templates.template.yield();
-  });
+  isStable: function(state, env) {
+    return state.lastPartialName === state.partialName;
+  },
 
-  return true;
-}
+  render: function(renderNode, env, scope, params, hash, template, inverse, visitor) {
+    var state = renderNode.state;
+    if (!state.partialName) { return true; }
+    var found = lookupPartial(env, state.partialName);
+    if (!found) { return true; }
+
+    internal.hostBlock(renderNode, env, scope, found.raw, null, null, visitor, function(options) {
+      options.templates.template.yield();
+    });
+  }
+};
