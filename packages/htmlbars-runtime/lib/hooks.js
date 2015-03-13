@@ -475,9 +475,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
 export function continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor) {
   hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
     var helper = env.hooks.lookupHelper(env, scope, path);
-    params = normalizeArray(env, params);
-    hash = normalizeObject(env, hash);
-    helper.call(thisFor(options.templates), params, hash, options.templates);
+    env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
   });
 }
 
@@ -630,19 +628,28 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
     return;
   }
 
-  var value;
   var options = optionsFor(null, null, env, scope, morph);
 
   var helper = env.hooks.lookupHelper(env, scope, path);
-  params = normalizeArray(env, params);
-  hash = normalizeObject(env, hash);
-  value = helper.call(thisFor(options.templates), params, hash, options.templates);
+  var result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
 
-  if (morph.lastValue !== value) {
-    morph.setContent(value);
+  if (result && result.value) {
+    var value = result.value;
+    if (morph.lastValue !== value) {
+      morph.setContent(value);
+    }
+    morph.lastValue = value;
   }
+}
 
-  morph.lastValue = value;
+export function keyword(path, morph, env, scope, params, hash, template, inverse, visitor)  {
+  handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor);
+}
+
+export function invokeHelper(morph, env, scope, visitor, _params, _hash, helper, templates, context) {
+  var params = normalizeArray(env, _params);
+  var hash = normalizeObject(env, _hash);
+  return { value: helper.call(context, params, hash, templates) };
 }
 
 function normalizeArray(env, array) {
@@ -775,11 +782,9 @@ export function range(morph, env, scope, path, value, visitor) {
   `attribute` hook.
 */
 export function element(morph, env, scope, path, params, hash /*, visitor */) {
-  var helper = lookupHelper(env, scope, path);
+  var helper = env.hooks.lookupHelper(env, scope, path);
   if (helper) {
-    params = normalizeArray(env, params);
-    hash = normalizeObject(env, hash);
-    helper(params, hash, { element: morph.element });
+    env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { element: morph.element });
   }
 }
 
@@ -815,10 +820,9 @@ export function attribute(morph, env, scope, name, value) {
 }
 
 export function subexpr(env, scope, helperName, params, hash) {
-  var helper = lookupHelper(env, scope, helperName);
-  params = normalizeArray(env, params);
-  hash = normalizeObject(env, hash);
-  return helper(params, hash, {});
+  var helper = env.hooks.lookupHelper(env, scope, helperName);
+  var result = env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, {});
+  if (result && result.value) { return result.value; }
 }
 
 /**
@@ -941,6 +945,7 @@ export default {
   createChildScope: createChildScope,
   hasHelper: hasHelper,
   lookupHelper: lookupHelper,
+  invokeHelper: invokeHelper,
 
   // derived hooks
   attribute: attribute,
@@ -950,4 +955,5 @@ export default {
   get: get,
   inline: inline,
   range: range,
+  keyword: keyword
 };
