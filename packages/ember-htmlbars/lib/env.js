@@ -13,6 +13,7 @@ import bindShadowScope from "ember-htmlbars/hooks/bind-shadow-scope";
 import bindSelf from "ember-htmlbars/hooks/bind-self";
 import bindScope from "ember-htmlbars/hooks/bind-scope";
 import bindLocal from "ember-htmlbars/hooks/bind-local";
+import updateSelf from "ember-htmlbars/hooks/update-self";
 import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
 import getValue from "ember-htmlbars/hooks/get-value";
@@ -36,6 +37,7 @@ merge(emberHooks, {
   bindSelf: bindSelf,
   bindScope: bindScope,
   bindLocal: bindLocal,
+  updateSelf: updateSelf,
   getRoot: getRoot,
   getChild: getChild,
   getValue: getValue,
