@@ -148,10 +148,10 @@ RenderResult.prototype.rerender = function(env, self, blockArguments, scope) {
 RenderResult.prototype.revalidateWith = function(env, scope, self, blockArguments, visitor) {
   if (env !== undefined) { this.env = env; }
   if (scope !== undefined) { this.scope = scope; }
-  this.bindScope();
+  this.updateScope();
 
-  if (self !== undefined) { this.bindSelf(self); }
-  if (blockArguments !== undefined) { this.bindLocals(blockArguments); }
+  if (self !== undefined) { this.updateSelf(self); }
+  if (blockArguments !== undefined) { this.updateLocals(blockArguments); }
 
   this.populateNodes(visitor);
 };
@@ -195,8 +195,16 @@ RenderResult.prototype.bindScope = function() {
   this.env.hooks.bindScope(this.env, this.scope);
 };
 
+RenderResult.prototype.updateScope = function() {
+  this.env.hooks.updateScope(this.env, this.scope);
+};
+
 RenderResult.prototype.bindSelf = function(self) {
   this.env.hooks.bindSelf(this.env, this.scope, self);
+};
+
+RenderResult.prototype.updateSelf = function(self) {
+  this.env.hooks.updateSelf(this.env, this.scope, self);
 };
 
 RenderResult.prototype.bindLocals = function(blockArguments) {
@@ -204,6 +212,14 @@ RenderResult.prototype.bindLocals = function(blockArguments) {
 
   for (var i=0, l=localNames.length; i<l; i++) {
     this.env.hooks.bindLocal(this.env, this.scope, localNames[i], blockArguments[i]);
+  }
+};
+
+RenderResult.prototype.updateLocals = function(blockArguments) {
+  var localNames = this.template.locals;
+
+  for (var i=0, l=localNames.length; i<l; i++) {
+    this.env.hooks.updateLocal(this.env, this.scope, localNames[i], blockArguments[i]);
   }
 };
 

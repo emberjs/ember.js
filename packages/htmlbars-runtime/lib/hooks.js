@@ -379,6 +379,10 @@ export function bindSelf(env, scope, self) {
   scope.self = self;
 }
 
+export function updateSelf(env, scope, self) {
+  env.hooks.bindSelf(env, scope, self);
+}
+
 /**
   Host Hook: bindLocal
 
@@ -397,6 +401,10 @@ export function bindSelf(env, scope, self) {
 export function bindLocal(env, scope, name, value) {
   scope.localPresent[name] = true;
   scope.locals[name] = value;
+}
+
+export function updateLocal(env, scope, name, value) {
+  env.hooks.bindLocal(env, scope, name, value);
 }
 
 /**
@@ -921,6 +929,10 @@ export function bindScope(/* env, scope */) {
   // other than `self`, `locals` and `block`.
 }
 
+export function updateScope(env, scope) {
+  env.hooks.bindScope(env, scope);
+}
+
 export default {
   // fundamental hooks that you will likely want to override
   bindLocal: bindLocal,
@@ -942,6 +954,9 @@ export default {
   // fundamental hooks with good default behavior
   bindBlock: bindBlock,
   bindShadowScope: bindShadowScope,
+  updateLocal: updateLocal,
+  updateSelf: updateSelf,
+  updateScope: updateScope,
   createChildScope: createChildScope,
   hasHelper: hasHelper,
   lookupHelper: lookupHelper,
