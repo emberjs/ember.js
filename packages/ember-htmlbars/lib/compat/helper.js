@@ -30,7 +30,7 @@ function calculateCompatType(item) {
   @private
 */
 function HandlebarsCompatibleHelper(fn) {
-  this.helperFunction = function helperFunc(params, hash, options, env) {
+  this.helperFunction = function helperFunc(params, hash, options, env, scope) {
     var param, fnResult;
     var hasBlock = options.template && options.template.yield;
 
@@ -72,6 +72,10 @@ function HandlebarsCompatibleHelper(fn) {
         args[i] = param;
       }
     }
+
+    handlebarsOptions.legacyGetPath = function(path) {
+      return env.hooks.get(env, scope, path).value();
+    };
 
     handlebarsOptions.data = {
       view: env.view

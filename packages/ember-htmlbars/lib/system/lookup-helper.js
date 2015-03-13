@@ -59,5 +59,5 @@ export default function lookupHelper(name, view, env) {
     container._registry.register(helperName, helper);
   }
 
-  return helper.helperFunction;
+  return helper;
 }

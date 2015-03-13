@@ -11,6 +11,6 @@ export default function invokeHelper(morph, env, scope, visitor, _params, _hash,
     env.hooks.keyword('view', morph, env, scope, [helper.viewClass], _hash, null, null, visitor);
   } else if (helper.helperFunction) {
     var helperFunc = helper.helperFunction;
-    return { value: helperFunc.call({}, _params, _hash, templates, env) };
+    return { value: helperFunc.call({}, _params, _hash, templates, env, scope) };
   }
 }
