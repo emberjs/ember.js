@@ -16,6 +16,7 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-template-compiler/system/compile";
+import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
@@ -106,7 +107,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
 
     expectDeprecation(function() {
       runAppend(view);
-    }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+    }, eachDeprecation);
   },
 
   teardown() {
@@ -262,7 +263,7 @@ QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
 
   view = EmberView.create({
     container: container,
-    template: templateFor('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
+    template: templateFor('{{#each view.content as |value|}}{{value}}-{{#each view.options as |option|}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
 
     content: A(['X', 'Y']),
     options: A([
@@ -769,7 +770,7 @@ QUnit.test("views inside #each preserve the new context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -784,7 +785,7 @@ QUnit.test("single-arg each defaults to current context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -799,7 +800,7 @@ QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -889,7 +890,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1040,7 +1041,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1055,7 +1056,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });

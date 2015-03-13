@@ -4,17 +4,24 @@
 */
 
 import { get } from "ember-metal/property_get";
-import updateScope from "ember-htmlbars/utils/update-scope";
+import SimpleStream from "ember-metal/streams/simple-stream";
+import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function bindSelf(env, scope, self) {
   Ember.assert("BUG: scope.attrs and self.isView should not both be true", !(scope.attrs && self.isView));
 
   if (self.isView) {
     scope.view = self;
-    updateScope(scope.locals, 'view', self, null);
-    updateScope(scope, 'self', get(self, 'context'), null, true);
+    newStream(scope.locals, 'view', self, null);
+    newStream(scope, 'self', get(self, 'context'), null, true);
     return;
   }
 
-  updateScope(scope, 'self', self, null);
+  newStream(scope, 'self', self, null);
+}
+
+function newStream(scope, key, newValue, renderNode, isSelf) {
+  var stream = new SimpleStream(newValue, isSelf ? null : key);
+  if (renderNode) { subscribe(renderNode, scope, stream); }
+  scope[key] = stream;
 }
