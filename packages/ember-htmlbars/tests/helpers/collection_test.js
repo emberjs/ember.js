@@ -86,7 +86,7 @@ QUnit.test("itemViewClass works in the #collection helper with a global (DEPRECA
     template: compile('{{#collection content=view.exampleController itemViewClass=TemplateTests.ExampleItemView}}beta{{/collection}}')
   });
 
-  var deprecation = /Global lookup of TemplateTests.ExampleItemView from a Handlebars template is deprecated/;
+  var deprecation = /Global lookup of TemplateTests from a Handlebars template is deprecated/;
   expectDeprecation(function() {
     runAppend(view);
   }, deprecation);
