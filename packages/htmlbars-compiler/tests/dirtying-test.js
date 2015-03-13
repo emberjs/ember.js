@@ -540,18 +540,18 @@ test("Returning true from `linkRenderNodes` makes the value itself stable across
   equalTokens(result.fragment, "<div class='goodbye world'></div>");
 });
 
-var cleanedUpCount;
-var cleanedUpNode;
+var destroyedRenderNodeCount;
+var destroyedRenderNode;
 
 QUnit.module("HTML-based compiler (dirtying) - pruning", {
   beforeEach: function() {
     commonSetup();
-    cleanedUpCount = 0;
-    cleanedUpNode = null;
+    destroyedRenderNodeCount = 0;
+    destroyedRenderNode = null;
 
-    hooks.cleanup = function(renderNode) {
-      cleanedUpNode = renderNode;
-      cleanedUpCount++;
+    hooks.destroyRenderNode = function(renderNode) {
+      destroyedRenderNode = renderNode;
+      destroyedRenderNodeCount++;
     };
   }
 });
@@ -567,14 +567,14 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   object.condition = false;
   result.rerender();
 
-  strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
-  strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 1, "cleanup hook was invoked once");
+  strictEqual(destroyedRenderNode.lastValue, 'hello world', "The correct render node is passed in");
 
   object.condition = true;
   result.rerender();
 
-  strictEqual(cleanedUpCount, 2, "cleanup hook was invoked again");
-  strictEqual(cleanedUpNode.lastValue, 'Nothing', "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 2, "cleanup hook was invoked again");
+  strictEqual(destroyedRenderNode.lastValue, 'Nothing', "The correct render node is passed in");
 });
 
 test("Pruned render nodes invoke a cleanup hook when cleared", function() {
@@ -588,13 +588,13 @@ test("Pruned render nodes invoke a cleanup hook when cleared", function() {
   object.condition = false;
   result.rerender();
 
-  strictEqual(cleanedUpCount, 1, "cleanup hook was invoked once");
-  strictEqual(cleanedUpNode.lastValue, 'hello world', "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 1, "cleanup hook was invoked once");
+  strictEqual(destroyedRenderNode.lastValue, 'hello world', "The correct render node is passed in");
 
   object.condition = true;
   result.rerender();
 
-  strictEqual(cleanedUpCount, 1, "cleanup hook was not invoked again");
+  strictEqual(destroyedRenderNodeCount, 1, "cleanup hook was not invoked again");
 });
 
 test("Pruned lists invoke a cleanup hook when removing elements", function() {
@@ -608,14 +608,14 @@ test("Pruned lists invoke a cleanup hook when removing elements", function() {
   object.list.pop();
   result.rerender();
 
-  strictEqual(cleanedUpCount, 2, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
-  strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 2, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(destroyedRenderNode.lastValue, "world", "The correct render node is passed in");
 
   object.list.pop();
   result.rerender();
 
-  strictEqual(cleanedUpCount, 4, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
-  strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 4, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(destroyedRenderNode.lastValue, "hello", "The correct render node is passed in");
 });
 
 test("Pruned lists invoke a cleanup hook on their subtrees when removing elements", function() {
@@ -629,14 +629,14 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
   object.list.pop();
   result.rerender();
 
-  strictEqual(cleanedUpCount, 3, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
-  strictEqual(cleanedUpNode.lastValue, "world", "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 3, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(destroyedRenderNode.lastValue, "world", "The correct render node is passed in");
 
   object.list.pop();
   result.rerender();
 
-  strictEqual(cleanedUpCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
-  strictEqual(cleanedUpNode.lastValue, "hello", "The correct render node is passed in");
+  strictEqual(destroyedRenderNodeCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
+  strictEqual(destroyedRenderNode.lastValue, "hello", "The correct render node is passed in");
 });
 
 QUnit.module("Manual elements", {

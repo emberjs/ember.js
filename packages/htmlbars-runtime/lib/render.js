@@ -3,6 +3,7 @@ import { visitChildren } from "../htmlbars-util/morph-utils";
 import ExpressionVisitor from "./expression-visitor";
 import { AlwaysDirtyVisitor } from "./expression-visitor";
 import Morph from "./morph";
+import { clearMorph } from "../htmlbars-util/template-utils";
 
 export default function render(template, env, scope, options) {
   var dom = env.dom;
@@ -58,9 +59,9 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
     shouldSetContent = false;
   }
 
-  if (rootNode.childNodes && env.hooks.cleanup) {
+  if (rootNode.childNodes) {
     visitChildren(rootNode.childNodes, function(node) {
-      env.hooks.cleanup(node);
+      clearMorph(node, env, true);
     });
   }
 
@@ -158,14 +159,7 @@ RenderResult.prototype.revalidateWith = function(env, scope, self, blockArgument
 
 RenderResult.prototype.destroy = function() {
   var rootNode = this.root;
-  var cleanup = this.env.hooks.cleanup;
-
-  if (cleanup) {
-    visitChildren([rootNode], function(node) {
-      cleanup(node);
-    });
-  }
-  rootNode.clear();
+  clearMorph(rootNode, this.env, true);
 };
 
 RenderResult.prototype.populateNodes = function(visitor) {

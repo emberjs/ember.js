@@ -2,7 +2,7 @@ import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject } from "../htmlbars-util/object-utils";
-import { visitChildren, validateChildMorphs } from "../htmlbars-util/morph-utils";
+import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 import { clearMorph } from "../htmlbars-util/template-utils";
 
 /**
@@ -499,13 +499,13 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
   while (item) {
     var next = item.nextMorph;
     delete morphMap[item.key];
-    if (env.hooks.cleanup) { visitChildren([item], env.hooks.cleanup); }
+    clearMorph(item, env, true);
     item.destroy();
     item = next;
   }
 
   if (toClear) {
-    clearMorph(toClear, env.hooks.cleanup, false);
+    clearMorph(toClear, env, false);
   }
 }
 
@@ -554,7 +554,7 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
     var isEmpty = keyword.isEmpty(morph.state, env, scope, params, hash);
 
     if (isEmpty) {
-      if (!firstTime) { clearMorph(morph, env.hooks.cleanup, false); }
+      if (!firstTime) { clearMorph(morph, env, false); }
       return true;
     }
   }
@@ -577,7 +577,7 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
       validateChildMorphs(env, morph, visitor);
       return true;
     } else {
-      clearMorph(morph, env.hooks.cleanup, true);
+      clearMorph(morph, env, false);
     }
   }
 
@@ -939,7 +939,6 @@ export default {
   bindSelf: bindSelf,
   bindScope: bindScope,
   classify: classify,
-  cleanup: null,
   component: component,
   concat: concat,
   createFreshScope: createFreshScope,
@@ -961,6 +960,8 @@ export default {
   hasHelper: hasHelper,
   lookupHelper: lookupHelper,
   invokeHelper: invokeHelper,
+  cleanupRenderNode: null,
+  destroyRenderNode: null,
 
   // derived hooks
   attribute: attribute,
