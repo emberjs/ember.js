@@ -3,7 +3,6 @@
 @submodule ember-htmlbars
 */
 
-import merge from "ember-metal/merge";
 import helpers from "ember-htmlbars/helpers";
 import View from "ember-views/views/view";
 import Component from "ember-views/views/component";
@@ -32,22 +31,20 @@ function calculateCompatType(item) {
 */
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
-    var param, blockResult, fnResult;
-    var context = this;
+    var param, fnResult;
+    var hasBlock = options.template && options.template.yield;
+
     var handlebarsOptions = {
       hash: { },
       types: new Array(params.length),
       hashTypes: { }
     };
 
-    merge(handlebarsOptions, options);
-    merge(handlebarsOptions, env);
-
     handlebarsOptions.hash = {};
 
-    if (options.isBlock) {
+    if (hasBlock) {
       handlebarsOptions.fn = function() {
-        blockResult = options.template.render(context, env, { contextualElement: options.morph.contextualElement }).fragment;
+        options.template.yield();
       };
     }
 
@@ -57,7 +54,7 @@ function HandlebarsCompatibleHelper(fn) {
       handlebarsOptions.hashTypes[prop] = calculateCompatType(param);
 
       if (isStream(param)) {
-        handlebarsOptions.hash[prop] = param._label;
+        handlebarsOptions.hash[prop] = param.path;
       } else {
         handlebarsOptions.hash[prop] = param;
       }
@@ -70,16 +67,26 @@ function HandlebarsCompatibleHelper(fn) {
       handlebarsOptions.types[i] = calculateCompatType(param);
 
       if (isStream(param)) {
-        args[i] = param._label;
+        args[i] = param.path;
       } else {
         args[i] = param;
       }
     }
+
+    handlebarsOptions.data = {
+      view: env.view
+    };
+
     args.push(handlebarsOptions);
 
     fnResult = fn.apply(this, args);
 
-    return options.isBlock ? blockResult : fnResult;
+    if (options.element) {
+      Ember.deprecate("Returning a string of attributes from a helper inside an element is deprecated.");
+      applyAttributes(env.dom, options.element, fnResult);
+    } else if (!options.template) {
+      return fnResult;
+    }
   };
 
   this.isHTMLBars = true;
@@ -112,6 +119,17 @@ export function handlebarsHelper(name, value) {
     var boundFn = makeBoundHelper.apply(this, boundHelperArgs);
 
     helpers[name] = boundFn;
+  }
+}
+
+function applyAttributes(dom, element, innerString) {
+  var string = "<" + element.tagName + " " + innerString + "></div>";
+  var fragment = dom.parseHTML(string, dom.createElement(element.tagName));
+
+  var attrs = fragment.firstChild.attributes;
+
+  for (var i=0, l=attrs.length; i<l; i++) {
+    element.setAttributeNode(attrs[i].cloneNode());
   }
 }
 

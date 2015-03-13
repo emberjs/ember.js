@@ -12,7 +12,7 @@ export default function bindSelf(env, scope, self) {
   if (self.isView) {
     scope.view = self;
     updateScope(scope.locals, 'view', self, null);
-    updateScope(scope, 'self', get(self, 'context'), null);
+    updateScope(scope, 'self', get(self, 'context'), null, true);
     return;
   }
 

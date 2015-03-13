@@ -373,11 +373,11 @@ Stream.prototype = {
   }
 };
 
-Stream.wrap = function(value, Kind) {
+Stream.wrap = function(value, Kind, param) {
   if (value.isStream) {
     return value;
   } else {
-    return new Kind(value);
+    return new Kind(value, param);
   }
 };
 

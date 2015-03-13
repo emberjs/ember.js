@@ -21,6 +21,7 @@ import classify from "ember-htmlbars/hooks/classify";
 import component from "ember-htmlbars/hooks/component";
 import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
 import hasHelper from "ember-htmlbars/hooks/has-helper";
+import invokeHelper from "ember-htmlbars/hooks/invoke-helper";
 
 import helpers from "ember-htmlbars/helpers";
 import keywords, { registerKeyword } from "ember-htmlbars/keywords";
@@ -44,7 +45,8 @@ merge(emberHooks, {
   classify: classify,
   component: component,
   lookupHelper: lookupHelper,
-  hasHelper: hasHelper
+  hasHelper: hasHelper,
+  invokeHelper: invokeHelper
 });
 
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";

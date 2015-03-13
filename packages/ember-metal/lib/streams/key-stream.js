@@ -21,6 +21,9 @@ function KeyStream(source, key) {
   this.dependency = this.addDependency(source);
   this.observedObject = undefined;
   this.key = key;
+
+  // used to get the original path for debugging and legacy purposes
+  this.path = this.source.label ? this.source.label + '.' + key : key;
 }
 
 KeyStream.prototype = create(Stream.prototype);

@@ -13,7 +13,7 @@ export default function bindLocal(env, scope, key, value) {
     existing.setSource(value);
     existing.notify();
   } else {
-    var newValue = Stream.wrap(value, SimpleStream);
+    var newValue = Stream.wrap(value, SimpleStream, key);
     scope.locals[key] = newValue;
   }
 }
