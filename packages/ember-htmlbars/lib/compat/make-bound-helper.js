@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Helper from "ember-htmlbars/system/helper";
+//import Helper from "ember-htmlbars/system/helper";
 
 /**
   A helper function used by `registerBoundHelper`. Takes the
@@ -32,9 +32,9 @@ import Helper from "ember-htmlbars/system/helper";
   @deprecated
 */
 export default function makeBoundHelper(fn) {
-  return new Helper(function(params, hash, templates) {
+  return function(params, hash, templates) {
     var args = params.slice();
     args.push({ hash: hash, templates: templates });
-    fn.apply(undefined, args);
-  });
+    return fn.apply(undefined, args);
+  };
 }
