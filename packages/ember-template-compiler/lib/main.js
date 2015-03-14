@@ -4,7 +4,7 @@ import compile from "ember-template-compiler/system/compile";
 import template from "ember-template-compiler/system/template";
 import { registerPlugin } from "ember-template-compiler/plugins";
 
-import TransformEachInToHash from "ember-template-compiler/plugins/transform-each-in-to-hash";
+import TransformEachInToBlockParams from "ember-template-compiler/plugins/transform-each-in-to-block-params";
 import TransformWithAsToHash from "ember-template-compiler/plugins/transform-with-as-to-hash";
 import TransformBindAttrToAttributes from "ember-template-compiler/plugins/transform-bind-attr-to-attributes";
 
@@ -12,7 +12,7 @@ import TransformBindAttrToAttributes from "ember-template-compiler/plugins/trans
 import "ember-template-compiler/compat";
 
 registerPlugin('ast', TransformWithAsToHash);
-registerPlugin('ast', TransformEachInToHash);
+registerPlugin('ast', TransformEachInToBlockParams);
 registerPlugin('ast', TransformBindAttrToAttributes);
 
 export {
