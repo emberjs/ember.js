@@ -18,6 +18,7 @@ import {
   unlessHelper
 } from "ember-htmlbars/helpers/if_unless";
 import withHelper from "ember-htmlbars/helpers/with";
+import locHelper from "ember-htmlbars/helpers/loc";
 import logHelper from "ember-htmlbars/helpers/log";
 import eachHelper from "ember-htmlbars/helpers/each";
 import bindAttrClassHelper from "ember-htmlbars/helpers/bind-attr-class";
@@ -34,6 +35,7 @@ import "ember-htmlbars/compat";
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('with', withHelper);
+registerHelper('loc', locHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
 registerHelper('bind-attr-class', bindAttrClassHelper);
