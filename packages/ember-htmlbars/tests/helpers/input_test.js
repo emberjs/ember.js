@@ -1,8 +1,10 @@
 import run from "ember-metal/run_loop";
+import EventDispatcher from "ember-views/system/event_dispatcher";
 import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
+import jQuery from "ember-views/system/jquery";
 
 var view;
 var controller;
@@ -216,6 +218,43 @@ QUnit.test("should have the default type", function() {
   equal(view.$('input').attr('type'), 'text', "Has a default text type");
 });
 
+var dispatcher;
+QUnit.module("{{input action='doSomething' on='key-press'}}", {
+  setup: function() {
+    controller = {
+      send: function(actionName, value, sender) {
+        equal(actionName, 'doSomething', "the action was called");
+      }
+    };
+
+    dispatcher = EventDispatcher.create();
+    dispatcher.setup();
+
+    view = View.extend({
+      controller: controller,
+      template: compile('{{input action="doSomething" on="key-press"}}')
+    }).create();
+
+    runAppend(view);
+  },
+
+  teardown: function() {
+    run(function() {
+      dispatcher.destroy();
+    });
+
+    runDestroy(view);
+  }
+});
+
+test("should trigger an action on key-press event", function() {
+  expect(1);
+  var event = jQuery.Event("keypress");
+  event.keyCode = event.which = 13;
+  view.$('input').trigger(event);
+});
+
+
 QUnit.module("{{input type='checkbox'}}", {
   setup: function() {
     controller = {
@@ -281,7 +320,7 @@ QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
 QUnit.test("It asserts the presence of checked=", function() {
   expectAssertion(function() {
     runAppend(view);
-  }, /you must use `checked=/);
+  }, /you must use `checked/);
 });
 
 QUnit.module("{{input type=boundType}}", {

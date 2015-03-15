@@ -1,6 +1,8 @@
 import Checkbox from "ember-views/views/checkbox";
 import TextField from "ember-views/views/text_field";
 import { read } from "ember-metal/streams/utils";
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
+import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
 
 import Ember from "ember-metal/core"; // Ember.assert
 
@@ -189,22 +191,12 @@ import Ember from "ember-metal/core"; // Ember.assert
 export function inputHelper(params, hash, options, env) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', params.length === 0);
 
-  var onEvent = hash.on;
-  var inputType;
+  var props = {
+    helperName: options.helperName || 'input'
+  };
 
-  inputType = read(hash.type);
+  var view = read(hash.type) === 'checkbox' ? Checkbox : TextField;
 
-  if (inputType === 'checkbox') {
-    delete hash.type;
-
-    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
-                 " you must use `checked=someBooleanValue` instead.", !hash.hasOwnProperty('value'));
-
-    env.helpers.view.helperFunction.call(this, [Checkbox], hash, options, env);
-  } else {
-    delete hash.on;
-
-    hash.onEvent = onEvent || 'enter';
-    env.helpers.view.helperFunction.call(this, [TextField], hash, options, env);
-  }
+  mergeViewBindings(this, props, hash);
+  appendTemplatedView(this, options.morph, view, props);
 }

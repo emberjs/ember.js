@@ -359,6 +359,29 @@ QUnit.test("bubbling of handled actions can be enabled via bubbles property", fu
   equal(stopPropagationCount, 1, "propagation was prevented if bubbles is false");
 });
 
+test('when both on and onEvent are passed the error is thrown', function() {
+  expectAssertion(function() {
+    textField = TextField.create({
+      on: 'key-press',
+      onEvent: 'key-up'
+    });
+  }, /You can either pass `on` or `onEvent`/);
+});
+
+test('onEvent is set to "enter" by default', function() {
+  textField = TextField.create();
+
+  equal(textField.get('onEvent'), 'enter', 'onEvent should be set to "enter"');
+});
+
+test('value passed as `on` is set to `onEvent`', function() {
+  textField = TextField.create({
+    on: 'key-press'
+  });
+
+  equal(textField.get('onEvent'), 'key-press', '`onEvent` should be set to "key-press"');
+  ok(textField.get('on') !== 'key-press', '`on` should not be set to "key-press"');
+});
 
 var dispatcher, StubController;
 QUnit.module("Ember.TextField - Action events", {

@@ -23,7 +23,7 @@ import TextSupport from "ember-views/mixins/text_support";
   @extends Ember.Component
   @uses Ember.TextSupport
 */
-export default Component.extend(TextSupport, {
+var TextField = Component.extend(TextSupport, {
   instrumentDisplay: '{{input type="text"}}',
 
   classNames: ['ember-text-field'],
@@ -113,3 +113,20 @@ export default Component.extend(TextSupport, {
   */
   max: null
 });
+
+TextField.reopenClass({
+  create: function(attributes) {
+    attributes = attributes || {};
+
+    Ember.assert('You can either pass `on` or `onEvent` to TextField, not both', !(attributes.on && attributes.onEvent));
+
+    if (!attributes.onEvent) {
+      attributes.onEvent = attributes.on || 'enter';
+      delete attributes.on;
+    }
+
+    return this._super.apply(this, arguments);
+  }
+});
+
+export default TextField;
