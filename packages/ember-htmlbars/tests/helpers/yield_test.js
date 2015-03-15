@@ -201,7 +201,7 @@ QUnit.test("can bind a keyword to a component and use it in yield", function() {
 
   view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: compile('{{#with boundText as item}}{{#view component contentBinding="item"}}{{item}}{{/view}}{{/with}}')
+    template: compile('{{#with boundText as item}}{{#view component content=item}}{{item}}{{/view}}{{/with}}')
   });
 
   runAppend(view);

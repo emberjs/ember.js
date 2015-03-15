@@ -903,7 +903,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     view = EmberView.create({
       container: container,
       controller: controller,
-      template: templateFor('{{#EACH|this|personController}}{{#view controllerBinding="personController"}}{{name}}{{/view}}{{/each}}', useBlockParams)
+      template: templateFor('{{#EACH|this|personController}}{{#view controller=personController}}{{name}}{{/view}}{{/each}}', useBlockParams)
     });
 
     runAppend(view);

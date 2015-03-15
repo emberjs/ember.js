@@ -356,7 +356,7 @@ QUnit.test("should give its item views the class specified by itemClass", functi
   equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
-QUnit.test("should give its item views the classBinding specified by itemClassBinding", function() {
+QUnit.test("should give its item views the class specified by itemClass", function() {
   var ItemClassBindingTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })])
@@ -365,7 +365,7 @@ QUnit.test("should give its item views the classBinding specified by itemClassBi
   view = EmberView.create({
     itemClassBindingTestCollectionView: ItemClassBindingTestCollectionView,
     isBar: true,
-    template: compile('{{#collection view.itemClassBindingTestCollectionView itemClassBinding="view.isBar"}}foo{{/collection}}')
+    template: compile('{{#collection view.itemClassBindingTestCollectionView itemClass=view.isBar}}foo{{/collection}}')
   });
 
   runAppend(view);
@@ -376,7 +376,7 @@ QUnit.test("should give its item views the classBinding specified by itemClassBi
   // to introduce a new keyword that could be used from within `itemClassBinding`. For instance, `itemClassBinding="item.isBaz"`.
 });
 
-QUnit.test("should give its item views the property specified by itemPropertyBinding", function() {
+QUnit.test("should give its item views the property specified by itemProperty", function() {
   var ItemPropertyBindingTestItemView = EmberView.extend({
     tagName: 'li'
   });
@@ -391,7 +391,7 @@ QUnit.test("should give its item views the property specified by itemPropertyBin
         return ItemPropertyBindingTestItemView;
       }
     },
-    template: compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection content=view.content tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
@@ -413,7 +413,7 @@ QUnit.test("should unsubscribe stream bindings", function() {
   view = EmberView.create({
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    template: compile('{{#collection contentBinding="view.content" itemProperty=view.baz}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection content=view.content itemProperty=view.baz}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
@@ -674,7 +674,7 @@ QUnit.test("context should be content", function() {
     controller: {
       items: items
     },
-    template: compile('{{collection contentBinding="items" itemViewClass="an-item"}}')
+    template: compile('{{collection content=items itemViewClass="an-item"}}')
   });
 
   runAppend(view);
