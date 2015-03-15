@@ -391,7 +391,7 @@ QUnit.test("should give its item views the property specified by itemPropertyBin
         return ItemPropertyBindingTestItemView;
       }
     },
-    template: compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="item-property-binding-test-item-view" itemPropertyBinding="view.baz" preserveContext=false}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
@@ -413,7 +413,7 @@ QUnit.test("should unsubscribe stream bindings", function() {
   view = EmberView.create({
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    template: compile('{{#collection contentBinding="view.content" itemPropertyBinding="view.baz"}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection contentBinding="view.content" itemProperty=view.baz}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
