@@ -279,8 +279,8 @@ QUnit.test("mixing old and new styles of property binding fires a warning, treat
   Ember.warn = oldWarn;
 });
 
-QUnit.test('"Binding"-suffixed bindings are runloop-synchronized', function() {
-  expect(5);
+QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', function() {
+  expect(6);
 
   var subview;
 
@@ -299,7 +299,10 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized', function() {
   });
 
   view = View.create();
-  runAppend(view);
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /You're attempting to render a view by passing colorBinding to a view helper, but this syntax is deprecated. You should use `color=someValue` instead./);
 
   equal(view.$('h1 .color').text(), 'mauve', 'renders bound value');
 
@@ -992,7 +995,7 @@ QUnit.test('{{view}} should evaluate other attributes bindings set in the curren
   view = EmberView.create({
     name: 'myView',
     textField: TextField,
-    template: compile('{{view view.textField valueBinding="view.name"}}')
+    template: compile('{{view view.textField value=view.name}}')
   });
 
   runAppend(view);
@@ -1064,7 +1067,7 @@ QUnit.test('a view helper\'s bindings are to the parent context', function() {
       name: 'foo'
     }),
     Subview: Subview,
-    template: compile('<h1>{{view view.Subview colorBinding="color" someControllerBinding="this"}}</h1>')
+    template: compile('<h1>{{view view.Subview color=color someController=this}}</h1>')
   });
 
   view = View.create();
@@ -1179,7 +1182,7 @@ QUnit.test('should work with precompiled templates', function() {
   equal(view.$().text(), 'updated', 'the precompiled template was updated');
 });
 
-QUnit.test('bindings should be relative to the current context', function() {
+QUnit.test('bindings should be relative to the current context [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1195,12 +1198,14 @@ QUnit.test('bindings should be relative to the current context', function() {
     template: compile('{{#if view.museumOpen}} {{view view.museumView nameBinding="view.museumDetails.name" dollarsBinding="view.museumDetails.price"}} {{/if}}')
   });
 
-  runAppend(view);
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
-QUnit.test('bindings should respect keywords', function() {
+QUnit.test('bindings should respect keywords [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1217,6 +1222,32 @@ QUnit.test('bindings should respect keywords', function() {
     }),
 
     template: compile('{{#if view.museumOpen}}{{view view.museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
+  });
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+
+  equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
+});
+
+QUnit.test('should respect keywords', function() {
+  view = EmberView.create({
+    museumOpen: true,
+
+    controller: {
+      museumOpen: true,
+      museumDetails: EmberObject.create({
+        name: 'SFMoMA',
+        price: 20
+      })
+    },
+
+    museumView: EmberView.extend({
+      template: compile('Name: {{view.name}} Price: ${{view.dollars}}')
+    }),
+
+    template: compile('{{#if view.museumOpen}}{{view view.museumView name=controller.museumDetails.name dollars=controller.museumDetails.price}}{{/if}}')
   });
 
   runAppend(view);

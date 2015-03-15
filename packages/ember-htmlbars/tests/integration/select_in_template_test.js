@@ -25,7 +25,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   }
 });
 
-QUnit.test("works from a template with bindings", function() {
+QUnit.test("works from a template with bindings [DEPRECATED]", function() {
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -66,6 +66,70 @@ QUnit.test("works from a template with bindings", function() {
     )
   });
 
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+
+  var select = view.get('select');
+  ok(select.$().length, "Select was rendered");
+  equal(select.$('option').length, 5, "Options were rendered");
+  equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n", "Option values were rendered");
+  equal(select.get('selection'), null, "Nothing has been selected");
+
+  run(function() {
+    application.selectedPersonController.set('person', erik);
+  });
+
+  equal(select.get('selection'), erik, "Selection was updated through binding");
+  run(function() {
+    application.peopleController.pushObject(Person.create({ id: 5, firstName: "James", lastName: "Rosen" }));
+  });
+
+  equal(select.$('option').length, 6, "New option was added");
+  equal(select.get('selection'), erik, "Selection was maintained after new option was added");
+});
+
+QUnit.test("works from a template", function() {
+  var Person = EmberObject.extend({
+    id: null,
+    firstName: null,
+    lastName: null,
+
+    fullName: computed(function() {
+      return this.get('firstName') + " " + this.get('lastName');
+    }).property('firstName', 'lastName')
+  });
+
+  var erik = Person.create({ id: 4, firstName: 'Erik', lastName: 'Bryn' });
+
+  var application = Namespace.create();
+
+  application.peopleController = ArrayController.create({
+    content: Ember.A([
+      Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
+      Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
+      Person.create({ id: 3, firstName: 'Peter', lastName: 'Wagenet' }),
+      erik
+    ])
+  });
+
+  application.selectedPersonController = EmberObject.create({
+    person: null
+  });
+
+  view = EmberView.create({
+    app: application,
+    selectView: SelectView,
+    template: compile(
+      '{{view view.selectView viewName="select"' +
+      '    content=view.app.peopleController' +
+      '    optionLabelPath="content.fullName"' +
+      '    optionValuePath="content.id"' +
+      '    prompt="Pick a person:"' +
+      '    selection=view.app.selectedPersonController.person}}'
+    )
+  });
+
   runAppend(view);
 
   var select = view.get('select');
@@ -96,8 +160,8 @@ QUnit.test("upon content change, the DOM should reflect the selection (#481)", f
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    contentBinding="view.user.options"' +
-      '    selectionBinding="view.user.selectedOption"}}'
+      '    content=view.user.options' +
+      '    selection=view.user.selectedOption}}'
     )
   });
 
@@ -131,8 +195,8 @@ QUnit.test("upon content change with Array-like content, the DOM should reflect 
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    contentBinding="view.proxy"' +
-      '    selectionBinding="view.proxy.selectedOption"}}'
+      '    content=view.proxy' +
+      '    selection=view.proxy.selectedOption}}'
     )
   });
 
@@ -177,7 +241,9 @@ function testValueBinding(templateString) {
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (old xBinding='' syntax)", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
+  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    contentBinding="view.collection"' +
@@ -188,7 +254,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (new quoteless binding shorthand)", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound value", function() {
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -227,7 +293,9 @@ function testSelectionBinding(templateString) {
   equal(select.$('option:eq(1)').prop('selected'), true, "Selected property is set to proper option");
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding (old xBinding='' syntax)", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
+  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +
     '    contentBinding="view.collection"' +
@@ -238,7 +306,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding (new quoteless binding shorthand)", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
