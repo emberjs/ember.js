@@ -268,7 +268,9 @@ QUnit.test("mixing old and new styles of property binding fires a warning, treat
     snork: "nerd"
   }).create();
 
-  runAppend(view);
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /You're attempting to render a view by passing borfBinding to a view helper without a quoted value, but this syntax is ambiguous. You should either surround borfBinding's value in quotes or remove `Binding` from borfBinding./);
 
   equal(jQuery('#lol').text(), "nerd", "awkward mixed syntax treated like binding");
 
