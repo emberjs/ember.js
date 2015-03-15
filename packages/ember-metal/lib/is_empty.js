@@ -1,5 +1,8 @@
 import { get } from 'ember-metal/property_get';
-import isNone from 'ember-metal/is_none';
+import __isEmpty__ from 'lodash/lang/isEmpty';
+import isBoolean from 'lodash/lang/isBoolean';
+import isFunction from 'lodash/lang/isFunction';
+import isObject from 'lodash/lang/isObject';
 
 /**
   Verifies that a value is `null` or an empty string, empty array,
@@ -25,36 +28,13 @@ import isNone from 'ember-metal/is_none';
   @return {Boolean}
 */
 function isEmpty(obj) {
-  var none = isNone(obj);
-  if (none) {
-    return none;
+  if (isBoolean(obj) || isFunction(obj) || obj === 0) {
+    return false;
+  } else if (isObject(obj)) {
+    return get(obj, 'length') === 0;
+  } else {
+    return __isEmpty__(obj);
   }
-
-  if (typeof obj.size === 'number') {
-    return !obj.size;
-  }
-
-  var objectType = typeof obj;
-
-  if (objectType === 'object') {
-    var size = get(obj, 'size');
-    if (typeof size === 'number') {
-      return !size;
-    }
-  }
-
-  if (typeof obj.length === 'number' && objectType !== 'function') {
-    return !obj.length;
-  }
-
-  if (objectType === 'object') {
-    var length = get(obj, 'length');
-    if (typeof length === 'number') {
-      return !length;
-    }
-  }
-
-  return false;
 }
 
 export default isEmpty;
