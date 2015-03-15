@@ -72,8 +72,15 @@ function mergeDOMViewBindings(view, props, hash) {
   if (hash['class']) {
     if (typeof hash['class'] === 'string') {
       props.classNames = hash['class'].split(' ');
-    } else {
+    } else if (hash['class']._label) {
+      // label exists for via property paths in the template
+      // but not for streams with nested sub-expressions
       classBindings.push(hash['class']._label);
+    } else {
+      // this stream did not have a label which means that
+      // it is not a simple property path type stream (likely
+      // the result of a sub-expression)
+      classBindings.push(hash['class']);
     }
   }
 
@@ -89,7 +96,15 @@ function mergeDOMViewBindings(view, props, hash) {
     props.classNameBindings = classBindings;
 
     for (var i = 0; i < classBindings.length; i++) {
-      var classBinding = streamifyClassNameBinding(view, classBindings[i]);
+      var initialValue = classBindings[i];
+      var classBinding;
+
+      if (isStream(initialValue)) {
+        classBinding = initialValue;
+      } else {
+        classBinding = streamifyClassNameBinding(view, initialValue);
+      }
+
       if (isStream(classBinding)) {
         classBindings[i] = classBinding;
       } else {
