@@ -96,7 +96,7 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
   equal(count, 0, "Subscribers called correct number of times");
   equal(nameStream.value(), "mmun", "Stream value is correct");
 
-  object = { name: "wycats" }
+  object = { name: "wycats" };
   nameStream.setSource(new Stream(function() {
     return object;
   }));

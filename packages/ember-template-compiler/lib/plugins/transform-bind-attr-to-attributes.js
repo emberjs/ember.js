@@ -142,6 +142,7 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
           b.string('')
         ]);
       }
+      break;
     case 3:
       // Before: {{bind-attr class="some.path:foo:bar ..."}}
       // After: class="{{if some.path "foo" "bar"}} ..."
@@ -166,7 +167,7 @@ function isBindAttrModifier(modifier) {
     return true;
   } else {
     return false;
-  };
+  }
 }
 
 function assertAttrNameIsUnused(element, name) {

@@ -163,7 +163,7 @@ function normalizeClass(component, classAttr) {
       var prop = 'view.' + microsyntax[0];
       var activeClass, inactiveClass;
 
-      if (microsyntax.length === 1)  {
+      if (microsyntax.length === 1) {
         activeClass = prop;
       } else if (microsyntax.length === 2) {
         activeClass = microsyntax[1];
@@ -217,7 +217,7 @@ function normalizeClass(component, classAttr) {
       var prop = 'view.' + microsyntax[0];
       var activeClass, inactiveClass;
 
-      if (microsyntax.length === 1)  {
+      if (microsyntax.length === 1) {
         activeClass = prop;
       } else if (microsyntax.length === 2) {
         activeClass = microsyntax[1];
@@ -272,7 +272,7 @@ function normalizeClass(component, classAttr) {
       var prop = 'view.' + microsyntax[0];
       var activeClass, inactiveClass;
 
-      if (microsyntax.length === 1)  {
+      if (microsyntax.length === 1) {
         activeClass = prop;
       } else if (microsyntax.length === 2) {
         activeClass = microsyntax[1];
