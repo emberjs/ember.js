@@ -31,7 +31,7 @@ function mergeGenericViewBindings(view, props, hash) {
       if (typeof value === 'string') {
         props[key] = view._getBindingForStream(value);
       } else if (isStream(value)) {
-        Ember.warn(
+        Ember.deprecate(
           "You're attempting to render a view by passing " + key + " " +
           "to a view helper without a quoted value, but this syntax is " +
           "ambiguous. You should either surround " + key + "'s value in " +
