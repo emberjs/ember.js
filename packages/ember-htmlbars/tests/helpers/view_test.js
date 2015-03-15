@@ -14,6 +14,7 @@ import compile from "ember-template-compiler/system/compile";
 import template from 'ember-template-compiler/system/template';
 import { observersFor } from "ember-metal/observer";
 import Controller from 'ember-runtime/controllers/controller';
+import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { set } from 'ember-metal/property_set';
@@ -47,6 +48,7 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('helper', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
@@ -412,6 +414,30 @@ QUnit.test("Should apply classes when bound property specified", function() {
   runAppend(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
+});
+
+QUnit.test("Should apply a class from a sub expression", function() {
+  registry.register('helper:string-concat', makeBoundHelper(function(params) {
+    return params.join('');
+  }));
+
+  view = EmberView.create({
+    container: container,
+    controller: {
+      type: 'btn',
+      size: 'large'
+    },
+    template: compile('{{#view id="foo" class=(string-concat type "-" size)}} Foo{{/view}}')
+  });
+
+  runAppend(view);
+
+  ok(jQuery('#foo').hasClass('btn-large'), "applies classname from subexpression");
+
+  run(view, view.set, 'controller.size', 'medium');
+
+  ok(!jQuery('#foo').hasClass('btn-large'), "removes classname from subexpression update");
+  ok(jQuery('#foo').hasClass('btn-medium'), "adds classname from subexpression update");
 });
 
 QUnit.test("Should not apply classes when bound property specified is false", function() {
