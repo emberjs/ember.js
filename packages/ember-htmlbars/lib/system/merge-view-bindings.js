@@ -29,6 +29,12 @@ function mergeGenericViewBindings(view, props, hash) {
 
     if (IS_BINDING.test(key)) {
       if (typeof value === 'string') {
+        Ember.deprecate(
+          "You're attempting to render a view by passing " + key + " " +
+          "to a view helper, but this syntax is deprecated. You should use `" +
+          key.slice(0, -7) + "=someValue` instead."
+        );
+
         props[key] = view._getBindingForStream(value);
       } else if (isStream(value)) {
         Ember.deprecate(
