@@ -47,7 +47,7 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
           throw new Error('You cannot use keyword (`{{each foo in bar}}`) and block params (`{{each bar as |foo|}}`) at the same time.');
         }
 
-        node.program.blockParams = [ keyword ];
+        node.program.blockParams = [keyword];
       } else {
         node.sexpr.hash.pairs.push(b.pair(
           'keyword',
@@ -67,6 +67,6 @@ function validate(node) {
     node.sexpr.params.length === 3 &&
     node.sexpr.params[1].type === 'PathExpression' &&
     node.sexpr.params[1].original === 'in';
-};
+}
 
 export default TransformEachInToBlockParams;

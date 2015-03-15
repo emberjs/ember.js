@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import { get } from 'ember-metal/property_get';
 import { isArray } from "ember-metal/utils";
 
 export default function bindAttrClassHelper(params) {

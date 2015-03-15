@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { loc } from 'ember-runtime/system/string';
 
 /**
