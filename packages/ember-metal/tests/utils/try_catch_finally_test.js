@@ -4,7 +4,7 @@ var tryCount, catchCount, finalizeCount, tryable, catchable, finalizer, error,
 tryableResult, catchableResult, finalizerResult;
 
 QUnit.module("Ember.tryFinally", {
-  setup: function() {
+  setup() {
     error = new Error('Test Error');
     tryCount = 0;
     finalizeCount = 0;
@@ -27,7 +27,7 @@ QUnit.module("Ember.tryFinally", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     tryCount = catchCount = finalizeCount = tryable = catchable = finalizer =
     finalizeCount = tryableResult = null;
   }

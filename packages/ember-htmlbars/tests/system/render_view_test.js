@@ -5,7 +5,7 @@ import keys from 'ember-metal/keys';
 
 var view;
 QUnit.module('ember-htmlbars: renderView', {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -18,7 +18,7 @@ QUnit.test('default environment values are passed through', function() {
     template: {
       isHTMLBars: true,
       revision: 'Ember@VERSION_STRING_PLACEHOLDER',
-      render: function(view, env, contextualElement, blockArguments) {
+      render(view, env, contextualElement, blockArguments) {
         for (var i = 0, l = keyNames.length; i < l; i++) {
           var keyName = keyNames[i];
 
@@ -36,7 +36,7 @@ QUnit.test('Provides a helpful assertion if revisions do not match.', function()
     template: {
       isHTMLBars: true,
       revision: 'Foo-Bar-Baz',
-      render: function() { }
+      render() { }
     }
   });
 

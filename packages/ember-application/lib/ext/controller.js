@@ -42,7 +42,7 @@ var defaultControllersComputedProperty = computed(function() {
   return {
     needs: get(controller, 'needs'),
     container: get(controller, 'container'),
-    unknownProperty: function(controllerName) {
+    unknownProperty(controllerName) {
       var needs = this.needs;
       var dependency, i, l;
 
@@ -61,7 +61,7 @@ var defaultControllersComputedProperty = computed(function() {
                          ' should have a `needs` property that is an array of the controllers it has access to.';
       throw new ReferenceError(errorMessage);
     },
-    setUnknownProperty: function (key, value) {
+    setUnknownProperty(key, value) {
       throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + inspect(controller));
     }
   };
@@ -123,7 +123,7 @@ ControllerMixin.reopen({
   */
   needs: [],
 
-  init: function() {
+  init() {
     var needs = get(this, 'needs');
     var length = get(needs, 'length');
 
@@ -149,7 +149,7 @@ ControllerMixin.reopen({
     @see {Ember.Route#controllerFor}
     @deprecated Use `needs` instead
   */
-  controllerFor: function(controllerName) {
+  controllerFor(controllerName) {
     Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
     return controllerFor(get(this, 'container'), controllerName);
   },

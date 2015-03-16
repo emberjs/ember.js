@@ -3,7 +3,7 @@ import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 QUnit.module("ember-htmlbars: makeViewHelper");
 
 QUnit.test("makes helpful assertion when called with invalid arguments", function() {
-  var viewClass = { toString: function() { return 'Some Random Class'; } };
+  var viewClass = { toString() { return 'Some Random Class'; } };
 
   var helper = makeViewHelper(viewClass);
 

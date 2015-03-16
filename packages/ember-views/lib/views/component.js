@@ -117,7 +117,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }),
 
-  init: function() {
+  init() {
     this._super(...arguments);
     this._keywords.view = this;
     set(this, 'context', this);
@@ -165,9 +165,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   templateName: null,
 
-  _setupKeywords: function() {},
+  _setupKeywords() {},
 
-  _yield: function(context, options, morph, blockArguments) {
+  _yield(context, options, morph, blockArguments) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -281,7 +281,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
   */
-  sendAction: function(action, ...contexts) {
+  sendAction(action, ...contexts) {
     var actionName;
 
     // Send the default action
@@ -307,7 +307,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     });
   },
 
-  send: function(actionName, ...args) {
+  send(actionName, ...args) {
     var target;
     var hasAction = this._actions && this._actions[actionName];
 

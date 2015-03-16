@@ -14,11 +14,11 @@ import {
 var states = cloneStates(viewStates);
 
 merge(states._default, {
-  rerenderIfNeeded: function() { return this; }
+  rerenderIfNeeded() { return this; }
 });
 
 merge(states.inDOM, {
-  rerenderIfNeeded: function(view) {
+  rerenderIfNeeded(view) {
     if (view.normalizedValue() !== view._lastNormalizedValue) {
       view.rerender();
     }
@@ -28,13 +28,13 @@ merge(states.inDOM, {
 export default Mixin.create({
   _states: states,
 
-  normalizedValue: function() {
+  normalizedValue() {
     var value = this.lazyValue.value();
     var valueNormalizer = get(this, 'valueNormalizerFunc');
     return valueNormalizer ? valueNormalizer(value) : value;
   },
 
-  rerenderIfNeeded: function() {
+  rerenderIfNeeded() {
     this.currentState.rerenderIfNeeded(this);
   }
 });

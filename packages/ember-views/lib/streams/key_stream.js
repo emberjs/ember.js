@@ -25,13 +25,13 @@ function KeyStream(source, key) {
 KeyStream.prototype = create(Stream.prototype);
 
 merge(KeyStream.prototype, {
-  valueFn: function() {
+  valueFn() {
     if (this.obj) {
       return get(this.obj, this.key);
     }
   },
 
-  revalidate: function() {
+  revalidate() {
     var prevObj = this.obj;
     var nextObj = read(this.source);
 
@@ -44,25 +44,25 @@ merge(KeyStream.prototype, {
     }
   },
 
-  becameActive: function() {
+  becameActive() {
     if (this.obj && typeof this.obj === 'object') {
       addObserver(this.obj, this.key, this, this.notify);
     }
   },
 
-  becameInactive: function() {
+  becameInactive() {
     if (this.obj && typeof this.obj === 'object') {
       removeObserver(this.obj, this.key, this, this.notify);
     }
   },
 
-  setValue: function(value) {
+  setValue(value) {
     if (this.obj) {
       set(this.obj, this.key, value);
     }
   },
 
-  setSource: function(nextSource) {
+  setSource(nextSource) {
     Ember.assert("KeyStream error: source must be an object", typeof nextSource === 'object');
 
     var prevSource = this.source;
@@ -77,7 +77,7 @@ merge(KeyStream.prototype, {
 
   _super$destroy: Stream.prototype.destroy,
 
-  destroy: function() {
+  destroy() {
     if (this._super$destroy()) {
       this.source = undefined;
       this.obj = undefined;

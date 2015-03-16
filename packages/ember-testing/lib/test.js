@@ -63,7 +63,7 @@ var Test = {
     @param {Function} helperMethod
     @param options {Object}
   */
-  registerHelper: function(name, helperMethod) {
+  registerHelper(name, helperMethod) {
     helpers[name] = {
       method: helperMethod,
       meta: { wait: false }
@@ -110,7 +110,7 @@ var Test = {
     @param {Function} helperMethod
     @since 1.2.0
   */
-  registerAsyncHelper: function(name, helperMethod) {
+  registerAsyncHelper(name, helperMethod) {
     helpers[name] = {
       method: helperMethod,
       meta: { wait: true }
@@ -130,7 +130,7 @@ var Test = {
     @method unregisterHelper
     @param {String} name The helper to remove.
   */
-  unregisterHelper: function(name) {
+  unregisterHelper(name) {
     delete helpers[name];
     delete Test.Promise.prototype[name];
   },
@@ -159,7 +159,7 @@ var Test = {
     @method onInjectHelpers
     @param {Function} callback The function to be called.
   */
-  onInjectHelpers: function(callback) {
+  onInjectHelpers(callback) {
     injectHelpersCallbacks.push(callback);
   },
 
@@ -174,7 +174,7 @@ var Test = {
     @method promise
     @param {Function} resolver The function used to resolve the promise.
   */
-  promise: function(resolver) {
+  promise(resolver) {
     return new Test.Promise(resolver);
   },
 
@@ -209,7 +209,7 @@ var Test = {
     @param {Mixed} The value to resolve
     @since 1.2.0
   */
-  resolve: function(val) {
+  resolve(val) {
     return Test.promise(function(resolve) {
       return resolve(val);
     });
@@ -242,7 +242,7 @@ var Test = {
      @param {Function} callback
      @since 1.2.0
   */
-  registerWaiter: function(context, callback) {
+  registerWaiter(context, callback) {
     if (arguments.length === 1) {
       callback = context;
       context = null;
@@ -262,7 +262,7 @@ var Test = {
      @param {Function} callback
      @since 1.2.0
   */
-  unregisterWaiter: function(context, callback) {
+  unregisterWaiter(context, callback) {
     if (!this.waiters) { return; }
     if (arguments.length === 1) {
       callback = context;
@@ -371,7 +371,7 @@ EmberApplication.reopen({
 
     @method setupForTesting
   */
-  setupForTesting: function() {
+  setupForTesting() {
     setupForTesting();
 
     this.testing = true;
@@ -409,7 +409,7 @@ EmberApplication.reopen({
 
     @method injectTestHelpers
   */
-  injectTestHelpers: function(helperContainer) {
+  injectTestHelpers(helperContainer) {
     if (helperContainer) {
       this.helperContainer = helperContainer;
     } else {
@@ -441,7 +441,7 @@ EmberApplication.reopen({
     @public
     @method removeTestHelpers
   */
-  removeTestHelpers: function() {
+  removeTestHelpers() {
     if (!this.helperContainer) { return; }
 
     for (var name in helpers) {

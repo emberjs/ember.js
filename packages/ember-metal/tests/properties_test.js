@@ -16,7 +16,7 @@ QUnit.test("for data properties, didDefineProperty hook should be called if impl
   expect(2);
 
   var obj = {
-    didDefineProperty: function(obj, keyName, value) {
+    didDefineProperty(obj, keyName, value) {
       equal(keyName, 'foo', "key name should be foo");
       equal(value, 'bar', "value should be bar");
     }
@@ -31,7 +31,7 @@ QUnit.test("for descriptor properties, didDefineProperty hook should be called i
   var computedProperty = computed(function() { return this; });
 
   var obj = {
-    didDefineProperty: function(obj, keyName, value) {
+    didDefineProperty(obj, keyName, value) {
       equal(keyName, 'foo', "key name should be foo");
       strictEqual(value, computedProperty, "value should be passed descriptor");
     }

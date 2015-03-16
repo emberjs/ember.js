@@ -5,7 +5,7 @@ import View from "ember-views/views/view";
 var parentView, view;
 
 QUnit.module("View#nearest*", {
-  teardown: function() {
+  teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
       if (view) { view.destroy(); }
@@ -16,7 +16,7 @@ QUnit.module("View#nearest*", {
 (function() {
   var Mixin = EmberMixin.create({});
   var Parent = View.extend(Mixin, {
-    render: function(buffer) {
+    render(buffer) {
       this.appendChild(View.create());
     }
   });
@@ -51,7 +51,7 @@ QUnit.module("View#nearest*", {
     view = View.create({
       myProp: true,
 
-      render: function(buffer) {
+      render(buffer) {
         this.appendChild(View.create());
       }
     });

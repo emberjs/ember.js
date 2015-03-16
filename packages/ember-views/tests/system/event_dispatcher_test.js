@@ -12,14 +12,14 @@ var view;
 var dispatcher;
 
 QUnit.module("EventDispatcher", {
-  setup: function() {
+  setup() {
     run(function() {
       dispatcher = EventDispatcher.create();
       dispatcher.setup();
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
       dispatcher.destroy();
@@ -34,11 +34,11 @@ QUnit.test("should dispatch events to views", function() {
   var parentKeyDownCalled = 0;
 
   var childView = View.createWithMixins({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('<span id="wot">ewot</span>');
     },
 
-    keyDown: function(evt) {
+    keyDown(evt) {
       childKeyDownCalled++;
 
       return false;
@@ -46,17 +46,17 @@ QUnit.test("should dispatch events to views", function() {
   });
 
   view = View.createWithMixins({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
       this.appendChild(childView);
     },
 
-    mouseDown: function(evt) {
+    mouseDown(evt) {
       parentMouseDownCalled++;
       receivedEvent = evt;
     },
 
-    keyDown: function(evt) {
+    keyDown(evt) {
       parentKeyDownCalled++;
     }
   });
@@ -88,12 +88,12 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
   view = View.createWithMixins({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
       this._super(buffer);
     },
 
-    mouseDown: function(evt) {
+    mouseDown(evt) {
       receivedEvent = evt;
     }
   });
@@ -124,11 +124,11 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
 QUnit.test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = View.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
 
-    change: function(evt) {
+    change(evt) {
       receivedEvent = evt;
     }
   });
@@ -146,17 +146,17 @@ QUnit.test("events should stop propagating if the view is destroyed", function()
   var parentViewReceived, receivedEvent;
 
   var parentView = ContainerView.create({
-    change: function(evt) {
+    change(evt) {
       parentViewReceived = true;
     }
   });
 
   view = parentView.createChildView(View, {
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
 
-    change: function(evt) {
+    change(evt) {
       receivedEvent = true;
       var self = this;
       run(function() {
@@ -183,7 +183,7 @@ QUnit.test('should not interfere with event propagation of virtualViews', functi
 
   var view = View.create({
     isVirtual: true,
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('<div id="propagate-test-div"></div>');
     }
   });
@@ -205,17 +205,17 @@ QUnit.test('should not interfere with event propagation of virtualViews', functi
 QUnit.test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
   view = ContainerView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
 
     eventManager: EmberObject.create({
-      mouseDown: function() {
+      mouseDown() {
         receivedEvent++;
       }
     }),
 
-    mouseDown: function() {}
+    mouseDown() {}
   });
 
   run(function() {
@@ -234,7 +234,7 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
     elementId: 'containerView',
 
     eventManager: EmberObject.create({
-      mouseDown: function(evt, view) {
+      mouseDown(evt, view) {
         // Re-dispatch event when you get it.
         //
         // The second parameter tells the dispatcher
@@ -252,12 +252,12 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
     child: View.extend({
       elementId: 'nestedView',
 
-      mouseDown: function(evt) {
+      mouseDown(evt) {
         receivedEvent++;
       }
     }),
 
-    mouseDown: function(evt) {
+    mouseDown(evt) {
       receivedEvent++;
     }
   });
@@ -275,7 +275,7 @@ QUnit.test("event handlers should be wrapped in a run loop", function() {
     elementId: 'test-view',
 
     eventManager: EmberObject.create({
-      mouseDown: function() {
+      mouseDown() {
         ok(run.currentRunLoop, 'a run loop should have started');
       }
     })
@@ -287,7 +287,7 @@ QUnit.test("event handlers should be wrapped in a run loop", function() {
 });
 
 QUnit.module("EventDispatcher#setup", {
-  setup: function() {
+  setup() {
     run(function() {
       dispatcher = EventDispatcher.create({
         rootElement: "#qunit-fixture"
@@ -295,7 +295,7 @@ QUnit.module("EventDispatcher#setup", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
       dispatcher.destroy();
@@ -311,7 +311,7 @@ QUnit.test("additional events which should be listened on can be passed", functi
 
     view = View.create({
       elementId: "leView",
-      myEvent: function() {
+      myEvent() {
         ok(true, "custom event has been triggered");
       }
     }).appendTo(dispatcher.get("rootElement"));
@@ -330,7 +330,7 @@ QUnit.test("additional events and rootElement can be specified", function () {
 
     view = View.create({
       elementId: "leView",
-      myEvent: function() {
+      myEvent() {
         ok(true, "custom event has been triggered");
       }
     }).appendTo(dispatcher.get("rootElement"));

@@ -18,7 +18,7 @@ var trim = jQuery.trim;
 var registry, container, originalOutletHelper, top;
 
 QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
-  setup: function() {
+  setup() {
     originalOutletHelper = helpers['outlet'];
     registerHelper('outlet', outletHelper);
 
@@ -30,7 +30,7 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
     top = CoreOutlet.create();
   },
 
-  teardown: function() {
+  teardown() {
     delete helpers['outlet'];
     helpers['outlet'] = originalOutletHelper;
 

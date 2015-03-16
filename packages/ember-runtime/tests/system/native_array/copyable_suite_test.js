@@ -4,11 +4,11 @@ import {generateGuid} from 'ember-metal/utils';
 CopyableTests.extend({
   name: 'NativeArray Copyable',
 
-  newObject: function() {
+  newObject() {
     return Ember.A([generateGuid()]);
   },
 
-  isEqual: function(a, b) {
+  isEqual(a, b) {
     if (!(a instanceof Array)) {
       return false;
     }

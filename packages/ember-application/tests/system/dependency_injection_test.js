@@ -8,7 +8,7 @@ var originalLookup = Ember.lookup;
 var registry, locator, lookup, application, originalModelInjections;
 
 QUnit.module("Ember.Application Dependency Injection", {
-  setup: function() {
+  setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
 
@@ -31,7 +31,7 @@ QUnit.module("Ember.Application Dependency Injection", {
 
     lookup = Ember.lookup = {};
   },
-  teardown: function() {
+  teardown() {
     run(application, 'destroy');
     application = locator = null;
     Ember.lookup = originalLookup;

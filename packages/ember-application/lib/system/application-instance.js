@@ -80,7 +80,7 @@ export default EmberObject.extend({
   */
   rootElement: null,
 
-  init: function() {
+  init() {
     this._super(...arguments);
 
     // Create a per-instance registry that will use the application's registry
@@ -118,7 +118,7 @@ export default EmberObject.extend({
     @param options
     @private
   */
-  overrideRouterLocation: function(options) {
+  overrideRouterLocation(options) {
     var location = options && options.location;
     var router = get(this, 'router');
 
@@ -137,7 +137,7 @@ export default EmberObject.extend({
     @param view {Ember.View} the root-most view
     @private
   */
-  didCreateRootView: function(view) {
+  didCreateRootView(view) {
     view.appendTo(this.rootElement);
   },
 
@@ -148,7 +148,7 @@ export default EmberObject.extend({
 
     @private
   */
-  startRouting: function() {
+  startRouting() {
     var router = get(this, 'router');
     var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
 
@@ -163,7 +163,7 @@ export default EmberObject.extend({
     Because setup should only occur once, multiple calls to `setupRouter`
     beyond the first call have no effect.
   */
-  setupRouter: function() {
+  setupRouter() {
     if (this._didSetupRouter) { return; }
     this._didSetupRouter = true;
 
@@ -180,7 +180,7 @@ export default EmberObject.extend({
     @param url {String} the URL the router should route to
     @private
   */
-  handleURL: function(url) {
+  handleURL(url) {
     var router = get(this, 'router');
 
     this.setupRouter();
@@ -190,7 +190,7 @@ export default EmberObject.extend({
   /**
     @private
   */
-  setupEventDispatcher: function() {
+  setupEventDispatcher() {
     var dispatcher = this.container.lookup('event_dispatcher:main');
     dispatcher.setup(this.customEvents, this.rootElement);
 
@@ -200,7 +200,7 @@ export default EmberObject.extend({
   /**
     @private
   */
-  willDestroy: function() {
+  willDestroy() {
     this._super(...arguments);
     run(this.container, 'destroy');
   }

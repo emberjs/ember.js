@@ -6,11 +6,11 @@ import DefaultResolver from "ember-application/system/resolver";
 var application;
 
 QUnit.module("Ember.Application Dependency Injection – customResolver", {
-  setup: function() {
+  setup() {
     function fallbackTemplate() { return "<h1>Fallback</h1>"; }
 
     var Resolver = DefaultResolver.extend({
-      resolveTemplate: function(resolvable) {
+      resolveTemplate(resolvable) {
         var resolvedTemplate = this._super(resolvable);
         if (resolvedTemplate) { return resolvedTemplate; }
         return fallbackTemplate;
@@ -25,7 +25,7 @@ QUnit.module("Ember.Application Dependency Injection – customResolver", {
       });
     });
   },
-  teardown: function() {
+  teardown() {
     run(application, 'destroy');
   }
 });

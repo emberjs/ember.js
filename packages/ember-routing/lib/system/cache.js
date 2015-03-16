@@ -1,20 +1,20 @@
 import EmberObject from "ember-runtime/system/object";
 
 export default EmberObject.extend({
-  init: function() {
+  init() {
     this.cache = {};
   },
-  has: function(bucketKey) {
+  has(bucketKey) {
     return bucketKey in this.cache;
   },
-  stash: function(bucketKey, key, value) {
+  stash(bucketKey, key, value) {
     var bucket = this.cache[bucketKey];
     if (!bucket) {
       bucket = this.cache[bucketKey] = {};
     }
     bucket[key] = value;
   },
-  lookup: function(bucketKey, prop, defaultValue) {
+  lookup(bucketKey, prop, defaultValue) {
     var cache = this.cache;
     if (!(bucketKey in cache)) {
       return defaultValue;

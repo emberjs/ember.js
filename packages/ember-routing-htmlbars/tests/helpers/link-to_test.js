@@ -9,7 +9,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view;
 
 QUnit.module("ember-routing-htmlbars: link-to helper", {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

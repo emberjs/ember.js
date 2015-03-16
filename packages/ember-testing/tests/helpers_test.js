@@ -90,8 +90,8 @@ function setupApp() {
 }
 
 QUnit.module("ember-testing: Helper setup", {
-  setup: function() { cleanup(); },
-  teardown: function() { cleanup(); }
+  setup() { cleanup(); },
+  teardown() { cleanup(); }
 });
 
 QUnit.test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
@@ -242,10 +242,10 @@ QUnit.test("Ember.Application#removeTestHelpers resets the helperContainer's ori
 });
 
 QUnit.module("ember-testing: Helper methods", {
-  setup: function() {
+  setup() {
     setupApp();
   },
-  teardown: function() {
+  teardown() {
     cleanup();
   }
 });
@@ -324,18 +324,18 @@ QUnit.test("`click` triggers appropriate events in order", function() {
   App.IndexView = EmberView.extend({
     classNames: 'index-view',
 
-    didInsertElement: function() {
+    didInsertElement() {
       this.$().on('mousedown focusin mouseup click', function(e) {
         events.push(e.type);
       });
     },
 
     Checkbox: Ember.Checkbox.extend({
-      click: function() {
+      click() {
         events.push('click:' + this.get('checked'));
       },
 
-      change: function() {
+      change() {
         events.push('change:' + this.get('checked'));
       }
     })
@@ -411,7 +411,7 @@ QUnit.test("`wait` respects registerWaiters with optional context", function() {
 
   var obj = {
     counter: 0,
-    ready: function() {
+    ready() {
       return ++this.counter > 2;
     }
   };
@@ -451,7 +451,7 @@ QUnit.test("`triggerEvent accepts an optional options hash without context", fun
   App.IndexView = EmberView.extend({
     template: compile('{{input type="text" id="scope" class="input"}}'),
 
-    didInsertElement: function() {
+    didInsertElement() {
       this.$('.input').on('blur change', function(e) {
         event = e;
       });
@@ -480,7 +480,7 @@ QUnit.test("`triggerEvent can limit searching for a selector to a scope", functi
   App.IndexView = EmberView.extend({
     template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
 
-    didInsertElement: function() {
+    didInsertElement() {
       this.$('.input').on('blur change', function(e) {
         event = e;
       });
@@ -508,7 +508,7 @@ QUnit.test("`triggerEvent` can be used to trigger arbitrary events", function() 
   App.IndexView = EmberView.extend({
     template: compile('{{input type="text" id="foo"}}'),
 
-    didInsertElement: function() {
+    didInsertElement() {
       this.$('#foo').on('blur change', function(e) {
         event = e;
       });
@@ -557,7 +557,7 @@ QUnit.test("`fillIn` focuses on the element", function() {
 
   App.ApplicationRoute = Ember.Route.extend({
     actions: {
-      wasFocused: function() {
+      wasFocused() {
         ok(true, 'focusIn event was triggered');
       }
     }
@@ -677,7 +677,7 @@ QUnit.test("`triggerEvent accepts an optional options hash and context", functio
   App.IndexView = EmberView.extend({
     template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
 
-    didInsertElement: function() {
+    didInsertElement() {
       this.$('.input').on('blur change', function(e) {
         event = e;
       });
@@ -699,7 +699,7 @@ QUnit.test("`triggerEvent accepts an optional options hash and context", functio
 });
 
 QUnit.module("ember-testing debugging helpers", {
-  setup: function() {
+  setup() {
     setupApp();
 
     run(function() {
@@ -711,7 +711,7 @@ QUnit.module("ember-testing debugging helpers", {
     run(App, 'advanceReadiness');
   },
 
-  teardown: function() {
+  teardown() {
     cleanup();
   }
 });
@@ -728,7 +728,7 @@ QUnit.test("pauseTest pauses", function() {
 });
 
 QUnit.module("ember-testing routing helpers", {
-  setup: function() {
+  setup() {
     run(function() {
       App = EmberApplication.create();
       App.setupForTesting();
@@ -749,7 +749,7 @@ QUnit.module("ember-testing routing helpers", {
     run(App, 'advanceReadiness');
   },
 
-  teardown: function() {
+  teardown() {
     cleanup();
   }
 });
@@ -786,11 +786,11 @@ QUnit.test("currentRouteName for '/posts/new'", function() {
 });
 
 QUnit.module("ember-testing pendingAjaxRequests", {
-  setup: function() {
+  setup() {
     setupApp();
   },
 
-  teardown: function() {
+  teardown() {
     cleanup();
   }
 });
@@ -831,7 +831,7 @@ QUnit.test("pendingAjaxRequests is reset by setupForTesting", function() {
 });
 
 QUnit.module("ember-testing async router", {
-  setup: function() {
+  setup() {
     cleanup();
 
     run(function() {
@@ -848,13 +848,13 @@ QUnit.module("ember-testing async router", {
       });
 
       App.UserRoute = EmberRoute.extend({
-        model: function() {
+        model() {
           return resolveLater();
         }
       });
 
       App.UserProfileRoute = EmberRoute.extend({
-        beforeModel: function() {
+        beforeModel() {
           var self = this;
           return resolveLater().then(function() {
             self.transitionTo('user.edit');
@@ -889,7 +889,7 @@ QUnit.module("ember-testing async router", {
     run(App, 'advanceReadiness');
   },
 
-  teardown: function() {
+  teardown() {
     cleanup();
   }
 });
@@ -919,7 +919,7 @@ QUnit.test("currentRouteName for '/user/profile'", function() {
 var originalVisitHelper, originalFindHelper, originalWaitHelper;
 
 QUnit.module('can override built-in helpers', {
-  setup: function() {
+  setup() {
     originalVisitHelper = Test._helpers.visit;
     originalFindHelper  = Test._helpers.find;
     originalWaitHelper  = Test._helpers.wait;
@@ -935,7 +935,7 @@ QUnit.module('can override built-in helpers', {
     });
   },
 
-  teardown: function() {
+  teardown() {
     App.removeTestHelpers();
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);

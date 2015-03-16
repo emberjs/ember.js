@@ -7,10 +7,10 @@ import EmberApplication from "ember-application/system/application";
 var App, originalAdapter;
 
 QUnit.module("ember-testing Adapters", {
-  setup: function() {
+  setup() {
     originalAdapter = Test.adapter;
   },
-  teardown: function() {
+  teardown() {
     run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
@@ -24,7 +24,7 @@ QUnit.test("Setting a test adapter manually", function() {
   var CustomAdapter;
 
   CustomAdapter = Adapter.extend({
-    asyncStart: function() {
+    asyncStart() {
       ok(true, "Correct adapter was used");
     }
   });

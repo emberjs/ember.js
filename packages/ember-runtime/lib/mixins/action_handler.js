@@ -153,7 +153,7 @@ var ActionHandler = Mixin.create({
     @private
     @method willMergeMixin
   */
-  willMergeMixin: function(props) {
+  willMergeMixin(props) {
     var hashName;
 
     if (!props._actions) {
@@ -204,7 +204,7 @@ var ActionHandler = Mixin.create({
     @param {String} actionName The action to trigger
     @param {*} context a context to send with the action
   */
-  send: function(actionName, ...args) {
+  send(actionName, ...args) {
     var target;
 
     if (this._actions && this._actions[actionName]) {

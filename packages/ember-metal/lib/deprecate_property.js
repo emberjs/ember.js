@@ -30,11 +30,11 @@ export function deprecateProperty(object, deprecatedKey, newKey) {
     defineProperty(object, deprecatedKey, {
       configurable: true,
       enumerable: false,
-      set: function(value) {
+      set(value) {
         deprecate();
         set(this, newKey, value);
       },
-      get: function() {
+      get() {
         deprecate();
         return get(this, newKey);
       }

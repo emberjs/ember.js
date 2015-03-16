@@ -7,11 +7,11 @@ import compile from "ember-template-compiler/system/compile";
 var registry, container, view;
 
 QUnit.module("EmberView - Nested View Ordering", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
       container.destroy();
@@ -24,7 +24,7 @@ QUnit.test("should call didInsertElement on child views before parent", function
   var insertedLast;
 
   view = EmberView.create({
-    didInsertElement: function() {
+    didInsertElement() {
       insertedLast = "outer";
     },
     container: container,
@@ -32,7 +32,7 @@ QUnit.test("should call didInsertElement on child views before parent", function
   });
 
   registry.register("view:inner", EmberView.extend({
-    didInsertElement: function() {
+    didInsertElement() {
       insertedLast = "inner";
     }
   }));

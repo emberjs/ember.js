@@ -23,7 +23,7 @@ function createRouter(overrides, disableSetup) {
 }
 
 QUnit.module("Ember Router", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
 
@@ -33,7 +33,7 @@ QUnit.module("Ember Router", {
     registry.register('location:auto', AutoLocation);
     registry.register('location:none', NoneLocation);
   },
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     registry = container = null;
   }
@@ -89,13 +89,13 @@ QUnit.test("replacePath should be called with the right path", function() {
     pathname: '/rootdir/welcome',
     hash: '',
     search: '',
-    replace: function(url) {
+    replace(url) {
       equal(url, 'http://test.com/rootdir/#/welcome');
     }
   };
 
   location.location = browserLocation;
-  location.global = { onhashchange: function() { } };
+  location.global = { onhashchange() { } };
   location.history = null;
 
   createRouter({
@@ -137,7 +137,7 @@ QUnit.test("Router should cancel routing setup when the Location class says so v
   var router;
   var FakeLocation = {
     cancelRouterSetup: true,
-    create: function () { return this; }
+    create() { return this; }
   };
 
   registry.register('location:fake', FakeLocation);
@@ -146,7 +146,7 @@ QUnit.test("Router should cancel routing setup when the Location class says so v
     container: container,
     location: 'fake',
 
-    _setupRouter: function () {
+    _setupRouter() {
       ok(false, '_setupRouter should not be called');
     }
   });
@@ -165,13 +165,13 @@ QUnit.test("AutoLocation should replace the url when it's not in the preferred f
     pathname: '/rootdir/welcome',
     hash: '',
     search: '',
-    replace: function(url) {
+    replace(url) {
       equal(url, 'http://test.com/rootdir/#/welcome');
     }
   };
   location.history = null;
   location.global = {
-    onhashchange: function() { }
+    onhashchange() { }
   };
 
   createRouter({
@@ -186,7 +186,7 @@ QUnit.test("Router#handleURL should remove any #hashes before doing URL transiti
   var router = createRouter({
     container: container,
 
-    _doURLTransition: function (routerJsMethod, url) {
+    _doURLTransition(routerJsMethod, url) {
       equal(routerJsMethod, 'handleURL');
       equal(url, '/foo/bar?time=morphin');
     }

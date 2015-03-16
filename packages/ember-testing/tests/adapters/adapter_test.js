@@ -4,10 +4,10 @@ import Adapter from "ember-testing/adapters/adapter";
 var adapter;
 
 QUnit.module("ember-testing Adapter", {
-  setup: function() {
+  setup() {
     adapter = new Adapter();
   },
-  teardown: function() {
+  teardown() {
     run(adapter, adapter.destroy);
   }
 });

@@ -145,11 +145,11 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     @param {Object} object
     @return {String}
   */
-  lookupItemController: function(object) {
+  lookupItemController(object) {
     return get(this, 'itemController');
   },
 
-  objectAtContent: function(idx) {
+  objectAtContent(idx) {
     var length = get(this, 'length');
     var arrangedContent = get(this, 'arrangedContent');
     var object = arrangedContent && arrangedContent.objectAt(idx);
@@ -172,12 +172,12 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     return object;
   },
 
-  arrangedContentDidChange: function() {
+  arrangedContentDidChange() {
     this._super(...arguments);
     this._resetSubControllers();
   },
 
-  arrayContentDidChange: function(idx, removedCnt, addedCnt) {
+  arrayContentDidChange(idx, removedCnt, addedCnt) {
     var subControllers = this._subControllers;
 
     if (subControllers.length) {
@@ -198,7 +198,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     this._super(idx, removedCnt, addedCnt);
   },
 
-  init: function() {
+  init() {
     this._super(...arguments);
     this._subControllers = [];
   },
@@ -217,7 +217,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
    */
   _isVirtual: false,
 
-  controllerAt: function(idx, object, controllerClass) {
+  controllerAt(idx, object, controllerClass) {
     var container = get(this, 'container');
     var subControllers = this._subControllers;
     var fullName, subController, parentController;
@@ -255,7 +255,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   _subControllers: null,
 
-  _resetSubControllers: function() {
+  _resetSubControllers() {
     var controller;
     var subControllers = this._subControllers;
 
@@ -272,7 +272,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     }
   },
 
-  willDestroy: function() {
+  willDestroy() {
     this._resetSubControllers();
     this._super(...arguments);
   }

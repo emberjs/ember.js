@@ -12,7 +12,7 @@ var view, originalSetAttribute, setAttributeCalls, renderer;
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   QUnit.module("ember-htmlbars: data attribute", {
-    teardown: function() {
+    teardown() {
       runDestroy(view);
     }
   });
@@ -30,7 +30,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   QUnit.test("property set before didInsertElement", function() {
     var matchingElement;
     view = EmberView.create({
-      didInsertElement: function() {
+      didInsertElement() {
         matchingElement = this.$('div[data-name=erik]');
       },
       context: { name: 'erik' },
@@ -198,7 +198,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   });
 
   QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
-    setup: function() {
+    setup() {
       renderer = new Renderer(dom);
 
       originalSetAttribute = dom.setAttribute;
@@ -213,7 +213,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       setAttributeCalls = [];
     },
 
-    teardown: function() {
+    teardown() {
       dom.setAttribute = originalSetAttribute;
 
       runDestroy(view);

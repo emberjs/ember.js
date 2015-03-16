@@ -44,11 +44,11 @@ function setAndFlush(obj, prop, value) {
 }
 
 var TestLocation = Ember.NoneLocation.extend({
-  initState: function() {
+  initState() {
     this.set('path', startingURL);
   },
 
-  setURL: function(path) {
+  setURL(path) {
     if (expectedReplaceURL) {
       ok(false, "pushState occurred but a replaceState was expected");
     }
@@ -59,7 +59,7 @@ var TestLocation = Ember.NoneLocation.extend({
     this.set('path', path);
   },
 
-  replaceURL: function(path) {
+  replaceURL(path) {
     if (expectedPushURL) {
       ok(false, "replaceState occurred but a pushState was expected");
     }
@@ -111,11 +111,11 @@ function sharedTeardown() {
 }
 
 QUnit.module("Routing w/ Query Params", {
-  setup: function() {
+  setup() {
     sharedSetup();
   },
 
-  teardown: function() {
+  teardown() {
     sharedTeardown();
   }
 });
@@ -227,7 +227,7 @@ QUnit.test("model hooks receives query params", function() {
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { omg: 'lol' });
     }
   });
@@ -256,7 +256,7 @@ QUnit.test("controllers won't be eagerly instantiated by internal query params l
   var catsIndexShouldBeCreated = false;
 
   App.HomeRoute = Ember.Route.extend({
-    setup: function() {
+    setup() {
       homeShouldBeCreated = true;
       this._super.apply(this, arguments);
     }
@@ -265,14 +265,14 @@ QUnit.test("controllers won't be eagerly instantiated by internal query params l
   App.HomeController = Ember.Controller.extend({
     queryParams: ['foo'],
     foo: "123",
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       ok(homeShouldBeCreated, "HomeController should be created at this time");
     }
   });
 
   App.AboutRoute = Ember.Route.extend({
-    setup: function() {
+    setup() {
       aboutShouldBeCreated = true;
       this._super.apply(this, arguments);
     }
@@ -281,21 +281,21 @@ QUnit.test("controllers won't be eagerly instantiated by internal query params l
   App.AboutController = Ember.Controller.extend({
     queryParams: ['lol'],
     lol: "haha",
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       ok(aboutShouldBeCreated, "AboutController should be created at this time");
     }
   });
 
   App.CatsIndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return [];
     },
-    setup: function() {
+    setup() {
       catsIndexShouldBeCreated = true;
       this._super.apply(this, arguments);
     },
-    setupController: function(controller, context) {
+    setupController(controller, context) {
       controller.set('model', context);
     }
   });
@@ -304,7 +304,7 @@ QUnit.test("controllers won't be eagerly instantiated by internal query params l
     queryParams: ['breed', 'name'],
     breed: 'Golden',
     name: null,
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       ok(catsIndexShouldBeCreated, "CatsIndexController should be created at this time");
     }
@@ -336,7 +336,7 @@ QUnit.test("model hooks receives query params (overridden by incoming url value)
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { omg: 'yes' });
     }
   });
@@ -360,7 +360,7 @@ QUnit.test("Route#paramsFor fetches query params", function() {
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params, transition) {
+    model(params, transition) {
       deepEqual(this.paramsFor('index'), { something: 'omg', foo: 'fooapp' }, "could retrieve params for index");
     }
   });
@@ -378,7 +378,7 @@ QUnit.test("Route#paramsFor fetches falsy query params", function() {
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params, transition) {
+    model(params, transition) {
       equal(params.foo, false);
     }
   });
@@ -399,13 +399,13 @@ QUnit.test("model hook can query prefix-less application params", function() {
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { appomg: 'applol' });
     }
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { omg: 'lol' });
       deepEqual(this.paramsFor('application'), { appomg: 'applol' });
     }
@@ -428,13 +428,13 @@ QUnit.test("model hook can query prefix-less application params (overridden by i
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { appomg: 'appyes' });
     }
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { omg: 'yes' });
       deepEqual(this.paramsFor('application'), { appomg: 'appyes' });
     }
@@ -460,7 +460,7 @@ QUnit.test("can opt into full transition by setting refreshModel in route queryP
 
   var appModelCount = 0;
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       appModelCount++;
     }
   });
@@ -472,7 +472,7 @@ QUnit.test("can opt into full transition by setting refreshModel in route queryP
         refreshModel: true
       }
     },
-    model: function(params) {
+    model(params) {
       indexModelCount++;
 
       if (indexModelCount === 1) {
@@ -509,7 +509,7 @@ QUnit.test("Use Ember.get to retrieve query params 'refreshModel' configuration"
 
   var appModelCount = 0;
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       appModelCount++;
     }
   });
@@ -517,11 +517,11 @@ QUnit.test("Use Ember.get to retrieve query params 'refreshModel' configuration"
   var indexModelCount = 0;
   App.IndexRoute = Ember.Route.extend({
     queryParams: Ember.Object.create({
-      unknownProperty: function(keyName) {
+      unknownProperty(keyName) {
         return { refreshModel: true };
       }
     }),
-    model: function(params) {
+    model(params) {
       indexModelCount++;
 
       if (indexModelCount === 1) {
@@ -559,7 +559,7 @@ QUnit.test("can use refreshModel even w URL changes that remove QPs from address
         refreshModel: true
       }
     },
-    model: function(params) {
+    model(params) {
       indexModelCount++;
 
       var data;
@@ -688,7 +688,7 @@ QUnit.test("can opt into full transition by setting refreshModel in route queryP
 
   var parentModelCount = 0;
   App.ParentRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       parentModelCount++;
     },
     queryParams: {
@@ -724,7 +724,7 @@ QUnit.test("Use Ember.get to retrieve query params 'replace' configuration", fun
 
   App.ApplicationRoute = Ember.Route.extend({
     queryParams: Ember.Object.create({
-      unknownProperty: function(keyName) {
+      unknownProperty(keyName) {
         // We are simulating all qps requiring refresh
         return { replace: true };
       }
@@ -753,12 +753,12 @@ QUnit.test("can override incoming QP values in setupController", function() {
   });
 
   App.IndexRoute = Ember.Route.extend({
-    setupController: function(controller) {
+    setupController(controller) {
       ok(true, "setupController called");
       controller.set('omg', 'OVERRIDE');
     },
     actions: {
-      queryParamsDidChange: function() {
+      queryParamsDidChange() {
         ok(false, "queryParamsDidChange shouldn't fire");
       }
     }
@@ -784,12 +784,12 @@ QUnit.test("can override incoming QP array values in setupController", function(
   });
 
   App.IndexRoute = Ember.Route.extend({
-    setupController: function(controller) {
+    setupController(controller) {
       ok(true, "setupController called");
       controller.set('omg', ['OVERRIDE']);
     },
     actions: {
-      queryParamsDidChange: function() {
+      queryParamsDidChange() {
         ok(false, "queryParamsDidChange shouldn't fire");
       }
     }
@@ -912,7 +912,7 @@ QUnit.test("A default boolean value deserializes QPs as booleans rather than str
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       equal(params.foo, true, "model hook received foo as boolean true");
     }
   });
@@ -1044,7 +1044,7 @@ QUnit.test("Overwriting with array with same content shouldn't refire update", f
   });
 
   App.HomeRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       modelCount++;
     }
   });
@@ -1080,7 +1080,7 @@ QUnit.test("Defaulting to params hash as the model should not result in that par
   });
 
   App.OtherRoute = Ember.Route.extend({
-    model: function(p, trans) {
+    model(p, trans) {
       var m = Ember.meta(trans.params.application);
       ok(!m.watching.woot, "A meta object isn't constructed for this params POJO");
     }
@@ -1099,13 +1099,13 @@ QUnit.test("A child of a resource route still defaults to parent route's model e
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(p, trans) {
+    model(p, trans) {
       return { woot: true };
     }
   });
 
   App.IndexRoute = Ember.Route.extend({
-    setupController: function(controller, model) {
+    setupController(controller, model) {
       deepEqual(withoutMeta(model), { woot: true }, "index route inherited model route from parent route");
     }
   });
@@ -1172,7 +1172,7 @@ QUnit.test("Undefined isn't deserialized into a string", function() {
   });
 
   App.ExampleRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       deepEqual(params, { foo: undefined });
     }
   });
@@ -1196,7 +1196,7 @@ QUnit.test("query params have been set by the time setupController is called", f
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    setupController: function(controller) {
+    setupController(controller) {
       equal(controller.get('foo'), 'YEAH', "controller's foo QP property set before setupController called");
     }
   });
@@ -1227,7 +1227,7 @@ testParamlessLinks('application');
 testParamlessLinks('index');
 
 QUnit.module("Model Dep Query Params", {
-  setup: function() {
+  setup() {
     sharedSetup();
 
     App.Router.map(function() {
@@ -1245,7 +1245,7 @@ QUnit.module("Model Dep Query Params", {
     var self = this;
     App.ArticleRoute = Ember.Route.extend({
       queryParams: {},
-      model: function(params) {
+      model(params) {
         if (self.expectedModelHookParams) {
           deepEqual(params, self.expectedModelHookParams, "the ArticleRoute model hook received the expected merged dynamic segment + query params hash");
           self.expectedModelHookParams = null;
@@ -1282,7 +1282,7 @@ QUnit.module("Model Dep Query Params", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     sharedTeardown();
     ok(!this.expectedModelHookParams, "there should be no pending expectation of expected model hook params");
   }
@@ -1468,7 +1468,7 @@ QUnit.test("can reset query params using the resetController hook", function() {
   });
 
   App.ArticleRoute.reopen({
-    resetController: function(controller, isExiting) {
+    resetController(controller, isExiting) {
       this.controllerFor('comments').set('page', 1);
       if (isExiting) {
         controller.set('q', 'imdone');
@@ -1513,7 +1513,7 @@ QUnit.test("can unit test without bucket cache", function() {
 });
 
 QUnit.module("Query Params - overlapping query param property names", {
-  setup: function() {
+  setup() {
     sharedSetup();
 
     App.Router.map(function() {
@@ -1528,7 +1528,7 @@ QUnit.module("Query Params - overlapping query param property names", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     sharedTeardown();
   }
 });

@@ -4,7 +4,7 @@ import { get } from 'ember-metal/property_get';
 
 var obj;
 var moduleOpts = {
-  setup: function() {
+  setup() {
     obj = {
       foo: {
         bar: {
@@ -37,7 +37,7 @@ var moduleOpts = {
     };
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
     window.Foo = undefined;
     window.aProp = undefined;

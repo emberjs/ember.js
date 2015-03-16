@@ -62,7 +62,7 @@ function ClassSet() {
 }
 
 ClassSet.prototype = {
-  add: function(string) {
+  add(string) {
     if (this.seen[string] === true) { return; }
     this.seen[string] = true;
 
@@ -135,7 +135,7 @@ var RenderBuffer = function(domHelper) {
 
 RenderBuffer.prototype = {
 
-  reset: function(tagName, contextualElement) {
+  reset(tagName, contextualElement) {
     this.tagName = tagName;
     this.buffer = null;
     this._element = null;
@@ -253,18 +253,18 @@ RenderBuffer.prototype = {
   */
   elementStyle: null,
 
-  pushChildView: function (view) {
+  pushChildView(view) {
     var index = this.childViews.length;
     this.childViews[index] = view;
     this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
   },
 
-  pushAttrNode: function (node) {
+  pushAttrNode(node) {
     var index = this.attrNodes.length;
     this.attrNodes[index] = node;
   },
 
-  hydrateMorphs: function (contextualElement) {
+  hydrateMorphs(contextualElement) {
     var childViews = this.childViews;
     var el = this._element;
     for (var i=0,l=childViews.length; i<l; i++) {
@@ -272,9 +272,7 @@ RenderBuffer.prototype = {
       var ref = el.querySelector('#morph-'+i);
 
       Ember.assert('An error occurred while setting up template bindings. Please check ' +
-                   (childView && childView._parentView && childView._parentView._debugTemplateName ?
-                        '"' + childView._parentView._debugTemplateName + '" template ' :
-                        ''
+                   (((childView && childView._parentView && childView._parentView._debugTemplateName ? '"' + childView._parentView._debugTemplateName + '" template ' : ''))
                    )  + 'for invalid markup or bindings within HTML comments.',
                    ref);
 
@@ -296,7 +294,7 @@ RenderBuffer.prototype = {
     @param {String} string HTML to push into the buffer
     @chainable
   */
-  push: function(content) {
+  push(content) {
     if (typeof content === 'string') {
       if (this.buffer === null) {
         this.buffer = '';
@@ -317,7 +315,7 @@ RenderBuffer.prototype = {
     @param {String} className Class name to add to the buffer
     @chainable
   */
-  addClass: function(className) {
+  addClass(className) {
     // lazily create elementClasses
     this.elementClasses = (this.elementClasses || new ClassSet());
     this.elementClasses.add(className);
@@ -326,7 +324,7 @@ RenderBuffer.prototype = {
     return this;
   },
 
-  setClasses: function(classNames) {
+  setClasses(classNames) {
     this.elementClasses = null;
     var len = classNames.length;
     var i;
@@ -342,7 +340,7 @@ RenderBuffer.prototype = {
     @param {String} id
     @chainable
   */
-  id: function(id) {
+  id(id) {
     this.elementId = id;
     return this;
   },
@@ -359,7 +357,7 @@ RenderBuffer.prototype = {
     @chainable
     @return {Ember.RenderBuffer|String} this or the current attribute value
   */
-  attr: function(name, value) {
+  attr(name, value) {
     var attributes = this.elementAttributes = (this.elementAttributes || {});
 
     if (arguments.length === 1) {
@@ -378,7 +376,7 @@ RenderBuffer.prototype = {
     @param {String} name The name of the attribute
     @chainable
   */
-  removeAttr: function(name) {
+  removeAttr(name) {
     var attributes = this.elementAttributes;
     if (attributes) { delete attributes[name]; }
 
@@ -394,7 +392,7 @@ RenderBuffer.prototype = {
     @chainable
     @return {Ember.RenderBuffer|String} this or the current property value
   */
-  prop: function(name, value) {
+  prop(name, value) {
     var properties = this.elementProperties = (this.elementProperties || {});
 
     if (arguments.length === 1) {
@@ -413,7 +411,7 @@ RenderBuffer.prototype = {
     @param {String} name The name of the property
     @chainable
   */
-  removeProp: function(name) {
+  removeProp(name) {
     var properties = this.elementProperties;
     if (properties) { delete properties[name]; }
 
@@ -428,14 +426,14 @@ RenderBuffer.prototype = {
     @param {String} value
     @chainable
   */
-  style: function(name, value) {
+  style(name, value) {
     this.elementStyle = (this.elementStyle || {});
 
     this.elementStyle[name] = value;
     return this;
   },
 
-  generateElement: function() {
+  generateElement() {
     var tagName = this.tagName;
     var id = this.elementId;
     var classes = this.classes;
@@ -500,7 +498,7 @@ RenderBuffer.prototype = {
     @return {DOMElement} The element corresponding to the generated HTML
       of this buffer
   */
-  element: function() {
+  element() {
 
     if (this._element && this.attrNodes.length > 0) {
       var i, l, attrMorph, attrNode;
@@ -546,7 +544,7 @@ RenderBuffer.prototype = {
     @method string
     @return {String} The generated HTML
   */
-  string: function() {
+  string() {
     if (this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
       var thisElement = this.element();
@@ -560,7 +558,7 @@ RenderBuffer.prototype = {
     }
   },
 
-  outerContextualElement: function() {
+  outerContextualElement() {
     if (this._outerContextualElement === undefined) {
       Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
                       " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
@@ -570,7 +568,7 @@ RenderBuffer.prototype = {
     return this._outerContextualElement;
   },
 
-  innerContextualElement: function(html) {
+  innerContextualElement(html) {
     var innerContextualElement;
     if (this._element && this._element.nodeType === 1) {
       innerContextualElement = this._element;
@@ -585,14 +583,14 @@ RenderBuffer.prototype = {
     return omittedStartTag || innerContextualElement;
   },
 
-  innerString: function() {
+  innerString() {
     var content = this.innerContent();
     if (content && !content.nodeType) {
       return content;
     }
   },
 
-  innerContent: function() {
+  innerContent() {
     return this.buffer;
   }
 };

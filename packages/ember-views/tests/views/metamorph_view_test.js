@@ -9,16 +9,16 @@ import _MetamorphView from "ember-views/views/metamorph_view";
 var view, childView, metamorphView;
 
 QUnit.module("Metamorph views", {
-  setup: function() {
+  setup() {
     view = EmberView.create({
-      render: function(buffer) {
+      render(buffer) {
         buffer.push("<h1>View</h1>");
         this.appendChild(metamorphView);
       }
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
       if (childView && !childView.isDestroyed) {
@@ -34,13 +34,13 @@ QUnit.module("Metamorph views", {
 
 QUnit.test("a Metamorph view is not a view's parentView", function() {
   childView = EmberView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<p>Bye bros</p>");
     }
   });
 
   metamorphView = _MetamorphView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<h2>Meta</h2>");
       this.appendChild(childView);
     }
@@ -59,9 +59,9 @@ QUnit.test("a Metamorph view is not a view's parentView", function() {
 });
 
 QUnit.module("Metamorph views correctly handle DOM", {
-  setup: function() {
+  setup() {
     view = EmberView.create({
-      render: function(buffer) {
+      render(buffer) {
         buffer.push("<h1>View</h1>");
         this.appendChild(metamorphView);
       }
@@ -70,7 +70,7 @@ QUnit.module("Metamorph views correctly handle DOM", {
     metamorphView = _MetamorphView.create({
       powerRanger: "Jason",
 
-      render: function(buffer) {
+      render(buffer) {
         buffer.push("<h2 id='from-meta'>"+get(this, 'powerRanger')+"</h2>");
       }
     });
@@ -80,7 +80,7 @@ QUnit.module("Metamorph views correctly handle DOM", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
       if (!metamorphView.isDestroyed) {
@@ -130,10 +130,10 @@ QUnit.test("a metamorph view calls its children's willInsertElement and didInser
     ViewWithCallback: EmberView.extend({
       template: compile('<div id="do-i-exist"></div>'),
 
-      willInsertElement: function() {
+      willInsertElement() {
         willInsertElementCalled = true;
       },
-      didInsertElement: function() {
+      didInsertElement() {
         didInsertElementCalled = true;
         didInsertElementSawElement = (this.$('div').length === 1);
       }
@@ -167,7 +167,7 @@ QUnit.test("replacing a Metamorph should invalidate childView elements", functio
     show: false,
 
     CustomView: EmberView.extend({
-      init: function() {
+      init() {
         this._super.apply(this, arguments);
         // This will be called in preRender
         // We want it to cache a null value
@@ -175,7 +175,7 @@ QUnit.test("replacing a Metamorph should invalidate childView elements", functio
         this.get('element');
       },
 
-      didInsertElement: function() {
+      didInsertElement() {
         elementOnDidInsert = this.get('element');
       }
     }),

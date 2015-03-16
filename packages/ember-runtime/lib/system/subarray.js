@@ -41,7 +41,7 @@ SubArray.prototype = {
 
     @return {number} The index of the item in the subarray.
   */
-  addItem: function(index, match) {
+  addItem(index, match) {
     var returnValue = -1;
     var itemType = match ? RETAIN : FILTER;
     var self = this;
@@ -94,7 +94,7 @@ SubArray.prototype = {
     @return {number} The index of the item in the subarray, or `-1` if the item
     was not in the subarray.
   */
-  removeItem: function(index) {
+  removeItem(index) {
     var returnValue = -1;
     var self = this;
 
@@ -117,7 +117,7 @@ SubArray.prototype = {
   },
 
 
-  _findOperation: function (index, foundCallback, notFoundCallback) {
+  _findOperation(index, foundCallback, notFoundCallback) {
     var seenInSubArray = 0;
     var operationIndex, len, operation, rangeStart, rangeEnd;
 
@@ -138,7 +138,7 @@ SubArray.prototype = {
     notFoundCallback(seenInSubArray);
   },
 
-  _composeAt: function(index) {
+  _composeAt(index) {
     var op = this._operations[index];
     var otherOp;
 
@@ -166,7 +166,7 @@ SubArray.prototype = {
     }
   },
 
-  toString: function () {
+  toString() {
     var str = "";
     EnumerableUtils.forEach(this._operations, function (operation) {
       str += " " + operation.type + ":" + operation.count;

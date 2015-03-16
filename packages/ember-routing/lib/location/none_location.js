@@ -28,7 +28,7 @@ export default EmberObject.extend({
     @method getURL
     @return {String} path
   */
-  getURL: function() {
+  getURL() {
     return get(this, 'path');
   },
 
@@ -40,7 +40,7 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL: function(path) {
+  setURL(path) {
     set(this, 'path', path);
   },
 
@@ -53,7 +53,7 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL: function(callback) {
+  onUpdateURL(callback) {
     this.updateCallback = callback;
   },
 
@@ -64,7 +64,7 @@ export default EmberObject.extend({
     @method handleURL
     @param callback {Function}
   */
-  handleURL: function(url) {
+  handleURL(url) {
     set(this, 'path', url);
     this.updateCallback(url);
   },
@@ -81,7 +81,7 @@ export default EmberObject.extend({
     @param url {String}
     @return {String} url
   */
-  formatURL: function(url) {
+  formatURL(url) {
     // The return value is not overly meaningful, but we do not want to throw
     // errors when test code renders templates containing {{action href=true}}
     // helpers.

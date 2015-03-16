@@ -8,11 +8,11 @@ var view, originalLookup, lookup;
 var originalLookup = Ember.lookup;
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     view = null;
 

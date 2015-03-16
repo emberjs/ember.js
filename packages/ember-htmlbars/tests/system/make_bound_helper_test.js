@@ -20,13 +20,13 @@ function registerRepeatHelper() {
 }
 
 QUnit.module("ember-htmlbars: makeBoundHelper", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('helper', { instantiate: false });
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     runDestroy(container);
     registry = container = view = null;

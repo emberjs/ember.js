@@ -6,7 +6,7 @@ import {get} from 'ember-metal/property_get';
 CopyableTests.extend({
   name: 'Ember.Set Copyable',
 
-  newObject: function() {
+  newObject() {
     var set, originalCopy;
     ignoreDeprecation(function() {
       set = new Set();
@@ -28,7 +28,7 @@ CopyableTests.extend({
     return set;
   },
 
-  isEqual: function(a, b) {
+  isEqual(a, b) {
     if (!(a instanceof Set)) {
       return false;
     }

@@ -16,7 +16,7 @@ function mockBrowserLocation(overrides) {
     pathname: '/',
     hash: '',
     search: '',
-    replace: function () {
+    replace() {
       ok(false, 'location.replace should not be called during testing');
     }
   }, overrides);
@@ -34,7 +34,7 @@ QUnit.test("replacePath cannot be used to redirect to a different origin", funct
     hostname: 'emberjs.com',
     port: '1337',
 
-    replace: function (url) {
+    replace(url) {
       equal(url, expectedURL);
     }
   };
@@ -74,10 +74,10 @@ QUnit.test("getFullPath() should return full pathname including query and hash",
 });
 
 QUnit.test("Feature-Detecting onhashchange", function() {
-  equal(supportsHashChange(undefined, { onhashchange: function() {} }), true, "When not in IE, use onhashchange existence as evidence of the feature");
+  equal(supportsHashChange(undefined, { onhashchange() {} }), true, "When not in IE, use onhashchange existence as evidence of the feature");
   equal(supportsHashChange(undefined, { }), false, "When not in IE, use onhashchange absence as evidence of the feature absence");
-  equal(supportsHashChange(7, { onhashchange: function() {} }), false, "When in IE7 compatibility mode, never report existence of the feature");
-  equal(supportsHashChange(8, { onhashchange: function() {} }), true, "When in IE8+, use onhashchange existence as evidence of the feature");
+  equal(supportsHashChange(7, { onhashchange() {} }), false, "When in IE7 compatibility mode, never report existence of the feature");
+  equal(supportsHashChange(8, { onhashchange() {} }), true, "When in IE8+, use onhashchange existence as evidence of the feature");
 });
 
 QUnit.test("Feature-detecting the history API", function() {

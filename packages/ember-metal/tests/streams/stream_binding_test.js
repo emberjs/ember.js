@@ -8,7 +8,7 @@ import StreamBinding from "ember-metal/streams/stream_binding";
 var source, value;
 
 QUnit.module('Stream Binding', {
-  setup: function() {
+  setup() {
     value = "zlurp";
 
     source = new Stream(function() {
@@ -20,7 +20,7 @@ QUnit.module('Stream Binding', {
       this.notify();
     };
   },
-  teardown: function() {
+  teardown() {
     value = undefined;
     source = undefined;
   }

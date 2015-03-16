@@ -12,14 +12,14 @@ function buildView(template, context) {
 var oldString;
 
 QUnit.module('ember-htmlbars: {{#loc}} helper', {
-  setup: function() {
+  setup() {
     oldString = Ember.STRINGS;
     Ember.STRINGS = {
       '_Howdy Friend': 'Hallo Freund'
     };
   },
 
-  teardown: function() {
+  teardown() {
     Ember.STRINGS = oldString;
   }
 });

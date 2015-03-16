@@ -71,7 +71,7 @@ function superFunction() {
 // ensure we prime superFunction to mitigate
 // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
 var primer = {
-  __nextSuper: function(a, b, c, d ) { }
+  __nextSuper(a, b, c, d) { }
 };
 
 superFunction.call(primer);

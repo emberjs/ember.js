@@ -51,7 +51,7 @@ export default Mixin.create({
     @method frozenCopy
     @return {Object} copy of receiver or receiver
   */
-  frozenCopy: function() {
+  frozenCopy() {
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {

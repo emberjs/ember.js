@@ -46,14 +46,14 @@ var ViewChildViewsSupport = Mixin.create({
 
   _childViews: EMPTY_ARRAY,
 
-  init: function() {
+  init() {
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
 
     this._super(...arguments);
   },
 
-  appendChild: function(view, options) {
+  appendChild(view, options) {
     return this.currentState.appendChild(this, view, options);
   },
 
@@ -64,7 +64,7 @@ var ViewChildViewsSupport = Mixin.create({
     @param {Ember.View} view
     @return {Ember.View} receiver
   */
-  removeChild: function(view) {
+  removeChild(view) {
     // If we're destroying, the entire subtree will be
     // freed, and the DOM will be handled separately,
     // so no need to mess with childViews.
@@ -95,7 +95,7 @@ var ViewChildViewsSupport = Mixin.create({
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
-  createChildView: function(maybeViewClass, _attrs) {
+  createChildView(maybeViewClass, _attrs) {
     if (!maybeViewClass) {
       throw new TypeError("createChildViews first argument must exist");
     }

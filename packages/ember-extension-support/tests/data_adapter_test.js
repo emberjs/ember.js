@@ -15,13 +15,13 @@ var adapter, App;
 var Model = EmberObject.extend();
 
 var DataAdapter = EmberDataAdapter.extend({
-  detect: function(klass) {
+  detect(klass) {
     return klass !== Model && Model.detect(klass);
   }
 });
 
 QUnit.module("Data Adapter", {
-  setup: function() {
+  setup() {
     run(function() {
       App = EmberApplication.create();
       App.toString = function() { return 'App'; };
@@ -29,7 +29,7 @@ QUnit.module("Data Adapter", {
       App.registry.register('data-adapter:main', DataAdapter);
     });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       adapter.destroy();
       App.destroy();
@@ -42,10 +42,10 @@ QUnit.test("Model types added with DefaultResolver", function() {
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
-    getRecords: function() {
+    getRecords() {
       return Ember.A([1,2,3]);
     },
-    columnsForType: function() {
+    columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
     }
   });
@@ -68,10 +68,10 @@ QUnit.test("Model types added with DefaultResolver", function() {
 QUnit.test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend();
   var StubContainerDebugAdapter = DefaultResolver.extend({
-    canCatalogEntriesByType: function(type) {
+    canCatalogEntriesByType(type) {
       return true;
     },
-    catalogEntriesByType: function(type) {
+    catalogEntriesByType(type) {
       return [PostClass];
     }
   });
@@ -79,10 +79,10 @@ QUnit.test("Model types added with custom container-debug-adapter", function() {
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
-    getRecords: function() {
+    getRecords() {
       return Ember.A([1,2,3]);
     },
-    columnsForType: function() {
+    columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
     }
   });
@@ -109,7 +109,7 @@ QUnit.test("Model Types Updated", function() {
   adapter = App.__container__.lookup('data-adapter:main');
   var records = Ember.A([1,2,3]);
   adapter.reopen({
-    getRecords: function() {
+    getRecords() {
       return records;
     }
   });
@@ -143,16 +143,16 @@ QUnit.test("Records Added", function() {
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
-    getRecords: function() {
+    getRecords() {
       return recordList;
     },
-    getRecordColor: function() {
+    getRecordColor() {
       return 'blue';
     },
-    getRecordColumnValues: function() {
+    getRecordColumnValues() {
       return { title: 'Post ' + countAdded };
     },
-    getRecordKeywords: function() {
+    getRecordKeywords() {
       return ['Post ' + countAdded];
     }
   });
@@ -180,10 +180,10 @@ QUnit.test("Observes and releases a record correctly", function() {
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
-    getRecords: function() {
+    getRecords() {
       return recordList;
     },
-    observeRecord: function(record, recordUpdated) {
+    observeRecord(record, recordUpdated) {
       var self = this;
       var callback = function() {
         recordUpdated(self.wrapRecord(record));
@@ -193,7 +193,7 @@ QUnit.test("Observes and releases a record correctly", function() {
         removeObserver(record, 'title', callback);
       };
     },
-    getRecordColumnValues: function(record) {
+    getRecordColumnValues(record) {
       return { title: get(record, 'title') };
     }
   });

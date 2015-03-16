@@ -15,7 +15,7 @@ import "ember-routing"; //ES6TODO: fixme?
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
 QUnit.module("ember-testing Acceptance", {
-  setup: function() {
+  setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
@@ -33,13 +33,13 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.IndexRoute = EmberRoute.extend({
-        model: function() {
+        model() {
           indexHitCount += 1;
         }
       });
 
       App.PostsRoute = EmberRoute.extend({
-        renderTemplate: function() {
+        renderTemplate() {
           currentRoute = 'posts';
           this._super.apply(this, arguments);
         }
@@ -51,7 +51,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.CommentsRoute = EmberRoute.extend({
-        renderTemplate: function() {
+        renderTemplate() {
           currentRoute = 'comments';
           this._super.apply(this, arguments);
         }
@@ -62,7 +62,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.AbortTransitionRoute = EmberRoute.extend({
-        beforeModel: function(transition) {
+        beforeModel(transition) {
           transition.abort();
         }
       });
@@ -87,7 +87,7 @@ QUnit.module("ember-testing Acceptance", {
     originalAdapter = Test.adapter;
   },
 
-  teardown: function() {
+  teardown() {
     App.removeTestHelpers();
     Test.unregisterHelper('slowHelper');
     jQuery('#ember-testing-container, #ember-testing').remove();
@@ -242,7 +242,7 @@ QUnit.test("Aborted transitions are not logged via Ember.Test.adapter#exception"
   expect(0);
 
   Test.adapter = QUnitAdapter.create({
-    exception: function(error) {
+    exception(error) {
       ok(false, "aborted transitions are not logged");
     }
   });
@@ -255,7 +255,7 @@ QUnit.test("Unhandled exceptions are logged via Ember.Test.adapter#exception", f
 
   var asyncHandled;
   Test.adapter = QUnitAdapter.create({
-    exception: function(error) {
+    exception(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
       asyncHandled['catch'](function() { }); // handle the rejection so it doesn't leak later.
     }
@@ -274,7 +274,7 @@ QUnit.test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#
   expect(1);
 
   Test.adapter = QUnitAdapter.create({
-    exception: function(error) {
+    exception(error) {
       equal(error.message, "Catch me", "Exception successfully caught and passed to Ember.Test.adapter.exception");
     }
   });
@@ -309,11 +309,11 @@ QUnit.test("test must not finish while asyncHelpers are pending", function () {
   var innerRan = false;
 
   Test.adapter = QUnitAdapter.extend({
-    asyncStart: function() {
+    asyncStart() {
       async++;
       this._super();
     },
-    asyncEnd: function() {
+    asyncEnd() {
       async--;
       this._super();
     }

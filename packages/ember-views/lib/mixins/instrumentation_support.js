@@ -17,7 +17,7 @@ var InstrumentationSupport = Mixin.create({
 
   instrumentName: 'view',
 
-  instrumentDetails: function(hash) {
+  instrumentDetails(hash) {
     hash.template = get(this, 'templateName');
     this._super(hash);
   }

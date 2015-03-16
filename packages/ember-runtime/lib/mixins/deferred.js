@@ -22,7 +22,7 @@ export default Mixin.create({
     @param {Function} resolve a callback function to be called when done
     @param {Function} reject  a callback function to be called when failed
   */
-  then: function(resolve, reject, label) {
+  then(resolve, reject, label) {
     var deferred, promise, entity;
 
     entity = this;
@@ -45,7 +45,7 @@ export default Mixin.create({
 
     @method resolve
   */
-  resolve: function(value) {
+  resolve(value) {
     var deferred, promise;
 
     deferred = get(this, '_deferred');
@@ -63,7 +63,7 @@ export default Mixin.create({
 
     @method reject
   */
-  reject: function(value) {
+  reject(value) {
     get(this, '_deferred').reject(value);
   },
 

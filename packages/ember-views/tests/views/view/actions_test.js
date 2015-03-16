@@ -7,7 +7,7 @@ import View from "ember-views/views/view";
 var view;
 
 QUnit.module("View action handling", {
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
     });
@@ -18,7 +18,7 @@ QUnit.test("Action can be handled by a function on actions object", function() {
   expect(1);
   view = View.extend({
     actions: {
-      poke: function() {
+      poke() {
         ok(true, 'poked');
       }
     }
@@ -30,14 +30,14 @@ QUnit.test("A handled action can be bubbled to the target for continued processi
   expect(2);
   view = View.extend({
     actions: {
-      poke: function() {
+      poke() {
         ok(true, 'poked 1');
         return true;
       }
     },
     target: Controller.extend({
       actions: {
-        poke: function() {
+        poke() {
           ok(true, 'poked 2');
         }
       }
@@ -51,10 +51,10 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var SuperView = View.extend({
     actions: {
-      foo: function() {
+      foo() {
         ok(true, 'foo');
       },
-      bar: function(msg) {
+      bar(msg) {
         equal(msg, "HELLO");
       }
     }
@@ -62,7 +62,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var BarViewMixin = Mixin.create({
     actions: {
-      bar: function(msg) {
+      bar(msg) {
         equal(msg, "HELLO");
         this._super(msg);
       }
@@ -71,7 +71,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var IndexView = SuperView.extend(BarViewMixin, {
     actions: {
-      baz: function() {
+      baz() {
         ok(true, 'baz');
       }
     }
@@ -87,7 +87,7 @@ QUnit.test("Actions cannot be provided at create time", function() {
   expectAssertion(function() {
     view = View.create({
       actions: {
-        foo: function() {
+        foo() {
           ok(true, 'foo');
         }
       }

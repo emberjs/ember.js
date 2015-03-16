@@ -10,13 +10,13 @@ var trim = jQuery.trim;
 var dispatcher, select;
 
 QUnit.module("Ember.Select", {
-  setup: function() {
+  setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
     select = EmberSelect.create();
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       dispatcher.destroy();
       select.destroy();

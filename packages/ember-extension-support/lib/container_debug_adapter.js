@@ -76,7 +76,7 @@ export default EmberObject.extend({
     @param {String} type The type. e.g. "model", "controller", "route"
     @return {boolean} whether a list is available for this type.
   */
-  canCatalogEntriesByType: function(type) {
+  canCatalogEntriesByType(type) {
     if (type === 'model' || type === 'template') {
       return false;
     }
@@ -91,7 +91,7 @@ export default EmberObject.extend({
     @param {String} type The type. e.g. "model", "controller", "route"
     @return {Array} An array of strings.
   */
-  catalogEntriesByType: function(type) {
+  catalogEntriesByType(type) {
     var namespaces = emberA(Namespace.NAMESPACES);
     var types = emberA();
     var typeSuffixRegex = new RegExp(classify(type) + "$");

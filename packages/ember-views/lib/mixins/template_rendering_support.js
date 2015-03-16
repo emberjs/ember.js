@@ -23,7 +23,7 @@ var TemplateRenderingSupport = Mixin.create({
     @method render
     @param {Ember.RenderBuffer} buffer The render buffer
   */
-  render: function(buffer) {
+  render(buffer) {
     // If this view has a layout, it is the responsibility of the
     // the layout to render the view's template. Otherwise, render the template
     // directly.

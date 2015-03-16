@@ -48,7 +48,7 @@ var originalLookup = Ember.lookup;
 
 QUnit.module("object.get()", {
 
-  setup: function() {
+  setup() {
     object = ObservableObject.createWithMixins(Observable, {
 
       normal: 'value',
@@ -57,11 +57,11 @@ QUnit.module("object.get()", {
 
       computed: computed(function() { return 'value'; }).volatile(),
 
-      method: function() { return "value"; },
+      method() { return "value"; },
 
       nullProperty: null,
 
-      unknownProperty: function(key, value) {
+      unknownProperty(key, value) {
         this.lastUnknownProperty = key;
         return "unknown";
       }
@@ -97,7 +97,7 @@ QUnit.test("should call unknownProperty when value is undefined", function() {
 // Ember.GET()
 //
 QUnit.module("Ember.get()", {
-  setup: function() {
+  setup() {
     objectA = ObservableObject.createWithMixins({
 
       normal: 'value',
@@ -106,11 +106,11 @@ QUnit.module("Ember.get()", {
 
       computed: computed(function() { return 'value'; }).volatile(),
 
-      method: function() { return "value"; },
+      method() { return "value"; },
 
       nullProperty: null,
 
-      unknownProperty: function(key, value) {
+      unknownProperty(key, value) {
         this.lastUnknownProperty = key;
         return "unknown";
       }
@@ -175,11 +175,11 @@ QUnit.test("should work when object is Ember (used in Ember.get)", function() {
 });
 
 QUnit.module("Ember.get() with paths", {
-  setup: function() {
+  setup() {
     lookup = Ember.lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -230,7 +230,7 @@ QUnit.test("should return a property at a given path relative to the passed obje
 
 QUnit.module("object.set()", {
 
-  setup: function() {
+  setup() {
     object = ObservableObject.createWithMixins({
 
       // normal property
@@ -247,7 +247,7 @@ QUnit.module("object.set()", {
 
       // method, but not a property
       _method: "method",
-      method: function(key, value) {
+      method(key, value) {
         if (value !== undefined) {
           this._method = value;
         }
@@ -259,11 +259,11 @@ QUnit.module("object.set()", {
 
       // unknown property
       _unknown: 'unknown',
-      unknownProperty: function(key) {
+      unknownProperty(key) {
         return this._unknown;
       },
 
-      setUnknownProperty: function(key, value) {
+      setUnknownProperty(key, value) {
         this._unknown = value;
         return this._unknown;
       }
@@ -314,7 +314,7 @@ QUnit.test("should call unknownProperty with value when property is undefined", 
 //
 
 QUnit.module("Computed properties", {
-  setup: function() {
+  setup() {
     lookup = Ember.lookup = {};
 
     object = ObservableObject.createWithMixins({
@@ -388,7 +388,7 @@ QUnit.module("Computed properties", {
 
     });
   },
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -649,7 +649,7 @@ QUnit.test("cacheable nested dependent keys should clear after their dependencie
 
 QUnit.module("Observable objects & object properties ", {
 
-  setup: function() {
+  setup() {
     object = ObservableObject.createWithMixins({
 
       normal: 'value',
@@ -660,7 +660,7 @@ QUnit.module("Observable objects & object properties ", {
       testRemove: 'observerToBeRemoved',
       normalArray: Ember.A([1,2,3,4,5]),
 
-      getEach: function() {
+      getEach() {
         var keys = ['normal','abnormal'];
         var ret = [];
         for (var idx=0; idx<keys.length;idx++) {
@@ -669,7 +669,7 @@ QUnit.module("Observable objects & object properties ", {
         return ret;
       },
 
-      newObserver: function() {
+      newObserver() {
         this.abnormal = 'changedValueObserved';
       },
 
@@ -754,7 +754,7 @@ QUnit.test('should notify array observer when array changes', function() {
 });
 
 QUnit.module("object.addObserver()", {
-  setup: function() {
+  setup() {
 
     ObjectC = ObservableObject.create({
 
@@ -767,15 +767,15 @@ QUnit.module("object.addObserver()", {
       normal2: 'dependentValue',
       incrementor: 10,
 
-      action: function() {
+      action() {
         this.normal1= 'newZeroValue';
       },
 
-      observeOnceAction: function() {
+      observeOnceAction() {
         this.incrementor= this.incrementor+1;
       },
 
-      chainedObserver: function() {
+      chainedObserver() {
         this.normal2 = 'chainedPropertyObserved';
       }
 
@@ -799,7 +799,7 @@ QUnit.test("should register an observer for a property - Special case of chained
 });
 
 QUnit.module("object.removeObserver()", {
-  setup: function() {
+  setup() {
     ObjectD = ObservableObject.create({
 
       objectF: ObservableObject.create({
@@ -811,28 +811,28 @@ QUnit.module("object.removeObserver()", {
       normal2: 'dependentValue',
       ArrayKeys: ['normal','normal1'],
 
-      addAction: function() {
+      addAction() {
         this.normal1 = 'newZeroValue';
       },
-      removeAction: function() {
+      removeAction() {
         this.normal2 = 'newDependentValue';
       },
-      removeChainedObserver: function() {
+      removeChainedObserver() {
         this.normal2 = 'chainedPropertyObserved';
       },
 
       observableValue: "hello world",
 
-      observer1: function() {
+      observer1() {
         // Just an observer
       },
-      observer2: function() {
+      observer2() {
         this.removeObserver('observableValue', null, 'observer1');
         this.removeObserver('observableValue', null, 'observer2');
         this.hasObserverFor('observableValue');   // Tickle 'getMembers()'
         this.removeObserver('observableValue', null, 'observer3');
       },
-      observer3: function() {
+      observer3() {
         // Just an observer
       }
     });
@@ -887,7 +887,7 @@ QUnit.test("removing an observer inside of an observer shouldn’t cause any pro
 
 QUnit.module("Bind function ", {
 
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     objectA = ObservableObject.create({
       name: "Sproutcore",
@@ -896,7 +896,7 @@ QUnit.module("Bind function ", {
 
     objectB = ObservableObject.create({
       normal: "value",
-      computed: function() {
+      computed() {
         this.normal = 'newValue';
       }
     });
@@ -909,7 +909,7 @@ QUnit.module("Bind function ", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });

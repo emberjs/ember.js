@@ -3,10 +3,10 @@ import run from 'ember-metal/run_loop';
 var originalDebounce = run.backburner.debounce;
 var wasCalled = false;
 QUnit.module('Ember.run.debounce', {
-  setup: function() {
+  setup() {
     run.backburner.debounce = function() { wasCalled = true; };
   },
-  teardown: function() {
+  teardown() {
     run.backburner.debounce = originalDebounce;
   }
 });

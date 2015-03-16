@@ -68,7 +68,7 @@ export default Mixin.create({
    @param {Function} method The callback to execute
    @return this
   */
-  on: function(name, target, method) {
+  on(name, target, method) {
     addListener(this, name, target, method);
     return this;
   },
@@ -88,7 +88,7 @@ export default Mixin.create({
     @param {Function} method The callback to execute
     @return this
   */
-  one: function(name, target, method) {
+  one(name, target, method) {
     if (!method) {
       method = target;
       target = null;
@@ -116,7 +116,7 @@ export default Mixin.create({
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
   */
-  trigger: function(name, ...args) {
+  trigger(name, ...args) {
     sendEvent(this, name, args);
   },
 
@@ -129,7 +129,7 @@ export default Mixin.create({
     @param {Function} method The function of the subscription
     @return this
   */
-  off: function(name, target, method) {
+  off(name, target, method) {
     removeListener(this, name, target, method);
     return this;
   },
@@ -141,7 +141,7 @@ export default Mixin.create({
     @param {String} name The name of the event
     @return {Boolean} does the object have a subscription for event
    */
-  has: function(name) {
+  has(name) {
     return hasListeners(this, name);
   }
 });

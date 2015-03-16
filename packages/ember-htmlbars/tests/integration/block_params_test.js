@@ -21,7 +21,7 @@ function aliasHelper(params, hash, options, env) {
 }
 
 QUnit.module("ember-htmlbars: block params", {
-  setup: function() {
+  setup() {
     registerHelper('alias', aliasHelper);
 
     registry = new Registry();
@@ -33,7 +33,7 @@ QUnit.module("ember-htmlbars: block params", {
     registry.register('component-lookup:main', ComponentLookup);
   },
 
-  teardown: function() {
+  teardown() {
     delete helpers.alias;
 
     runDestroy(container);

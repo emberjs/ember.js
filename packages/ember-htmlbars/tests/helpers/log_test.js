@@ -6,7 +6,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var originalLookup, originalLog, logCalls, lookup, view;
 
 QUnit.module('ember-htmlbars: {{#log}} helper', {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     originalLog = Ember.Logger.log;
@@ -16,7 +16,7 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
     };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
 
     view = null;

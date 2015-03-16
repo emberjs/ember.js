@@ -90,7 +90,7 @@ export function unwatchKey(obj, keyName, meta) {
         o_defineProperty(obj, keyName, {
           configurable: true,
           enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-          set: function(val) {
+          set(val) {
             // redefine to set as enumerable
             o_defineProperty(obj, keyName, {
               configurable: true,

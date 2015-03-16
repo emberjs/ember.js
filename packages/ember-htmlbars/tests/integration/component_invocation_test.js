@@ -8,7 +8,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var registry, container, view;
 
 QUnit.module('component - invocation', {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('component', { singleton: false });
@@ -18,7 +18,7 @@ QUnit.module('component - invocation', {
     registry.register('component-lookup:main', ComponentLookup);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;

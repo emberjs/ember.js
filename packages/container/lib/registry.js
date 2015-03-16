@@ -145,7 +145,7 @@ Registry.prototype = {
    @param {Object} options
    @return {Container} created container
    */
-  container: function(options) {
+  container(options) {
     var container = new Container(this, options);
 
     // 2.0TODO - remove `registerContainer`
@@ -164,7 +164,7 @@ Registry.prototype = {
 
    @param {Container} newly created container
    */
-  registerContainer: function(container) {
+  registerContainer(container) {
     if (!this._defaultContainer) {
       this._defaultContainer = container;
     }
@@ -173,7 +173,7 @@ Registry.prototype = {
     }
   },
 
-  lookup: function(fullName, options) {
+  lookup(fullName, options) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
 
     if (instanceInitializersFeatureEnabled) {
@@ -183,7 +183,7 @@ Registry.prototype = {
     return this._defaultContainer.lookup(fullName, options);
   },
 
-  lookupFactory: function(fullName) {
+  lookupFactory(fullName) {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
 
     if (instanceInitializersFeatureEnabled) {
@@ -211,7 +211,7 @@ Registry.prototype = {
    @param {Function} factory
    @param {Object} options
    */
-  register: function(fullName, factory, options) {
+  register(fullName, factory, options) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     if (factory === undefined) {
@@ -244,7 +244,7 @@ Registry.prototype = {
    @method unregister
    @param {String} fullName
    */
-  unregister: function(fullName) {
+  unregister(fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     var normalizedName = this.normalize(fullName);
@@ -286,7 +286,7 @@ Registry.prototype = {
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolve: function(fullName) {
+  resolve(fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
     var factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback) {
@@ -307,7 +307,7 @@ Registry.prototype = {
    @param {String} fullName
    @return {string} described fullName
    */
-  describe: function(fullName) {
+  describe(fullName) {
     return fullName;
   },
 
@@ -318,7 +318,7 @@ Registry.prototype = {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalizeFullName: function(fullName) {
+  normalizeFullName(fullName) {
     return fullName;
   },
 
@@ -329,9 +329,9 @@ Registry.prototype = {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalize: function(fullName) {
+  normalize(fullName) {
     return this._normalizeCache[fullName] || (
-        this._normalizeCache[fullName] = this.normalizeFullName(fullName)
+        (this._normalizeCache[fullName] = this.normalizeFullName(fullName))
       );
   },
 
@@ -342,7 +342,7 @@ Registry.prototype = {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString: function(factory, fullName) {
+  makeToString(factory, fullName) {
     return factory.toString();
   },
 
@@ -354,7 +354,7 @@ Registry.prototype = {
    @param {String} fullName
    @return {Boolean}
    */
-  has: function(fullName) {
+  has(fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
     return has(this, this.normalize(fullName));
   },
@@ -387,11 +387,11 @@ Registry.prototype = {
    @param {String} type
    @param {Object} options
    */
-  optionsForType: function(type, options) {
+  optionsForType(type, options) {
     this._typeOptions[type] = options;
   },
 
-  getOptionsForType: function(type) {
+  getOptionsForType(type) {
     var optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -404,13 +404,13 @@ Registry.prototype = {
    @param {String} fullName
    @param {Object} options
    */
-  options: function(fullName, options) {
+  options(fullName, options) {
     options = options || {};
     var normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   },
 
-  getOptions: function(fullName) {
+  getOptions(fullName) {
     var normalizedName = this.normalize(fullName);
     var options = this._options[normalizedName];
     if (options === undefined && this.fallback) {
@@ -419,7 +419,7 @@ Registry.prototype = {
     return options;
   },
 
-  getOption: function(fullName, optionName) {
+  getOption(fullName, optionName) {
     var options = this._options[fullName];
 
     if (options && options[optionName] !== undefined) {
@@ -437,7 +437,7 @@ Registry.prototype = {
     }
   },
 
-  option: function(fullName, optionName) {
+  option(fullName, optionName) {
     Ember.deprecate('`Registry.option()` has been deprecated. Call `Registry.getOption()` instead.');
     return this.getOption(fullName, optionName);
   },
@@ -478,7 +478,7 @@ Registry.prototype = {
    @param {String} property
    @param {String} fullName
    */
-  typeInjection: function(type, property, fullName) {
+  typeInjection(type, property, fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     var fullNameType = fullName.split(':')[0];
@@ -541,7 +541,7 @@ Registry.prototype = {
    @param {String} property
    @param {String} injectionName
    */
-  injection: function(fullName, property, injectionName) {
+  injection(fullName, property, injectionName) {
     this.validateFullName(injectionName);
     var normalizedInjectionName = this.normalize(injectionName);
 
@@ -591,7 +591,7 @@ Registry.prototype = {
    @param {String} property
    @param {String} fullName
    */
-  factoryTypeInjection: function(type, property, fullName) {
+  factoryTypeInjection(type, property, fullName) {
     var injections = this._factoryTypeInjections[type] ||
                      (this._factoryTypeInjections[type] = []);
 
@@ -651,7 +651,7 @@ Registry.prototype = {
    @param {String} property
    @param {String} injectionName
    */
-  factoryInjection: function(fullName, property, injectionName) {
+  factoryInjection(fullName, property, injectionName) {
     var normalizedName = this.normalize(fullName);
     var normalizedInjectionName = this.normalize(injectionName);
 
@@ -669,14 +669,14 @@ Registry.prototype = {
     });
   },
 
-  validateFullName: function(fullName) {
+  validateFullName(fullName) {
     if (!VALID_FULL_NAME_REGEXP.test(fullName)) {
       throw new TypeError('Invalid Fullname, expected: `type:name` got: ' + fullName);
     }
     return true;
   },
 
-  validateInjections: function(injections) {
+  validateInjections(injections) {
     if (!injections) { return; }
 
     var fullName;
@@ -690,7 +690,7 @@ Registry.prototype = {
     }
   },
 
-  normalizeInjectionsHash: function(hash) {
+  normalizeInjectionsHash(hash) {
     var injections = [];
 
     for (var key in hash) {
@@ -707,7 +707,7 @@ Registry.prototype = {
     return injections;
   },
 
-  getInjections: function(fullName) {
+  getInjections(fullName) {
     var injections = this._injections[fullName] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getInjections(fullName));
@@ -715,7 +715,7 @@ Registry.prototype = {
     return injections;
   },
 
-  getTypeInjections: function(type) {
+  getTypeInjections(type) {
     var injections = this._typeInjections[type] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getTypeInjections(type));
@@ -723,7 +723,7 @@ Registry.prototype = {
     return injections;
   },
 
-  getFactoryInjections: function(fullName) {
+  getFactoryInjections(fullName) {
     var injections = this._factoryInjections[fullName] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getFactoryInjections(fullName));
@@ -731,7 +731,7 @@ Registry.prototype = {
     return injections;
   },
 
-  getFactoryTypeInjections: function(type) {
+  getFactoryTypeInjections(type) {
     var injections = this._factoryTypeInjections[type] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getFactoryTypeInjections(type));

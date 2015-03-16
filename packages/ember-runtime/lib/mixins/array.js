@@ -123,7 +123,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} idx The index of the item to return.
     @return {*} item at index or undefined
   */
-  objectAt: function(idx) {
+  objectAt(idx) {
     if (idx < 0 || idx >= get(this, 'length')) {
       return undefined;
     }
@@ -145,7 +145,7 @@ export default Mixin.create(Enumerable, {
     @param {Array} indexes An array of indexes of items to return.
     @return {Array}
    */
-  objectsAt: function(indexes) {
+  objectsAt(indexes) {
     var self = this;
 
     return map(indexes, function(idx) {
@@ -154,7 +154,7 @@ export default Mixin.create(Enumerable, {
   },
 
   // overrides Ember.Enumerable version
-  nextObject: function(idx) {
+  nextObject(idx) {
     return this.objectAt(idx);
   },
 
@@ -185,7 +185,7 @@ export default Mixin.create(Enumerable, {
   }),
 
   // optimized version from Enumerable
-  contains: function(obj) {
+  contains(obj) {
     return this.indexOf(obj) >= 0;
   },
 
@@ -208,7 +208,7 @@ export default Mixin.create(Enumerable, {
     @param {Integer} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
   */
-  slice: function(beginIndex, endIndex) {
+  slice(beginIndex, endIndex) {
     var ret = Ember.A();
     var length = get(this, 'length');
 
@@ -257,7 +257,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} startAt optional starting location to search, default 0
     @return {Number} index or -1 if not found
   */
-  indexOf: function(object, startAt) {
+  indexOf(object, startAt) {
     var len = get(this, 'length');
     var idx;
 
@@ -300,7 +300,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} startAt optional starting location to search, default 0
     @return {Number} index or -1 if not found
   */
-  lastIndexOf: function(object, startAt) {
+  lastIndexOf(object, startAt) {
     var len = get(this, 'length');
     var idx;
 
@@ -350,7 +350,7 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
 
-  addArrayObserver: function(target, opts) {
+  addArrayObserver(target, opts) {
     return arrayObserversHelper(this, target, opts, addListener, false);
   },
 
@@ -365,7 +365,7 @@ export default Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
-  removeArrayObserver: function(target, opts) {
+  removeArrayObserver(target, opts) {
     return arrayObserversHelper(this, target, opts, removeListener, true);
   },
 
@@ -393,7 +393,7 @@ export default Mixin.create(Enumerable, {
       pass `null` assumes 0.
     @return {Ember.Array} receiver
   */
-  arrayContentWillChange: function(startIdx, removeAmt, addAmt) {
+  arrayContentWillChange(startIdx, removeAmt, addAmt) {
     var removing, lim;
 
     // if no args are passed assume everything changes
@@ -447,7 +447,7 @@ export default Mixin.create(Enumerable, {
       pass `null` assumes 0.
     @return {Ember.Array} receiver
   */
-  arrayContentDidChange: function(startIdx, removeAmt, addAmt) {
+  arrayContentDidChange(startIdx, removeAmt, addAmt) {
     var adding, lim;
 
     // if no args are passed assume everything changes

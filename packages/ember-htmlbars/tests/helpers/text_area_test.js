@@ -11,7 +11,7 @@ function set(object, key, value) {
 }
 
 QUnit.module("{{textarea}}", {
-  setup: function() {
+  setup() {
     controller = {
       val: 'Lorem ipsum dolor'
     };
@@ -24,7 +24,7 @@ QUnit.module("{{textarea}}", {
     runAppend(textArea);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(textArea);
   }
 });

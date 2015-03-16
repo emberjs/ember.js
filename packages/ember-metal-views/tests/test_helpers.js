@@ -76,11 +76,11 @@ MetalRenderer.prototype.scheduleRender = function (renderer, render) {
 
 export function testsFor(name, options) {
   QUnit.module(name, {
-    setup: function() {
+    setup() {
       renderer = new MetalRenderer();
       if (options && options.setup) { options.setup(renderer); }
     },
-    teardown: function() {
+    teardown() {
       if (options && options.teardown) { options.teardown(renderer); }
       renderer = undefined;
     }

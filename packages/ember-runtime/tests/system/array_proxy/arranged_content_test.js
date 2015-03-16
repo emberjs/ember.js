@@ -6,7 +6,7 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 var array;
 
 QUnit.module("ArrayProxy - arrangedContent", {
-  setup: function() {
+  setup() {
     run(function() {
       array = ArrayProxy.createWithMixins({
         content: Ember.A([1,2,4,5]),
@@ -21,7 +21,7 @@ QUnit.module("ArrayProxy - arrangedContent", {
       });
     });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       array.destroy();
     });
@@ -173,14 +173,14 @@ QUnit.test("firstObject - returns first arranged object", function() {
 
 
 QUnit.module("ArrayProxy - arrangedContent matching content", {
-  setup: function() {
+  setup() {
     run(function() {
       array = ArrayProxy.createWithMixins({
         content: Ember.A([1,2,4,5])
       });
     });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       array.destroy();
     });
@@ -203,7 +203,7 @@ QUnit.test("reverseObjects - reverses content", function() {
 });
 
 QUnit.module("ArrayProxy - arrangedContent with transforms", {
-  setup: function() {
+  setup() {
     run(function() {
       array = ArrayProxy.createWithMixins({
         content: Ember.A([1,2,4,5]),
@@ -217,14 +217,14 @@ QUnit.module("ArrayProxy - arrangedContent with transforms", {
           }));
         }).property('content.[]'),
 
-        objectAtContent: function(idx) {
+        objectAtContent(idx) {
           var obj = this.get('arrangedContent').objectAt(idx);
           return obj && obj.toString();
         }
       });
     });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       array.destroy();
     });

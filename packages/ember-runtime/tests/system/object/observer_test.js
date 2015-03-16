@@ -214,7 +214,7 @@ testBoth('chain observer on class that has a reference to an uninitialized objec
     one: {
       two: "old"
     },
-    init: function () {
+    init() {
       this.child = ChildClass.create({
         parent: this
       });

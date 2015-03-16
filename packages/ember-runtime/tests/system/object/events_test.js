@@ -112,7 +112,7 @@ QUnit.test("a listener registered with one can take method as string and can be 
 
 QUnit.test("a listener registered with one can be removed with off", function() {
   var obj = EmberObject.createWithMixins(Evented, {
-    F: function() {}
+    F() {}
   });
   var F = function() {};
 

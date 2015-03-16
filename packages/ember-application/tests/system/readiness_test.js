@@ -10,12 +10,12 @@ var readyWasCalled, domReady, readyCallbacks;
 // sufficient for Ember's requirements.
 
 QUnit.module("Application readiness", {
-  setup: function() {
+  setup() {
     readyWasCalled = 0;
     readyCallbacks = [];
 
     var jQueryInstance = {
-      ready: function(callback) {
+      ready(callback) {
         readyCallbacks.push(callback);
         if (jQuery.isReady) {
           domReady();
@@ -41,13 +41,13 @@ QUnit.module("Application readiness", {
     Application = EmberApplication.extend({
       $: jQuery,
 
-      ready: function() {
+      ready() {
         readyWasCalled++;
       }
     });
   },
 
-  teardown: function() {
+  teardown() {
     if (application) {
       run(function() { application.destroy(); });
     }

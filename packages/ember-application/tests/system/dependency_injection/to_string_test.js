@@ -8,7 +8,7 @@ import { guidFor } from "ember-metal/utils";
 var originalLookup, App, originalModelInjections;
 
 QUnit.module("Ember.Application Dependency Injection – toString", {
-  setup: function() {
+  setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
 
@@ -25,7 +25,7 @@ QUnit.module("Ember.Application Dependency Injection – toString", {
 
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
     run(App, 'destroy');
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
@@ -50,7 +50,7 @@ QUnit.test("with a custom resolver", function() {
   run(function() {
     App = Application.create({
       Resolver: DefaultResolver.extend({
-        makeToString: function(factory, fullName) {
+        makeToString(factory, fullName) {
           return fullName;
         }
       })

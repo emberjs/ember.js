@@ -18,7 +18,7 @@ function mockBrowserLocation(overrides) {
     pathname: '/',
     hash: '',
     search: '',
-    replace: function () {
+    replace() {
       ok(false, 'location.replace should not be called during testing');
     }
   }, overrides);
@@ -26,10 +26,10 @@ function mockBrowserLocation(overrides) {
 
 function mockBrowserHistory(overrides) {
   return merge({
-    pushState: function () {
+    pushState() {
       ok(false, 'history.pushState should not be called during testing');
     },
-    replaceState: function () {
+    replaceState() {
       ok(false, 'history.replaceState should not be called during testing');
     }
   }, overrides);
@@ -53,7 +53,7 @@ function createLocation(location, history) {
 var location;
 
 QUnit.module("Ember.AutoLocation", {
-  teardown: function() {
+  teardown() {
     if (location) {
       run(location, 'destroy');
     }
@@ -99,7 +99,7 @@ QUnit.test("AutoLocation should use a HashLocation instance when pushStates are 
 
   location = createLocation(browserLocation);
   location.global = {
-    onhashchange: function() { }
+    onhashchange() { }
   };
 
   location.detect();
@@ -123,14 +123,14 @@ QUnit.test("AutoLocation should use an index path (i.e. '/') without any locatio
     pathname: '/',
     hash: '',
     search: '',
-    replace: function (path) {
+    replace(path) {
       ok(false, 'location.replace should not be called');
     }
   });
 
   location = createLocation(browserLocation);
   location.global = {
-    onhashchange: function() { }
+    onhashchange() { }
   };
 
   location.detect();
@@ -150,14 +150,14 @@ QUnit.test("AutoLocation should transform the URL for hashchange-only browsers v
     port: '',
     search: '',
 
-    replace: function (path) {
+    replace(path) {
       equal(path, 'http://test.com/#/test', 'location.replace should be called with normalized HashLocation path');
     }
   });
 
   var location = createLocation(browserLocation);
   location.global = {
-    onhashchange: function() { }
+    onhashchange() { }
   };
 
   location.detect();
@@ -180,7 +180,7 @@ QUnit.test("AutoLocation should replace the URL for pushState-supported browsers
   });
 
   var browserHistory = mockBrowserHistory({
-    replaceState: function (state, title, path) {
+    replaceState(state, title, path) {
       equal(path, '/test', 'history.replaceState should be called with normalized HistoryLocation url');
     }
   });

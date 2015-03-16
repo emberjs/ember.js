@@ -99,7 +99,7 @@ function Stream(fn) {
 Stream.prototype = {
   isStream: true,
 
-  init: function() {
+  init() {
     this.state = 'dirty';
     this.cache = undefined;
     this.subscriberHead = null;
@@ -113,7 +113,7 @@ Stream.prototype = {
     this.gotValueWhileInactive = false;
   },
 
-  get: function(path) {
+  get(path) {
     var firstKey = getFirstKey(path);
     var tailPath = getTailPath(path);
 
@@ -135,7 +135,7 @@ Stream.prototype = {
     }
   },
 
-  value: function() {
+  value() {
     if (!this.isActive) {
       this.gotValueWhileInactive = true;
       this.revalidate();
@@ -157,7 +157,7 @@ Stream.prototype = {
     // Ember.assert("Stream error: value was called in an invalid state: " + this.state);
   },
 
-  addDependency: function(stream, callback, context) {
+  addDependency(stream, callback, context) {
     if (!stream || !stream.isStream) {
       return;
     }
@@ -185,7 +185,7 @@ Stream.prototype = {
     return dependency;
   },
 
-  subscribeDependencies: function() {
+  subscribeDependencies() {
     var dependency = this.dependencyHead;
     while (dependency) {
       var next = dependency.next;
@@ -194,7 +194,7 @@ Stream.prototype = {
     }
   },
 
-  unsubscribeDependencies: function() {
+  unsubscribeDependencies() {
     var dependency = this.dependencyHead;
     while (dependency) {
       var next = dependency.next;
@@ -203,16 +203,16 @@ Stream.prototype = {
     }
   },
 
-  becameActive: function() {},
-  becameInactive: function() {},
+  becameActive() {},
+  becameInactive() {},
 
   // This method is invoked when the value function is called and when
   // a stream becomes active. This allows changes to be made to a stream's
   // input, and only do any work in response if the stream has subscribers
   // or if someone actually gets the stream's value.
-  revalidate: function() {},
+  revalidate() {},
 
-  maybeActivate: function() {
+  maybeActivate() {
     if (this.subscriberHead && !this.isActive) {
       this.isActive = true;
       this.subscribeDependencies();
@@ -221,7 +221,7 @@ Stream.prototype = {
     }
   },
 
-  maybeDeactivate: function() {
+  maybeDeactivate() {
     if (!this.subscriberHead && this.isActive) {
       this.isActive = false;
       this.unsubscribeDependencies();
@@ -229,19 +229,19 @@ Stream.prototype = {
     }
   },
 
-  valueFn: function() {
+  valueFn() {
     throw new Error("Stream error: valueFn not implemented");
   },
 
-  setValue: function() {
+  setValue() {
     throw new Error("Stream error: setValue not implemented");
   },
 
-  notify: function() {
+  notify() {
     this.notifyExcept();
   },
 
-  notifyExcept: function(callbackToSkip, contextToSkip) {
+  notifyExcept(callbackToSkip, contextToSkip) {
     if (this.state === 'clean' || this.gotValueWhileInactive) {
       this.gotValueWhileInactive = false;
       this.state = 'dirty';
@@ -249,7 +249,7 @@ Stream.prototype = {
     }
   },
 
-  subscribe: function(callback, context) {
+  subscribe(callback, context) {
     var subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {
       this.subscriberHead = this.subscriberTail = subscriber;
@@ -265,7 +265,7 @@ Stream.prototype = {
     return function() { subscriber.removeFrom(stream); };
   },
 
-  unsubscribe: function(callback, context) {
+  unsubscribe(callback, context) {
     var subscriber = this.subscriberHead;
 
     while (subscriber) {
@@ -277,7 +277,7 @@ Stream.prototype = {
     }
   },
 
-  _notifySubscribers: function(callbackToSkip, contextToSkip) {
+  _notifySubscribers(callbackToSkip, contextToSkip) {
     var subscriber = this.subscriberHead;
 
     while (subscriber) {
@@ -300,7 +300,7 @@ Stream.prototype = {
     }
   },
 
-  destroy: function() {
+  destroy() {
     if (this.state !== 'destroyed') {
       this.state = 'destroyed';
 
@@ -317,7 +317,7 @@ Stream.prototype = {
     }
   },
 
-  isGlobal: function() {
+  isGlobal() {
     var stream = this;
     while (stream !== undefined) {
       if (stream._isRoot) {

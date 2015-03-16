@@ -8,7 +8,7 @@ import ContainerView from "ember-views/views/container_view";
 var parentView, view;
 
 QUnit.module("Ember.View#element", {
-  teardown: function() {
+  teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
       view.destroy();

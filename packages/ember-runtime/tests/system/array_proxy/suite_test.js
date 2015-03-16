@@ -7,16 +7,16 @@ MutableArrayTests.extend({
 
   name: 'Ember.ArrayProxy',
 
-  newObject: function(ary) {
+  newObject(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
     return ArrayProxy.create({ content: Ember.A(ret) });
   },
 
-  mutate: function(obj) {
+  mutate(obj) {
     obj.pushObject(get(obj, 'length')+1);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.toArray ? obj.toArray() : obj.slice();
   }
 

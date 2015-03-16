@@ -73,7 +73,7 @@ Binding.prototype = {
     @method copy
     @return {Ember.Binding} `this`
   */
-  copy: function() {
+  copy() {
     var copy = new Binding(this._to, this._from);
     if (this._oneWay) { copy._oneWay = true; }
     return copy;
@@ -96,7 +96,7 @@ Binding.prototype = {
     @param {String} path the property path to connect to
     @return {Ember.Binding} `this`
   */
-  from: function(path) {
+  from(path) {
     this._from = path;
     return this;
   },
@@ -114,7 +114,7 @@ Binding.prototype = {
     @param {String|Tuple} path A property path or tuple
     @return {Ember.Binding} `this`
   */
-  to: function(path) {
+  to(path) {
     this._to = path;
     return this;
   },
@@ -128,7 +128,7 @@ Binding.prototype = {
     @method oneWay
     @return {Ember.Binding} `this`
   */
-  oneWay: function() {
+  oneWay() {
     this._oneWay = true;
     return this;
   },
@@ -137,7 +137,7 @@ Binding.prototype = {
     @method toString
     @return {String} string representation of binding
   */
-  toString: function() {
+  toString() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
     return `Ember.Binding<${guidFor(this)}>(${this._from} -> ${this._to})${oneWay}`;
   },
@@ -155,7 +155,7 @@ Binding.prototype = {
     @param {Object} obj The root object for this binding.
     @return {Ember.Binding} `this`
   */
-  connect: function(obj) {
+  connect(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var fromPath = this._from;
@@ -183,7 +183,7 @@ Binding.prototype = {
     @param {Object} obj The root object you passed when connecting the binding.
     @return {Ember.Binding} `this`
   */
-  disconnect: function(obj) {
+  disconnect(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
 
     var twoWay = !this._oneWay;
@@ -206,16 +206,16 @@ Binding.prototype = {
   //
 
   /* called when the from side changes */
-  fromDidChange: function(target) {
+  fromDidChange(target) {
     this._scheduleSync(target, 'fwd');
   },
 
   /* called when the to side changes */
-  toDidChange: function(target) {
+  toDidChange(target) {
     this._scheduleSync(target, 'back');
   },
 
-  _scheduleSync: function(obj, dir) {
+  _scheduleSync(obj, dir) {
     var existingDir = this._direction;
 
     // if we haven't scheduled the binding yet, schedule it
@@ -231,7 +231,7 @@ Binding.prototype = {
     }
   },
 
-  _sync: function(obj) {
+  _sync(obj) {
     var log = Ember.LOG_BINDINGS;
 
     // don't synchronize destroyed objects or disconnected bindings
@@ -289,7 +289,7 @@ mixinProperties(Binding, {
     @method from
     @static
   */
-  from: function(from) {
+  from(from) {
     var C = this;
     return new C(undefined, from);
   },
@@ -300,7 +300,7 @@ mixinProperties(Binding, {
     @method to
     @static
   */
-  to: function(to) {
+  to(to) {
     var C = this;
     return new C(to, undefined);
   },
@@ -321,7 +321,7 @@ mixinProperties(Binding, {
       binding two way again.
     @return {Ember.Binding} `this`
   */
-  oneWay: function(from, flag) {
+  oneWay(from, flag) {
     var C = this;
     return new C(undefined, from).oneWay(flag);
   }

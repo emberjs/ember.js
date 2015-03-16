@@ -58,19 +58,19 @@ export default Mixin.create({
 
   _debugContainerKey: null,
 
-  willWatchProperty: function (key) {
+  willWatchProperty(key) {
     var contentKey = 'content.' + key;
     addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
-  didUnwatchProperty: function (key) {
+  didUnwatchProperty(key) {
     var contentKey = 'content.' + key;
     removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
-  unknownProperty: function (key) {
+  unknownProperty(key) {
     var content = get(this, 'content');
     if (content) {
       Ember.deprecate(
@@ -82,7 +82,7 @@ export default Mixin.create({
     }
   },
 
-  setUnknownProperty: function (key, value) {
+  setUnknownProperty(key, value) {
     var m = meta(this);
     if (m.proto === this) {
       // if marked as prototype then just defineProperty

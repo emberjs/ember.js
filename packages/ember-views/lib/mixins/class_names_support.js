@@ -20,7 +20,7 @@ var EMPTY_ARRAY = [];
 var ClassNamesSupport = Mixin.create({
   concatenatedProperties: ['classNames', 'classNameBindings'],
 
-  init: function() {
+  init() {
     this._super(...arguments);
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
@@ -93,7 +93,7 @@ var ClassNamesSupport = Mixin.create({
     @method _applyClassNameBindings
     @private
   */
-  _applyClassNameBindings: function() {
+  _applyClassNameBindings() {
     var classBindings = this.classNameBindings;
 
     if (!classBindings || !classBindings.length) { return; }
