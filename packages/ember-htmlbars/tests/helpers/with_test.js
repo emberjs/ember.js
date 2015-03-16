@@ -43,7 +43,7 @@ function testWithAs(moduleName, templateString) {
     equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
   });
 
-  QUnit.test("updating the context should update the alias", function() {
+  QUnit.skip("updating the context should update the alias", function() {
     run(function() {
       view.set('context.person', {
         name: "Yehuda Katz"
@@ -100,7 +100,7 @@ QUnit.test("re-using the same variable with different #with blocks does not over
   equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
 });
 
-QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
+QUnit.skip("the scoped variable is not available outside the {{with}} block.", function() {
   run(function() {
     view.set('template', compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
@@ -112,7 +112,7 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
   equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
 });
 
-QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+QUnit.skip("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   run(function() {
     view.set('template', compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {
@@ -141,7 +141,7 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   }
 });
 
-QUnit.test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
+QUnit.skip("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of Foo from a Handlebars template is deprecated/);
@@ -175,7 +175,7 @@ QUnit.test("it should support #with view as foo", function() {
   runDestroy(view);
 });
 
-QUnit.test("it should support #with name as food, then #with foo as bar", function() {
+QUnit.skip("it should support #with name as food, then #with foo as bar", function() {
   var view = EmberView.create({
     template: compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
     context: { name: "caterpillar" }
@@ -215,7 +215,7 @@ QUnit.test("it should support #with this as qux", function() {
 
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
-QUnit.test("it should wrap context with object controller [DEPRECATED]", function() {
+QUnit.skip("it should wrap context with object controller [DEPRECATED]", function() {
   var childController;
 
   var Controller = ObjectController.extend({
@@ -489,7 +489,7 @@ QUnit.test("re-using the same variable with different #with blocks does not over
   equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
 });
 
-QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
+QUnit.skip("the scoped variable is not available outside the {{with}} block.", function() {
   run(function() {
     view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
@@ -501,7 +501,7 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
   equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
 });
 
-QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+QUnit.skip("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   run(function() {
     view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {

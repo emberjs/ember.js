@@ -114,7 +114,7 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
   equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
-QUnit.test("should allow for computed properties with dependencies", function() {
+QUnit.skip("should allow for computed properties with dependencies", function() {
   expectDeprecationInHTMLBars();
 
   helper('capitalizeName', function(value) {
@@ -141,7 +141,7 @@ QUnit.test("should allow for computed properties with dependencies", function() 
   equal(view.$().text(), 'WES', "helper output updated");
 });
 
-QUnit.test("bound helpers should support options", function() {
+QUnit.skip("bound helpers should support options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
@@ -208,7 +208,7 @@ QUnit.test("bound helper should support this keyword", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-QUnit.test("bound helpers should support bound options", function() {
+QUnit.skip("bound helpers should support bound options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
@@ -293,7 +293,7 @@ QUnit.test("bound helpers should support multiple bound properties", function() 
   equal(view.$().text(), 'WOOTYEAH', "helper correctly re-rendered after both bound helper properties changed");
 });
 
-QUnit.test("bound helpers should expose property names in options.data.properties", function() {
+QUnit.skip("bound helpers should expose property names in options.data.properties", function() {
   expectDeprecationInHTMLBars();
 
   helper('echo', function() {
@@ -340,7 +340,7 @@ QUnit.test("bound helpers can be invoked with zero args", function() {
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
 
-QUnit.test("bound helpers should not be invoked with blocks", function() {
+QUnit.skip("bound helpers should not be invoked with blocks", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
@@ -353,7 +353,7 @@ QUnit.test("bound helpers should not be invoked with blocks", function() {
   }, /registerBoundHelper-generated helpers do not support use with Handlebars blocks/i);
 });
 
-QUnit.test("should observe dependent keys passed to registerBoundHelper", function() {
+QUnit.skip("should observe dependent keys passed to registerBoundHelper", function() {
   try {
     expectDeprecationInHTMLBars();
 
@@ -440,7 +440,7 @@ QUnit.test("shouldn't treat quoted strings as bound paths", function() {
   equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
 });
 
-QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
+QUnit.skip("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
   expectDeprecationInHTMLBars();
 
   helper('reverse', function(val) {
@@ -468,7 +468,7 @@ QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATE
   equal(view.$().text(), '0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb 0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb ', "helper output is still correct");
 });
 
-QUnit.test("bound helpers can handle nulls in array (with objects)", function() {
+QUnit.skip("bound helpers can handle nulls in array (with objects)", function() {
   expectDeprecationInHTMLBars();
 
   helper('print-foo', function(val) {
@@ -493,7 +493,7 @@ QUnit.test("bound helpers can handle nulls in array (with objects)", function() 
   equal(view.$().text(), '|NOPE 5|5 6|6 |NOPE 5|5 6|6 ', "helper output is correct");
 });
 
-QUnit.test("bound helpers can handle `this` keyword when it's a non-object", function() {
+QUnit.skip("bound helpers can handle `this` keyword when it's a non-object", function() {
   expectDeprecationInHTMLBars();
 
   helper("shout", function(value) {

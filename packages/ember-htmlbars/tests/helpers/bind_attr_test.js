@@ -431,8 +431,7 @@ QUnit.test("should be able to bind classes to globals with {{bind-attr class}}",
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
 });
 
-QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block", function() {
-
+QUnit.skip("should be able to bind-attr to 'this' in an {{#each}} block", function() {
   ignoreDeprecation(function() {
     view = EmberView.create({
       template: compile('{{#each view.images}}<img {{bind-attr src=this}}>{{/each}}'),
@@ -448,7 +447,7 @@ QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block", functi
   ok(/three\.gif$/.test(images[2].src));
 });
 
-QUnit.test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}}", function() {
+QUnit.skip("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}}", function() {
   ignoreDeprecation(function() {
     view = EmberView.create({
       template: compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),

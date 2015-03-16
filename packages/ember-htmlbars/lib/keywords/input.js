@@ -5,7 +5,7 @@ export default {
     var type = env.hooks.getValue(hash.type) || 'text';
 
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
-                 " you must use `checked=someBooleanValue` instead.", !(type === 'checked' && hash.hasOwnProperty('value')));
+                 " you must use `checked=someBooleanValue` instead.", !(type === 'checkbox' && hash.hasOwnProperty('value')));
 
     return { componentName: classification[type] };
   },

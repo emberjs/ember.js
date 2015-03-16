@@ -55,7 +55,7 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
+QUnit.skip('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
   var env = generateEnv();
   var view = {
     container: generateContainer()
@@ -70,7 +70,7 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
   equal(actual, someName, 'does not wrap provided function if `isHTMLBars` is truthy');
 });
 
-QUnit.test('wraps helper from container in a Handlebars compat helper', function() {
+QUnit.skip('wraps helper from container in a Handlebars compat helper', function() {
   expect(2);
   var env = generateEnv();
   var view = {
@@ -98,7 +98,7 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });
 
-QUnit.test('asserts if component-lookup:main cannot be found', function() {
+QUnit.skip('asserts if component-lookup:main cannot be found', function() {
   var env = generateEnv();
   var view = {
     container: generateContainer()
@@ -111,7 +111,7 @@ QUnit.test('asserts if component-lookup:main cannot be found', function() {
   }, 'Could not find \'component-lookup:main\' on the provided container, which is necessary for performing component lookups');
 });
 
-QUnit.test('registers a helper in the container if component is found', function() {
+QUnit.skip('registers a helper in the container if component is found', function() {
   var env = generateEnv();
   var view = {
     container: generateContainer()

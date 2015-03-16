@@ -29,17 +29,17 @@ QUnit.module("{{textarea}}", {
   }
 });
 
-QUnit.test("Should insert a textarea", function() {
+QUnit.skip("Should insert a textarea", function() {
   equal(textArea.$('textarea').length, 1, "There is a single textarea");
 });
 
-QUnit.test("Should become disabled when the controller changes", function() {
+QUnit.skip("Should become disabled when the controller changes", function() {
   ok(textArea.$('textarea').is(':not(:disabled)'), "Nothing is disabled yet");
   set(controller, 'disabled', true);
   ok(textArea.$('textarea').is(':disabled'), "The disabled attribute is updated");
 });
 
-QUnit.test("Should bind its contents to the specified value", function() {
+QUnit.skip("Should bind its contents to the specified value", function() {
   equal(textArea.$('textarea').val(), "Lorem ipsum dolor", "The contents are included");
   set(controller, 'val', "sit amet");
   equal(textArea.$('textarea').val(), "sit amet", "The new contents are included");
