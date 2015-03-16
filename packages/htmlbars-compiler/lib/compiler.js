@@ -67,29 +67,3 @@ export function template(templateSpec) {
 export function compile(string, options) {
   return template(compileSpec(string, options));
 }
-
-/*
- * Compile a string into a template spec string. The template spec is a string
- * representation of a template. Usually, you would use compileSpec for
- * pre-compilation of a template on the server.
- *
- * Example usage:
- *
- *     var templateSpec = compileSpec("Howdy {{name}}");
- *     // This next step is basically what plain compile does
- *     var template = new Function("return " + templateSpec)();
- *
- * @method compileSpec
- * @param {String} string An htmlbars template string
- * @return {Function} A template spec string
- */
-export function compileSpec(string, options) {
-  var ast = preprocess(string, options);
-  var compiler = new TemplateCompiler(options);
-  var program = compiler.compile(ast);
-  return program;
-}
-
-export function template(program) {
-  return new Function("return " + program)();
-}
