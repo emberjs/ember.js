@@ -44,6 +44,7 @@ Container.prototype = {
 
    @property _registry
    @type Registry
+   @since 1.11.0
    */
   _registry: null,
 

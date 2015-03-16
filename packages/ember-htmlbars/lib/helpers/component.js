@@ -57,6 +57,7 @@ import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
   ```
 
   @method component
+  @since 1.11.0
   @for Ember.Handlebars.helpers
 */
 export function componentHelper(params, hash, options, env) {
