@@ -27,15 +27,15 @@ var RoutingService = Service.extend({
   currentState: readOnly('router.currentState'),
   currentRouteName: readOnly('router.currentRouteName'),
 
-  availableRoutes: function() {
+  availableRoutes() {
     return keys(get(this, 'router').router.recognizer.names);
   },
 
-  hasRoute: function(routeName) {
+  hasRoute(routeName) {
     return get(this, 'router').hasRoute(routeName);
   },
 
-  transitionTo: function(routeName, models, queryParams, shouldReplace) {
+  transitionTo(routeName, models, queryParams, shouldReplace) {
     var router = get(this, 'router');
 
     var transition = router._doTransition(routeName, models, queryParams);
@@ -45,11 +45,11 @@ var RoutingService = Service.extend({
     }
   },
 
-  normalizeQueryParams: function(routeName, models, queryParams) {
+  normalizeQueryParams(routeName, models, queryParams) {
     get(this, 'router')._prepareQueryParams(routeName, models, queryParams);
   },
 
-  generateURL: function(routeName, models, queryParams) {
+  generateURL(routeName, models, queryParams) {
     var router = get(this, 'router');
 
     var visibleQueryParams = {};
@@ -61,7 +61,7 @@ var RoutingService = Service.extend({
     return router.generate.apply(router, args);
   },
 
-  isActiveForRoute: function(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
+  isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     var router = get(this, 'router');
 
     var handlers = router.router.recognizer.handlersFor(routeName);

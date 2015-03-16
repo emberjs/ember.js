@@ -15,7 +15,7 @@ export default Mixin.create({
     }
   }),
 
-  unknownProperty: function(key) {
+  unknownProperty(key) {
     var attrs = get(this, 'attrs');
 
     if (attrs && key in attrs) {
@@ -24,7 +24,7 @@ export default Mixin.create({
     }
   },
 
-  setUnknownProperty: function(key) {
+  setUnknownProperty(key) {
 
   }
 });

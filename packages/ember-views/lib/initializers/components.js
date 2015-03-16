@@ -5,7 +5,7 @@ import Checkbox from "ember-views/views/checkbox";
 onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: 'ember-views-components',
-    initialize: function(registry) {
+    initialize(registry) {
       registry.register('component:-text-field', TextField);
       registry.register('component:-checkbox', Checkbox);
     }

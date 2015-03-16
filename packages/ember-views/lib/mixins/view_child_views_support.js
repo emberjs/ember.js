@@ -138,7 +138,7 @@ var ViewChildViewsSupport = Mixin.create({
     return view;
   },
 
-  linkChild: function(instance) {
+  linkChild(instance) {
     instance.container = this.container;
     instance._parentView = this;
     instance.ownerView = this.ownerView;

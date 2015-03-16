@@ -7,7 +7,7 @@ import run from "ember-metal/run_loop";
 var App;
 
 QUnit.module("Default Registry", {
-  setup: function() {
+  setup() {
     run(function() {
       App = Application.create({
         rootElement: '#qunit-fixture'
@@ -17,7 +17,7 @@ QUnit.module("Default Registry", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(App, 'destroy');
   }
 });
@@ -25,7 +25,7 @@ QUnit.module("Default Registry", {
 QUnit.test("Default objects are registered", function(assert) {
   App.instanceInitializer({
     name: "test",
-    initialize: function(instance) {
+    initialize(instance) {
       var registry = instance.registry;
 
       assert.strictEqual(registry.resolve("component:-text-field"), TextField, "TextField was registered");

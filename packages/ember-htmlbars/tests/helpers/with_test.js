@@ -219,7 +219,7 @@ QUnit.skip("it should wrap context with object controller [DEPRECATED]", functio
   var childController;
 
   var Controller = ObjectController.extend({
-    init: function() {
+    init() {
       if (childController) { throw new Error("Did not expect controller.init to be invoked twice"); }
       childController = this;
       this._super();

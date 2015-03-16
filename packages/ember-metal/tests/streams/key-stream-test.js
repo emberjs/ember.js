@@ -9,7 +9,7 @@ function incrementCount() {
 }
 
 QUnit.module('KeyStream', {
-  setup: function() {
+  setup() {
     count = 0;
     object = { name: "mmun" };
 
@@ -22,7 +22,7 @@ QUnit.module('KeyStream', {
       this.notify();
     };
   },
-  teardown: function() {
+  teardown() {
     count = undefined;
     object = undefined;
     source = undefined;

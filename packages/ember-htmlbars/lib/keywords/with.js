@@ -2,7 +2,7 @@ import { internal } from "htmlbars-runtime";
 import { get } from "ember-metal/property_get";
 
 export default {
-  setupState: function(state, env, scope, params, hash) {
+  setupState(state, env, scope, params, hash) {
     var controller = hash.controller;
 
     if (controller && !state.controller) {
@@ -23,15 +23,15 @@ export default {
     return { controller: null };
   },
 
-  isStable: function() {
+  isStable() {
     return true;
   },
 
-  isEmpty: function(state) {
+  isEmpty(state) {
     return false;
   },
 
-  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+  render(morph, env, scope, params, hash, template, inverse, visitor) {
     if (morph.state.controller) { morph.addDestruction(morph.state.controller); }
 
     Ember.assert(

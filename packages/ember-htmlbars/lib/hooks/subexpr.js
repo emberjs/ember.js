@@ -28,7 +28,7 @@ function SubexprStream(params, hash, helper) {
 SubexprStream.prototype = create(Stream.prototype);
 
 merge(SubexprStream.prototype, {
-  compute: function() {
+  compute() {
     var sourceParams = this.source.params;
     var sourceHash = this.source.hash;
 
@@ -48,7 +48,7 @@ merge(SubexprStream.prototype, {
 
   _super$subscribe: Stream.prototype.subscribe,
 
-  subscribe: function() {
+  subscribe() {
     if (!this.subscribed) {
       var sourceParams = this.source.params;
       var sourceHash = this.source.hash;
@@ -67,13 +67,13 @@ merge(SubexprStream.prototype, {
     return this._super$subscribe.apply(this, arguments);
   },
 
-  _didChange: function() {
+  _didChange() {
     this.notify();
   },
 
   _super$destroy: Stream.prototype.destroy,
 
-  destroy: function(prune) {
+  destroy(prune) {
     if (this._super$destroy(prune)) {
       this.source = undefined;
       return true;

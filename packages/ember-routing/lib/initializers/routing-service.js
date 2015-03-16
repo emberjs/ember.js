@@ -4,7 +4,7 @@ import RoutingService from "ember-routing/services/routing";
 onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: 'routing-service',
-    initialize: function(registry) {
+    initialize(registry) {
       // Register the routing service...
       registry.register('service:-routing', RoutingService);
       // Then inject the app router into it

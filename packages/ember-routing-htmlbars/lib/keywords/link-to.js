@@ -4,11 +4,11 @@ import Ember from "ember-metal/core"; // assert
 import merge from "ember-metal/merge";
 
 export default {
-  link: function(state, params, hash) {
+  link(state, params, hash) {
     Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
   },
 
-  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+  render(morph, env, scope, params, hash, template, inverse, visitor) {
     var attrs = merge({}, readHash(hash));
     attrs.params = readArray(params);
 
@@ -24,7 +24,7 @@ export default {
     env.hooks.component(morph, env, scope, '-link-to', attrs, template, visitor);
   },
 
-  rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
+  rerender(morph, env, scope, params, hash, template, inverse, visitor) {
     this.render(morph, env, scope, params, hash, template, inverse, visitor);
   }
 };

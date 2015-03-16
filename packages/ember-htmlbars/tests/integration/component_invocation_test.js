@@ -91,11 +91,11 @@ QUnit.test('rerendering component with attrs from parent', function() {
   var willReceiveAttrs = 0;
 
   registry.register('component:non-block', Component.extend({
-    willReceiveAttrs: function() {
+    willReceiveAttrs() {
       willReceiveAttrs++;
     },
 
-    willUpdate: function() {
+    willUpdate() {
       willUpdate++;
     }
   }));

@@ -21,10 +21,10 @@ var registry = new Registry();
 // TODO: Add tests that test actual behavior. Currently, all behavior
 // is tested integration-style in the `ember` package.
 registry.register('service:-routing', EmberObject.extend({
-  availableRoutes: function() { return ['index']; },
-  hasRoute: function(name) { return name === 'index'; },
-  isActiveForRoute: function() { return true; },
-  generateURL: function() { return "/"; }
+  availableRoutes() { return ['index']; },
+  hasRoute(name) { return name === 'index'; },
+  isActiveForRoute() { return true; },
+  generateURL() { return "/"; }
 }));
 
 registry.register('component-lookup:main', ComponentLookup);
