@@ -224,7 +224,7 @@ var CollectionView = ContainerView.extend({
 
     @method init
   */
-  init: function() {
+  init() {
     var ret = this._super(...arguments);
     this._contentDidChange();
     return ret;
@@ -272,7 +272,7 @@ var CollectionView = ContainerView.extend({
     @private
     @method _assertArrayLike
   */
-  _assertArrayLike: function(content) {
+  _assertArrayLike(content) {
     Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), EmberArray.detect(content));
   },
 
@@ -281,7 +281,7 @@ var CollectionView = ContainerView.extend({
 
     @method destroy
   */
-  destroy: function() {
+  destroy() {
     if (!this._super(...arguments)) { return; }
 
     var content = get(this, 'content');
@@ -307,7 +307,7 @@ var CollectionView = ContainerView.extend({
     @param {Number} start the index at which the changes will occur
     @param {Number} removed number of object to be removed from content
   */
-  arrayWillChange: function(content, start, removedCount) {
+  arrayWillChange(content, start, removedCount) {
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
     var emptyView = get(this, 'emptyView');
@@ -341,7 +341,7 @@ var CollectionView = ContainerView.extend({
     @param {Number} removed number of object removed from content
     @param {Number} added number of object added to content
   */
-  arrayDidChange: function(content, start, removed, added) {
+  arrayDidChange(content, start, removed, added) {
     var addedViews = [];
     var view, item, idx, len, itemViewClass, emptyView, itemViewProps;
 
@@ -424,7 +424,7 @@ var CollectionView = ContainerView.extend({
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
-  createChildView: function(_view, attrs) {
+  createChildView(_view, attrs) {
     var view = this._super(_view, attrs);
 
     var itemTagName = get(view, 'tagName');

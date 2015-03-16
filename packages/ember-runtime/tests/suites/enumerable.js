@@ -16,13 +16,13 @@ var ObserverClass = EmberObject.extend({
 
   isEnabled: true,
 
-  init: function() {
+  init() {
     this._super.apply(this, arguments);
     this.reset();
   },
 
 
-  propertyWillChange: function(target, key) {
+  propertyWillChange(target, key) {
     if (this._keysBefore[key] === undefined) { this._keysBefore[key] = 0; }
     this._keysBefore[key]++;
   },
@@ -31,7 +31,7 @@ var ObserverClass = EmberObject.extend({
     Invoked when the property changes.  Just records the parameters for
     later analysis.
   */
-  propertyDidChange: function(target, key, value) {
+  propertyDidChange(target, key, value) {
     if (this._keys[key] === undefined) { this._keys[key] = 0; }
     this._keys[key]++;
     this._values[key] = value;
@@ -42,7 +42,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Object} receiver
   */
-  reset: function() {
+  reset() {
     this._keysBefore = {};
     this._keys = {};
     this._values = {};
@@ -52,7 +52,7 @@ var ObserverClass = EmberObject.extend({
   },
 
 
-  observeBefore: function(obj) {
+  observeBefore(obj) {
     var keys = Array.prototype.slice.call(arguments, 1);
     var loc  = keys.length;
     while (--loc>=0) {
@@ -71,7 +71,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Object} receiver
   */
-  observe: function(obj) {
+  observe(obj) {
     if (obj.addObserver) {
       var keys = Array.prototype.slice.call(arguments, 1);
       var loc  = keys.length;
@@ -97,7 +97,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Boolean}
   */
-  validate: function(key, value) {
+  validate(key, value) {
     if (!this.isEnabled) {
       return true;
     }
@@ -119,7 +119,7 @@ var ObserverClass = EmberObject.extend({
     @param {String} key
       Key to check
   */
-  timesCalledBefore: function(key) {
+  timesCalledBefore(key) {
     return this._keysBefore[key] || 0;
   },
 
@@ -129,29 +129,29 @@ var ObserverClass = EmberObject.extend({
     @param {String} key
       Key to check
   */
-  timesCalled: function(key) {
+  timesCalled(key) {
     return this._keys[key] || 0;
   },
 
   /**
     begins acting as an enumerable observer.
   */
-  observeEnumerable: function(obj) {
+  observeEnumerable(obj) {
     obj.addEnumerableObserver(this);
     return this;
   },
 
-  stopObserveEnumerable: function(obj) {
+  stopObserveEnumerable(obj) {
     obj.removeEnumerableObserver(this);
     return this;
   },
 
-  enumerableWillChange: function() {
+  enumerableWillChange() {
     equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
-  enumerableDidChange: function() {
+  enumerableDidChange() {
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
@@ -181,7 +181,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of strings
   */
-  newFixture: function(cnt) {
+  newFixture(cnt) {
     var ret = [];
     while (--cnt >= 0) {
       ret.push(generateGuid());
@@ -199,7 +199,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of objects
   */
-  newObjectsFixture: function(cnt) {
+  newObjectsFixture(cnt) {
     var ret = [];
     var item;
     while (--cnt >= 0) {
@@ -237,7 +237,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {void}
   */
-  mutate: function() {},
+  mutate() {},
 
   /**
     Becomes true when you define a new mutate() method, indicating that
@@ -252,7 +252,7 @@ var EnumerableTests = Suite.extend({
   /**
     Invoked to actually run the test - overridden by mixins
   */
-  run: function() {},
+  run() {},
 
 
   /**
@@ -261,7 +261,7 @@ var EnumerableTests = Suite.extend({
     After running the test, call the validate() method on the observer to
     validate the results.
   */
-  newObserver: function(obj) {
+  newObserver(obj) {
     var ret = get(this, 'observerClass').create();
     if (arguments.length>0) {
       ret.observeBefore.apply(ret, arguments);

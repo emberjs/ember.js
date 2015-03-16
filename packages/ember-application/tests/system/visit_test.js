@@ -43,7 +43,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
       // Create an instance initializer that should *not* get run.
       app.instanceInitializer({
         name: "assert-no-autoboot",
-        initialize: function() {
+        initialize() {
           clearTimeout(timeout);
           QUnit.start();
           assert.ok(false, "instance should not have been created");
@@ -62,7 +62,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
       app = createApplication();
       app.instanceInitializer({
         name: 'register-application-template',
-        initialize: function(app) {
+        initialize(app) {
           app.registry.register('template:application', compile('<h1>Hello world</h1>'));
         }
       });
@@ -94,7 +94,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
       app = createApplication();
       app.instanceInitializer({
         name: 'register-application-template',
-        initialize: function(app) {
+        initialize(app) {
           app.registry.register('template:application', compile('<h1>Hello world</h1> {{view "child"}}'));
           app.registry.register('view:application', View.extend({
             elementId: 'my-cool-app'

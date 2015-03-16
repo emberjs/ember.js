@@ -7,16 +7,16 @@ QUnit.test("View hierarchy is done rendering to DOM when functions queued in aft
   var didInsert = 0;
   var childView = View.create({
     elementId: 'child_view',
-    didInsertElement: function() {
+    didInsertElement() {
       didInsert++;
     }
   });
   var parentView = View.create({
     elementId: 'parent_view',
-    render: function(buffer) {
+    render(buffer) {
       this.appendChild(childView);
     },
-    didInsertElement: function() {
+    didInsertElement() {
       didInsert++;
     }
   });

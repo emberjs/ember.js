@@ -34,7 +34,7 @@ function firstGrandchild(view) {
 }
 
 QUnit.module("collection helper", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -45,7 +45,7 @@ QUnit.module("collection helper", {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -231,7 +231,7 @@ QUnit.test("should be able to specify which class should be used for the empty v
 
   view = EmberView.create({
     container: {
-      lookupFactory: function() {
+      lookupFactory() {
         return EmptyView;
       }
     },
@@ -387,7 +387,7 @@ QUnit.test("should give its item views the property specified by itemProperty", 
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
     container: {
-      lookupFactory: function() {
+      lookupFactory() {
         return ItemPropertyBindingTestItemView;
       }
     },

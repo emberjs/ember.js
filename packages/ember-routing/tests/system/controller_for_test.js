@@ -51,13 +51,13 @@ function resolverFor(namespace) {
 var container, appController, namespace;
 
 QUnit.module("Ember.controllerFor", {
-  setup: function() {
+  setup() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
     container._registry.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
-  teardown: function() {
+  teardown() {
     run(function () {
       container.destroy();
       namespace.destroy();
@@ -72,11 +72,11 @@ QUnit.test("controllerFor should lookup for registered controllers", function() 
 });
 
 QUnit.module("Ember.generateController", {
-  setup: function() {
+  setup() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
   },
-  teardown: function() {
+  teardown() {
     run(function () {
       container.destroy();
       namespace.destroy();

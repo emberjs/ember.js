@@ -124,7 +124,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   disabled: false,
   maxlength: null,
 
-  init: function() {
+  init() {
     this._super(...arguments);
     this.on("paste", this, this._elementValueDidChange);
     this.on("cut", this, this._elementValueDidChange);
@@ -175,7 +175,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   */
   bubbles: false,
 
-  interpretKeyEvents: function(event) {
+  interpretKeyEvents(event) {
     var map = TextSupport.KEY_EVENTS;
     var method = map[event.keyCode];
 
@@ -183,11 +183,11 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     if (method) { return this[method](event); }
   },
 
-  _elementValueDidChange: function() {
+  _elementValueDidChange() {
     set(this, 'value', this.$().val());
   },
 
-  change: function(event) {
+  change(event) {
     this._elementValueDidChange(event);
   },
 
@@ -204,7 +204,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method insertNewline
     @param {Event} event
   */
-  insertNewline: function(event) {
+  insertNewline(event) {
     sendAction('enter', this, event);
     sendAction('insert-newline', this, event);
   },
@@ -221,7 +221,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method cancel
     @param {Event} event
   */
-  cancel: function(event) {
+  cancel(event) {
     sendAction('escape-press', this, event);
   },
 
@@ -237,7 +237,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method focusIn
     @param {Event} event
   */
-  focusIn: function(event) {
+  focusIn(event) {
     sendAction('focus-in', this, event);
   },
 
@@ -253,7 +253,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method focusOut
     @param {Event} event
   */
-  focusOut: function(event) {
+  focusOut(event) {
     this._elementValueDidChange(event);
     sendAction('focus-out', this, event);
   },
@@ -270,7 +270,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method keyPress
     @param {Event} event
   */
-  keyPress: function(event) {
+  keyPress(event) {
     sendAction('key-press', this, event);
   },
 
@@ -286,7 +286,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method keyUp
     @param {Event} event
   */
-  keyUp: function(event) {
+  keyUp(event) {
     this.interpretKeyEvents(event);
 
     this.sendAction('key-up', get(this, 'value'), event);
@@ -304,7 +304,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @method keyDown
     @param {Event} event
   */
-  keyDown: function(event) {
+  keyDown(event) {
     this.sendAction('key-down', get(this, 'value'), event);
   }
 });

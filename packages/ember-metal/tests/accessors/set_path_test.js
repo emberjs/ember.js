@@ -42,7 +42,7 @@ QUnit.module('set with path', {
 });
 
 QUnit.test('[Foo, bar] -> Foo.bar', function() {
-  Ember.lookup.Foo = { toString: function() { return 'Foo'; } }; // Behave like an Ember.Namespace
+  Ember.lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
 
   set(Ember.lookup.Foo, 'bar', 'baz');
   equal(get(Ember.lookup.Foo, 'bar'), 'baz');

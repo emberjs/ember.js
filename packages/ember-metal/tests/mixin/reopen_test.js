@@ -18,7 +18,7 @@ QUnit.test('using reopen() to add more properties to a simple', function() {
 
 QUnit.test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function() {
   var Taco = EmberObject.extend({
-    createBreakfast: function() {
+    createBreakfast() {
       // There is no original createBreakfast function.
       // Calling the wrapped _super function here
       // used to end in an infinite call loop
@@ -28,7 +28,7 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
   });
 
   Taco.reopen({
-    createBreakfast: function() {
+    createBreakfast() {
       return this._super.apply(this, arguments);
     }
   });

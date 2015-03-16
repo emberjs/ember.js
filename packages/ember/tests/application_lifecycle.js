@@ -3,7 +3,7 @@ import "ember";
 var App, container, router;
 
 QUnit.module("Application Lifecycle", {
-  setup: function() {
+  setup() {
     Ember.run(function() {
       App = Ember.Application.create({
         rootElement: '#qunit-fixture'
@@ -19,7 +19,7 @@ QUnit.module("Application Lifecycle", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     router = null;
     Ember.run(App, 'destroy');
   }
@@ -45,18 +45,18 @@ QUnit.test("Resetting the application allows controller properties to be set whe
   });
 
   App.HomeRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
-    deactivate: function() {
+    deactivate() {
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
   App.ApplicationRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
-    deactivate: function() {
+    deactivate() {
       this.controllerFor('application').set('selectedMenuItem', null);
     }
   });
@@ -82,18 +82,18 @@ QUnit.test("Destroying the application resets the router before the container is
   });
 
   App.HomeRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
-    deactivate: function() {
+    deactivate() {
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
   App.ApplicationRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
-    deactivate: function() {
+    deactivate() {
       this.controllerFor('application').set('selectedMenuItem', null);
     }
   });

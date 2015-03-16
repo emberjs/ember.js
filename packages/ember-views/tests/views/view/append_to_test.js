@@ -8,11 +8,11 @@ import ContainerView from "ember-views/views/container_view";
 var View, view, willDestroyCalled, childView;
 
 QUnit.module("EmberView - append() and appendTo()", {
-  setup: function() {
+  setup() {
     View = EmberView.extend({});
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
@@ -36,7 +36,7 @@ QUnit.test("should be added to the specified element when calling appendTo()", f
 
 QUnit.test("should be added to the document body when calling append()", function() {
   view = View.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("foo bar baz");
     }
   });
@@ -67,15 +67,15 @@ QUnit.test("append calls willInsertElement and didInsertElement callbacks", func
   var didInsertElementCalled = false;
 
   var ViewWithCallback = View.extend({
-    willInsertElement: function() {
+    willInsertElement() {
       willInsertElementCalled = true;
     },
-    didInsertElement: function() {
+    didInsertElement() {
       didInsertElementCalled = true;
     },
-    render: function(buffer) {
+    render(buffer) {
       this.appendChild(EmberView.create({
-        willInsertElement: function() {
+        willInsertElement() {
           willInsertElementCalledInChild = true;
         }
       }));
@@ -97,7 +97,7 @@ QUnit.test("remove removes an element from the DOM", function() {
   willDestroyCalled = 0;
 
   view = View.create({
-    willDestroyElement: function() {
+    willDestroyElement() {
       willDestroyCalled++;
     }
   });
@@ -124,7 +124,7 @@ QUnit.test("destroy more forcibly removes the view", function() {
   willDestroyCalled = 0;
 
   view = View.create({
-    willDestroyElement: function() {
+    willDestroyElement() {
       willDestroyCalled++;
     }
   });
@@ -149,7 +149,7 @@ QUnit.test("destroy more forcibly removes the view", function() {
 });
 
 QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
-  setup: function() {
+  setup() {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
     View = ContainerView.extend({
@@ -160,7 +160,7 @@ QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
@@ -198,7 +198,7 @@ QUnit.test("should be added to the document body when calling append()", functio
 });
 
 QUnit.module("EmberView - removing views in a view hierarchy", {
-  setup: function() {
+  setup() {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
     willDestroyCalled = 0;
@@ -206,7 +206,7 @@ QUnit.module("EmberView - removing views in a view hierarchy", {
     view = ContainerView.create({
       childViews: ['child'],
       child: EmberView.create({
-        willDestroyElement: function() {
+        willDestroyElement() {
           willDestroyCalled++;
         }
       })
@@ -215,7 +215,7 @@ QUnit.module("EmberView - removing views in a view hierarchy", {
     childView = get(view, 'child');
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });

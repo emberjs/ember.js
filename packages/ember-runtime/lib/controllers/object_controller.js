@@ -25,7 +25,7 @@ export var objectControllerDeprecation = 'Ember.ObjectController is deprecated, 
   @deprecated
 **/
 export default ObjectProxy.extend(ControllerMixin, {
-  init: function() {
+  init() {
     Ember.deprecate(objectControllerDeprecation, this.isGenerated);
   }
 });

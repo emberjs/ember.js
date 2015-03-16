@@ -8,7 +8,7 @@ import EmberView from "ember-views/views/view";
 var view;
 
 QUnit.module("EmberView - Class Name Bindings", {
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });

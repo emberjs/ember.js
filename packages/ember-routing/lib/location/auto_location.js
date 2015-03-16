@@ -110,7 +110,7 @@ export default EmberObject.extend({
    necessary. In the case of AutoLocation, we detect whether to use history
    or hash concrete implementations.
   */
-  detect: function() {
+  detect() {
     var rootURL = this.rootURL;
 
     Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
@@ -143,7 +143,7 @@ export default EmberObject.extend({
   onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
   formatURL: delegateToConcreteImplementation('formatURL'),
 
-  willDestroy: function() {
+  willDestroy() {
     var concreteImplementation = get(this, 'concreteImplementation');
 
     if (concreteImplementation) {

@@ -32,7 +32,7 @@ function pauseUntil(time) {
 }
 
 QUnit.module('run.later', {
-  teardown: function() {
+  teardown() {
     window.setTimeout = originalSetTimeout;
     Date.prototype.valueOf = originalDateValueOf;
   }

@@ -4,12 +4,12 @@ import Libraries from "ember-metal/libraries";
 var libs, registry;
 
 QUnit.module('Libraries registry', {
-  setup: function() {
+  setup() {
     libs = new Libraries();
     registry = libs._registry;
   },
 
-  teardown: function() {
+  teardown() {
     libs = null;
     registry = null;
   }

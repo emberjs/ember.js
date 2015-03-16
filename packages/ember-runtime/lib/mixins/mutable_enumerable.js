@@ -72,7 +72,7 @@ export default Mixin.create(Enumerable, {
     @param {Ember.Enumerable} objects the objects to add.
     @return {Object} receiver
   */
-  addObjects: function(objects) {
+  addObjects(objects) {
     beginPropertyChanges(this);
     forEach(objects, function(obj) { this.addObject(obj); }, this);
     endPropertyChanges(this);
@@ -103,7 +103,7 @@ export default Mixin.create(Enumerable, {
     @param {Ember.Enumerable} objects the objects to remove
     @return {Object} receiver
   */
-  removeObjects: function(objects) {
+  removeObjects(objects) {
     beginPropertyChanges(this);
     for (var i = objects.length - 1; i >= 0; i--) {
       this.removeObject(objects[i]);

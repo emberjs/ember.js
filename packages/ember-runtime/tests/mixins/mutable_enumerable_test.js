@@ -13,7 +13,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
 
   _content: null,
 
-  addObject: function(obj) {
+  addObject(obj) {
     if (indexOf(this._content, obj)>=0) {
       return this;
     }
@@ -23,7 +23,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
     this.enumerableContentDidChange(null, [obj]);
   },
 
-  removeObject: function(obj) {
+  removeObject(obj) {
     var idx = indexOf(this._content, obj);
     if (idx<0) {
       return this;
@@ -35,11 +35,11 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
     return this;
   },
 
-  init: function(ary) {
+  init(ary) {
     this._content = ary || [];
   },
 
-  nextObject: function(idx) {
+  nextObject(idx) {
     return idx>=get(this, 'length') ? undefined : this._content[idx];
   },
 
@@ -47,7 +47,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
     return this._content.length;
   }),
 
-  slice: function() {
+  slice() {
     return this._content.slice();
   }
 });
@@ -57,17 +57,17 @@ MutableEnumerableTests.extend({
 
   name: 'Basic Mutable Array',
 
-  newObject: function(ary) {
+  newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
     return new TestMutableEnumerable(ary);
   },
 
   // allows for testing of the basic enumerable after an internal mutation
-  mutate: function(obj) {
+  mutate(obj) {
     obj.addObject(this.getFixture(1)[0]);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.slice();
   }
 

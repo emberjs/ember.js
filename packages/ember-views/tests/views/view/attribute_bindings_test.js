@@ -14,10 +14,10 @@ var appendView = function() {
 };
 
 QUnit.module("EmberView - Attribute Bindings", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
   },
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() {
         view.destroy();

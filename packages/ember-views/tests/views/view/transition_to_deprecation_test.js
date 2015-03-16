@@ -4,10 +4,10 @@ import run from 'ember-metal/run_loop';
 var view;
 
 QUnit.module('views/view/transition_to_deprecation', {
-  setup: function() {
+  setup() {
     view = EmberView.create();
   },
-  teardown: function() {
+  teardown() {
     run(view, 'destroy');
   }
 });

@@ -16,7 +16,7 @@ QUnit.test("The `contentArrayDidChange` method is invoked after `content` is upd
       return Ember.A(this.get('content').slice());
     }),
 
-    contentArrayDidChange: function(array, idx, removedCount, addedCount) {
+    contentArrayDidChange(array, idx, removedCount, addedCount) {
       observerCalled = true;
       return this._super(array, idx, removedCount, addedCount);
     }

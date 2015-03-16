@@ -71,7 +71,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
 
   ActionManager.registeredActions[actionId] = {
     eventName: eventName,
-    handler: function handleRegisteredAction(event) {
+    handler(event) {
       if (!isAllowedEvent(event, allowedKeys)) { return true; }
 
       if (options.preventDefault !== false) {

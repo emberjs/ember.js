@@ -19,7 +19,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: property", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }

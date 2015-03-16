@@ -8,10 +8,10 @@ var originalLookup = Ember.lookup;
 var lookup, view;
 
 QUnit.module("EmberView.create", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });
@@ -56,14 +56,14 @@ QUnit.test("creates a renderer if one is not provided", function() {
   var childView;
 
   view = EmberView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push('Em');
       this.appendChild(childView);
     }
   });
 
   childView = EmberView.create({
-    template: function() { return 'ber'; }
+    template() { return 'ber'; }
   });
 
   run(function() {

@@ -11,7 +11,7 @@ import { set } from 'ember-metal/property_set';
 var willCount, didCount;
 
 QUnit.module('unwatch', {
-  setup: function() {
+  setup() {
     willCount = didCount = 0;
   }
 });

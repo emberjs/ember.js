@@ -206,7 +206,7 @@ var LinkView = EmberComponent.extend({
 
     @method init
   */
-  init: function() {
+  init() {
     this._super(...arguments);
 
     Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
@@ -224,7 +224,7 @@ var LinkView = EmberComponent.extend({
     @method _paramsChanged
     @since 1.3.0
    */
-  _paramsChanged: function() {
+  _paramsChanged() {
     this.notifyPropertyChange('resolvedParams');
   },
 
@@ -235,7 +235,7 @@ var LinkView = EmberComponent.extend({
    @method _setupPathObservers
    @since 1.3.0
   **/
-  _setupPathObservers: function() {
+  _setupPathObservers() {
     var params = this.params;
 
     var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
@@ -257,7 +257,7 @@ var LinkView = EmberComponent.extend({
     }
   },
 
-  afterRender: function() {
+  afterRender() {
     this._super(...arguments);
     this._setupPathObservers();
   },
@@ -353,7 +353,7 @@ var LinkView = EmberComponent.extend({
     @method _invoke
     @param {Event} event
   */
-  _invoke: function(event) {
+  _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
 
     if (this.preventDefault !== false) {
@@ -407,7 +407,7 @@ var LinkView = EmberComponent.extend({
     @param transition
     @param href
    */
-  _eagerUpdateUrl: function(transition, href) {
+  _eagerUpdateUrl(transition, href) {
     if (!transition.isActive || !transition.urlMethod) {
       // transition was aborted, already ran to completion,
       // or it has a null url-updated method.

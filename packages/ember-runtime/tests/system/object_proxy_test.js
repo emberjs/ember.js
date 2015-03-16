@@ -28,7 +28,7 @@ testBoth("should proxy properties to content", function(get, set) {
   var content = {
         firstName: 'Tom',
         lastName: 'Dale',
-        unknownProperty: function (key) { return key + ' unknown';}
+        unknownProperty(key) { return key + ' unknown';}
       };
   var proxy = ObjectProxy.create();
 

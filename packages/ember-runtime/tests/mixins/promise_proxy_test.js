@@ -16,7 +16,7 @@ QUnit.test("present on ember namespace", function() {
 });
 
 QUnit.module("Ember.PromiseProxy - ObjectProxy", {
-  setup: function() {
+  setup() {
     ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
   }
 });

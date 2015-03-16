@@ -99,15 +99,15 @@ function ItemPropertyObserverContext(dependentArray, index, trackedArray) {
 }
 
 DependentArraysObserver.prototype = {
-  setValue: function (newValue) {
+  setValue(newValue) {
     this.instanceMeta.setValue(newValue, true);
   },
 
-  getValue: function () {
+  getValue() {
     return this.instanceMeta.getValue();
   },
 
-  setupObservers: function (dependentArray, dependentKey) {
+  setupObservers(dependentArray, dependentKey) {
     this.dependentKeysByGuid[guidFor(dependentArray)] = dependentKey;
 
     dependentArray.addArrayObserver(this, {
@@ -120,7 +120,7 @@ DependentArraysObserver.prototype = {
     }
   },
 
-  teardownObservers: function (dependentArray, dependentKey) {
+  teardownObservers(dependentArray, dependentKey) {
     var itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [];
 
     delete this.dependentKeysByGuid[guidFor(dependentArray)];
@@ -133,14 +133,14 @@ DependentArraysObserver.prototype = {
     });
   },
 
-  suspendArrayObservers: function (callback, binding) {
+  suspendArrayObservers(callback, binding) {
     var oldSuspended = this.suspended;
     this.suspended = true;
     callback.call(binding);
     this.suspended = oldSuspended;
   },
 
-  setupPropertyObservers: function (dependentKey, itemPropertyKeys) {
+  setupPropertyObservers(dependentKey, itemPropertyKeys) {
     var dependentArray = get(this.instanceMeta.context, dependentKey);
     var length = get(dependentArray, 'length');
     var observerContexts = new Array(length);
@@ -158,7 +158,7 @@ DependentArraysObserver.prototype = {
     }, this);
   },
 
-  teardownPropertyObservers: function (dependentKey, itemPropertyKeys) {
+  teardownPropertyObservers(dependentKey, itemPropertyKeys) {
     var dependentArrayObserver = this;
     var trackedArray = this.trackedArraysByGuid[dependentKey];
     var beforeObserver, observer, item;
@@ -182,7 +182,7 @@ DependentArraysObserver.prototype = {
     });
   },
 
-  createPropertyObserverContext: function (dependentArray, index, trackedArray) {
+  createPropertyObserverContext(dependentArray, index, trackedArray) {
     var observerContext = new ItemPropertyObserverContext(dependentArray, index, trackedArray);
 
     this.createPropertyObserver(observerContext);
@@ -190,7 +190,7 @@ DependentArraysObserver.prototype = {
     return observerContext;
   },
 
-  createPropertyObserver: function (observerContext) {
+  createPropertyObserver(observerContext) {
     var dependentArrayObserver = this;
 
     observerContext.beforeObserver = function (obj, keyName) {
@@ -202,11 +202,11 @@ DependentArraysObserver.prototype = {
     };
   },
 
-  resetTransformations: function (dependentKey, observerContexts) {
+  resetTransformations(dependentKey, observerContexts) {
     this.trackedArraysByGuid[dependentKey] = new TrackedArray(observerContexts);
   },
 
-  trackAdd: function (dependentKey, index, newItems) {
+  trackAdd(dependentKey, index, newItems) {
     var trackedArray = this.trackedArraysByGuid[dependentKey];
 
     if (trackedArray) {
@@ -214,7 +214,7 @@ DependentArraysObserver.prototype = {
     }
   },
 
-  trackRemove: function (dependentKey, index, removedCount) {
+  trackRemove(dependentKey, index, removedCount) {
     var trackedArray = this.trackedArraysByGuid[dependentKey];
 
     if (trackedArray) {
@@ -224,7 +224,7 @@ DependentArraysObserver.prototype = {
     return [];
   },
 
-  updateIndexes: function (trackedArray, array) {
+  updateIndexes(trackedArray, array) {
     var length = get(array, 'length');
     // OPTIMIZE: we could stop updating once we hit the object whose observer
     // fired; ie partially apply the transformations
@@ -244,7 +244,7 @@ DependentArraysObserver.prototype = {
     });
   },
 
-  dependentArrayWillChange: function (dependentArray, index, removedCount, addedCount) {
+  dependentArrayWillChange(dependentArray, index, removedCount, addedCount) {
     if (this.suspended) { return; }
 
     var removedItem = this.callbacks.removedItem;
@@ -280,7 +280,7 @@ DependentArraysObserver.prototype = {
     this.callbacks.flushedChanges.call(this.instanceMeta.context, this.getValue(), this.instanceMeta.sugarMeta);
   },
 
-  dependentArrayDidChange: function (dependentArray, index, removedCount, addedCount) {
+  dependentArrayDidChange(dependentArray, index, removedCount, addedCount) {
     if (this.suspended) { return; }
 
     var addedItem = this.callbacks.addedItem;
@@ -313,7 +313,7 @@ DependentArraysObserver.prototype = {
     this.trackAdd(dependentKey, normalizedIndex, observerContexts);
   },
 
-  itemPropertyWillChange: function (obj, keyName, array, observerContext) {
+  itemPropertyWillChange(obj, keyName, array, observerContext) {
     var guid = guidFor(obj);
 
     if (!this.changedItems[guid]) {
@@ -329,13 +329,13 @@ DependentArraysObserver.prototype = {
     this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
-  itemPropertyDidChange: function (obj, keyName, array, observerContext) {
+  itemPropertyDidChange(obj, keyName, array, observerContext) {
     if (--this.changedItemCount === 0) {
       this.flushChanges();
     }
   },
 
-  flushChanges: function () {
+  flushChanges() {
     var changedItems = this.changedItems;
     var key, c, changeMeta;
 
@@ -429,7 +429,7 @@ function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue)
 }
 
 ReduceComputedPropertyInstanceMeta.prototype = {
-  getValue: function () {
+  getValue() {
     var value = cacheGet(this.cache, this.propertyName);
 
     if (value !== undefined) {
@@ -439,7 +439,7 @@ ReduceComputedPropertyInstanceMeta.prototype = {
     }
   },
 
-  setValue: function(newValue, triggerObservers) {
+  setValue(newValue, triggerObservers) {
     // This lets sugars force a recomputation, handy for very simple
     // implementations of eg max.
     if (newValue === cacheGet(this.cache, this.propertyName)) {

@@ -12,7 +12,7 @@ import hasElement from "ember-views/views/states/has_element";
 var inDOM = create(hasElement);
 
 merge(inDOM, {
-  enter: function(view) {
+  enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     if (!view.isVirtual) {
@@ -26,13 +26,13 @@ merge(inDOM, {
     });
   },
 
-  exit: function(view) {
+  exit(view) {
     if (!this.isVirtual) {
       view._unregister();
     }
   },
 
-  appendAttr: function(view, attrNode) {
+  appendAttr(view, attrNode) {
     var _childViews = view._childViews;
 
     if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }

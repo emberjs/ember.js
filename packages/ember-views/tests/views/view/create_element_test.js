@@ -7,7 +7,7 @@ import { equalHTML } from "ember-metal-views/tests/test_helpers";
 var view;
 
 QUnit.module("Ember.View#createElement", {
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });
@@ -46,7 +46,7 @@ QUnit.test("calls render and turns resultant string into element", function() {
   view = EmberView.create({
     tagName: 'span',
 
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("foo");
     }
   });
@@ -70,7 +70,7 @@ QUnit.test("calls render and parses the buffer string in the right context", fun
     tagName: 'table',
     childViews: [EmberView.create({
       tagName: '',
-      render: function(buffer) {
+      render(buffer) {
         // Emulate a metamorph
         buffer.push("<script></script><tr><td>snorfblax</td></tr>");
       }
@@ -99,13 +99,13 @@ QUnit.test("does not wrap many tr children in tbody elements", function() {
     childViews: [
       EmberView.create({
         tagName: '',
-        render: function(buffer) {
+        render(buffer) {
           // Emulate a metamorph
           buffer.push("<script></script><tr><td>snorfblax</td></tr>");
         } }),
       EmberView.create({
         tagName: '',
-        render: function(buffer) {
+        render(buffer) {
           // Emulate a metamorph
           buffer.push("<script></script><tr><td>snorfblax</td></tr>");
         } })

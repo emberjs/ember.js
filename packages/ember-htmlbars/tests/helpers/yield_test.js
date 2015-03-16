@@ -20,12 +20,12 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view, registry, container;
 
 QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       Ember.TEMPLATES = {};
     });
@@ -227,7 +227,7 @@ QUnit.test("yield view should be a virtual view", function() {
     controller: {
       component: component,
       includedComponent: Component.extend({
-        didInsertElement: function() {
+        didInsertElement() {
           var parentView = this.get('parentView');
 
           ok(parentView.get('isParentComponent'), "parent view is the parent component");
@@ -313,8 +313,8 @@ QUnit.test("nested simple bindings inside of a yielded template should work prop
 });
 
 QUnit.module("ember-htmlbars: Component {{yield}}", {
-  setup: function() {},
-  teardown: function() {
+  setup() {},
+  teardown() {
     runDestroy(view);
     delete helpers['inner-component'];
     delete helpers['outer-component'];
@@ -325,7 +325,7 @@ QUnit.test("yield with nested components (#3220)", function() {
   var count = 0;
   var InnerComponent = Component.extend({
     layout: compile("{{yield}}"),
-    _yield: function (context, options, morph) {
+    _yield(context, options, morph) {
       count++;
       if (count > 1) {
         throw new EmberError('is looping');

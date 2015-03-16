@@ -38,7 +38,7 @@ export function generateControllerFactory(container, controllerName, context) {
 
   Factory = container.lookupFactory(factoryName).extend({
     isGenerated: true,
-    toString: function() {
+    toString() {
       return "(generated " + controllerName + " controller)";
     }
   });

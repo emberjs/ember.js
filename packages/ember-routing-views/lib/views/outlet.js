@@ -8,7 +8,7 @@ import { _Metamorph } from "ember-views/views/metamorph_view";
 import { get } from "ember-metal/property_get";
 
 export var CoreOutletView = ContainerView.extend({
-  init: function() {
+  init() {
     this._super();
     this._childOutlets = [];
     this._outletState = null;
@@ -16,7 +16,7 @@ export var CoreOutletView = ContainerView.extend({
 
   _isOutlet: true,
 
-  _parentOutlet: function() {
+  _parentOutlet() {
     var parent = this._parentView;
     while (parent && !parent._isOutlet) {
       parent = parent._parentView;
@@ -34,7 +34,7 @@ export var CoreOutletView = ContainerView.extend({
     }
   }),
 
-  willDestroy: function() {
+  willDestroy() {
     var parent = this._parentOutlet();
     if (parent) {
       parent._childOutlets.removeObject(this);
@@ -43,7 +43,7 @@ export var CoreOutletView = ContainerView.extend({
   },
 
 
-  _diffState: function(state) {
+  _diffState(state) {
     while (state && emptyRouteState(state)) {
       state = state.outlets.main;
     }
@@ -52,7 +52,7 @@ export var CoreOutletView = ContainerView.extend({
     return different;
   },
 
-  setOutletState: function(state) {
+  setOutletState(state) {
     if (!this._diffState(state)) {
       var children = this._childOutlets;
       for (var i = 0 ; i < children.length; i++) {
@@ -70,7 +70,7 @@ export var CoreOutletView = ContainerView.extend({
     }
   },
 
-  _buildView: function(state) {
+  _buildView(state) {
     if (!state) { return; }
 
     var LOG_VIEW_LOOKUPS = get(this, 'namespace.LOG_VIEW_LOOKUPS');

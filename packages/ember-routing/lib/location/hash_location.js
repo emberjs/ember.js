@@ -24,7 +24,7 @@ import EmberLocation from "ember-routing/location/api";
 export default EmberObject.extend({
   implementation: 'hash',
 
-  init: function() {
+  init() {
     set(this, 'location', get(this, '_location') || window.location);
   },
 
@@ -49,7 +49,7 @@ export default EmberObject.extend({
     @private
     @method getURL
   */
-  getURL: function() {
+  getURL() {
     var originalPath = this.getHash().substr(1);
     var outPath = originalPath;
 
@@ -77,7 +77,7 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL: function(path) {
+  setURL(path) {
     get(this, 'location').hash = path;
     set(this, 'lastSetURL', path);
   },
@@ -90,7 +90,7 @@ export default EmberObject.extend({
     @method replaceURL
     @param path {String}
   */
-  replaceURL: function(path) {
+  replaceURL(path) {
     get(this, 'location').replace('#' + path);
     set(this, 'lastSetURL', path);
   },
@@ -104,7 +104,7 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL: function(callback) {
+  onUpdateURL(callback) {
     var self = this;
     var guid = guidFor(this);
 
@@ -131,7 +131,7 @@ export default EmberObject.extend({
     @method formatURL
     @param url {String}
   */
-  formatURL: function(url) {
+  formatURL(url) {
     return '#' + url;
   },
 
@@ -141,7 +141,7 @@ export default EmberObject.extend({
     @private
     @method willDestroy
   */
-  willDestroy: function() {
+  willDestroy() {
     var guid = guidFor(this);
 
     Ember.$(window).off('hashchange.ember-location-'+guid);

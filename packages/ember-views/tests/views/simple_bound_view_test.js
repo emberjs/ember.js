@@ -10,7 +10,7 @@ QUnit.test('does not render if update is triggered by normalizedValue is the sam
     return obj.foo;
   });
   var morph = {
-    setContent: function(newValue) {
+    setContent(newValue) {
       value = newValue;
     }
   };

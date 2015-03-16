@@ -33,7 +33,7 @@ QUnit.test('should get arbitrary properties on an object', function() {
 testBoth("should call unknownProperty on watched values if the value is undefined", function(get, set) {
   var obj = {
     count: 0,
-    unknownProperty: function(key) {
+    unknownProperty(key) {
       equal(key, 'foo', "should pass key");
       this.count++;
       return "FOO";
@@ -133,7 +133,7 @@ QUnit.test('should call unknownProperty if defined and value is undefined', func
 
   var obj = {
     count: 0,
-    unknownProperty: function(key) {
+    unknownProperty(key) {
       equal(key, 'foo', 'should pass key');
       this.count++;
       return 'FOO';
@@ -147,7 +147,7 @@ QUnit.test('should call unknownProperty if defined and value is undefined', func
 testBoth("if unknownProperty is present, it is called", function(get, set) {
   var obj = {
     count: 0,
-    unknownProperty: function(key) {
+    unknownProperty(key) {
       if (key === "foo") {
         equal(key, 'foo', "should pass key");
         this.count++;

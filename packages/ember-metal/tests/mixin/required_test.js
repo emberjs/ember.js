@@ -8,7 +8,7 @@ import { get } from 'ember-metal/property_get';
 var PartialMixin, FinalMixin, obj;
 
 QUnit.module('Module.required', {
-  setup: function() {
+  setup() {
     PartialMixin = Mixin.create({
       foo: required(),
       bar: 'BAR'
@@ -21,7 +21,7 @@ QUnit.module('Module.required', {
     obj = {};
   },
 
-  teardown: function() {
+  teardown() {
     PartialMixin = FinalMixin = obj = null;
   }
 });

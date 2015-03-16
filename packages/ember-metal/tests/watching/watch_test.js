@@ -13,7 +13,7 @@ var willCount, didCount,
     originalLookup, lookup, Global;
 
 QUnit.module('watch', {
-  setup: function() {
+  setup() {
     willCount = didCount = 0;
     willKeys = [];
     didKeys = [];
@@ -22,7 +22,7 @@ QUnit.module('watch', {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });

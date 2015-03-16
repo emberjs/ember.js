@@ -14,7 +14,7 @@ import "ember-routing";
 var App, logs, originalLogger;
 
 QUnit.module("Ember.Application – logging of generated classes", {
-  setup: function() {
+  setup() {
     logs = {};
 
     originalLogger = Ember.Logger.info;
@@ -43,7 +43,7 @@ QUnit.module("Ember.Application – logging of generated classes", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     Ember.Logger.info = originalLogger;
 
     run(App, 'destroy');
@@ -72,7 +72,7 @@ function visit(path) {
   });
 
   return {
-    then: function(resolve, reject) {
+    then(resolve, reject) {
       run(promise, 'then', resolve, reject);
     }
   };
@@ -139,7 +139,7 @@ QUnit.test("predefined classes do not get logged", function() {
 });
 
 QUnit.module("Ember.Application – logging of view lookups", {
-  setup: function() {
+  setup() {
     logs = {};
 
     originalLogger = Ember.Logger.info;
@@ -168,7 +168,7 @@ QUnit.module("Ember.Application – logging of view lookups", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     Ember.Logger.info = originalLogger;
 
     run(App, 'destroy');

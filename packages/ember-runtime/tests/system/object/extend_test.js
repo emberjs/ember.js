@@ -21,15 +21,15 @@ QUnit.test('Sub-subclass', function() {
 QUnit.test('Overriding a method several layers deep', function() {
   var SomeClass = EmberObject.extend({
     fooCnt: 0,
-    foo: function() { this.fooCnt++; },
+    foo() { this.fooCnt++; },
 
     barCnt: 0,
-    bar: function() { this.barCnt++; }
+    bar() { this.barCnt++; }
   });
 
   var AnotherClass = SomeClass.extend({
     barCnt: 0,
-    bar: function() {
+    bar() {
       this.barCnt++;
       this._super.apply(this, arguments);
     }
@@ -37,7 +37,7 @@ QUnit.test('Overriding a method several layers deep', function() {
 
   var FinalClass = AnotherClass.extend({
     fooCnt: 0,
-    foo: function() {
+    foo() {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }
@@ -51,7 +51,7 @@ QUnit.test('Overriding a method several layers deep', function() {
 
   // Try overriding on create also
   obj = FinalClass.createWithMixins({
-    foo: function() {
+    foo() {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }

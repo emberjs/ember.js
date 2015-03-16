@@ -5,10 +5,10 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 var originalLookup;
 
 QUnit.module("TargetActionSupport", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
   },
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -26,7 +26,7 @@ QUnit.test("it should support actions specified as strings", function() {
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      anEvent: function() {
+      anEvent() {
         ok(true, "anEvent method was called");
       }
     }),
@@ -42,7 +42,7 @@ QUnit.test("it should invoke the send() method on objects that implement it", fu
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      send: function(evt, context) {
+      send(evt, context) {
         equal(evt, 'anEvent', "send() method was invoked with correct event name");
         equal(context, obj, "send() method was invoked with correct context");
       }
@@ -61,7 +61,7 @@ QUnit.test("it should find targets specified using a property path", function() 
   Ember.lookup = { Test: Test };
 
   Test.targetObj = EmberObject.create({
-    anEvent: function() {
+    anEvent() {
       ok(true, "anEvent method was called on global object");
     }
   });
@@ -80,7 +80,7 @@ QUnit.test("it should use an actionContext object specified as a property on the
         action: 'anEvent',
         actionContext: {},
         target: EmberObject.create({
-          anEvent: function(ctx) {
+          anEvent(ctx) {
             ok(obj.actionContext === ctx, "anEvent method was called with the expected context");
           }
         })
@@ -99,7 +99,7 @@ QUnit.test("it should find an actionContext specified as a property path", funct
         action: 'anEvent',
         actionContext: 'Test.aContext',
         target: EmberObject.create({
-          anEvent: function(ctx) {
+          anEvent(ctx) {
             ok(Test.aContext === ctx, "anEvent method was called with the expected context");
           }
         })
@@ -110,7 +110,7 @@ QUnit.test("it should find an actionContext specified as a property path", funct
 QUnit.test("it should use the target specified in the argument", function() {
   expect(2);
   var targetObj = EmberObject.create({
-        anEvent: function() {
+        anEvent() {
           ok(true, "anEvent method was called");
         }
       });
@@ -126,7 +126,7 @@ QUnit.test("it should use the action specified in the argument", function() {
 
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      anEvent: function() {
+      anEvent() {
         ok(true, "anEvent method was called");
       }
     })
@@ -139,7 +139,7 @@ QUnit.test("it should use the actionContext specified in the argument", function
   var context = {};
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      anEvent: function(ctx) {
+      anEvent(ctx) {
         ok(context === ctx, "anEvent method was called with the expected context");
       }
     }),
@@ -155,7 +155,7 @@ QUnit.test("it should allow multiple arguments from actionContext", function() {
   var param2 = 'someOtherParam';
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      anEvent: function(first, second) {
+      anEvent(first, second) {
         ok(first === param1, "anEvent method was called with the expected first argument");
         ok(second === param2, "anEvent method was called with the expected second argument");
       }
@@ -170,7 +170,7 @@ QUnit.test("it should use a null value specified in the actionContext argument",
   expect(2);
   var obj = EmberObject.createWithMixins(TargetActionSupport, {
     target: EmberObject.create({
-      anEvent: function(ctx) {
+      anEvent(ctx) {
         ok(null === ctx, "anEvent method was called with the expected context (null)");
       }
     }),

@@ -33,21 +33,21 @@ function mockBrowserLocation(path) {
 }
 
 QUnit.module("Ember.HashLocation", {
-  setup: function() {
+  setup() {
     HashTestLocation = HashLocation.extend({
       _location: {
         href: 'http://test.com/',
         pathname: '/',
         hash: '',
         search: '',
-        replace: function () {
+        replace() {
           ok(false, 'location.replace should not be called during testing');
         }
       }
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (location) { location.destroy(); }
     });
@@ -110,7 +110,7 @@ QUnit.test("HashLocation.replaceURL() correctly replaces to the path with a page
 
   createLocation({
     _location: {
-      replace: function(path) {
+      replace(path) {
         equal(path, '#/foo');
       }
     }
@@ -129,7 +129,7 @@ QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", functio
   Ember.$ = function (element) {
     equal(element, window);
     return {
-      on: function(eventName, callback) {
+      on(eventName, callback) {
         equal(eventName, 'hashchange.ember-location-' + guid);
         equal(Object.prototype.toString.call(callback), '[object Function]');
       }
@@ -138,7 +138,7 @@ QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", functio
 
   createLocation({
     // Mock so test teardown doesn't fail
-    willDestroy: function () {}
+    willDestroy() {}
   });
 
   var guid = guidFor(location);
@@ -166,7 +166,7 @@ QUnit.test("HashLocation.willDestroy() cleans up hashchange event listener", fun
     equal(element, window);
 
     return {
-      off: function(eventName) {
+      off(eventName) {
         equal(eventName, 'hashchange.ember-location-' + guid);
       }
     };

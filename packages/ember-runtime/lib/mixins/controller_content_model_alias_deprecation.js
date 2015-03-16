@@ -35,7 +35,7 @@ export default Mixin.create({
     @method willMergeMixin
     @since 1.4.0
   */
-  willMergeMixin: function(props) {
+  willMergeMixin(props) {
     // Calling super is only OK here since we KNOW that
     // there is another Mixin loaded first.
     this._super(...arguments);

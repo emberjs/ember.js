@@ -11,11 +11,11 @@ var TestMutableArray = EmberObject.extend(MutableArray, {
 
   _content: null,
 
-  init: function(ary) {
+  init(ary) {
     this._content = Ember.A(ary || []);
   },
 
-  replace: function(idx, amt, objects) {
+  replace(idx, amt, objects) {
 
     var args = objects ? objects.slice() : [];
     var removeAmt = amt;
@@ -30,7 +30,7 @@ var TestMutableArray = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     return this._content[idx];
   },
 
@@ -38,7 +38,7 @@ var TestMutableArray = EmberObject.extend(MutableArray, {
     return this._content.length;
   }),
 
-  slice: function() {
+  slice() {
     return this._content.slice();
   }
 
@@ -49,17 +49,17 @@ MutableArrayTests.extend({
 
   name: 'Basic Mutable Array',
 
-  newObject: function(ary) {
+  newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
     return new TestMutableArray(ary);
   },
 
   // allows for testing of the basic enumerable after an internal mutation
-  mutate: function(obj) {
+  mutate(obj) {
     obj.addObject(this.getFixture(1)[0]);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.slice();
   }
 

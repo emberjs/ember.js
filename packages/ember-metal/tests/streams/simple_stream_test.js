@@ -4,7 +4,7 @@ import SimpleStream from "ember-metal/streams/simple";
 var source, value;
 
 QUnit.module('Simple Stream', {
-  setup: function() {
+  setup() {
     value = "zlurp";
 
     source = new Stream(function() {
@@ -16,7 +16,7 @@ QUnit.module('Simple Stream', {
       this.notify();
     };
   },
-  teardown: function() {
+  teardown() {
     value = undefined;
     source = undefined;
   }

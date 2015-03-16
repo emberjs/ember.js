@@ -269,7 +269,7 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   autoboot: true,
 
-  init: function() {
+  init() {
     this._super(...arguments);
 
     if (!this.$) {
@@ -307,7 +307,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method buildRegistry
     @return {Ember.Registry} the configured registry
   */
-  buildRegistry: function() {
+  buildRegistry() {
     var registry = this.registry = Application.buildRegistry(this);
 
     return registry;
@@ -320,7 +320,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method buildInstance
     @return {Ember.Container} the configured container
   */
-  buildInstance: function() {
+  buildInstance() {
     return ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
@@ -328,7 +328,7 @@ var Application = Namespace.extend(DeferredMixin, {
     });
   },
 
-  buildDefaultInstance: function() {
+  buildDefaultInstance() {
     var instance = this.buildInstance();
 
     // For the default instance only, set the view registry to the global
@@ -360,7 +360,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method scheduleInitialize
   */
-  waitForDOMReady: function(_instance) {
+  waitForDOMReady(_instance) {
     if (!this.$ || this.$.isReady) {
       run.schedule('actions', this, 'domReady', _instance);
     } else {
@@ -392,7 +392,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @method deferReadiness
   */
-  deferReadiness: function() {
+  deferReadiness() {
     Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Application);
     Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
     this._readinessDeferrals++;
@@ -406,7 +406,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method advanceReadiness
     @see {Ember.Application#deferReadiness}
   */
-  advanceReadiness: function() {
+  advanceReadiness() {
     Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Application);
     this._readinessDeferrals--;
 
@@ -473,7 +473,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  factory {Function} (e.g., App.Person)
     @param  options {Object} (optional) disable instantiation or singleton usage
   **/
-  register: function() {
+  register() {
     this.registry.register(...arguments);
   },
 
@@ -526,7 +526,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  property {String}
     @param  injectionName {String}
   **/
-  inject: function() {
+  inject() {
     this.registry.injection(...arguments);
   },
 
@@ -540,7 +540,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @deprecated
     @method initialize
    **/
-  initialize: function() {
+  initialize() {
     Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
   },
 
@@ -554,7 +554,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method _initialize
   */
-  domReady: function(_instance) {
+  domReady(_instance) {
     if (this.isDestroyed) { return; }
 
     var app = this;
@@ -566,7 +566,7 @@ var Application = Namespace.extend(DeferredMixin, {
     return this;
   },
 
-  boot: function() {
+  boot() {
     if (this._bootPromise) { return this._bootPromise; }
 
     var defer = new Ember.RSVP.defer();
@@ -649,7 +649,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @method reset
   **/
-  reset: function() {
+  reset() {
     var instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
@@ -671,7 +671,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method runInitializers
   */
-  runInitializers: function(registry) {
+  runInitializers(registry) {
     var App = this;
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert("No application initializer named '" + name + "'", !!initializer);
@@ -685,14 +685,14 @@ var Application = Namespace.extend(DeferredMixin, {
     });
   },
 
-  runInstanceInitializers: function(instance) {
+  runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', function(name, initializer) {
       Ember.assert("No instance initializer named '" + name + "'", !!initializer);
       initializer.initialize(instance);
     });
   },
 
-  _runInitializer: function(bucketName, cb) {
+  _runInitializer(bucketName, cb) {
     var initializersByName = get(this.constructor, bucketName);
     var initializers = props(initializersByName);
     var graph = new DAG();
@@ -712,7 +712,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @method didBecomeReady
   */
-  didBecomeReady: function() {
+  didBecomeReady() {
     if (this.autoboot) {
       if (environment.hasDOM) {
         this.__deprecatedInstance__.setupEventDispatcher();
@@ -739,7 +739,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @event ready
   */
-  ready: function() { return this; },
+  ready() { return this; },
 
   /**
     @deprecated Use 'Resolver' instead
@@ -758,14 +758,14 @@ var Application = Namespace.extend(DeferredMixin, {
   Resolver: null,
 
   // This method must be moved to the application instance object
-  willDestroy: function() {
+  willDestroy() {
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
     this.__deprecatedInstance__.destroy();
   },
 
-  initializer: function(options) {
+  initializer(options) {
     this.constructor.initializer(options);
   },
 
@@ -774,7 +774,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @deprecated
   */
-  then: function() {
+  then() {
     Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-code-then-code-on-ember-application' });
 
     this._super(...arguments);
@@ -783,7 +783,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
 if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   Application.reopen({
-    instanceInitializer: function(options) {
+    instanceInitializer(options) {
       this.constructor.instanceInitializer(options);
     }
   });
@@ -810,7 +810,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
       @method visit
       @private
     */
-    visit: function(url) {
+    visit(url) {
       var instance = this.buildInstance();
       this.runInstanceInitializers(instance);
 
@@ -984,7 +984,7 @@ Application.reopenClass({
       build the registry
     @return {Ember.Registry} the built registry
   */
-  buildRegistry: function(namespace) {
+  buildRegistry(namespace) {
     var registry = new Registry();
 
     registry.set = set;
@@ -1004,13 +1004,13 @@ Application.reopenClass({
     registry.register('controller:object', ObjectController, { instantiate: false });
     registry.register('controller:array', ArrayController, { instantiate: false });
 
-    registry.register('renderer:-dom', { create: function() { return new Renderer(new DOMHelper()); } });
+    registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });
 
     registry.injection('view', 'renderer', 'renderer:-dom');
     registry.register('view:select', SelectView);
     registry.register('view:-outlet', OutletView);
 
-    registry.register('-view-registry:main', { create: function() { return {}; } });
+    registry.register('-view-registry:main', { create() { return {}; } });
 
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 

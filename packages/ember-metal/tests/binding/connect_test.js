@@ -38,11 +38,11 @@ function performTest(binding, a, b, get, set, connect) {
 var originalLookup, lookup, GlobalB;
 
 QUnit.module("Ember.Binding", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
   },
-  teardown: function() {
+  teardown() {
     lookup = null;
     Ember.lookup = originalLookup;
   }

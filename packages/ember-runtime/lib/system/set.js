@@ -152,7 +152,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method clear
     @return {Ember.Set} An empty Set
   */
-  clear: function() {
+  clear() {
     if (this.isFrozen) { throw new EmberError(FROZEN_ERROR); }
 
     var len = get(this, 'length');
@@ -195,7 +195,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @param {Ember.Set} obj the other object.
     @return {Boolean}
   */
-  isEqual: function(obj) {
+  isEqual(obj) {
     // fail fast
     if (!Enumerable.detect(obj)) {
       return false;
@@ -268,7 +268,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method pop
     @return {Object} The removed object from the set or null.
   */
-  pop: function() {
+  pop() {
     if (get(this, 'isFrozen')) {
       throw new EmberError(FROZEN_ERROR);
     }
@@ -367,7 +367,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   // PRIVATE ENUMERABLE SUPPORT
   //
 
-  init: function(items) {
+  init(items) {
     Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
     this._super(...arguments);
 
@@ -377,7 +377,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   // implement Ember.Enumerable
-  nextObject: function(idx) {
+  nextObject(idx) {
     return this[idx];
   },
 
@@ -392,7 +392,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   }),
 
   // implements Ember.MutableEnumerable
-  addObject: function(obj) {
+  addObject(obj) {
     if (get(this, 'isFrozen')) {
       throw new EmberError(FROZEN_ERROR);
     }
@@ -427,7 +427,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   // implements Ember.MutableEnumerable
-  removeObject: function(obj) {
+  removeObject(obj) {
     if (get(this, 'isFrozen')) {
       throw new EmberError(FROZEN_ERROR);
     }
@@ -471,11 +471,11 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   // optimized version
-  contains: function(obj) {
+  contains(obj) {
     return this[guidFor(obj)]>=0;
   },
 
-  copy: function() {
+  copy() {
     var C = this.constructor;
     var ret = new C();
     var loc = get(this, 'length');
@@ -488,7 +488,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     return ret;
   },
 
-  toString: function() {
+  toString() {
     var len = this.length;
     var array = [];
     var idx;

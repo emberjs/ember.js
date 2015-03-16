@@ -11,7 +11,7 @@ import renderView from "ember-htmlbars/system/render-view";
 import emptyTemplate from "ember-htmlbars/templates/empty";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
-  init: function() {
+  init() {
     this._super(...arguments);
 
     var self = this;
@@ -21,11 +21,11 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     }));
   },
 
-  normalizedValue: function() {
+  normalizedValue() {
     return this.templateNameStream.value();
   },
 
-  render: function(buffer) {
+  render(buffer) {
     var templateName = this.normalizedValue();
     this._lastNormalizedValue = templateName;
 

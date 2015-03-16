@@ -7,7 +7,7 @@ QUnit.test('Ember.run.bind builds a run-loop wrapped callback handler', function
 
   var obj = {
     value: 0,
-    increment: function(increment) {
+    increment(increment) {
       ok(run.currentRunLoop, 'expected a run-loop');
       return this.value += increment;
     }

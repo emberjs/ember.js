@@ -10,13 +10,13 @@ import { inspect } from "ember-metal/utils";
   @extends Ember.Test.Adapter
 */
 export default Adapter.extend({
-  asyncStart: function() {
+  asyncStart() {
     QUnit.stop();
   },
-  asyncEnd: function() {
+  asyncEnd() {
     QUnit.start();
   },
-  exception: function(error) {
+  exception(error) {
     ok(false, inspect(error));
   }
 });

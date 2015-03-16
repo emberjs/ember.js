@@ -7,13 +7,13 @@ import compile from "ember-template-compiler/system/compile";
 var View, view;
 
 QUnit.module("EmberView - renderToElement()", {
-  setup: function() {
+  setup() {
     View = EmberView.extend({
       template: compile('<h1>hello world</h1> goodbye world')
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });

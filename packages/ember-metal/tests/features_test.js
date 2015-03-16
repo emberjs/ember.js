@@ -4,13 +4,13 @@ var isEnabled = Ember.FEATURES.isEnabled;
 var origFeatures, origEnableAll, origEnableOptional;
 
 QUnit.module("Ember.FEATURES.isEnabled", {
-  setup: function() {
+  setup() {
     origFeatures       = Ember.FEATURES;
     origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
-  teardown: function() {
+  teardown() {
     Ember.FEATURES                     = origFeatures;
     Ember.ENV.ENABLE_ALL_FEATURES      = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;

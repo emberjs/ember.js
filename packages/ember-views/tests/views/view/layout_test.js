@@ -6,13 +6,13 @@ import EmberView from "ember-views/views/view";
 var registry, container, view;
 
 QUnit.module("EmberView - Layout Functionality", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
       container.destroy();
@@ -24,7 +24,7 @@ QUnit.module("EmberView - Layout Functionality", {
 QUnit.test("Layout views return throw if their layout cannot be found", function() {
   view = EmberView.create({
     layoutName: 'cantBeFound',
-    container: { lookup: function() { } }
+    container: { lookup() { } }
   });
 
   expectAssertion(function() {
@@ -78,7 +78,7 @@ QUnit.test("should fall back to defaultTemplate if neither template nor template
   var View;
 
   View = EmberView.extend({
-    defaultLayout: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    defaultLayout(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create({
@@ -98,8 +98,8 @@ QUnit.test("should not use defaultLayout if layout is provided", function() {
   var View;
 
   View = EmberView.extend({
-    layout:  function() { return "foo"; },
-    defaultLayout: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    layout() { return "foo"; },
+    defaultLayout(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
@@ -113,11 +113,11 @@ QUnit.test("should not use defaultLayout if layout is provided", function() {
 
 QUnit.test("the template property is available to the layout template", function() {
   view = EmberView.create({
-    template: function(context, options) {
+    template(context, options) {
       options.data.buffer.push(" derp");
     },
 
-    layout: function(context, options) {
+    layout(context, options) {
       options.data.buffer.push("Herp");
       get(options.data.view, 'template')(context, options);
     }

@@ -32,7 +32,7 @@ var VisibilitySupport = Mixin.create({
     run.scheduleOnce('render', this, this._toggleVisibility);
   }),
 
-  _toggleVisibility: function() {
+  _toggleVisibility() {
     var $el = this.$();
     var isVisible = get(this, 'isVisible');
 
@@ -55,7 +55,7 @@ var VisibilitySupport = Mixin.create({
     }
   },
 
-  _notifyBecameVisible: function() {
+  _notifyBecameVisible() {
     this.trigger('becameVisible');
 
     this.forEachChildView(function(view) {
@@ -67,7 +67,7 @@ var VisibilitySupport = Mixin.create({
     });
   },
 
-  _notifyBecameHidden: function() {
+  _notifyBecameHidden() {
     this.trigger('becameHidden');
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
@@ -78,7 +78,7 @@ var VisibilitySupport = Mixin.create({
     });
   },
 
-  _isAncestorHidden: function() {
+  _isAncestorHidden() {
     var parent = get(this, 'parentView');
 
     while (parent) {

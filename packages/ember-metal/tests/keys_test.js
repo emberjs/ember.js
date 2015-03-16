@@ -24,7 +24,7 @@ QUnit.test("should get a key array for a specified object", function() {
 // This test is for IE8.
 QUnit.test("should get a key array for property that is named the same as prototype property", function() {
   var object1 = {
-    toString: function() {}
+    toString() {}
   };
 
   var object2 = keys(object1);

@@ -144,7 +144,7 @@ export default {
     @deprecated Use the container to lookup the location implementation that you
     need.
   */
-  create: function(options) {
+  create(options) {
     var implementation = options && options.implementation;
     Ember.assert("Ember.Location.create: you must specify a 'implementation' option", !!implementation);
 
@@ -176,7 +176,7 @@ export default {
    @deprecated Register your custom location implementation with the
    container directly.
   */
-  registerImplementation: function(name, implementation) {
+  registerImplementation(name, implementation) {
     Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
                     ' Register your custom location implementation with the container instead.', false);
 
@@ -196,7 +196,7 @@ export default {
     @method getHash
     @since 1.4.0
   */
-  _getHash: function () {
+  _getHash() {
     return getHash(this.location);
   }
 };

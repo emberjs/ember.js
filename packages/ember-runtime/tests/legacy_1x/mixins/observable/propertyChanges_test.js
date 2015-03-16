@@ -28,7 +28,7 @@ var revMatches = false;
 var ObjectA;
 
 QUnit.module("object.propertyChanges", {
-  setup: function() {
+  setup() {
     ObjectA = ObservableObject.createWithMixins({
       foo  : 'fooValue',
       prop : 'propValue',
@@ -49,7 +49,7 @@ QUnit.module("object.propertyChanges", {
       }),
 
       starProp: null,
-      starObserver: function(target, key, value, rev) {
+      starObserver(target, key, value, rev) {
         revMatches = (rev === target.propertyRevision);
         this.starProp = key;
       }

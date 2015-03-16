@@ -9,7 +9,7 @@ import compile from "ember-template-compiler/system/compile";
 var view;
 
 QUnit.module('ember-htmlbars: element hook', {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     delete helpers.test;
   }

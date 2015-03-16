@@ -15,7 +15,7 @@ import ControllerMixin from "ember-runtime/mixins/controller";
 ControllerMixin.reopen({
   concatenatedProperties: ['queryParams', '_pCacheMeta'],
 
-  init: function() {
+  init() {
     this._super(...arguments);
     listenForQueryParamChanges(this);
   },
@@ -100,7 +100,7 @@ ControllerMixin.reopen({
     @method _updateCacheParams
     @private
   */
-  _updateCacheParams: function(params) {
+  _updateCacheParams(params) {
     var cacheMeta = get(this, '_cacheMeta');
     for (var prop in cacheMeta) {
       if (!cacheMeta.hasOwnProperty(prop)) { continue; }
@@ -121,7 +121,7 @@ ControllerMixin.reopen({
     @method _qpChanged
     @private
   */
-  _qpChanged: function(controller, _prop) {
+  _qpChanged(controller, _prop) {
     var prop = _prop.substr(0, _prop.length-3);
     var cacheMeta = get(controller, '_cacheMeta');
     var propCache = cacheMeta[prop];
@@ -145,7 +145,7 @@ ControllerMixin.reopen({
     @method _calculateCacheKey
     @private
   */
-  _calculateCacheKey: function(prefix, _parts, values) {
+  _calculateCacheKey(prefix, _parts, values) {
     var parts = _parts || [];
     var suffixes = "";
     for (var i = 0, len = parts.length; i < len; ++i) {
@@ -227,7 +227,7 @@ ControllerMixin.reopen({
     @for Ember.ControllerMixin
     @method transitionToRoute
   */
-  transitionToRoute: function() {
+  transitionToRoute() {
     // target may be either another controller or a router
     var target = get(this, 'target');
     var method = target.transitionToRoute || target.transitionTo;
@@ -239,7 +239,7 @@ ControllerMixin.reopen({
     @for Ember.ControllerMixin
     @method transitionTo
   */
-  transitionTo: function() {
+  transitionTo() {
     Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
     return this.transitionToRoute(...arguments);
   },
@@ -299,7 +299,7 @@ ControllerMixin.reopen({
     @for Ember.ControllerMixin
     @method replaceRoute
   */
-  replaceRoute: function() {
+  replaceRoute() {
     // target may be either another controller or a router
     var target = get(this, 'target');
     var method = target.replaceRoute || target.replaceWith;
@@ -311,7 +311,7 @@ ControllerMixin.reopen({
     @for Ember.ControllerMixin
     @method replaceWith
   */
-  replaceWith: function() {
+  replaceWith() {
     Ember.deprecate("replaceWith is deprecated. Please use replaceRoute.");
     return this.replaceRoute(...arguments);
   }

@@ -7,13 +7,13 @@ import Namespace from "ember-runtime/system/namespace";
 var originalLookup, lookup;
 
 QUnit.module('Namespace', {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.BOOTED = false;
 
     lookup = Ember.lookup = {};
   },
-  teardown: function() {
+  teardown() {
     Ember.BOOTED = false;
 
     for (var prop in lookup) {

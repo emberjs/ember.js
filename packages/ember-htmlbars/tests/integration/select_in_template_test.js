@@ -14,12 +14,12 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var dispatcher, view;
 
 QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
-  setup: function() {
+  setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(dispatcher);
     runDestroy(view);
   }

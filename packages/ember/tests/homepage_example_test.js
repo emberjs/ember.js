@@ -22,7 +22,7 @@ function setupExample() {
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       var people = Ember.A([
         App.Person.create({
           firstName: "Tom",
@@ -39,7 +39,7 @@ function setupExample() {
 }
 
 QUnit.module("Homepage Example", {
-  setup: function() {
+  setup() {
     Ember.run(function() {
       App = Ember.Application.create({
         name: "App",
@@ -58,7 +58,7 @@ QUnit.module("Homepage Example", {
     setupExample();
   },
 
-  teardown: function() {
+  teardown() {
     Ember.run(function() {
       App.destroy();
     });

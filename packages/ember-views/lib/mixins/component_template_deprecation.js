@@ -28,7 +28,7 @@ export default Mixin.create({
     @method willMergeMixin
     @since 1.4.0
   */
-  willMergeMixin: function(props) {
+  willMergeMixin(props) {
     // must call _super here to ensure that the ActionHandler
     // mixin is setup properly (moves actions -> _actions)
     //

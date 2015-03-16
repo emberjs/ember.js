@@ -3,7 +3,7 @@ import create from 'ember-metal/platform/create';
 import KeyStream from "ember-views/streams/key_stream";
 
 var ViewKeywordSupport = Mixin.create({
-  init: function() {
+  init() {
     this._super(...arguments);
 
     if (!this._keywords) {
@@ -15,7 +15,7 @@ var ViewKeywordSupport = Mixin.create({
     this._setupKeywords();
   },
 
-  _setupKeywords: function() {
+  _setupKeywords() {
     var keywords = this._keywords;
     var contextView = this._contextView || this._parentView;
 

@@ -16,14 +16,14 @@ var view, MyApp, originalLookup, lookup;
 var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: binding integration', {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
     MyApp = lookup.MyApp = EmberObject.create({});
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
 
     runDestroy(view);

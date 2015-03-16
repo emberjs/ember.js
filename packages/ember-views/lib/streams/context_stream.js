@@ -16,9 +16,9 @@ function ContextStream(view) {
 ContextStream.prototype = create(Stream.prototype);
 
 merge(ContextStream.prototype, {
-  value: function() {},
+  value() {},
 
-  _makeChildStream: function(key, _fullPath) {
+  _makeChildStream(key, _fullPath) {
     var stream;
 
     if (key === '' || key === 'this') {

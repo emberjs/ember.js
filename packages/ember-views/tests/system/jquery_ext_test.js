@@ -26,14 +26,14 @@ if (document.createEvent) {
 }
 
 QUnit.module("EventDispatcher", {
-  setup: function() {
+  setup() {
     run(function() {
       dispatcher = EventDispatcher.create();
       dispatcher.setup();
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
       dispatcher.destroy();
@@ -63,12 +63,12 @@ if (canDataTransfer) {
     var dropCalled = 0;
 
     view = View.createWithMixins({
-      render: function(buffer) {
+      render(buffer) {
         buffer.push('please drop stuff on me');
         this._super(buffer);
       },
 
-      drop: function(evt) {
+      drop(evt) {
         receivedEvent = evt;
         dropCalled++;
       }

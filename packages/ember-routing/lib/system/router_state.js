@@ -7,7 +7,7 @@ var RouterState = EmberObject.extend({
   routerJs: null,
   routerJsState: null,
 
-  isActiveIntent: function(routeName, models, queryParams, queryParamsMustMatch) {
+  isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
     var state = this.routerJsState;
     if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
 

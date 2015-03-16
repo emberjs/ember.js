@@ -6,14 +6,14 @@ import { oneWay } from "ember-metal/binding";
 var MyApp;
 
 QUnit.module('system/mixin/binding/oneWay_test', {
-  setup: function() {
+  setup() {
     MyApp = {
       foo: { value: 'FOO' },
       bar: { value: 'BAR' }
     };
   },
 
-  teardown: function() {
+  teardown() {
     MyApp = null;
   }
 });

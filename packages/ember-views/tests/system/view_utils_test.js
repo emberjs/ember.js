@@ -25,7 +25,7 @@ var ClientRectListCtor, ClientRectCtor;
 var view;
 
 QUnit.module("ViewUtils", {
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
     });
@@ -40,7 +40,7 @@ QUnit.test("getViewClientRects", function() {
   }
 
   view = View.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("Hello, world!");
     }
   });
@@ -57,7 +57,7 @@ QUnit.test("getViewBoundingClientRect", function() {
   }
 
   view = View.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("Hello, world!");
     }
   });
