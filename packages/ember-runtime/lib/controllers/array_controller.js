@@ -173,7 +173,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   arrangedContentDidChange: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._resetSubControllers();
   },
 
@@ -199,7 +199,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._subControllers = [];
   },
 
@@ -274,6 +274,6 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   willDestroy: function() {
     this._resetSubControllers();
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });

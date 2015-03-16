@@ -153,10 +153,10 @@ export default EmberObject.extend({
 });
 
 function delegateToConcreteImplementation(methodName) {
-  return function() {
+  return function(...args) {
     var concreteImplementation = get(this, 'concreteImplementation');
     Ember.assert("AutoLocation's detect() method should be called before calling any other hooks.", !!concreteImplementation);
-    return tryInvoke(concreteImplementation, methodName, arguments);
+    return tryInvoke(concreteImplementation, methodName, args);
   };
 }
 

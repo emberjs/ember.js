@@ -151,7 +151,7 @@ export default {
     var implementationClass = this.implementations[implementation];
     Ember.assert("Ember.Location.create: " + implementation + " is not a valid implementation", !!implementationClass);
 
-    return implementationClass.create.apply(implementationClass, arguments);
+    return implementationClass.create(...arguments);
   },
 
   /**

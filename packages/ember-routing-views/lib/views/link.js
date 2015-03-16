@@ -207,7 +207,7 @@ var LinkView = EmberComponent.extend({
     @method init
   */
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
 
@@ -258,7 +258,7 @@ var LinkView = EmberComponent.extend({
   },
 
   afterRender: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._setupPathObservers();
   },
 

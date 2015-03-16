@@ -81,7 +81,7 @@ export default EmberObject.extend({
   rootElement: null,
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
@@ -201,7 +201,7 @@ export default EmberObject.extend({
     @private
   */
   willDestroy: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     run(this.container, 'destroy');
   }
 });

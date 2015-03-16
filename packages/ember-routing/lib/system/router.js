@@ -250,8 +250,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     return transition;
   },
 
-  transitionTo: function() {
-    var args = slice.call(arguments);
+  transitionTo: function(...args) {
     var queryParams;
     if (resemblesURL(args[0])) {
       return this._doURLTransition('transitionTo', args[0]);
@@ -269,7 +268,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   intermediateTransitionTo: function() {
-    this.router.intermediateTransitionTo.apply(this.router, arguments);
+    this.router.intermediateTransitionTo(...arguments);
 
     updatePaths(this);
 
@@ -280,11 +279,11 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   replaceWith: function() {
-    return this.transitionTo.apply(this, arguments).method('replace');
+    return this.transitionTo(...arguments).method('replace');
   },
 
   generate: function() {
-    var url = this.router.generate.apply(this.router, arguments);
+    var url = this.router.generate(...arguments);
     return this.location.formatURL(url);
   },
 
@@ -298,7 +297,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   isActive: function(routeName) {
     var router = this.router;
-    return router.isActive.apply(router, arguments);
+    return router.isActive(...arguments);
   },
 
   /**
@@ -319,7 +318,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   send: function(name, context) {
-    this.router.trigger.apply(this.router, arguments);
+    this.router.trigger(...arguments);
   },
 
   /**
@@ -351,7 +350,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       this._toplevelView.destroy();
       this._toplevelView = null;
     }
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this.reset();
   },
 

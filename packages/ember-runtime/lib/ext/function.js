@@ -75,7 +75,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     var ret = computed(this);
     // ComputedProperty.prototype.property expands properties; no need for us to
     // do so here.
-    return ret.property.apply(ret, arguments);
+    return ret.property(...arguments);
   };
 
   /**
@@ -103,13 +103,9 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observes
     @for Function
   */
-  FunctionPrototype.observes = function() {
-    var length = arguments.length;
-    var args = new Array(length);
-    for (var x = 0; x < length; x++) {
-      args[x] = arguments[x];
-    }
-    return observer.apply(this, args.concat(this));
+  FunctionPrototype.observes = function(...args) {
+    args.push(this);
+    return observer.apply(this, args);
   };
 
   /**
@@ -149,7 +145,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     });
 
     // observes handles property expansion
-    return this.observes.apply(this, arguments);
+    return this.observes(...arguments);
   };
 
   /**
