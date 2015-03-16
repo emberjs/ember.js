@@ -1,8 +1,8 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
-import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta as metaFor} from "ember-metal/utils";
-import {forEach} from "ember-metal/array";
-import {watchKey, unwatchKey} from "ember-metal/watch_key";
+import { get, normalizeTuple } from "ember-metal/property_get";
+import { meta as metaFor } from "ember-metal/utils";
+import { forEach } from "ember-metal/array";
+import { watchKey, unwatchKey } from "ember-metal/watch_key";
 
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
@@ -88,9 +88,9 @@ function ChainNode(parent, key, value) {
   // It is false for the root of a chain (because we have no parent)
   // and for global paths (because the parent node is the object with
   // the observer on it)
-  this._watching = value===undefined;
+  this._watching = (value === undefined);
 
-  this._value  = value;
+  this._value = value;
   this._paths = {};
   if (this._watching) {
     this._object = parent.value();
@@ -189,7 +189,7 @@ ChainNodePrototype.add = function(path) {
   if (tuple[0] && tuple[0] === obj) {
     path = tuple[1];
     key  = firstKey(path);
-    path = path.slice(key.length+1);
+    path = path.slice(key.length + 1);
 
   // global path, but object does not exist yet.
   // put into a queue and try to connect later.
@@ -201,7 +201,7 @@ ChainNodePrototype.add = function(path) {
   // global path, and object already exists
   } else {
     src  = tuple[0];
-    key  = path.slice(0, 0-(tuple[1].length+1));
+    key  = path.slice(0, 0 - (tuple[1].length + 1));
     path = tuple[1];
   }
 
@@ -224,10 +224,10 @@ ChainNodePrototype.remove = function(path) {
   if (tuple[0] === obj) {
     path = tuple[1];
     key  = firstKey(path);
-    path = path.slice(key.length+1);
+    path = path.slice(key.length + 1);
   } else {
     src  = tuple[0];
-    key  = path.slice(0, 0-(tuple[1].length+1));
+    key  = path.slice(0, 0 - (tuple[1].length + 1));
     path = tuple[1];
   }
 
@@ -253,7 +253,7 @@ ChainNodePrototype.chain = function(key, path, src) {
   // chain rest of path if there is one
   if (path) {
     key = firstKey(path);
-    path = path.slice(key.length+1);
+    path = path.slice(key.length + 1);
     node.chain(key, path); // NOTE: no src means it will observe changes...
   }
 };
@@ -271,11 +271,10 @@ ChainNodePrototype.unchain = function(key, path) {
 
   // delete node if needed.
   node.count--;
-  if (node.count<=0) {
+  if (node.count <= 0) {
     delete chains[node._key];
     node.destroy();
   }
-
 };
 
 ChainNodePrototype.willChange = function(events) {
@@ -300,7 +299,7 @@ ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
   }
 
   if (this._parent) {
-    this._parent.chainWillChange(this, path, depth+1, events);
+    this._parent.chainWillChange(this, path, depth + 1, events);
   } else {
     if (depth > 1) {
       events.push(this.value(), path);
@@ -318,7 +317,7 @@ ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
   }
 
   if (this._parent) {
-    this._parent.chainDidChange(this, path, depth+1, events);
+    this._parent.chainDidChange(this, path, depth + 1, events);
   } else {
     if (depth > 1) {
       events.push(this.value(), path);
@@ -386,7 +385,7 @@ export function finishChains(obj) {
 
         chainNodes = chainWatchers[key];
         if (chainNodes) {
-          for (var i=0,l=chainNodes.length;i<l;i++) {
+          for (var i = 0, l = chainNodes.length; i < l; i++) {
             chainNodes[i].didChange(null);
           }
         }
