@@ -1277,7 +1277,7 @@ var View = CoreView.extend(
     this.scheduledRevalidation = false;
   },
 
-  scheduleRevalidate: function() {
+  scheduleRevalidate() {
     if (!this.scheduledRevalidation) {
       this.scheduledRevalidation = true;
       run.scheduleOnce('render', this, this.revalidate);

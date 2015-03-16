@@ -11,7 +11,7 @@ var registry, container, view;
 var hooks;
 
 QUnit.module('component - lifecycle hooks', {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('component', { singleton: false });
@@ -23,7 +23,7 @@ QUnit.module('component - lifecycle hooks', {
     hooks = [];
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -43,28 +43,28 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
 
   function component(label) {
     return Component.extend({
-      init: function() {
+      init() {
         this.label = label;
         pushHook(label, 'init');
         components[label] = this;
         this._super.apply(this, arguments);
       },
-      willReceiveAttrs: function(nextAttrs) {
+      willReceiveAttrs(nextAttrs) {
         pushHook(label, 'willReceiveAttrs', nextAttrs);
       },
-      willUpdate: function() {
+      willUpdate() {
         pushHook(label, 'willUpdate');
       },
-      didUpdate: function() {
+      didUpdate() {
         pushHook(label, 'didUpdate');
       },
-      didInsertElement: function() {
+      didInsertElement() {
         pushHook(label, 'didInsertElement');
       },
-      willRender: function() {
+      willRender() {
         pushHook(label, 'willRender');
       },
-      didRender: function() {
+      didRender() {
         pushHook(label, 'didRender');
       }
     });
@@ -174,28 +174,28 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
 
   function component(label) {
     return Component.extend({
-      init: function() {
+      init() {
         this.label = label;
         pushHook(label, 'init');
         components[label] = this;
         this._super.apply(this, arguments);
       },
-      willReceiveAttrs: function(nextAttrs) {
+      willReceiveAttrs(nextAttrs) {
         pushHook(label, 'willReceiveAttrs', nextAttrs);
       },
-      willUpdate: function() {
+      willUpdate() {
         pushHook(label, 'willUpdate');
       },
-      didUpdate: function() {
+      didUpdate() {
         pushHook(label, 'didUpdate');
       },
-      didInsertElement: function() {
+      didInsertElement() {
         pushHook(label, 'didInsertElement');
       },
-      willRender: function() {
+      willRender() {
         pushHook(label, 'willRender');
       },
-      didRender: function() {
+      didRender() {
         pushHook(label, 'didRender');
       }
     });
@@ -262,29 +262,29 @@ QUnit.test('manually re-rendering in `willReceiveAttrs` triggers lifecycle hooks
 
   function component(label) {
     return Component.extend({
-      init: function() {
+      init() {
         this.label = label;
         pushHook(label, 'init');
         components[label] = this;
         this._super.apply(this, arguments);
       },
-      willReceiveAttrs: function(nextAttrs) {
+      willReceiveAttrs(nextAttrs) {
         this.rerender();
         pushHook(label, 'willReceiveAttrs', nextAttrs);
       },
-      willUpdate: function() {
+      willUpdate() {
         pushHook(label, 'willUpdate');
       },
-      didUpdate: function() {
+      didUpdate() {
         pushHook(label, 'didUpdate');
       },
-      didInsertElement: function() {
+      didInsertElement() {
         pushHook(label, 'didInsertElement');
       },
-      willRender: function() {
+      willRender() {
         pushHook(label, 'willRender');
       },
-      didRender: function() {
+      didRender() {
         pushHook(label, 'didRender');
       }
     });

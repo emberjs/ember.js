@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 
 export default {
-  setupState: function(lastState, env, scope, params, hash) {
+  setupState(lastState, env, scope, params, hash) {
     var type = env.hooks.getValue(hash.type) || 'text';
 
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
@@ -10,7 +10,7 @@ export default {
     return { componentName: classification[type] };
   },
 
-  render: function(morph, env, scope, params, hash, template, inverse, visitor) {
+  render(morph, env, scope, params, hash, template, inverse, visitor) {
     // Force the component hook to treat this as a first-time render,
     // because normal components (`<foo-bar>`) cannot change at runtime,
     // but the `{{component}}` helper can.

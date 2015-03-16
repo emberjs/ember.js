@@ -25,7 +25,7 @@ registerKeyword('link-to', linkTo);
 
 var deprecatedLinkTo = merge({}, linkTo);
 merge(deprecatedLinkTo, {
-  link: function(state, params, hash) {
+  link(state, params, hash) {
     linkTo.link.call(this, state, params, hash);
     Ember.deprecate("The 'linkTo' view helper is deprecated in favor of 'link-to'");
   }

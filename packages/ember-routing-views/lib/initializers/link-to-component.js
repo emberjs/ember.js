@@ -4,7 +4,7 @@ import linkToComponent from "ember-routing-views/views/link";
 onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: 'link-to-component',
-    initialize: function(registry) {
+    initialize(registry) {
       registry.register('component:-link-to', linkToComponent);
     }
   });

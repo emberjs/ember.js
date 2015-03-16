@@ -34,7 +34,7 @@ merge(SimpleStream.prototype, {
     }
   },
 
-  replaceDependency: function(nextSource) {
+  replaceDependency(nextSource) {
     if (this.dependency) {
       this.dependency = this.dependency.replace(nextSource);
     } else {

@@ -10,11 +10,11 @@ import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
 topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 export default {
-  willRender: function(renderNode, env) {
+  willRender(renderNode, env) {
     env.view.ownerView._outlets.push(renderNode);
   },
 
-  setupState: function(state, env, scope, params, hash) {
+  setupState(state, env, scope, params, hash) {
     var outletState = env.outletState;
     var read = env.hooks.getValue;
 
@@ -29,19 +29,19 @@ export default {
     return { outletState: selectedOutletState };
   },
 
-  childEnv: function(state) {
+  childEnv(state) {
     return { outletState: state.outletState && state.outletState.outlets };
   },
 
-  isStable: function(lastState, nextState) {
+  isStable(lastState, nextState) {
     return isStable(lastState.outletState, nextState.outletState);
   },
 
-  isEmpty: function(state) {
+  isEmpty(state) {
     return isEmpty(state.outletState);
   },
 
-  rerender: function(morph, env, scope, params, hash, template, inverse, visitor) {
+  rerender(morph, env, scope, params, hash, template, inverse, visitor) {
     var newEnv = env;
     if (morph.emberView) {
       newEnv = merge({}, env);
@@ -49,7 +49,7 @@ export default {
     }
   },
 
-  render: function(renderNode, env, scope, params, hash, template, inverse, visitor) {
+  render(renderNode, env, scope, params, hash, template, inverse, visitor) {
     var state = renderNode.state;
     var parentView = env.view;
     var outletState = state.outletState;
