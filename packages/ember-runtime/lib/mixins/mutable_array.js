@@ -72,7 +72,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     want to reuse an existing array without having to recreate it.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
+    var colors = ['red', 'green', 'blue'];
+
     color.length();   //  3
     colors.clear();   //  []
     colors.length();  //  0
@@ -96,9 +97,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     specified index.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.insertAt(2, "yellow");  // ["red", "green", "yellow", "blue"]
-    colors.insertAt(5, "orange");  // Error: Index out of range
+    var colors = ['red', 'green', 'blue'];
+
+    colors.insertAt(2, 'yellow');  // ['red', 'green', 'yellow', 'blue']
+    colors.insertAt(5, 'orange');  // Error: Index out of range
     ```
 
     @method insertAt
@@ -123,9 +125,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
 
     ```javascript
-    var colors = ["red", "green", "blue", "yellow", "orange"];
-    colors.removeAt(0);     // ["green", "blue", "yellow", "orange"]
-    colors.removeAt(2, 2);  // ["green", "blue"]
+    var colors = ['red', 'green', 'blue', 'yellow', 'orange'];
+
+    colors.removeAt(0);     // ['green', 'blue', 'yellow', 'orange']
+    colors.removeAt(2, 2);  // ['green', 'blue']
     colors.removeAt(4, 2);  // Error: Index out of range
     ```
 
@@ -157,9 +160,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     is KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green"];
-    colors.pushObject("black");     // ["red", "green", "black"]
-    colors.pushObject(["yellow"]);  // ["red", "green", ["yellow"]]
+    var colors = ['red', 'green'];
+
+    colors.pushObject('black');     // ['red', 'green', 'black']
+    colors.pushObject(['yellow']);  // ['red', 'green', ['yellow']]
     ```
 
     @method pushObject
@@ -176,8 +180,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     notifying observers of the change until all objects are added.
 
     ```javascript
-    var colors = ["red"];
-    colors.pushObjects(["yellow", "orange"]);  // ["red", "yellow", "orange"]
+    var colors = ['red'];
+
+    colors.pushObjects(['yellow', 'orange']);  // ['red', 'yellow', 'orange']
     ```
 
     @method pushObjects
@@ -197,9 +202,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     it is KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.popObject();   // "blue"
-    console.log(colors);  // ["red", "green"]
+    var colors = ['red', 'green', 'blue'];
+
+    colors.popObject();   // 'blue'
+    console.log(colors);  // ['red', 'green']
     ```
 
     @method popObject
@@ -221,9 +227,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     like `shift()` but it is KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.shiftObject();  // "red"
-    console.log(colors);   // ["green", "blue"]
+    var colors = ['red', 'green', 'blue'];
+
+    colors.shiftObject();  // 'red'
+    console.log(colors);   // ['green', 'blue']
     ```
 
     @method shiftObject
@@ -244,9 +251,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     KVO-compliant.
 
     ```javascript
-    var colors = ["red"];
-    colors.unshiftObject("yellow");    // ["yellow", "red"]
-    colors.unshiftObject(["black"]);   // [["black"], "yellow", "red"]
+    var colors = ['red'];
+
+    colors.unshiftObject('yellow');    // ['yellow', 'red']
+    colors.unshiftObject(['black']);   // [['black'], 'yellow', 'red']
     ```
 
     @method unshiftObject
@@ -263,9 +271,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     observers until all objects have been added.
 
     ```javascript
-    var colors = ["red"];
-    colors.unshiftObjects(["black", "white"]);   // ["black", "white", "red"]
-    colors.unshiftObjects("yellow"); // Type Error: 'undefined' is not a function
+    var colors = ['red'];
+
+    colors.unshiftObjects(['black', 'white']);   // ['black', 'white', 'red']
+    colors.unshiftObjects('yellow'); // Type Error: 'undefined' is not a function
     ```
 
     @method unshiftObjects
@@ -300,8 +309,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     If argument is an empty array receiver will be cleared.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.setObjects(["black", "white"]);  // ["black", "white"]
+    var colors = ['red', 'green', 'blue'];
+
+    colors.setObjects(['black', 'white']);  // ['black', 'white']
     colors.setObjects([]);                  // []
     ```
 
@@ -328,10 +338,11 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     Remove all occurrences of an object in the array.
 
     ```javascript
-    var cities = ["Chicago", "Berlin", "Lima", "Chicago"];
-    cities.removeObject("Chicago");  // ["Berlin", "Lima"]
-    cities.removeObject("Lima");     // ["Berlin"]
-    cities.removeObject("Tokyo")     // ["Berlin"]
+    var cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
+
+    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
+    cities.removeObject('Lima');     // ['Berlin']
+    cities.removeObject('Tokyo')     // ['Berlin']
     ```
 
     @method removeObject
@@ -355,9 +366,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     present in the array.
 
     ```javascript
-    var cities = ["Chicago", "Berlin"];
-    cities.addObject("Lima");    // ["Chicago", "Berlin", "Lima"]
-    cities.addObject("Berlin");  // ["Chicago", "Berlin", "Lima"]
+    var cities = ['Chicago', 'Berlin'];
+
+    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
+    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
     ```
 
     @method addObject
@@ -371,5 +383,4 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     return this;
   }
-
 });
