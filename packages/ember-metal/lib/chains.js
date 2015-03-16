@@ -111,13 +111,13 @@ function ChainNode(parent, key, value) {
 
 function lazyGet(obj, key) {
   if (!obj) {
-    return undefined;
+    return;
   }
 
   var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) {
-    return undefined;
+    return;
   }
 
   if (key === "@each") {
@@ -131,7 +131,7 @@ function lazyGet(obj, key) {
     if (meta.cache && key in meta.cache) {
       return meta.cache[key];
     } else {
-      return undefined;
+      return;
     }
   }
 
