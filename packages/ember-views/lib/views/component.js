@@ -12,8 +12,6 @@ import { computed } from "ember-metal/computed";
 import { bool } from "ember-metal/computed_macros";
 import defaultComponentLayout from "ember-htmlbars/templates/component";
 
-var a_slice = Array.prototype.slice;
-
 /**
 @module ember
 @submodule ember-views
@@ -120,7 +118,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   }),
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._keywords.view = this;
     set(this, 'context', this);
     set(this, 'controller', this);
@@ -283,9 +281,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
   */
-  sendAction: function(action) {
+  sendAction: function(action, ...contexts) {
     var actionName;
-    var contexts = a_slice.call(arguments, 1);
 
     // Send the default action
     if (action === undefined) {
@@ -310,8 +307,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     });
   },
 
-  send: function(actionName) {
-    var args = [].slice.call(arguments, 1);
+  send: function(actionName, ...args) {
     var target;
     var hasAction = this._actions && this._actions[actionName];
 
@@ -323,7 +319,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     if (target = get(this, 'target')) {
       Ember.assert("The `target` for " + this + " (" + target +
                    ") does not have a `send` method", typeof target.send === 'function');
-      target.send.apply(target, arguments);
+      target.send(...arguments);
     } else {
       if (!hasAction) {
         throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);

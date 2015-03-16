@@ -34,7 +34,7 @@ export default Mixin.create({
     //
     // Calling super is only OK here since we KNOW that
     // there is another Mixin loaded first.
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     var deprecatedProperty, replacementProperty;
     var layoutSpecified = (props.layoutName || props.layout || get(this, 'layoutName'));

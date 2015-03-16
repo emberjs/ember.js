@@ -126,7 +126,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   destroy: function() {
     var parent = this._parentView;
 
-    if (!this._super.apply(this, arguments)) { return; }
+    if (!this._super(...arguments)) { return; }
 
 
     // destroy the element -- this will avoid each child view destroying

@@ -4,7 +4,7 @@ import KeyStream from "ember-views/streams/key_stream";
 
 var ViewKeywordSupport = Mixin.create({
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     if (!this._keywords) {
       this._keywords = create(null);

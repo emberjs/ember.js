@@ -10,8 +10,6 @@ import alias from 'ember-metal/alias';
 @module ember-metal
 */
 
-var a_slice = [].slice;
-
 function getProperties(self, propertyNames) {
   var ret = {};
   for (var i = 0; i < propertyNames.length; i++) {
@@ -21,9 +19,7 @@ function getProperties(self, propertyNames) {
 }
 
 function generateComputedWithProperties(macro) {
-  return function() {
-    var properties = a_slice.call(arguments);
-
+  return function(...properties) {
     var computedFunc = computed(function() {
       return macro.apply(this, [getProperties(this, properties)]);
     });

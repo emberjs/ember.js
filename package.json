@@ -18,7 +18,7 @@
     "ember-cli-dependency-checker": "0.0.7",
     "ember-cli-yuidoc": "^0.4.0",
     "ember-publisher": "0.0.7",
-    "emberjs-build": "emberjs/emberjs-build#v0.0.37",
+    "emberjs-build": "emberjs/emberjs-build#v0.0.38",
     "express": "^4.5.0",
     "github": "^0.2.3",
     "glob": "~4.3.2",

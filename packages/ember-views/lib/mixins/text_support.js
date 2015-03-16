@@ -125,7 +125,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   maxlength: null,
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this.on("paste", this, this._elementValueDidChange);
     this.on("cut", this, this._elementValueDidChange);
     this.on("input", this, this._elementValueDidChange);

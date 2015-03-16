@@ -1,8 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import {
-  isArray,
-  apply
+  isArray
 } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import {
@@ -270,7 +269,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
   replace: function() {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
-      apply(this, this._replace, arguments);
+      this._replace(...arguments);
     } else {
       throw new EmberError("Using replace on an arranged ArrayProxy is not allowed.");
     }
@@ -362,7 +361,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
   slice: function() {
     var arr = this.toArray();
-    return arr.slice.apply(arr, arguments);
+    return arr.slice(...arguments);
   },
 
   arrangedContentArrayWillChange: function(item, idx, removedCnt, addedCnt) {
@@ -374,7 +373,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._setupContent();
     this._setupArrangedContent();
   },

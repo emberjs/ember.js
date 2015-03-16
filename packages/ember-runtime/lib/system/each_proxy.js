@@ -34,7 +34,7 @@ import {
 var EachArray = EmberObject.extend(EmberArray, {
 
   init: function(content, keyName, owner) {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._keyName = keyName;
     this._owner   = owner;
     this._content = content;
@@ -114,7 +114,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 var EachProxy = EmberObject.extend({
 
   init: function(content) {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._content = content;
     content.addArrayObserver(this);
 
@@ -134,8 +134,7 @@ var EachProxy = EmberObject.extend({
     @param value {*}
   */
   unknownProperty: function(keyName, value) {
-    var ret;
-    ret = new EachArray(this._content, keyName, this);
+    var ret = new EachArray(this._content, keyName, this);
     defineProperty(this, keyName, null, ret);
     this.beginObservingContentKey(keyName);
     return ret;

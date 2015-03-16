@@ -9,7 +9,6 @@ import {
   getWithDefault
 } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { apply } from "ember-metal/utils";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
 import { Mixin } from "ember-metal/mixin";
@@ -29,8 +28,6 @@ import {
 import { cacheFor } from "ember-metal/computed";
 import isNone from "ember-metal/is_none";
 
-
-var slice = Array.prototype.slice;
 /**
   ## Overview
 
@@ -160,8 +157,8 @@ export default Mixin.create({
     @param {String...|Array} list of keys to get
     @return {Hash}
   */
-  getProperties: function() {
-    return apply(null, getProperties, [this].concat(slice.call(arguments)));
+  getProperties: function(...args) {
+    return getProperties.apply(null, [this].concat(args));
   },
 
   /**

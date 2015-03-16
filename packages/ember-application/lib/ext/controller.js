@@ -141,7 +141,7 @@ ControllerMixin.reopen({
       get(this, 'controllers');
     }
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
   /**

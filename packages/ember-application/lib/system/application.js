@@ -270,7 +270,7 @@ var Application = Namespace.extend(DeferredMixin, {
   autoboot: true,
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     if (!this.$) {
       this.$ = jQuery;
@@ -474,7 +474,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  options {Object} (optional) disable instantiation or singleton usage
   **/
   register: function() {
-    this.registry.register.apply(this.registry, arguments);
+    this.registry.register(...arguments);
   },
 
   /**
@@ -527,7 +527,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  injectionName {String}
   **/
   inject: function() {
-    this.registry.injection.apply(this.registry, arguments);
+    this.registry.injection(...arguments);
   },
 
   /**
@@ -777,7 +777,7 @@ var Application = Namespace.extend(DeferredMixin, {
   then: function() {
     Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-code-then-code-on-ember-application' });
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });
 

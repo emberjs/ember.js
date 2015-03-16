@@ -487,8 +487,7 @@ function applyMixin(obj, mixins, partial) {
   @param mixins*
   @return obj
 */
-export function mixin(obj) {
-  var args = a_slice.call(arguments, 1);
+export function mixin(obj, ...args) {
   applyMixin(obj, args, false);
   return obj;
 }
@@ -589,15 +588,10 @@ Ember.anyUnprocessedMixins = false;
   @static
   @param arguments*
 */
-Mixin.create = function() {
+Mixin.create = function(...args) {
   // ES6TODO: this relies on a global state?
   Ember.anyUnprocessedMixins = true;
   var M = this;
-  var length = arguments.length;
-  var args = new Array(length);
-  for (var i = 0; i < length; i++) {
-    args[i] = arguments[i];
-  }
   return new M(args, undefined);
 };
 
@@ -682,9 +676,9 @@ MixinPrototype.detect = function(obj) {
   return false;
 };
 
-MixinPrototype.without = function() {
+MixinPrototype.without = function(...args) {
   var ret = new Mixin([this]);
-  ret._without = a_slice.call(arguments);
+  ret._without = args;
   return ret;
 };
 

@@ -15,8 +15,6 @@ import {
 } from "ember-metal/utils";
 import create from "ember-metal/platform/create";
 
-var a_slice = [].slice;
-
 /* listener flags */
 var ONCE = 1;
 var SUSPENDED = 2;
@@ -410,9 +408,9 @@ export function listenersFor(obj, eventName) {
   @param {Function} func
   @return func
 */
-export function on() {
-  var func = a_slice.call(arguments, -1)[0];
-  var events = a_slice.call(arguments, 0, -1);
+export function on(...args) {
+  var func = args.pop();
+  var events = args;
   func.__ember_listens__ = events;
   return func;
 }

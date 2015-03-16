@@ -16,7 +16,7 @@ ControllerMixin.reopen({
   concatenatedProperties: ['queryParams', '_pCacheMeta'],
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     listenForQueryParamChanges(this);
   },
 
@@ -241,7 +241,7 @@ ControllerMixin.reopen({
   */
   transitionTo: function() {
     Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
-    return this.transitionToRoute.apply(this, arguments);
+    return this.transitionToRoute(...arguments);
   },
 
   /**
@@ -313,7 +313,7 @@ ControllerMixin.reopen({
   */
   replaceWith: function() {
     Ember.deprecate("replaceWith is deprecated. Please use replaceRoute.");
-    return this.replaceRoute.apply(this, arguments);
+    return this.replaceRoute(...arguments);
   }
 });
 

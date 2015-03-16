@@ -195,7 +195,7 @@ var ContainerView = View.extend(MutableArray, {
   },
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     var childViews = get(this, 'childViews');
     Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(childViews));

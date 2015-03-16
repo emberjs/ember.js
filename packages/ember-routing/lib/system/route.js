@@ -908,7 +908,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   transitionTo: function(name, context) {
     var router = this.router;
-    return router.transitionTo.apply(router, arguments);
+    return router.transitionTo(...arguments);
   },
 
   /**
@@ -929,7 +929,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
    */
   intermediateTransitionTo: function() {
     var router = this.router;
-    router.intermediateTransitionTo.apply(router, arguments);
+    router.intermediateTransitionTo(...arguments);
   },
 
   /**
@@ -989,7 +989,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   replaceWith: function() {
     var router = this.router;
-    return router.replaceWith.apply(router, arguments);
+    return router.replaceWith(...arguments);
   },
 
   /**
@@ -1028,7 +1028,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   send: function() {
     if (this.router || !Ember.testing) {
-      this.router.send.apply(this.router, arguments);
+      this.router.send(...arguments);
     } else {
       var name = arguments[0];
       var args = slice.call(arguments, 1);
@@ -1348,7 +1348,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   findModel: function() {
     var store = get(this, 'store');
-    return store.find.apply(store, arguments);
+    return store.find(...arguments);
   },
 
   /**

@@ -9,7 +9,6 @@ import EmberApplication from "ember-application/system/application";
   @module ember
   @submodule ember-testing
  */
-var slice = [].slice;
 var helpers = {};
 var injectHelpersCallbacks = [];
 
@@ -279,8 +278,7 @@ function helper(app, name) {
   var fn = helpers[name].method;
   var meta = helpers[name].meta;
 
-  return function() {
-    var args = slice.call(arguments);
+  return function(...args) {
     var lastPromise;
 
     args.unshift(app);
@@ -458,8 +456,7 @@ EmberApplication.reopen({
 // But still here for backwards compatibility
 // of helper chaining
 function protoWrap(proto, name, callback, isAsync) {
-  proto[name] = function() {
-    var args = arguments;
+  proto[name] = function(...args) {
     if (isAsync) {
       return callback.apply(this, args);
     } else {

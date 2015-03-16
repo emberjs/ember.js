@@ -204,8 +204,7 @@ var ActionHandler = Mixin.create({
     @param {String} actionName The action to trigger
     @param {*} context a context to send with the action
   */
-  send: function(actionName) {
-    var args = [].slice.call(arguments, 1);
+  send: function(actionName, ...args) {
     var target;
 
     if (this._actions && this._actions[actionName]) {
@@ -216,7 +215,7 @@ var ActionHandler = Mixin.create({
     if (target = get(this, 'target')) {
       Ember.assert("The `target` for " + this + " (" + target +
                    ") does not have a `send` method", typeof target.send === 'function');
-      target.send.apply(target, arguments);
+      target.send(...arguments);
     }
   }
 });
