@@ -46,7 +46,7 @@ AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
 };
 
 AliasedProperty.prototype.setup = function(obj, keyName) {
-  Ember.assert("Setting alias '" + keyName + "' on self", this.altKey !== keyName);
+  Ember.assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
   var m = meta(obj);
   if (m.watching[keyName]) {
     addDependentKeys(this, obj, keyName, m);
@@ -66,7 +66,7 @@ AliasedProperty.prototype.readOnly = function() {
 };
 
 function AliasedProperty_readOnlySet(obj, keyName, value) {
-  throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
+  throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 
 AliasedProperty.prototype.oneWay = function() {

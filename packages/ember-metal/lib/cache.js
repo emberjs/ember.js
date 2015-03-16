@@ -10,7 +10,7 @@ function Cache(limit, func) {
   this.func   = func;
 }
 
-var UNDEFINED = function() { };
+var UNDEFINED = function() {};
 
 Cache.prototype = {
   set: function(key, value) {

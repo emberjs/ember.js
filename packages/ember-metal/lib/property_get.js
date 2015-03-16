@@ -55,8 +55,8 @@ export function get(obj, keyName) {
     obj = Ember.lookup;
   }
 
-  Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
-  Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
+  Ember.assert(`Cannot call get with ${keyName} key.`, !!keyName);
+  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined);
 
   if (!obj) {
     return _getPath(obj, keyName);
@@ -135,9 +135,10 @@ export function normalizeTuple(target, path) {
   return [target, path];
 }
 
+
 function validateIsPath(path) {
   if (!path || path.length===0) {
-    throw new EmberError('Object in path '+path+' could not be found or was destroyed.');
+    throw new EmberError(`Object in path ${path} could not be found or was destroyed.`);
   }
 }
 

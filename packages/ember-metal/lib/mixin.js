@@ -226,8 +226,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
-  Ember.assert("You passed in `" + JSON.stringify(value) + "` as the value for `" + key +
-               "` but `" + key + "` cannot be an Array", !isArray(value));
+  Ember.assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !isArray(value));
 
   if (!baseValue) { return value; }
 
@@ -292,7 +291,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 
   for (var i=0, l=mixins.length; i<l; i++) {
     currentMixin = mixins[i];
-    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(currentMixin),
+    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
                  typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]');
 
     props = mixinProperties(m, currentMixin);
@@ -625,7 +624,7 @@ MixinPrototype.reopen = function() {
 
   for (idx=0; idx < len; idx++) {
     currentMixin = arguments[idx];
-    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(currentMixin),
+    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
                  typeof currentMixin === 'object' && currentMixin !== null &&
                    Object.prototype.toString.call(currentMixin) !== '[object Array]');
 
@@ -699,7 +698,9 @@ function _keys(ret, mixin, seen) {
       if (props.hasOwnProperty(key)) { ret[key] = true; }
     }
   } else if (mixin.mixins) {
-    a_forEach.call(mixin.mixins, function(x) { _keys(ret, x, seen); });
+    a_forEach.call(mixin.mixins, (x) => {
+      _keys(ret, x, seen);
+    });
   }
 }
 
@@ -808,18 +809,18 @@ export function aliasMethod(methodName) {
   @param {Function} func
   @return func
 */
-export function observer() {
-  var func  = a_slice.call(arguments, -1)[0];
+export function observer(...args) {
+  var func  = args.slice(-1)[0];
   var paths;
 
-  var addWatchedProperty = function (path) { paths.push(path); };
-  var _paths = a_slice.call(arguments, 0, -1);
+  var addWatchedProperty = function(path) { paths.push(path); };
+  var _paths = args.slice(0, -1);
 
   if (typeof func !== "function") {
     // revert to old, soft-deprecated argument ordering
 
-    func  = arguments[0];
-    _paths = a_slice.call(arguments, 1);
+    func  = args[0];
+    _paths = args.slice(1);
   }
 
   paths = [];
@@ -911,19 +912,19 @@ export function immediateObserver() {
   @param {Function} func
   @return func
 */
-export function beforeObserver() {
-  var func  = a_slice.call(arguments, -1)[0];
+export function beforeObserver(...args) {
+  var func  = args.slice(-1)[0];
   var paths;
 
   var addWatchedProperty = function(path) { paths.push(path); };
 
-  var _paths = a_slice.call(arguments, 0, -1);
+  var _paths = args.slice(0, -1);
 
   if (typeof func !== "function") {
     // revert to old, soft-deprecated argument ordering
 
-    func  = arguments[0];
-    _paths = a_slice.call(arguments, 1);
+    func  = args[0];
+    _paths = args.slice(1);
   }
 
   paths = [];

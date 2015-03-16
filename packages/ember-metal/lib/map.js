@@ -26,11 +26,11 @@ import create from "ember-metal/platform/create";
 import { deprecateProperty } from "ember-metal/deprecate_property";
 
 function missingFunction(fn) {
-  throw new TypeError('' + Object.prototype.toString.call(fn) + " is not a function");
+  throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
 }
 
 function missingNew(name) {
-  throw new TypeError("Constructor " + name + "requires 'new'");
+  throw new TypeError(`Constructor ${name} requires 'new'`);
 }
 
 function copyNull(obj) {
@@ -182,7 +182,7 @@ OrderedSet.prototype = {
     @param {Function} fn
     @param self
   */
-  forEach: function(fn /*, thisArg*/) {
+  forEach: function(fn /*, ...thisArg*/) {
     if (typeof fn !== 'function') {
       missingFunction(fn);
     }
@@ -390,7 +390,7 @@ Map.prototype = {
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
   */
-  forEach: function(callback /*, thisArg*/) {
+  forEach: function(callback/*, ...thisArg*/) {
     if (typeof callback !== 'function') {
       missingFunction(callback);
     }

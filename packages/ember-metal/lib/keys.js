@@ -15,7 +15,7 @@ var keys = Object.keys;
 if (!keys || !canDefineNonEnumerableProperties) {
   // modified from
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
-  keys = (function () {
+  keys = (function() {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString');
     var dontEnums = [

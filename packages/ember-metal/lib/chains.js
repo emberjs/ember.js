@@ -22,7 +22,7 @@ export function flushPendingChains() {
   var queue = pendingQueue;
   pendingQueue = [];
 
-  forEach.call(queue, function(q) {
+  forEach.call(queue, (q) => {
     q[0].add(q[1]);
   });
 

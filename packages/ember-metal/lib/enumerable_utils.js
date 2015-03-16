@@ -95,7 +95,7 @@ export function indexOf(obj, element, index) {
  *
  */
 export function indexesOf(obj, elements) {
-  return elements === undefined ? [] : map(elements, function(item) {
+  return elements === undefined ? [] : map(elements, (item) => {
     return indexOf(obj, item);
   });
 }
@@ -212,7 +212,7 @@ export function replace(array, idx, amt, objects) {
  */
 export function intersection(array1, array2) {
   var result = [];
-  forEach(array1, function(element) {
+  forEach(array1, (element) => {
     if (indexOf(array2, element) >= 0) {
       result.push(element);
     }
