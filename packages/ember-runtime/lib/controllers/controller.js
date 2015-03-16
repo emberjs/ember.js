@@ -44,8 +44,9 @@ function controllerInjectionHelper(factory) {
   });
   ```
 
-  @method inject.controller
-  @for Ember
+  @method controller
+  @since 1.10.0
+  @for Ember.inject
   @param {String} name (optional) name of the controller to inject, defaults
          to the property's name
   @return {Ember.InjectedProperty} injection descriptor instance

@@ -603,6 +603,38 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
 
   /**
+    This event is triggered when the router enters the route. It is
+    not executed when the model for the route changes.
+
+    ```javascript
+    App.ApplicationRoute = Ember.Route.extend({
+      collectAnalytics: function(){
+        collectAnalytics();
+      }.on('activate')
+    });
+    ```
+
+    @event activate
+    @since 1.9.0
+  */
+
+  /**
+    This event is triggered when the router completely exits this
+    route. It is not executed when the model for the route changes.
+
+    ```javascript
+    App.IndexRoute = Ember.Route.extend({
+      trackPageLeaveAnalytics: function(){
+        trackPageLeaveAnalytics();
+      }.on('deactivate')
+    });
+    ```
+
+    @event deactivate
+    @since 1.9.0
+  */
+
+  /**
     The controller associated with this route.
 
     Example

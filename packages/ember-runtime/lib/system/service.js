@@ -22,8 +22,9 @@ import { createInjectionHelper } from 'ember-runtime/inject';
   that looks up the `auth` service in the container, making it easily
   accessible in the `model` hook.
 
-  @method inject.service
-  @for Ember
+  @method service
+  @since 1.10.0
+  @for Ember.inject
   @param {String} name (optional) name of the service to inject, defaults to
          the property's name
   @return {Ember.InjectedProperty} injection descriptor instance
@@ -34,5 +35,6 @@ createInjectionHelper('service');
   @class Service
   @namespace Ember
   @extends Ember.Object
+  @since 1.10.0
 */
 export default Object.extend();

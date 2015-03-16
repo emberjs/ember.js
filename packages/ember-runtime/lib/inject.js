@@ -8,6 +8,7 @@ import keys from "ember-metal/keys";
 
   @class inject
   @namespace Ember
+  @static
   */
 function inject() {
   Ember.assert("Injected properties must be created through helpers, see `" +
@@ -24,7 +25,8 @@ var typeValidators = {};
 
   @private
   @method createInjectionHelper
-  @namespace Ember
+  @since 1.10.0
+  @for Ember
   @param {String} type The container type the helper will inject
   @param {Function} validator A validation callback that is executed at mixin-time
 */
@@ -42,7 +44,8 @@ export function createInjectionHelper(type, validator) {
 
   @private
   @method validatePropertyInjections
-  @namespace Ember
+  @since 1.10.0
+  @for Ember
   @param {Object} factory The factory object
 */
 export function validatePropertyInjections(factory) {

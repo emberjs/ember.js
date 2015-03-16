@@ -21,6 +21,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
  @private
  @class Registry
+ @since 1.11.0
 */
 function Registry(options) {
   this.fallback = options && options.fallback ? options.fallback : null;
