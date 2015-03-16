@@ -1304,7 +1304,7 @@ var View = CoreView.extend(
       this.elementId = guidFor(this);
     }
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     if (!this._viewRegistry) {
       this._viewRegistry = View.views;
@@ -1349,7 +1349,7 @@ var View = CoreView.extend(
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
 
-    if (!this._super.apply(this, arguments)) { return; }
+    if (!this._super(...arguments)) { return; }
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {

@@ -50,7 +50,7 @@ var ViewChildViewsSupport = Mixin.create({
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
   appendChild: function(view, options) {

@@ -10,7 +10,7 @@ var ViewStreamSupport = Mixin.create({
     this._baseContext = undefined;
     this._contextStream = undefined;
     this._streamBindings = undefined;
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
   getStream: function(path) {

@@ -11,7 +11,7 @@ import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     var self = this;
 
@@ -63,7 +63,7 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
   },
 
   willDestroy: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
 
     if (this._generatedController) {
       this._generatedController.destroy();

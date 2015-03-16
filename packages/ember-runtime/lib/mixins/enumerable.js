@@ -10,7 +10,6 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { apply } from 'ember-metal/utils';
 import {
   Mixin,
   required,
@@ -29,8 +28,6 @@ import {
   hasListeners
 } from 'ember-metal/events';
 import compare from 'ember-runtime/compare';
-
-var a_slice = Array.prototype.slice;
 
 var contexts = [];
 
@@ -431,7 +428,7 @@ export default Mixin.create({
    */
   reject: function(callback, target) {
     return this.filter(function() {
-      return !(apply(target, callback, arguments));
+      return !(callback.apply(target, arguments));
     });
   },
 
@@ -446,7 +443,7 @@ export default Mixin.create({
     @return {Array} filtered array
   */
   filterBy: function(key, value) {
-    return this.filter(apply(this, iter, arguments));
+    return this.filter(iter.apply(this, arguments));
   },
 
   /**
@@ -568,7 +565,7 @@ export default Mixin.create({
     @return {Object} found item or `undefined`
   */
   findBy: function(key, value) {
-    return this.find(apply(this, iter, arguments));
+    return this.find(iter.apply(this, arguments));
   },
 
   /**
@@ -655,7 +652,7 @@ export default Mixin.create({
     @since 1.3.0
   */
   isEvery: function(key, value) {
-    return this.every(apply(this, iter, arguments));
+    return this.every(iter.apply(this, arguments));
   },
 
   /**
@@ -764,7 +761,7 @@ export default Mixin.create({
     @since 1.3.0
   */
   isAny: function(key, value) {
-    return this.any(apply(this, iter, arguments));
+    return this.any(iter.apply(this, arguments));
   },
 
   /**
@@ -842,19 +839,14 @@ export default Mixin.create({
     @param {Object...} args optional arguments to pass as well.
     @return {Array} return values from calling invoke.
   */
-  invoke: function(methodName) {
+  invoke: function(methodName, ...args) {
     var ret = Ember.A();
-    var args;
-
-    if (arguments.length > 1) {
-      args = a_slice.call(arguments, 1);
-    }
 
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? apply(x, method, args) : x[methodName]();
+        ret[idx] = args ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 

@@ -116,14 +116,7 @@ export default Mixin.create({
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
   */
-  trigger: function(name) {
-    var length = arguments.length;
-    var args = new Array(length - 1);
-
-    for (var i = 1; i < length; i++) {
-      args[i - 1] = arguments[i];
-    }
-
+  trigger: function(name, ...args) {
     sendEvent(this, name, args);
   },
 

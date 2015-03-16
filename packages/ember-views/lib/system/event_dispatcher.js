@@ -237,7 +237,7 @@ export default EmberObject.extend({
   destroy: function() {
     var rootElement = get(this, 'rootElement');
     jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
-    return this._super.apply(this, arguments);
+    return this._super(...arguments);
   },
 
   toString: function() {

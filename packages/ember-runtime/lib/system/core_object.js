@@ -229,12 +229,7 @@ function makeCtor() {
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
 CoreObject.PrototypeMixin = Mixin.create({
-  reopen: function() {
-    var length = arguments.length;
-    var args = new Array(length);
-    for (var i = 0; i < length; i++) {
-      args[i] = arguments[i];
-    }
+  reopen: function(...args) {
     applyMixin(this, args, true);
     return this;
   },
@@ -586,14 +581,9 @@ var ClassMixinProps = {
     @static
     @param [arguments]*
   */
-  createWithMixins: function() {
+  createWithMixins: function(...args) {
     var C = this;
-    var l= arguments.length;
-    if (l > 0) {
-      var args = new Array(l);
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
+    if (args.length > 0) {
       this._initMixins(args);
     }
     return new C();
@@ -636,14 +626,9 @@ var ClassMixinProps = {
     @static
     @param [arguments]*
   */
-  create: function() {
+  create: function(...args) {
     var C = this;
-    var l = arguments.length;
-    if (l > 0) {
-      var args = new Array(l);
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
+    if (args.length > 0) {
       this._initProperties(args);
     }
     return new C();
@@ -680,16 +665,7 @@ var ClassMixinProps = {
   */
   reopen: function() {
     this.willReopen();
-
-    var l = arguments.length;
-    var args = new Array(l);
-    if (l > 0) {
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
-    }
-
-    apply(this.PrototypeMixin, reopen, args);
+    reopen.apply(this.PrototypeMixin, arguments);
     return this;
   },
 
@@ -749,15 +725,7 @@ var ClassMixinProps = {
     @method reopenClass
   */
   reopenClass: function() {
-    var l = arguments.length;
-    var args = new Array(l);
-    if (l > 0) {
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
-    }
-
-    apply(this.ClassMixin, reopen, args);
+    reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);
     return this;
   },

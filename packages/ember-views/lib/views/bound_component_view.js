@@ -12,7 +12,7 @@ import ContainerView from "ember-views/views/container_view";
 
 export default ContainerView.extend(_Metamorph, {
   init: function() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     var componentNameStream = this._boundComponentOptions.componentNameStream;
     var container = this.container;
     this.componentClassStream = chain(componentNameStream, function() {
@@ -24,7 +24,7 @@ export default ContainerView.extend(_Metamorph, {
   },
   willDestroy: function() {
     unsubscribe(this.componentClassStream, this._updateBoundChildComponent, this);
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
   _updateBoundChildComponent: function() {
     this.replace(0, 1, [this._createNewComponent()]);
