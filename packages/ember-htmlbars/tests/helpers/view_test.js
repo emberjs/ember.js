@@ -423,7 +423,7 @@ QUnit.test("Should apply classes when bound property specified", function() {
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
 
-QUnit.test("Should apply a class from a sub expression", function() {
+QUnit.skip("Should apply a class from a sub expression", function() {
   registry.register('helper:string-concat', makeBoundHelper(function(params) {
     return params.join('');
   }));
@@ -1233,7 +1233,7 @@ QUnit.skip('bindings should respect keywords [DEPRECATED]', function() {
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
-QUnit.test('should respect keywords', function() {
+QUnit.skip('should respect keywords', function() {
   view = EmberView.create({
     museumOpen: true,
 

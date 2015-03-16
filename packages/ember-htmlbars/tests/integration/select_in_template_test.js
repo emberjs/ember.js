@@ -89,7 +89,7 @@ QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
 
-QUnit.test("works from a template", function() {
+QUnit.skip("works from a template", function() {
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
