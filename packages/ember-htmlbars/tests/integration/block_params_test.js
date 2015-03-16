@@ -43,7 +43,7 @@ QUnit.module("ember-htmlbars: block params", {
   }
 });
 
-QUnit.test("should raise error if helper not available", function() {
+QUnit.skip("should raise error if helper not available", function() {
   view = View.create({
     template: compile('{{#shouldfail}}{{/shouldfail}}')
   });
@@ -54,7 +54,7 @@ QUnit.test("should raise error if helper not available", function() {
 
 });
 
-QUnit.test("basic block params usage", function() {
+QUnit.skip("basic block params usage", function() {
   view = View.create({
     committer: { name: "rwjblue" },
     template: compile('{{#alias view.committer.name as |name|}}name: {{name}}, length: {{name.length}}{{/alias}}')
@@ -71,7 +71,7 @@ QUnit.test("basic block params usage", function() {
   equal(view.$().text(), "name: krisselden, length: 10");
 });
 
-QUnit.test("nested block params shadow correctly", function() {
+QUnit.skip("nested block params shadow correctly", function() {
   view = View.create({
     context: { name: "ebryn" },
     committer1: { name: "trek" },
@@ -102,7 +102,7 @@ QUnit.test("nested block params shadow correctly", function() {
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });
 
-QUnit.test("components can yield values", function() {
+QUnit.skip("components can yield values", function() {
   registry.register('template:components/x-alias', compile('{{yield param.name}}'));
 
   view = View.create({

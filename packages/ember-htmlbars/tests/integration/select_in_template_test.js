@@ -25,7 +25,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   }
 });
 
-QUnit.test("works from a template with bindings [DEPRECATED]", function() {
+QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -151,7 +151,7 @@ QUnit.test("works from a template", function() {
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
 
-QUnit.test("upon content change, the DOM should reflect the selection (#481)", function() {
+QUnit.skip("upon content change, the DOM should reflect the selection (#481)", function() {
   var userOne = { name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a' };
   var userTwo = { name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd' };
 
@@ -181,7 +181,7 @@ QUnit.test("upon content change, the DOM should reflect the selection (#481)", f
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-QUnit.test("upon content change with Array-like content, the DOM should reflect the selection", function() {
+QUnit.skip("upon content change with Array-like content, the DOM should reflect the selection", function() {
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 
@@ -241,7 +241,7 @@ function testValueBinding(templateString) {
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
+QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
   expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
 
   testValueBinding(
@@ -254,7 +254,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound value", function() {
+QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -293,7 +293,7 @@ function testSelectionBinding(templateString) {
   equal(select.$('option:eq(1)').prop('selected'), true, "Selected property is set to proper option");
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
+QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
   expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
 
   testSelectionBinding(
@@ -306,7 +306,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
+QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -317,7 +317,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
+QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
   var templateString = '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
     '    optionLabelPath="content.name"' +

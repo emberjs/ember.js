@@ -46,7 +46,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yummy Loisaida arepas!', 'component was updated and re-rendered');
   });
 
-  QUnit.test("component helper with actions", function() {
+  QUnit.skip("component helper with actions", function() {
     registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
     registry.register('component:foo-bar', Ember.Component.extend({
       classNames: 'foo-bar',

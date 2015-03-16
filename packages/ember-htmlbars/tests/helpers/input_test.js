@@ -14,7 +14,7 @@ var controller, registry, container;
 function commonSetup() {
   registry = new Registry();
   registry.register('component:-text-field', TextField);
-  registry.register('component:-check-box', Checkbox);
+  registry.register('component:-checkbox', Checkbox);
   registry.register('component-lookup:main', ComponentLookup);
   container = registry.container();
 }

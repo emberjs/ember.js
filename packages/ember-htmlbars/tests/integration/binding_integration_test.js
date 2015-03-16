@@ -87,7 +87,7 @@ QUnit.test("should be able to update when bound property updates", function() {
   equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
 });
 
-QUnit.test('should cleanup bound properties on rerender', function() {
+QUnit.skip('should cleanup bound properties on rerender', function() {
   view = EmberView.create({
     controller: EmberObject.create({ name: 'wycats' }),
     template: compile('{{name}}')
@@ -102,7 +102,7 @@ QUnit.test('should cleanup bound properties on rerender', function() {
   equal(view._childViews.length, 1);
 });
 
-QUnit.test("should update bound values after view's parent is removed and then re-appended", function() {
+QUnit.skip("should update bound values after view's parent is removed and then re-appended", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var controller = EmberObject.create();
@@ -153,7 +153,7 @@ QUnit.test("should update bound values after view's parent is removed and then r
   runDestroy(parentView);
 });
 
-QUnit.test('should accept bindings as a string or an Ember.Binding', function() {
+QUnit.skip('should accept bindings as a string or an Ember.Binding', function() {
   var ViewWithBindings = EmberView.extend({
     oneWayBindingTestBinding: Binding.oneWay('context.direction'),
     twoWayBindingTestBinding: Binding.from('context.direction'),
