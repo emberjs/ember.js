@@ -94,7 +94,7 @@ export default EmberObject.extend({
   catalogEntriesByType(type) {
     var namespaces = emberA(Namespace.NAMESPACES);
     var types = emberA();
-    var typeSuffixRegex = new RegExp(classify(type) + "$");
+    var typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {

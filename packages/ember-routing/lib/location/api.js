@@ -149,7 +149,7 @@ export default {
     Ember.assert("Ember.Location.create: you must specify a 'implementation' option", !!implementation);
 
     var implementationClass = this.implementations[implementation];
-    Ember.assert("Ember.Location.create: " + implementation + " is not a valid implementation", !!implementationClass);
+    Ember.assert(`Ember.Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
 
     return implementationClass.create(...arguments);
   },
@@ -177,8 +177,7 @@ export default {
    container directly.
   */
   registerImplementation(name, implementation) {
-    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
-                    ' Register your custom location implementation with the container instead.', false);
+    Ember.deprecate(`Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.`, false);
 
     this.implementations[name] = implementation;
   },
