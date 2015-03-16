@@ -71,6 +71,7 @@ import {
   map,
   sort,
   setDiff,
+  difference,
   mapBy,
   mapProperty,
   filter,
@@ -136,6 +137,7 @@ EmComputed.max = max;
 EmComputed.map = map;
 EmComputed.sort = sort;
 EmComputed.setDiff = setDiff;
+EmComputed.difference = difference;
 EmComputed.mapBy = mapBy;
 EmComputed.mapProperty = mapProperty;
 EmComputed.filter = filter;
