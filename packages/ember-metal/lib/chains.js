@@ -17,7 +17,9 @@ var pendingQueue = [];
 // back in the queue and reschedule is true, schedules a timeout to try
 // again.
 export function flushPendingChains() {
-  if (pendingQueue.length === 0) { return; } // nothing to do
+  if (pendingQueue.length === 0) {
+    return;
+  } // nothing to do
 
   var queue = pendingQueue;
   pendingQueue = [];
@@ -31,7 +33,9 @@ export function flushPendingChains() {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
+  if (!obj || ('object' !== typeof obj)) {
+    return;
+  } // nothing to do
 
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
@@ -48,10 +52,14 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node) {
-  if (!obj || 'object' !== typeof obj) { return; } // nothing to do
+  if (!obj || 'object' !== typeof obj) {
+    return;
+  } // nothing to do
 
   var m = obj['__ember_meta__'];
-  if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+  if (m && !m.hasOwnProperty('chainWatchers')) {
+    return;
+  } // nothing to do
 
   var nodes = m && m.chainWatchers;
 
@@ -344,7 +352,9 @@ ChainNodePrototype.didChange = function(events) {
   var chains = this._chains;
   if (chains) {
     for (var key in chains) {
-      if (!chains.hasOwnProperty(key)) { continue; }
+      if (!chains.hasOwnProperty(key)) {
+        continue;
+      }
       chains[key].didChange(events);
     }
   }
