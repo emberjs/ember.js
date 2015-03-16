@@ -3,12 +3,26 @@ import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
+import Registry from "container/registry";
+import ComponentLookup from "ember-views/component_lookup";
+import TextField from 'ember-views/views/text_field';
+import Checkbox from 'ember-views/views/checkbox';
 
 var view;
-var controller;
+var controller, registry, container;
+
+function commonSetup() {
+  registry = new Registry();
+  registry.register('component:-text-field', TextField);
+  registry.register('component:-check-box', Checkbox);
+  registry.register('component-lookup:main', ComponentLookup);
+  container = registry.container();
+}
 
 QUnit.module("{{input type='text'}}", {
   setup() {
+    commonSetup();
+
     controller = {
       val: "hello",
       place: "Enter some text",
@@ -19,6 +33,7 @@ QUnit.module("{{input type='text'}}", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
     }).create();
@@ -125,9 +140,12 @@ QUnit.test("input can be updated multiple times", function() {
 
 QUnit.module("{{input type='text'}} - static values", {
   setup() {
+    commonSetup();
+
     controller = {};
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
     }).create();
@@ -174,11 +192,14 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
 
 QUnit.module("{{input type='text'}} - dynamic type", {
   setup() {
+    commonSetup();
+
     controller = {
       someProperty: 'password'
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type=someProperty}}')
     }).create();
@@ -195,11 +216,24 @@ QUnit.test("should insert a text field into DOM", function() {
   equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type.");
 });
 
+QUnit.test("should change if the type changes", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type.");
+
+  run(function() {
+    set(controller, 'someProperty', 'text');
+  });
+
+  equal(view.$('input').attr('type'), 'text', "it changes after the type changes");
+});
+
 QUnit.module("{{input}} - default type", {
   setup() {
+    commonSetup();
+
     controller = {};
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input}}')
     }).create();
@@ -218,6 +252,8 @@ QUnit.test("should have the default type", function() {
 
 QUnit.module("{{input type='checkbox'}}", {
   setup() {
+    commonSetup();
+
     controller = {
       tab: 6,
       name: 'hello',
@@ -225,6 +261,7 @@ QUnit.module("{{input type='checkbox'}}", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name checked=val}}')
     }).create();
@@ -267,7 +304,10 @@ QUnit.test("checkbox checked property is updated", function() {
 
 QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
   setup() {
+    commonSetup();
+
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
     }).create();
@@ -286,12 +326,15 @@ QUnit.test("It asserts the presence of checked=", function() {
 
 QUnit.module("{{input type=boundType}}", {
   setup() {
+    commonSetup();
+
     controller = {
       inputType: "checkbox",
       isChecked: true
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type=inputType checked=isChecked}}')
     }).create();
@@ -316,6 +359,8 @@ QUnit.test("checkbox checked property is updated", function() {
 
 QUnit.module("{{input type='checkbox'}} - static values", {
   setup() {
+    commonSetup();
+
     controller = {
       tab: 6,
       name: 'hello',
@@ -323,6 +368,7 @@ QUnit.module("{{input type='checkbox'}} - static values", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=true tabindex=6 name="hello" checked=false}}')
     }).create();

@@ -674,6 +674,7 @@ var View = CoreView.extend(
   LegacyViewSupport,
   InstrumentationSupport,
   VisibilitySupport, {
+  concatenatedProperties: ['attributeBindings'],
 
   /**
     @property isView

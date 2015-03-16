@@ -60,6 +60,7 @@ import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
 import partial from "ember-htmlbars/keywords/partial";
+import input from "ember-htmlbars/keywords/input";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -68,6 +69,7 @@ registerKeyword('unbound', unbound);
 registerKeyword('view', view);
 registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
+registerKeyword('input', input);
 
 export default {
   hooks: emberHooks,
