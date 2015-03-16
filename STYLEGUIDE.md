@@ -325,7 +325,7 @@ function fooBar(opt) {
 }
 ```
 
-#Rest Parameters
+## Rest Parameters
 
 Since [Babel implements](https://babeljs.io/repl/#?experimental=true&playground=true&evaluate=true&loose=false&spec=false&code=function%20foo\(...args\)%20%7B%0A%20%20%0A%7D) Rest parameters in a non-leaking matter you should use them whenever applicable.
 
@@ -336,6 +336,33 @@ function foo(...args) {
   });
 }
 ```
+
+## Destructuring
+
+When decomposing simple arrays or object, prefer [destructuring](http://babeljs.io/docs/learn-es6/#destructuring);
+
+```javascript
+// array destructuring
+var fullName = 'component:foo-bar';
+var [
+  first,
+  last
+] = fullName.split(':');
+```
+
+```javascript
+// object destructuring
+var person = {
+  firstName: 'Stefan',
+  lastName: 'Penner'
+}
+
+var {
+  firstName,
+  lastName
+} = person;
+```
+
 
 ## Comments
 

@@ -117,13 +117,14 @@ export default EmberObject.extend({
     this._parseNameCache = dictionary(null);
   },
   normalize(fullName) {
-    var split = fullName.split(':', 2);
-    var type = split[0];
-    var name = split[1];
+    var [
+      type,
+      name
+    ] = fullName.split(':', 2);
 
     Ember.assert("Tried to normalize a container name without a colon (:) in it." +
                  " You probably tried to lookup a name that did not contain a type," +
-                 " a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
+                 " a colon, and a name. A proper lookup name would be `view:post`.", fullName.split(':').length === 2);
 
     if (type !== 'template') {
       var result = name;
@@ -191,9 +192,11 @@ export default EmberObject.extend({
   },
 
   _parseName(fullName) {
-    var nameParts = fullName.split(':');
-    var type = nameParts[0];
-    var fullNameWithoutType = nameParts[1];
+    var [
+      type,
+      fullNameWithoutType
+    ] = fullName.split(':');
+
     var name = fullNameWithoutType;
     var namespace = get(this, 'namespace');
     var root = namespace;
