@@ -19,7 +19,7 @@ var pendingQueue = [];
 export function flushPendingChains() {
   if (pendingQueue.length === 0) {
     return;
-  } // nothing to do
+  }
 
   var queue = pendingQueue;
   pendingQueue = [];
@@ -35,7 +35,7 @@ export function flushPendingChains() {
 function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) {
     return;
-  } // nothing to do
+  }
 
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
@@ -54,12 +54,12 @@ function addChainWatcher(obj, keyName, node) {
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) {
     return;
-  } // nothing to do
+  }
 
   var m = obj['__ember_meta__'];
   if (m && !m.hasOwnProperty('chainWatchers')) {
     return;
-  } // nothing to do
+  }
 
   var nodes = m && m.chainWatchers;
 
