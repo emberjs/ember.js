@@ -112,6 +112,10 @@ function normalizeComponentAttributes(component, attrs) {
       if (microsyntax[1]) {
         normalized[microsyntax[1]] = ['get', 'view.' + microsyntax[0]];
       } else if (attrs[attr]) {
+        // TODO: For compatibility with 1.x, we probably need to `set`
+        // the component's attribute here if it is a CP, but we also
+        // probably want to suspend observers and allow the
+        // willUpdateAttrs logic to trigger observers at the correct time.
         normalized[attr] = ['value', attrs[attr]];
       } else {
         normalized[attr] = ['get', 'view.' + attr];

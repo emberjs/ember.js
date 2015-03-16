@@ -46,6 +46,7 @@ import {
   SelectOption,
   SelectOptgroup
 } from "ember-views/views/select";
+import "ember-views/initializers/components";
 // END IMPORTS
 
 /**
