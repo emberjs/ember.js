@@ -109,8 +109,6 @@ function ChainNode(parent, key, value) {
   }
 }
 
-var ChainNodePrototype = ChainNode.prototype;
-
 function lazyGet(obj, key) {
   if (!obj) {
     return undefined;
@@ -140,7 +138,7 @@ function lazyGet(obj, key) {
   return get(obj, key);
 }
 
-ChainNodePrototype.value = function() {
+ChainNode.prototype.value = function() {
   if (this._value === undefined && this._watching) {
     var obj = this._parent.value();
     this._value = lazyGet(obj, this._key);
@@ -148,7 +146,7 @@ ChainNodePrototype.value = function() {
   return this._value;
 };
 
-ChainNodePrototype.destroy = function() {
+ChainNode.prototype.destroy = function() {
   if (this._watching) {
     var obj = this._object;
     if (obj) {
@@ -159,7 +157,7 @@ ChainNodePrototype.destroy = function() {
 };
 
 // copies a top level object only
-ChainNodePrototype.copy = function(obj) {
+ChainNode.prototype.copy = function(obj) {
   var ret = new ChainNode(null, null, obj);
   var paths = this._paths;
   var path;
@@ -176,7 +174,7 @@ ChainNodePrototype.copy = function(obj) {
 
 // called on the root node of a chain to setup watchers on the specified
 // path.
-ChainNodePrototype.add = function(path) {
+ChainNode.prototype.add = function(path) {
   var obj, tuple, key, src, paths;
 
   paths = this._paths;
@@ -211,7 +209,7 @@ ChainNodePrototype.add = function(path) {
 
 // called on the root node of a chain to teardown watcher on the specified
 // path
-ChainNodePrototype.remove = function(path) {
+ChainNode.prototype.remove = function(path) {
   var obj, tuple, key, src, paths;
 
   paths = this._paths;
@@ -235,9 +233,9 @@ ChainNodePrototype.remove = function(path) {
   this.unchain(key, path);
 };
 
-ChainNodePrototype.count = 0;
+ChainNode.prototype.count = 0;
 
-ChainNodePrototype.chain = function(key, path, src) {
+ChainNode.prototype.chain = function(key, path, src) {
   var chains = this._chains;
   var node;
   if (!chains) {
@@ -258,7 +256,7 @@ ChainNodePrototype.chain = function(key, path, src) {
   }
 };
 
-ChainNodePrototype.unchain = function(key, path) {
+ChainNode.prototype.unchain = function(key, path) {
   var chains = this._chains;
   var node = chains[key];
 
@@ -277,7 +275,7 @@ ChainNodePrototype.unchain = function(key, path) {
   }
 };
 
-ChainNodePrototype.willChange = function(events) {
+ChainNode.prototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
     for (var key in chains) {
@@ -293,7 +291,7 @@ ChainNodePrototype.willChange = function(events) {
   }
 };
 
-ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
+ChainNode.prototype.chainWillChange = function(chain, path, depth, events) {
   if (this._key) {
     path = this._key + '.' + path;
   }
@@ -311,7 +309,7 @@ ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
   }
 };
 
-ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
+ChainNode.prototype.chainDidChange = function(chain, path, depth, events) {
   if (this._key) {
     path = this._key + '.' + path;
   }
@@ -329,7 +327,7 @@ ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
   }
 };
 
-ChainNodePrototype.didChange = function(events) {
+ChainNode.prototype.didChange = function(events) {
   // invalidate my own value first.
   if (this._watching) {
     var obj = this._parent.value();
