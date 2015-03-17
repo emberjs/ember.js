@@ -167,39 +167,38 @@ ChainNode.prototype = {
     return chainNode;
   },
 
-  // called on the root node of a chain to setup watchers on the specified
-  // path.
+  // This method is called on the root node of a chain to setup watchers on the
+  // specified path.
   add(path) {
-    var obj, tuple, key, src, paths;
+    var obj, key, src, normalizedObject, normalizedPath;
 
-    paths = this._paths;
-    paths[path] = (paths[path] || 0) + 1;
+    this._paths[path] = (this._paths[path] || 0) + 1;
 
     obj = this.value();
-    tuple = normalizeTuple(obj, path);
+    [normalizedObject, normalizedPath] = normalizeTuple(obj, path);
 
-    // the path was a local path
-    if (tuple[0] && tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
+    if (normalizedObject) {
+      // The path is a local path.
+      if (normalizedObject === obj) {
+        key  = firstKey(normalizedPath);
+        path = normalizedPath.slice(key.length + 1);
+
+        this.chain(key, path);
+
+      // global path, and object already exists
+      } else {
+        src  = normalizedObject;
+        key  = path.slice(0, -(normalizedPath.length + 1));
+        path = normalizedPath;
+
+        this.chain(key, path, src);
+      }
 
     // global path, but object does not exist yet.
     // put into a queue and try to connect later.
-    } else if (!tuple[0]) {
-      pendingQueue.push([this, path]);
-      tuple.length = 0;
-      return;
-
-    // global path, and object already exists
     } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
+      pendingQueue.push([this, path]);
     }
-
-    tuple.length = 0;
-    this.chain(key, path, src);
   },
 
   // called on the root node of a chain to teardown watcher on the specified
