@@ -8,6 +8,10 @@ import { watchKey, unwatchKey } from "ember-metal/watch_key";
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
 
+// Used to keep track of tuples of ChainNodes and paths where the path was for
+// a global and that global object was not available when the chain was added.
+var pendingQueue = [];
+
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
@@ -22,27 +26,6 @@ function isDescriptor(obj) {
 
 function getCache(descriptor, meta, key) {
   return descriptor._cacheable && meta.cache && meta.cache[key];
-}
-
-var pendingQueue = [];
-
-// attempts to add the pendingQueue chains again. If some of them end up
-// back in the queue and reschedule is true, schedules a timeout to try
-// again.
-export function flushPendingChains() {
-  if (pendingQueue.length === 0) {
-    return;
-  }
-
-  var queue = pendingQueue;
-  pendingQueue = [];
-
-  forEach.call(queue, (q) => {
-    q[0].add(q[1]);
-  });
-
-  warn('Watching an undefined global, Ember expects watched globals to be' +
-       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
 
 function addChainWatcher(obj, keyName, node) {
@@ -77,6 +60,27 @@ function removeChainWatcher(obj, keyName, node) {
 
   removeObject(meta.chainWatchers[keyName], node);
   unwatchKey(obj, keyName, meta);
+}
+
+function lazyGet(obj, key) {
+  if (!obj) {
+    return;
+  }
+
+  var meta = obj['__ember_meta__'];
+
+  // check if object meant only to be a prototype
+  if (meta && meta.proto === obj) {
+    return;
+  }
+
+  // Use `get` if the return value is an EachProxy or a plain property.
+  if (key === "@each" || !isDescriptor(obj[key])) {
+    return get(obj, key);
+  // Otherwise get the cached value of the computed property.
+  } else {
+    return getCache(obj[key], meta, key);
+  }
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
@@ -114,27 +118,6 @@ function ChainNode(parent, key, value) {
   // can implement.
   if (this._parent && this._parent._key === '@each') {
     this.value();
-  }
-}
-
-function lazyGet(obj, key) {
-  if (!obj) {
-    return;
-  }
-
-  var meta = obj['__ember_meta__'];
-
-  // check if object meant only to be a prototype
-  if (meta && meta.proto === obj) {
-    return;
-  }
-
-  // Use `get` if the return value is an EachProxy or a plain property.
-  if (key === "@each" || !isDescriptor(obj[key])) {
-    return get(obj, key);
-  // Otherwise get the cached value of the computed property.
-  } else {
-    return getCache(obj[key], meta, key);
   }
 }
 
@@ -278,25 +261,6 @@ ChainNode.prototype = {
     }
   },
 
-  notify(chain, path, depth, events) {
-    if (this._key) {
-      path = this._key + '.' + path;
-    }
-
-    if (this._parent) {
-      this._parent.notify(this, path, depth + 1, events);
-    } else {
-      if (depth > 1) {
-        events.push(this.value(), path);
-      }
-
-      path = 'this.' + path;
-      if (this._paths[path] > 0) {
-        events.push(this.value(), path);
-      }
-    }
-  },
-
   didChange(events) {
     // invalidate my own value first.
     if (this._watching) {
@@ -327,8 +291,46 @@ ChainNode.prototype = {
     if (events && this._parent) {
       this._parent.notify(this, this._key, 1, events);
     }
+  },
+
+  notify(chain, path, depth, events) {
+    if (this._key) {
+      path = this._key + '.' + path;
+    }
+
+    if (this._parent) {
+      this._parent.notify(this, path, depth + 1, events);
+    } else {
+      if (depth > 1) {
+        events.push(this.value(), path);
+      }
+
+      path = 'this.' + path;
+      if (this._paths[path] > 0) {
+        events.push(this.value(), path);
+      }
+    }
   }
 };
+
+// attempts to add the pendingQueue chains again. If some of them end up
+// back in the queue and reschedule is true, schedules a timeout to try
+// again.
+export function flushPendingChains() {
+  if (pendingQueue.length === 0) {
+    return;
+  }
+
+  var queue = pendingQueue;
+  pendingQueue = [];
+
+  forEach.call(queue, (q) => {
+    q[0].add(q[1]);
+  });
+
+  warn('Watching an undefined global, Ember expects watched globals to be' +
+       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
+}
 
 export function finishChains(obj) {
   var chains, chainWatchers, chainNodes;
