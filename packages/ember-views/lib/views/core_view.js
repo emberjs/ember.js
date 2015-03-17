@@ -66,19 +66,9 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: computed('_parentView', function() {
-    var parent = this._parentView;
-
-    if (parent && parent.isVirtual) {
-      return get(parent, 'parentView');
-    } else {
-      return parent;
-    }
-  }),
+  parentView: null,
 
   _state: null,
-
-  _parentView: null,
 
   // return the current view, not including virtual views
   concreteView: computed('parentView', function() {
@@ -124,15 +114,15 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   destroy() {
-    var parent = this._parentView;
+    var parent = this.parentView;
 
     if (!this._super(...arguments)) { return; }
 
 
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
-    if (!this.removedFromDOM && this._renderer) {
-      this._renderer.remove(this, true);
+    if (!this.removedFromDOM && this.renderer) {
+      this.renderer.remove(this, true);
     }
 
     // remove from parent if found. Don't call removeFromParent,

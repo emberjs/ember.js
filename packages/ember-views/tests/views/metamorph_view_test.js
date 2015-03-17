@@ -228,8 +228,8 @@ QUnit.test("re-rendering and then changing the property does not raise an except
   equal(view.$().text(), 'truth');
 
   run(function() {
-    view._childViews[0].rerender();
-    view._childViews[0].rerender();
+    view.childViews[0].rerender();
+    view.childViews[0].rerender();
   });
 
   equal(view.$().text(), 'truth');

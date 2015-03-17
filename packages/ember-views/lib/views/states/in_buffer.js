@@ -33,11 +33,11 @@ merge(inBuffer, {
   // buffer into its buffer.
   appendChild(view, childView, options) {
     var buffer = view.buffer;
-    var _childViews = view._childViews;
+    var childViews = view.childViews;
 
     childView = view.createChildView(childView, options);
-    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
-    _childViews.push(childView);
+    if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
+    childViews.push(childView);
 
     if (!childView._morph) {
       buffer.pushChildView(childView);
@@ -49,10 +49,10 @@ merge(inBuffer, {
   },
 
   appendAttr(view, attrNode, buffer) {
-    var _childViews = view._childViews;
+    var childViews = view.childViews;
 
-    if (!_attrNodes.length) { _attrNodes = view._attrNodes = _attrNodes.slice(); }
-    _attrNodes.push(attrNode);
+    if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
+    childViews.push(attrNode);
 
     if (!attrNode._morph) {
       buffer.pushAttrNode(attrNode);

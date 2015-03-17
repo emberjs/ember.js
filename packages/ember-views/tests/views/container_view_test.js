@@ -7,11 +7,16 @@ import Controller from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import Registry from "container/registry";
+import compile from "ember-template-compiler/system/compile";
 
 var trim = jQuery.trim;
-var container, view, otherContainer;
+var container, registry, view, otherContainer;
 
 QUnit.module("ember-views/views/container_view_test", {
+  setup() {
+    registry = new Registry();
+  },
   teardown() {
     run(function() {
       container.destroy();
@@ -25,7 +30,7 @@ QUnit.test("should be able to insert views after the DOM representation is creat
   container = ContainerView.create({
     classNameBindings: ['name'],
     name: 'foo',
-    container: {}
+    container: registry.container()
   });
 
   run(function() {
@@ -33,9 +38,7 @@ QUnit.test("should be able to insert views after the DOM representation is creat
   });
 
   view = View.create({
-    template() {
-      return "This is my moment";
-    }
+    template: compile('This is my moment')
   });
 
   run(function() {
@@ -79,11 +82,11 @@ QUnit.test("should be able to observe properties that contain child views", func
 
 QUnit.test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
   container = ContainerView.create({
-    container: {}
+    container: registry.container()
   });
 
   otherContainer = ContainerView.create({
-    container: {}
+    container: registry.container()
   });
 
   view = View.create();
@@ -190,15 +193,11 @@ QUnit.test("should be able to push initial views onto the ContainerView and have
       this._super.apply(this, arguments);
       this.pushObject(View.create({
         name: 'A',
-        template() {
-          return 'A';
-        }
+        template: compile('A')
       }));
       this.pushObject(View.create({
         name: 'B',
-        template() {
-          return 'B';
-        }
+        template: compile('B')
       }));
     },
     // functions here avoid attaching an observer, which is
@@ -226,9 +225,7 @@ QUnit.test("should be able to push initial views onto the ContainerView and have
   run(function () {
     container.pushObject(View.create({
       name: 'C',
-      template() {
-        return 'C';
-      }
+      template: compile('C')
     }));
   });
 

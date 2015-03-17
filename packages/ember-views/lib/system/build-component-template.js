@@ -77,7 +77,7 @@ function createLayoutBlock(template, yieldTo, self, component, attrs) {
 function createElementBlock(template, yieldTo, component) {
   return blockFor(template, {
     yieldTo: yieldTo,
-    self: { view: component },
+    self: component,
     options: { view: component }
   });
 }

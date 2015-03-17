@@ -16,7 +16,7 @@ var LegacyViewSupport = Mixin.create({
   afterRender(buffer) {},
 
   mutateChildViews(callback) {
-    var childViews = this._childViews;
+    var childViews = get(this, 'childViews');
     var idx = childViews.length;
     var view;
 

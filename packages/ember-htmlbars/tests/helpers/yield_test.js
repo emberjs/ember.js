@@ -248,7 +248,7 @@ QUnit.skip("adding a layout should not affect the context of normal views", func
   view = EmberView.create({
     template:     compile("View context: {{this}}"),
     context:      "ViewContext",
-    _parentView:  parentView
+    parentView:  parentView
   });
 
   run(function() {
@@ -270,7 +270,7 @@ QUnit.skip("adding a layout should not affect the context of normal views", func
   runDestroy(parentView);
 });
 
-QUnit.skip("yield should work for views even if _parentView is null", function() {
+QUnit.skip("yield should work for views even if parentView is null", function() {
   view = EmberView.create({
     layout:   compile('Layout: {{yield}}'),
     template: compile("View Content")
