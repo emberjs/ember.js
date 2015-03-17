@@ -14,7 +14,7 @@ import { guidFor } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import {
   Mixin,
-  observer,
+  observer
 } from "ember-metal/mixin";
 import { deprecateProperty } from "ember-metal/deprecate_property";
 
