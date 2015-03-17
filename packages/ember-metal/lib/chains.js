@@ -154,20 +154,17 @@ ChainNode.prototype = {
     }
   },
 
-  // copies a top level object only
+  // Create a new, top-level ChainNode and copy this ChainNodes's paths
+  // into it. This only works with top level chain nodes.
   copy(obj) {
-    var ret = new ChainNode(null, null, obj);
-    var paths = this._paths;
-    var path;
+    var chainNode = new ChainNode(null, null, obj);
 
-    for (path in paths) {
-      // this check will also catch non-number vals.
-      if (paths[path] <= 0) {
-        continue;
+    for (var path in this._paths) {
+      if (this._paths[path] > 0) {
+        chainNode.add(path);
       }
-      ret.add(path);
     }
-    return ret;
+    return chainNode;
   },
 
   // called on the root node of a chain to setup watchers on the specified
