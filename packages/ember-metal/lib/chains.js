@@ -300,13 +300,13 @@ ChainNode.prototype = {
   didChange(events) {
     // invalidate my own value first.
     if (this._watching) {
-      var obj = this._parent.value();
-      if (obj !== this._object) {
+      var currentObject = this._parent.value();
+      if (currentObject !== this._object) {
         removeChainWatcher(this._object, this._key, this);
-        this._object = obj;
-        addChainWatcher(obj, this._key, this);
+        this._object = currentObject;
+        addChainWatcher(currentObject, this._key, this);
       }
-      this._value  = undefined;
+      this._value = undefined;
 
       // Special-case: the EachProxy relies on immediate evaluation to
       // establish its observers.
@@ -315,24 +315,16 @@ ChainNode.prototype = {
       }
     }
 
-    // then notify chains...
-    var chains = this._chains;
-    if (chains) {
-      for (var key in chains) {
-        if (!chains.hasOwnProperty(key)) {
-          continue;
-        }
-        chains[key].didChange(events);
+    // Then notify chains
+    for (var key in this._chains) {
+      if (this._chains.hasOwnProperty(key)) {
+        this._chains[key].didChange(events);
       }
     }
 
-    // if no events are passed in then we only care about the above wiring update
-    if (events === null) {
-      return;
-    }
-
-    // and finally tell parent about my path changing...
-    if (this._parent) {
+    // If events were passed in and there is a parent, we tell the parent about
+    // my changing path
+    if (events && this._parent) {
       this._parent.notify(this, this._key, 1, events);
     }
   }
