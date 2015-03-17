@@ -77,22 +77,26 @@ function removeChainWatcher(obj, keyName, node) {
 function ChainNode(parent, key, value) {
   this._parent = parent;
   this._key    = key;
+  this._value = value;
 
-  // _watching is true when calling get(this._parent, this._key) will
-  // return the value of this node.
+  // Used to keep track of the number of times each path is added to a ChainNode.
+  this._paths = {};
+
+  // Used to keep track of how many nodes are in a chain.
+  this.count = 0;
+
+  // When the value for this ChainNode is unset, `_watching` is true.
+  // We set this flag so that we later have a means of deactivating this
+  // ChainNode when it is destroyed by setting `_watching` to false.
   //
-  // It is false for the root of a chain (because we have no parent)
-  // and for global paths (because the parent node is the object with
-  // the observer on it)
+  // We expect `_watching` to be false when the ChainNode is the root of a
+  // chain (because we have no parent) and for global paths (because the parent
+  // node is the object with the observer on it).
   this._watching = (value === undefined);
 
-  this._value = value;
-  this._paths = {};
   if (this._watching) {
     this._object = parent.value();
-    if (this._object) {
-      addChainWatcher(this._object, this._key, this);
-    }
+    addChainWatcher(this._object, this._key, this);
   }
 
   // Special-case: the EachProxy relies on immediate evaluation to
@@ -229,8 +233,6 @@ ChainNode.prototype = {
     tuple.length = 0;
     this.unchain(key, path);
   },
-
-  count: 0,
 
   chain(key, path, src) {
     var chains = this._chains;
