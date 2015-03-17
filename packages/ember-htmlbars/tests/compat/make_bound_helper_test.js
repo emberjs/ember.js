@@ -3,7 +3,6 @@ import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
-import SimpleBoundView from "ember-views/views/simple_bound_view";
 
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
 
@@ -537,51 +536,4 @@ QUnit.test("should have correct argument types", function() {
   runAppend(view);
 
   equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
-});
-
-QUnit.test("when no parameters are bound, no new views are created", function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{repeat "a"}}'),
-      controller: EmberObject.create()
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'a');
-});
-
-
-QUnit.test('when no hash parameters are bound, no new views are created', function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{repeat "a" count=3}}'),
-      controller: EmberObject.create()
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'aaa');
 });

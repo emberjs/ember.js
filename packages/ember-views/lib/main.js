@@ -36,7 +36,6 @@ import TextSupport from "ember-views/mixins/text_support";
 import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
-import SimpleBoundView from "ember-views/views/simple_bound_view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   _Metamorph
@@ -75,7 +74,6 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
-Ember._SimpleBoundView = SimpleBoundView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
 Ember.Select = Select;
