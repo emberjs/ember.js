@@ -33,7 +33,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     if (attrs && attrs.tagName) { options.tagName = attrs.tagName; }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
-    componentInfo.layout = get(component, 'layout') || componentInfo.layout;
+    componentInfo.layout = get(component, 'layout') || get(component, 'template') || componentInfo.layout;
   }
 
   Ember.assert("BUG: ComponentNode.create can take a scope or a self, but not both", !(contentScope && found.self));
