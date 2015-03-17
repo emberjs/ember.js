@@ -247,20 +247,19 @@ ChainNode.prototype = {
   },
 
   unchain(key, path) {
-    var chains = this._chains;
-    var node = chains[key];
+    var node = this._chains[key];
 
-    // unchain rest of path first...
+    // Unchain rest of path first
     if (path && path.length > 1) {
       var nextKey  = firstKey(path);
       var nextPath = path.slice(nextKey.length + 1);
       node.unchain(nextKey, nextPath);
     }
 
-    // delete node if needed.
+    // Delete node if it has no other nodes chained to it.
     node.count--;
     if (node.count <= 0) {
-      delete chains[node._key];
+      delete this._chains[node._key];
       node.destroy();
     }
   },
