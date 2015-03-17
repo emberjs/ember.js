@@ -41,18 +41,18 @@ function addChainWatcher(obj, keyName, node) {
     return;
   }
 
-  var m = metaFor(obj);
-  var nodes = m.chainWatchers;
+  var meta = metaFor(obj);
 
-  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
-    nodes = m.chainWatchers = {};
+  if (!meta.hasOwnProperty('chainWatchers')) {
+    meta.chainWatchers = {};
   }
 
-  if (!nodes[keyName]) {
-    nodes[keyName] = [];
+  if (!meta.chainWatchers[keyName]) {
+    meta.chainWatchers[keyName] = [];
   }
-  nodes[keyName].push(node);
-  watchKey(obj, keyName, m);
+
+  meta.chainWatchers[keyName].push(node);
+  watchKey(obj, keyName, meta);
 }
 
 function removeChainWatcher(obj, keyName, node) {
