@@ -149,10 +149,7 @@ ChainNode.prototype = {
 
   destroy() {
     if (this._watching) {
-      var obj = this._object;
-      if (obj) {
-        removeChainWatcher(obj, this._key, this);
-      }
+      removeChainWatcher(this._object, this._key, this);
       this._watching = false; // so future calls do nothing
     }
   },
