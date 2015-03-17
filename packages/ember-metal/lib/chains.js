@@ -2,6 +2,7 @@ import Ember from "ember-metal/core"; // warn, assert, etc;
 import { get, normalizeTuple } from "ember-metal/property_get";
 import { meta as metaFor } from "ember-metal/utils";
 import { forEach } from "ember-metal/array";
+import { removeObject } from "ember-metal/enumerable_utils";
 import { watchKey, unwatchKey } from "ember-metal/watch_key";
 
 var warn = Ember.warn;
@@ -60,23 +61,14 @@ function removeChainWatcher(obj, keyName, node) {
     return;
   }
 
-  var m = obj['__ember_meta__'];
-  if (m && !m.hasOwnProperty('chainWatchers')) {
+  var meta = obj['__ember_meta__'];
+
+  if (!meta || !meta.chainWatchers || !meta.chainWatchers[keyName]) {
     return;
   }
 
-  var nodes = m && m.chainWatchers;
-
-  if (nodes && nodes[keyName]) {
-    nodes = nodes[keyName];
-    for (var i = 0, l = nodes.length; i < l; i++) {
-      if (nodes[i] === node) {
-        nodes.splice(i, 1);
-        break;
-      }
-    }
-  }
-  unwatchKey(obj, keyName, m);
+  removeObject(meta.chainWatchers[keyName], node);
+  unwatchKey(obj, keyName, meta);
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
