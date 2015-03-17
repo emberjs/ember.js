@@ -31,7 +31,7 @@ export function preprocess(html, options) {
 
   if (options && options.plugins && options.plugins.ast) {
     for (var i = 0, l = options.plugins.ast.length; i < l; i++) {
-      var plugin = new options.plugins.ast[i]();
+      var plugin = new options.plugins.ast[i](options);
 
       plugin.syntax = syntax;
 
