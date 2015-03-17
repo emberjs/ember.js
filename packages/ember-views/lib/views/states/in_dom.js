@@ -33,10 +33,10 @@ merge(inDOM, {
   },
 
   appendAttr(view, attrNode) {
-    var _childViews = view._childViews;
+    var childViews = view.childViews;
 
-    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
-    _childViews.push(attrNode);
+    if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
+    childViews.push(attrNode);
 
     attrNode._parentView = view;
     view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);

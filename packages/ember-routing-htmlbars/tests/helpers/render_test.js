@@ -143,7 +143,7 @@ QUnit.test("{{render}} helper should render given template with a supplied model
 
   runAppend(view);
 
-  var postController = view._childViews[0].get('controller');
+  var postController = view.childViews[0].get('controller');
 
   equal(view.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);
@@ -265,8 +265,8 @@ QUnit.test("{{render}} helper should render templates with models multiple times
 
   runAppend(view);
 
-  var postController1 = view._childViews[0].get('controller');
-  var postController2 = view._childViews[1].get('controller');
+  var postController1 = view.childViews[0].get('controller');
+  var postController2 = view.childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?Me first ?Then me$/));
   equal(postController1.get('model'), post1);
@@ -307,7 +307,7 @@ QUnit.test("{{render}} helper should not leak controllers", function() {
 
   runAppend(view);
 
-  var postController1 = view._childViews[0].get('controller');
+  var postController1 = view.childViews[0].get('controller');
 
   runDestroy(view);
 
@@ -332,8 +332,8 @@ QUnit.test("{{render}} helper should not treat invocations with falsy contexts a
 
   runAppend(view);
 
-  var postController1 = view._childViews[0].get('controller');
-  var postController2 = view._childViews[1].get('controller');
+  var postController1 = view.childViews[0].get('controller');
+  var postController2 = view.childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?NOTHING ?NOTHING$/));
   equal(postController1.get('model'), 0);
@@ -365,8 +365,8 @@ QUnit.test("{{render}} helper should render templates both with and without mode
 
   runAppend(view);
 
-  var postController1 = view._childViews[0].get('controller');
-  var postController2 = view._childViews[1].get('controller');
+  var postController1 = view.childViews[0].get('controller');
+  var postController2 = view.childViews[1].get('controller');
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is omakase$/));
   equal(postController1.get('model'), null);

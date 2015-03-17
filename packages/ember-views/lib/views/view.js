@@ -15,13 +15,8 @@ import { computed } from "ember-metal/computed";
 import {
   Mixin,
   observer,
-  beforeObserver
 } from "ember-metal/mixin";
 import { deprecateProperty } from "ember-metal/deprecate_property";
-import {
-  propertyWillChange,
-  propertyDidChange
-} from "ember-metal/property_events";
 
 import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
@@ -798,24 +793,6 @@ var View = CoreView.extend(
     this.rerender();
   }),
 
-  // When it's a virtual view, we need to notify the parent that their
-  // childViews will change.
-  _childViewsWillChange: beforeObserver('childViews', function() {
-    if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
-      if (parentView) { propertyWillChange(parentView, 'childViews'); }
-    }
-  }),
-
-  // When it's a virtual view, we need to notify the parent that their
-  // childViews did change.
-  _childViewsDidChange: observer('childViews', function() {
-    if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
-      if (parentView) { propertyDidChange(parentView, 'childViews'); }
-    }
-  }),
-
   /**
     Return the nearest ancestor that is an instance of the provided
     class or mixin.
@@ -918,7 +895,7 @@ var View = CoreView.extend(
   },
 
   forEachChildView(callback) {
-    var childViews = this._childViews;
+    var childViews = this.childViews;
 
     if (!childViews) { return this; }
 
@@ -1290,7 +1267,7 @@ var View = CoreView.extend(
     @return {Ember.View} receiver
   */
   removeFromParent() {
-    var parent = this._parentView;
+    var parent = this.parentView;
 
     // Remove DOM element from parent
     this.remove();

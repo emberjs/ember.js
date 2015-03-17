@@ -99,7 +99,7 @@ QUnit.skip('should cleanup bound properties on rerender', function() {
 
   run(view, 'rerender');
 
-  equal(view._childViews.length, 1);
+  equal(view.childViews.length, 1);
 });
 
 QUnit.skip("should update bound values after view's parent is removed and then re-appended", function() {

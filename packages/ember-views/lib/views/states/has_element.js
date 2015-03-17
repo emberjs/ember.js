@@ -46,7 +46,7 @@ merge(hasElement, {
   // preRender state if inDOM.
 
   destroyElement(view) {
-    view._renderer.remove(view, false);
+    view.renderer.remove(view, false);
     return view;
   },
 
