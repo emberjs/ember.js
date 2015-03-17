@@ -11,6 +11,10 @@ function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
+function isObject(obj) {
+  return obj && (typeof obj === 'object');
+}
+
 var pendingQueue = [];
 
 // attempts to add the pendingQueue chains again. If some of them end up
@@ -33,7 +37,7 @@ export function flushPendingChains() {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) {
+  if (!isObject(obj)) {
     return;
   }
 
@@ -52,7 +56,7 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node) {
-  if (!obj || 'object' !== typeof obj) {
+  if (!isObject(obj)) {
     return;
   }
 
