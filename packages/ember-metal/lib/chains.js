@@ -204,26 +204,23 @@ ChainNode.prototype = {
   // called on the root node of a chain to teardown watcher on the specified
   // path
   remove(path) {
-    var obj, tuple, key, src, paths;
+    var obj, key, normalizedObject, normalizedPath;
 
-    paths = this._paths;
-    if (paths[path] > 0) {
-      paths[path]--;
+    if (this._paths[path] > 0) {
+      this._paths[path]--;
     }
 
     obj = this.value();
-    tuple = normalizeTuple(obj, path);
-    if (tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
+    [normalizedObject, normalizedPath] = normalizeTuple(obj, path);
+
+    if (normalizedObject === obj) {
+      key  = firstKey(normalizedPath);
+      path = normalizedPath.slice(key.length + 1);
     } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
+      key  = path.slice(0, -(normalizedPath.length + 1));
+      path = normalizedPath;
     }
 
-    tuple.length = 0;
     this.unchain(key, path);
   },
 
