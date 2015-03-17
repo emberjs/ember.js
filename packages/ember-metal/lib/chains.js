@@ -225,23 +225,24 @@ ChainNode.prototype = {
   },
 
   chain(key, path, src) {
-    var chains = this._chains;
     var node;
-    if (!chains) {
-      chains = this._chains = {};
+
+    if (!this._chains) {
+      this._chains = {};
     }
 
-    node = chains[key];
-    if (!node) {
-      node = chains[key] = new ChainNode(this, key, src);
+    if (!this._chains[key]) {
+      this._chains[key] = new ChainNode(this, key, src);
     }
-    node.count++; // count chains...
+
+    node = this._chains[key];
+    node.count++; // count chains
 
     // chain rest of path if there is one
     if (path) {
       key = firstKey(path);
       path = path.slice(key.length + 1);
-      node.chain(key, path); // NOTE: no src means it will observe changes...
+      node.chain(key, path); // No src means the ChainNode will observe changes.
     }
   },
 
