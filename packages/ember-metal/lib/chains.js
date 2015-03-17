@@ -313,9 +313,15 @@ ChainNode.prototype = {
   }
 };
 
-// attempts to add the pendingQueue chains again. If some of them end up
-// back in the queue and reschedule is true, schedules a timeout to try
-// again.
+// When a global path is added to a ChainNode but the global object doesn't
+// exist, the chainNode and path are pushed onto the pendingGlobalPathsQueue
+// as sets of tuples.
+//
+// [[ChainNode, 'Global.foo'] [ChainNode, 'AnotherGlobal.bar']]
+//
+// Later someone can call Ember.flushPendingChains to try to add these global
+// paths again.
+//
 export function flushPendingChains() {
   if (pendingQueue.length === 0) {
     return;
