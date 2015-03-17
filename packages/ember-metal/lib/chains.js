@@ -16,6 +16,14 @@ function isObject(obj) {
   return obj && (typeof obj === 'object');
 }
 
+function isDescriptor(obj) {
+  return isObject(obj) && obj.isDescriptor;
+}
+
+function getCache(descriptor, meta, key) {
+  return descriptor._cacheable && meta.cache && meta.cache[key];
+}
+
 var pendingQueue = [];
 
 // attempts to add the pendingQueue chains again. If some of them end up
@@ -115,27 +123,19 @@ function lazyGet(obj, key) {
   }
 
   var meta = obj['__ember_meta__'];
+
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) {
     return;
   }
 
-  if (key === "@each") {
+  // Use `get` if the return value is an EachProxy or a plain property.
+  if (key === "@each" || !isDescriptor(obj[key])) {
     return get(obj, key);
+  // Otherwise get the cached value of the computed property.
+  } else {
+    return getCache(obj[key], meta, key);
   }
-
-  // if a CP only return cached value
-  var possibleDesc = obj[key];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-  if (desc && desc._cacheable) {
-    if (meta.cache && key in meta.cache) {
-      return meta.cache[key];
-    } else {
-      return;
-    }
-  }
-
-  return get(obj, key);
 }
 
 ChainNode.prototype = {
