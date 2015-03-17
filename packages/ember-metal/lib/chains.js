@@ -265,13 +265,11 @@ ChainNode.prototype = {
   },
 
   willChange(events) {
-    var chains = this._chains;
-    if (chains) {
-      for (var key in chains) {
-        if (!chains.hasOwnProperty(key)) {
-          continue;
+    if (this._chains) {
+      for (var key in this._chains) {
+        if (this._chains.hasOwnProperty(key)) {
+          this._chains[key].willChange(events);
         }
-        chains[key].willChange(events);
       }
     }
 
