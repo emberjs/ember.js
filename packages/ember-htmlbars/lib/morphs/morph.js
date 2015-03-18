@@ -15,6 +15,7 @@ function EmberMorph(DOMHelper, contextualElement) {
 
 var proto = EmberMorph.prototype = o_create(HTMLBarsMorph.prototype);
 proto.HTMLBarsMorph$constructor = HTMLBarsMorph;
+proto.HTMLBarsMorph$clear = HTMLBarsMorph.prototype.clear;
 
 proto.addDestruction = function(toDestroy) {
   this.emberToDestroy = this.emberToDestroy || [];
@@ -22,8 +23,9 @@ proto.addDestruction = function(toDestroy) {
 };
 
 proto.cleanup = function() {
-  if (this.emberView) {
-    this.emberView.destroy();
+  var view;
+  if (view = this.emberView) {
+    view.destroy();
   }
 
   var toDestroy = this.emberToDestroy;

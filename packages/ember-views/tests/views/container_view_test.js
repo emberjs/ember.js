@@ -439,7 +439,6 @@ QUnit.test("if a ContainerView starts with a currentView and then a different cu
     set(container, 'currentView', secondaryView);
   });
 
-
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), secondaryView, "should have the currentView as the only child view");
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView: mainView.');
@@ -517,11 +516,12 @@ QUnit.test("should be able to modify childViews then rerender then modify again 
 
   var Child = View.extend({
     count: 0,
-    render(buffer) {
+    willRender: function() {
       this.count++;
-      buffer.push(this.label);
-    }
+    },
+    template: compile('{{view.label}}')
   });
+
   var one = Child.create({ label: 'one' });
   var two = Child.create({ label: 'two' });
 
@@ -578,7 +578,7 @@ QUnit.test("should invalidate `element` on itself and childViews when being rend
 
   var root = ContainerView.create();
 
-  view = View.create({ template: compile('') });
+  view = View.create({ template: compile('child view') });
   container = ContainerView.create({ childViews: ['child'], child: view });
 
   run(function() {
@@ -655,17 +655,15 @@ QUnit.test("if a containerView appends a child in its didInsertElement event, th
 
   });
 
-
   run(function() {
     root.appendTo('#qunit-fixture');
   });
 
-  run(function() {
-    root.pushObject(container);
-  });
-
-  equal(container.get('childViews').length, 1 , "containerView should only have a child");
-  equal(counter, 1 , "didInsertElement should be fired once");
+  expectAssertion(function() {
+    run(function() {
+      root.pushObject(container);
+    });
+  }, "A component was modified during the didInsertElement hook. You should not change any properties on components, models or services during didInsertElement");
 
   run(function() {
     root.destroy();
