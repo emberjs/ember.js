@@ -209,7 +209,7 @@ QUnit.test("The `unbound if` helper should work when its inverse is not present"
   equal(view.$().text(), '');
 });
 
-QUnit.skip('should not rerender if truthiness does not change', function() {
+QUnit.test('should not rerender if truthiness does not change', function() {
   view = EmberView.create({
     template: compile('<h1 id="first">{{#if view.shouldDisplay}}{{view view.InnerViewClass}}{{/if}}</h1>'),
 

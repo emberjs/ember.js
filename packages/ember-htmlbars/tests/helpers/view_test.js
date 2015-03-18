@@ -128,7 +128,7 @@ QUnit.skip("By default, without a container, EmberView is used", function() {
   ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
 });
 
-QUnit.skip("View lookup - App.FuView (DEPRECATED)", function() {
+QUnit.test("View lookup - App.FuView (DEPRECATED)", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -600,7 +600,7 @@ QUnit.test('should teardown observers from bound properties on rerender', functi
   equal(observersFor(view, 'foo').length, 1);
 });
 
-QUnit.skip('should update bound values after the view is removed and then re-appended', function() {
+QUnit.test('should update bound values after the view is removed and then re-appended', function() {
   view = EmberView.create({
     template: compile('{{#if view.showStuff}}{{view.boundValue}}{{else}}Not true.{{/if}}'),
     showStuff: true,
@@ -850,7 +850,7 @@ QUnit.skip('{{view}} should not allow attributeBindings to be set', function() {
   }, /Setting 'attributeBindings' via template helpers is not allowed/);
 });
 
-QUnit.skip('{{view}} should be able to point to a local view', function() {
+QUnit.test('{{view}} should be able to point to a local view', function() {
   view = EmberView.create({
     template: compile('{{view view.common}}'),
 
@@ -993,7 +993,7 @@ QUnit.skip('{{view}} should evaluate other attribute bindings set to global path
   runDestroy(lookup.App);
 });
 
-QUnit.skip('{{view}} should evaluate other attributes bindings set in the current context', function() {
+QUnit.test('{{view}} should evaluate other attributes bindings set in the current context', function() {
   view = EmberView.create({
     name: 'myView',
     textField: TextField,
@@ -1270,7 +1270,7 @@ QUnit.test('should bind to the property if no registered helper found for a must
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });
 
-QUnit.skip('{{view}} should be able to point to a local instance of view', function() {
+QUnit.test('{{view}} should be able to point to a local instance of view', function() {
   view = EmberView.create({
     template: compile("{{view view.common}}"),
 
@@ -1283,7 +1283,7 @@ QUnit.skip('{{view}} should be able to point to a local instance of view', funct
   equal(view.$().text(), "common", "tries to look up view name locally");
 });
 
-QUnit.skip("{{view}} should be able to point to a local instance of subclass of view", function() {
+QUnit.test("{{view}} should be able to point to a local instance of subclass of view", function() {
   var MyView = EmberView.extend();
   view = EmberView.create({
     template: compile("{{view view.subclassed}}"),

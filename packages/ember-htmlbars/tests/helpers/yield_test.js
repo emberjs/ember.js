@@ -124,7 +124,7 @@ QUnit.skip("block should not be required", function() {
   equal(view.$('div#container div.yielding').length, 1, 'yielding view is rendered as expected');
 });
 
-QUnit.skip("yield uses the outer context", function() {
+QUnit.test("yield uses the outer context", function() {
   var component = Component.extend({
     boundText: "inner",
     layout: compile("<p>{{boundText}}</p><p>{{yield}}</p>")
@@ -141,7 +141,7 @@ QUnit.skip("yield uses the outer context", function() {
 });
 
 
-QUnit.skip("yield inside a conditional uses the outer context [DEPRECATED]", function() {
+QUnit.test("yield inside a conditional uses the outer context [DEPRECATED]", function() {
   var component = Component.extend({
     boundText: "inner",
     truthy: true,
@@ -161,7 +161,7 @@ QUnit.skip("yield inside a conditional uses the outer context [DEPRECATED]", fun
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
 
-QUnit.skip("outer keyword doesn't mask inner component property", function () {
+QUnit.test("outer keyword doesn't mask inner component property", function () {
   var component = Component.extend({
     item: "inner",
     layout: compile("<p>{{item}}</p><p>{{yield}}</p>")
@@ -177,7 +177,7 @@ QUnit.skip("outer keyword doesn't mask inner component property", function () {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "inner component property isn't masked by outer keyword");
 });
 
-QUnit.skip("inner keyword doesn't mask yield property", function() {
+QUnit.test("inner keyword doesn't mask yield property", function() {
   var component = Component.extend({
     boundText: "inner",
     layout: compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
@@ -354,7 +354,7 @@ QUnit.skip("yield with nested components (#3220)", function() {
   equal(view.$('div > span').text(), "Hello world");
 });
 
-QUnit.skip("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
+QUnit.test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
   var component = Component.extend(Ember._Metamorph, {
     item: "inner",
     layout: compile("<p>{{item}}</p>{{#if item}}<p>{{yield}}</p>{{/if}}")
