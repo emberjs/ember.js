@@ -3,6 +3,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import compile from "ember-template-compiler/system/compile";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
@@ -126,8 +127,28 @@ test("view should be notified after isVisible is set to false and the element ha
 });
 
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
-  view = View.create({ isVisible: true });
-  var childView = view.get('childViews').objectAt(0);
+  run(function() {
+    view = View.create({ isVisible: false });
+    view.append();
+  });
+
+  ok(view.$().is(':hidden'), "precond - view is hidden when appended");
+
+  run(function() {
+    view.set('isVisible', true);
+  });
+
+  ok(view.$().is(':visible'), "precond - view is now visible");
+  equal(parentBecameVisible, 1);
+  equal(childBecameVisible, 1);
+  equal(grandchildBecameVisible, 1);
+});
+
+test("view should change visibility with a virtual childView", function() {
+  view = View.create({
+    isVisible: true,
+    template: compile('<div {{bind-attr bing="tweep"}}></div>')
+  });
 
   run(function() {
     view.append();
@@ -136,13 +157,10 @@ test("view should be notified after isVisible is set to false and the element ha
   ok(view.$().is(':visible'), "precond - view is visible when appended");
 
   run(function() {
-    childView.set('isVisible', false);
+    view.set('isVisible', false);
   });
 
-  ok(childView.$().is(':hidden'), "precond - view is now hidden");
-
-  equal(childBecameHidden, 1);
-  equal(grandchildBecameHidden, 1);
+  ok(view.$().is(':hidden'), "precond - view is now hidden");
 });
 
 test("view should be notified after isVisible is set to true and the element has been shown", function() {
