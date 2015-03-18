@@ -60,7 +60,7 @@ var ViewContextSupport = Mixin.create({
         return controller;
       }
 
-      parentView = this._parentView;
+      parentView = this.parentView;
       if (parentView) {
         return get(parentView, '_context');
       }
@@ -86,7 +86,7 @@ var ViewContextSupport = Mixin.create({
         return this._controller;
       }
 
-      return this._parentView ? get(this._parentView, 'controller') : null;
+      return this.parentView ? get(this.parentView, 'controller') : null;
     },
     set: function(_, value) {
       this._controller = value;

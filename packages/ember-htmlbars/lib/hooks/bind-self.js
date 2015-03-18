@@ -8,9 +8,7 @@ import SimpleStream from "ember-metal/streams/simple-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function bindSelf(env, scope, self) {
-  Ember.assert("BUG: scope.attrs and self.isView should not both be true", !(scope.attrs && self.isView));
-
-  if (self.isView) {
+  if (self && self.isView) {
     scope.view = self;
     newStream(scope.locals, 'view', self, null);
     newStream(scope, 'self', get(self, 'context'), null, true);
