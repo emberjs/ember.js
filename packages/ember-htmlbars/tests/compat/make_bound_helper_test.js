@@ -140,7 +140,7 @@ QUnit.skip("should allow for computed properties with dependencies", function() 
   equal(view.$().text(), 'WES', "helper output updated");
 });
 
-QUnit.skip("bound helpers should support options", function() {
+QUnit.test("bound helpers should support options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({

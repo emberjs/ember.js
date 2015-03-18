@@ -170,7 +170,7 @@ QUnit.skip("should be able to render an unbound helper invocation", function() {
   }
 });
 
-QUnit.skip("should be able to render an bound helper invocation mixed with static values", function() {
+QUnit.test("should be able to render an bound helper invocation mixed with static values", function() {
   view = EmberView.create({
       template: compile('{{unbound surround prefix value "bar"}} {{surround prefix value "bar"}} {{unbound surround "bar" value suffix}} {{surround "bar" value suffix}}'),
       context: EmberObject.create({
@@ -190,7 +190,7 @@ QUnit.skip("should be able to render an bound helper invocation mixed with stati
   equal(view.$().text(), "before-core-bar beforeChanged-coreChanged-bar bar-core-after bar-coreChanged-afterChanged", "only bound values change");
 });
 
-QUnit.skip("should be able to render unbound forms of multi-arg helpers", function() {
+QUnit.test("should be able to render unbound forms of multi-arg helpers", function() {
   view = EmberView.create({
     template: compile("{{fauxconcat foo bar bing}} {{unbound fauxconcat foo bar bing}}"),
     context: EmberObject.create({
@@ -231,7 +231,7 @@ QUnit.skip("should be able to render an unbound helper invocation for helpers wi
   equal(view.$().text(), "SALLY SHOOBY sallytaylor shoobytaylor", "only bound values change");
 });
 
-QUnit.skip("should be able to render an unbound helper invocation in #each helper", function() {
+QUnit.test("should be able to render an unbound helper invocation in #each helper", function() {
   view = EmberView.create({
     template: compile(
       ["{{#each person in people}}",
@@ -285,7 +285,7 @@ QUnit.skip("should be able to render an unbound helper invocation with bound has
   }
 });
 
-QUnit.skip("should be able to render bound form of a helper inside unbound form of same helper", function() {
+QUnit.test("should be able to render bound form of a helper inside unbound form of same helper", function() {
   view = EmberView.create({
     template: compile(
       ["{{#unbound if foo}}",

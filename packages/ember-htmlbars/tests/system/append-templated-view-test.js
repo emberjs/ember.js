@@ -67,7 +67,7 @@ QUnit.skip('does change the context if the view factory has a controller specifi
   equal(view.$().text(), 'controller context - view local controller context');
 });
 
-QUnit.skip('does change the context if a component factory is used', function() {
+QUnit.test('does change the context if a component factory is used', function() {
   var controller = {
     someProp: 'controller context',
     someView: EmberComponent.extend({
@@ -86,7 +86,7 @@ QUnit.skip('does change the context if a component factory is used', function() 
   equal(view.$().text(), 'controller context - view local controller context');
 });
 
-QUnit.skip('does change the context if a component instanced is used', function() {
+QUnit.test('does change the context if a component instance is used', function() {
   var controller = {
     someProp: 'controller context',
     someView: EmberComponent.create({
