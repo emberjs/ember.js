@@ -7,22 +7,47 @@ import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
 import create from "ember-metal/platform/create";
-import { subscribe, addDependency, read } from "ember-metal/streams/utils";
+import { subscribe, addDependency, read, labelsFor, labelFor } from "ember-metal/streams/utils";
 
 export default function subexpr(env, scope, helperName, params, hash) {
   var helper = lookupHelper(helperName, scope.self, env);
 
   Ember.assert("A helper named '"+helperName+"' could not be found", typeof helper === 'function');
 
-  return new SubexprStream(params, hash, helper);
+  var label = labelForSubexpr(params, hash, helperName);
+  return new SubexprStream(params, hash, helper, label);
 }
 
-function SubexprStream(params, hash, helper) {
-  this.init();
+function SubexprStream(params, hash, helper, label) {
+  this.init(label);
   this.source = { params: params, hash: hash };
   this.helper = helper;
   this.subscribed = false;
+}
 
+function labelForSubexpr(params, hash, helperName) {
+  return function() {
+    var paramsLabels = labelsForParams(params);
+    var hashLabels = labelsForHash(hash);
+    var label = `(${helperName}`;
+    if (paramsLabels) { label += ` ${paramsLabels}`; }
+    if (hashLabels) { label += ` ${hashLabels}`; }
+    return `${label})`;
+  };
+}
+
+function labelsForParams(params) {
+  return labelsFor(params).join(" ");
+}
+
+function labelsForHash(hash) {
+  var out = [];
+
+  for (var prop in hash) {
+    out.push(`${prop}=${labelFor(hash[prop])}`);
+  }
+
+  return out.join(" ");
 }
 
 SubexprStream.prototype = create(Stream.prototype);

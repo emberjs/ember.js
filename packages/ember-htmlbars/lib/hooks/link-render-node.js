@@ -47,7 +47,7 @@ function eachParam(list) {
   var stream = chain(list, function() {
     read(listChange);
     return read(list);
-  });
+  }, 'each');
 
   stream.addDependency(listChange);
   return stream;
@@ -71,7 +71,7 @@ function shouldDisplay(predicate) {
     }
 
     return !!predicateVal;
-  });
+  }, 'ShouldDisplay');
 
   addDependency(stream, length);
   addDependency(stream, isTruthy);

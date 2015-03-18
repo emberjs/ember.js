@@ -16,14 +16,18 @@ function KeyStream(source, key) {
   Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);
   Ember.assert("KeyStream error: key must not have a '.'", key.indexOf('.') === -1);
 
-  this.init();
+  // used to get the original path for debugging and legacy purposes
+  var label = this.path = labelFor(source, key);
+
+  this.init(label);
   this.source = source;
   this.dependency = this.addDependency(source);
   this.observedObject = undefined;
   this.key = key;
+}
 
-  // used to get the original path for debugging and legacy purposes
-  this.path = this.source.label ? this.source.label + '.' + key : key;
+function labelFor(source, key) {
+  return source.label ? source.label + '.' + key : key;
 }
 
 KeyStream.prototype = create(Stream.prototype);
@@ -66,6 +70,7 @@ merge(KeyStream.prototype, {
       this.update(function() {
         this.dependency.replace(nextSource);
         this.source = nextSource;
+        this.label = labelFor(nextSource, this.key);
       });
     }
 
