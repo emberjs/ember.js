@@ -599,3 +599,25 @@ QUnit.test("src attribute bound to null is not present", function() {
 
   ok(!view.element.hasAttribute('src'), "src attribute not present");
 });
+
+QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` is [DEPRECATED]', function() {
+  view = EmberView.create({
+    userValue: '42',
+    template: compile('<div {{bind-attr style=view.userValue}}></div>')
+  });
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please preform a security audit and once verified change from `<div {{bind-attr style=someProperty}}>` to `<div style={{{someProperty}}}>/);
+});
+
+QUnit.test('specifying `<div {{{bind-attr style=userValue}}}></div>` works properly', function() {
+  view = EmberView.create({
+    userValue: '42',
+    template: compile('<div {{{bind-attr style=view.userValue}}}></div>')
+  });
+
+  expectNoDeprecation(function() {
+    runAppend(view);
+  });
+});
