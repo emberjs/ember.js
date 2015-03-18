@@ -12,6 +12,7 @@ import { get } from "ember-metal/property_get";
 import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
+import { internal } from "htmlbars-runtime";
 
 function K() { return this; }
 
@@ -56,6 +57,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       renderer = renderer || new Renderer(new DOMHelper());
       this.renderer = renderer;
     }
+
+    this.isDestroyingSubtree = false;
   },
 
   /**
@@ -117,20 +120,16 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     var parent = this.parentView;
 
     if (!this._super(...arguments)) { return; }
-
-
-    // destroy the element -- this will avoid each child view destroying
-    // the element over and over again...
-    if (!this.removedFromDOM && this.renderer) {
-      this.renderer.remove(this, true);
-    }
-
-    // remove from parent if found. Don't call removeFromParent,
-    // as removeFromParent will try to remove the element from
-    // the DOM again.
-    if (parent) { parent.removeChild(this); }
-
     this._transitionTo('destroying', false);
+
+    if (!this.ownerView.isDestroyingSubtree) {
+      this.ownerView.isDestroyingSubtree = true;
+      if (parent) { parent.removeChild(this); }
+      if (this.renderNode) {
+        Ember.assert("BUG: Render node exists without concomitant env.", this.ownerView.env);
+        internal.clearMorph(this.renderNode, this.ownerView.env, true);
+      }
+    }
 
     return this;
   },

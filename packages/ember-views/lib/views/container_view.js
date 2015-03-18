@@ -4,6 +4,10 @@ import Component from "ember-views/views/component";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { forEach } from "ember-metal/enumerable_utils";
+import {
+  observer,
+  beforeObserver
+} from "ember-metal/mixin";
 
 import containerViewTemplate from "ember-htmlbars/templates/container-view";
 containerViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -173,8 +177,7 @@ var ContainerView = Component.extend(MutableArray, {
     Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(userChildViews));
 
     // redefine view's childViews property that was obliterated
-    var childViews = [];
-    set(this, 'childViews', childViews);
+    var childViews = this.childViews = [];
 
     forEach(userChildViews, function(viewName, idx) {
       var view;
@@ -195,44 +198,61 @@ var ContainerView = Component.extend(MutableArray, {
       if (!childViews.length) { childViews = this.childViews = this.childViews.slice(); }
       childViews.push(this.createChildView(currentView));
     }
+
+    set(this, 'length', childViews.length);
   },
+
+  // Normally parentView and childViews are managed at render time.  However,
+  // the ContainerView is an unusual legacy case. People expect to be able to
+  // push a child view into the ContainerView and have its parentView set
+  // appropriately. As a result, we link the child nodes ahead of time and
+  // ignore render-time linking.
+  appendChild(view) {},
+
+  _currentViewWillChange: beforeObserver('currentView', function() {
+    var currentView = get(this, 'currentView');
+    if (currentView) {
+      currentView.destroy();
+    }
+  }),
+
+  _currentViewDidChange: observer('currentView', function() {
+    var currentView = get(this, 'currentView');
+    if (currentView) {
+      Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !currentView._parentView);
+      this.pushObject(currentView);
+    }
+  }),
 
   layout: containerViewTemplate,
 
-  replace(idx, removedCount, addedViews) {
-    var addedCount = addedViews ? get(addedViews, 'length') : 0;
+  replace(idx, removedCount, addedViews=[]) {
+    var addedCount = get(addedViews, 'length');
     var childViews = get(this, 'childViews');
 
-    var removedViews = childViews.slice(idx, idx+removedCount);
-
     this.arrayContentWillChange(idx, removedCount, addedCount);
-    forEach(removedViews, view => view.remove());
 
-    if (addedCount === 0) {
-      childViews.splice(idx, removedCount);
-    } else {
-      if (!childViews.length) {
-        childViews = childViews.slice();
-        set(this, 'childViews', childViews);
-      }
-      forEach(addedViews, view => this.linkChild(view));
-      childViews.splice(idx, removedCount, ...addedViews);
-      this.notifyPropertyChange('childViews');
-    }
+    // Normally parentView and childViews are managed at render time.  However,
+    // the ContainerView is an unusual legacy case. People expect to be able to
+    // push a child view into the ContainerView and have its parentView set
+    // appropriately.
+    //
+    // Because of this, we synchronously fix up the parentView/childViews tree
+    // as soon as views are added or removed, despite the fact that this will
+    // happen automatically when we render.
+    var removedViews = childViews.slice(idx, idx+removedCount);
+    forEach(removedViews, view => this.unlinkChild(view));
+    forEach(addedViews, view => this.linkChild(view));
+
+    childViews.splice(idx, removedCount, ...addedViews);
+
+    this.notifyPropertyChange('childViews');
     this.arrayContentDidChange(idx, removedCount, addedCount);
-
-    //this.childViewsWillChange(this._childViews, idx, removedCount);
-    //this.childViewsDidChange(this._childViews, idx, removedCount, addedCount);
 
     //Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !item._parentView || item._parentView === self; }));
 
     set(this, 'length', childViews.length);
 
-    return this;
-  },
-
-  removeChild(child) {
-    this.removeObject(child);
     return this;
   },
 

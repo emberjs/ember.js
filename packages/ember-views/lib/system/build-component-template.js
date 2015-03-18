@@ -3,34 +3,25 @@ import { read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 
 export default function buildComponentTemplate(componentInfo, attrs, content) {
-  var component, layoutTemplate, contentBlock, blockToRender;
+  var component, layoutTemplate, blockToRender;
   var createdElementBlock = false;
 
   component = componentInfo.component;
 
+  blockToRender = function() {};
+
+  if (content.template) {
+    blockToRender = createContentBlock(content.template, content.scope, content.self, component || null);
+  }
+
+  layoutTemplate = componentInfo.layout;
+
+  if (layoutTemplate) {
+    blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self || {}, component || null, attrs);
+  }
+
   if (component) {
     var tagName = tagNameFor(component);
-    layoutTemplate = componentInfo.layout;
-
-    // Case 1: We are building a component without a template, either because
-    // it's a top-level component without a template, or because it's an
-    // in-template component without a block. If the layout `yields`, it does
-    // nothing.
-    blockToRender = function() {};
-
-    // Case 2: We are building a component with a template, either because
-    // it's a top-level component with a template, or because it's an
-    // in-template component with a block;
-    if (content.template) {
-      blockToRender = createContentBlock(content.template, content.scope, content.self, component);
-    }
-
-    // If there is a layout, it means that the component that we are rendering
-    // has a defined template. If that template yields, it will yield to the
-    // contentBlock defined above.
-    if (layoutTemplate) {
-      blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self || {}, component, attrs);
-    }
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents
@@ -47,17 +38,15 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
     return { createdElement: tagName !== '', block: blockToRender };
   }
 
-  contentBlock = createContentBlock(content.template, content.scope, content.self, null);
-  blockToRender = createLayoutBlock(componentInfo.layout.raw, contentBlock, content.self || {}, null, attrs);
-
   return { createdElement: false, block: blockToRender };
 }
 
 function blockFor(template, options) {
+  Ember.assert("BUG: Must pass a template to blockFor", !!template);
   return internal.blockFor(render, template, options);
 }
 
-function createContentBlock(template, scope, self, component) {
+function createContentBlock(template, scope, self) {
   Ember.assert("BUG: buildComponentTemplate can take a scope or a self, but not both", !(scope && self));
 
   return blockFor(template, {
