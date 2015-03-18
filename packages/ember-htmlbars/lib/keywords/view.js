@@ -6,6 +6,7 @@
 import { readViewFactory } from "ember-views/streams/utils";
 import EmberView from "ember-views/views/view";
 import ComponentNode from "ember-htmlbars/system/component-node";
+import objectKeys from "ember-metal/keys";
 
 export default {
   setupState(state, env, scope, params, hash) {
@@ -19,15 +20,20 @@ export default {
   },
 
   rerender(morph, env, scope, params, hash, template, inverse, visitor) {
-    return morph.state.componentNode.rerender(env, hash, visitor, true);
+    // If the hash is empty, the component cannot have extracted a part
+    // of a mutable param and used it in its layout, because there are
+    // no params at all.
+    if (objectKeys(hash).length) {
+      return morph.state.componentNode.rerender(env, hash, visitor, true);
+    }
   },
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
     var state = node.state;
     var parentView = state.parentView;
 
-    var view = hash.view = viewInstance(node.state.viewClassOrInstance);
-    parentView.linkChild(view);
+    var view = viewInstance(node.state.viewClassOrInstance);
+    parentView.appendChild(view);
 
     node.emberView = view;
 

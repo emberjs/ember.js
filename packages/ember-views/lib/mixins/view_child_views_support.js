@@ -27,8 +27,13 @@ var ViewChildViewsSupport = Mixin.create({
     this.ownerView = this;
   },
 
-  appendChild(view, options) {
-    return this.currentState.appendChild(this, view, options);
+  appendChild(view) {
+    this.linkChild(view);
+    this.childViews.push(view);
+  },
+
+  destroyChild(view) {
+    view.destroy();
   },
 
   /**
@@ -45,14 +50,12 @@ var ViewChildViewsSupport = Mixin.create({
     if (this.isDestroying) { return; }
 
     // update parent node
-    set(view, 'parentView', null);
+    this.unlinkChild(view);
 
     // remove view from childViews array.
     var childViews = get(this, 'childViews');
 
     removeObject(childViews, view);
-
-    this.propertyDidChange('childViews'); // HUH?! what happened to will change?
 
     return this;
   },
@@ -114,7 +117,13 @@ var ViewChildViewsSupport = Mixin.create({
   linkChild(instance) {
     instance.container = this.container;
     instance.parentView = this;
+    instance.trigger('parentViewDidChange');
     instance.ownerView = this.ownerView;
+  },
+
+  unlinkChild(instance) {
+    instance.parentView = null;
+    instance.trigger('parentViewDidChange');
   }
 });
 
