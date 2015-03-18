@@ -2,7 +2,7 @@ import hooks from 'htmlbars-runtime/hooks';
 import render from 'htmlbars-runtime/render';
 import { manualElement } from 'htmlbars-runtime/render';
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import { blockFor } from "../htmlbars-util/template-utils";
+import { blockFor, clearMorph } from "../htmlbars-util/template-utils";
 import { validateChildMorphs } from "htmlbars-runtime/expression-visitor";
 import {
   hostBlock,
@@ -18,7 +18,8 @@ var internal = {
   continueBlock: continueBlock,
   hostYieldWithShadowTemplate: hostYieldWithShadowTemplate,
   visitChildren: visitChildren,
-  validateChildMorphs: validateChildMorphs
+  validateChildMorphs: validateChildMorphs,
+  clearMorph: clearMorph
 };
 
 export {
