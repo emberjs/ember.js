@@ -102,8 +102,8 @@ Dependency.prototype.replace = function(stream, callback, context) {
   @namespace Ember.stream
   @constructor
 */
-function Stream(fn) {
-  this.init();
+function Stream(fn, label) {
+  this.init(label);
   this.compute = fn;
 }
 
@@ -112,14 +112,16 @@ var KeyStream;
 Stream.prototype = {
   isStream: true,
 
-  init() {
+  init(label) {
+    Ember.assert("Must initialize a stream with a label", label !== undefined);
+
     this.state = 'inactive';
     this.cache = undefined;
     this.subscriberHead = null;
     this.subscriberTail = null;
     this.children = undefined;
     this.dependencies = undefined;
-    this._label = undefined;
+    this.label = label;
   },
 
   _makeChildStream(key) {
