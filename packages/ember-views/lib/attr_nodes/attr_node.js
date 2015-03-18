@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import {
   read,
   subscribe,
@@ -26,6 +27,8 @@ AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isDestroying = false;
   this.lastValue = null;
   this.hasRenderedInitially = false;
+  this._dynamicStyleDeprecationMessage = '`<div style="foo: {{property}}">` to ' +
+    '`<div style="foo: {{{property}}}">`.';
 
   subscribe(this.attrValue, this.rerender, this);
 };
@@ -59,10 +62,26 @@ AttrNode.prototype.render = function render(buffer) {
   }
 
   if (this.lastValue !== null || value !== null) {
+    this._deprecateEscapedStyle(value);
     this._morph.setContent(value);
     this.lastValue = value;
     this.hasRenderedInitially = true;
   }
+};
+
+AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedStyle(value) {
+  Ember.deprecate(
+    'Dynamic content in the `style` attribute is not escaped and may pose a security risk. ' +
+    'Please preform a security audit and once verified change from ' +
+    this._dynamicStyleDeprecationMessage,
+    (function(name, value, escaped) {
+      // SafeString
+      if (value && value.toHTML) {
+        return true;
+      }
+      return name !== 'style' || !escaped;
+    }(this.attrName, value, this._morph.escaped))
+  );
 };
 
 AttrNode.prototype.rerender = function render() {
