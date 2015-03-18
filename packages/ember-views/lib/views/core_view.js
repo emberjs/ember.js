@@ -59,6 +59,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
 
     this.isDestroyingSubtree = false;
+    this._dispatching = null;
   },
 
   /**
@@ -129,6 +130,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
         Ember.assert("BUG: Render node exists without concomitant env.", this.ownerView.env);
         internal.clearMorph(this.renderNode, this.ownerView.env, true);
       }
+      this.ownerView.isDestroyingSubtree = false;
     }
 
     return this;

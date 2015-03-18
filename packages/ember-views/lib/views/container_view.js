@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import MutableArray from "ember-runtime/mixins/mutable_array";
 import Component from "ember-views/views/component";
 
@@ -170,6 +171,13 @@ containerViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @extends Ember.View
 */
 var ContainerView = Component.extend(MutableArray, {
+  willWatchProperty(prop) {
+    Ember.deprecate(
+      "ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.",
+      !prop.match(/\[]/) && prop.indexOf('@') !== 0
+    );
+  },
+
   init() {
     this._super(...arguments);
 
@@ -229,6 +237,14 @@ var ContainerView = Component.extend(MutableArray, {
   replace(idx, removedCount, addedViews=[]) {
     var addedCount = get(addedViews, 'length');
     var childViews = get(this, 'childViews');
+
+    Ember.assert("You can't add a child to a container - the child is already a child of another view", () => {
+      for (var i=0, l=addedViews.length; i<l; i++) {
+        var item = addedViews[i];
+        if (item.parentView && item.parentView !== this) { return false; }
+      }
+      return true;
+    });
 
     this.arrayContentWillChange(idx, removedCount, addedCount);
 

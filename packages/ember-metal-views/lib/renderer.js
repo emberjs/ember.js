@@ -38,11 +38,14 @@ Renderer.prototype.revalidateTopLevelView =
 
 Renderer.prototype.dispatchLifecycleHooks =
   function Renderer_dispatchLifecycleHooks(env) {
+    var ownerView = env.view;
+
     var lifecycleHooks = env.lifecycleHooks;
     var i, hook;
 
     for (i=0; i<lifecycleHooks.length; i++) {
       hook = lifecycleHooks[i];
+      ownerView._dispatching = hook.type;
 
       switch (hook.type) {
         case 'didInsertElement': this.didInsertElement(hook.view); break;
@@ -52,6 +55,7 @@ Renderer.prototype.dispatchLifecycleHooks =
       this.didRender(hook.view);
     }
 
+    ownerView._dispatching = null;
     env.lifecycleHooks = [];
   };
 

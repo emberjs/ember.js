@@ -1247,6 +1247,8 @@ var View = CoreView.extend(
   },
 
   scheduleRevalidate() {
+    Ember.assert(`A component was modified during the ${this._dispatching} hook. You should not change any properties on components, models or services during ${this._dispatching}`, !this._dispatching);
+
     if (!this.scheduledRevalidation) {
       this.scheduledRevalidation = true;
       run.scheduleOnce('render', this, this.revalidate);
