@@ -16,10 +16,7 @@ import {
 import isNone from 'ember-metal/is_none';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import { map } from 'ember-metal/enumerable_utils';
-import {
-  Mixin,
-  required
-} from 'ember-metal/mixin';
+import { Mixin } from 'ember-metal/mixin';
 import {
   propertyWillChange,
   propertyDidChange
@@ -93,12 +90,14 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
 export default Mixin.create(Enumerable, {
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Your array must support the `length` property. Your replace methods should
     set this property whenever it changes.
 
     @property {Number} length
   */
-  length: required(),
+  length: null,
 
   /**
     Returns the object at the given `index`. If the given `index` is negative

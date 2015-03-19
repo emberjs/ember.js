@@ -3,7 +3,7 @@ import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
-import {required, Mixin, observer} from "ember-metal/mixin";
+import {Mixin, observer} from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 import {on} from "ember-metal/events";
 import EmberObject from "ember-runtime/system/object";
@@ -245,7 +245,7 @@ QUnit.test("Triggers init", function() {
 
 QUnit.test('creating an object with required properties', function() {
   var ClassA = EmberObject.extend({
-    foo: required()
+    foo: null // required
   });
 
   var obj = ClassA.createWithMixins({ foo: 'FOO' }); // should not throw

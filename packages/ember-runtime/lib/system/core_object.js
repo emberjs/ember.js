@@ -34,7 +34,7 @@ import { sendEvent } from "ember-metal/events";
 import {
   IS_BINDING,
   Mixin,
-  required
+  REQUIRED
 } from "ember-metal/mixin";
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
@@ -462,9 +462,9 @@ CoreObject.__super__ = null;
 
 var ClassMixinProps = {
 
-  ClassMixin: required(),
+  ClassMixin: REQUIRED,
 
-  PrototypeMixin: required(),
+  PrototypeMixin: REQUIRED,
 
   isClass: true,
 

@@ -5,7 +5,7 @@
 
 
 import { get } from "ember-metal/property_get";
-import { required, Mixin } from "ember-metal/mixin";
+import { Mixin } from "ember-metal/mixin";
 import { Freezable } from "ember-runtime/mixins/freezable";
 import { fmt } from "ember-runtime/system/string";
 import EmberError from 'ember-metal/error';
@@ -28,6 +28,8 @@ import EmberError from 'ember-metal/error';
 */
 export default Mixin.create({
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Override to return a copy of the receiver. Default implementation raises
     an exception.
 
@@ -35,7 +37,7 @@ export default Mixin.create({
     @param {Boolean} deep if `true`, a deep copy of the object should be made
     @return {Object} copy of receiver
   */
-  copy: required(Function),
+  copy: null,
 
   /**
     If the object implements `Ember.Freezable`, then this will return a new

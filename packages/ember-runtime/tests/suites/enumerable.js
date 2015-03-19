@@ -1,6 +1,5 @@
 import { Suite } from 'ember-runtime/tests/suites/suite';
 import EmberObject from "ember-runtime/system/object";
-import {required} from "ember-metal/mixin";
 import {guidFor, generateGuid} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {get} from "ember-metal/property_get";
@@ -161,6 +160,8 @@ var ObserverClass = EmberObject.extend({
 
 var EnumerableTests = Suite.extend({
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement to return a new enumerable object for testing.  Should accept
     either no parameters, a single number (indicating the desired length of
     the collection) or an array of objects.
@@ -170,7 +171,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Ember.Enumerable} a new enumerable
   */
-  newObject: required(Function),
+  newObject: null,
 
   /**
     Implement to return a set of new fixture strings that can be applied to
@@ -211,6 +212,8 @@ var EnumerableTests = Suite.extend({
   },
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement accept an instance of the enumerable and return an array
     containing the objects in the enumerable.  This is used only for testing
     so performance is not important.
@@ -220,7 +223,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of items
   */
-  toArray: required(Function),
+  toArray: null,
 
   /**
     Implement this method if your object can mutate internally (even if it

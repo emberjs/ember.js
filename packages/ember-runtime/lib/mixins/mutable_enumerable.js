@@ -1,6 +1,6 @@
 import { forEach } from "ember-metal/enumerable_utils";
 import Enumerable from "ember-runtime/mixins/enumerable";
-import {Mixin, required} from "ember-metal/mixin";
+import { Mixin } from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
 
 /**
@@ -63,7 +63,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} object The object to add to the enumerable.
     @return {Object} the passed object
   */
-  addObject: required(Function),
+  addObject: null,
 
   /**
     Adds each object in the passed enumerable to the receiver.
@@ -93,7 +93,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} object The object to remove from the enumerable.
     @return {Object} the passed object
   */
-  removeObject: required(Function),
+  removeObject: null,
 
 
   /**

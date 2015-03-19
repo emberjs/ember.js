@@ -9,10 +9,12 @@ var PartialMixin, FinalMixin, obj;
 
 QUnit.module('Module.required', {
   setup() {
-    PartialMixin = Mixin.create({
-      foo: required(),
-      bar: 'BAR'
-    });
+    expectDeprecation(function() {
+      PartialMixin = Mixin.create({
+        foo: required(),
+        bar: 'BAR'
+      });
+    }, "Ember.required is deprecated as its behavior is inconsistent and unreliable.");
 
     FinalMixin = Mixin.create({
       foo: 'FOO'
