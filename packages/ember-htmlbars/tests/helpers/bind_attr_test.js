@@ -608,7 +608,7 @@ QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` is [DEPRECATE
 
   expectDeprecation(function() {
     runAppend(view);
-  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please preform a security audit and once verified change from `<div {{bind-attr style=someProperty}}>` to `<div style={{{someProperty}}}>/);
+  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please perform a security audit and once verified change from `<div {{bind-attr style=someProperty}}>` to `<div style={{{someProperty}}}>/);
 });
 
 QUnit.test('specifying `<div {{{bind-attr style=userValue}}}></div>` works properly', function() {
