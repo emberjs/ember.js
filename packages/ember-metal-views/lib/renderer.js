@@ -152,7 +152,8 @@ Renderer.prototype.willRender = function (view) {
 };
 
 Renderer.prototype.remove = function (view, shouldDestroy) {
-  // TODO: Is there more cleanup needed when removing a view?
+  this.willDestroyElement(view);
+  view._transitionTo('destroying', false);
 };
 
 Renderer.prototype.willRemoveElement = function (view) {};

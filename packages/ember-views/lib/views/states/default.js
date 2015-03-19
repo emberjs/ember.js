@@ -25,13 +25,8 @@ export default {
     return true; // continue event propagation
   },
 
-  destroyElement(view) {
-    if (view.renderer) {
-      view.renderer.remove(view, false);
-    }
-
-    return view;
-  },
+  cleanup: K,
+  destroyElement: K,
 
   rerender: K,
   invokeObserver: K

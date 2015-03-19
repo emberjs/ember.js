@@ -94,6 +94,19 @@
 
     <script>
       (function() {
+        if (QUnit.urlParams.forceskip) {
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return QUnit.test(string, callback);
+          };
+        } else {
+          var skip = QUnit.skip;
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return skip(string, callback);
+          }
+        }
+
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
 
@@ -148,13 +161,6 @@
 
         if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
         if (!QUnit.urlParams.nojshint && moduleName.match(/[-_.]jshint$/)) { Ember.__loader.require(moduleName); }
-
-        if (QUnit.urlParams.forceskip) {
-          QUnit.skip = function(string, callback) {
-            string = "SKIPPED: " + string;
-            return QUnit.test(string, callback);
-          };
-        }
       }
     </script>
 

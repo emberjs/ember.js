@@ -23,7 +23,7 @@ QUnit.module("EmberView#createChildView", {
   }
 });
 
-QUnit.skip("should create view from class with any passed attributes", function() {
+QUnit.test("should create view from class with any passed attributes", function() {
   var attrs = {
     foo: "baz"
   };

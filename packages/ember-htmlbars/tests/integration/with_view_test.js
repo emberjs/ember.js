@@ -56,7 +56,7 @@ QUnit.skip('View should update when the property used with the #with helper chan
   equal(view.$('#first').text(), 'bazam', 'view updates when a bound property changes');
 });
 
-QUnit.skip('should expose a view keyword [DEPRECATED]', function() {
+QUnit.test('should expose a view keyword [DEPRECATED]', function() {
   var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
   view = EmberView.create({
     container: container,
@@ -79,7 +79,7 @@ QUnit.skip('should expose a view keyword [DEPRECATED]', function() {
   equal(view.$().text(), 'barbang', 'renders values from view and child view');
 });
 
-QUnit.skip('bindings can be `this`, in which case they *are* the current context [DEPRECATED]', function() {
+QUnit.test('bindings can be `this`, in which case they *are* the current context [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -162,7 +162,7 @@ QUnit.test('views render their template in the context of the parent view\'s con
   equal(view.$('h1').text(), 'Lana del Heeeyyyyyy', 'renders properties from parent context');
 });
 
-QUnit.skip('views make a view keyword available that allows template to reference view context', function() {
+QUnit.test('views make a view keyword available that allows template to reference view context', function() {
   registry.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({

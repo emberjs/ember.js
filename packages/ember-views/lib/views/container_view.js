@@ -215,7 +215,13 @@ var ContainerView = Component.extend(MutableArray, {
   // push a child view into the ContainerView and have its parentView set
   // appropriately. As a result, we link the child nodes ahead of time and
   // ignore render-time linking.
-  appendChild(view) {},
+  appendChild(view) {
+    // This occurs if the view being appended is the empty view, rather than
+    // a view eagerly inserted into the childViews array.
+    if (view.parentView !== this) {
+      this.linkChild(view);
+    }
+  },
 
   _currentViewWillChange: beforeObserver('currentView', function() {
     var currentView = get(this, 'currentView');

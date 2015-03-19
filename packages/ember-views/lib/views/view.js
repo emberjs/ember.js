@@ -33,6 +33,7 @@ import ClassNamesSupport from "ember-views/mixins/class_names_support";
 import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
 import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
 import VisibilitySupport from "ember-views/mixins/visibility_support";
+import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
 
 function K() { return this; }
 
@@ -676,7 +677,8 @@ var View = CoreView.extend(
   ClassNamesSupport,
   LegacyViewSupport,
   InstrumentationSupport,
-  VisibilitySupport, {
+  VisibilitySupport,
+  CompatAttrsProxy, {
   concatenatedProperties: ['attributeBindings'],
 
   /**

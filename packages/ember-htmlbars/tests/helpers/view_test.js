@@ -223,7 +223,7 @@ QUnit.skip("View lookup - view.computed", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-QUnit.skip("id bindings downgrade to one-time property lookup", function() {
+QUnit.test("id bindings downgrade to one-time property lookup", function() {
   view = EmberView.extend({
     template: compile("{{#view id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
     meshuggah: 'stengah'
@@ -236,7 +236,7 @@ QUnit.skip("id bindings downgrade to one-time property lookup", function() {
   equal(jQuery('#stengah').text(), 'omg', "id didn't change");
 });
 
-QUnit.skip("specifying `id` as a static value works properly", function() {
+QUnit.test("specifying `id` as a static value works properly", function() {
   view = EmberView.extend({
     template: compile("{{#view id='blah'}}{{view.parentView.meshuggah}}{{/view}}"),
     meshuggah: 'stengah'
@@ -391,7 +391,7 @@ QUnit.skip("Should apply class without condition always", function() {
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
 
-QUnit.skip("Should apply classes when bound controller.* property specified", function() {
+QUnit.test("Should apply classes when bound controller.* property specified", function() {
   view = EmberView.create({
     controller: {
       someProp: 'foo'
@@ -1073,7 +1073,7 @@ QUnit.skip('a view helper\'s bindings are to the parent context', function() {
   equal(view.$('h1 .mauve').text(), 'foo bar', 'renders property bound in template from subview context');
 });
 
-QUnit.skip('should expose a controller keyword when present on the view', function() {
+QUnit.test('should expose a controller keyword when present on the view', function() {
   var templateString = '{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}';
   view = EmberView.create({
     container: container,
@@ -1110,7 +1110,7 @@ QUnit.skip('should expose a controller keyword when present on the view', functi
   equal(view.$().text(), 'aString', 'renders the controller itself if no additional path is specified');
 });
 
-QUnit.skip('should expose a controller keyword that can be used in conditionals', function() {
+QUnit.test('should expose a controller keyword that can be used in conditionals', function() {
   var templateString = '{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}';
   view = EmberView.create({
     container: container,
@@ -1350,7 +1350,9 @@ QUnit.test("{{view}} asserts that a view subclass instance is present off contro
   }, /must be a subclass or an instance of Ember.View/);
 });
 
-QUnit.skip('Specifying `id` to {{view}} is set on the view.', function() {
+QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
+  expectDeprecation(/You tried to look up an attribute directly on the component/);
+
   registry.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));
@@ -1368,7 +1370,9 @@ QUnit.skip('Specifying `id` to {{view}} is set on the view.', function() {
   equal(view.$('#view-elementId').text(), 'bar', 'the views elementId property is set');
 });
 
-QUnit.skip('Specifying `id` to {{view}} does not allow bound id changes.', function() {
+QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', function() {
+  expectDeprecation(/You tried to look up an attribute directly on the component/);
+
   registry.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));

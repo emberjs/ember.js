@@ -46,12 +46,13 @@ function blockFor(template, options) {
   return internal.blockFor(render, template, options);
 }
 
-function createContentBlock(template, scope, self) {
+function createContentBlock(template, scope, self, component) {
   Ember.assert("BUG: buildComponentTemplate can take a scope or a self, but not both", !(scope && self));
 
   return blockFor(template, {
     scope: scope,
-    self: self
+    self: self,
+    options: { view: component }
   });
 }
 

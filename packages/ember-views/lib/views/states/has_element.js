@@ -41,6 +41,10 @@ merge(hasElement, {
     renderNode.ownerNode.emberView.scheduleRevalidate();
   },
 
+  cleanup(view) {
+    view.currentState.destroyElement(view);
+  },
+
   // once the view is already in the DOM, destroying it removes it
   // from the DOM, nukes its element, and puts it back into the
   // preRender state if inDOM.
