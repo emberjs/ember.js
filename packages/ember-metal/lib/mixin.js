@@ -740,6 +740,7 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @for Ember
 */
 export function required() {
+  Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false);
   return REQUIRED;
 }
 
@@ -937,5 +938,7 @@ export function beforeObserver(...args) {
 
 export {
   IS_BINDING,
-  Mixin
+  Mixin,
+  required,
+  REQUIRED
 };

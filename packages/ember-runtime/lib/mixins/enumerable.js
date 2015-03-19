@@ -12,7 +12,6 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import {
   Mixin,
-  required,
   aliasMethod
 } from 'ember-metal/mixin';
 import { indexOf } from 'ember-metal/enumerable_utils';
@@ -91,6 +90,8 @@ function iter(key, value) {
 export default Mixin.create({
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement this method to make your class enumerable.
 
     This method will be called repeatedly during enumeration. The index value
@@ -123,7 +124,7 @@ export default Mixin.create({
     @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined
   */
-  nextObject: required(Function),
+  nextObject: null,
 
   /**
     Helper method returns the first object from a collection. This is usually

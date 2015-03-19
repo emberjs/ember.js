@@ -23,13 +23,13 @@ export var Resolver = EmberObject.extend({
     @property namespace
   */
   namespace: null,
-  normalize:         Ember.required(Function),
-  resolve:           Ember.required(Function),
-  parseName:         Ember.required(Function),
-  lookupDescription: Ember.required(Function),
-  makeToString:      Ember.required(Function),
-  resolveOther:      Ember.required(Function),
-  _logLookup:        Ember.required(Function)
+  normalize:         null, // required
+  resolve:           null, // required
+  parseName:         null, // required
+  lookupDescription: null, // required
+  makeToString:      null, // required
+  resolveOther:      null, // required
+  _logLookup:        null  // required
 });
 
 /**
