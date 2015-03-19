@@ -6,7 +6,7 @@ export default function eachHelper(params, hash, blocks) {
   var keyPath = hash.key;
 
   // TODO: Correct falsy semantics
-  if (!list) {
+  if (!list || get(list, 'length') === 0) {
     if (blocks.inverse.yield) { blocks.inverse.yield(); }
     return;
   }

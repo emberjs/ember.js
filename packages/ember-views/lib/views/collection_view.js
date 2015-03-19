@@ -5,12 +5,10 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import { isGlobalPath } from "ember-metal/binding";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { fmt } from "ember-runtime/system/string";
 import ContainerView from "ember-views/views/container_view";
-import CoreView from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import {
   observer,
@@ -308,23 +306,7 @@ var CollectionView = ContainerView.extend({
     @param {Number} removed number of object to be removed from content
   */
   arrayWillChange(content, start, removedCount) {
-    // If the contents were empty before and this template collection has an
-    // empty view remove it now.
-    var emptyView = get(this, 'emptyView');
-    if (emptyView && emptyView instanceof View) {
-      emptyView.removeFromParent();
-    }
-
-    // Loop through child views that correspond with the removed items.
-    // Note that we loop from the end of the array to the beginning because
-    // we are mutating it as we go.
-    var childViews = this._childViews;
-    var childView, idx;
-
-    for (idx = start + removedCount - 1; idx >= start; idx--) {
-      childView = childViews[idx];
-      childView.destroy();
-    }
+    this.replace(start, removedCount, []);
   },
 
   /**
@@ -343,7 +325,7 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange(content, start, removed, added) {
     var addedViews = [];
-    var view, item, idx, len, itemViewClass, emptyView, itemViewProps;
+    var view, item, idx, len, itemViewClass, itemViewProps;
 
     len = content ? get(content, 'length') : 0;
 
@@ -380,32 +362,13 @@ var CollectionView = ContainerView.extend({
 
       if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
         if (this.blockParams > 1) {
-          var childViews = this._childViews;
+          var childViews = this.childViews;
           for (idx = start+added; idx < len; idx++) {
             view = childViews[idx];
             set(view, 'contentIndex', idx);
           }
         }
       }
-    } else {
-      emptyView = get(this, 'emptyView');
-
-      if (!emptyView) { return; }
-
-      if ('string' === typeof emptyView && isGlobalPath(emptyView)) {
-        emptyView = get(emptyView) || emptyView;
-      }
-
-      emptyView = this.createChildView(emptyView);
-
-      addedViews.push(emptyView);
-      set(this, 'emptyView', emptyView);
-
-      if (CoreView.detect(emptyView)) {
-        this._createdEmptyView = emptyView;
-      }
-
-      this.replace(start, 0, addedViews);
     }
   },
 

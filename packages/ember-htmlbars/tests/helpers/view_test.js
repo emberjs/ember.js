@@ -672,7 +672,7 @@ QUnit.skip('{{view}} should not override class bindings defined on a child view'
   ok(view.$('.visible').length > 0, 'class bindings are not overriden');
 });
 
-QUnit.skip('child views can be inserted using the {{view}} helper', function() {
+QUnit.test('child views can be inserted using the {{view}} helper', function() {
   registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.labelView}}'));
   registry.register('template:nested', compile('<div id="child-view">Goodbye {{cruel}} {{world}}</div>'));
 
@@ -702,7 +702,7 @@ QUnit.skip('child views can be inserted using the {{view}} helper', function() {
   ok(view.$().text().match(/Hello world!.*Goodbye cruel world\!/), 'parent view should appear before the child view');
 });
 
-QUnit.skip('should be able to explicitly set a view\'s context', function() {
+QUnit.test("should be able to explicitly set a view's context", function() {
   var context = EmberObject.create({
     test: 'test'
   });

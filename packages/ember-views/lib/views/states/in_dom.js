@@ -27,9 +27,8 @@ merge(inDOM, {
   },
 
   exit(view) {
-    if (!this.isVirtual) {
-      view._unregister();
-    }
+    view._unregister();
+    view.renderer.willDestroyElement(view);
   },
 
   appendAttr(view, attrNode) {
