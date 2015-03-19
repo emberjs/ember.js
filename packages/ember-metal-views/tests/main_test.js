@@ -15,7 +15,7 @@ testsFor("ember-metal-views", {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("by default, view renders as a div", function() {
+QUnit.skip("by default, view renders as a div", function() {
   view = { isView: true };
 
   appendTo(view);
@@ -23,7 +23,7 @@ QUnit.test("by default, view renders as a div", function() {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("tagName can be specified", function() {
+QUnit.skip("tagName can be specified", function() {
   view = {
     isView: true,
     tagName: 'span'
@@ -35,7 +35,7 @@ QUnit.test("tagName can be specified", function() {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("textContent can be specified", function() {
+QUnit.skip("textContent can be specified", function() {
   view = {
     isView: true,
     textContent: 'ohai <a>derp</a>'
@@ -47,7 +47,7 @@ QUnit.test("textContent can be specified", function() {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("innerHTML can be specified", function() {
+QUnit.skip("innerHTML can be specified", function() {
   view = {
     isView: true,
     innerHTML: 'ohai <a>derp</a>'
@@ -59,7 +59,7 @@ QUnit.test("innerHTML can be specified", function() {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("innerHTML tr can be specified", function() {
+QUnit.skip("innerHTML tr can be specified", function() {
   view = {
     isView: true,
     tagName: 'table',
@@ -72,7 +72,7 @@ QUnit.test("innerHTML tr can be specified", function() {
 });
 
 // Test the behavior of the helper createElement stub
-QUnit.test("element can be specified", function() {
+QUnit.skip("element can be specified", function() {
   view = {
     isView: true,
     element: document.createElement('i')
@@ -83,7 +83,7 @@ QUnit.test("element can be specified", function() {
   equalHTML('qunit-fixture', "<i></i>");
 });
 
-QUnit.test("willInsertElement hook", function() {
+QUnit.skip("willInsertElement hook", function() {
   expect(3);
 
   view = {
@@ -101,7 +101,7 @@ QUnit.test("willInsertElement hook", function() {
   equalHTML('qunit-fixture', "<div>you gone and done inserted that element</div>");
 });
 
-QUnit.test("didInsertElement hook", function() {
+QUnit.skip("didInsertElement hook", function() {
   expect(3);
 
   view = {
@@ -119,7 +119,7 @@ QUnit.test("didInsertElement hook", function() {
   equalHTML('qunit-fixture', "<div>you gone and done inserted that element</div>");
 });
 
-QUnit.test("classNames - array", function() {
+QUnit.skip("classNames - array", function() {
   view = {
     isView: true,
     classNames: ['foo', 'bar'],
@@ -130,7 +130,7 @@ QUnit.test("classNames - array", function() {
   equalHTML('qunit-fixture', '<div class="foo bar">ohai</div>');
 });
 
-QUnit.test("classNames - string", function() {
+QUnit.skip("classNames - string", function() {
   view = {
     isView: true,
     classNames: 'foo bar',

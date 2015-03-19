@@ -23,7 +23,7 @@ QUnit.module("EmberView#createChildView", {
   }
 });
 
-QUnit.test("should create view from class with any passed attributes", function() {
+QUnit.skip("should create view from class with any passed attributes", function() {
   var attrs = {
     foo: "baz"
   };
@@ -54,7 +54,7 @@ QUnit.test("should create property on parentView to a childView instance if prov
   equal(get(view, 'someChildView'), newView);
 });
 
-QUnit.test("should update a view instances attributes, including the _parentView and container properties", function() {
+QUnit.skip("should update a view instances attributes, including the _parentView and container properties", function() {
   var attrs = {
     foo: "baz"
   };
@@ -69,7 +69,7 @@ QUnit.test("should update a view instances attributes, including the _parentView
   deepEqual(newView, myView);
 });
 
-QUnit.test("should create from string via container lookup", function() {
+QUnit.skip("should create from string via container lookup", function() {
   var ChildViewClass = EmberView.extend();
   var fullName = 'view:bro';
 

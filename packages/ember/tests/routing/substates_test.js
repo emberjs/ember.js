@@ -373,7 +373,7 @@ QUnit.test("Loading actions bubble to root, but don't enter substates above pivo
   equal(appController.get('currentPath'), "grandma.smells", "Finished transition");
 });
 
-QUnit.test("Default error event moves into nested route", function() {
+QUnit.skip("Default error event moves into nested route", function() {
 
   expect(5);
 
@@ -485,7 +485,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
   });
 
-  QUnit.test("Default error event moves into nested route, prioritizing more specifically named error route", function() {
+  QUnit.skip("Default error event moves into nested route, prioritizing more specifically named error route", function() {
 
     expect(5);
 
@@ -602,7 +602,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
 
-  QUnit.test("Prioritized error substate entry works with preserved-namespace nested routes", function() {
+  QUnit.skip("Prioritized error substate entry works with preserved-namespace nested routes", function() {
 
     expect(1);
 
@@ -673,7 +673,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
 
-  QUnit.test("Prioritized error substate entry works with auto-generated index routes", function() {
+  QUnit.skip("Prioritized error substate entry works with auto-generated index routes", function() {
 
     expect(1);
 
@@ -710,7 +710,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "FOO ERROR: did it broke?", "foo.index_error was entered");
   });
 
-  QUnit.test("Rejected promises returned from ApplicationRoute transition into top-level application_error", function() {
+  QUnit.skip("Rejected promises returned from ApplicationRoute transition into top-level application_error", function() {
 
     expect(2);
 

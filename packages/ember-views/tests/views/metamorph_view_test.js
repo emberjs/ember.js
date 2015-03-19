@@ -32,7 +32,7 @@ QUnit.module("Metamorph views", {
   }
 });
 
-QUnit.test("a Metamorph view is not a view's parentView", function() {
+QUnit.skip("a Metamorph view is not a view's parentView", function() {
   childView = EmberView.create({
     render(buffer) {
       buffer.push("<p>Bye bros</p>");
@@ -90,7 +90,7 @@ QUnit.module("Metamorph views correctly handle DOM", {
   }
 });
 
-QUnit.test("a metamorph view generates without a DOM node", function() {
+QUnit.skip("a metamorph view generates without a DOM node", function() {
   var meta = jQuery("> h2", "#" + get(view, 'elementId'));
 
   equal(meta.length, 1, "The metamorph element should be directly inside its parent");
@@ -105,7 +105,7 @@ QUnit.test("a metamorph view can be removed from the DOM", function() {
   equal(meta.length, 0, "the associated DOM was removed");
 });
 
-QUnit.test("a metamorph view can be rerendered", function() {
+QUnit.skip("a metamorph view can be rerendered", function() {
   equal(jQuery('#from-meta').text(), "Jason", "precond - renders to the DOM");
 
   set(metamorphView, 'powerRanger', 'Trini');
@@ -120,7 +120,7 @@ QUnit.test("a metamorph view can be rerendered", function() {
 // Redefining without setup/teardown
 QUnit.module("Metamorph views correctly handle DOM");
 
-QUnit.test("a metamorph view calls its children's willInsertElement and didInsertElement", function() {
+QUnit.skip("a metamorph view calls its children's willInsertElement and didInsertElement", function() {
   var parentView;
   var willInsertElementCalled = false;
   var didInsertElementCalled = false;

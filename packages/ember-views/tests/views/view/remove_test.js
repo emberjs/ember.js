@@ -25,17 +25,17 @@ QUnit.module("View#removeChild", {
   }
 });
 
-QUnit.test("returns receiver", function() {
+QUnit.skip("returns receiver", function() {
   equal(parentView.removeChild(child), parentView, 'receiver');
 });
 
-QUnit.test("removes child from parent.childViews array", function() {
+QUnit.skip("removes child from parent.childViews array", function() {
   ok(indexOf(get(parentView, 'childViews'), child)>=0, 'precond - has child in childViews array before remove');
   parentView.removeChild(child);
   ok(indexOf(get(parentView, 'childViews'), child)<0, 'removed child');
 });
 
-QUnit.test("sets parentView property to null", function() {
+QUnit.skip("sets parentView property to null", function() {
   ok(get(child, 'parentView'), 'precond - has parentView');
   parentView.removeChild(child);
   ok(!get(child, 'parentView'), 'parentView is now null');
@@ -86,7 +86,7 @@ QUnit.module("View#removeFromParent", {
   }
 });
 
-QUnit.test("removes view from parent view", function() {
+QUnit.skip("removes view from parent view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
@@ -108,7 +108,7 @@ QUnit.test("removes view from parent view", function() {
   equal(parentView.$('div').length, 0, "removes DOM element from parent");
 });
 
-QUnit.test("returns receiver", function() {
+QUnit.skip("returns receiver", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
@@ -134,7 +134,7 @@ QUnit.test("does nothing if not in parentView", function() {
 });
 
 
-QUnit.test("the DOM element is gone after doing append and remove in two separate runloops", function() {
+QUnit.skip("the DOM element is gone after doing append and remove in two separate runloops", function() {
   view = View.create();
   run(function() {
     view.append();
@@ -147,7 +147,7 @@ QUnit.test("the DOM element is gone after doing append and remove in two separat
   ok(viewElem.length === 0, "view's element doesn't exist in DOM");
 });
 
-QUnit.test("the DOM element is gone after doing append and remove in a single runloop", function() {
+QUnit.skip("the DOM element is gone after doing append and remove in a single runloop", function() {
   view = View.create();
   run(function() {
     view.append();

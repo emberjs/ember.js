@@ -20,7 +20,7 @@ QUnit.module("EmberView#render", {
   }
 });
 
-QUnit.test("default implementation does not render child views", function() {
+QUnit.skip("default implementation does not render child views", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var rendered = 0;
@@ -51,7 +51,7 @@ QUnit.test("default implementation does not render child views", function() {
 
 });
 
-QUnit.test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
+QUnit.skip("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var rendered = 0;
@@ -172,7 +172,7 @@ QUnit.test("should not add role attribute unless one is specified", function() {
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
 
-QUnit.test("should re-render if the context is changed", function() {
+QUnit.skip("should re-render if the context is changed", function() {
   view = EmberView.create({
     elementId: 'template-context-test',
     context: { foo: "bar" },
@@ -197,7 +197,7 @@ QUnit.test("should re-render if the context is changed", function() {
   equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });
 
-QUnit.test("renders contained view with omitted start tag and parent view context", function() {
+QUnit.skip("renders contained view with omitted start tag and parent view context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.createWithMixins({

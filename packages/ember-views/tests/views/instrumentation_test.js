@@ -51,7 +51,7 @@ QUnit.test("generates the proper instrumentation details when called directly", 
   confirmPayload(payload, view);
 });
 
-QUnit.test("should add ember-view to views", function() {
+QUnit.skip("should add ember-view to views", function() {
   run(view, 'createElement');
 
   confirmPayload(beforeCalls[0], view);

@@ -26,7 +26,7 @@ QUnit.test("returns the receiver", function() {
   equal(ret, view, 'returns receiver');
 });
 
-QUnit.test('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
+QUnit.skip('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
   expect(1);
 
   view = EmberView.create({
@@ -42,7 +42,7 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
   }, /You cannot use `classNameBindings` on a tag-less view/);
 });
 
-QUnit.test("calls render and turns resultant string into element", function() {
+QUnit.skip("calls render and turns resultant string into element", function() {
   view = EmberView.create({
     tagName: 'span',
 
@@ -63,7 +63,7 @@ QUnit.test("calls render and turns resultant string into element", function() {
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
-QUnit.test("calls render and parses the buffer string in the right context", function() {
+QUnit.skip("calls render and parses the buffer string in the right context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -91,7 +91,7 @@ QUnit.test("calls render and parses the buffer string in the right context", fun
   equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
-QUnit.test("does not wrap many tr children in tbody elements", function() {
+QUnit.skip("does not wrap many tr children in tbody elements", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({

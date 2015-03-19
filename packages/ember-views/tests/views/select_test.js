@@ -83,7 +83,7 @@ QUnit.test("should become disabled if the disabled attribute is changed", functi
   ok(!select.element.disabled, 'disabled property is falsy');
 });
 
-QUnit.test("can have options", function() {
+QUnit.skip("can have options", function() {
   select.set('content', Ember.A([1, 2, 3]));
 
   append();
@@ -116,7 +116,7 @@ QUnit.test("select name is updated when setting name property of view", function
   equal(select.$().attr('name'), "bar", "updates select after name changes");
 });
 
-QUnit.test("can specify the property path for an option's label and value", function() {
+QUnit.skip("can specify the property path for an option's label and value", function() {
   select.set('content', Ember.A([
     { id: 1, firstName: 'Yehuda' },
     { id: 2, firstName: 'Tom' }
@@ -133,7 +133,7 @@ QUnit.test("can specify the property path for an option's label and value", func
   deepEqual(map(select.$('option').toArray(), function(el) { return jQuery(el).attr('value'); }), ["1", "2"], "Options should have values");
 });
 
-QUnit.test("can retrieve the current selected option when multiple=false", function() {
+QUnit.skip("can retrieve the current selected option when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
 
@@ -149,7 +149,7 @@ QUnit.test("can retrieve the current selected option when multiple=false", funct
   equal(select.get('selection'), tom, "On change, the new option should be selected");
 });
 
-QUnit.test("can retrieve the current selected options when multiple=true", function() {
+QUnit.skip("can retrieve the current selected options when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -175,7 +175,7 @@ QUnit.test("can retrieve the current selected options when multiple=true", funct
   deepEqual(select.get('selection'), [tom, david], "On change, the new options should be selected");
 });
 
-QUnit.test("selection can be set when multiple=false", function() {
+QUnit.skip("selection can be set when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
 
@@ -194,7 +194,7 @@ QUnit.test("selection can be set when multiple=false", function() {
   equal(select.$()[0].selectedIndex, 0, "After changing it, selection should be correct");
 });
 
-QUnit.test("selection can be set from a Promise when multiple=false", function() {
+QUnit.skip("selection can be set from a Promise when multiple=false", function() {
   expect(1);
 
   var yehuda = { id: 1, firstName: 'Yehuda' };
@@ -211,7 +211,7 @@ QUnit.test("selection can be set from a Promise when multiple=false", function()
   equal(select.$()[0].selectedIndex, 1, "Should select from Promise content");
 });
 
-QUnit.test("selection from a Promise don't overwrite newer selection once resolved, when multiple=false", function() {
+QUnit.skip("selection from a Promise don't overwrite newer selection once resolved, when multiple=false", function() {
   expect(1);
 
   var yehuda = { id: 1, firstName: 'Yehuda' };
@@ -244,7 +244,7 @@ QUnit.test("selection from a Promise don't overwrite newer selection once resolv
   append();
 });
 
-QUnit.test("selection from a Promise resolving to null should not select when multiple=false", function() {
+QUnit.skip("selection from a Promise resolving to null should not select when multiple=false", function() {
   expect(1);
 
   var yehuda = { id: 1, firstName: 'Yehuda' };
@@ -261,7 +261,7 @@ QUnit.test("selection from a Promise resolving to null should not select when mu
   equal(select.$()[0].selectedIndex, -1, "Should not select any object when the Promise resolve to null");
 });
 
-QUnit.test("selection can be set when multiple=true", function() {
+QUnit.skip("selection can be set when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -282,7 +282,7 @@ QUnit.test("selection can be set when multiple=true", function() {
   deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
 });
 
-QUnit.test("selection can be set when multiple=true and prompt", function() {
+QUnit.skip("selection can be set when multiple=true and prompt", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -306,7 +306,7 @@ QUnit.test("selection can be set when multiple=true and prompt", function() {
   deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
 });
 
-QUnit.test("multiple selections can be set when multiple=true", function() {
+QUnit.skip("multiple selections can be set when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -332,7 +332,7 @@ QUnit.test("multiple selections can be set when multiple=true", function() {
     "After changing it, selection should be correct");
 });
 
-QUnit.test("multiple selections can be set by changing in place the selection array when multiple=true", function() {
+QUnit.skip("multiple selections can be set by changing in place the selection array when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -361,7 +361,7 @@ QUnit.test("multiple selections can be set by changing in place the selection ar
 });
 
 
-QUnit.test("multiple selections can be set indirectly via bindings and in-place when multiple=true (issue #1058)", function() {
+QUnit.skip("multiple selections can be set indirectly via bindings and in-place when multiple=true (issue #1058)", function() {
   var indirectContent = EmberObject.create();
 
   var tom = { id: 2, firstName: 'Tom' };
@@ -402,7 +402,7 @@ QUnit.test("multiple selections can be set indirectly via bindings and in-place 
   deepEqual(select.get('selection'), [cyril], "After updating bound selection, selection should be correct");
 });
 
-QUnit.test("select with group can group options", function() {
+QUnit.skip("select with group can group options", function() {
   var content = Ember.A([
     { firstName: 'Yehuda', organization: 'Tilde' },
     { firstName: 'Tom', organization: 'Tilde' },
@@ -429,7 +429,7 @@ QUnit.test("select with group can group options", function() {
   equal(trim(select.$('optgroup').last().text()), 'Keith');
 });
 
-QUnit.test("select with group doesn't break options", function() {
+QUnit.skip("select with group doesn't break options", function() {
   var content = Ember.A([
     { id: 1, firstName: 'Yehuda', organization: 'Tilde' },
     { id: 2, firstName: 'Tom', organization: 'Tilde' },
@@ -458,7 +458,7 @@ QUnit.test("select with group doesn't break options", function() {
   deepEqual(select.get('selection'), content.get('firstObject'));
 });
 
-QUnit.test("select with group observes its content", function() {
+QUnit.skip("select with group observes its content", function() {
   var wycats = { firstName: 'Yehuda', organization: 'Tilde' };
   var content = Ember.A([
     wycats
@@ -503,7 +503,7 @@ QUnit.test("select with group whose content is undefined doesn't breaks", functi
   equal(select.$('optgroup').length, 0);
 });
 
-QUnit.test("selection uses the same array when multiple=true", function() {
+QUnit.skip("selection uses the same array when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -530,7 +530,7 @@ QUnit.test("selection uses the same array when multiple=true", function() {
   deepEqual(selection, [tom,david], "On change the original selection array is updated");
 });
 
-QUnit.test("Ember.SelectedOption knows when it is selected when multiple=false", function() {
+QUnit.skip("Ember.SelectedOption knows when it is selected when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -552,7 +552,7 @@ QUnit.test("Ember.SelectedOption knows when it is selected when multiple=false",
   deepEqual(selectedOptions(), [false, false, false, true], "After changing it, selection should be correct");
 });
 
-QUnit.test("Ember.SelectedOption knows when it is selected when multiple=true", function() {
+QUnit.skip("Ember.SelectedOption knows when it is selected when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
@@ -576,7 +576,7 @@ QUnit.test("Ember.SelectedOption knows when it is selected when multiple=true", 
   deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
 });
 
-QUnit.test("Ember.SelectedOption knows when it is selected when multiple=true and options are primitives", function() {
+QUnit.skip("Ember.SelectedOption knows when it is selected when multiple=true and options are primitives", function() {
   run(function() {
     select.set('content', Ember.A([1, 2, 3, 4]));
     select.set('multiple', true);
@@ -592,7 +592,7 @@ QUnit.test("Ember.SelectedOption knows when it is selected when multiple=true an
   deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
 });
 
-QUnit.test("a prompt can be specified", function() {
+QUnit.skip("a prompt can be specified", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
 
@@ -645,7 +645,7 @@ QUnit.test("handles null content", function() {
   equal(select.get('element').selectedIndex, -1, "should have no selection");
 });
 
-QUnit.test("valueBinding handles 0 as initiated value (issue #2763)", function() {
+QUnit.skip("valueBinding handles 0 as initiated value (issue #2763)", function() {
   var indirectData = EmberObject.create({
     value: 0
   });
@@ -668,7 +668,7 @@ QUnit.test("valueBinding handles 0 as initiated value (issue #2763)", function()
   equal(select.get('value'), 0, "Value property should equal 0");
 });
 
-QUnit.test("should be able to select an option and then reselect the prompt", function() {
+QUnit.skip("should be able to select an option and then reselect the prompt", function() {
   run(function() {
     select.set('content', Ember.A(['one', 'two', 'three']));
     select.set('prompt', 'Select something');
@@ -686,7 +686,7 @@ QUnit.test("should be able to select an option and then reselect the prompt", fu
   equal(select.$()[0].selectedIndex, 0);
 });
 
-QUnit.test("should be able to get the current selection's value", function() {
+QUnit.skip("should be able to get the current selection's value", function() {
   run(function() {
     select.set('content', Ember.A([
       { label: 'Yehuda Katz', value: 'wycats' },
@@ -703,7 +703,7 @@ QUnit.test("should be able to get the current selection's value", function() {
   equal(select.get('value'), 'wycats');
 });
 
-QUnit.test("should be able to set the current selection by value", function() {
+QUnit.skip("should be able to set the current selection by value", function() {
   var ebryn = { label: 'Erik Bryn', value: 'ebryn' };
 
   run(function() {

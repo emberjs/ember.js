@@ -316,7 +316,7 @@ QUnit.test("`wait` helper can be passed a resolution value", function() {
 
 });
 
-QUnit.test("`click` triggers appropriate events in order", function() {
+QUnit.skip("`click` triggers appropriate events in order", function() {
   expect(5);
 
   var click, wait, events;
@@ -551,7 +551,7 @@ QUnit.test("`fillIn` takes context into consideration", function() {
   });
 });
 
-QUnit.test("`fillIn` focuses on the element", function() {
+QUnit.skip("`fillIn` focuses on the element", function() {
   expect(2);
   var fillIn, find, visit, andThen;
 
