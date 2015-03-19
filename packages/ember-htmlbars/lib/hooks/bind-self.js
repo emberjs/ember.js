@@ -11,6 +11,7 @@ export default function bindSelf(env, scope, self) {
   if (self && self.isView) {
     scope.view = self;
     newStream(scope.locals, 'view', self, null);
+    newStream(scope.locals, 'controller', scope.locals.view.getKey('controller'));
     newStream(scope, 'self', get(self, 'context'), null, true);
     return;
   }

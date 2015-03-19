@@ -253,7 +253,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
                    ", but the action name (" + actionName + ") was not a string.",
                    isNone(actionName) || typeof actionName === 'string');
     } else {
-      actionName = get(this, action);
+      actionName = get(this, 'attrs.' + action) || get(this, action);
       Ember.assert("The " + action + " action was triggered on the component " +
                    this.toString() + ", but the action name (" + actionName +
                    ") was not a string.",

@@ -122,7 +122,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
     if (!this._super(...arguments)) { return; }
 
-    this._transitionTo('destroying', false);
+    this.currentState.cleanup(this);
 
     if (!this.ownerView.isDestroyingSubtree) {
       this.ownerView.isDestroyingSubtree = true;

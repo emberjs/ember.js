@@ -22,9 +22,9 @@ export default Mixin.create({
       Ember.deprecate("You tried to look up an attribute directly on the component. This is deprecated. Use attrs." + key + " instead.");
       return get(attrs, key);
     }
-  },
-
-  setUnknownProperty(key) {
-
   }
+
+  //setUnknownProperty(key) {
+
+  //}
 });

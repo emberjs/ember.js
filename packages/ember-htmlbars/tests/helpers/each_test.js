@@ -737,7 +737,7 @@ QUnit.test("it supports {{else}}", function() {
   assertHTML(view, "Nothing");
 });
 
-QUnit.skip("it works with the controller keyword", function() {
+QUnit.test("it works with the controller keyword", function() {
   runDestroy(view);
 
   var controller = ArrayController.create({
@@ -756,7 +756,7 @@ QUnit.skip("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
-QUnit.skip("views inside #each preserve the new context [DEPRECATED]", function() {
+QUnit.test("views inside #each preserve the new context [DEPRECATED]", function() {
   runDestroy(view);
 
   var controller = A([{ name: "Adam" }, { name: "Steve" }]);
@@ -879,7 +879,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
   if (!useBlockParams) {
-    QUnit.skip("views inside #each preserve the new context [DEPRECATED]", function() {
+    QUnit.test("views inside #each preserve the new context [DEPRECATED]", function() {
       var controller = A([{ name: "Adam" }, { name: "Steve" }]);
 
       view = EmberView.create({

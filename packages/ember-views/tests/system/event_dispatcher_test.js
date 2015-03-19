@@ -7,6 +7,7 @@ import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ContainerView from "ember-views/views/container_view";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 var dispatcher;
@@ -84,14 +85,11 @@ QUnit.skip("should dispatch events to views", function() {
   equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
-QUnit.skip("should not dispatch events to views not inDOM", function() {
+QUnit.test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
   view = View.createWithMixins({
-    render(buffer) {
-      buffer.push('some <span id="awesome">awesome</span> content');
-      this._super(buffer);
-    },
+    template: compile('some <span id="awesome">awesome</span> content'),
 
     mouseDown(evt) {
       receivedEvent = evt;

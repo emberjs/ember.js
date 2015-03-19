@@ -28,7 +28,6 @@ merge(inDOM, {
 
   exit(view) {
     view._unregister();
-    view.renderer.willDestroyElement(view);
   },
 
   appendAttr(view, attrNode) {

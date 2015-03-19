@@ -83,7 +83,6 @@ var ViewChildViewsSupport = Mixin.create({
 
     var attrs = _attrs || {};
     var view;
-    attrs.parentView = this;
     attrs.renderer = this.renderer;
 
     if (maybeViewClass.isViewClass) {
@@ -110,6 +109,8 @@ var ViewChildViewsSupport = Mixin.create({
       attrs.container = this.container;
       setProperties(view, attrs);
     }
+
+    this.linkChild(view);
 
     return view;
   },
