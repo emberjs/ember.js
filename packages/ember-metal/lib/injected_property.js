@@ -9,7 +9,6 @@ import create from "ember-metal/platform/create";
 
   @class InjectedProperty
   @namespace Ember
-  @extends Ember.Descriptor
   @constructor
   @param {String} type The container type the property will lookup
   @param {String} name (optional) The name the property will lookup, defaults
