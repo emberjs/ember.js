@@ -303,7 +303,6 @@ Ember.beginPropertyChanges = beginPropertyChanges;
 Ember.endPropertyChanges = endPropertyChanges;
 Ember.changeProperties = changeProperties;
 
-Ember.Descriptor     = Descriptor;
 Ember.defineProperty = defineProperty;
 
 Ember.set    = set;

@@ -770,7 +770,6 @@ Alias.prototype = new Descriptor();
   @method aliasMethod
   @for Ember
   @param {String} methodName name of the method to alias
-  @return {Ember.Descriptor}
 */
 export function aliasMethod(methodName) {
   return new Alias(methodName);

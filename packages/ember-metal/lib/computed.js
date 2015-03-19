@@ -108,7 +108,6 @@ function UNDEFINED() { }
 
   @class ComputedProperty
   @namespace Ember
-  @extends Ember.Descriptor
   @constructor
 */
 function ComputedProperty(config, opts) {
