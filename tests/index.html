@@ -36,6 +36,14 @@
         };
         window.ENV = window.ENV || {};
 
+        window.printTestCounts = function() {
+          var passing = $("li[id^='qunit-'].pass").length;
+          var failing = $("li[id^='qunit-'].fail").length;
+          var total = passing + failing;
+
+          console.table([{ passing: passing, failing: failing, total: total }], ["passing", "failing", "total"]);
+        }
+
         // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
         ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
         ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
@@ -120,6 +128,7 @@
         QUnit.config.urlConfig.push({ id: 'livereload', label: 'Live Reload'});
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
+        QUnit.config.urlConfig.push('forceskip');
       })();
     </script>
 
@@ -138,6 +147,13 @@
 
         if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
         if (!QUnit.urlParams.nojshint && moduleName.match(/[-_.]jshint$/)) { Ember.__loader.require(moduleName); }
+
+        if (QUnit.urlParams.forceskip) {
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return QUnit.test(string, callback);
+          };
+        }
       }
     </script>
 

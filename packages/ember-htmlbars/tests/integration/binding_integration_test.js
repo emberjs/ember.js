@@ -153,7 +153,7 @@ QUnit.test("should update bound values after view's parent is removed and then r
   runDestroy(parentView);
 });
 
-QUnit.skip('should accept bindings as a string or an Ember.Binding', function() {
+QUnit.test('should accept bindings as a string or an Ember.Binding', function() {
   var ViewWithBindings = EmberView.extend({
     oneWayBindingTestBinding: Binding.oneWay('context.direction'),
     twoWayBindingTestBinding: Binding.from('context.direction'),

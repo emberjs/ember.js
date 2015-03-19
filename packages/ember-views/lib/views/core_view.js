@@ -121,6 +121,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     var parent = this.parentView;
 
     if (!this._super(...arguments)) { return; }
+
     this._transitionTo('destroying', false);
 
     if (!this.ownerView.isDestroyingSubtree) {
