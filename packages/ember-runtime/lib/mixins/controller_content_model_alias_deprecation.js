@@ -13,14 +13,7 @@ import { Mixin } from 'ember-metal/mixin';
   simple ground rule: Never set a controllers content, rather always set
   its model and ember will do the right thing.
 
-
-  `Ember.ControllerContentModelAliasDeprecation` is used internally by Ember in
-  `Ember.Controller`.
-
-  @class ControllerContentModelAliasDeprecation
-  @namespace Ember
-  @private
-  @since 1.7.0
+  Used internally by Ember in `Ember.Controller`.
 */
 export default Mixin.create({
   /**
