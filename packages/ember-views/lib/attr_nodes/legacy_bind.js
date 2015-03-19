@@ -11,6 +11,9 @@ import o_create from "ember-metal/platform/create";
 
 function LegacyBindAttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
+
+  this._dynamicStyleDeprecationMessage = '`<div {{bind-attr style=someProperty}}>` to ' +
+    '`<div style={{{someProperty}}}>`.';
 }
 
 LegacyBindAttrNode.prototype = o_create(AttrNode.prototype);
@@ -34,6 +37,7 @@ LegacyBindAttrNode.prototype.render = function render(buffer) {
                value === null || value === undefined || typeOf(value) === 'number' || typeOf(value) === 'string' || typeOf(value) === 'boolean');
 
   if (this.lastValue !== null || value !== null) {
+    this._deprecateEscapedStyle(value);
     this._morph.setContent(value);
     this.lastValue = value;
   }
