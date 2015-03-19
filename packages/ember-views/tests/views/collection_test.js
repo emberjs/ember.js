@@ -45,7 +45,7 @@ QUnit.test("should render a view for each item in its content array", function()
   equal(view.$('div').length, 4);
 });
 
-QUnit.skip("should render the emptyView if content array is empty (view class)", function() {
+QUnit.test("should render the emptyView if content array is empty (view class)", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(),
@@ -63,7 +63,7 @@ QUnit.skip("should render the emptyView if content array is empty (view class)",
   ok(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, "displays empty view");
 });
 
-QUnit.skip("should render the emptyView if content array is empty (view instance)", function() {
+QUnit.test("should render the emptyView if content array is empty (view instance)", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(),
@@ -81,7 +81,7 @@ QUnit.skip("should render the emptyView if content array is empty (view instance
   ok(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, "displays empty view");
 });
 
-QUnit.skip("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
+QUnit.test("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(['NEWS GUVNAH']),
@@ -118,7 +118,7 @@ QUnit.test("should allow custom item views by setting itemViewClass", function()
   });
 });
 
-QUnit.skip("should insert a new item in DOM when an item is added to the content array", function() {
+QUnit.test("should insert a new item in DOM when an item is added to the content array", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
@@ -144,7 +144,7 @@ QUnit.skip("should insert a new item in DOM when an item is added to the content
   equal(trim(view.$(':nth-child(2)').text()), 'quux');
 });
 
-QUnit.skip("should remove an item from DOM when an item is removed from the content array", function() {
+QUnit.test("should remove an item from DOM when an item is removed from the content array", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
@@ -172,7 +172,7 @@ QUnit.skip("should remove an item from DOM when an item is removed from the cont
   });
 });
 
-QUnit.skip("it updates the view if an item is replaced", function() {
+QUnit.test("it updates the view if an item is replaced", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -200,7 +200,7 @@ QUnit.skip("it updates the view if an item is replaced", function() {
   });
 });
 
-QUnit.skip("can add and replace in the same runloop", function() {
+QUnit.test("can add and replace in the same runloop", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -230,7 +230,7 @@ QUnit.skip("can add and replace in the same runloop", function() {
 
 });
 
-QUnit.skip("can add and replace the object before the add in the same runloop", function() {
+QUnit.test("can add and replace the object before the add in the same runloop", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -259,7 +259,7 @@ QUnit.skip("can add and replace the object before the add in the same runloop", 
   });
 });
 
-QUnit.skip("can add and replace complicatedly", function() {
+QUnit.test("can add and replace complicatedly", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -290,7 +290,7 @@ QUnit.skip("can add and replace complicatedly", function() {
   });
 });
 
-QUnit.skip("can add and replace complicatedly harder", function() {
+QUnit.test("can add and replace complicatedly harder", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
@@ -322,7 +322,7 @@ QUnit.skip("can add and replace complicatedly harder", function() {
   });
 });
 
-QUnit.skip("should allow changes to content object before layer is created", function() {
+QUnit.test("should allow changes to content object before layer is created", function() {
   view = CollectionView.create({
     content: null
   });
@@ -338,7 +338,7 @@ QUnit.skip("should allow changes to content object before layer is created", fun
   ok(view.$().children().length);
 });
 
-QUnit.skip("should fire life cycle events when elements are added and removed", function() {
+QUnit.test("should fire life cycle events when elements are added and removed", function() {
   var view;
   var didInsertElement = 0;
   var willDestroyElement = 0;
@@ -421,7 +421,7 @@ QUnit.skip("should fire life cycle events when elements are added and removed", 
   equal(destroy, 8);
 });
 
-QUnit.skip("should allow changing content property to be null", function() {
+QUnit.test("should allow changing content property to be null", function() {
   view = CollectionView.create({
     content: Ember.A([1, 2, 3]),
 
@@ -443,7 +443,7 @@ QUnit.skip("should allow changing content property to be null", function() {
   equal(trim(view.$().children().text()), "(empty)", "should display empty view");
 });
 
-QUnit.skip("should allow items to access to the CollectionView's current index in the content array", function() {
+QUnit.test("should allow items to access to the CollectionView's current index in the content array", function() {
   view = CollectionView.create({
     content: Ember.A(['zero', 'one', 'two']),
     itemViewClass: View.extend({
@@ -476,7 +476,7 @@ QUnit.test("should allow declaration of itemViewClass as a string", function() {
   equal(view.$('.ember-view').length, 3);
 });
 
-QUnit.skip("should not render the emptyView if content is emptied and refilled in the same run loop", function() {
+QUnit.test("should not render the emptyView if content is emptied and refilled in the same run loop", function() {
   view = CollectionView.create({
     tagName: 'div',
     content: Ember.A(['NEWS GUVNAH']),
@@ -599,7 +599,7 @@ QUnit.test("should render the emptyView if content array is empty and emptyView 
   ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, "displays empty view");
 });
 
-QUnit.skip("should lookup against the container if itemViewClass is given as a string", function() {
+QUnit.test("should lookup against the container if itemViewClass is given as a string", function() {
   var ItemView = View.extend({
     template: compile('{{view.content}}')
   });
@@ -620,7 +620,7 @@ QUnit.skip("should lookup against the container if itemViewClass is given as a s
 
 });
 
-QUnit.skip("should lookup only global path against the container if itemViewClass is given as a string", function() {
+QUnit.test("should lookup only global path against the container if itemViewClass is given as a string", function() {
   var ItemView = View.extend({
     template: compile('{{view.content}}')
   });
@@ -640,7 +640,7 @@ QUnit.skip("should lookup only global path against the container if itemViewClas
   equal(view.$().text(), 'hi');
 });
 
-QUnit.skip("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
+QUnit.test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
   var EmptyView = View.extend({
     tagName: 'kbd',
     template: compile('THIS IS AN EMPTY VIEW')
@@ -662,7 +662,7 @@ QUnit.skip("should lookup against the container and render the emptyView if empt
   ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, "displays empty view");
 });
 
-QUnit.skip("should lookup from only global path against the container if emptyView is given as string and content array is empty ", function() {
+QUnit.test("should lookup from only global path against the container if emptyView is given as string and content array is empty ", function() {
   var EmptyView = View.extend({
     template: compile("EMPTY")
   });

@@ -21,7 +21,7 @@ QUnit.module("EmberView - Template Functionality", {
   }
 });
 
-QUnit.skip("Template views return throw if their template cannot be found", function() {
+QUnit.test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
     container: { lookup() { } }

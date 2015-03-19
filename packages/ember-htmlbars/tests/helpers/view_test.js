@@ -92,25 +92,19 @@ QUnit.test("should not enter an infinite loop when binding an attribute in Handl
   runDestroy(parentView);
 });
 
-QUnit.skip("By default view:toplevel is used", function() {
+QUnit.test("By default view:toplevel is used", function() {
+  var registry = new Registry();
+
   var DefaultView = viewClass({
     elementId: 'toplevel-view',
     template: compile('hello world')
   });
 
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:toplevel');
-
-    return DefaultView;
-  }
-
-  var container = {
-    lookupFactory: lookupFactory
-  };
+  registry.register('view:toplevel', DefaultView);
 
   view = EmberView.extend({
     template: compile('{{view}}'),
-    container: container
+    container: registry.container()
   }).create();
 
   runAppend(view);
@@ -118,7 +112,7 @@ QUnit.skip("By default view:toplevel is used", function() {
   equal(jQuery('#toplevel-view').text(), 'hello world');
 });
 
-QUnit.skip("By default, without a container, EmberView is used", function() {
+QUnit.test("By default, without a container, EmberView is used", function() {
   view = EmberView.extend({
     template: compile('{{view tagName="span"}}')
   }).create();
@@ -366,7 +360,7 @@ QUnit.skip('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
   equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
 });
 
-QUnit.skip("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
+QUnit.test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
   expect(4);
 
   registry = new Registry();

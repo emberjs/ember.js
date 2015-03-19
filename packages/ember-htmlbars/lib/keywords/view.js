@@ -32,26 +32,13 @@ export default {
     var state = node.state;
     var parentView = state.parentView;
 
-    var view = viewInstance(node.state.viewClassOrInstance);
-    parentView.appendChild(view);
-
-    node.emberView = view;
-
-    var options = { component: view, layout: null };
+    var options = { component: node.state.viewClassOrInstance, layout: null };
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
     state.componentNode = componentNode;
 
     componentNode.render(env, hash, visitor);
   }
 };
-
-function viewInstance(viewClassOrInstance) {
-  if (viewClassOrInstance instanceof EmberView) {
-    return viewClassOrInstance;
-  } else {
-    return viewClassOrInstance.create();
-  }
-}
 
 function getView(viewPath, container) {
   var viewClassOrInstance;

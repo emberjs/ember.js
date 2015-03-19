@@ -1213,7 +1213,7 @@ QUnit.test("{{link-to}} active property respects changing parent route context",
 
 });
 
-QUnit.skip("{{link-to}} populates href with default query param values even without query-params object", function() {
+QUnit.test("{{link-to}} populates href with default query param values even without query-params object", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo'],
     foo: '123'
