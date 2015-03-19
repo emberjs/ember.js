@@ -665,6 +665,7 @@ var needsFinallyFix = (function() {
   ```
 
   @method tryFinally
+  @deprecated Use JavaScript's native try/finally
   @for Ember
   @param {Function} tryable The function to run the try callback
   @param {Function} finalizer The function to run the finally callback
@@ -711,6 +712,11 @@ if (needsFinallyFix) {
   };
 }
 
+var deprecatedTryFinally = function() {
+  Ember.deprecate("tryFinally is deprecated. Please use JavaScript's native try/finally.", false);
+  return tryFinally.apply(this, arguments);
+};
+
 /**
   Provides try/catch/finally functionality, while working
   around Safari's double finally bug.
@@ -741,6 +747,7 @@ if (needsFinallyFix) {
   ```
 
   @method tryCatchFinally
+  @deprecated Use JavaScript's native try/catch/finally instead
   @for Ember
   @param {Function} tryable The function to run the try callback
   @param {Function} catchable The function to run the catchable callback
@@ -790,6 +797,11 @@ if (needsFinallyFix) {
     return (finalResult === undefined) ? result : finalResult;
   };
 }
+
+var deprecatedTryCatchFinally = function() {
+  Ember.deprecate("tryCatchFinally is deprecated. Please use JavaScript's native try/catch/finally.", false);
+  return tryCatchFinally.apply(this, arguments);
+};
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -972,7 +984,9 @@ export {
   meta,
   typeOf,
   tryCatchFinally,
+  deprecatedTryCatchFinally,
   isArray,
   canInvoke,
-  tryFinally
+  tryFinally,
+  deprecatedTryFinally
 };
