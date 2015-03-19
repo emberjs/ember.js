@@ -46,7 +46,9 @@ test("hooks are present", function () {
     "getChild",
     "getValue",
     "cleanupRenderNode",
-    "destroyRenderNode"
+    "destroyRenderNode",
+    "willCleanupTree",
+    "didCleanupTree"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {

@@ -43,19 +43,28 @@ export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
   }
 
   if (toClear) {
-    clearMorph(toClear, env);
+    if (Object.prototype.toString.call(toClear) === '[object Array]') {
+      for (var i=0, l=toClear.length; i<l; i++) {
+        clearMorph(toClear[i], env);
+      }
+    } else {
+      clearMorph(toClear, env);
+    }
   }
 }
 
 export function clearMorph(morph, env, destroySelf) {
   var cleanup = env.hooks.cleanupRenderNode;
   var destroy = env.hooks.destroyRenderNode;
+  var willCleanup = env.hooks.willCleanupTree;
+  var didCleanup = env.hooks.didCleanupTree;
 
   function destroyNode(node) {
     if (cleanup) { cleanup(node); }
     if (destroy) { destroy(node); }
   }
 
+  if (willCleanup) { willCleanup(env, morph, destroySelf); }
   if (cleanup) { cleanup(morph); }
   if (destroySelf && destroy) { destroy(morph); }
 
@@ -63,6 +72,8 @@ export function clearMorph(morph, env, destroySelf) {
 
   // TODO: Deal with logical children that are not in the DOM tree
   morph.clear();
+  if (didCleanup) { didCleanup(env, morph, destroySelf); }
+
   morph.lastResult = null;
   morph.lastYielded = null;
   morph.childNodes = null;

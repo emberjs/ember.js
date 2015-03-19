@@ -3,7 +3,7 @@ import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject, keyLength, shallowCopy, merge } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
-import { clearMorph } from "../htmlbars-util/template-utils";
+import { clearMorph, renderAndCleanup } from "../htmlbars-util/template-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -122,6 +122,12 @@ export function wrapForHelper(template, env, scope, morph, renderState, visitor)
 function yieldTemplate(template, env, parentScope, morph, renderState, visitor) {
   return function(blockArguments, self) {
     renderState.clearMorph = null;
+
+    if (morph.morphList) {
+      renderState.morphList = morph.morphList.firstChildMorph;
+      renderState.morphList = null;
+    }
+
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
@@ -183,7 +189,8 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     }
 
     renderState.morphListStart = currentMorph;
-    renderState.clearMorph = null;
+    renderState.clearMorph = morph.childNodes;
+    morph.childNodes = null;
   };
 }
 
@@ -489,24 +496,7 @@ export function continueBlock(morph, env, scope, path, params, hash, template, i
 
 export function hostBlock(morph, env, scope, template, inverse, shadowOptions, visitor, callback) {
   var options = optionsFor(template, inverse, env, scope, morph, visitor);
-  options.renderState.shadowOptions = shadowOptions;
-  callback(options);
-
-  var item = options.renderState.morphListStart;
-  var toClear = options.renderState.clearMorph;
-  var morphMap = morph.morphMap;
-
-  while (item) {
-    var next = item.nextMorph;
-    delete morphMap[item.key];
-    clearMorph(item, env, true);
-    item.destroy();
-    item = next;
-  }
-
-  if (toClear) {
-    clearMorph(toClear, env, false);
-  }
+  renderAndCleanup(morph, env, options, shadowOptions, callback);
 }
 
 function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
@@ -978,6 +968,8 @@ export default {
   invokeHelper: invokeHelper,
   cleanupRenderNode: null,
   destroyRenderNode: null,
+  willCleanupTree: null,
+  didCleanupTree: null,
 
   // derived hooks
   attribute: attribute,
