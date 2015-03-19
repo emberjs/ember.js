@@ -102,7 +102,7 @@ QUnit.skip('should cleanup bound properties on rerender', function() {
   equal(view.childViews.length, 1);
 });
 
-QUnit.skip("should update bound values after view's parent is removed and then re-appended", function() {
+QUnit.test("should update bound values after view's parent is removed and then re-appended", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var controller = EmberObject.create();

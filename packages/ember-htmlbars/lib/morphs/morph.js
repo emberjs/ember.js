@@ -24,7 +24,13 @@ proto.addDestruction = function(toDestroy) {
 
 proto.cleanup = function() {
   var view;
+
   if (view = this.emberView) {
+    if (!view.ownerView.isDestroyingSubtree) {
+      view.ownerView.isDestroyingSubtree = true;
+      if (view.parentView) { view.parentView.removeChild(view); }
+    }
+
     view.destroy();
   }
 

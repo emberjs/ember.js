@@ -719,7 +719,7 @@ QUnit.skip("it supports {{emptyViewClass=}} with in format", function() {
   assertText(view, "I'm empty");
 });
 
-QUnit.skip("it supports {{else}}", function() {
+QUnit.test("it supports {{else}}", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),

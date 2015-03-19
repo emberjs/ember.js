@@ -10,7 +10,7 @@ QUnit.module('ember-htmlbars: appendTemplatedView', {
   }
 });
 
-QUnit.skip('can accept a view instance', function() {
+QUnit.test('can accept a view instance', function() {
   var controller = {
     someProp: 'controller context',
     someView: EmberView.create({
@@ -28,7 +28,7 @@ QUnit.skip('can accept a view instance', function() {
   equal(view.$().text(), 'controller context - controller context');
 });
 
-QUnit.skip('can accept a view factory', function() {
+QUnit.test('can accept a view factory', function() {
   var controller = {
     someProp: 'controller context',
     someView: EmberView.extend({
@@ -46,7 +46,7 @@ QUnit.skip('can accept a view factory', function() {
   equal(view.$().text(), 'controller context - controller context');
 });
 
-QUnit.skip('does change the context if the view factory has a controller specified', function() {
+QUnit.test('does change the context if the view factory has a controller specified', function() {
   var controller = {
     someProp: 'controller context',
     someView: EmberView.extend({
