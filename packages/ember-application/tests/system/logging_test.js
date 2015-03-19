@@ -205,7 +205,7 @@ QUnit.test("do not log when template and view are missing when flag is not true"
   });
 });
 
-QUnit.test("log which view is used with a template", function() {
+QUnit.skip("log which view is used with a template", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;

@@ -261,7 +261,7 @@ QUnit.test("model hooks receives query params", function() {
   equal(router.get('location.path'), "");
 });
 
-QUnit.test("controllers won't be eagerly instantiated by internal query params logic", function() {
+QUnit.skip("controllers won't be eagerly instantiated by internal query params logic", function() {
   expect(10);
   Router.map(function() {
     this.resource('cats', function() {
@@ -700,7 +700,7 @@ QUnit.test("An explicit replace:false on a changed QP always wins and causes a p
   Ember.run(appController, 'setProperties', { alex: 'sriracha' });
 });
 
-QUnit.test("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
+QUnit.skip("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
   Ember.TEMPLATES.parent = compile('{{outlet}}');
   Ember.TEMPLATES['parent/child'] = compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
 
@@ -843,7 +843,7 @@ QUnit.test("URL transitions that remove QPs still register as QP changes", funct
   equal(indexController.get('omg'), 'lol');
 });
 
-QUnit.test("Subresource naming style is supported", function() {
+QUnit.skip("Subresource naming style is supported", function() {
 
   Router.map(function() {
     this.resource('abc.def', { path: '/abcdef' }, function() {
@@ -1137,7 +1137,7 @@ QUnit.test("A child of a resource route still defaults to parent route's model e
   bootApplication();
 });
 
-QUnit.test("opting into replace does not affect transitions between routes", function() {
+QUnit.skip("opting into replace does not affect transitions between routes", function() {
   expect(5);
   Ember.TEMPLATES.application = compile(
     "{{link-to 'Foo' 'foo' id='foo-link'}}" +
@@ -1312,7 +1312,7 @@ QUnit.module("Model Dep Query Params", {
   }
 });
 
-QUnit.test("query params have 'model' stickiness by default", function() {
+QUnit.skip("query params have 'model' stickiness by default", function() {
   this.boot();
 
   Ember.run(this.$link1, 'click');
@@ -1334,7 +1334,7 @@ QUnit.test("query params have 'model' stickiness by default", function() {
   equal(this.$link3.attr('href'), '/a/a-3');
 });
 
-QUnit.test("query params have 'model' stickiness by default (url changes)", function() {
+QUnit.skip("query params have 'model' stickiness by default (url changes)", function() {
 
   this.boot();
 
@@ -1369,7 +1369,7 @@ QUnit.test("query params have 'model' stickiness by default (url changes)", func
 });
 
 
-QUnit.test("query params have 'model' stickiness by default (params-based transitions)", function() {
+QUnit.skip("query params have 'model' stickiness by default (params-based transitions)", function() {
   Ember.TEMPLATES.application = compile("{{#each a in articles}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
 
   this.boot();
@@ -1415,7 +1415,7 @@ QUnit.test("query params have 'model' stickiness by default (params-based transi
   equal(this.$link3.attr('href'), '/a/a-3?q=hay');
 });
 
-QUnit.test("'controller' stickiness shares QP state between models", function() {
+QUnit.skip("'controller' stickiness shares QP state between models", function() {
   App.ArticleController.reopen({
     queryParams: { q: { scope: 'controller' } }
   });
@@ -1459,7 +1459,7 @@ QUnit.test("'controller' stickiness shares QP state between models", function() 
   equal(this.$link3.attr('href'), '/a/a-3?q=woot&z=123');
 });
 
-QUnit.test("'model' stickiness is scoped to current or first dynamic parent route", function() {
+QUnit.skip("'model' stickiness is scoped to current or first dynamic parent route", function() {
   this.boot();
 
   Ember.run(router, 'transitionTo', 'comments', 'a-1');
@@ -1483,7 +1483,7 @@ QUnit.test("'model' stickiness is scoped to current or first dynamic parent rout
   equal(router.get('location.path'), '/a/a-1/comments?page=3');
 });
 
-QUnit.test("can reset query params using the resetController hook", function() {
+QUnit.skip("can reset query params using the resetController hook", function() {
   App.Router.map(function() {
     this.resource('article', { path: '/a/:id' }, function() {
       this.resource('comments');

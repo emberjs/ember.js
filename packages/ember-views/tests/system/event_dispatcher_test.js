@@ -27,7 +27,7 @@ QUnit.module("EventDispatcher", {
   }
 });
 
-QUnit.test("should dispatch events to views", function() {
+QUnit.skip("should dispatch events to views", function() {
   var receivedEvent;
   var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
@@ -84,7 +84,7 @@ QUnit.test("should dispatch events to views", function() {
   equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
-QUnit.test("should not dispatch events to views not inDOM", function() {
+QUnit.skip("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
   view = View.createWithMixins({
@@ -121,7 +121,7 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
   $element.remove();
 });
 
-QUnit.test("should send change events up view hierarchy if view contains form elements", function() {
+QUnit.skip("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = View.create({
     render(buffer) {
@@ -142,7 +142,7 @@ QUnit.test("should send change events up view hierarchy if view contains form el
   equal(receivedEvent.target, jQuery('#is-done')[0], "target property is the element that was clicked");
 });
 
-QUnit.test("events should stop propagating if the view is destroyed", function() {
+QUnit.skip("events should stop propagating if the view is destroyed", function() {
   var parentViewReceived, receivedEvent;
 
   var parentView = ContainerView.create({
@@ -178,7 +178,7 @@ QUnit.test("events should stop propagating if the view is destroyed", function()
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
-QUnit.test('should not interfere with event propagation of virtualViews', function() {
+QUnit.skip('should not interfere with event propagation of virtualViews', function() {
   var receivedEvent;
 
   var view = View.create({
@@ -202,7 +202,7 @@ QUnit.test('should not interfere with event propagation of virtualViews', functi
   deepEqual(receivedEvent && receivedEvent.target, jQuery('#propagate-test-div')[0], 'target property is the element that was clicked');
 });
 
-QUnit.test("should dispatch events to nearest event manager", function() {
+QUnit.skip("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
   view = ContainerView.create({
     render(buffer) {

@@ -76,7 +76,7 @@ QUnit.test("outlet should support an optional name", function() {
 });
 
 
-QUnit.test("outlet should correctly lookup a view", function() {
+QUnit.skip("outlet should correctly lookup a view", function() {
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['special']
@@ -100,7 +100,7 @@ QUnit.test("outlet should correctly lookup a view", function() {
   equal(top.$().find('.special').length, 1, "expected to find .special element");
 });
 
-QUnit.test("outlet should assert view is specified as a string", function() {
+QUnit.skip("outlet should assert view is specified as a string", function() {
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view=containerView}}"));
 
   expectAssertion(function () {
@@ -109,7 +109,7 @@ QUnit.test("outlet should assert view is specified as a string", function() {
 
 });
 
-QUnit.test("outlet should assert view path is successfully resolved", function() {
+QUnit.skip("outlet should assert view path is successfully resolved", function() {
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view='someViewNameHere'}}"));
 
   expectAssertion(function () {
@@ -118,7 +118,7 @@ QUnit.test("outlet should assert view path is successfully resolved", function()
 
 });
 
-QUnit.test("outlet should support an optional view class", function() {
+QUnit.skip("outlet should support an optional view class", function() {
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['very-special']
@@ -195,7 +195,7 @@ QUnit.test("Outlets bind to the current template's view, not inner contexts [DEP
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-QUnit.test("should support layouts", function() {
+QUnit.skip("should support layouts", function() {
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
   var routerState = {
@@ -234,7 +234,7 @@ QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted na
   runAppend(top);
 });
 
-QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+QUnit.skip("should throw an assertion if {{outlet}} used with unquoted name", function() {
   top.setOutletState(withTemplate("{{outlet foo}}"));
   expectAssertion(function() {
     runAppend(top);

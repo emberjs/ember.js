@@ -193,7 +193,7 @@ QUnit.test("should update attribute bindings with micro syntax", function() {
   ok(!view.$().prop('disabled'), "updates disabled property when false");
 });
 
-QUnit.test("should allow namespaced attributes in micro syntax", function () {
+QUnit.skip("should allow namespaced attributes in micro syntax", function () {
   view = EmberView.create({
     attributeBindings: ['xlinkHref:xlink:href'],
     xlinkHref: '/foo.png'
@@ -253,7 +253,7 @@ QUnit.test("should allow binding to String objects", function() {
   ok(!view.$().attr('foo'), "removes foo attribute when null");
 });
 
-QUnit.test("should teardown observers on rerender", function() {
+QUnit.skip("should teardown observers on rerender", function() {
   view = EmberView.create({
     attributeBindings: ['foo'],
     classNameBindings: ['foo'],
@@ -295,7 +295,7 @@ QUnit.test("handles attribute bindings for properties", function() {
   equal(!!view.$().prop('checked'), false, 'changes to unchecked');
 });
 
-QUnit.test("handles `undefined` value for properties", function() {
+QUnit.skip("handles `undefined` value for properties", function() {
   view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value'],
@@ -397,7 +397,7 @@ QUnit.test("attributeBindings should not fail if view has been destroyed", funct
   ok(!error, error);
 });
 
-QUnit.test("asserts if an attributeBinding is setup on class", function() {
+QUnit.skip("asserts if an attributeBinding is setup on class", function() {
   view = EmberView.create({
     attributeBindings: ['class']
   });

@@ -14,7 +14,7 @@ QUnit.module("virtual views", {
   }
 });
 
-QUnit.test("a virtual view does not appear as a view's parentView", function() {
+QUnit.skip("a virtual view does not appear as a view's parentView", function() {
   rootView = EmberView.create({
     elementId: 'root-view',
 
@@ -54,7 +54,7 @@ QUnit.test("a virtual view does not appear as a view's parentView", function() {
   equal(children.objectAt(0), childView, "the child element skips through the virtual view");
 });
 
-QUnit.test("when a virtual view's child views change, the parent's childViews should reflect", function() {
+QUnit.skip("when a virtual view's child views change, the parent's childViews should reflect", function() {
   rootView = EmberView.create({
     elementId: 'root-view',
 

@@ -21,7 +21,7 @@ QUnit.module("EmberView - Template Functionality", {
   }
 });
 
-QUnit.test("Template views return throw if their template cannot be found", function() {
+QUnit.skip("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
     container: { lookup() { } }
@@ -33,7 +33,7 @@ QUnit.test("Template views return throw if their template cannot be found", func
 });
 
 if (typeof Handlebars === "object") {
-  QUnit.test("should allow standard Handlebars template usage", function() {
+  QUnit.skip("should allow standard Handlebars template usage", function() {
     view = EmberView.create({
       context: { name: "Erik" },
       template: Handlebars.compile("Hello, {{name}}")
@@ -47,7 +47,7 @@ if (typeof Handlebars === "object") {
   });
 }
 
-QUnit.test("should call the function of the associated template", function() {
+QUnit.skip("should call the function of the associated template", function() {
   registry.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
   });
@@ -64,7 +64,7 @@ QUnit.test("should call the function of the associated template", function() {
   ok(view.$('#twas-called').length, "the named template was called");
 });
 
-QUnit.test("should call the function of the associated template with itself as the context", function() {
+QUnit.skip("should call the function of the associated template with itself as the context", function() {
   registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
@@ -85,7 +85,7 @@ QUnit.test("should call the function of the associated template with itself as t
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-QUnit.test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
+QUnit.skip("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -105,7 +105,7 @@ QUnit.test("should fall back to defaultTemplate if neither template nor template
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-QUnit.test("should not use defaultTemplate if template is provided", function() {
+QUnit.skip("should not use defaultTemplate if template is provided", function() {
   var View;
 
   View = EmberView.extend({
@@ -121,7 +121,7 @@ QUnit.test("should not use defaultTemplate if template is provided", function() 
   equal("foo", view.$().text(), "default template was not printed");
 });
 
-QUnit.test("should not use defaultTemplate if template is provided", function() {
+QUnit.skip("should not use defaultTemplate if template is provided", function() {
   var View;
 
   registry.register('template:foobar', function() { return 'foo'; });
@@ -140,7 +140,7 @@ QUnit.test("should not use defaultTemplate if template is provided", function() 
   equal("foo", view.$().text(), "default template was not printed");
 });
 
-QUnit.test("should render an empty element if no template is specified", function() {
+QUnit.skip("should render an empty element if no template is specified", function() {
   view = EmberView.create();
   run(function() {
     view.createElement();
@@ -149,7 +149,7 @@ QUnit.test("should render an empty element if no template is specified", functio
   equal(view.$().html(), '', "view div should be empty");
 });
 
-QUnit.test("should provide a controller to the template if a controller is specified on the view", function() {
+QUnit.skip("should provide a controller to the template if a controller is specified on the view", function() {
   expect(7);
 
   var Controller1 = EmberObject.extend({
@@ -240,7 +240,7 @@ QUnit.test("should provide a controller to the template if a controller is speci
   });
 });
 
-QUnit.test("should throw an assertion if no container has been set", function() {
+QUnit.skip("should throw an assertion if no container has been set", function() {
   expect(1);
   var View;
 

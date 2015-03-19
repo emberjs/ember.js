@@ -29,17 +29,17 @@ QUnit.module('KeyStream', {
   }
 });
 
-QUnit.test("can be instantiated manually", function() {
+QUnit.skip("can be instantiated manually", function() {
   var nameStream = new KeyStream(source, 'name');
   equal(nameStream.value(), "mmun", "Stream value is correct");
 });
 
-QUnit.test("can be instantiated via `Stream.prototype.get`", function() {
+QUnit.skip("can be instantiated via `Stream.prototype.get`", function() {
   var nameStream = source.get('name');
   equal(nameStream.value(), "mmun", "Stream value is correct");
 });
 
-QUnit.test("is notified when the observed object's property is mutated", function() {
+QUnit.skip("is notified when the observed object's property is mutated", function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
@@ -52,7 +52,7 @@ QUnit.test("is notified when the observed object's property is mutated", functio
   equal(nameStream.value(), "wycats", "Stream value is correct");
 });
 
-QUnit.test("is notified when the source stream's value changes to a new object", function() {
+QUnit.skip("is notified when the source stream's value changes to a new object", function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
@@ -71,7 +71,7 @@ QUnit.test("is notified when the source stream's value changes to a new object",
   equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
-QUnit.test("is notified when the source stream's value changes to the same object", function() {
+QUnit.skip("is notified when the source stream's value changes to the same object", function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
@@ -89,7 +89,7 @@ QUnit.test("is notified when the source stream's value changes to the same objec
   equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
-QUnit.test("is notified when setSource is called with a new stream whose value is a new object", function() {
+QUnit.skip("is notified when setSource is called with a new stream whose value is a new object", function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
@@ -110,7 +110,7 @@ QUnit.test("is notified when setSource is called with a new stream whose value i
   equal(nameStream.value(), "kris", "Stream value is correct");
 });
 
-QUnit.test("is notified when setSource is called with a new stream whose value is the same object", function() {
+QUnit.skip("is notified when setSource is called with a new stream whose value is the same object", function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 

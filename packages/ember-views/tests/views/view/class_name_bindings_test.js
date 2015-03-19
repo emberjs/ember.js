@@ -15,7 +15,7 @@ QUnit.module("EmberView - Class Name Bindings", {
   }
 });
 
-QUnit.test("should apply bound class names to the element", function() {
+QUnit.skip("should apply bound class names to the element", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
@@ -55,7 +55,7 @@ QUnit.test("should apply bound class names to the element", function() {
   ok(!view.$().hasClass('disabled'), "does not add class name for negated binding");
 });
 
-QUnit.test("should add, remove, or change class names if changed after element is created", function() {
+QUnit.skip("should add, remove, or change class names if changed after element is created", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
@@ -98,7 +98,7 @@ QUnit.test("should add, remove, or change class names if changed after element i
   ok(view.$().hasClass('disabled'), "adds negated class name for negated binding");
 });
 
-QUnit.test(":: class name syntax works with an empty true class", function() {
+QUnit.skip(":: class name syntax works with an empty true class", function() {
   view = EmberView.create({
     isEnabled: false,
     classNameBindings: ['isEnabled::not-enabled']
@@ -135,7 +135,7 @@ QUnit.test("classNames should not be duplicated on rerender", function() {
   equal(view.$().attr('class'), 'ember-view high');
 });
 
-QUnit.test("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
+QUnit.skip("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
   run(function() {
     view = EmberView.create({
       classNameBindings: ['priority'],
@@ -164,7 +164,7 @@ QUnit.test("classNameBindings should work when the binding property is updated a
 
 });
 
-QUnit.test("classNames removed by a classNameBindings observer should not re-appear on rerender", function() {
+QUnit.skip("classNames removed by a classNameBindings observer should not re-appear on rerender", function() {
   view = EmberView.create({
     classNameBindings: ['isUrgent'],
     isUrgent: true
@@ -189,7 +189,7 @@ QUnit.test("classNames removed by a classNameBindings observer should not re-app
   equal(view.$().attr('class'), 'ember-view');
 });
 
-QUnit.test("classNameBindings lifecycle test", function() {
+QUnit.skip("classNameBindings lifecycle test", function() {
   run(function() {
     view = EmberView.create({
       classNameBindings: ['priority'],
@@ -262,7 +262,7 @@ QUnit.test("classNameBindings should not fail if view has been destroyed", funct
   ok(!error, error);
 });
 
-QUnit.test("Providing a binding with a space in it asserts", function() {
+QUnit.skip("Providing a binding with a space in it asserts", function() {
   view = EmberView.create({
     classNameBindings: 'i:think:i am:so:clever'
   });
