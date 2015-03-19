@@ -22,7 +22,7 @@ QUnit.test('specifying `<div style="width: {{userValue}}></div>` is [DEPRECATED]
 
   expectDeprecation(function() {
     runAppend(view);
-  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please preform a security audit and once verified change from `<div style="foo: {{property}}">` to `<div style="foo: {{{property}}}">/);
+  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please perform a security audit and once verified change from `<div style="foo: {{property}}">` to `<div style="foo: {{{property}}}">/);
 });
 
 QUnit.test('specifying `<div style="width: {{{userValue}}}></div>` works properly', function() {
