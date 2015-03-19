@@ -9,14 +9,6 @@ import { Mixin } from "ember-metal/mixin";
 @submodule ember-views
 */
 
-// The `morph` and `outerHTML` properties are internal only
-// and not observable.
-
-/**
-  @class _Metamorph
-  @namespace Ember
-  @private
-*/
 export var _Metamorph = Mixin.create({
   isVirtual: true,
   tagName: '',
@@ -30,11 +22,4 @@ export var _Metamorph = Mixin.create({
   }
 });
 
-/**
-  @class _MetamorphView
-  @namespace Ember
-  @extends Ember.View
-  @uses Ember._Metamorph
-  @private
-*/
 export default View.extend(_Metamorph);
