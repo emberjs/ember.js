@@ -8,11 +8,7 @@ import { Mixin } from 'ember-metal/mixin';
   a component. The `template` and `templateName` properties specified at
   extend time are moved to `layout` and `layoutName` respectively.
 
-  `Ember.ComponentTemplateDeprecation` is used internally by Ember in
-  `Ember.Component`.
-
-  @class ComponentTemplateDeprecation
-  @namespace Ember
+  This is used internally by Ember in `Ember.Component`.
 */
 export default Mixin.create({
   /**
