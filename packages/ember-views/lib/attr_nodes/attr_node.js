@@ -11,7 +11,7 @@ import {
 } from "ember-metal/streams/utils";
 import run from "ember-metal/run_loop";
 
-function AttrNode(attrName, attrValue) {
+export default function AttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
@@ -99,5 +99,3 @@ AttrNode.prototype.destroy = function AttrNode_destroy() {
     this._renderer.remove(this, true);
   }
 };
-
-export default AttrNode;
