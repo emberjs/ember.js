@@ -27,7 +27,8 @@ var ViewChildViewsSupport = Mixin.create({
     this._super(...arguments);
 
     // setup child views. be sure to clone the child views array first
-    this.childViews = this.childViews.slice();
+    // 2.0TODO: Remove Ember.A() here
+    this.childViews = Ember.A(this.childViews.slice());
     this.ownerView = this;
   },
 
@@ -121,13 +122,13 @@ var ViewChildViewsSupport = Mixin.create({
 
   linkChild(instance) {
     instance.container = this.container;
-    instance.parentView = this;
+    set(instance, 'parentView', this);
     instance.trigger('parentViewDidChange');
     instance.ownerView = this.ownerView;
   },
 
   unlinkChild(instance) {
-    instance.parentView = null;
+    set(instance, 'parentView', null);
     instance.trigger('parentViewDidChange');
   }
 });

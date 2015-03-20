@@ -1,7 +1,7 @@
 import merge from "ember-metal/merge";
 import Ember from "ember-metal/core";
 import buildComponentTemplate from "ember-views/system/build-component-template";
-import { readHash } from "ember-metal/streams/utils";
+import { readHash, read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
@@ -29,8 +29,13 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
 
   if (found.component) {
     var options = { parentView: parentView, isOutlet: found.isOutlet };
-    if (attrs && attrs.id) { options.elementId = attrs.id; }
-    if (attrs && attrs.tagName) { options.tagName = attrs.tagName; }
+
+    if (found.createOptions) {
+      merge(options, found.createOptions);
+    }
+
+    if (attrs && attrs.id) { options.elementId = read(attrs.id); }
+    if (attrs && attrs.tagName) { options.tagName = read(attrs.tagName); }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
     componentInfo.layout = get(component, 'layout') || get(component, 'template') || componentInfo.layout;

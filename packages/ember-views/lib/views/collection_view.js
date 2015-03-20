@@ -5,17 +5,19 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
+import ContainerView from "ember-views/views/container_view";
+import View from "ember-views/views/view";
+import EmberArray from "ember-runtime/mixins/array";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { fmt } from "ember-runtime/system/string";
-import ContainerView from "ember-views/views/container_view";
-import View from "ember-views/views/view";
+import { computed } from "ember-metal/computed";
 import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
-import EmberArray from "ember-runtime/mixins/array";
+import { IS_BINDING } from "ember-metal/mixin";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -331,7 +333,7 @@ var CollectionView = ContainerView.extend({
 
     if (len) {
       itemViewProps = this._itemViewProps || {};
-      itemViewClass = get(this, 'itemViewClass');
+      itemViewClass = get(this, 'attrs.itemViewClass') || get(this, 'itemViewClass');
 
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
@@ -398,7 +400,58 @@ var CollectionView = ContainerView.extend({
     }
 
     return view;
-  }
+  },
+
+  willRender: function() {
+    var attrs = this.attrs;
+    var itemProps = buildItemViewProps(this._itemViewTemplate, attrs);
+    this._itemViewProps = itemProps;
+    var childViews = get(this, 'childViews');
+
+    for (var i=0, l=childViews.length; i<l; i++) {
+      childViews[i].setProperties(itemProps);
+    }
+
+    if ('content' in attrs) {
+      set(this, 'content', attrs.content);
+    }
+
+    if ('emptyView' in attrs) {
+      set(this, 'emptyView', attrs.emptyView);
+    }
+  },
+
+  _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {
+    var emptyView = get(this, 'emptyView');
+    var attrsEmptyViewClass = get(this, 'attrs.emptyViewClass');
+    var emptyViewClass = get(this, 'emptyViewClass');
+    var inverse = get(this, '_itemViewInverse');
+    var actualEmpty = emptyView || attrsEmptyViewClass;
+
+    // Somehow, our previous semantics differed depending on whether the
+    // `emptyViewClass` was provided on the JavaScript class or via the
+    // Handlebars template.
+    // In Glimmer, we disambiguate between the two by checking first (and
+    // preferring) the attrs-supplied class.
+    // If not present, we fall back to the class's `emptyViewClass`, but only
+    // if an inverse has been provided via an `{{else}}`.
+    if (inverse && actualEmpty) {
+      if (actualEmpty.extend) {
+        return actualEmpty.extend({ template: inverse });
+      } else {
+        set(actualEmpty, 'template', inverse);
+      }
+    } else if (inverse && emptyViewClass) {
+      return emptyViewClass.extend({ template: inverse });
+    }
+
+    return actualEmpty;
+  }),
+
+  _emptyViewTagName: computed('tagName', function() {
+    var tagName = get(this, 'tagName');
+    return CollectionView.CONTAINER_MAP[tagName] || 'div';
+  })
 });
 
 /**
@@ -421,5 +474,33 @@ CollectionView.CONTAINER_MAP = {
   tr: 'td',
   select: 'option'
 };
+
+function buildItemViewProps(template, attrs) {
+  var props = {};
+
+  // Go through options passed to the {{collection}} helper and extract options
+  // that configure item views instead of the collection itself.
+  for (var prop in attrs) {
+    if (prop === 'itemViewClass' || prop === 'itemController' || prop === 'itemClassBinding') {
+      continue;
+    }
+    if (attrs.hasOwnProperty(prop)) {
+      var match = prop.match(/^item(.)(.*)$/);
+      if (match) {
+        var childProp = match[1].toLowerCase() + match[2];
+
+        Ember.assert("View bindings are not yet supported in Glimmer.", !IS_BINDING.test(prop));
+        props[childProp] = attrs[prop];
+        delete attrs[prop];
+      }
+    }
+  }
+
+  if (template) {
+    props.template = template;
+  }
+
+  return props;
+}
 
 export default CollectionView;
