@@ -157,8 +157,6 @@ Ember.ArrayProxy = ArrayProxy;
 Ember.ObjectProxy = ObjectProxy;
 Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
-Ember.EachArray = EachArray;
-Ember.EachProxy = EachProxy;
 Ember.NativeArray = NativeArray;
 // ES6TODO: Currently we must rely on the global from ember-metal/core to avoid circular deps
 // Ember.A = A;
