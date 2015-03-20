@@ -1882,27 +1882,45 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   disconnectOutlet(options) {
     var outletName;
     var parentView;
-    var parent;
     if (!options || typeof options === "string") {
       outletName = options;
     } else {
       outletName = options.outlet;
       parentView = options.parentView;
     }
-
     parentView = parentView && parentView.replace(/\//g, '.');
-    parent = parentRoute(this);
+    outletName = outletName || 'main';
+    this._disconnectOutlet(outletName, parentView);
+    for (var i = 0; i < this.router.router.currentHandlerInfos.length; i++) {
+      // This non-local state munging is sadly necessary to maintain
+      // backward compatibility with our existing semantics, which allow
+      // any route to disconnectOutlet things originally rendered by any
+      // other route. This should all get cut in 2.0.
+      this.router.router.
+        currentHandlerInfos[i].handler._disconnectOutlet(outletName, parentView);
+    }
+  },
+
+  _disconnectOutlet(outletName, parentView) {
+    var parent = parentRoute(this);
     if (parent && parentView === parent.routeName) {
       parentView = undefined;
     }
-    outletName = outletName || 'main';
-
     for (var i = 0; i < this.connections.length; i++) {
       var connection = this.connections[i];
       if (connection.outlet === outletName && connection.into === parentView) {
-        this.connections.splice(i, 1);
+        // This neuters the disconnected outlet such that it doesn't
+        // render anything, but it leaves an entry in the outlet
+        // hierarchy so that any existing other renders that target it
+        // don't suddenly blow up. They will still stick themselves
+        // into its outlets, which won't render anywhere. All of this
+        // statefulness should get the machete in 2.0.
+        this.connections[i] = {
+          into: connection.into,
+          outlet: connection.outlet,
+          name: connection.name
+        };
         run.once(this.router, '_setOutlets');
-        return;
       }
     }
   },
