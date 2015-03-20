@@ -84,7 +84,6 @@ import {
 } from "ember-metal/property_events";
 
 import {
-  Descriptor,
   defineProperty
 } from "ember-metal/properties";
 import {
