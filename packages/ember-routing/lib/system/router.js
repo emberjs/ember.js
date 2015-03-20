@@ -200,14 +200,17 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     for (var i = 0; i < handlerInfos.length; i++) {
       route = handlerInfos[i].handler;
-      var connections = normalizedConnections(route);
+      var connections = route.connections;
       var ownState;
       for (var j = 0; j < connections.length; j++) {
         var appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
         liveRoutes = appended.liveRoutes;
-        if (appended.ownState.render.name === route.routeName) {
+        if (appended.ownState.render.name === route.routeName || appended.ownState.render.outlet === 'main') {
           ownState = appended.ownState;
         }
+      }
+      if (connections.length === 0) {
+        ownState = representEmptyRoute(liveRoutes, defaultParentState, route);
       }
       defaultParentState = ownState;
     }
@@ -1029,34 +1032,27 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   };
 }
 
-function normalizedConnections(route) {
-  var connections = route.connections;
-  var mainConnections = [];
-  var otherConnections = [];
-
-  for (var i = 0; i < connections.length; i++) {
-    var connection = connections[i];
-    if (connection.outlet === 'main') {
-      mainConnections.push(connection);
-    } else {
-      otherConnections.push(connection);
-    }
+function representEmptyRoute(liveRoutes, defaultParentState, route) {
+  // the route didn't render anything
+  var alreadyAppended = findLiveRoute(liveRoutes, route.routeName);
+  if (alreadyAppended) {
+    // But some other route has already rendered our default
+    // template, so that becomes the default target for any
+    // children we may have.
+    return alreadyAppended;
+  } else {
+    // Create an entry to represent our default template name,
+    // just so other routes can target it and inherit its place
+    // in the outlet hierarchy.
+    defaultParentState.outlets.main = {
+      render: {
+        name: route.routeName,
+        outlet: 'main'
+      },
+      outlets: {}
+    };
+    return defaultParentState;
   }
-
-  if (mainConnections.length === 0) {
-    // There's always an entry to represent the route, even if it
-    // doesn't actually render anything into its own
-    // template. This gives other routes a place to target.
-    mainConnections.push({
-      name: route.routeName,
-      outlet: 'main'
-    });
-  }
-
-  // We process main connections first, because a main connection may
-  // be targeted by other connections.
-  return mainConnections.concat(otherConnections);
 }
-
 
 export default EmberRouter;
