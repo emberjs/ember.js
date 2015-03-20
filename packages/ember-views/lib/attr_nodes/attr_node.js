@@ -84,12 +84,12 @@ AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedSt
   );
 };
 
-AttrNode.prototype.rerender = function render() {
+AttrNode.prototype.rerender = function AttrNode_render() {
   this.isDirty = true;
   run.schedule('render', this, this.renderIfDirty);
 };
 
-AttrNode.prototype.destroy = function render() {
+AttrNode.prototype.destroy = function AttrNode_destroy() {
   this.isDestroying = true;
   this.isDirty = false;
 
