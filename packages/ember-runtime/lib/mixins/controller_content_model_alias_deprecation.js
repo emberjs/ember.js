@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core'; // Ember.deprecate
 import { Mixin } from 'ember-metal/mixin';
 
-/**
+/*
   The ControllerContentModelAliasDeprecation mixin is used to provide a useful
   deprecation warning when specifying `content` directly on a `Ember.Controller`
   (without also specifying `model`).
