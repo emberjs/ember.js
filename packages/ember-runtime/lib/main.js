@@ -21,10 +21,6 @@ import { Container, Registry } from "ember-runtime/system/container";
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
-import {
-  EachArray,
-  EachProxy
-} from 'ember-runtime/system/each_proxy';
 
 import NativeArray from 'ember-runtime/system/native_array';
 import Set from 'ember-runtime/system/set';
