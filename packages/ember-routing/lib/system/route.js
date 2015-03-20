@@ -1994,8 +1994,6 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     }
   }
 
-  Ember.assert("An outlet ("+outlet+") was specified but was not found.", outlet === 'main' || into);
-
   var parent;
   if (into && (parent = parentRoute(route)) && into === parentRoute(route).routeName) {
     into = undefined;
