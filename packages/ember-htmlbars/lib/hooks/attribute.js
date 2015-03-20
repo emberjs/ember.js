@@ -6,7 +6,7 @@
 import AttrNode from "ember-views/attr_nodes/attr_node";
 import EmberError from "ember-metal/error";
 import { isStream } from "ember-metal/streams/utils";
-import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
+import sanitizeAttributeValue from "morph-attr/sanitize-attribute-value";
 
 var boundAttributesEnabled = false;
 
