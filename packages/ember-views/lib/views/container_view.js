@@ -185,7 +185,9 @@ var ContainerView = Component.extend(MutableArray, {
     Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(userChildViews));
 
     // redefine view's childViews property that was obliterated
-    var childViews = this.childViews = [];
+    // 2.0TODO: Don't Ember.A() this so users disabling prototype extensions
+    // don't pay a penalty.
+    var childViews = this.childViews = Ember.A([]);
 
     forEach(userChildViews, function(viewName, idx) {
       var view;
@@ -203,7 +205,7 @@ var ContainerView = Component.extend(MutableArray, {
 
     var currentView = get(this, 'currentView');
     if (currentView) {
-      if (!childViews.length) { childViews = this.childViews = this.childViews.slice(); }
+      if (!childViews.length) { childViews = this.childViews = Ember.A(this.childViews.slice()); }
       childViews.push(this.createChildView(currentView));
     }
 

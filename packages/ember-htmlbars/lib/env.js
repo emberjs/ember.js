@@ -65,6 +65,7 @@ import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
 import partial from "ember-htmlbars/keywords/partial";
 import input from "ember-htmlbars/keywords/input";
+import collection from "ember-htmlbars/keywords/collection";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -74,6 +75,7 @@ registerKeyword('view', view);
 registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
 registerKeyword('input', input);
+registerKeyword('collection', collection);
 
 export default {
   hooks: emberHooks,

@@ -162,9 +162,8 @@ QUnit.skip("collection helper should try to use container to resolve view", func
 
   registry.register('view:collectionTest', ACollectionView);
 
-  var controller = { container: container };
   view = EmberView.create({
-    controller: controller,
+    container: container,
     template: compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
   });
 
@@ -219,6 +218,7 @@ QUnit.skip("empty views should be removed when content is added to the collectio
 });
 
 QUnit.skip("should be able to specify which class should be used for the empty view", function() {
+  var registry = new Registry();
   var App;
 
   run(function() {
@@ -229,12 +229,10 @@ QUnit.skip("should be able to specify which class should be used for the empty v
     template: compile('This is an empty view')
   });
 
+  registry.register('view:empty-view', EmptyView);
+
   view = EmberView.create({
-    container: {
-      lookupFactory() {
-        return EmptyView;
-      }
-    },
+    container: registry.container(),
     template: compile('{{collection emptyViewClass="empty-view"}}')
   });
 
@@ -356,7 +354,7 @@ QUnit.skip("should give its item views the class specified by itemClass", functi
   equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
-QUnit.skip("should give its item views the class specified by itemClass", function() {
+QUnit.skip("should give its item views the class specified by itemClass binding", function() {
   var ItemClassBindingTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })])
@@ -377,20 +375,20 @@ QUnit.skip("should give its item views the class specified by itemClass", functi
 });
 
 QUnit.skip("should give its item views the property specified by itemProperty", function() {
+  var registry = new Registry();
+
   var ItemPropertyBindingTestItemView = EmberView.extend({
     tagName: 'li'
   });
+
+  registry.register('view:item-property-binding-test-item-view', ItemPropertyBindingTestItemView);
 
   // Use preserveContext=false so the itemView handlebars context is the view context
   // Set itemView bindings using item*
   view = EmberView.create({
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    container: {
-      lookupFactory() {
-        return ItemPropertyBindingTestItemView;
-      }
-    },
+    container: registry.container(),
     template: compile('{{#collection content=view.content tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
@@ -481,7 +479,7 @@ QUnit.skip("should pass content as context when using {{#each}} helper [DEPRECAT
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.');
 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
