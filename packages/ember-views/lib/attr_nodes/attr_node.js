@@ -72,7 +72,7 @@ AttrNode.prototype.render = function render(buffer) {
 AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedStyle(value) {
   Ember.deprecate(
     'Dynamic content in the `style` attribute is not escaped and may pose a security risk. ' +
-    'Please preform a security audit and once verified change from ' +
+    'Please perform a security audit and once verified change from ' +
     this._dynamicStyleDeprecationMessage,
     (function(name, value, escaped) {
       // SafeString
