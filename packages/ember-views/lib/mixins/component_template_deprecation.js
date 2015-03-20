@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core'; // Ember.deprecate
 import { get } from "ember-metal/property_get";
 import { Mixin } from 'ember-metal/mixin';
 
-/**
+/*
   The ComponentTemplateDeprecation mixin is used to provide a useful
   deprecation warning when using either `template` or `templateName` with
   a component. The `template` and `templateName` properties specified at
