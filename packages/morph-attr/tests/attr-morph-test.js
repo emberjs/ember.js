@@ -89,7 +89,7 @@ var badTags = [
   { tag: 'body', attr: 'background' },
   { tag: 'link', attr: 'href' },
   { tag: 'img', attr: 'src' },
-  { tag: 'iframe', attr: 'src' }
+  { tag: 'iframe', attr: 'src'}
 ];
 
 for (var i=0, l=badTags.length; i<l; i++) {
@@ -164,3 +164,13 @@ test("can update namespaced attribute", function(){
 });
 
 }
+
+test("embed src as data uri is sanitized", function() {
+  var element = document.createElement('embed');
+  var morph = domHelper.createAttrMorph(element, 'src');
+  morph.setContent('data:image/svg+xml;base64,PH');
+
+  equal( element.getAttribute('src'),
+        'unsafe:data:image/svg+xml;base64,PH',
+        'attribute is escaped');
+});
