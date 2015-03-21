@@ -3,7 +3,6 @@
 @submodule ember-htmlbars
 */
 
-import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
@@ -12,7 +11,7 @@ export default function bindSelf(env, scope, self) {
     scope.view = self;
     newStream(scope.locals, 'view', self, null);
     newStream(scope.locals, 'controller', scope.locals.view.getKey('controller'));
-    newStream(scope, 'self', get(self, 'context'), null, true);
+    newStream(scope, 'self', scope.locals.view.getKey('context'), null, true);
     return;
   }
 

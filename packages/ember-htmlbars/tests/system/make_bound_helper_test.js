@@ -31,7 +31,7 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
   }
 });
 
-QUnit.skip("should update bound helpers in a subexpression when properties change", function() {
+QUnit.test("should update bound helpers in a subexpression when properties change", function() {
   registry.register('helper:x-dasherize', makeBoundHelper(function(params, hash, options, env) {
     return dasherize(params[0]);
   }));

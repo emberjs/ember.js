@@ -143,25 +143,17 @@ QUnit.test("View lookup - App.FuView (DEPRECATED)", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-QUnit.skip("View lookup - 'fu'", function() {
+QUnit.test("View lookup - 'fu'", function() {
   var FuView = viewClass({
     elementId: "fu",
     template: compile("bro")
   });
 
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
-  }
-
-  var container = {
-    lookupFactory: lookupFactory
-  };
+  registry.register('view:fu', FuView);
 
   view = EmberView.extend({
     template: compile("{{view 'fu'}}"),
-    container: container
+    container: container,
   }).create();
 
   runAppend(view);
@@ -169,21 +161,13 @@ QUnit.skip("View lookup - 'fu'", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-QUnit.skip("View lookup - 'fu' when fu is a property and a view name", function() {
+QUnit.test("View lookup - 'fu' when fu is a property and a view name", function() {
   var FuView = viewClass({
     elementId: "fu",
     template: compile("bro")
   });
 
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
-  }
-
-  var container = {
-    lookupFactory: lookupFactory
-  };
+  registry.register('view:fu', FuView);
 
   view = EmberView.extend({
     template: compile("{{view 'fu'}}"),
@@ -196,21 +180,13 @@ QUnit.skip("View lookup - 'fu' when fu is a property and a view name", function(
   equal(jQuery('#fu').text(), 'bro');
 });
 
-QUnit.skip("View lookup - view.computed", function() {
+QUnit.test("View lookup - view.computed", function() {
   var FuView = viewClass({
     elementId: "fu",
     template: compile("bro")
   });
 
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
-  }
-
-  var container = {
-    lookupFactory: lookupFactory
-  };
+  registry.register('view:fu', FuView);
 
   view = EmberView.extend({
     template: compile("{{view view.computed}}"),
@@ -247,7 +223,7 @@ QUnit.test("specifying `id` as a static value works properly", function() {
   equal(view.$('#blah').text(), 'stengah', "id binding performed property lookup");
 });
 
-QUnit.skip("mixing old and new styles of property binding fires a warning, treats value as if it were quoted", function() {
+QUnit.test("mixing old and new styles of property binding fires a warning, treats value as if it were quoted", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -261,23 +237,24 @@ QUnit.skip("mixing old and new styles of property binding fires a warning, treat
     ok(msg.match(/You're attempting to render a view by passing borfBinding.+, but this syntax is ambiguous./));
   };
 
+  let compiled;
+  expectDeprecation(function() {
+    compiled = compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}");
+  }, "You're using legacy binding syntax: borfBinding=view.snork at 1:8 in (inline). Please replace with borf=view.snork");
+
   view = EmberView.extend({
-    template: compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}"),
+    template: compiled,
     snork: "nerd"
   }).create();
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You're attempting to render a view by passing borfBinding to a view helper without a quoted value, but this syntax is ambiguous. You should either surround borfBinding's value in quotes or remove `Binding` from borfBinding./);
+  runAppend(view);
 
   equal(jQuery('#lol').text(), "nerd", "awkward mixed syntax treated like binding");
 
   Ember.warn = oldWarn;
 });
 
-QUnit.skip('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', function() {
-  expect(6);
-
+QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', function() {
   var subview;
 
   var Subview = EmberView.extend({
@@ -288,17 +265,20 @@ QUnit.skip('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
     template: compile('<div class="color">{{view.color}}</div>')
   });
 
+  let compiled;
+  expectDeprecation(function() {
+    compiled = compile('<h1>{{view view.Subview colorBinding="view.color"}}</h1>');
+  }, `You're using legacy binding syntax: colorBinding="view.color" at 1:24 in (inline). Please replace with color=view.color`);
+
   var View = EmberView.extend({
     color: "mauve",
     Subview: Subview,
-    template: compile('<h1>{{view view.Subview colorBinding="view.color"}}</h1>')
+    template: compiled
   });
 
   view = View.create();
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You're attempting to render a view by passing colorBinding to a view helper, but this syntax is deprecated. You should use `color=someValue` instead./);
+  runAppend(view);
 
   equal(view.$('h1 .color').text(), 'mauve', 'renders bound value');
 
@@ -310,6 +290,10 @@ QUnit.skip('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
     view.set('color', 'persian rose');
 
     run.schedule('sync', function() {
+      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    run.schedule('afterRender', function() {
       equal(get(subview, 'color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
     });
 
@@ -319,9 +303,7 @@ QUnit.skip('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
   equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
 });
 
-QUnit.skip('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
-  expect(5);
-
+QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
   var subview;
 
   var Subview = EmberView.extend({
@@ -329,7 +311,7 @@ QUnit.skip('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
       subview = this;
       return this._super.apply(this, arguments);
     },
-    template: compile('<div class="color">{{view.color}}</div>')
+    template: compile('<div class="color">{{view.attrs.color}}</div>')
   });
 
   var View = EmberView.extend({
@@ -345,19 +327,23 @@ QUnit.skip('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
 
   run(function() {
     run.schedule('sync', function() {
-      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+      equal(get(subview, 'attrs.color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
     });
 
     view.set('color', 'persian rose');
 
     run.schedule('sync', function() {
-      equal(get(subview, 'color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
+      equal(get(subview, 'attrs.color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
     });
 
-    equal(get(subview, 'color'), 'mauve', 'bound property does not update immediately');
+    run.schedule('afterRender', function() {
+      equal(get(subview, 'attrs.color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    equal(get(subview, 'attrs.color'), 'mauve', 'bound property does not update immediately');
   });
 
-  equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
+  equal(get(subview, 'attrs.color'), 'persian rose', 'bound property is updated after runloop flush');
 });
 
 QUnit.test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
@@ -417,7 +403,7 @@ QUnit.test("Should apply classes when bound property specified", function() {
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
 
-QUnit.skip("Should apply a class from a sub expression", function() {
+QUnit.test("Should apply a class from a sub expression", function() {
   registry.register('helper:string-concat', makeBoundHelper(function(params) {
     return params.join('');
   }));
@@ -494,19 +480,13 @@ QUnit.skip("Should update classes from a bound property", function() {
   ok(jQuery('#foo').hasClass('fooBar'), "changes property to string value (but does not dasherize)");
 });
 
-QUnit.skip("bound properties should be available in the view", function() {
+QUnit.test("bound properties should be available in the view", function() {
   var FuView = viewClass({
     elementId: 'fu',
-    template: compile("{{view.foo}}")
+    template: compile("{{view.attrs.foo}}")
   });
 
-  function lookupFactory(fullName) {
-    return FuView;
-  }
-
-  var container = {
-    lookupFactory: lookupFactory
-  };
+  registry.register('view:fu', FuView);
 
   view = EmberView.extend({
     template: compile("{{view 'fu' foo=view.someProp}}"),
@@ -716,7 +696,7 @@ QUnit.test("should be able to explicitly set a view's context", function() {
   equal(view.$().text(), 'test');
 });
 
-QUnit.skip('Template views add an elementId to child views created using the view helper', function() {
+QUnit.test('Template views add an elementId to child views created using the view helper', function() {
   registry.register('template:parent', compile('<div>{{view view.childView}}</div>'));
   registry.register('template:child', compile('I can\'t believe it\'s not butter.'));
 
@@ -737,7 +717,7 @@ QUnit.skip('Template views add an elementId to child views created using the vie
   equal(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
 
-QUnit.skip('Child views created using the view helper should have their parent view set properly', function() {
+QUnit.test('Child views created using the view helper should have their parent view set properly', function() {
   var template = '{{#view}}{{#view}}{{view}}{{/view}}{{/view}}';
 
   view = EmberView.create({
@@ -750,7 +730,7 @@ QUnit.skip('Child views created using the view helper should have their parent v
   equal(childView, get(firstChild(childView), 'parentView'), 'parent view is correct');
 });
 
-QUnit.skip('Child views created using the view helper should have their IDs registered for events', function() {
+QUnit.test('Child views created using the view helper should have their IDs registered for events', function() {
   var template = '{{view}}{{view id="templateViewTest"}}';
 
   view = EmberView.create({
@@ -801,7 +781,7 @@ QUnit.test('{{view}} id attribute should set id on layer', function() {
   equal(view.$('#bar').text(), 'baz', 'emits content');
 });
 
-QUnit.skip('{{view}} tag attribute should set tagName of the view', function() {
+QUnit.test('{{view}} tag attribute should set tagName of the view', function() {
   registry.register('template:foo', compile('{{#view view.tagView tag="span"}}baz{{/view}}'));
 
   var TagView = EmberView;
@@ -841,7 +821,7 @@ QUnit.skip('{{view}} should not allow attributeBindings to be set', function() {
       template: compile('{{view attributeBindings="one two"}}')
     });
     runAppend(view);
-  }, /Setting 'attributeBindings' via template helpers is not allowed/);
+  }, "Setting 'attributeBindings' via template helpers is not allowed @ 1:21 in (inline)");
 });
 
 QUnit.test('{{view}} should be able to point to a local view', function() {
@@ -1178,7 +1158,7 @@ QUnit.test('should work with precompiled templates', function() {
   equal(view.$().text(), 'updated', 'the precompiled template was updated');
 });
 
-QUnit.skip('bindings should be relative to the current context [DEPRECATED]', function() {
+QUnit.test('bindings should be relative to the current context [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1188,20 +1168,18 @@ QUnit.skip('bindings should be relative to the current context [DEPRECATED]', fu
     }),
 
     museumView: EmberView.extend({
-      template: compile('Name: {{view.name}} Price: ${{view.dollars}}')
+      template: compile('Name: {{view.attrs.name}} Price: ${{view.attrs.dollars}}')
     }),
 
-    template: compile('{{#if view.museumOpen}} {{view view.museumView nameBinding="view.museumDetails.name" dollarsBinding="view.museumDetails.price"}} {{/if}}')
+    template: compile('{{#if view.museumOpen}} {{view view.museumView name=view.museumDetails.name dollars=view.museumDetails.price}} {{/if}}')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
-QUnit.skip('bindings should respect keywords [DEPRECATED]', function() {
+QUnit.test('bindings should respect keywords [DEPRECATED]', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1214,20 +1192,18 @@ QUnit.skip('bindings should respect keywords [DEPRECATED]', function() {
     },
 
     museumView: EmberView.extend({
-      template: compile('Name: {{view.name}} Price: ${{view.dollars}}')
+      template: compile('Name: {{view.attrs.name}} Price: ${{view.attrs.dollars}}')
     }),
 
-    template: compile('{{#if view.museumOpen}}{{view view.museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
+    template: compile('{{#if view.museumOpen}}{{view view.museumView name=controller.museumDetails.name dollars=controller.museumDetails.price}}{{/if}}')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
-QUnit.skip('should respect keywords', function() {
+QUnit.test('should respect keywords', function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1240,7 +1216,7 @@ QUnit.skip('should respect keywords', function() {
     },
 
     museumView: EmberView.extend({
-      template: compile('Name: {{view.name}} Price: ${{view.dollars}}')
+      template: compile('Name: {{view.attrs.name}} Price: ${{view.attrs.dollars}}')
     }),
 
     template: compile('{{#if view.museumOpen}}{{view view.museumView name=controller.museumDetails.name dollars=controller.museumDetails.price}}{{/if}}')

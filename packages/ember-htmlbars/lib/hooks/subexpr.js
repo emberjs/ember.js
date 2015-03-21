@@ -11,11 +11,14 @@ import { subscribe, addDependency, read, labelsFor, labelFor } from "ember-metal
 
 export default function subexpr(env, scope, helperName, params, hash) {
   var helper = lookupHelper(helperName, scope.self, env);
+  var invoker = function(params, hash) {
+    return env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { template: {}, inverse: {} }, undefined).value;
+  };
 
-  Ember.assert("A helper named '"+helperName+"' could not be found", typeof helper === 'function');
+  //Ember.assert("A helper named '"+helperName+"' could not be found", typeof helper === 'function');
 
   var label = labelForSubexpr(params, hash, helperName);
-  return new SubexprStream(params, hash, helper, label);
+  return new SubexprStream(params, hash, invoker, label);
 }
 
 function SubexprStream(params, hash, helper, label) {
@@ -68,7 +71,7 @@ merge(SubexprStream.prototype, {
       hash[prop] = read(sourceHash[prop]);
     }
 
-    return this.helper.call(undefined, params, hash, { template: {}, inverse: {} });
+    return this.helper(params, hash);
   },
 
   _super$subscribe: Stream.prototype.subscribe,

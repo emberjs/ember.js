@@ -43,6 +43,10 @@ export default {
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
     state.componentNode = componentNode;
 
+    if (hash.itemView) {
+      hash.itemViewClass = hash.itemView;
+    }
+
     componentNode.render(env, hash, visitor);
   }
 };
@@ -51,11 +55,7 @@ function getView(viewPath, container) {
   var viewClassOrInstance;
 
   if (!viewPath) {
-    //if (container) {
-      //viewClassOrInstance = container.lookupFactory('view:toplevel');
-    //} else {
-      viewClassOrInstance = CollectionView;
-    //}
+    viewClassOrInstance = CollectionView;
   } else {
     viewClassOrInstance = readViewFactory(viewPath, container);
   }
