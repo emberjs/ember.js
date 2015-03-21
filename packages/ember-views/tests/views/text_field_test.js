@@ -561,3 +561,15 @@ QUnit.test('should not reset cursor position when text field receives keyUp even
 
   equal(caretPosition(view.$()), 5, 'The keyUp event should not result in the cursor being reset due to the bind-attr observers');
 });
+
+QUnit.test('an unsupported type defaults to `text`', function() {
+  view = TextField.create({
+    type: 'blahblah'
+  });
+
+  equal(get(view, 'type'), 'text', 'should default to text if the type is not a valid type');
+
+  appendView(view);
+
+  equal(view.element.type, 'text');
+});
