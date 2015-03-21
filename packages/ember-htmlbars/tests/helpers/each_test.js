@@ -100,11 +100,13 @@ QUnit.module("the #each helper [DEPRECATED]", {
     lookup.MyView = MyView = EmberView.extend({
       template: templateMyView
     });
+    registry.register('view:my-view', MyView);
 
     templateMyEmptyView = templateFor("I'm empty");
     lookup.MyEmptyView = MyEmptyView = EmberView.extend({
       template: templateMyEmptyView
     });
+    registry.register('view:my-empty-view', MyEmptyView);
 
     expectDeprecation(function() {
       runAppend(view);
@@ -401,7 +403,7 @@ QUnit.skip("itemController specified in template gets a parentController propert
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-QUnit.skip("itemController specified in ArrayController gets a parentController property", function() {
+QUnit.test("itemController specified in ArrayController gets a parentController property", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
@@ -429,7 +431,7 @@ QUnit.skip("itemController specified in ArrayController gets a parentController 
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-QUnit.skip("itemController's parentController property, when the ArrayController has a parentController", function() {
+QUnit.test("itemController's parentController property, when the ArrayController has a parentController", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
@@ -494,7 +496,7 @@ QUnit.skip("it supports itemController when using a custom keyword", function() 
   equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
 });
 
-QUnit.skip("it supports {{itemView=}}", function() {
+QUnit.test("it supports {{itemView=}}", function() {
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -514,7 +516,7 @@ QUnit.skip("it supports {{itemView=}}", function() {
 });
 
 
-QUnit.skip("it defers all normalization of itemView names to the resolver", function() {
+QUnit.test("it defers all normalization of itemView names to the resolver", function() {
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -527,15 +529,16 @@ QUnit.skip("it defers all normalization of itemView names to the resolver", func
   });
 
   registry.register('view:an-item-view', itemView);
-  registry.resolve = function(fullname) {
-    equal(fullname, "view:an-item-view", "leaves fullname untouched");
-    return Registry.prototype.resolve.call(this, fullname);
-  };
+  //registry.resolve = function(fullname) {
+    //equal(fullname, "view:an-item-view", "leaves fullname untouched");
+    //return Registry.prototype.resolve.call(this, fullname);
+  //};
   runAppend(view);
 
+  assertText(view, 'itemView:Steve HoltitemView:Annabelle');
 });
 
-QUnit.skip("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
+QUnit.test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView}}'),
@@ -551,15 +554,10 @@ QUnit.skip("it supports {{itemViewClass=}} with global (DEPRECATED)", function()
   assertText(view, "Steve HoltAnnabelle");
 });
 
-QUnit.skip("it supports {{itemViewClass=}} via container", function() {
+QUnit.test("it supports {{itemViewClass=}} via container", function() {
   runDestroy(view);
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        equal(name, 'view:my-view');
-        return MyView;
-      }
-    },
+    container: container,
     template: templateFor('{{each view.people itemViewClass="my-view"}}'),
     people: people
   });
@@ -569,14 +567,14 @@ QUnit.skip("it supports {{itemViewClass=}} via container", function() {
   assertText(view, "Steve HoltAnnabelle");
 });
 
-QUnit.skip("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
+QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
     people: people
   });
 
-  expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
+  //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   runAppend(view);
   equal(view.$('ul').length, 1, 'rendered ul tag');
@@ -584,19 +582,15 @@ QUnit.skip("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
   equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
 });
 
-QUnit.skip("it supports {{itemViewClass=}} with in format", function() {
+QUnit.test("it supports {{itemViewClass=}} with in format", function() {
   MyView = EmberView.extend({
     template: templateFor("{{person.name}}")
   });
 
   runDestroy(view);
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        return MyView;
-      }
-    },
-    template: templateFor('{{each person in view.people itemViewClass="myView"}}'),
+    container: registry.container(),
+    template: templateFor('{{each person in view.people itemViewClass="my-view"}}'),
     people: people
   });
 
@@ -606,7 +600,7 @@ QUnit.skip("it supports {{itemViewClass=}} with in format", function() {
 
 });
 
-QUnit.skip("it supports {{emptyView=}}", function() {
+QUnit.test("it supports {{emptyView=}}", function() {
   var emptyView = EmberView.extend({
     template: templateFor('emptyView:sad panda')
   });
@@ -649,7 +643,7 @@ QUnit.skip("it defers all normalization of emptyView names to the resolver", fun
   runAppend(view);
 });
 
-QUnit.skip("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
+QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -666,16 +660,11 @@ QUnit.skip("it supports {{emptyViewClass=}} with global (DEPRECATED)", function(
   assertText(view, "I'm empty");
 });
 
-QUnit.skip("it supports {{emptyViewClass=}} via container", function() {
+QUnit.test("it supports {{emptyViewClass=}} via container", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        equal(name, 'view:my-empty-view');
-        return MyEmptyView;
-      }
-    },
+    container: container,
     template: templateFor('{{each view.people emptyViewClass="my-empty-view"}}'),
     people: A()
   });
@@ -685,7 +674,7 @@ QUnit.skip("it supports {{emptyViewClass=}} via container", function() {
   assertText(view, "I'm empty");
 });
 
-QUnit.skip("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function() {
+QUnit.test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -693,7 +682,7 @@ QUnit.skip("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function
     people: A()
   });
 
-  expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
+  //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   runAppend(view);
 
@@ -701,16 +690,12 @@ QUnit.skip("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function
   equal(view.$('b').text(), "I'm empty");
 });
 
-QUnit.skip("it supports {{emptyViewClass=}} with in format", function() {
+QUnit.test("it supports {{emptyViewClass=}} with in format", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        return MyEmptyView;
-      }
-    },
-    template: templateFor('{{each person in view.people emptyViewClass="myEmptyView"}}'),
+    container: container,
+    template: templateFor('{{each person in view.people emptyViewClass="my-empty-view"}}'),
     people: A()
   });
 
@@ -775,7 +760,7 @@ QUnit.test("views inside #each preserve the new context [DEPRECATED]", function(
   equal(view.$().text(), "AdamSteve");
 });
 
-QUnit.skip("single-arg each defaults to current context [DEPRECATED]", function() {
+QUnit.test("single-arg each defaults to current context [DEPRECATED]", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -790,7 +775,7 @@ QUnit.skip("single-arg each defaults to current context [DEPRECATED]", function(
   equal(view.$().text(), "AdamSteve");
 });
 
-QUnit.skip("single-arg each will iterate over controller if present [DEPRECATED]", function() {
+QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -1031,7 +1016,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
   if (!useBlockParams) {
-    QUnit.skip("{{each}} without arguments [DEPRECATED]", function() {
+    QUnit.test("{{each}} without arguments [DEPRECATED]", function() {
       expect(2);
 
       view = EmberView.create({

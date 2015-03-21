@@ -6,6 +6,7 @@ var trim = jQuery.trim;
 import { Registry } from "ember-runtime/system/container";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { deprecation } from "ember-htmlbars/keywords/template";
 
 var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
@@ -26,7 +27,7 @@ QUnit.module("Support for {{template}} helper", {
   }
 });
 
-QUnit.skip("should render other templates via the container (DEPRECATED)", function() {
+QUnit.test("should render other templates via the container (DEPRECATED)", function() {
   registry.register('template:sub_template_from_container', compile('sub-template'));
 
   view = EmberView.create({
@@ -34,14 +35,14 @@ QUnit.skip("should render other templates via the container (DEPRECATED)", funct
     template: compile('This {{template "sub_template_from_container"}} is pretty great.')
   });
 
-  expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
+  expectDeprecation(deprecation);
 
   runAppend(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
 
-QUnit.skip("should use the current view's context (DEPRECATED)", function() {
+QUnit.test("should use the current view's context (DEPRECATED)", function() {
   registry.register('template:person_name', compile("{{firstName}} {{lastName}}"));
 
   view = EmberView.create({
@@ -53,7 +54,7 @@ QUnit.skip("should use the current view's context (DEPRECATED)", function() {
     lastName: 'Selden'
   }));
 
-  expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
+  expectDeprecation(deprecation);
 
   runAppend(view);
 

@@ -66,6 +66,7 @@ import componentKeyword from "ember-htmlbars/keywords/component";
 import partial from "ember-htmlbars/keywords/partial";
 import input from "ember-htmlbars/keywords/input";
 import collection from "ember-htmlbars/keywords/collection";
+import templateKeyword from "ember-htmlbars/keywords/template";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -74,6 +75,7 @@ registerKeyword('unbound', unbound);
 registerKeyword('view', view);
 registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
+registerKeyword('template', templateKeyword);
 registerKeyword('input', input);
 registerKeyword('collection', collection);
 

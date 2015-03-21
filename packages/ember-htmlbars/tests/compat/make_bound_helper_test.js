@@ -442,6 +442,8 @@ QUnit.test("shouldn't treat quoted strings as bound paths", function() {
 QUnit.skip("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
   expectDeprecationInHTMLBars();
 
+  // The problem here is that `undefined` is treated as "use the parent scope" in yieldItem
+
   helper('reverse', function(val) {
     return val ? val.split('').reverse().join('') : "NOPE";
   });
@@ -455,7 +457,7 @@ QUnit.skip("bound helpers can handle nulls in array (with primitives) [DEPRECATE
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
@@ -483,7 +485,7 @@ QUnit.skip("bound helpers can handle nulls in array (with objects)", function() 
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 
@@ -492,7 +494,7 @@ QUnit.skip("bound helpers can handle nulls in array (with objects)", function() 
   equal(view.$().text(), '|NOPE 5|5 6|6 |NOPE 5|5 6|6 ', "helper output is correct");
 });
 
-QUnit.skip("bound helpers can handle `this` keyword when it's a non-object", function() {
+QUnit.test("bound helpers can handle `this` keyword when it's a non-object", function() {
   expectDeprecationInHTMLBars();
 
   helper("shout", function(value) {
@@ -506,19 +508,19 @@ QUnit.skip("bound helpers can handle `this` keyword when it's a non-object", fun
 
   runAppend(view);
 
-  equal(view.$().text(), 'alex!', "helper output is correct");
+  equal(view.$().text(), 'alex!', "helper output is correct first");
 
   run(function() {
     set(view, 'context', '');
   });
 
-  equal(view.$().text(), '!', "helper output is correct");
+  equal(view.$().text(), '!', "helper output is correct after updating to empty");
 
   run(function() {
     set(view, 'context', 'wallace');
   });
 
-  equal(view.$().text(), 'wallace!', "helper output is correct");
+  equal(view.$().text(), 'wallace!', "helper output is correct after updating to wallace");
 });
 
 QUnit.test("should have correct argument types", function() {

@@ -81,7 +81,7 @@ QUnit.test('should read from an Object.create(null)', function() {
   equal(view.$().text(), 'baz');
 });
 
-QUnit.skip('should escape HTML in primitive value contexts when using normal mustaches', function() {
+QUnit.test('should escape HTML in primitive value contexts when using normal mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
     template: compile('{{this}}')
@@ -100,7 +100,7 @@ QUnit.skip('should escape HTML in primitive value contexts when using normal mus
   equal(view.$('i').length, 0, 'does not create an element when value is updated');
 });
 
-QUnit.skip('should not escape HTML in primitive value contexts when using triple mustaches', function() {
+QUnit.test('should not escape HTML in primitive value contexts when using triple mustaches', function() {
   view = EmberView.create({
     context: '<b>Max</b><b>James</b>',
     template: compile('{{{this}}}')

@@ -29,6 +29,10 @@ export default {
   },
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
+    if (hash.tag) {
+      hash = swapKey(hash, 'tag', 'tagName');
+    }
+
     var state = node.state;
     var parentView = state.parentView;
 
@@ -54,4 +58,15 @@ function getView(viewPath, container) {
   }
 
   return viewClassOrInstance;
+}
+
+function swapKey(hash, original, update) {
+  var newHash = {};
+
+  for (var prop in hash) {
+    if (prop === original) { newHash[update] = hash[prop]; }
+    else { newHash[prop] = hash[prop]; }
+  }
+
+  return newHash;
 }
