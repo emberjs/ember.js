@@ -25,6 +25,10 @@ var mainContext = this;
     };
 
     requirejs = require = requireModule = function(name) {
+      return internalRequire(name, null);
+    }
+
+    function internalRequire(name, referrerName) {
       var exports = seen[name];
 
       if (exports !== undefined) {
@@ -34,7 +38,11 @@ var mainContext = this;
       exports = seen[name] = {};
 
       if (!registry[name]) {
-        throw new Error('Could not find module ' + name);
+        if (referrerName) {
+          throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
+        } else {
+          throw new Error('Could not find module ' + name);
+        }
       }
 
       var mod = registry[name];
@@ -47,7 +55,7 @@ var mainContext = this;
         if (deps[i] === 'exports') {
           reified.push(exports);
         } else {
-          reified.push(requireModule(resolve(deps[i], name)));
+          reified.push(internalRequire(resolve(deps[i], name), name));
         }
       }
 
