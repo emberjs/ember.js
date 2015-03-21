@@ -584,7 +584,7 @@ QUnit.test("src attribute bound to undefined is not present", function() {
 
   runAppend(view);
 
-  ok(!view.element.hasAttribute('src'), "src attribute not present");
+  ok(!view.element.firstChild.hasAttribute('src'), "src attribute not present");
 });
 
 QUnit.test("src attribute bound to null is not present", function() {
@@ -597,7 +597,7 @@ QUnit.test("src attribute bound to null is not present", function() {
 
   runAppend(view);
 
-  ok(!view.element.hasAttribute('src'), "src attribute not present");
+  ok(!view.element.firstChild.hasAttribute('src'), "src attribute not present");
 });
 
 QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` is [DEPRECATED]', function() {
