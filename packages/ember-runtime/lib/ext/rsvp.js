@@ -45,6 +45,11 @@ export function onerrorDefault(e) {
     error = e;
   }
 
+  if (error && error.name === "UnrecognizedURLError") {
+    Ember.assert("The URL '" + error.message + "' did not match any routes in your application", false);
+    return;
+  }
+
   if (error && error.name !== 'TransitionAborted') {
     if (Ember.testing) {
       // ES6TODO: remove when possible
@@ -56,7 +61,9 @@ export function onerrorDefault(e) {
         Test.adapter.exception(error);
         Logger.error(error.stack);
       } else {
-        throw error;
+        Ember.run.schedule(Ember.run.queues[Ember.run.queues.length-1], function() {
+          throw error;
+        });
       }
     } else if (Ember.onerror) {
       Ember.onerror(error);

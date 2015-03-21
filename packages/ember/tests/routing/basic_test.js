@@ -44,7 +44,7 @@ function handleURLRejectsWith(path, expectedReason) {
     router.handleURL(path).then(function(value) {
       ok(false, 'expected handleURLing: `' + path + '` to fail');
     }, function(reason) {
-      equal(expectedReason, reason);
+      equal(reason, expectedReason);
     });
   });
 }
@@ -3166,6 +3166,8 @@ QUnit.test('Redirecting with null model doesn\'t error out', function() {
 });
 
 QUnit.test('rejecting the model hooks promise with a non-error prints the `message` property', function() {
+  expect(5);
+
   var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
   var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
 
@@ -3185,10 +3187,16 @@ QUnit.test('rejecting the model hooks promise with a non-error prints the `messa
     }
   });
 
-  bootApplication();
+  throws(function() {
+    bootApplication();
+  }, function(err) {
+    equal(err.message, rejectedMessage);
+    return true;
+  }, 'expected an exception');
 });
 
 QUnit.test('rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property', function() {
+  expect(5);
   var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
   var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
 
@@ -3210,7 +3218,12 @@ QUnit.test('rejecting the model hooks promise with an error with `errorThrown` p
     }
   });
 
-  bootApplication();
+  throws(function() {
+    bootApplication();
+  }, function(err) {
+    equal(err.message, rejectedMessage);
+    return true;
+  }, 'expected an exception');
 });
 
 QUnit.test('rejecting the model hooks promise with no reason still logs error', function() {
@@ -3232,6 +3245,7 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
 });
 
 QUnit.test('rejecting the model hooks promise with a string shows a good error', function() {
+  expect(3);
   var originalLoggerError = Ember.Logger.error;
   var rejectedMessage = 'Supercalifragilisticexpialidocious';
 
@@ -3250,7 +3264,9 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
     }
   });
 
-  bootApplication();
+  throws(function() {
+    bootApplication();
+  }, rejectedMessage, 'expected an exception');
 
   Ember.Logger.error = originalLoggerError;
 });
@@ -3285,7 +3301,7 @@ QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire un
 });
 
 QUnit.test('Errors in transitionTo within redirect hook are logged', function() {
-  expect(3);
+  expect(4);
   var actual = [];
 
   Router.map(function() {
@@ -3304,7 +3320,9 @@ QUnit.test('Errors in transitionTo within redirect hook are logged', function() 
     actual.push(arguments);
   };
 
-  bootApplication();
+  throws(function() {
+    bootApplication();
+  }, /More context objects were passed/);
 
   equal(actual.length, 1, 'the error is only logged once');
   equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
@@ -3325,7 +3343,9 @@ QUnit.test('Errors in transition show error template if available', function() {
     }
   });
 
-  bootApplication();
+  throws(function() {
+    bootApplication();
+  }, /More context objects were passed/);
 
   equal(Ember.$('#error').length, 1, 'Error template was rendered.');
 });
@@ -3945,4 +3965,32 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
 
   assert.strictEqual(myComponentCounter, 1, 'didInsertElement not invoked on displayed component');
   assert.strictEqual(otherComponentCounter, 1, 'didInsertElement invoked on displayed component');
+});
+
+QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
+  expect(1);
+  Ember.TEMPLATES.application = compile('{{outlet}}');
+  Ember.TEMPLATES.index = compile('index');
+  Ember.TEMPLATES.other = compile('other');
+
+  Router.map(function() {
+    this.route('other', function() {
+    });
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    actions: {
+      willTransition() {
+        throw new Error('boom');
+      }
+    }
+  });
+
+  bootApplication();
+
+  throws(function() {
+    Ember.run(function() {
+      router.handleURL('/other');
+    });
+  }, /boom/, 'expected an exception that didnt happen');
 });

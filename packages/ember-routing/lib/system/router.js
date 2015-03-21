@@ -1015,14 +1015,6 @@ function didBeginTransition(transition, router) {
     router.set('currentState', routerState);
   }
   router.set('targetState', routerState);
-
-  transition.then(null, function(error) {
-    if (!error || !error.name) { return; }
-
-    Ember.assert(`The URL '${error.message}' did not match any routes in your application`, error.name !== 'UnrecognizedURLError');
-
-    return error;
-  }, 'Ember: Process errors from Router');
 }
 
 function resemblesURL(str) {
