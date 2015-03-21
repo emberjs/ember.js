@@ -85,7 +85,7 @@ QUnit.skip("Bound helpers registered on the container can be late-invoked", func
 
 // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
 // and we are not going to recreate the handlebars helperMissing concept
-QUnit.skip("Undashed helpers registered on the container can not (presently) be invoked", function() {
+QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
 
   // Note: the reason we're not allowing undashed helpers is to avoid
   // a possible perf hit in hot code paths, i.e. _triageMustache.

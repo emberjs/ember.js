@@ -87,7 +87,7 @@ QUnit.test("should be able to update when bound property updates", function() {
   equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
 });
 
-QUnit.skip('should cleanup bound properties on rerender', function() {
+QUnit.test('should cleanup bound properties on rerender', function() {
   view = EmberView.create({
     controller: EmberObject.create({ name: 'wycats' }),
     template: compile('{{name}}')
@@ -99,7 +99,7 @@ QUnit.skip('should cleanup bound properties on rerender', function() {
 
   run(view, 'rerender');
 
-  equal(view.childViews.length, 1);
+  equal(view.$().text(), 'wycats', 'rendered binding');
 });
 
 QUnit.test("should update bound values after view's parent is removed and then re-appended", function() {

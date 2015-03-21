@@ -7,7 +7,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
-import EmberError from "ember-metal/error";
 import helpers from "ember-htmlbars/helpers";
 import {
   registerHelper
@@ -322,17 +321,8 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
 });
 
 QUnit.skip("yield with nested components (#3220)", function() {
-  var count = 0;
   var InnerComponent = Component.extend({
     layout: compile("{{yield}}"),
-    _yield(context, options, morph) {
-      count++;
-      if (count > 1) {
-        throw new EmberError('is looping');
-      }
-
-      return this._super(context, options, morph);
-    }
   });
 
   registerHelper('inner-component', makeViewHelper(InnerComponent));

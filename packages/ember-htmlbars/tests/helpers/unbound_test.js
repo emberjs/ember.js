@@ -57,7 +57,7 @@ QUnit.test('it should not re-render if the property changes', function() {
   equal(view.$().text(), 'BORK BORK', 'should not re-render if the property changes');
 });
 
-QUnit.skip('it should throw the helper missing error if multiple properties are provided', function() {
+QUnit.test('it should throw the helper missing error if multiple properties are provided', function() {
   throws(function() {
     runAppend(EmberView.create({
       template: compile('{{unbound foo bar}}'),

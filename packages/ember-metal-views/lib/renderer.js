@@ -32,8 +32,11 @@ Renderer.prototype.renderTopLevelView =
 
 Renderer.prototype.revalidateTopLevelView =
   function Renderer_revalidateTopLevelView(view) {
-    view.renderNode.lastResult.revalidate(view.env);
-    this.dispatchLifecycleHooks(view.env);
+    // This guard prevents revalidation on an already-destroyed view.
+    if (view.renderNode.lastResult) {
+      view.renderNode.lastResult.revalidate(view.env);
+      this.dispatchLifecycleHooks(view.env);
+    }
   };
 
 Renderer.prototype.dispatchLifecycleHooks =
