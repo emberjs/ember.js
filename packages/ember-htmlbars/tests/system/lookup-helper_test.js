@@ -1,4 +1,4 @@
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
+import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import Component from "ember-views/views/component";
@@ -35,7 +35,7 @@ QUnit.test('returns undefined if no container exists (and helper is not found in
   var env = generateEnv();
   var view = {};
 
-  var actual = lookupHelper('flubarb', view, env);
+  var actual = findHelper('flubarb', view, env);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
@@ -50,7 +50,7 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
     }
   };
 
-  var actual = lookupHelper('flubarb', view, env);
+  var actual = findHelper('flubarb', view, env);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });

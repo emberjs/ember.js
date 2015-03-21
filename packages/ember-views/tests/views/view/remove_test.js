@@ -25,17 +25,17 @@ QUnit.module("View#removeChild", {
   }
 });
 
-QUnit.skip("returns receiver", function() {
+QUnit.test("returns receiver", function() {
   equal(parentView.removeChild(child), parentView, 'receiver');
 });
 
-QUnit.skip("removes child from parent.childViews array", function() {
+QUnit.test("removes child from parent.childViews array", function() {
   ok(indexOf(get(parentView, 'childViews'), child)>=0, 'precond - has child in childViews array before remove');
   parentView.removeChild(child);
   ok(indexOf(get(parentView, 'childViews'), child)<0, 'removed child');
 });
 
-QUnit.skip("sets parentView property to null", function() {
+QUnit.test("sets parentView property to null", function() {
   ok(get(child, 'parentView'), 'precond - has parentView');
   parentView.removeChild(child);
   ok(!get(child, 'parentView'), 'parentView is now null');
@@ -108,7 +108,7 @@ QUnit.skip("removes view from parent view", function() {
   equal(parentView.$('div').length, 0, "removes DOM element from parent");
 });
 
-QUnit.skip("returns receiver", function() {
+QUnit.test("returns receiver", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });

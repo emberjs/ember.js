@@ -27,7 +27,7 @@ export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
   @param {String} name the name of the helper to lookup
   @return {Handlebars Helper}
 */
-export default function lookupHelper(name, view, env) {
+export function findHelper(name, view, env) {
   var helper = env.helpers[name];
   if (helper) {
     return helper;
@@ -58,6 +58,14 @@ export default function lookupHelper(name, view, env) {
     container._registry.unregister(helperName);
     container._registry.register(helperName, helper);
   }
+
+  return helper;
+}
+
+export default function lookupHelper(name, view, env) {
+  let helper = findHelper(name, view, env);
+
+  Ember.assert(`A helper named '${name}' could not be found`, !!helper);
 
   return helper;
 }

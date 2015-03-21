@@ -24,7 +24,7 @@ QUnit.test("returns null if the view has no element and no parent view", functio
   equal(get(view, 'element'), null, 'has no element');
 });
 
-QUnit.skip("returns null if the view has no element and parent view has no element", function() {
+QUnit.test("returns null if the view has no element and parent view has no element", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({

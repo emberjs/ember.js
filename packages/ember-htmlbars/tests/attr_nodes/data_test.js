@@ -180,7 +180,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     equalInnerHTML(view.element, '<div data-name="mmun">Hi!</div>', "attribute is updated output");
   });
 
-  QUnit.skip("updates fail silently after an element is destroyed", function() {
+  QUnit.test("updates fail silently after an element is destroyed", function() {
     var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
