@@ -5,7 +5,7 @@ import DOMHelper from "../../dom-helper";
 
 var domHelper = new DOMHelper();
 
-QUnit.module('sanitizeAttributeValue(null, "href")');
+QUnit.module('sanitizeAttributeValue(null, "*")');
 
 var goodProtocols = [ 'https', 'http', 'ftp', 'tel', 'file'];
 
@@ -17,10 +17,10 @@ function buildProtocolTest(protocol) {
   test('allows ' + protocol + ' protocol when element is not provided', function() {
     expect(1);
 
-    var expected = protocol + '://foo.com';
-    var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
+    var attributeValue = protocol + '://foo.com';
+    var actual = sanitizeAttributeValue(domHelper, null, 'href', attributeValue);
 
-    equal(actual, expected, 'protocol not escaped');
+    equal(actual, attributeValue, 'protocol not escaped');
   });
 }
 
@@ -29,10 +29,10 @@ test('blocks javascript: protocol', function() {
 
   expect(1);
 
-  var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
+  var attributeValue = 'javascript:alert("foo")';
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', attributeValue);
 
-  equal(actual, 'unsafe:' + expected, 'protocol escaped');
+  equal(actual, 'unsafe:' + attributeValue, 'protocol escaped');
 });
 
 test('blocks blacklisted protocols', function() {
@@ -40,10 +40,10 @@ test('blocks blacklisted protocols', function() {
 
   expect(1);
 
-  var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(domHelper, null, 'href', expected);
+  var attributeValue = 'javascript:alert("foo")';
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', attributeValue);
 
-  equal(actual, 'unsafe:' + expected, 'protocol escaped');
+  equal(actual, 'unsafe:' + attributeValue, 'protocol escaped');
 });
 
 test('does not block SafeStrings', function() {
@@ -51,8 +51,60 @@ test('does not block SafeStrings', function() {
 
   expect(1);
 
-  var expected = 'javascript:alert("foo")';
-  var actual = sanitizeAttributeValue(domHelper, null, 'href', new SafeString(expected));
+  var attributeValue = 'javascript:alert("foo")';
+  var actual = sanitizeAttributeValue(domHelper, null, 'href', new SafeString(attributeValue));
 
-  equal(actual, expected, 'protocol unescaped');
+  equal(actual, attributeValue, 'protocol unescaped');
+});
+
+test("blocks data uri for EMBED", function() {
+  /* jshint scripturl:true */
+
+  expect(1);
+
+  var attributeValue = 'data:image/svg+xml;base64,...';
+  var actual = sanitizeAttributeValue(domHelper, { tagName: 'EMBED' }, 'src', attributeValue);
+
+  equal(actual, 'unsafe:' + attributeValue, 'protocol escaped');
+});
+
+test("doesn't sanitize data uri for IMG", function() {
+  /* jshint scripturl:true */
+
+  expect(1);
+
+  var attributeValue = 'data:image/svg+xml;base64,...';
+  var actual = sanitizeAttributeValue(domHelper, { tagName: 'IMG' }, 'src', attributeValue);
+
+  equal(actual, attributeValue, 'protocol should not have been escaped');
+});
+
+var badTags = [
+  'A',
+  'BODY',
+  'LINK',
+  'IMG',
+  'IFRAME',
+  'BASE'
+];
+
+var badAttributes = [
+  'href',
+  'src',
+  'background'
+];
+
+var someIllegalProtocols = [
+  'javascript',
+  'vbscript'
+];
+
+badTags.forEach(function(tagName) {
+  badAttributes.forEach(function(attrName) {
+    someIllegalProtocols.forEach(function(protocol) {
+      test(' <' + tagName + ' ' + attrName + '="' + protocol + ':something"> ...', function() {
+        equal(sanitizeAttributeValue(domHelper, { tagName: tagName }, attrName, protocol + ':something'), 'unsafe:' + protocol + ':something');
+      });
+    });
+  });
 });
