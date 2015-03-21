@@ -350,3 +350,41 @@ QUnit.test("checkbox name is updated", function() {
 QUnit.test("checkbox checked property is updated", function() {
   equal(view.$('input').prop('checked'), false, "the checkbox isn't checked yet");
 });
+
+QUnit.module("{{input type='text'}} - null/undefined values", {
+  teardown() {
+    runDestroy(view);
+  }
+});
+
+QUnit.test("placeholder attribute bound to undefined is not present", function() {
+  view = View.extend({
+    controller: {},
+    template: compile('{{input placeholder=someThingNotThere}}')
+  }).create();
+
+  runAppend(view);
+
+  ok(!view.element.childNodes[1].hasAttribute('placeholder'), "attribute not present");
+
+  run(null, set, view, 'controller.someThingNotThere', 'foo');
+
+  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+});
+
+QUnit.test("placeholder attribute bound to null is not present", function() {
+  view = View.extend({
+    controller: {
+      someNullProperty: null
+    },
+    template: compile('{{input placeholder=someNullProperty}}')
+  }).create();
+
+  runAppend(view);
+
+  ok(!view.element.childNodes[1].hasAttribute('placeholder'), "attribute not present");
+
+  run(null, set, view, 'controller.someNullProperty', 'foo');
+
+  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+});
