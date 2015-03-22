@@ -1,70 +1,86 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
-import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta as metaFor} from "ember-metal/utils";
-import {forEach} from "ember-metal/array";
-import {watchKey, unwatchKey} from "ember-metal/watch_key";
+import { get, normalizeTuple } from "ember-metal/property_get";
+import { meta as metaFor } from "ember-metal/utils";
+import { forEach } from "ember-metal/array";
+import { removeObject } from "ember-metal/enumerable_utils";
+import { watchKey, unwatchKey } from "ember-metal/watch_key";
 
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
+
+// Used to keep track of tuples of ChainNodes and paths where the path was for
+// a global and that global object was not available when the chain was added.
+var pendingQueue = [];
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
-var pendingQueue = [];
+function isObject(obj) {
+  return obj && (typeof obj === 'object');
+}
 
-// attempts to add the pendingQueue chains again. If some of them end up
-// back in the queue and reschedule is true, schedules a timeout to try
-// again.
-export function flushPendingChains() {
-  if (pendingQueue.length === 0) { return; } // nothing to do
+function isDescriptor(obj) {
+  return isObject(obj) && obj.isDescriptor;
+}
 
-  var queue = pendingQueue;
-  pendingQueue = [];
-
-  forEach.call(queue, (q) => {
-    q[0].add(q[1]);
-  });
-
-  warn('Watching an undefined global, Ember expects watched globals to be' +
-       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
+function getCache(descriptor, meta, key) {
+  return descriptor._cacheable && meta.cache && meta.cache[key];
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
-
-  var m = metaFor(obj);
-  var nodes = m.chainWatchers;
-
-  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
-    nodes = m.chainWatchers = {};
+  if (!isObject(obj)) {
+    return;
   }
 
-  if (!nodes[keyName]) {
-    nodes[keyName] = [];
+  var meta = metaFor(obj);
+
+  if (!meta.hasOwnProperty('chainWatchers')) {
+    meta.chainWatchers = {};
   }
-  nodes[keyName].push(node);
-  watchKey(obj, keyName, m);
+
+  if (!meta.chainWatchers[keyName]) {
+    meta.chainWatchers[keyName] = [];
+  }
+
+  meta.chainWatchers[keyName].push(node);
+  watchKey(obj, keyName, meta);
 }
 
 function removeChainWatcher(obj, keyName, node) {
-  if (!obj || 'object' !== typeof obj) { return; } // nothing to do
-
-  var m = obj['__ember_meta__'];
-  if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
-
-  var nodes = m && m.chainWatchers;
-
-  if (nodes && nodes[keyName]) {
-    nodes = nodes[keyName];
-    for (var i = 0, l = nodes.length; i < l; i++) {
-      if (nodes[i] === node) {
-        nodes.splice(i, 1);
-        break;
-      }
-    }
+  if (!isObject(obj)) {
+    return;
   }
-  unwatchKey(obj, keyName, m);
+
+  var meta = obj['__ember_meta__'];
+
+  if (!meta || !meta.chainWatchers || !meta.chainWatchers[keyName]) {
+    return;
+  }
+
+  removeObject(meta.chainWatchers[keyName], node);
+  unwatchKey(obj, keyName, meta);
+}
+
+function lazyGet(obj, key) {
+  if (!obj) {
+    return;
+  }
+
+  var meta = obj['__ember_meta__'];
+
+  // check if object meant only to be a prototype
+  if (meta && meta.proto === obj) {
+    return;
+  }
+
+  // Use `get` if the return value is an EachProxy or a plain property.
+  if (key === "@each" || !isDescriptor(obj[key])) {
+    return get(obj, key);
+  // Otherwise get the cached value of the computed property.
+  } else {
+    return getCache(obj[key], meta, key);
+  }
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
@@ -73,22 +89,26 @@ function removeChainWatcher(obj, keyName, node) {
 function ChainNode(parent, key, value) {
   this._parent = parent;
   this._key    = key;
+  this._value = value;
 
-  // _watching is true when calling get(this._parent, this._key) will
-  // return the value of this node.
-  //
-  // It is false for the root of a chain (because we have no parent)
-  // and for global paths (because the parent node is the object with
-  // the observer on it)
-  this._watching = value===undefined;
-
-  this._value  = value;
+  // Used to keep track of the number of times each path is added to a ChainNode.
   this._paths = {};
+
+  // Used to keep track of how many nodes are in a chain.
+  this.count = 0;
+
+  // When the value for this ChainNode is unset, `_watching` is true.
+  // We set this flag so that we later have a means of deactivating this
+  // ChainNode when it is destroyed by setting `_watching` to false.
+  //
+  // We expect `_watching` to be false when the ChainNode is the root of a
+  // chain (because we have no parent) and for global paths (because the parent
+  // node is the object with the observer on it).
+  this._watching = (value === undefined);
+
   if (this._watching) {
     this._object = parent.value();
-    if (this._object) {
-      addChainWatcher(this._object, this._key, this);
-    }
+    addChainWatcher(this._object, this._key, this);
   }
 
   // Special-case: the EachProxy relies on immediate evaluation to
@@ -101,292 +121,250 @@ function ChainNode(parent, key, value) {
   }
 }
 
-var ChainNodePrototype = ChainNode.prototype;
+ChainNode.prototype = {
+  value() {
+    if (this._value === undefined && this._watching) {
+      var obj = this._parent.value();
+      this._value = lazyGet(obj, this._key);
+    }
+    return this._value;
+  },
 
-function lazyGet(obj, key) {
-  if (!obj) {
-    return undefined;
-  }
+  destroy() {
+    if (this._watching) {
+      removeChainWatcher(this._object, this._key, this);
+      this._watching = false; // so future calls do nothing
+    }
+  },
 
-  var meta = obj['__ember_meta__'];
-  // check if object meant only to be a prototype
-  if (meta && meta.proto === obj) {
-    return undefined;
-  }
+  // Create a new, top-level ChainNode and copy this ChainNodes's paths
+  // into it. This only works with top level chain nodes.
+  copy(obj) {
+    var chainNode = new ChainNode(null, null, obj);
 
-  if (key === "@each") {
-    return get(obj, key);
-  }
+    for (var path in this._paths) {
+      if (this._paths[path] > 0) {
+        chainNode.add(path);
+      }
+    }
+    return chainNode;
+  },
 
-  // if a CP only return cached value
-  var possibleDesc = obj[key];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-  if (desc && desc._cacheable) {
-    if (meta.cache && key in meta.cache) {
-      return meta.cache[key];
+  // This method is called on the root node of a chain to setup watchers on the
+  // specified path.
+  add(path) {
+    var obj, key, src, normalizedObject, normalizedPath;
+
+    this._paths[path] = (this._paths[path] || 0) + 1;
+
+    obj = this.value();
+    [normalizedObject, normalizedPath] = normalizeTuple(obj, path);
+
+    if (normalizedObject) {
+      // The path is a local path.
+      if (normalizedObject === obj) {
+        key  = firstKey(normalizedPath);
+        path = normalizedPath.slice(key.length + 1);
+
+        this.chain(key, path);
+
+      // global path, and object already exists
+      } else {
+        src  = normalizedObject;
+        key  = path.slice(0, -(normalizedPath.length + 1));
+        path = normalizedPath;
+
+        this.chain(key, path, src);
+      }
+
+    // global path, but object does not exist yet.
+    // put into a queue and try to connect later.
     } else {
-      return undefined;
+      pendingQueue.push([this, path]);
+    }
+  },
+
+  // called on the root node of a chain to teardown watcher on the specified
+  // path
+  remove(path) {
+    var obj, key, normalizedObject, normalizedPath;
+
+    if (this._paths[path] > 0) {
+      this._paths[path]--;
+    }
+
+    obj = this.value();
+    [normalizedObject, normalizedPath] = normalizeTuple(obj, path);
+
+    if (normalizedObject === obj) {
+      key  = firstKey(normalizedPath);
+      path = normalizedPath.slice(key.length + 1);
+    } else {
+      key  = path.slice(0, -(normalizedPath.length + 1));
+      path = normalizedPath;
+    }
+
+    this.unchain(key, path);
+  },
+
+  chain(key, path, src) {
+    var node;
+
+    if (!this._chains) {
+      this._chains = {};
+    }
+
+    if (!this._chains[key]) {
+      this._chains[key] = new ChainNode(this, key, src);
+    }
+
+    node = this._chains[key];
+    node.count++; // count chains
+
+    // chain rest of path if there is one
+    if (path) {
+      key = firstKey(path);
+      path = path.slice(key.length + 1);
+      node.chain(key, path); // No src means the ChainNode will observe changes.
+    }
+  },
+
+  unchain(key, path) {
+    var node = this._chains[key];
+
+    // Unchain rest of path first
+    if (path && path.length > 1) {
+      var nextKey  = firstKey(path);
+      var nextPath = path.slice(nextKey.length + 1);
+      node.unchain(nextKey, nextPath);
+    }
+
+    // Delete node if it has no other nodes chained to it.
+    node.count--;
+    if (node.count <= 0) {
+      delete this._chains[node._key];
+      node.destroy();
+    }
+  },
+
+  willChange(events) {
+    if (this._chains) {
+      for (var key in this._chains) {
+        if (this._chains.hasOwnProperty(key)) {
+          this._chains[key].willChange(events);
+        }
+      }
+    }
+
+    if (this._parent) {
+      this._parent.notify(this, this._key, 1, events);
+    }
+  },
+
+  didChange(events) {
+    // invalidate my own value first.
+    if (this._watching) {
+      var currentObject = this._parent.value();
+      if (currentObject !== this._object) {
+        removeChainWatcher(this._object, this._key, this);
+        this._object = currentObject;
+        addChainWatcher(currentObject, this._key, this);
+      }
+      this._value = undefined;
+
+      // Special-case: the EachProxy relies on immediate evaluation to
+      // establish its observers.
+      if (this._parent && this._parent._key === '@each') {
+        this.value();
+      }
+    }
+
+    // Then notify chains
+    for (var key in this._chains) {
+      if (this._chains.hasOwnProperty(key)) {
+        this._chains[key].didChange(events);
+      }
+    }
+
+    // If events were passed in and there is a parent, we tell the parent about
+    // my changing path
+    if (events && this._parent) {
+      this._parent.notify(this, this._key, 1, events);
+    }
+  },
+
+  notify(chain, path, depth, events) {
+    if (this._key) {
+      path = this._key + '.' + path;
+    }
+
+    if (this._parent) {
+      this._parent.notify(this, path, depth + 1, events);
+    } else {
+      if (depth > 1) {
+        events.push(this.value(), path);
+      }
+
+      path = 'this.' + path;
+      if (this._paths[path] > 0) {
+        events.push(this.value(), path);
+      }
     }
   }
+};
 
-  return get(obj, key);
+// When a global path is added to a ChainNode but the global object doesn't
+// exist, the chainNode and path are pushed onto the pendingGlobalPathsQueue
+// as sets of tuples.
+//
+// [[ChainNode, 'Global.foo'] [ChainNode, 'AnotherGlobal.bar']]
+//
+// Later someone can call Ember.flushPendingChains to try to add these global
+// paths again.
+//
+export function flushPendingChains() {
+  if (pendingQueue.length === 0) {
+    return;
+  }
+
+  var queue = pendingQueue;
+  pendingQueue = [];
+
+  forEach.call(queue, (q) => {
+    q[0].add(q[1]);
+  });
+
+  warn('Watching an undefined global, Ember expects watched globals to be' +
+       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
 
-ChainNodePrototype.value = function() {
-  if (this._value === undefined && this._watching) {
-    var obj = this._parent.value();
-    this._value = lazyGet(obj, this._key);
-  }
-  return this._value;
-};
-
-ChainNodePrototype.destroy = function() {
-  if (this._watching) {
-    var obj = this._object;
-    if (obj) {
-      removeChainWatcher(obj, this._key, this);
-    }
-    this._watching = false; // so future calls do nothing
-  }
-};
-
-// copies a top level object only
-ChainNodePrototype.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj);
-  var paths = this._paths;
-  var path;
-
-  for (path in paths) {
-    // this check will also catch non-number vals.
-    if (paths[path] <= 0) {
-      continue;
-    }
-    ret.add(path);
-  }
-  return ret;
-};
-
-// called on the root node of a chain to setup watchers on the specified
-// path.
-ChainNodePrototype.add = function(path) {
-  var obj, tuple, key, src, paths;
-
-  paths = this._paths;
-  paths[path] = (paths[path] || 0) + 1;
-
-  obj = this.value();
-  tuple = normalizeTuple(obj, path);
-
-  // the path was a local path
-  if (tuple[0] && tuple[0] === obj) {
-    path = tuple[1];
-    key  = firstKey(path);
-    path = path.slice(key.length+1);
-
-  // global path, but object does not exist yet.
-  // put into a queue and try to connect later.
-  } else if (!tuple[0]) {
-    pendingQueue.push([this, path]);
-    tuple.length = 0;
-    return;
-
-  // global path, and object already exists
-  } else {
-    src  = tuple[0];
-    key  = path.slice(0, 0-(tuple[1].length+1));
-    path = tuple[1];
-  }
-
-  tuple.length = 0;
-  this.chain(key, path, src);
-};
-
-// called on the root node of a chain to teardown watcher on the specified
-// path
-ChainNodePrototype.remove = function(path) {
-  var obj, tuple, key, src, paths;
-
-  paths = this._paths;
-  if (paths[path] > 0) {
-    paths[path]--;
-  }
-
-  obj = this.value();
-  tuple = normalizeTuple(obj, path);
-  if (tuple[0] === obj) {
-    path = tuple[1];
-    key  = firstKey(path);
-    path = path.slice(key.length+1);
-  } else {
-    src  = tuple[0];
-    key  = path.slice(0, 0-(tuple[1].length+1));
-    path = tuple[1];
-  }
-
-  tuple.length = 0;
-  this.unchain(key, path);
-};
-
-ChainNodePrototype.count = 0;
-
-ChainNodePrototype.chain = function(key, path, src) {
-  var chains = this._chains;
-  var node;
-  if (!chains) {
-    chains = this._chains = {};
-  }
-
-  node = chains[key];
-  if (!node) {
-    node = chains[key] = new ChainNode(this, key, src);
-  }
-  node.count++; // count chains...
-
-  // chain rest of path if there is one
-  if (path) {
-    key = firstKey(path);
-    path = path.slice(key.length+1);
-    node.chain(key, path); // NOTE: no src means it will observe changes...
-  }
-};
-
-ChainNodePrototype.unchain = function(key, path) {
-  var chains = this._chains;
-  var node = chains[key];
-
-  // unchain rest of path first...
-  if (path && path.length > 1) {
-    var nextKey  = firstKey(path);
-    var nextPath = path.slice(nextKey.length + 1);
-    node.unchain(nextKey, nextPath);
-  }
-
-  // delete node if needed.
-  node.count--;
-  if (node.count<=0) {
-    delete chains[node._key];
-    node.destroy();
-  }
-
-};
-
-ChainNodePrototype.willChange = function(events) {
-  var chains = this._chains;
-  if (chains) {
-    for (var key in chains) {
-      if (!chains.hasOwnProperty(key)) {
-        continue;
-      }
-      chains[key].willChange(events);
-    }
-  }
-
-  if (this._parent) {
-    this._parent.chainWillChange(this, this._key, 1, events);
-  }
-};
-
-ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
-  if (this._key) {
-    path = this._key + '.' + path;
-  }
-
-  if (this._parent) {
-    this._parent.chainWillChange(this, path, depth+1, events);
-  } else {
-    if (depth > 1) {
-      events.push(this.value(), path);
-    }
-    path = 'this.' + path;
-    if (this._paths[path] > 0) {
-      events.push(this.value(), path);
-    }
-  }
-};
-
-ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
-  if (this._key) {
-    path = this._key + '.' + path;
-  }
-
-  if (this._parent) {
-    this._parent.chainDidChange(this, path, depth+1, events);
-  } else {
-    if (depth > 1) {
-      events.push(this.value(), path);
-    }
-    path = 'this.' + path;
-    if (this._paths[path] > 0) {
-      events.push(this.value(), path);
-    }
-  }
-};
-
-ChainNodePrototype.didChange = function(events) {
-  // invalidate my own value first.
-  if (this._watching) {
-    var obj = this._parent.value();
-    if (obj !== this._object) {
-      removeChainWatcher(this._object, this._key, this);
-      this._object = obj;
-      addChainWatcher(obj, this._key, this);
-    }
-    this._value  = undefined;
-
-    // Special-case: the EachProxy relies on immediate evaluation to
-    // establish its observers.
-    if (this._parent && this._parent._key === '@each') {
-      this.value();
-    }
-  }
-
-  // then notify chains...
-  var chains = this._chains;
-  if (chains) {
-    for (var key in chains) {
-      if (!chains.hasOwnProperty(key)) { continue; }
-      chains[key].didChange(events);
-    }
-  }
-
-  // if no events are passed in then we only care about the above wiring update
-  if (events === null) {
-    return;
-  }
-
-  // and finally tell parent about my path changing...
-  if (this._parent) {
-    this._parent.chainDidChange(this, this._key, 1, events);
-  }
-};
-
 export function finishChains(obj) {
-  // We only create meta if we really have to
-  var m = obj['__ember_meta__'];
   var chains, chainWatchers, chainNodes;
 
-  if (m) {
-    // finish any current chains node watchers that reference obj
-    chainWatchers = m.chainWatchers;
-    if (chainWatchers) {
-      for (var key in chainWatchers) {
-        if (!chainWatchers.hasOwnProperty(key)) {
-          continue;
-        }
+  // We only create meta if we really have to
+  var meta = obj['__ember_meta__'];
 
-        chainNodes = chainWatchers[key];
-        if (chainNodes) {
-          for (var i=0,l=chainNodes.length;i<l;i++) {
-            chainNodes[i].didChange(null);
-          }
-        }
+  if (!meta) {
+    return;
+  }
+
+  // finish any current chains node watchers that reference obj
+  chainWatchers = meta.chainWatchers;
+
+  for (var key in chainWatchers) {
+    if (chainWatchers.hasOwnProperty(key) && chainWatchers[key]) {
+      chainNodes = chainWatchers[key];
+
+      for (var i = 0; i < chainNodes.length; i++) {
+        chainNodes[i].didChange(null);
       }
     }
-    // copy chains from prototype
-    chains = m.chains;
-    if (chains && chains.value() !== obj) {
-      metaFor(obj).chains = chains = chains.copy(obj);
-    }
+  }
+
+  // copy chains from prototype
+  chains = meta.chains;
+  if (chains && chains.value() !== obj) {
+    metaFor(obj).chains = chains.copy(obj);
   }
 }
 
