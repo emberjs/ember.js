@@ -53,7 +53,7 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
   equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
-QUnit.skip("should update bound helpers when properties change", function() {
+QUnit.test("should update bound helpers when properties change", function() {
   registry.register('helper:x-capitalize', makeBoundHelper(function(params, hash, options, env) {
     return params[0].toUpperCase();
   }));
@@ -73,7 +73,7 @@ QUnit.skip("should update bound helpers when properties change", function() {
   equal(view.$().text(), 'WES', "helper output updated");
 });
 
-QUnit.skip("should update bound helpers when hash properties change", function() {
+QUnit.test("should update bound helpers when hash properties change", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
@@ -94,7 +94,7 @@ QUnit.skip("should update bound helpers when hash properties change", function()
   equal(view.$().text(), 'YoYoYoYoYo', "helper output updated");
 });
 
-QUnit.skip("bound helpers should support keywords", function() {
+QUnit.test("bound helpers should support keywords", function() {
   registry.register('helper:x-capitalize', makeBoundHelper(function(params, hash, options, env) {
     return params[0].toUpperCase();
   }));
@@ -127,7 +127,7 @@ QUnit.test("bound helpers should not process `fooBinding` style hash properties"
   runAppend(view);
 });
 
-QUnit.skip("bound helpers should support multiple bound properties", function() {
+QUnit.test("bound helpers should support multiple bound properties", function() {
 
   registry.register('helper:x-combine', makeBoundHelper(function(params, hash, options, env) {
     return params.join('');
@@ -176,7 +176,7 @@ QUnit.test("bound helpers can be invoked with zero args", function() {
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
 
-QUnit.skip("bound helpers should not be invoked with blocks", function() {
+QUnit.test("bound helpers should not be invoked with blocks", function() {
   registerRepeatHelper();
   view = EmberView.create({
     container: container,
@@ -189,7 +189,7 @@ QUnit.skip("bound helpers should not be invoked with blocks", function() {
   }, /makeBoundHelper generated helpers do not support use with blocks/i);
 });
 
-QUnit.skip("shouldn't treat raw numbers as bound paths", function() {
+QUnit.test("shouldn't treat raw numbers as bound paths", function() {
   registry.register('helper:x-sum', makeBoundHelper(function(params) {
     return params[0] + params[1];
   }));
@@ -209,7 +209,7 @@ QUnit.skip("shouldn't treat raw numbers as bound paths", function() {
   equal(view.$().text(), '6 5 11', "helper still updates as expected");
 });
 
-QUnit.skip("should have correct argument types", function() {
+QUnit.test("should have correct argument types", function() {
   registry.register('helper:get-type', makeBoundHelper(function(params) {
     return typeof params[0];
   }));

@@ -3,8 +3,9 @@ import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import Component from "ember-views/views/component";
 
-function generateEnv(helpers) {
+function generateEnv(helpers, container) {
   return {
+    container: container,
     helpers: (helpers ? helpers : {})
   };
 }
@@ -55,10 +56,11 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-QUnit.skip('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
-  var env = generateEnv();
+QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
+  var container = generateContainer();
+  var env = generateEnv(null, container);
   var view = {
-    container: generateContainer()
+    container: container
   };
 
   function someName() {}
@@ -70,11 +72,12 @@ QUnit.skip('does a lookup in the container if the name contains a dash (and help
   equal(actual, someName, 'does not wrap provided function if `isHTMLBars` is truthy');
 });
 
-QUnit.skip('wraps helper from container in a Handlebars compat helper', function() {
+QUnit.test('wraps helper from container in a Handlebars compat helper', function() {
   expect(2);
-  var env = generateEnv();
+  var container = generateContainer();
+  var env = generateEnv(null, container);
   var view = {
-    container: generateContainer()
+    container: container
   };
   var called;
 
@@ -98,10 +101,11 @@ QUnit.skip('wraps helper from container in a Handlebars compat helper', function
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });
 
-QUnit.skip('asserts if component-lookup:main cannot be found', function() {
-  var env = generateEnv();
+QUnit.test('asserts if component-lookup:main cannot be found', function() {
+  var container = generateContainer();
+  var env = generateEnv(null, container);
   var view = {
-    container: generateContainer()
+    container: container
   };
 
   view.container._registry.unregister('component-lookup:main');
@@ -111,10 +115,11 @@ QUnit.skip('asserts if component-lookup:main cannot be found', function() {
   }, 'Could not find \'component-lookup:main\' on the provided container, which is necessary for performing component lookups');
 });
 
-QUnit.skip('registers a helper in the container if component is found', function() {
-  var env = generateEnv();
+QUnit.test('registers a helper in the container if component is found', function() {
+  var container = generateContainer();
+  var env = generateEnv(null, container);
   var view = {
-    container: generateContainer()
+    container: container
   };
 
   view.container._registry.register('component:some-name', Component);

@@ -58,11 +58,11 @@ QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    contentBinding="view.app.peopleController"' +
+      '    content=view.app.peopleController' +
       '    optionLabelPath="content.fullName"' +
       '    optionValuePath="content.id"' +
       '    prompt="Pick a person:"' +
-      '    selectionBinding="view.app.selectedPersonController.person"}}'
+      '    selection=view.app.selectedPersonController.person}}'
     )
   });
 
