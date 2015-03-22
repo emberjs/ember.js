@@ -10,7 +10,12 @@ var badTags = {
   'BODY': true,
   'LINK': true,
   'IMG': true,
-  'IFRAME': true
+  'IFRAME': true,
+  'BASE': true
+};
+
+var badTagsForDataURI = {
+  'EMBED': true
 };
 
 export var badAttributes = {
@@ -19,13 +24,17 @@ export var badAttributes = {
   'background': true
 };
 
+var badAttributesForDataURI = {
+  'src': true
+};
+
 export function sanitizeAttributeValue(dom, element, attribute, value) {
   var tagName;
 
   if (!element) {
     tagName = null;
   } else {
-    tagName = element.tagName;
+    tagName = element.tagName.toUpperCase();
   }
 
   if (value && value.toHTML) {
@@ -37,6 +46,10 @@ export function sanitizeAttributeValue(dom, element, attribute, value) {
     if (badProtocols[protocol] === true) {
       return 'unsafe:' + value;
     }
+  }
+
+  if (badTagsForDataURI[tagName] && badAttributesForDataURI[attribute]) {
+    return 'unsafe:' + value;
   }
 
   return value;
