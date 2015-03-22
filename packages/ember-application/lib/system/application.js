@@ -837,7 +837,7 @@ Application.reopenClass({
   /**
     Initializer receives an object which has the following attributes:
     `name`, `before`, `after`, `initialize`. The only required attribute is
-    `initialize, all others are optional.
+    `initialize`, all others are optional.
 
     * `name` allows you to specify under which name the initializer is registered.
     This must be a unique name, as trying to register two initializers with the
