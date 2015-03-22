@@ -3,7 +3,6 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { computed } from "ember-metal/computed";
 import { Registry } from "ember-runtime/system/container";
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
@@ -69,12 +68,12 @@ QUnit.test("block should work properly even when templates are not hard-coded", 
 
 });
 
-QUnit.skip("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
+QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
     layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
-      var n = get(this, 'n');
+      var n = this.attrs.n;
       var indexArray = A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
