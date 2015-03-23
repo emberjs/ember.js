@@ -2,6 +2,7 @@ import {
   set,
   trySet
 } from 'ember-metal/property_set';
+import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 
 var originalLookup = Ember.lookup;
@@ -108,7 +109,7 @@ QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
 QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   throws(function() {
     set(obj, 'foo.baz.bat', "BAM");
-  }, Error);
+  }, EmberError);
 });
 
 QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {

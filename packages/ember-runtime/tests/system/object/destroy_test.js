@@ -10,6 +10,7 @@ import {
 import objectKeys from "ember-metal/keys";
 import { testBoth } from "ember-metal/tests/props_helper";
 import EmberObject from "ember-runtime/system/object";
+import EmberError from "ember-metal/error";
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
@@ -47,7 +48,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 
       throws(function() {
         set(obj, 'foo', 'baz');
-      }, Error, "raises an exception");
+      }, EmberError, "raises an exception");
     });
   }
 }

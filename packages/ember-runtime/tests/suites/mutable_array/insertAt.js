@@ -1,5 +1,6 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from "ember-metal/property_get";
+import EmberError from 'ember-metal/error';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -39,7 +40,7 @@ suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() 
 
   throws(function() {
     obj.insertAt(200, that.newFixture(1)[0]);
-  }, Error);
+  }, EmberError);
 });
 
 suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
@@ -108,7 +109,7 @@ suite.test("[A].insertAt(200,X) => OUT_OF_RANGE exception", function() {
 
   throws(function() {
     obj.insertAt(200, that.newFixture(1)[0]);
-  }, Error);
+  }, EmberError);
 });
 
 suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
