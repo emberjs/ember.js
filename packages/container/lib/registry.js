@@ -180,7 +180,7 @@ Registry.prototype = {
       Ember.deprecate(
         '`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.',
         false,
-        { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" }
+        { url: "http://emberjs.com/guides/deprecations#toc_access-to-instances-in-initializers" }
       );
     }
 
@@ -194,7 +194,7 @@ Registry.prototype = {
       Ember.deprecate(
         '`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.',
         false,
-        { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" }
+        { url: "http://emberjs.com/guides/deprecations#toc_access-to-instances-in-initializers" }
       );
     }
 
