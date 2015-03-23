@@ -14,6 +14,7 @@ import SortableMixin from 'ember-runtime/mixins/sortable';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
+import EmberArray from 'ember-runtime/mixins/array';
 
 
 /**
@@ -203,7 +204,17 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     this._subControllers = [];
   },
 
-  model: computed(function () {
+  model: computed(function (key, value) {
+    if (arguments.length > 1) {
+      Ember.assert(
+        'ArrayController expects `model` to implement the Ember.Array mixin. ' +
+        'This can often be fixed by wrapping your model with `Ember.A()`.',
+        EmberArray.detect(value)
+      );
+
+      return value;
+    }
+
     return Ember.A();
   }),
 
