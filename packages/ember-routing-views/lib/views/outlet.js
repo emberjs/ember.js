@@ -10,7 +10,7 @@ import { get } from "ember-metal/property_get";
 export var CoreOutletView = ContainerView.extend({
   init() {
     this._super();
-    this._childOutlets = [];
+    this._childOutlets = Ember.A();
     this._outletState = null;
   },
 

@@ -1022,13 +1022,40 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   if (target) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
-    Ember.assert("You attempted to render into '" + renderOptions.into + "' but it was not found", !renderOptions.into);
-    liveRoutes = myState;
+    if (renderOptions.into) {
+      // Megahax time. Post-2.0-breaking-changes, we will just assert
+      // right here that the user tried to target a nonexistent
+      // thing. But for now we still need to support the `render`
+      // helper, and people are allowed to target templates rendered
+      // by the render helper. So instead we defer doing anyting with
+      // these orphan renders until afterRender.
+      appendOrphan(liveRoutes, renderOptions.into, myState);
+    } else {
+      liveRoutes = myState;
+    }
   }
   return {
     liveRoutes: liveRoutes,
     ownState: myState
   };
+}
+
+function appendOrphan(liveRoutes, into, myState) {
+  if (!liveRoutes.outlets.__ember_orphans__) {
+    liveRoutes.outlets.__ember_orphans__ = {
+      render: {
+        name: '__ember_orphans__'
+      },
+      outlets: create(null)
+    };
+  }
+  liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
+  Ember.run.schedule('afterRender', function() {
+    // `wasUsed` gets set by the render helper. See the function
+    // `impersonateAnOutlet`.
+    Ember.assert("You attempted to render into '" + into + "' but it was not found",
+                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
+  });
 }
 
 function representEmptyRoute(liveRoutes, defaultParentState, route) {
