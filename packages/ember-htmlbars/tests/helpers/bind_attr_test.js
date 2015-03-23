@@ -1,4 +1,6 @@
+/*globals EmberDev */
 /*jshint newcap:false*/
+
 import Ember from "ember-metal/core"; // Ember.lookup
 import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
@@ -11,13 +13,15 @@ import { observersFor } from "ember-metal/observer";
 import { Registry } from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { styleWarning } from "ember-views/attr_nodes/attr_node";
+import { SafeString } from "ember-htmlbars/utils/string";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, registry, container, lookup;
+var TemplateTests, registry, container, lookup, warnings, originalWarn;
 
 /**
   This module specifically tests integration with Handlebars and Ember-specific
@@ -35,6 +39,14 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
     registry.optionsForType('template', { instantiate: false });
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
+
+    warnings = [];
+    originalWarn = Ember.warn;
+    Ember.warn = function(message, test) {
+      if (!test) {
+        warnings.push(message);
+      }
+    };
   },
 
   teardown: function() {
@@ -43,6 +55,7 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
     registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
+    Ember.warn = originalWarn;
     TemplateTests = null;
   }
 });
@@ -637,24 +650,27 @@ QUnit.test("src attribute will be cleared when the value is set to null or undef
   equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
 });
 
-QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` is [DEPRECATED]', function() {
+if (!EmberDev.runningProdBuild) {
+
+  QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` triggers a warning', function() {
+    view = EmberView.create({
+      userValue: '42',
+      template: compile('<div {{bind-attr style=view.userValue}}></div>')
+    });
+
+    runAppend(view);
+
+    deepEqual(warnings, [styleWarning]);
+  });
+}
+
+QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` works properly with a SafeString', function() {
   view = EmberView.create({
-    userValue: '42',
+    userValue: new SafeString('42'),
     template: compile('<div {{bind-attr style=view.userValue}}></div>')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /Dynamic content in the `style` attribute is not escaped and may pose a security risk. Please perform a security audit and once verified change from `<div {{bind-attr style=someProperty}}>` to `<div style={{{someProperty}}}>/);
-});
+  runAppend(view);
 
-QUnit.test('specifying `<div {{{bind-attr style=userValue}}}></div>` works properly', function() {
-  view = EmberView.create({
-    userValue: '42',
-    template: compile('<div {{{bind-attr style=view.userValue}}}></div>')
-  });
-
-  expectNoDeprecation(function() {
-    runAppend(view);
-  });
+  deepEqual(warnings, [ ]);
 });

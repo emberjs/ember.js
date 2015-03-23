@@ -15,6 +15,11 @@ function AttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
+export var styleWarning = 'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+                          'please ensure that values being bound are properly escaped. For more information, ' +
+                          'including how to disable this warning, see ' +
+                          'http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes.';
+
 AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isView = true;
 
@@ -27,8 +32,6 @@ AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isDestroying = false;
   this.lastValue = null;
   this.hasRenderedInitially = false;
-  this._dynamicStyleDeprecationMessage = '`<div style="foo: {{property}}">` to ' +
-    '`<div style="foo: {{{property}}}">`.';
 
   subscribe(this.attrValue, this.rerender, this);
 };
@@ -76,16 +79,19 @@ AttrNode.prototype.render = function render(buffer) {
 };
 
 AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedStyle(value) {
-  Ember.deprecate(
-    'Dynamic content in the `style` attribute is not escaped and may pose a security risk. ' +
-    'Please perform a security audit and once verified change from ' +
-    this._dynamicStyleDeprecationMessage,
+  Ember.warn(
+    styleWarning,
     (function(name, value, escaped) {
       // SafeString
       if (value && value.toHTML) {
         return true;
       }
-      return name !== 'style' || !escaped;
+
+      if (name !== 'style') {
+        return true;
+      }
+
+      return !escaped;
     }(this.attrName, value, this._morph.escaped))
   );
 };
