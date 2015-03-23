@@ -37,7 +37,7 @@
     "broccoli-uglify-js": "~0.1.3",
     "chalk": "~0.4.0",
     "ember-cli": "^0.1.13",
-    "ember-cli-sauce": "^0.1.0",
+    "ember-cli-sauce": "^1.0.0",
     "git-repo-version": "^0.1.2",
     "handlebars": "mmun/handlebars.js#new-ast-3238645f",
     "morph-range": "^0.1.2",

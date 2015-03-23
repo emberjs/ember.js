@@ -11,7 +11,7 @@ env:
 matrix:
   fast_finish: true
 before_script:
-  - curl -L https://gist.githubusercontent.com/johanneswuerbach/ce15304c6d33538ecc6e/raw/sauce-connect.sh | bash
+  - ember start-sauce-connect
 after_script:
   - sleep 10
-  - killall sc
+  - ember stop-sauce-connect
