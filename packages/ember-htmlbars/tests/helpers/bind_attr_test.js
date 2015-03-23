@@ -574,7 +574,7 @@ QUnit.test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>
   }, /You cannot set `data-bar` manually and via `{{bind-attr}}` helper on the same element/);
 });
 
-QUnit.test("src attribute bound to undefined is not present", function() {
+QUnit.test("src attribute bound to undefined is empty", function() {
   var template = compile("<img {{bind-attr src=view.undefinedValue}}>");
 
   view = EmberView.create({
@@ -584,10 +584,10 @@ QUnit.test("src attribute bound to undefined is not present", function() {
 
   runAppend(view);
 
-  ok(!view.element.firstChild.hasAttribute('src'), "src attribute not present");
+  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
 });
 
-QUnit.test("src attribute bound to null is not present", function() {
+QUnit.test("src attribute bound to null is empty", function() {
   var template = compile("<img {{bind-attr src=view.nullValue}}>");
 
   view = EmberView.create({
@@ -597,7 +597,44 @@ QUnit.test("src attribute bound to null is not present", function() {
 
   runAppend(view);
 
-  ok(!view.element.firstChild.hasAttribute('src'), "src attribute not present");
+  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
+});
+
+QUnit.test("src attribute will be cleared when the value is set to null or undefined", function() {
+  var template = compile("<img {{bind-attr src=view.value}}>");
+
+  view = EmberView.create({
+    template: template,
+    value: 'one'
+  });
+
+  runAppend(view);
+
+  equal(view.element.firstChild.getAttribute('src'), 'one', "src attribute is present");
+
+  run(function() {
+    set(view, 'value', 'two');
+  });
+
+  equal(view.element.firstChild.getAttribute('src'), 'two', "src attribute is present");
+
+  run(function() {
+    set(view, 'value', null);
+  });
+
+  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
+
+  run(function() {
+    set(view, 'value', 'three');
+  });
+
+  equal(view.element.firstChild.getAttribute('src'), 'three', "src attribute is present");
+
+  run(function() {
+    set(view, 'value', undefined);
+  });
+
+  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
 });
 
 QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` is [DEPRECATED]', function() {
