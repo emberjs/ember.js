@@ -13,6 +13,7 @@ import {
 import { isStream } from "ember-metal/streams/utils";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
+import create from 'ember-metal/platform/create';
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -191,6 +192,51 @@ export function renderHelper(params, hash, options, env) {
     helperName: 'render "' + name + '"'
   };
 
+  impersonateAnOutlet(currentView, view, name);
   mergeViewBindings(currentView, props, hash);
   appendTemplatedView(currentView, options.morph, view, props);
+}
+
+// Megahax to make outlets inside the render helper work, until we
+// can kill that behavior at 2.0.
+function impersonateAnOutlet(currentView, view, name) {
+  view._childOutlets = Ember.A();
+  view._isOutlet = true;
+  view._outletName = '__ember_orphans__';
+  view._matchOutletName = name;
+  view.setOutletState = function(state) {
+    var ownState;
+    if (state && (ownState = state.outlets[this._matchOutletName])) {
+      this._outletState = {
+        render: { name: 'render helper stub' },
+        outlets: create(null)
+      };
+      this._outletState.outlets[ownState.render.outlet] = ownState;
+      ownState.wasUsed = true;
+    } else {
+      this._outletState = null;
+    }
+    for (var i = 0; i < this._childOutlets.length; i++) {
+      var child = this._childOutlets[i];
+      child.setOutletState(this._outletState && this._outletState.outlets[child._outletName]);
+    }
+  };
+
+  var pointer = currentView;
+  var po;
+  while (pointer && !pointer._isOutlet) {
+    pointer = pointer._parentView;
+  }
+  while (pointer && (po = pointer._parentOutlet())) {
+    pointer = po;
+  }
+  if (pointer) {
+    // we've found the toplevel outlet. Subscribe to its
+    // __ember_orphan__ child outlet, which is our hack convention for
+    // stashing outlet state that may target the render helper.
+    pointer._childOutlets.push(view);
+    if (pointer._outletState) {
+      view.setOutletState(pointer._outletState.outlets[view._outletName]);
+    }
+  }
 }
