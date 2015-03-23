@@ -75,7 +75,7 @@ function templateFor(templateString, useBlockParams) {
 var originalLookup = Ember.lookup;
 var lookup;
 
-QUnit.module("the #each helper [DEPRECATED]", {
+QUnit.module("the scope changing #each helper [DEPRECATED]", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 

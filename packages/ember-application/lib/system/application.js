@@ -771,7 +771,11 @@ var Application = Namespace.extend(DeferredMixin, {
     @deprecated
   */
   then: function() {
-    Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-code-then-code-on-ember-application' });
+    Ember.deprecate(
+      'Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.',
+      false,
+      { url: 'http://emberjs.com/guides/deprecations/#toc_code-then-code-on-ember-application' }
+    );
 
     this._super.apply(this, arguments);
   }
@@ -1060,7 +1064,10 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
+  Ember.deprecate(
+    'Application.resolver is deprecated in favor of Application.Resolver',
+    !namespace.get('resolver')
+  );
 
   var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
   var resolver = ResolverClass.create({
@@ -1083,7 +1090,7 @@ function resolverFor(namespace) {
     if (resolver.normalize) {
       return resolver.normalize(fullName);
     } else {
-      Ember.deprecate('The Resolver should now provide a \'normalize\' function', false);
+      Ember.deprecate('The Resolver should now provide a \'normalize\' function');
       return fullName;
     }
   };

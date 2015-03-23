@@ -141,8 +141,11 @@ import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 export function collectionHelper(params, hash, options, env) {
   var path = params[0];
 
-  Ember.deprecate("Using the {{collection}} helper without specifying a class has been" +
-                  " deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+  Ember.deprecate(
+    "Using the {{collection}} helper without specifying a class has been" +
+    " deprecated as the {{each}} helper now supports the same functionality.",
+    path !== 'collection'
+  );
 
   Ember.assert("You cannot pass more than one argument to the collection helper", params.length <= 1);
 

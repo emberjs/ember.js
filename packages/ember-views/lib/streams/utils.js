@@ -13,7 +13,11 @@ export function readViewFactory(object, container) {
   if (typeof value === 'string') {
     if (isGlobal(value)) {
       viewClass = get(null, value);
-      Ember.deprecate('Resolved the view "'+value+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}.', !viewClass, { url: 'http://emberjs.com/guides/deprecations/#toc_global-lookup-of-views' });
+      Ember.deprecate(
+        'Resolved the view "'+value+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}.',
+        !viewClass,
+        { url: 'http://emberjs.com/guides/deprecations/#toc_global-lookup-of-views' }
+      );
     } else {
       Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
       viewClass = container.lookupFactory('view:'+value);

@@ -46,7 +46,7 @@ export default Mixin.create({
       props.model = props.content;
       delete props['content'];
 
-      Ember.deprecate('Do not specify `content` on a Controller, use `model` instead.', false);
+      Ember.deprecate('Do not specify `content` on a Controller, use `model` instead.');
     }
   }
 });
