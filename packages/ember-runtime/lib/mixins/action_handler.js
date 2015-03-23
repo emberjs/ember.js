@@ -163,7 +163,7 @@ var ActionHandler = Mixin.create({
         hashName = 'actions';
       } else if (typeOf(props.events) === 'object') {
         Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor' +
-                        ' of putting them in an `actions` object', false);
+                        ' of putting them in an `actions` object');
         hashName = 'events';
       }
 

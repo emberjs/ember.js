@@ -2,6 +2,14 @@ import Ember from 'ember-metal/core';
 
 QUnit.module('ember-debug');
 
+QUnit.test('Ember.deprecate throws deprecation with one argument', function() {
+  expect(1);
+
+  throws(function() {
+    Ember.deprecate('Deprecation is thrown');
+  });
+});
+
 QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
   expect(3);
 

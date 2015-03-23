@@ -209,7 +209,10 @@ var LinkView = EmberComponent.extend({
   init: function() {
     this._super.apply(this, arguments);
 
-    Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
+    Ember.deprecate(
+      'Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.',
+      !this.currentWhen
+    );
 
     // Map desired event name to invoke function
     var eventName = get(this, 'eventName');

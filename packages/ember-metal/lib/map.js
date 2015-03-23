@@ -125,7 +125,10 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   remove: function(obj, _guid) {
-    Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
+    Ember.deprecate(
+      'Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.',
+      this._silenceRemoveDeprecation
+    );
 
     return this.delete(obj, _guid);
   },

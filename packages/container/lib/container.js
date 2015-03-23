@@ -21,7 +21,11 @@ var Registry;
  */
 function Container(registry, options) {
   this._registry = registry || (function() {
-    Ember.deprecate("A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.");
+    Ember.deprecate(
+      "A container should only be created for an already instantiated " +
+      "registry. For backward compatibility, an isolated registry will " +
+      "be instantiated just for this container."
+    );
 
     // TODO - See note above about transpiler import workaround.
     if (!Registry) { Registry = requireModule('container/registry')['default']; }
