@@ -1,5 +1,6 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from "ember-metal/property_get";
+import EmberError from 'ember-metal/error';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -30,7 +31,7 @@ suite.test("[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception", function() {
   var obj = this.newObject([]);
   throws(function() {
     obj.removeAt(200);
-  }, Error);
+  }, EmberError);
 });
 
 suite.test("[A,B].removeAt(0) => [B] + notify", function() {

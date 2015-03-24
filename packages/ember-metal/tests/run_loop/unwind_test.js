@@ -10,7 +10,7 @@ QUnit.test('RunLoop unwinds despite unhandled exception', function() {
     run(function() {
       run.schedule('actions', function() { throw new EmberError("boom!"); });
     });
-  }, Error, "boom!");
+  }, EmberError, "boom!");
 
   // The real danger at this point is that calls to autorun will stick
   // tasks into the already-dead runloop, which will never get
@@ -38,4 +38,3 @@ QUnit.test('run unwinds despite unhandled exception', function() {
   run.currentRunLoop = initialRunLoop;
 
 });
-
