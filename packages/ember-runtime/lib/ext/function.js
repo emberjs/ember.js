@@ -154,7 +154,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     `Ember.EXTEND_PROTOTYPES.Function` is true, which is the default.
 
     You can get notified when a property change is about to happen by
-    by adding the `observesBefore` call to the end of your method
+    adding the `observesBefore` call to the end of your method
     declarations in classes that you write. For example:
 
     ```javascript
