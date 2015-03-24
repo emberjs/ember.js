@@ -1,6 +1,8 @@
 import Stream from "ember-metal/streams/stream";
 import {
   read,
+  subscribe,
+  unsubscribe,
   isStream
 } from "ember-metal/streams/utils";
 import create from 'ember-metal/platform/create';
@@ -28,37 +30,31 @@ function ShouldDisplayStream(predicateStream) {
   this.predicateStream = predicateStream;
   this.isTruthyStream = predicateStream.get('isTruthy');
   this.lengthStream = undefined;
-  this.dependency = {
-    predicate: this.addDependency(this.predicateStream),
-    isTruthy: this.addDependency(this.isTruthyStream),
-    length: null
-  };
+  subscribe(this.predicateStream, this.notify, this);
+  subscribe(this.isTruthyStream, this.notify, this);
 }
 
 ShouldDisplayStream.prototype = create(Stream.prototype);
 
-ShouldDisplayStream.prototype.revalidate = function() {
+ShouldDisplayStream.prototype.valueFn = function() {
   var oldPredicate = this.oldPredicate;
   var newPredicate = read(this.predicateStream);
   var newIsArray = isArray(newPredicate);
 
   if (newPredicate !== oldPredicate) {
+
     if (this.lengthStream && !newIsArray) {
-      this.dependency.length.removeFrom(this);
-      this.dependency.length = null;
+      unsubscribe(this.lengthStream, this.notify, this);
       this.lengthStream = undefined;
     }
 
     if (!this.lengthStream && newIsArray) {
       this.lengthStream = this.predicateStream.get('length');
-      this.dependency.length = this.addDependency(this.lengthStream);
+      subscribe(this.lengthStream, this.notify, this);
     }
-
     this.oldPredicate = newPredicate;
   }
-};
 
-ShouldDisplayStream.prototype.valueFn = function() {
   var truthy = read(this.isTruthyStream);
   if (typeof truthy === 'boolean') {
     return truthy;
@@ -69,5 +65,5 @@ ShouldDisplayStream.prototype.valueFn = function() {
     return length !== 0;
   }
 
-  return !!read(this.predicateStream);
+  return !!newPredicate;
 };
