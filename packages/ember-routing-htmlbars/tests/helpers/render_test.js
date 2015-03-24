@@ -535,3 +535,23 @@ QUnit.test("throws an assertion if {{render}} is called with a literal for a mod
     runAppend(view);
   }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
 });
+
+QUnit.test("{{render}} helper should let view provide its own template", function() {
+  var template = "{{render 'fish'}}";
+  var controller = EmberController.extend({ container: container });
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  container._registry.register('template:fish', compile('Hello fish!'));
+  container._registry.register('template:other', compile('Hello other!'));
+
+  container._registry.register('view:fish', EmberView.extend({
+    templateName: 'other'
+  }));
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Hello other!');
+});
