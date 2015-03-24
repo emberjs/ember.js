@@ -31,6 +31,44 @@ QUnit.test("can return a stream that is notified of changes", function() {
   run(view, 'set', 'controller.name', 'Max');
 });
 
+QUnit.test("replacing itermediate stream chain value", function() {
+  expect(7);
+
+  view = EmberView.create({
+    foo: { bar: 'raytiley' }
+  });
+
+  var count = 0;
+
+  var stream = view.getStream('view.foo.bar');
+  stream.value();
+  stream.subscribe(function() {
+    stream.value();
+    count++;
+  });
+
+  // run
+  view.set('foo', { bar: 'mmun' });
+  equal(view.get('foo.bar'), 'mmun');
+
+  view.set('foo.bar', 'ebryn');
+  equal(view.get('foo.bar'), 'ebryn');
+
+  view.set('foo.bar', 'drogus');
+  equal(view.get('foo.bar'), 'drogus');
+
+  view.set('foo', { bar: 'bantic' });
+  equal(view.get('foo.bar'), 'bantic');
+
+  view.set('foo.bar', 'mixonic');
+  equal(view.get('foo.bar'), 'mixonic');
+
+  view.set('foo.bar', 'teddyzeenny');
+  equal(view.get('foo.bar'), 'teddyzeenny');
+
+  equal(count, 6, 'fires subscriber twice');
+});
+
 QUnit.test("a single stream is used for the same path", function() {
   expect(2);
 

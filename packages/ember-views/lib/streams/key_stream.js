@@ -41,6 +41,10 @@ merge(KeyStream.prototype, {
         addObserver(nextObj, this.key, this, this._didChange);
       }
 
+      if (nextObj && typeof nextObj === 'object' && this.isActive) {
+        addObserver(nextObj, this.key, this, this.notify);
+      }
+
       this.obj = nextObj;
     }
 
