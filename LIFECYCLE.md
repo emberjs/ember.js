@@ -109,7 +109,7 @@ First, this template is invoked with a `self`:
 {
   "title": "Rails is omakase",
   "author": { "name": "@dhh" },
-  "comments" [{
+  "comments": [{
     "id": "1",
     "body": "very tasty"
   }]
@@ -285,11 +285,11 @@ template:
 
 And the new `self`:
 
-```json
+```js
 {
   "title": "Rails is omakase",
   // author is removed
-  "comments" [{
+  "comments": [{
     "id": "1",
     "body": "very tasty"
   }, { // a new comment
