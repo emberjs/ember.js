@@ -894,10 +894,10 @@ EmberRouter.reopenClass({
     supplied callback function using `this.resource` and `this.route`.
 
     ```javascript
-    App.Router.map(function({
+    App.Router.map(function(){
       this.route('about');
       this.resource('article');
-    }));
+    });
     ```
 
     For more detailed examples please see
