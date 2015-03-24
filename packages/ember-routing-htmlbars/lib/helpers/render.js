@@ -124,8 +124,19 @@ export function renderHelper(params, hash, options, env) {
   name = name.replace(/\//g, '.');
   // \ legacy slash as namespace support
 
+  var templateName = 'template:' + name;
+  Ember.assert(
+    "You used `{{render '" + name + "'}}`, but '" + name + "' can not be " +
+    "found as either a template or a view.",
+    container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.template
+  );
 
-  view = container.lookup('view:' + name) || container.lookup('view:default');
+  var template = options.template;
+  view = container.lookup('view:' + name);
+  if (!view) {
+    view = container.lookup('view:default');
+    template = template || container.lookup(templateName);
+  }
 
   // provide controller override
   var controllerName;
@@ -173,14 +184,6 @@ export function renderHelper(params, hash, options, env) {
   }
 
   hash.viewName = camelize(name);
-
-  var templateName = 'template:' + name;
-  Ember.assert(
-    "You used `{{render '" + name + "'}}`, but '" + name + "' can not be " +
-    "found as either a template or a view.",
-    container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.template
-  );
-  var template = options.template || container.lookup(templateName);
 
   if (router && !initialContext) {
     router._connectActiveView(name, view);
