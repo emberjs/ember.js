@@ -79,6 +79,8 @@ requested. This facilitates reflection of changes onto the DOM
 asynchronously, without incurring any costs for intermediate values that
 are never used.
 
+[frp-property]: https://github.com/baconjs/bacon.js/#property
+
 HTMLBars itself is agnostic to the precise reference type used: you can
 even just use a regular JavaScript value, but a number of the hooks in
 HTMLBars are designed to make a system with a stable reference type,
