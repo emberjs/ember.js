@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
@@ -45,7 +47,7 @@ QUnit.test("returns element if you set the value", function() {
   equal(get(view, 'element'), dom, 'now has set element');
 });
 
-Ember.runInDebug(function() {
+if (EmberDev && !EmberDev.runningProdBuild) {
   QUnit.test("should not allow the elementId to be changed after inserted", function() {
     view = EmberView.create({
       elementId: 'one'
@@ -61,5 +63,4 @@ Ember.runInDebug(function() {
 
     equal(view.get('elementId'), 'one', 'elementId is still "one"');
   });
-});
-
+}
