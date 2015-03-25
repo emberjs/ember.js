@@ -1,4 +1,5 @@
 import Renderer from "ember-views/system/renderer";
+import environment from "ember-metal/environment";
 import DOMHelper from "dom-helper";
 
 import {
@@ -53,7 +54,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     // Fallback for legacy cases where the view was created directly
     // via `create()` instead of going through the container.
     if (!this.renderer) {
-      renderer = renderer || new Renderer(new DOMHelper());
+      renderer = renderer || environment.hasDOM ? new Renderer(new DOMHelper()) : null;
       this.renderer = renderer;
     }
   },
