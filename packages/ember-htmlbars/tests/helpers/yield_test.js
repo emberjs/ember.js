@@ -7,6 +7,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
+import { _Metamorph } from "ember-views/views/metamorph_view";
 import EmberError from "ember-metal/error";
 import helpers from "ember-htmlbars/helpers";
 import {
@@ -354,8 +355,8 @@ QUnit.test("yield with nested components (#3220)", function() {
   equal(view.$('div > span').text(), "Hello world");
 });
 
-QUnit.test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
-  var component = Component.extend(Ember._Metamorph, {
+QUnit.test("yield works inside a conditional in a component that has _Metamorph mixed in", function() {
+  var component = Component.extend(_Metamorph, {
     item: "inner",
     layout: compile("<p>{{item}}</p>{{#if item}}<p>{{yield}}</p>{{/if}}")
   });
