@@ -236,7 +236,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     variable and getQueryParamsFor, using the supplied routeName.
 
     @method paramsFor
-    @param {String} routename
+    @param {String} name
 
   */
   paramsFor(name) {
