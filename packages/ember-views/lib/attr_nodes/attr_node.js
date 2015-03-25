@@ -21,6 +21,7 @@ export var styleWarning = 'Binding style attributes may introduce cross-site scr
                           'http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes.';
 
 AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
+  this.isAttrNode = true;
   this.isView = true;
 
   this.tagName = '';
