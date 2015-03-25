@@ -32,6 +32,7 @@
 - [#10345](https://github.com/emberjs/ember.js/pull/10345) Update to QUnit 1.17.1. [@rwjblue](https://github.com/rwjblue)
 - [#10350](https://github.com/emberjs/ember.js/pull/10350) Make meta.cache & meta.cacheMeta lazy [@ebryn](https://github.com/ebryn)
 - [#10353](https://github.com/emberjs/ember.js/pull/10353) Avoid creating context bindings for collection views [@mmun](https://github.com/mmun)
+- [#10093](https://github.com/emberjs/ember.js/pull/10093) [FEATURE] Implement {{component}} helper [@lukemelia](https://github.com/lukemelia)
 
 ### 1.10.0 (February 7, 2015)
 
