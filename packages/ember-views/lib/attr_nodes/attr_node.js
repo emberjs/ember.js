@@ -16,6 +16,7 @@ export default function AttrNode(attrName, attrValue) {
 }
 
 AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
+  this.isAttrNode = true;
   this.isView = true;
 
   this.tagName = '';
