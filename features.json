@@ -13,7 +13,7 @@
     "ember-metal-stream": null,
     "ember-htmlbars-each-with-index": true,
     "ember-application-instance-initializers": true,
-    "ember-application-initializer-context": null,
+    "ember-application-initializer-context": true,
     "ember-router-willtransition": true,
     "ember-application-visit": null,
     "ember-views-component-block-info": null,
