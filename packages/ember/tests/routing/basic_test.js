@@ -3691,13 +3691,13 @@ QUnit.test("Renders child into parent with non-default template name", function(
   });
 
   App.RootRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render('exports/root');
     }
   });
 
   App.RootIndexRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render('exports/index');
     }
   });
@@ -3746,7 +3746,7 @@ QUnit.test("Can render({into:...}) the render helper", function() {
   Ember.TEMPLATES.bar = compile('bar');
 
   App.IndexRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render({ into: 'foo' });
     },
     actions: {
@@ -3772,7 +3772,7 @@ QUnit.test("Can disconnect from the render helper", function() {
   Ember.TEMPLATES.index = compile('other');
 
   App.IndexRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render({ into: 'foo' });
     },
     actions: {
@@ -3800,7 +3800,7 @@ QUnit.test("Can render({into:...}) the render helper's children", function() {
   Ember.TEMPLATES.bar = compile('bar');
 
   App.IndexRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render({ into: 'foo' });
       this.render('other', { into: 'index' });
     },
@@ -3829,7 +3829,7 @@ QUnit.test("Can disconnect from the render helper's children", function() {
   Ember.TEMPLATES.other = compile('other');
 
   App.IndexRoute = Ember.Route.extend({
-    renderTemplate() {
+    renderTemplate: function() {
       this.render({ into: 'foo' });
       this.render('other', { into: 'index' });
     },

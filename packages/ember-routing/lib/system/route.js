@@ -1896,7 +1896,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
   },
 
-  _disconnectOutlet(outletName, parentView) {
+  _disconnectOutlet: function(outletName, parentView) {
     var parent = parentRoute(this);
     if (parent && parentView === parent.routeName) {
       parentView = undefined;

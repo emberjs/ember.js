@@ -1789,14 +1789,14 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
         });
 
         App.AboutRoute = Ember.Route.extend({
-          model: function() {
+          model: function () {
             aboutDefer = Ember.RSVP.defer();
             return aboutDefer.promise;
           }
         });
 
         App.OtherRoute = Ember.Route.extend({
-          model() {
+          model: function () {
             otherDefer = Ember.RSVP.defer();
             return otherDefer.promise;
           }
@@ -1855,31 +1855,22 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     });
 
     App.ParentRouteAboutRoute = Ember.Route.extend({
-      model() {
+      model: function () {
         aboutDefer = Ember.RSVP.defer();
         return aboutDefer.promise;
       }
     });
 
     App.ParentRouteOtherRoute = Ember.Route.extend({
-      model() {
+      model: function () {
         otherDefer = Ember.RSVP.defer();
         return otherDefer.promise;
       }
     });
 
-    Ember.TEMPLATES.application = compile(`
-      {{outlet}}
-      {{#link-to 'index' tagName='li'}}
-        {{link-to 'Index' 'index' id='index-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.about' tagName='li'}}
-        {{link-to 'About' 'parent-route.about' id='about-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.other' tagName='li'}}
-        {{link-to 'Other' 'parent-route.other' id='other-link'}}
-      {{/link-to}}
-    `);
+    var asdf = 'foo';
+
+    Ember.TEMPLATES.application = compile("{{outlet}} {{#link-to 'index' tagName='li'}} {{link-to 'Index' 'index' id='index-link'}} {{/link-to}} {{#link-to 'parent-route.about' tagName='li'}} {{link-to 'About' 'parent-route.about' id='about-link'}} {{/link-to}} {{#link-to 'parent-route.other' tagName='li'}} {{link-to 'Other' 'parent-route.other' id='other-link'}} {{/link-to}}");
 
     bootApplication();
 

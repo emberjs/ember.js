@@ -352,7 +352,7 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='text'}} - null/undefined values", {
-  teardown() {
+  teardown: function() {
     runDestroy(view);
   }
 });
