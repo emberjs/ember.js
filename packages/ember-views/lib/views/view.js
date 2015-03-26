@@ -1114,10 +1114,9 @@ var View = CoreView.extend(
     If not manually set a default value will be provided by the framework.
 
     Once rendered an element's `elementId` is considered immutable and you
-    should never change it. You should not programatically bind or assign
-    an `elementId` once a component or element has been initialized. If
-    you need to compute a dynamic value for the `elementId`, you should do
-    this when the component or element is being instantiated:
+    should never change it. If you need to compute a dynamic value for the
+    `elementId`, you should do this when the component or element is being
+    instantiated:
 
     ```javascript
       export default Ember.Component.extend({
