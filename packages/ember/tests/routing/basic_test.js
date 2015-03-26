@@ -7,6 +7,7 @@ import ActionManager from "ember-views/system/action_manager";
 import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
+var trim = Ember.$.trim;
 
 var Router, App, router, registry, container, originalLoggerError;
 
@@ -3671,13 +3672,13 @@ QUnit.test("Tolerates stacked renders", function() {
     }
   });
   bootApplication();
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hi');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
   Ember.run(router, 'send', 'openLayer');
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hilayer');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hilayer');
   Ember.run(router, 'send', 'openLayer');
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hilayer');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hilayer');
   Ember.run(router, 'send', 'close');
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hi');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
 });
 
 QUnit.test("Renders child into parent with non-default template name", function() {
@@ -3732,11 +3733,11 @@ QUnit.test("Allows any route to disconnectOutlet another route's templates", fun
     }
   });
   bootApplication();
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hi');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
   Ember.run(router, 'send', 'openLayer');
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hilayer');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hilayer');
   Ember.run(router, 'send', 'close');
-  equal(Ember.$('#qunit-fixture').text().trim(), 'hi');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
 });
 
 QUnit.test("Can render({into:...}) the render helper", function() {
