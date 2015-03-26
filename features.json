@@ -12,7 +12,7 @@
     "ember-testing-checkbox-helpers": null,
     "ember-metal-stream": null,
     "ember-htmlbars-each-with-index": true,
-    "ember-application-instance-initializers": null,
+    "ember-application-instance-initializers": true,
     "ember-application-initializer-context": null,
     "ember-router-willtransition": true,
     "ember-application-visit": null,
