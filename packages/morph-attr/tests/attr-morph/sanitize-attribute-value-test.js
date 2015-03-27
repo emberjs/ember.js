@@ -1,5 +1,6 @@
 import { sanitizeAttributeValue } from "morph-attr/sanitize-attribute-value";
 import SafeString from "htmlbars-util/safe-string";
+import { forEach } from "htmlbars-util/array-utils";
 
 import DOMHelper from "../../dom-helper";
 
@@ -99,9 +100,9 @@ var someIllegalProtocols = [
   'vbscript'
 ];
 
-badTags.forEach(function(tagName) {
-  badAttributes.forEach(function(attrName) {
-    someIllegalProtocols.forEach(function(protocol) {
+forEach(badTags, function(tagName) {
+  forEach(badAttributes, function(attrName) {
+    forEach(someIllegalProtocols, function(protocol) {
       test(' <' + tagName + ' ' + attrName + '="' + protocol + ':something"> ...', function() {
         equal(sanitizeAttributeValue(domHelper, { tagName: tagName }, attrName, protocol + ':something'), 'unsafe:' + protocol + ':something');
       });
