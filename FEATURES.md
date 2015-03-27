@@ -266,3 +266,13 @@ for a detailed explanation.
   ```
 
   Addd in [#10461](https://github.com/emberjs/ember.js/pull/10461)
+
+* `ember-runtime-sortable-sort-order`
+
+  Add the ability to define the sort order of `Sortable` on a
+  per-property base. The `Sortable` will look at `sortProperties`
+  as before, but there one can append `:desc` to sort that
+  property in DESC order. This is independent of `sortAscending`
+  which is still inverting the whole sort order.
+
+  Added in [#4785](https://github.com/emberjs/ember.js/pull/4785).

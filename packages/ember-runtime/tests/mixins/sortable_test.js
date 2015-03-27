@@ -67,6 +67,26 @@ QUnit.test("you can change sorted properties", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 });
 
+if (Ember.FEATURES.isEnabled("ember-runtime-sortable-sort-order")) {
+  QUnit.test("you can use reverted order per sorted properties", function () {
+    sortedArrayController.set('sortProperties', ['id:desc']);
+
+    equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by DESC id');
+    equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+
+    sortedArrayController.set('sortAscending', false);
+
+    equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is sorted by DESC id in global DESC order');
+    equal(sortedArrayController.objectAt(2).name, 'Scumbag Bryn', 'array is sorted by DESC id in global DESC order');
+    equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+
+    sortedArrayController.set('sortProperties', ['name:desc']);
+
+    equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by DESC name in global DESC order');
+    equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+  });
+}
+
 QUnit.test("changing sort order triggers observers", function() {
   var observer;
   var changeCount = 0;
@@ -379,3 +399,50 @@ QUnit.test("Ember.Sortable with sortFunction on ArrayProxy should work like Arra
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
+
+if (Ember.FEATURES.isEnabled("ember-runtime-sortable-sort-order")) {
+  QUnit.module("Ember.Sortable with complex sortProperties", {
+    setup: function () {
+      run(function () {
+        var array = [
+          { id: 1, name: "Scumbag Dale", level: 10, order: 3 },
+          { id: 2, name: "Scumbag Katz", level: 10, order: 4 },
+          { id: 3, name: "Scumbag Bryn", level: 12, order: 3 },
+          { id: 4, name: "Scumbag Huafu", level: 12, order: 4 },
+          { id: 5, name: "Scumbag Pet", level: 10, order: 4 }
+        ];
+
+        unsortedArray = Ember.A(Ember.A(array).copy());
+
+        sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
+          content: unsortedArray
+        });
+      });
+    },
+
+    teardown: function () {
+      run(function () {
+        sortedArrayController.set('content', null);
+        sortedArrayController.destroy();
+      });
+    }
+  });
+
+  QUnit.test("using complex sortProperties", function () {
+    var getIds = function (reversed) {
+      var res = sortedArrayController.mapBy('id');
+      return (reversed ? res.reverse() : res).join(',');
+    };
+
+    sortedArrayController.set('sortProperties', ['level', 'name:desc', 'order']);
+
+    equal(getIds(), '5,2,1,4,3', 'array should be sorted correctly');
+    sortedArrayController.set('sortAscending', false);
+    equal(getIds(true), '5,2,1,4,3', 'array should be sorted correctly');
+
+    sortedArrayController.set('sortProperties', ['level:desc', 'order:desc', 'name']);
+    equal(getIds(true), '4,3,2,5,1', 'array should be sorted correctly');
+    sortedArrayController.set('sortAscending', true);
+    equal(getIds(false), '4,3,2,5,1', 'array should be sorted correctly');
+  });
+}
