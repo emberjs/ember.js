@@ -727,15 +727,18 @@ var View = CoreView.extend(
     @property template
     @type Function
   */
-  template: computed('templateName', function(key, value) {
-    if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName');
-    var template = this.templateForName(templateName, 'template');
-
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-
-    return template || get(this, 'defaultTemplate');
+  template: computed('templateName', {
+    get: function() {
+      var templateName = get(this, 'templateName');
+      var template = this.templateForName(templateName, 'template');
+      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
+      return template || get(this, 'defaultTemplate');
+    },
+    set: function(key, value) {
+      if (value !== undefined) { return value; }
+      return get(this, key);
+    }
   }),
 
   /**

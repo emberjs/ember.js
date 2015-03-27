@@ -161,26 +161,28 @@ export default Mixin.create(MutableEnumerable, {
 
     @property arrangedContent
   */
-  arrangedContent: computed('content', 'sortProperties.@each', function(key, value) {
-    var content = get(this, 'content');
-    var isSorted = get(this, 'isSorted');
-    var sortProperties = get(this, 'sortProperties');
-    var self = this;
+  arrangedContent: computed('content', 'sortProperties.@each', {
+    get: function(key) {
+      var content = get(this, 'content');
+      var isSorted = get(this, 'isSorted');
+      var sortProperties = get(this, 'sortProperties');
+      var self = this;
 
-    if (content && isSorted) {
-      content = content.slice();
-      content.sort(function(item1, item2) {
-        return self.orderBy(item1, item2);
-      });
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+      if (content && isSorted) {
+        content = content.slice();
+        content.sort(function(item1, item2) {
+          return self.orderBy(item1, item2);
+        });
+        forEach(content, function(item) {
+          forEach(sortProperties, function(sortProperty) {
+            addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+          }, this);
         }, this);
-      }, this);
-      return Ember.A(content);
-    }
+        return Ember.A(content);
+      }
 
-    return content;
+      return content;
+    }
   }),
 
   _contentWillChange: beforeObserver('content', function() {

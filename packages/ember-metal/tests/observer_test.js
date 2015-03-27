@@ -1028,9 +1028,9 @@ testBoth('setting simple prop should not trigger', function(get, set) {
 testBoth('setting a cached computed property whose value has changed should trigger', function(get, set) {
   var obj = {};
 
-  defineProperty(obj, 'foo', computed(function(key, value) {
-    if (arguments.length === 2) { return value; }
-    return get(this, 'baz');
+  defineProperty(obj, 'foo', computed({
+    get: function() { return get(this, 'baz'); },
+    set: function(key, value) { return value; }
   }).property('baz'));
 
   var count = 0;
@@ -1070,11 +1070,9 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
 
     mixin.apply(obj);
 
-    defineProperty(obj, 'foo', computed(function(key, value) {
-      if (arguments.length > 1) {
-        return value;
-      }
-      return "yes hello this is foo";
+    defineProperty(obj, 'foo', computed({
+      get: function() { return "yes hello this is foo"; },
+      set: function(key, value) { return value; }
     }));
 
     equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
@@ -1105,11 +1103,9 @@ if (Ember.EXTEND_PROTOTYPES) {
 
       mixin.apply(obj);
 
-      defineProperty(obj, 'foo', computed(function(key, value) {
-        if (arguments.length > 1) {
-          return value;
-        }
-        return "yes hello this is foo";
+      defineProperty(obj, 'foo', computed({
+        get: function(key) { return "yes hello this is foo"; },
+        set: function(key, value) { return value; }
       }));
 
       equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
@@ -1139,11 +1135,9 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 
     mixin.apply(obj);
 
-    defineProperty(obj, 'foo', computed(function(key, value) {
-      if (arguments.length > 1) {
-        return value;
-      }
-      return "yes hello this is foo";
+    defineProperty(obj, 'foo', computed({
+      get: function() { return "yes hello this is foo"; },
+      set: function(key, value) { return value; }
     }));
 
     equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");

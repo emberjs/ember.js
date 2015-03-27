@@ -25,7 +25,7 @@ RSVP.configure('async', function(callback, promise) {
 
   if (Ember.testing && async) { asyncStart(); }
 
-  run.backburner.schedule('actions', function(){
+  run.backburner.schedule('actions', function() {
     if (Ember.testing && async) { asyncEnd(); }
     callback(promise);
   });

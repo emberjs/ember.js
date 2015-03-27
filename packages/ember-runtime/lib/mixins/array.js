@@ -167,12 +167,14 @@ export default Mixin.create(Enumerable, {
     @property []
     @return this
   */
-  '[]': computed(function(key, value) {
-    if (value !== undefined) {
+  '[]': computed({
+    get: function(key) {
+      return this;
+    },
+    set: function(key, value) {
       this.replace(0, get(this, 'length'), value);
+      return this;
     }
-
-    return this;
   }),
 
   firstObject: computed(function() {

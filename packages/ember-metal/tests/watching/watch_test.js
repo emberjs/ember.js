@@ -40,12 +40,16 @@ function addListeners(obj, keyPath) {
 
 testBoth('watching a computed property', function(get, set) {
   var obj = {};
-  Ember.defineProperty(obj, 'foo', Ember.computed(function(keyName, value) {
-    if (value !== undefined) {
-      this.__foo = value;
+  Ember.defineProperty(obj, 'foo', Ember.computed({
+    get: function() {
+      return this.__foo;
+    },
+    set: function(keyName, value) {
+      if (value !== undefined) {
+        this.__foo = value;
+      }
+      return this.__foo;
     }
-
-    return this.__foo;
   }));
   addListeners(obj, 'foo');
 

@@ -51,7 +51,7 @@ QUnit.test('overriding computed properties', function() {
   equal(get(obj, 'aProp'), 'AD', "should define super for D");
 
   obj = { };
-  defineProperty(obj, 'aProp', computed(function(key, value) {
+  defineProperty(obj, 'aProp', computed(function(key) {
     return 'obj';
   }));
   MixinD.apply(obj);
@@ -66,19 +66,16 @@ QUnit.test('calling set on overridden computed properties', function() {
   var superSetOccurred = false;
 
   SuperMixin = Mixin.create({
-    aProp: computed(function(key, val) {
-      if (arguments.length === 1) {
-        superGetOccurred = true;
-      } else {
-        superSetOccurred = true;
-      }
-      return true;
+    aProp: computed({
+      get: function(key) { superGetOccurred = true; },
+      set: function(key, value) { superSetOccurred = true; }
     })
   });
 
   SubMixin = Mixin.create(SuperMixin, {
-    aProp: computed(function(key, val) {
-      return this._super.apply(this, arguments);
+    aProp: computed({
+      get: function(key) { return this._super.apply(this, arguments); },
+      set: function(key, value) { return this._super.apply(this, arguments); }
     })
   });
 
@@ -112,12 +109,14 @@ QUnit.test('setter behavior works properly when overriding computed properties',
   var cpWasCalled = false;
 
   var MixinB = Mixin.create({
-    cpWithSetter2: computed(function(k, v) {
-      cpWasCalled = true;
+    cpWithSetter2: computed({
+      get: K,
+      set: function(k, v) { cpWasCalled = true; }
     }),
 
-    cpWithSetter3: computed(function(k, v) {
-      cpWasCalled = true;
+    cpWithSetter3: computed({
+      get: K,
+      set: function(k, v) { cpWasCalled = true; }
     }),
 
     cpWithoutSetter: computed(function(k) {

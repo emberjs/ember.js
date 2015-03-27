@@ -46,11 +46,9 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
   var obj = EmberObject.createWithMixins({
     firstName: "Steve",
     lastName: "Jobs",
-    companyName: computed(function(key, value) {
-      if (value !== undefined) {
-        throw exc;
-      }
-      return "Apple, Inc.";
+    companyName: computed({
+      get: function() { return "Apple, Inc."; },
+      set: function(key, value) { throw exc; }
     })
   });
 

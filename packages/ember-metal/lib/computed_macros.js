@@ -674,13 +674,16 @@ export function readOnly(dependentKey) {
   @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
 */
 export function defaultTo(defaultPath) {
-  return computed(function(key, newValue, cachedValue) {
-    Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
-
-    if (arguments.length === 1) {
+  return computed({
+    get: function(key) {
+      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
       return get(this, defaultPath);
+    },
+
+    set: function(key, newValue, cachedValue) {
+      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
+      return newValue != null ? newValue : get(this, defaultPath);
     }
-    return newValue != null ? newValue : get(this, defaultPath);
   });
 }
 
@@ -698,14 +701,15 @@ export function defaultTo(defaultPath) {
   @since 1.7.0
 */
 export function deprecatingAlias(dependentKey) {
-  return computed(dependentKey, function(key, value) {
-    Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
-
-    if (arguments.length > 1) {
+  return computed(dependentKey, {
+    get: function(key) {
+      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
+      return get(this, dependentKey);
+    },
+    set: function(key, value) {
+      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
       set(this, dependentKey, value);
       return value;
-    } else {
-      return get(this, dependentKey);
     }
   });
 }

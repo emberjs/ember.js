@@ -145,15 +145,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @deprecated
   @property template
   */
-  template: computed(function(key, value) {
-    if (value !== undefined) { return value; }
+  template: computed({
+    get: function() {
+      var templateName = get(this, 'templateName');
+      var template = this.templateForName(templateName, 'template');
 
-    var templateName = get(this, 'templateName');
-    var template = this.templateForName(templateName, 'template');
+      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-
-    return template || get(this, 'defaultTemplate');
+      return template || get(this, 'defaultTemplate');
+    },
+    set: function(key, value) {
+      return value;
+    }
   }).property('templateName'),
 
   /**

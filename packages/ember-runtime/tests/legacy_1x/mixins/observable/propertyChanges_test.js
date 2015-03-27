@@ -123,12 +123,12 @@ QUnit.test("should invalidate function property cache when notifyPropertyChange 
 
   var a = ObservableObject.createWithMixins({
     _b: null,
-    b: computed(function(key, value) {
-      if (value !== undefined) {
+    b: computed({
+      get: function() { return this._b; },
+      set: function(key, value) {
         this._b = value;
         return this;
       }
-      return this._b;
     }).volatile()
   });
 
