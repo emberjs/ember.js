@@ -1868,8 +1868,6 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       }
     });
 
-    var asdf = 'foo';
-
     Ember.TEMPLATES.application = compile("{{outlet}} {{#link-to 'index' tagName='li'}} {{link-to 'Index' 'index' id='index-link'}} {{/link-to}} {{#link-to 'parent-route.about' tagName='li'}} {{link-to 'About' 'parent-route.about' id='about-link'}} {{/link-to}} {{#link-to 'parent-route.other' tagName='li'}} {{link-to 'Other' 'parent-route.other' id='other-link'}} {{/link-to}}");
 
     bootApplication();
