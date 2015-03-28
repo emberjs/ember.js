@@ -7,8 +7,7 @@ import lastIndexOfTests from 'ember-runtime/tests/suites/array/lastIndexOf';
 import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
 
 var ObserverClass = EnumerableTestsObserverClass.extend({
-
-   observeArray: function(obj) {
+  observeArray: function(obj) {
     obj.addArrayObserver(this);
     return this;
   },
