@@ -72,7 +72,7 @@ QUnit.test("block should work properly even when templates are not hard-coded", 
 
 QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
-    layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
+    layout: compile('<div class="times">{{#each view.index as |item|}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
       var n = get(this, 'n');

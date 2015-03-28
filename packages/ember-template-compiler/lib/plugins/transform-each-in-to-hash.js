@@ -44,6 +44,13 @@ TransformEachInToHash.prototype.transform = function TransformEachInToHash_trans
         throw new Error('You cannot use keyword (`{{each foo in bar}}`) and block params (`{{each bar as |foo|}}`) at the same time.');
       }
 
+      Ember.deprecate(
+        "Using the 'each in' form of {{each}} is deprecated. " +
+        "Please use the block form (`{{#each foo as |bar|}}`) instead.",
+        false,
+        { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-non-block-params-each-helper-syntax' }
+      );
+
       var removedParams = node.sexpr.params.splice(0, 2);
       var keyword = removedParams[0].original;
 

@@ -18,7 +18,7 @@ import WithView from "ember-views/views/with_view";
       There are {{blogPosts.length}} blog posts written by {{user.name}}.
     </div>
 
-    {{#each post in blogPosts}}
+    {{#each blogPosts as |post|}}
       <li>{{post.title}}</li>
     {{/each}}
   {{/with}}

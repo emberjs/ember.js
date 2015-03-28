@@ -497,7 +497,7 @@ QUnit.test("The Homepage with a `setupController` hook", function() {
   });
 
   Ember.TEMPLATES.home = compile(
-    "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
+    "<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
   bootApplication();
@@ -616,7 +616,7 @@ QUnit.test("The Homepage with a `setupController` hook modifying other controlle
   });
 
   Ember.TEMPLATES.home = compile(
-    "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
+    "<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
   bootApplication();
@@ -640,7 +640,7 @@ QUnit.test("The Homepage with a computed context that does not get overridden", 
   });
 
   Ember.TEMPLATES.home = compile(
-    "<ul>{{#each passage in model}}<li>{{passage}}</li>{{/each}}</ul>"
+    "<ul>{{#each model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>"
   );
 
   bootApplication();
@@ -670,7 +670,7 @@ QUnit.test("The Homepage getting its controller context via model", function() {
   });
 
   Ember.TEMPLATES.home = compile(
-    "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
+    "<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
   bootApplication();

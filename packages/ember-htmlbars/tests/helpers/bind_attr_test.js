@@ -446,14 +446,14 @@ QUnit.test("should be able to bind classes to globals with {{bind-attr class}} (
 });
 
 QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
-
   view = EmberView.create({
     template: compile('{{#each view.images}}<img {{bind-attr src=this}}>{{/each}}'),
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 
-  runAppend(view);
+  expectDeprecation(function() {
+    runAppend(view);
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   var images = view.$('img');
   ok(/one\.png$/.test(images[0].src));
@@ -462,23 +462,23 @@ QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECA
 });
 
 QUnit.test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}} [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
-
   view = EmberView.create({
     template: compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),
     items: A(['a', 'b', 'c'])
   });
 
-  runAppend(view);
+  expectDeprecation(function() {
+    runAppend(view);
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block form (`{{#each foo as |bar|}}`) instead.');
 
   ok(view.$('li').eq(0).hasClass('a'), "sets classname to the value of the first item");
   ok(view.$('li').eq(1).hasClass('b'), "sets classname to the value of the second item");
   ok(view.$('li').eq(2).hasClass('c'), "sets classname to the value of the third item");
 });
 
-QUnit.test("should be able to bind-attr to var in {{#each var in list}} block", function() {
+QUnit.test("should be able to bind-attr to var in {{#each list as |var|}} block", function() {
   view = EmberView.create({
-    template: compile('{{#each image in view.images}}<img {{bind-attr src=image}}>{{/each}}'),
+    template: compile('{{#each view.images as |image|}}<img {{bind-attr src=image}}>{{/each}}'),
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 

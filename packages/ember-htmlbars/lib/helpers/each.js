@@ -18,7 +18,7 @@ import EachView from "ember-views/views/each";
   ```
 
   ```handlebars
-  {{#each person in developers}}
+  {{#each developers as |person|}}
     {{person.name}}
     {{! `this` is whatever it was outside the #each }}
   {{/each}}
@@ -32,7 +32,7 @@ import EachView from "ember-views/views/each";
   ```
 
   ```handlebars
-  {{#each name in developerNames}}
+  {{#each developerNames as |name|}}
     {{name}}
   {{/each}}
   ```
@@ -43,7 +43,7 @@ import EachView from "ember-views/views/each";
   if the collection is empty.
 
   ```
-  {{#each person in developers}}
+  {{#each developers as |person|}}
     {{person.name}}
   {{else}}
     <p>Sorry, nobody is available for this task.</p>
@@ -59,7 +59,7 @@ import EachView from "ember-views/views/each";
 
   ```handlebars
   <ul>
-  {{#each developer in developers itemViewClass="person"}}
+  {{#each developers itemViewClass="person" as |developer|}}
     {{developer.name}}
   {{/each}}
   </ul>
@@ -115,7 +115,7 @@ import EachView from "ember-views/views/each";
 
   ```handlebars
   <ul>
-  {{#each developer in developers emptyViewClass="no-people"}}
+  {{#each developers emptyViewClass="no-people" as |developer|}}
     <li>{{developer.name}}</li>
   {{/each}}
   </ul>
@@ -142,15 +142,15 @@ import EachView from "ember-views/views/each";
   ```
 
   ```handlebars
-  {{#each person in developers itemController="recruit"}}
+  {{#each developers itemController="recruit" as |person|}}
     {{person.name}} {{#if person.isAvailableForHire}}Hire me!{{/if}}
   {{/each}}
   ```
 
   @method each
   @for Ember.Handlebars.helpers
-  @param [name] {String} name for item (used with `in`)
   @param [path] {String} path
+  @param [name] {String} name for item (used in block)
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
   @param [options.emptyViewClass] {String} a path to a view class used for each item
@@ -162,8 +162,8 @@ function eachHelper(params, hash, options, env) {
   var path = params[0] || view.getStream('');
 
   Ember.assert(
-    "If you pass more than one argument to the each helper, " +
-    "it must be in the form #each foo in bar",
+    "The each helper only takes a single argument. Did you mean to use the " +
+    "block syntax? (`{{#each foo as |bar|}}`)",
     params.length <= 1
   );
 
@@ -176,7 +176,7 @@ function eachHelper(params, hash, options, env) {
 
   Ember.deprecate(
     "Using the context switching form of {{each}} is deprecated. " +
-    "Please use the keyword form (`{{#each foo in bar}}`) instead.",
+    "Please use the block form (`{{#each foo as |bar|}}`) instead.",
     hash.keyword === true || typeof hash.keyword === 'string',
     { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
   );

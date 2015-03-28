@@ -1289,7 +1289,7 @@ QUnit.module("Model Dep Query Params", {
       page: 1
     });
 
-    Ember.TEMPLATES.application = compile("{{#each a in articles}} {{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}");
+    Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}");
 
     this.boot = function() {
       bootApplication();
@@ -1370,7 +1370,7 @@ QUnit.test("query params have 'model' stickiness by default (url changes)", func
 
 
 QUnit.test("query params have 'model' stickiness by default (params-based transitions)", function() {
-  Ember.TEMPLATES.application = compile("{{#each a in articles}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
+  Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
 
   this.boot();
 
