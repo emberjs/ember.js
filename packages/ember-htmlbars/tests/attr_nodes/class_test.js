@@ -14,8 +14,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
   isInlineIfEnabled = true;
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: class attribute", {
   teardown: function() {
@@ -151,5 +151,5 @@ QUnit.test("class attribute stays in order", function() {
   ok(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation
