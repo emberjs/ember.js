@@ -288,8 +288,8 @@ QUnit.test("should ignore removing an object not in the set", function() {
 });
 
 QUnit.module("Set.pop + Set.copy", {
-// generate a set with every type of object, but none of the specific
-// ones we add in the tests below...
+  // generate a set with every type of object, but none of the specific
+  // ones we add in the tests below...
   setup: function() {
     ignoreDeprecation(function() {
       set = new Set(Ember.A([
