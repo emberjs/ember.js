@@ -667,6 +667,7 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
+// jscs:disable validateIndentation
 var View = CoreView.extend(
   ViewStreamSupport,
   ViewKeywordSupport,
@@ -1435,6 +1436,7 @@ var View = CoreView.extend(
     return scheduledFn;
   }
 });
+// jscs:enable validateIndentation
 
 deprecateProperty(View.prototype, 'state', '_state');
 deprecateProperty(View.prototype, 'states', '_states');
@@ -1457,14 +1459,14 @@ deprecateProperty(View.prototype, 'states', '_states');
     on a destroyed view.
 */
 
-  // in the destroyed state, everything is illegal
+// in the destroyed state, everything is illegal
 
-  // before rendering has begun, all legal manipulations are noops.
+// before rendering has begun, all legal manipulations are noops.
 
-  // inside the buffer, legal manipulations are done on the buffer
+// inside the buffer, legal manipulations are done on the buffer
 
-  // once the view has been inserted into the DOM, legal manipulations
-  // are done on the DOM element.
+// once the view has been inserted into the DOM, legal manipulations
+// are done on the DOM element.
 
 var mutation = EmberObject.extend(Evented).create();
 // TODO MOVE TO RENDERER HOOKS
