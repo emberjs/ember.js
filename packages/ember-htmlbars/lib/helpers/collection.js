@@ -220,8 +220,8 @@ export function collectionHelper(params, hash, options, env) {
   if (inverse) {
     emptyViewClass = get(collectionPrototype, 'emptyViewClass');
     emptyViewClass = emptyViewClass.extend({
-          template: inverse,
-          tagName: itemHash.tagName
+      template: inverse,
+      tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
     emptyViewClass = readViewFactory(hash.emptyViewClass, container);

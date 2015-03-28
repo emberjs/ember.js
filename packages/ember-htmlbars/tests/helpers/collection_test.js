@@ -156,8 +156,8 @@ QUnit.test("collection helper should try to use container to resolve view", func
   var container = registry.container();
 
   var ACollectionView = CollectionView.extend({
-        tagName: 'ul',
-        content: A(['foo', 'bar', 'baz'])
+    tagName: 'ul',
+    content: A(['foo', 'bar', 'baz'])
   });
 
   registry.register('view:collectionTest', ACollectionView);
