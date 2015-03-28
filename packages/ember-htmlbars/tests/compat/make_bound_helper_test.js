@@ -53,8 +53,8 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
 });
 
 QUnit.test("primitives should work correctly [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
-  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   view = EmberView.create({
     prims: Ember.A(["string", 12]),
@@ -453,7 +453,7 @@ QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATE
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
@@ -481,7 +481,7 @@ QUnit.test("bound helpers can handle nulls in array (with objects)", function() 
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 

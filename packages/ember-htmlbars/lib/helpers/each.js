@@ -163,7 +163,7 @@ function eachHelper(params, hash, options, env) {
 
   Ember.assert(
     "If you pass more than one argument to the each helper, " +
-    "it must be in the form #each foo in bar",
+    "it must be in the form {{#each foo in bar}}",
     params.length <= 1
   );
 
@@ -176,7 +176,7 @@ function eachHelper(params, hash, options, env) {
 
   Ember.deprecate(
     "Using the context switching form of {{each}} is deprecated. " +
-    "Please use the keyword form (`{{#each foo in bar}}`) instead.",
+    "Please use the block param form (`{{#each bar as |foo|}}`) instead.",
     hash.keyword === true || typeof hash.keyword === 'string',
     { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
   );

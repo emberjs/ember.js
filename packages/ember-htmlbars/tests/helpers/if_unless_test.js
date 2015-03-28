@@ -47,7 +47,7 @@ QUnit.test("unless should keep the current context (#784) [DEPRECATED]", functio
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$().text(), 'foo: 42');
 });

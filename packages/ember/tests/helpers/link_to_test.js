@@ -939,7 +939,7 @@ QUnit.test("The {{link-to}} helper works in an #each'd array of string route nam
 
   expectDeprecation(function() {
     bootApplication();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");
