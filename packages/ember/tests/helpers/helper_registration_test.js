@@ -68,7 +68,7 @@ QUnit.test("Unbound dashed helpers registered on the container can be late-invok
   ok(!helpers['x-borf'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
-  // need to make `makeBoundHelper` for HTMLBars
+// need to make `makeBoundHelper` for HTMLBars
 QUnit.test("Bound helpers registered on the container can be late-invoked", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
 
@@ -83,8 +83,8 @@ QUnit.test("Bound helpers registered on the container can be late-invoked", func
   ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
-  // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
-  // and we are not going to recreate the handlebars helperMissing concept
+// we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
+// and we are not going to recreate the handlebars helperMissing concept
 QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
 
   // Note: the reason we're not allowing undashed helpers is to avoid

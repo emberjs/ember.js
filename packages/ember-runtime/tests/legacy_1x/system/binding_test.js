@@ -284,9 +284,9 @@ QUnit.module("propertyNameBinding with longhand", {
       });
 
       TestNamespace.toObject = EmberObject.createWithMixins({
-          valueBinding: Binding.from('TestNamespace.fromObject.value'),
-          localValue: "originalLocal",
-          relativeBinding: Binding.from('localValue')
+        valueBinding: Binding.from('TestNamespace.fromObject.value'),
+        localValue: "originalLocal",
+        relativeBinding: Binding.from('localValue')
       });
     });
   },

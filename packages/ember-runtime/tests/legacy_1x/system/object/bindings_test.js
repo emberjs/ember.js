@@ -115,7 +115,7 @@ var fooBindingModuleOpts = {
   teardown: function() {
     Ember.lookup = originalLookup;
     TestObject = fromObject = extraObject = null;
-  //  delete TestNamespace;
+    //  delete TestNamespace;
   }
 
 };

@@ -70,7 +70,7 @@ QUnit.test("should observe the changes within the nested begin / end property ch
   equal(ObjectA.prop, "propValue");
   ObjectA.endPropertyChanges();
 
-    //end inner nest
+  //end inner nest
   ObjectA.set('prop', 'changePropValue');
   equal(ObjectA.newFoo, "newFooValue");
 
