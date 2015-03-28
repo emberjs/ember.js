@@ -30,7 +30,7 @@ DSL.prototype = {
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
 
-        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
+        return indexOf.call(['array', 'basic', 'object', 'application'], name) === -1;
       })()
     );
 
