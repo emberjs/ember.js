@@ -137,7 +137,7 @@ Registry.prototype = {
    @property _defaultContainer
    @type Container
    */
-   _defaultContainer: null,
+  _defaultContainer: null,
 
   /**
    Creates a container based on this registry.

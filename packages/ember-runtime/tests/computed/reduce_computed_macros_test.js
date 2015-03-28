@@ -634,18 +634,18 @@ QUnit.module('computedSetDiff', {
 QUnit.test("it throws an error if given fewer or more than two dependent properties", function() {
   throws(function () {
     EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5]),
-        diff: computedSetDiff('array')
+      array: Ember.A([1,2,3,4,5,6,7]),
+      array2: Ember.A([3,4,5]),
+      diff: computedSetDiff('array')
     });
   }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
 
   throws(function () {
     EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5]),
-        array3: Ember.A([7]),
-        diff: computedSetDiff('array', 'array2', 'array3')
+      array: Ember.A([1,2,3,4,5,6,7]),
+      array2: Ember.A([3,4,5]),
+      array3: Ember.A([7]),
+      diff: computedSetDiff('array', 'array2', 'array3')
     });
   }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
 });

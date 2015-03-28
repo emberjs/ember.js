@@ -8,7 +8,7 @@ import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
 
 var ObserverClass = EnumerableTestsObserverClass.extend({
 
-   observeArray(obj) {
+  observeArray(obj) {
     obj.addArrayObserver(this);
     return this;
   },

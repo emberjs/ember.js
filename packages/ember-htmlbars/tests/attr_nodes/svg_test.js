@@ -9,8 +9,8 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: svg attribute", {
   teardown() {
@@ -75,5 +75,5 @@ QUnit.test("class is output", function() {
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', "attribute is output");
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

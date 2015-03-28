@@ -9,8 +9,8 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: boolean attribute", {
   teardown() {
@@ -94,6 +94,5 @@ QUnit.test("disabled attribute preserves a blank string value", function() {
         'boolean property is set false');
 });
 
-
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

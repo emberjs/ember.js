@@ -125,7 +125,7 @@ QUnit.test("on first retrieval, array computed properties dependent on nested ob
 
 QUnit.test("after the first retrieval, array computed properties observe additions to dependent arrays", function() {
   var numbers = get(obj, 'numbers');
-      // set up observers
+  // set up observers
   var evenNumbers = get(obj, 'evenNumbers');
 
   run(function() {
@@ -137,7 +137,7 @@ QUnit.test("after the first retrieval, array computed properties observe additio
 
 QUnit.test("after the first retrieval, array computed properties observe removals from dependent arrays", function() {
   var numbers = get(obj, 'numbers');
-      // set up observers
+  // set up observers
   var evenNumbers = get(obj, 'evenNumbers');
 
   run(function() {

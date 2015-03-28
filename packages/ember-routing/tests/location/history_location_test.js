@@ -19,14 +19,14 @@ function mockBrowserLocation(path) {
   var pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
 
   return {
-      hash: tmp.hash,
-      host: tmp.host || 'localhost',
-      hostname: tmp.hostname || 'localhost',
-      href: tmp.href,
-      pathname: pathname,
-      port: tmp.port || '',
-      protocol: protocol,
-      search: tmp.search
+    hash: tmp.hash,
+    host: tmp.host || 'localhost',
+    hostname: tmp.hostname || 'localhost',
+    href: tmp.href,
+    pathname: pathname,
+    port: tmp.port || '',
+    protocol: protocol,
+    search: tmp.search
   };
 }
 

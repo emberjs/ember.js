@@ -31,7 +31,7 @@ RSVP.configure('async', function(callback, promise) {
   });
 });
 
-RSVP.Promise.prototype.fail = function(callback, label){
+RSVP.Promise.prototype.fail = function(callback, label) {
   Ember.deprecate('RSVP.Promise.fail has been renamed as RSVP.Promise.catch');
   return this['catch'](callback, label);
 };
