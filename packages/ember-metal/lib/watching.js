@@ -78,7 +78,9 @@ var NODE_STACK = [];
   @return {void}
 */
 export function destroy(obj) {
-  var meta = obj['__ember_meta__'], node, nodes, key, nodeObject;
+  var meta = obj['__ember_meta__'];
+  var node, nodes, key, nodeObject;
+
   if (meta) {
     obj['__ember_meta__'] = null;
     // remove chainWatchers to remove circular references that would prevent GC

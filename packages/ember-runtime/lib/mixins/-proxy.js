@@ -73,6 +73,12 @@ export default Mixin.create({
   unknownProperty: function (key) {
     var content = get(this, 'content');
     if (content) {
+      Ember.deprecate(
+        fmt('You attempted to access `%@` from `%@`, but object proxying is deprecated. ' +
+            'Please use `model.%@` instead.', [key, this, key]),
+        !this.isController,
+        { url: 'http://emberjs.com/guides/deprecations/#toc_objectcontroller' }
+      );
       return get(content, key);
     }
   },
@@ -89,6 +95,13 @@ export default Mixin.create({
     var content = get(this, 'content');
     Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of" +
                      " object proxy %@: its 'content' is undefined.", [key, value, this]), content);
+
+    Ember.deprecate(
+      fmt('You attempted to set `%@` from `%@`, but object proxying is deprecated. ' +
+          'Please use `model.%@` instead.', [key, this, key]),
+      !this.isController,
+      { url: 'http://emberjs.com/guides/deprecations/#toc_objectcontroller' }
+    );
     return set(content, key, value);
   }
 

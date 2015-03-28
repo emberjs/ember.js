@@ -1,4 +1,4 @@
-fileMap = function(revision,tag,date) {
+function fileMap(revision,tag,date) {
   return {
     "ember.js":                   fileObject("ember",                   ".js",   "text/javascript",  revision, tag, date),
     "ember.debug.js":             fileObject("ember.debug",             ".js",   "text/javascript",  revision, tag, date),

@@ -4,193 +4,11 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
-import EmberObject from "ember-runtime/system/object";
-import { get } from "ember-metal/property_get";
-import SimpleStream from "ember-metal/streams/simple";
-import keys from "ember-metal/keys";
-import { IS_BINDING } from "ember-metal/mixin";
-import { read, isStream } from "ember-metal/streams/utils";
+import { read } from "ember-metal/streams/utils";
 import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
-
-import { map } from 'ember-metal/enumerable_utils';
-import {
-  streamifyClassNameBinding
-} from "ember-views/streams/class_name_binding";
-
-function makeBindings(hash, options, view) {
-  for (var prop in hash) {
-    var value = hash[prop];
-
-    // Classes are processed separately
-    if (prop === 'class' && isStream(value)) {
-      hash.classBinding = value._label;
-      delete hash['class'];
-      continue;
-    }
-
-    if (prop === 'classBinding') {
-      continue;
-    }
-
-    if (IS_BINDING.test(prop)) {
-      if (isStream(value)) {
-        Ember.warn("You're attempting to render a view by passing " +
-                   prop + " " +
-                   "to a view helper without a quoted value, " +
-                   "but this syntax is ambiguous. You should either surround " +
-                   prop + "'s value in quotes or remove `Binding` " +
-                   "from " + prop + ".");
-      } else if (typeof value === 'string') {
-        hash[prop] = view._getBindingForStream(value);
-      }
-    } else {
-      if (isStream(value) && prop !== 'id') {
-        hash[prop + 'Binding'] = view._getBindingForStream(value);
-        delete hash[prop];
-      }
-    }
-  }
-}
-
-export var ViewHelper = EmberObject.create({
-  propertiesFromHTMLOptions: function(hash, options, env) {
-    var view    = env.data.view;
-    var classes = read(hash['class']);
-
-    var extensions = {
-      helperName: options.helperName || ''
-    };
-
-    if (hash.id) {
-      extensions.elementId = read(hash.id);
-    }
-
-    if (hash.tag) {
-      extensions.tagName = hash.tag;
-    }
-
-    if (classes) {
-      classes = classes.split(' ');
-      extensions.classNames = classes;
-    }
-
-    if (hash.classBinding) {
-      extensions.classNameBindings = hash.classBinding.split(' ');
-    }
-
-    if (hash.classNameBindings) {
-      if (extensions.classNameBindings === undefined) {
-        extensions.classNameBindings = [];
-      }
-      extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
-    }
-
-    if (hash.attributeBindings) {
-      Ember.assert("Setting 'attributeBindings' via template helpers is not allowed." +
-                   " Please subclass Ember.View and set it there instead.");
-      extensions.attributeBindings = null;
-    }
-
-    // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
-    // as well as class name bindings. If the bindings are local, make them relative to the current context
-    // instead of the view.
-
-    var hashKeys = keys(hash);
-
-    for (var i = 0, l = hashKeys.length; i < l; i++) {
-      var prop = hashKeys[i];
-
-      if (prop !== 'classNameBindings') {
-        extensions[prop] = hash[prop];
-      }
-    }
-
-    if (extensions.classNameBindings) {
-      extensions.classNameBindings = map(extensions.classNameBindings, function(classNameBinding){
-        var binding = streamifyClassNameBinding(view, classNameBinding);
-        if (isStream(binding)) {
-          return binding;
-        } else {
-          // returning a stream informs the classNameBindings logic
-          // in views/view that this value is already processed.
-          return new SimpleStream(binding);
-        }
-      });
-    }
-
-    return extensions;
-  },
-
-  helper: function(newView, hash, options, env) {
-    var data = env.data;
-    var template = options.template;
-    var newViewProto;
-
-    makeBindings(hash, options, env.data.view);
-
-    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
-    var currentView = data.view;
-
-    if (View.detectInstance(newView)) {
-      newViewProto = newView;
-    } else {
-      newViewProto = newView.proto();
-    }
-
-    if (template) {
-      Ember.assert(
-        "You cannot provide a template block if you also specified a templateName",
-        !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName')
-      );
-      viewOptions.template = template;
-    }
-
-    // We only want to override the `_context` computed property if there is
-    // no specified controller. See View#_context for more information.
-    if (!newViewProto.controller && !newViewProto.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
-      viewOptions._context = get(currentView, 'context'); // TODO: is this right?!
-    }
-
-    viewOptions._morph = options.morph;
-
-    currentView.appendChild(newView, viewOptions);
-  },
-
-  instanceHelper: function(newView, hash, options, env) {
-    var data = env.data;
-    var template = options.template;
-
-    makeBindings(hash, options, env.data.view);
-
-    Ember.assert(
-      'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
-      View.detectInstance(newView)
-    );
-
-    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
-    var currentView = data.view;
-
-    if (template) {
-      Ember.assert(
-        "You cannot provide a template block if you also specified a templateName",
-        !get(viewOptions, 'templateName') && !get(newView, 'templateName')
-      );
-      viewOptions.template = template;
-    }
-
-    // We only want to override the `_context` computed property if there is
-    // no specified controller. See View#_context for more information.
-    if (!newView.controller && !newView.controllerBinding &&
-        !viewOptions.controller && !viewOptions.controllerBinding) {
-      viewOptions._context = get(currentView, 'context'); // TODO: is this right?!
-    }
-
-    viewOptions._morph = options.morph;
-
-    currentView.appendChild(newView, viewOptions);
-  }
-});
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
+import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
 
 /**
   `{{view}}` inserts a new instance of an `Ember.View` into a template passing its
@@ -366,28 +184,34 @@ export var ViewHelper = EmberObject.create({
 
   @method view
   @for Ember.Handlebars.helpers
-  @param {String} path
-  @param {Hash} options
-  @return {String} HTML string
 */
 export function viewHelper(params, hash, options, env) {
-  Ember.assert("The view helper only takes a single argument", params.length <= 2);
+  Ember.assert(
+    "The `view` helper expects zero or one arguments.",
+    params.length <= 2
+  );
 
-  var container = this.container || read(this._keywords.view).container;
-  var viewClass;
-
+  var view = env.data.view;
+  var container = view.container || read(view._keywords.view).container;
+  var viewClassOrInstance;
   if (params.length === 0) {
     if (container) {
-      viewClass = container.lookupFactory('view:toplevel');
+      viewClassOrInstance = container.lookupFactory('view:toplevel');
     } else {
-      viewClass = View;
+      viewClassOrInstance = View;
     }
   } else {
-    var pathStream = params[0];
-    viewClass = readViewFactory(pathStream, container);
+    viewClassOrInstance = readViewFactory(params[0], container);
   }
 
-  options.helperName = options.helperName || 'view';
+  var props = {
+    helperName: options.helperName || 'view'
+  };
 
-  return ViewHelper.helper(viewClass, hash, options, env);
+  if (options.template) {
+    props.template = options.template;
+  }
+
+  mergeViewBindings(view, props, hash);
+  appendTemplatedView(view, options.morph, viewClassOrInstance, props);
 }

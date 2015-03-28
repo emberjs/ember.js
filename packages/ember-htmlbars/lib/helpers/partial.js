@@ -1,8 +1,7 @@
-import Ember from "ember-metal/core"; // Ember.assert
-
-import isNone from 'ember-metal/is_none';
-import { bind } from "./binding";
+import { get } from "ember-metal/property_get";
 import { isStream } from "ember-metal/streams/utils";
+import BoundPartialView from "ember-views/views/bound_partial_view";
+import lookupPartial from "ember-views/system/lookup_partial";
 
 /**
 @module ember
@@ -50,49 +49,18 @@ import { isStream } from "ember-metal/streams/utils";
 */
 
 export function partialHelper(params, hash, options, env) {
-  options.helperName = options.helperName || 'partial';
+  var view = env.data.view;
+  var templateName = params[0];
 
-  var name = params[0];
-
-  if (isStream(name)) {
-    options.template = createPartialTemplate(name);
-    bind.call(this, name, hash, options, env, true, exists);
+  if (isStream(templateName)) {
+    view.appendChild(BoundPartialView, {
+      _morph: options.morph,
+      _context: get(view, 'context'),
+      templateNameStream: templateName,
+      helperName: options.helperName || 'partial'
+    });
   } else {
-    return renderPartial(name, this, env, options.morph.contextualElement);
+    var template = lookupPartial(view, templateName);
+    return template.render(view, env, options.morph.contextualElement);
   }
-}
-
-function exists(value) {
-  return !isNone(value);
-}
-
-function lookupPartial(view, templateName) {
-  var nameParts = templateName.split("/");
-  var lastPart = nameParts[nameParts.length - 1];
-
-  nameParts[nameParts.length - 1] = "_" + lastPart;
-
-  var underscoredName = nameParts.join('/');
-  var template = view.templateForName(underscoredName);
-  if (!template) {
-    template = view.templateForName(templateName);
-  }
-
-  Ember.assert('Unable to find partial with name "'+templateName+'"', !!template);
-
-  return template;
-}
-
-function renderPartial(name, view, env, contextualElement) {
-  var template = lookupPartial(view, name);
-  return template.render(view, env, contextualElement);
-}
-
-function createPartialTemplate(nameStream) {
-  return {
-    isHTMLBars: true,
-    render: function(view, env, contextualElement) {
-      return renderPartial(nameStream.value(), view, env, contextualElement);
-    }
-  };
 }

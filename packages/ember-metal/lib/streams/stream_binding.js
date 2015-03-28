@@ -1,4 +1,4 @@
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import Stream from "ember-metal/streams/stream";

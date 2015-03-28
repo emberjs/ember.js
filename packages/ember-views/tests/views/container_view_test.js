@@ -21,7 +21,7 @@ QUnit.module("ember-views/views/container_view_test", {
   }
 });
 
-test("should be able to insert views after the DOM representation is created", function() {
+QUnit.test("should be able to insert views after the DOM representation is created", function() {
   container = ContainerView.create({
     classNameBindings: ['name'],
     name: 'foo',
@@ -52,7 +52,7 @@ test("should be able to insert views after the DOM representation is created", f
 
 });
 
-test("should be able to observe properties that contain child views", function() {
+QUnit.test("should be able to observe properties that contain child views", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   run(function() {
@@ -77,7 +77,7 @@ test("should be able to observe properties that contain child views", function()
   equal(container.get('displayIsDisplayed'), false, "can bind to child view");
 });
 
-test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
+QUnit.test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
   container = ContainerView.create({
     container: {}
   });
@@ -103,7 +103,7 @@ test("childViews inherit their parents iocContainer, and retain the original con
   equal(get(view, 'container'), container.container, "still inherits its original parentViews iocContainer");
 });
 
-test("should set the parentView property on views that are added to the child views array", function() {
+QUnit.test("should set the parentView property on views that are added to the child views array", function() {
   container = ContainerView.create();
 
   var ViewKlass = View.extend({
@@ -161,7 +161,7 @@ test("should set the parentView property on views that are added to the child vi
   });
 });
 
-test("should trigger parentViewDidChange when parentView is changed", function() {
+QUnit.test("should trigger parentViewDidChange when parentView is changed", function() {
   container = ContainerView.create();
 
   var secondContainer = ContainerView.create();
@@ -184,10 +184,10 @@ test("should trigger parentViewDidChange when parentView is changed", function()
   });
 });
 
-test("should be able to push initial views onto the ContainerView and have it behave", function() {
+QUnit.test("should be able to push initial views onto the ContainerView and have it behave", function() {
   var Container = ContainerView.extend({
     init: function () {
-      this._super();
+      this._super.apply(this, arguments);
       this.pushObject(View.create({
         name: 'A',
         template: function () {
@@ -206,8 +206,8 @@ test("should be able to push initial views onto the ContainerView and have it be
     lengthSquared: function () {
       return this.get('length') * this.get('length');
     },
-    mapViewNames: function(){
-      return this.map(function(_view){
+    mapViewNames: function() {
+      return this.map(function(_view) {
         return _view.get('name');
       });
     }
@@ -241,11 +241,11 @@ test("should be able to push initial views onto the ContainerView and have it be
   run(container, 'destroy');
 });
 
-test("views that are removed from a ContainerView should have their child views cleared", function() {
+QUnit.test("views that are removed from a ContainerView should have their child views cleared", function() {
   container = ContainerView.create();
   view = View.createWithMixins({
     remove: function() {
-      this._super();
+      this._super.apply(this, arguments);
     },
     template: function(context, options) {
       options.data.view.appendChild(View);
@@ -263,10 +263,10 @@ test("views that are removed from a ContainerView should have their child views 
     container.removeObject(view);
   });
   equal(get(view, 'childViews.length'), 0, "child views are cleared when removed from container view");
-  equal(container.$().html(),'', "the child view is removed from the DOM");
+  equal(container.$().text(), '', "the child view is removed from the DOM");
 });
 
-test("if a ContainerView starts with an empy currentView, nothing is displayed", function() {
+QUnit.test("if a ContainerView starts with an empty currentView, nothing is displayed", function() {
   container = ContainerView.create();
 
   run(function() {
@@ -277,7 +277,7 @@ test("if a ContainerView starts with an empy currentView, nothing is displayed",
   equal(get(container, 'childViews.length'), 0, "should not have any child views");
 });
 
-test("if a ContainerView starts with a currentView, it is rendered as a child view", function() {
+QUnit.test("if a ContainerView starts with a currentView, it is rendered as a child view", function() {
   var controller = Controller.create();
   container = ContainerView.create({
     controller: controller
@@ -305,7 +305,7 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
-test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
+QUnit.test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
   var context = null;
   var mainView = View.create({
     template: function(ctx, opts) {
@@ -334,7 +334,7 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
   equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
-test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
+QUnit.test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
   var context = null;
   var mainView = View.create({
     template: function(ctx, opts) {
@@ -369,7 +369,7 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
   equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
-test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
+QUnit.test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
   var context = null;
   var mainView = View.create({
     template: function(ctx, opts) {
@@ -406,7 +406,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(get(container, 'childViews.length'), 0, "should not have any child views");
 });
 
-test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated and the previous currentView is destroyed", function() {
+QUnit.test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated and the previous currentView is destroyed", function() {
   var context = null;
   var mainView = View.create({
     template: function(ctx, opts) {
@@ -445,7 +445,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(get(container, 'childViews.length'), 0, "should not have any child views");
 });
 
-test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is destroyed and the new one is added", function() {
+QUnit.test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is destroyed and the new one is added", function() {
   container = ContainerView.create();
   var mainView = View.create({
     template: function() {
@@ -497,7 +497,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(trim(container.$().text()), "This is the tertiary view.", "should render its child");
 });
 
-test("should be able to modify childViews many times during an run loop", function () {
+QUnit.test("should be able to modify childViews many times during an run loop", function () {
 
   container = ContainerView.create();
 
@@ -535,7 +535,7 @@ test("should be able to modify childViews many times during an run loop", functi
   equal(trim(container.$().text()), 'onetwothree');
 });
 
-test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
+QUnit.test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
   container = ContainerView.create();
 
   run(function() {
@@ -544,7 +544,10 @@ test("should be able to modify childViews then remove the ContainerView in same 
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {
@@ -555,7 +558,7 @@ test("should be able to modify childViews then remove the ContainerView in same 
   equal(count, 0, 'did not render child');
 });
 
-test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
+QUnit.test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
   container = ContainerView.create();
 
   run(function() {
@@ -564,7 +567,10 @@ test("should be able to modify childViews then destroy the ContainerView in same
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {
@@ -576,7 +582,7 @@ test("should be able to modify childViews then destroy the ContainerView in same
 });
 
 
-test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
+QUnit.test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
   container = ContainerView.create();
 
   run(function() {
@@ -585,7 +591,10 @@ test("should be able to modify childViews then rerender the ContainerView in sam
 
   var count = 0;
   var child = View.create({
-    template: function () { count++; return 'child'; }
+    template: function () {
+      count++;
+      return 'child';
+    }
   });
 
   run(function() {
@@ -599,7 +608,7 @@ test("should be able to modify childViews then rerender the ContainerView in sam
   equal(trim(container.$().text()), 'child');
 });
 
-test("should be able to modify childViews then rerender then modify again the ContainerView in same run loop", function () {
+QUnit.test("should be able to modify childViews then rerender then modify again the ContainerView in same run loop", function () {
   container = ContainerView.create();
 
   run(function() {
@@ -613,8 +622,8 @@ test("should be able to modify childViews then rerender then modify again the Co
       buffer.push(this.label);
     }
   });
-  var one = Child.create({label: 'one'});
-  var two = Child.create({label: 'two'});
+  var one = Child.create({ label: 'one' });
+  var two = Child.create({ label: 'two' });
 
   run(function() {
     container.pushObject(one);
@@ -627,7 +636,7 @@ test("should be able to modify childViews then rerender then modify again the Co
   equal(trim(container.$().text()), 'onetwo');
 });
 
-test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
+QUnit.test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
   container = ContainerView.create();
 
   run(function() {
@@ -641,8 +650,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
       buffer.push(this.label);
     }
   });
-  var one = Child.create({label: 'one'});
-  var two = Child.create({label: 'two'});
+  var one = Child.create({ label: 'one' });
+  var two = Child.create({ label: 'two' });
 
   run(function() {
     container.pushObject(one);
@@ -665,7 +674,7 @@ test("should be able to modify childViews then rerender again the ContainerView 
   equal(trim(container.$().text()), 'onetwo');
 });
 
-test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
+QUnit.test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var root = ContainerView.create();
@@ -693,7 +702,7 @@ test("should invalidate `element` on itself and childViews when being rendered b
   });
 });
 
-test("Child view can only be added to one container at a time", function () {
+QUnit.test("Child view can only be added to one container at a time", function () {
   expect(2);
 
   container = ContainerView.create();
@@ -726,7 +735,7 @@ test("Child view can only be added to one container at a time", function () {
   });
 });
 
-test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
+QUnit.test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
 
   var counter = 0;
   var root = ContainerView.create({});
@@ -766,11 +775,11 @@ test("if a containerView appends a child in its didInsertElement event, the didI
 });
 
 
-test("ContainerView is observable [DEPRECATED]", function(){
+QUnit.test("ContainerView is observable [DEPRECATED]", function() {
   container = ContainerView.create();
   var observerFired = false;
-  expectDeprecation(function(){
-    container.addObserver('this.[]', function(){
+  expectDeprecation(function() {
+    container.addObserver('this.[]', function() {
       observerFired = true;
     });
   }, /ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView./);

@@ -1,33 +1,34 @@
 {
   "features": {
     "features-stripped-test": false,
-    "ember-routing-named-substates": false,
-    "ember-routing-add-model-option": true,
-    "ember-routing-linkto-target-attribute": true,
-    "ember-routing-will-change-hooks": false,
-    "ember-routing-multi-current-when": true,
-    "ember-routing-auto-location-uses-replace-state-for-history": true,
-    "event-dispatcher-can-disable-event-manager": false,
-    "ember-metal-is-present": true,
-    "property-brace-expansion-improvement": true,
-    "ember-routing-handlebars-action-with-key-code": false,
-    "ember-runtime-item-controller-inline-class": false,
-    "ember-metal-injected-properties": true,
+    "ember-routing-named-substates": true,
     "mandatory-setter": "development-only",
-    "ember-routing-fire-activate-deactivate-events": true,
-    "ember-testing-pause-test": true,
-    "ember-htmlbars": true,
-    "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": false,
-    "ember-htmlbars-inline-if-helper": false,
-    "ember-htmlbars-attribute-syntax": false
+    "ember-htmlbars-component-helper": true,
+    "ember-htmlbars-inline-if-helper": true,
+    "ember-htmlbars-attribute-syntax": true,
+    "ember-routing-transitioning-classes": true,
+    "new-computed-syntax": false,
+    "ember-testing-checkbox-helpers": false,
+    "ember-metal-stream": false,
+    "ember-htmlbars-each-with-index": true,
+    "ember-application-instance-initializers": false,
+    "ember-application-initializer-context": false,
+    "ember-router-willtransition": true,
+    "ember-application-visit": false
   },
   "debugStatements": [
     "Ember.warn",
+    "Ember.default.warn",
     "Ember.assert",
+    "Ember.default.assert",
     "Ember.deprecate",
+    "Ember.default.deprecate",
     "Ember.debug",
+    "Ember.default.debug",
     "Ember.Logger.info",
-    "Ember.runInDebug"
+    "Ember.default.Logger.info",
+    "Ember.runInDebug",
+    "Ember.default.runInDebug"
   ]
 }

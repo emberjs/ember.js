@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-routing-handlebars
+@submodule ember-routing-htmlbars
 */
 
 import Ember from "ember-metal/core"; // assert
@@ -104,7 +104,7 @@ import 'ember-htmlbars';
   `{{link-to}}` will use your application's Router to
   fill the element's `href` property with a url that
   matches the path to the supplied `routeName` for your
-  routers's configured `Location` scheme, which defaults
+  router's configured `Location` scheme, which defaults
   to Ember.HashLocation.
 
   ### Handling current route
@@ -116,7 +116,7 @@ import 'ember-htmlbars';
 
   ```handlebars
   {{#link-to 'photoGallery.recent'}}
-    Great Hamster Photos from the last week
+    Great Hamster Photos
   {{/link-to}}
   ```
 
@@ -134,7 +134,7 @@ import 'ember-htmlbars';
 
   ```handlebars
   {{#link-to 'photoGallery.recent' activeClass="current-url"}}
-    Great Hamster Photos from the last week
+    Great Hamster Photos
   {{/link-to}}
   ```
 
@@ -193,7 +193,7 @@ import 'ember-htmlbars';
   ```
 
   ```html
-  <a href="/hamster-photos/42/comment/718">
+  <a href="/hamster-photos/42/comments/718">
     A+++ would snuggle again.
   </a>
   ```
@@ -287,8 +287,8 @@ import 'ember-htmlbars';
   @see {Ember.LinkView}
 */
 function linkToHelper(params, hash, options, env) {
-  var shouldEscape = !hash.unescaped;
   var queryParamsObject;
+  var view = env.data.view;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
@@ -305,11 +305,12 @@ function linkToHelper(params, hash, options, env) {
 
   if (!options.template) {
     var linkTitle = params.shift();
+    var parseTextAsHTML = options.morph.parseTextAsHTML;
 
-    if (shouldEscape) {
-      hash.layout = inlineEscapedLinkTo;
-    } else {
+    if (parseTextAsHTML) {
       hash.layout = inlineUnescapedLinkTo;
+    } else {
+      hash.layout = inlineEscapedLinkTo;
     }
 
     hash.linkTitle = linkTitle;
@@ -321,6 +322,8 @@ function linkToHelper(params, hash, options, env) {
 
       if (!lazyValue._isController) {
         while (ControllerMixin.detect(lazyValue.value())) {
+          Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + view + '` to use `{{link-to "post" someController.model}}` instead.');
+
           lazyValue = lazyValue.get('model');
         }
       }

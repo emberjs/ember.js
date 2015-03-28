@@ -2,7 +2,7 @@ import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 QUnit.module('Ember.EnumerableUtils.intersection');
 
-test('returns an array of objects that appear in both enumerables', function() {
+QUnit.test('returns an array of objects that appear in both enumerables', function() {
   var a = [1,2,3];
   var b = [2,3,4];
   var result;
@@ -12,7 +12,7 @@ test('returns an array of objects that appear in both enumerables', function() {
   deepEqual(result, [2,3]);
 });
 
-test("large replace", function() {
+QUnit.test("large replace", function() {
   expect(0);
 
   // https://code.google.com/p/chromium/issues/detail?id=56588

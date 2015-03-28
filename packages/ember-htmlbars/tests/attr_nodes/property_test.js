@@ -16,6 +16,7 @@ function canSetFalsyMaxLength() {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: property", {
   teardown: function() {
@@ -25,9 +26,9 @@ QUnit.module("ember-htmlbars: property", {
   }
 });
 
-test("maxlength sets the property and attribute", function() {
+QUnit.test("maxlength sets the property and attribute", function() {
   view = EmberView.create({
-    context: {length: 5},
+    context: { length: 5 },
     template: compile("<input maxlength={{length}}>")
   });
 
@@ -38,9 +39,9 @@ test("maxlength sets the property and attribute", function() {
   equal(view.element.firstChild.maxLength, 1);
 });
 
-test("quoted maxlength sets the property and attribute", function() {
+QUnit.test("quoted maxlength sets the property and attribute", function() {
   view = EmberView.create({
-    context: {length: 5},
+    context: { length: 5 },
     template: compile("<input maxlength='{{length}}'>")
   });
 
@@ -56,7 +57,7 @@ test("quoted maxlength sets the property and attribute", function() {
   }
 });
 
-test("array value can be set as property", function() {
+QUnit.test("array value can be set as property", function() {
   view = EmberView.create({
     context: {},
     template: compile("<input value={{items}}>")

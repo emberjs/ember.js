@@ -10,7 +10,7 @@ var CopyableObject = EmberObject.extend(Copyable, {
   id: null,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     set(this, 'id', generateGuid());
   },
 
@@ -30,7 +30,10 @@ CopyableTests.extend({
   },
 
   isEqual: function(a, b) {
-    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) return false;
-    return get(a, 'id') === get(b,'id');
+    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) {
+      return false;
+    }
+
+    return get(a, 'id') === get(b, 'id');
   }
 }).run();

@@ -1,9 +1,19 @@
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 import {
   getFirstKey,
   getTailPath
 } from "ember-metal/path_cache";
 
+/**
+@module ember-metal
+*/
+
+/**
+  @public
+  @class Stream
+  @namespace Ember.stream
+  @constructor
+*/
 function Stream(fn) {
   this.init();
   this.valueFn = fn;

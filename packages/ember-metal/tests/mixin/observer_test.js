@@ -78,7 +78,7 @@ testBoth('replacing observer should remove old observer', function(get, set) {
 });
 
 testBoth('observing chain with property before', function(get, set) {
-  var obj2 = {baz: 'baz'};
+  var obj2 = { baz: 'baz' };
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -96,7 +96,7 @@ testBoth('observing chain with property before', function(get, set) {
 });
 
 testBoth('observing chain with property after', function(get, set) {
-  var obj2 = {baz: 'baz'};
+  var obj2 = { baz: 'baz' };
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -114,7 +114,7 @@ testBoth('observing chain with property after', function(get, set) {
 });
 
 testBoth('observing chain with property in mixin applied later', function(get, set) {
-  var obj2 = {baz: 'baz'};
+  var obj2 = { baz: 'baz' };
 
   var MyMixin = Mixin.create({
 
@@ -124,7 +124,7 @@ testBoth('observing chain with property in mixin applied later', function(get, s
     })
   });
 
-  var MyMixin2 = Mixin.create({bar: obj2});
+  var MyMixin2 = Mixin.create({ bar: obj2 });
 
   var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
@@ -137,7 +137,7 @@ testBoth('observing chain with property in mixin applied later', function(get, s
 });
 
 testBoth('observing chain with existing property', function(get, set) {
-  var obj2 = {baz: 'baz'};
+  var obj2 = { baz: 'baz' };
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -146,7 +146,7 @@ testBoth('observing chain with existing property', function(get, set) {
     })
   });
 
-  var obj = mixin({bar: obj2}, MyMixin);
+  var obj = mixin({ bar: obj2 }, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', "BAZ");
@@ -154,8 +154,8 @@ testBoth('observing chain with existing property', function(get, set) {
 });
 
 testBoth('observing chain with property in mixin before', function(get, set) {
-  var obj2 = {baz: 'baz'};
-  var MyMixin2 = Mixin.create({bar: obj2});
+  var obj2 = { baz: 'baz' };
+  var MyMixin2 = Mixin.create({ bar: obj2 });
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -172,8 +172,8 @@ testBoth('observing chain with property in mixin before', function(get, set) {
 });
 
 testBoth('observing chain with property in mixin after', function(get, set) {
-  var obj2 = {baz: 'baz'};
-  var MyMixin2 = Mixin.create({bar: obj2});
+  var obj2 = { baz: 'baz' };
+  var MyMixin2 = Mixin.create({ bar: obj2 });
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -190,10 +190,10 @@ testBoth('observing chain with property in mixin after', function(get, set) {
 });
 
 testBoth('observing chain with overriden property', function(get, set) {
-  var obj2 = {baz: 'baz'};
-  var obj3 = {baz: 'foo'};
+  var obj2 = { baz: 'baz' };
+  var obj3 = { baz: 'foo' };
 
-  var MyMixin2 = Mixin.create({bar: obj3});
+  var MyMixin2 = Mixin.create({ bar: obj3 });
 
   var MyMixin = Mixin.create({
     count: 0,
@@ -202,7 +202,7 @@ testBoth('observing chain with overriden property', function(get, set) {
     })
   });
 
-  var obj = mixin({bar: obj2}, MyMixin, MyMixin2);
+  var obj = mixin({ bar: obj2 }, MyMixin, MyMixin2);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   equal(isWatching(obj2, 'baz'), false, 'should not be watching baz');

@@ -10,8 +10,14 @@ QUnit.module("Ember.tryFinally", {
     tryableResult = 'tryable return value';
     finalizerResult = undefined;
 
-    tryable   = function() { tryCount++;      return tryableResult;   };
-    finalizer = function() { finalizeCount++; return finalizerResult; };
+    tryable   = function() {
+      tryCount++;
+      return tryableResult;
+    };
+    finalizer = function() {
+      finalizeCount++;
+      return finalizerResult;
+    };
   },
 
   teardown: function() {
@@ -28,49 +34,61 @@ function callTryFinallyWithError() {
     equal(e, error, 'correct error was thrown');
   }
 
-  equal(errorWasThrown, true,  'error was thrown');
+  equal(errorWasThrown, true, 'error was thrown');
 }
 
-test("no failure", function() {
+QUnit.test("no failure", function() {
   equal(tryFinally(tryable, finalizer), tryableResult, 'correct return value');
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("no failure, return from finally", function() {
+QUnit.test("no failure, return from finally", function() {
   finalizerResult = 'finalizer return value';
 
   equal(tryFinally(tryable, finalizer), finalizerResult, 'crrect return value');
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("try failed", function() {
-  tryable = function() { tryCount++; throw error; };
+QUnit.test("try failed", function() {
+  tryable = function() {
+    tryCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("finally failed", function() {
-  finalizer = function() { finalizeCount++; throw error; };
+QUnit.test("finally failed", function() {
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });
 
-test("finally and try failed", function() {
-  tryable   = function() { tryCount++;      throw error; };
-  finalizer = function() { finalizeCount++; throw error; };
+QUnit.test("finally and try failed", function() {
+  tryable   = function() {
+    tryCount++;
+    throw error;
+  };
+  finalizer = function() {
+    finalizeCount++;
+    throw error;
+  };
 
   callTryFinallyWithError();
 
-  equal(tryCount,      1, 'tryable was called once');
+  equal(tryCount, 1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
 });

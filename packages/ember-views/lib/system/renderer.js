@@ -1,18 +1,17 @@
 import Ember from "ember-metal/core";
 import Renderer from 'ember-metal-views/renderer';
-import { create } from 'ember-metal/platform';
-import renderBuffer from "ember-views/system/render_buffer";
+import create from 'ember-metal/platform/create';
+import RenderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
-import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import {
   _instrumentStart,
   subscribers
 } from "ember-metal/instrumentation";
 
-function EmberRenderer() {
-  this.buffer = renderBuffer();
-  this._super$constructor();
+function EmberRenderer(domHelper, _destinedForDOM) {
+  this._super$constructor(domHelper, _destinedForDOM);
+  this.buffer = new RenderBuffer(domHelper);
 }
 
 EmberRenderer.prototype = create(Renderer.prototype);
@@ -36,7 +35,7 @@ EmberRenderer.prototype.createElement =
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     var tagName = view.tagName;
-    if (tagName === undefined) {
+    if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
       tagName = get(view, 'tagName');
       Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
     }
@@ -110,24 +109,36 @@ Renderer.prototype.didCreateElement = function (view) {
   }
 }; // hasElement
 Renderer.prototype.willInsertElement = function (view) {
-  if (view.trigger) { view.trigger('willInsertElement'); }
+  if (this._destinedForDOM) {
+    if (view.trigger) { view.trigger('willInsertElement'); }
+  }
 }; // will place into DOM
 Renderer.prototype.didInsertElement = function (view) {
   if (view._transitionTo) {
     view._transitionTo('inDOM');
   }
-  if (view.trigger) { view.trigger('didInsertElement'); }
+
+  if (this._destinedForDOM) {
+    if (view.trigger) { view.trigger('didInsertElement'); }
+  }
 }; // inDOM // placed into DOM
 
 Renderer.prototype.willRemoveElement = function (view) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
-  if (view.trigger) { view.trigger('willDestroyElement'); }
-  if (view.trigger) { view.trigger('willClearRender'); }
+  if (this._destinedForDOM) {
+    if (view._willDestroyElement) {
+      view._willDestroyElement();
+    }
+    if (view.trigger) {
+      view.trigger('willDestroyElement');
+      view.trigger('willClearRender');
+    }
+  }
 };
 
 Renderer.prototype.didDestroyElement = function (view) {
-  set(view, 'element', null);
+  view.element = null;
   if (view._transitionTo) {
     view._transitionTo('preRender');
   }

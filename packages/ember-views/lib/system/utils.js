@@ -17,8 +17,8 @@ export function isSimpleClick(event) {
 */
 function getViewRange(view) {
   var range = document.createRange();
-  range.setStartAfter(view._morph.start);
-  range.setEndBefore(view._morph.end);
+  range.setStartBefore(view._morph.firstNode);
+  range.setEndAfter(view._morph.lastNode);
   return range;
 }
 
@@ -26,7 +26,7 @@ function getViewRange(view) {
   `getViewClientRects` provides information about the position of the border
   box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inpsector
+  It is only intended to be used by development tools like the Ember Inspector
   and may not work on older browsers.
 
   @private

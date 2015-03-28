@@ -119,7 +119,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   }),
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this._keywords.view = this;
     set(this, 'context', this);
     set(this, 'controller', this);
@@ -198,7 +198,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @default null
   */
   targetObject: computed(function(key) {
-    var parentView = get(this, '_parentView');
+    var parentView = this._parentView;
     return parentView ? get(parentView, 'controller') : null;
   }).property('_parentView'),
 
@@ -213,7 +213,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
     ```javascript
     App.PlayButtonComponent = Ember.Component.extend({
-      click: function(){
+      click: function() {
         if (this.get('isPlaying')) {
           this.sendAction('play');
         } else {
@@ -240,11 +240,11 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     ```javascript
     App.ApplicationController = Ember.Controller.extend({
       actions: {
-        musicStarted: function(){
+        musicStarted: function() {
           // called when the play button is clicked
           // and the music started playing
         },
-        musicStopped: function(){
+        musicStopped: function() {
           // called when the play button is clicked
           // and the music stopped playing
         }
@@ -257,7 +257,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
     ```javascript
     App.NextButtonComponent = Ember.Component.extend({
-      click: function(){
+      click: function() {
         this.sendAction();
       }
     });
@@ -271,7 +271,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     ```javascript
     App.ApplicationController = Ember.Controller.extend({
       actions: {
-        playNextSongInAlbum: function(){
+        playNextSongInAlbum: function() {
           ...
         }
       }
@@ -315,11 +315,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     var hasAction = this._actions && this._actions[actionName];
 
     if (hasAction) {
-      if (this._actions[actionName].apply(this, args) === true) {
-        // handler returned true, so this action will bubble
-      } else {
-        return;
-      }
+      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+      if (!shouldBubble) { return; }
     }
 
     if (target = get(this, 'target')) {

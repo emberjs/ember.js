@@ -17,7 +17,7 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import SubArray from 'ember-runtime/system/subarray';
-import Container from 'ember-runtime/system/container';
+import { Container, Registry } from "ember-runtime/system/container";
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
@@ -98,9 +98,7 @@ Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  Ember.inject = inject;
-}
+Ember.inject = inject;
 
 Ember.Array = EmberArray;
 
@@ -152,6 +150,7 @@ Ember.Object = EmberObject;
 Ember.TrackedArray = TrackedArray;
 Ember.SubArray = SubArray;
 Ember.Container = Container;
+Ember.Registry = Registry;
 Ember.Namespace = Namespace;
 Ember.Enumerable = Enumerable;
 Ember.ArrayProxy = ArrayProxy;
@@ -173,9 +172,7 @@ Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  Ember.Service = Service;
-}
+Ember.Service = Service;
 
 Ember._ProxyMixin = _ProxyMixin;
 

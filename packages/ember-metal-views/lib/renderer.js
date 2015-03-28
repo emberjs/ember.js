@@ -1,19 +1,25 @@
-import { DOMHelper } from "morph";
+import DOMHelper from "dom-helper";
+import environment from "ember-metal/environment";
 
-function Renderer() {
+var domHelper = environment.hasDOM ? new DOMHelper() : null;
+
+function Renderer(_helper, _destinedForDOM) {
   this._uuid = 0;
+
+  // These sizes and values are somewhat arbitrary (but sensible)
+  // pre-allocation defaults.
   this._views = new Array(2000);
   this._queue = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._elements = new Array(17);
   this._inserts = {};
-  this._dom = new DOMHelper();
+  this._dom = _helper || domHelper;
+  this._destinedForDOM = _destinedForDOM === undefined ? true : _destinedForDOM;
 }
 
-function Renderer_renderTree(_view, _parentView, _insertAt) {
+function Renderer_renderTree(_view, _parentView, _refMorph) {
   var views = this._views;
   views[0] = _view;
-  var insertAt = _insertAt === undefined ? -1 : _insertAt;
   var index = 0;
   var total = 1;
   var levelBase = _parentView ? _parentView._level+1 : 0;
@@ -57,9 +63,17 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       contextualElement = parent._childViewsMorph.contextualElement;
     }
     if (!contextualElement && view._didCreateElementWithoutMorph) {
-      // This code path is only used by createElement and rerender when createElement
-      // was previously called on a view.
-      contextualElement = document.body;
+      // This code path is used by view.createElement(), which has two purposes:
+      //
+      // 1. Legacy usage of `createElement()`. Nobody really knows what the point
+      //    of that is. This usage may be removed in Ember 2.0.
+      // 2. FastBoot, which creates an element and has no DOM to insert it into.
+      //
+      // For FastBoot purposes, rendering the DOM without a contextual element
+      // should work fine, because it essentially re-emits the original markup
+      // as a String, which will then be parsed again by the browser, which will
+      // apply the appropriate parsing rules.
+      contextualElement = typeof document !== 'undefined' ? document.body : null;
     }
     element = this.createElement(view, contextualElement);
 
@@ -99,7 +113,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
       parentIndex = parents[level];
       parent = parentIndex === -1 ? _parentView : views[parentIndex];
-      this.insertElement(view, parent, element, -1);
+      this.insertElement(view, parent, element, null);
       index = queue[--length];
       view = views[index];
       element = elements[level];
@@ -107,7 +121,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
     }
   }
 
-  this.insertElement(view, _parentView, element, insertAt);
+  this.insertElement(view, _parentView, element, _refMorph);
 
   for (i=total-1; i>=0; i--) {
     if (willInsert) {
@@ -148,9 +162,20 @@ Renderer.prototype.appendTo =
     this.scheduleInsert(view, morph);
   };
 
+Renderer.prototype.appendAttrTo =
+  function Renderer_appendAttrTo(view, target, attrName) {
+    var morph = this._dom.createAttrMorph(target, attrName);
+    this.scheduleInsert(view, morph);
+  };
+
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    var morph = this._dom.createMorph(target, null, null);
+    var morph;
+    if (target.firstNode) {
+      morph = this._dom.createMorph(target, target.firstNode, target.lastNode);
+    } else {
+      morph = this._dom.appendMorph(target);
+    }
     this.scheduleInsert(view, morph);
   };
 
@@ -223,7 +248,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
   }
 }
 
-function Renderer_insertElement(view, parentView, element, index) {
+function Renderer_insertElement(view, parentView, element, refMorph) {
   if (element === null || element === undefined) {
     return;
   }
@@ -231,11 +256,7 @@ function Renderer_insertElement(view, parentView, element, index) {
   if (view._morph) {
     view._morph.setContent(element);
   } else if (parentView) {
-    if (index === -1) {
-      view._morph = parentView._childViewsMorph.append(element);
-    } else {
-      view._morph = parentView._childViewsMorph.insert(index, element);
-    }
+    view._morph = parentView._childViewsMorph.insertContentBeforeMorph(element, refMorph);
   }
 }
 
@@ -262,7 +283,7 @@ function Renderer_afterRemove(view, shouldDestroy) {
 }
 
 Renderer.prototype.remove = Renderer_remove;
-Renderer.prototype.destroy = function (view) {
+Renderer.prototype.removeAndDestroy = function (view) {
   this.remove(view, true);
 };
 

@@ -1,6 +1,7 @@
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
-import { read } from "ember-metal/streams/utils";
 import EmberError from "ember-metal/error";
+import { IS_BINDING } from "ember-metal/mixin";
+import { read } from "ember-metal/streams/utils";
+import lookupHelper from "ember-htmlbars/system/lookup-helper";
 
 /**
 @module ember
@@ -28,35 +29,55 @@ import EmberError from "ember-metal/error";
   @return {String} HTML string
 */
 export function unboundHelper(params, hash, options, env) {
-  var length = params.length;
-  var result;
+  Ember.assert(
+    "The `unbound` helper expects at least one argument, " +
+    "e.g. `{{unbound user.name}}`.",
+    params.length > 0
+  );
 
-  options.helperName = options.helperName || 'unbound';
+  if (params.length === 1) {
+    return read(params[0]);
+  } else {
+    options.helperName = options.helperName || 'unbound';
 
-  if (length === 1) {
-    result = read(params[0]);
-  } else if (length >= 2) {
-    env.data.isUnbound = true;
-
+    var view = env.data.view;
     var helperName = params[0]._label;
-    var args = [];
-
-    for (var i = 1, l = params.length; i < l; i++) {
-      var value = read(params[i]);
-
-      args.push(value);
-    }
-
-    var helper = lookupHelper(helperName, this, env);
+    var helper = lookupHelper(helperName, view, env);
 
     if (!helper) {
       throw new EmberError('HTMLBars error: Could not find component or helper named ' + helperName + '.');
     }
 
-    result = helper.helperFunction.call(this, args, hash, options, env);
+    return helper.helperFunction.call(this, readParams(params), readHash(hash, view), options, env);
+  }
+}
 
-    delete env.data.isUnbound;
+function readParams(params) {
+  var l = params.length;
+  var unboundParams = new Array(l - 1);
+
+  for (var i = 1; i < l; i++) {
+    unboundParams[i-1] = read(params[i]);
   }
 
-  return result;
+  return unboundParams;
+}
+
+function readHash(hash, view) {
+  var unboundHash = {};
+
+  for (var prop in hash) {
+    if (IS_BINDING.test(prop)) {
+      var value = hash[prop];
+      if (typeof value === 'string') {
+        value = view.getStream(value);
+      }
+
+      unboundHash[prop.slice(0, -7)] = read(value);
+    } else {
+      unboundHash[prop] = read(hash[prop]);
+    }
+  }
+
+  return unboundHash;
 }

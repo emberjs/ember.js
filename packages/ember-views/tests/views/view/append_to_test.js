@@ -19,7 +19,7 @@ QUnit.module("EmberView - append() and appendTo()", {
   }
 });
 
-test("should be added to the specified element when calling appendTo()", function() {
+QUnit.test("should be added to the specified element when calling appendTo()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -34,7 +34,7 @@ test("should be added to the specified element when calling appendTo()", functio
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("should be added to the document body when calling append()", function() {
+QUnit.test("should be added to the document body when calling append()", function() {
   view = View.create({
     render: function(buffer) {
       buffer.push("foo bar baz");
@@ -51,7 +51,7 @@ test("should be added to the document body when calling append()", function() {
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("raises an assert when a target does not exist in the DOM", function() {
+QUnit.test("raises an assert when a target does not exist in the DOM", function() {
   view = View.create();
 
   expectAssertion(function() {
@@ -61,7 +61,7 @@ test("raises an assert when a target does not exist in the DOM", function() {
   });
 });
 
-test("append calls willInsertElement and didInsertElement callbacks", function() {
+QUnit.test("append calls willInsertElement and didInsertElement callbacks", function() {
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
@@ -93,7 +93,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
   ok(didInsertElementCalled, "didInsertElement called");
 });
 
-test("remove removes an element from the DOM", function() {
+QUnit.test("remove removes an element from the DOM", function() {
   willDestroyCalled = 0;
 
   view = View.create({
@@ -120,7 +120,7 @@ test("remove removes an element from the DOM", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-test("destroy more forcibly removes the view", function() {
+QUnit.test("destroy more forcibly removes the view", function() {
   willDestroyCalled = 0;
 
   view = View.create({
@@ -167,7 +167,7 @@ QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
   }
 });
 
-test("should be added to the specified element when calling appendTo()", function() {
+QUnit.test("should be added to the specified element when calling appendTo()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -182,7 +182,7 @@ test("should be added to the specified element when calling appendTo()", functio
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("should be added to the document body when calling append()", function() {
+QUnit.test("should be added to the document body when calling append()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -222,7 +222,7 @@ QUnit.module("EmberView - removing views in a view hierarchy", {
   }
 });
 
-test("remove removes child elements from the DOM", function() {
+QUnit.test("remove removes child elements from the DOM", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
   run(function() {
@@ -242,7 +242,7 @@ test("remove removes child elements from the DOM", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-test("destroy more forcibly removes child views", function() {
+QUnit.test("destroy more forcibly removes child views", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
   run(function() {
@@ -264,7 +264,7 @@ test("destroy more forcibly removes child views", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once on children");
 });
 
-test("destroy removes a child view from its parent", function() {
+QUnit.test("destroy removes a child view from its parent", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
   run(function() {

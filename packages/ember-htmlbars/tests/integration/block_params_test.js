@@ -1,4 +1,4 @@
-import Container from 'container/container';
+import Registry from "container/registry";
 import run from "ember-metal/run_loop";
 import ComponentLookup from 'ember-views/component_lookup';
 import View from "ember-views/views/view";
@@ -7,10 +7,12 @@ import helpers from "ember-htmlbars/helpers";
 import { registerHelper } from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var container, view;
+var registry, container, view;
 
 function aliasHelper(params, hash, options, env) {
-  this.appendChild(View, {
+  var view = env.data.view;
+
+  view.appendChild(View, {
     isVirtual: true,
     _morph: options.morph,
     template: options.template,
@@ -18,24 +20,26 @@ function aliasHelper(params, hash, options, env) {
   });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-
 QUnit.module("ember-htmlbars: block params", {
   setup: function() {
     registerHelper('alias', aliasHelper);
 
-    container = new Container();
-    container.optionsForType('component', { singleton: false });
-    container.optionsForType('view', { singleton: false });
-    container.optionsForType('template', { instantiate: false });
-    container.optionsForType('helper', { instantiate: false });
-    container.register('component-lookup:main', ComponentLookup);
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('component', { singleton: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('helper', { instantiate: false });
+    registry.register('component-lookup:main', ComponentLookup);
   },
+
   teardown: function() {
     delete helpers.alias;
 
     runDestroy(container);
     runDestroy(view);
+
+    registry = container = view = null;
   }
 });
 
@@ -67,7 +71,7 @@ QUnit.test("basic block params usage", function() {
   equal(view.$().text(), "name: krisselden, length: 10");
 });
 
-test("nested block params shadow correctly", function() {
+QUnit.test("nested block params shadow correctly", function() {
   view = View.create({
     context: { name: "ebryn" },
     committer1: { name: "trek" },
@@ -98,8 +102,8 @@ test("nested block params shadow correctly", function() {
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });
 
-test("components can yield values", function() {
-  container.register('template:components/x-alias', compile('{{yield param.name}}'));
+QUnit.test("components can yield values", function() {
+  registry.register('template:components/x-alias', compile('{{yield param.name}}'));
 
   view = View.create({
     container: container,
@@ -131,5 +135,3 @@ test("components can yield values", function() {
 
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });
-
-}

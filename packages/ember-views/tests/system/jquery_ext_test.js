@@ -42,7 +42,7 @@ QUnit.module("EventDispatcher", {
 });
 
 if (canDataTransfer) {
-  test("jQuery.event.fix copies over the dataTransfer property", function() {
+  QUnit.test("jQuery.event.fix copies over the dataTransfer property", function() {
     var originalEvent;
     var receivedEvent;
 
@@ -58,7 +58,7 @@ if (canDataTransfer) {
     equal(receivedEvent.dataTransfer, originalEvent.dataTransfer, "copies dataTransfer property to jQuery event");
   });
 
-  test("drop handler should receive event with dataTransfer property", function() {
+  QUnit.test("drop handler should receive event with dataTransfer property", function() {
     var receivedEvent;
     var dropCalled = 0;
 

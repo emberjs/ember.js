@@ -61,7 +61,7 @@ var Namespace = EmberObject.extend({
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
     namespaces.splice(indexOf.call(namespaces, this), 1);
-    this._super();
+    this._super.apply(this, arguments);
   }
 });
 
@@ -89,7 +89,7 @@ function processNamespace(paths, root, seen) {
   NAMESPACES_BY_ID[paths.join('.')] = root;
 
   // Loop over all of the keys in the namespace, looking for classes
-  for(var key in root) {
+  for (var key in root) {
     if (!hasOwnProp.call(root, key)) { continue; }
     var obj = root[key];
 
@@ -159,8 +159,11 @@ var NAME_KEY = Ember.NAME_KEY = GUID_KEY + '_name';
 function superClassString(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
-    if (superclass[NAME_KEY]) { return superclass[NAME_KEY]; }
-    else { return superClassString(superclass); }
+    if (superclass[NAME_KEY]) {
+      return superclass[NAME_KEY];
+    } else {
+      return superClassString(superclass);
+    }
   } else {
     return;
   }

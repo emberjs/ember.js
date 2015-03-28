@@ -7,45 +7,62 @@
 import Logger from "ember-metal/logger";
 
 /**
-  Execute the `debugger` statement in the current context.
+  Execute the `debugger` statement in the current template's context.
 
   ```handlebars
   {{debugger}}
   ```
 
-  Before invoking the `debugger` statement, there
-  are a few helpful variables defined in the
-  body of this helper that you can inspect while
-  debugging that describe how and where this
-  helper was invoked:
+  When using the debugger helper you will have access to a `get` function. This
+  function retrieves values available in the context of the template.
 
-  - templateContext: this is most likely a controller
-    from which this template looks up / displays properties
-  - typeOfTemplateContext: a string description of
-    what the templateContext is
-
-  For example, if you're wondering why a value `{{foo}}`
-  isn't rendering as expected within a template, you
-  could place a `{{debugger}}` statement, and when
-  the `debugger;` breakpoint is hit, you can inspect
-  `templateContext`, determine if it's the object you
-  expect, and/or evaluate expressions in the console
-  to perform property lookups on the `templateContext`:
+  For example, if you're wondering why a value `{{foo}}` isn't rendering as
+  expected within a template, you could place a `{{debugger}}` statement and,
+  when the `debugger;` breakpoint is hit, you can attempt to retrieve this value:
 
   ```
-    > templateContext.get('foo') // -> "<value of {{foo}}>"
+  > get('foo')
+  ```
+
+  `get` is also aware of keywords. So in this situation
+
+  ```handlebars
+  {{#each items as |item|}}
+    {{debugger}}
+  {{/each}}
+  ```
+
+  you'll be able to get values from the current item:
+
+  ```
+  > get('item.name')
+  ```
+
+  You can also access the context of the view to make sure it is the object that
+  you expect:
+
+  ```
+  > context
   ```
 
   @method debugger
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-export function debuggerHelper() {
+export function debuggerHelper(params, hash, options, env) {
 
-  // These are helpful values you can inspect while debugging.
   /* jshint unused: false */
-  var view = this;
-  Logger.info('Use `this` to access the view context.');
+  var view = env.data.view;
+
+  /* jshint unused: false */
+  var context = view.get('context');
+
+  /* jshint unused: false */
+  function get(path) {
+    return view.getStream(path).value();
+  }
+
+  Logger.info('Use `view`, `context`, and `get(<path>)` to debug this template.');
 
   debugger;
 }

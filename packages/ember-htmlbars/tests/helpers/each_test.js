@@ -9,7 +9,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -17,7 +17,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-template-compiler/system/compile";
 
-var people, view, container;
+var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
 
 // This function lets us write {{#EACH|people|p}} {{p}} {{/each}}
@@ -58,12 +58,12 @@ function parseEach(str, useBlockParams) {
 
 QUnit.module("parseEach test helper");
 
-test("block param syntax substitution", function() {
+QUnit.test("block param syntax substitution", function() {
   equal(parseEach("{{#EACH|people|p}}p people{{/EACH}}", true), "{{#each people as |p|}}p people{{/each}}");
   equal(parseEach("{{#EACH|people|p|a='b' c='d'}}p people{{/EACH}}", true), "{{#each people a='b' c='d' as |p|}}p people{{/each}}");
 });
 
-test("non-block param syntax substitution", function() {
+QUnit.test("non-block param syntax substitution", function() {
   equal(parseEach("{{#EACH|people|p}}p people{{/EACH}}", false), "{{#each p in people}}p people{{/each}}");
   equal(parseEach("{{#EACH|people|p|a='b' c='d'}}p people{{/EACH}}", false), "{{#each p in people a='b' c='d'}}p people{{/each}}");
 });
@@ -75,16 +75,18 @@ function templateFor(templateString, useBlockParams) {
 var originalLookup = Ember.lookup;
 var lookup;
 
-QUnit.module("the #each helper [DEPRECATED]", {
+QUnit.module("the scope changing #each helper [DEPRECATED]", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
     template = templateFor("{{#each view.people}}{{name}}{{/each}}");
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
-    container = new Container();
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
 
     view = EmberView.create({
       container: container,
@@ -104,13 +106,13 @@ QUnit.module("the #each helper [DEPRECATED]", {
 
     expectDeprecation(function() {
       runAppend(view);
-    },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+    }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = originalLookup;
   }
@@ -129,11 +131,11 @@ var assertText = function(view, expectedText) {
   equal(view.$().text(), expectedText);
 };
 
-test("it renders the template for each item in an array", function() {
+QUnit.test("it renders the template for each item in an array", function() {
   assertHTML(view, "Steve HoltAnnabelle");
 });
 
-test("it updates the view if an item is added", function() {
+QUnit.test("it updates the view if an item is added", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
   });
@@ -142,7 +144,7 @@ test("it updates the view if an item is added", function() {
 });
 
 if (typeof Handlebars === "object") {
-  test("should be able to use standard Handlebars #each helper", function() {
+  QUnit.test("should be able to use standard Handlebars #each helper", function() {
     runDestroy(view);
 
     view = EmberView.create({
@@ -156,7 +158,7 @@ if (typeof Handlebars === "object") {
   });
 }
 
-test("it allows you to access the current context using {{this}}", function() {
+QUnit.test("it allows you to access the current context using {{this}}", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -169,7 +171,7 @@ test("it allows you to access the current context using {{this}}", function() {
   assertHTML(view, "Black FrancisJoey SantiagoKim DealDavid Lovering");
 });
 
-test("it updates the view if an item is removed", function() {
+QUnit.test("it updates the view if an item is removed", function() {
   run(function() {
     people.removeAt(0);
   });
@@ -177,7 +179,7 @@ test("it updates the view if an item is removed", function() {
   assertHTML(view, "Annabelle");
 });
 
-test("it updates the view if an item is replaced", function() {
+QUnit.test("it updates the view if an item is replaced", function() {
   run(function() {
     people.removeAt(0);
     people.insertAt(0, { name: "Kazuki" });
@@ -186,7 +188,7 @@ test("it updates the view if an item is replaced", function() {
   assertHTML(view, "KazukiAnnabelle");
 });
 
-test("can add and replace in the same runloop", function() {
+QUnit.test("can add and replace in the same runloop", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(0);
@@ -196,7 +198,7 @@ test("can add and replace in the same runloop", function() {
   assertHTML(view, "KazukiAnnabelleTom Dale");
 });
 
-test("can add and replace the object before the add in the same runloop", function() {
+QUnit.test("can add and replace the object before the add in the same runloop", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
@@ -206,7 +208,7 @@ test("can add and replace the object before the add in the same runloop", functi
   assertHTML(view, "Steve HoltKazukiTom Dale");
 });
 
-test("can add and replace complicatedly", function() {
+QUnit.test("can add and replace complicatedly", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
@@ -219,7 +221,7 @@ test("can add and replace complicatedly", function() {
   assertHTML(view, "Steve HoltKazukiTom DaleMcMunch");
 });
 
-test("can add and replace complicatedly harder", function() {
+QUnit.test("can add and replace complicatedly harder", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
@@ -232,7 +234,7 @@ test("can add and replace complicatedly harder", function() {
   assertHTML(view, "Steve HoltKazukiFirestoneMcMunch");
 });
 
-test("it does not mark each option tag as selected", function() {
+QUnit.test("it does not mark each option tag as selected", function() {
   var selectView = EmberView.create({
     template: templateFor('<select id="people-select"><option value="">Please select a name</option>{{#each view.people}}<option {{bind-attr value=name}}>{{name}}</option>{{/each}}</select>'),
     people: people
@@ -245,7 +247,7 @@ test("it does not mark each option tag as selected", function() {
   equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
@@ -255,7 +257,7 @@ test("it does not mark each option tag as selected", function() {
   runDestroy(selectView);
 });
 
-test("View should not use keyword incorrectly - Issue #1315", function() {
+QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -274,7 +276,7 @@ test("View should not use keyword incorrectly - Issue #1315", function() {
   equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
 });
 
-test("it works inside a ul element", function() {
+QUnit.test("it works inside a ul element", function() {
   var ulView = EmberView.create({
     template: templateFor('<ul>{{#each view.people}}<li>{{name}}</li>{{/each}}</ul>'),
     people: people
@@ -285,7 +287,7 @@ test("it works inside a ul element", function() {
   equal(ulView.$('li').length, 2, "renders two <li> elements");
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(ulView.$('li').length, 3, "renders an additional <li> element when an object is added");
@@ -293,7 +295,7 @@ test("it works inside a ul element", function() {
   runDestroy(ulView);
 });
 
-test("it works inside a table element", function() {
+QUnit.test("it works inside a table element", function() {
   var tableView = EmberView.create({
     template: templateFor('<table><tbody>{{#each view.people}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>'),
     people: people
@@ -304,13 +306,13 @@ test("it works inside a table element", function() {
   equal(tableView.$('td').length, 2, "renders two <td> elements");
 
   run(function() {
-    people.pushObject({name: "Black Francis"});
+    people.pushObject({ name: "Black Francis" });
   });
 
   equal(tableView.$('td').length, 3, "renders an additional <td> element when an object is added");
 
   run(function() {
-    people.insertAt(0, {name: "Kim Deal"});
+    people.insertAt(0, { name: "Kim Deal" });
   });
 
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");
@@ -318,20 +320,20 @@ test("it works inside a table element", function() {
   runDestroy(tableView);
 });
 
-test("it supports itemController", function() {
+QUnit.test("it supports itemController", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name');
     })
   });
 
- runDestroy(view);
+  runDestroy(view);
 
   var parentController = {
     container: container
   };
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
 
   view = EmberView.create({
     container: container,
@@ -340,7 +342,7 @@ test("it supports itemController", function() {
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
@@ -364,10 +366,10 @@ test("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(view._childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
 });
 
-test("itemController specified in template gets a parentController property", function() {
+QUnit.test("itemController specified in template gets a parentController property", function() {
   // using an ObjectController for this test to verify that parentController does accidentally get set
   // on the proxied model.
   var Controller = ObjectController.extend({
@@ -380,7 +382,7 @@ test("itemController specified in template gets a parentController property", fu
         company: 'Yapp'
       };
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
   runDestroy(view);
 
   view = EmberView.create({
@@ -390,14 +392,14 @@ test("itemController specified in template gets a parentController property", fu
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-test("itemController specified in ArrayController gets a parentController property", function() {
+QUnit.test("itemController specified in ArrayController gets a parentController property", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
@@ -409,8 +411,8 @@ test("itemController specified in ArrayController gets a parentController proper
         company: 'Yapp'
       });
 
-  container.register('controller:people', PeopleController);
-  container.register('controller:person', PersonController);
+  registry.register('controller:people', PeopleController);
+  registry.register('controller:person', PersonController);
   runDestroy(view);
 
   view = EmberView.create({
@@ -425,7 +427,7 @@ test("itemController specified in ArrayController gets a parentController proper
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-test("itemController's parentController property, when the ArrayController has a parentController", function() {
+QUnit.test("itemController's parentController property, when the ArrayController has a parentController", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
@@ -434,16 +436,16 @@ test("itemController's parentController property, when the ArrayController has a
   var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
-        parentController: computed(function(){
+        parentController: computed(function() {
           return this.container.lookup('controller:company');
         }),
         company: 'Yapp'
       });
-   var CompanyController = EmberController.extend();
+  var CompanyController = EmberController.extend();
 
-  container.register('controller:company', CompanyController);
-  container.register('controller:people', PeopleController);
-  container.register('controller:person', PersonController);
+  registry.register('controller:company', CompanyController);
+  registry.register('controller:people', PeopleController);
+  registry.register('controller:person', PersonController);
 
   runDestroy(view);
   view = EmberView.create({
@@ -458,14 +460,14 @@ test("itemController's parentController property, when the ArrayController has a
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-test("it supports itemController when using a custom keyword", function() {
+QUnit.test("it supports itemController when using a custom keyword", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name');
     })
   });
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
 
   runDestroy(view);
   view = EmberView.create({
@@ -477,7 +479,7 @@ test("it supports itemController when using a custom keyword", function() {
     }
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
@@ -490,7 +492,7 @@ test("it supports itemController when using a custom keyword", function() {
   equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
 });
 
-test("it supports {{itemView=}}", function() {
+QUnit.test("it supports {{itemView=}}", function() {
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -502,7 +504,7 @@ test("it supports {{itemView=}}", function() {
     container: container
   });
 
-  container.register('view:anItemView', itemView);
+  registry.register('view:anItemView', itemView);
 
   runAppend(view);
 
@@ -510,7 +512,7 @@ test("it supports {{itemView=}}", function() {
 });
 
 
-test("it defers all normalization of itemView names to the resolver", function() {
+QUnit.test("it defers all normalization of itemView names to the resolver", function() {
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -522,39 +524,36 @@ test("it defers all normalization of itemView names to the resolver", function()
     container: container
   });
 
-  container.register('view:an-item-view', itemView);
-  container.resolve = function(fullname) {
+  registry.register('view:an-item-view', itemView);
+  registry.resolve = function(fullname) {
     equal(fullname, "view:an-item-view", "leaves fullname untouched");
-    return Container.prototype.resolve.call(this, fullname);
+    return Registry.prototype.resolve.call(this, fullname);
   };
   runAppend(view);
 
 });
 
-test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
+QUnit.test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView}}'),
     people: people
   });
 
-  var deprecation = /Resolved the view "MyView" on the global context/;
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
-  }
+  var deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     runAppend(view);
   }, deprecation);
 
   assertText(view, "Steve HoltAnnabelle");
 });
 
-test("it supports {{itemViewClass=}} via container", function() {
+QUnit.test("it supports {{itemViewClass=}} via container", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name){
+      lookupFactory: function(name) {
         equal(name, 'view:my-view');
         return MyView;
       }
@@ -568,7 +567,7 @@ test("it supports {{itemViewClass=}} via container", function() {
   assertText(view, "Steve HoltAnnabelle");
 });
 
-test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
+QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
       template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
@@ -583,7 +582,7 @@ test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
 });
 
-test("it supports {{itemViewClass=}} with in format", function() {
+QUnit.test("it supports {{itemViewClass=}} with in format", function() {
 
   MyView = EmberView.extend({
     template: templateFor("{{person.name}}")
@@ -592,7 +591,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name){
+      lookupFactory: function(name) {
         return MyView;
       }
     },
@@ -606,7 +605,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
 
 });
 
-test("it supports {{emptyView=}}", function() {
+QUnit.test("it supports {{emptyView=}}", function() {
   var emptyView = EmberView.extend({
     template: templateFor('emptyView:sad panda')
   });
@@ -619,14 +618,14 @@ test("it supports {{emptyView=}}", function() {
     container: container
   });
 
-  container.register('view:anEmptyView', emptyView);
+  registry.register('view:anEmptyView', emptyView);
 
   runAppend(view);
 
   assertText(view, "emptyView:sad panda");
 });
 
-test("it defers all normalization of emptyView names to the resolver", function() {
+QUnit.test("it defers all normalization of emptyView names to the resolver", function() {
   var emptyView = EmberView.extend({
     template: templateFor('emptyView:sad panda')
   });
@@ -639,17 +638,17 @@ test("it defers all normalization of emptyView names to the resolver", function(
     container: container
   });
 
-  container.register('view:an-empty-view', emptyView);
+  registry.register('view:an-empty-view', emptyView);
 
-  container.resolve = function(fullname) {
+  registry.resolve = function(fullname) {
     equal(fullname, "view:an-empty-view", "leaves fullname untouched");
-    return Container.prototype.resolve.call(this, fullname);
+    return Registry.prototype.resolve.call(this, fullname);
   };
 
   runAppend(view);
 });
 
-test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
+QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -657,11 +656,7 @@ test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
     people: A()
   });
 
-  var deprecation = /Resolved the view "MyEmptyView" on the global context/;
-
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    deprecation = /Global lookup of MyEmptyView from a Handlebars template is deprecated/;
-  }
+  var deprecation = /Global lookup of MyEmptyView from a Handlebars template is deprecated/;
 
   expectDeprecation(function() {
     runAppend(view);
@@ -670,7 +665,7 @@ test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
   assertText(view, "I'm empty");
 });
 
-test("it supports {{emptyViewClass=}} via container", function() {
+QUnit.test("it supports {{emptyViewClass=}} via container", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -689,7 +684,7 @@ test("it supports {{emptyViewClass=}} via container", function() {
   assertText(view, "I'm empty");
 });
 
-test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function() {
+QUnit.test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -705,7 +700,7 @@ test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function() {
   equal(view.$('b').text(), "I'm empty");
 });
 
-test("it supports {{emptyViewClass=}} with in format", function() {
+QUnit.test("it supports {{emptyViewClass=}} with in format", function() {
   runDestroy(view);
 
   view = EmberView.create({
@@ -723,7 +718,7 @@ test("it supports {{emptyViewClass=}} with in format", function() {
   assertText(view, "I'm empty");
 });
 
-test("it supports {{else}}", function() {
+QUnit.test("it supports {{else}}", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
@@ -741,7 +736,7 @@ test("it supports {{else}}", function() {
   assertHTML(view, "Nothing");
 });
 
-test("it works with the controller keyword", function() {
+QUnit.test("it works with the controller keyword", function() {
   runDestroy(view);
 
   var controller = ArrayController.create({
@@ -760,10 +755,10 @@ test("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
-test("views inside #each preserve the new context [DEPRECATED]", function() {
+QUnit.test("views inside #each preserve the new context [DEPRECATED]", function() {
   runDestroy(view);
 
-  var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
+  var controller = A([{ name: "Adam" }, { name: "Steve" }]);
 
   view = EmberView.create({
     container: container,
@@ -774,37 +769,37 @@ test("views inside #each preserve the new context [DEPRECATED]", function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
 
-test("single-arg each defaults to current context [DEPRECATED]", function() {
+QUnit.test("single-arg each defaults to current context [DEPRECATED]", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    context: A([ { name: "Adam" }, { name: "Steve" } ]),
+    context: A([{ name: "Adam" }, { name: "Steve" }]),
     template: templateFor('{{#each}}{{name}}{{/each}}')
   });
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
 
-test("single-arg each will iterate over controller if present [DEPRECATED]", function() {
+QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+    controller: A([{ name: "Adam" }, { name: "Steve" }]),
     template: templateFor('{{#each}}{{name}}{{/each}}')
   });
 
   expectDeprecation(function() {
     runAppend(view);
-  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -812,9 +807,11 @@ test("single-arg each will iterate over controller if present [DEPRECATED]", fun
 function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
     setup: function() {
-      container = new Container();
-      container.register('view:default', _MetamorphView);
-      container.register('view:toplevel', EmberView.extend());
+      registry = new Registry();
+      container = registry.container();
+
+      registry.register('view:default', _MetamorphView);
+      registry.register('view:toplevel', EmberView.extend());
     },
     teardown: function() {
       runDestroy(container);
@@ -823,7 +820,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     }
   });
 
-  test("#each accepts a name binding", function() {
+  QUnit.test("#each accepts a name binding", function() {
     view = EmberView.create({
       template: templateFor("{{#EACH|view.items|item}}{{view.title}} {{item}}{{/each}}", useBlockParams),
       title: "My Cool Each Test",
@@ -835,7 +832,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
   });
 
-  test("#each accepts a name binding and does not change the context", function() {
+  QUnit.test("#each accepts a name binding and does not change the context", function() {
     var controller = EmberController.create({
       name: 'bob the controller'
     });
@@ -856,7 +853,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
 
-  test("#each accepts a name binding and can display child properties", function() {
+  QUnit.test("#each accepts a name binding and can display child properties", function() {
     view = EmberView.create({
       template: templateFor("{{#EACH|view.items|item}}{{view.title}} {{item.name}}{{/each}}", useBlockParams),
       title: "My Cool Each Test",
@@ -868,7 +865,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
   });
 
-  test("#each accepts 'this' as the right hand side", function() {
+  QUnit.test("#each accepts 'this' as the right hand side", function() {
     view = EmberView.create({
       template: templateFor("{{#EACH|this|item}}{{view.title}} {{item.name}}{{/each}}", useBlockParams),
       title: "My Cool Each Test",
@@ -881,8 +878,8 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
   if (!useBlockParams) {
-    test("views inside #each preserve the new context [DEPRECATED]", function() {
-      var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
+    QUnit.test("views inside #each preserve the new context [DEPRECATED]", function() {
+      var controller = A([{ name: "Adam" }, { name: "Steve" }]);
 
       view = EmberView.create({
         container: container,
@@ -892,21 +889,21 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
   }
 
-  test("controller is assignable inside an #each", function() {
+  QUnit.test("controller is assignable inside an #each", function() {
     var controller = ArrayController.create({
-      model: A([ { name: "Adam" }, { name: "Steve" } ])
+      model: A([{ name: "Adam" }, { name: "Steve" }])
     });
 
     view = EmberView.create({
       container: container,
       controller: controller,
-      template: templateFor('{{#EACH|this|personController}}{{#view controllerBinding="personController"}}{{name}}{{/view}}{{/each}}', useBlockParams)
+      template: templateFor('{{#EACH|this|personController}}{{#view controller=personController}}{{name}}{{/view}}{{/each}}', useBlockParams)
     });
 
     runAppend(view);
@@ -914,7 +911,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     equal(view.$().text(), "AdamSteve");
   });
 
-  test("it doesn't assert when the morph tags have the same parent", function() {
+  QUnit.test("it doesn't assert when the morph tags have the same parent", function() {
     view = EmberView.create({
       controller: A(['Cyril', 'David']),
       template: templateFor('<table><tbody>{{#EACH|this|name}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>', useBlockParams)
@@ -925,14 +922,15 @@ function testEachWithItem(moduleName, useBlockParams) {
     ok(true, "No assertion from valid template");
   });
 
-  test("itemController specified in template with name binding does not change context", function() {
+  QUnit.test("itemController specified in template with name binding does not change context", function() {
     var Controller = EmberController.extend({
       controllerName: computed(function() {
         return "controller:"+this.get('model.name');
       })
     });
 
-    var container = new Container();
+    registry = new Registry();
+    container = registry.container();
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
@@ -942,7 +940,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       controllerName: 'controller:parentController'
     };
 
-    container.register('controller:array', ArrayController.extend());
+    registry.register('controller:array', ArrayController.extend());
 
     view = EmberView.create({
       container: container,
@@ -950,7 +948,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       controller: parentController
     });
 
-    container.register('controller:person', Controller);
+    registry.register('controller:person', Controller);
 
     runAppend(view);
 
@@ -968,13 +966,13 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-    strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+    strictEqual(view._childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
   });
 
-  test("itemController specified in ArrayController with name binding does not change context", function() {
+  QUnit.test("itemController specified in ArrayController with name binding does not change context", function() {
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
-    var PersonController = ObjectController.extend({
+    var PersonController = EmberController.extend({
           controllerName: computed(function() {
             return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
           })
@@ -985,10 +983,11 @@ function testEachWithItem(moduleName, useBlockParams) {
           company: 'Yapp',
           controllerName: 'controller:people'
         });
-    var container = new Container();
+    registry = new Registry();
+    container = registry.container();
 
-    container.register('controller:people', PeopleController);
-    container.register('controller:person', PersonController);
+    registry.register('controller:people', PeopleController);
+    registry.register('controller:person', PersonController);
 
     view = EmberView.create({
       container: container,
@@ -1003,40 +1002,63 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
   if (!useBlockParams) {
-    test("{{each}} without arguments [DEPRECATED]", function() {
+    QUnit.test("{{each}} without arguments [DEPRECATED]", function() {
       expect(2);
 
       view = EmberView.create({
-        controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+        controller: A([{ name: "Adam" }, { name: "Steve" }]),
         template: templateFor('{{#each}}{{name}}{{/each}}', useBlockParams)
       });
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
 
-    test("{{each this}} without keyword [DEPRECATED]", function() {
+    QUnit.test("{{each this}} without keyword [DEPRECATED]", function() {
       expect(2);
 
       view = EmberView.create({
-        controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+        controller: A([{ name: "Adam" }, { name: "Steve" }]),
         template: templateFor('{{#each this}}{{name}}{{/each}}', useBlockParams)
       });
 
       expectDeprecation(function() {
         runAppend(view);
-      },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
   }
+
+  if (useBlockParams) {
+    if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+      QUnit.test("the index is passed as the second parameter to #each blocks", function() {
+        expect(3);
+
+        var adam = { name: "Adam" };
+        view = EmberView.create({
+          controller: A([adam, { name: "Steve" }]),
+          template: templateFor('{{#each this as |person index|}}{{index}}. {{person.name}}{{/each}}', true)
+        });
+        runAppend(view);
+        equal(view.$().text(), "0. Adam1. Steve");
+
+        run(function() {
+          view.get('controller').unshiftObject({ name: "Bob" });
+        });
+        equal(view.$().text(), "0. Bob1. Adam2. Steve");
+
+        run(function() {
+          view.get('controller').removeObject(adam);
+        });
+        equal(view.$().text(), "0. Bob1. Steve");
+      });
+    }
+  }
 }
 
 testEachWithItem("{{#each foo in bar}}", false);
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
-  testEachWithItem("{{#each bar as |foo|}}", true);
-}
+testEachWithItem("{{#each bar as |foo|}}", true);

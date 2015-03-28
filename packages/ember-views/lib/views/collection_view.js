@@ -121,7 +121,7 @@ import EmberArray from "ember-runtime/mixins/array";
 
   For cases where additional customization beyond the use of a single
   `itemViewClass` or `tagName` matching is required CollectionView's
-  `createChildView` method can be overidden:
+  `createChildView` method can be overridden:
 
   ```javascript
   App.CustomCollectionView = Ember.CollectionView.extend({
@@ -225,7 +225,7 @@ var CollectionView = ContainerView.extend({
     @method init
   */
   init: function() {
-    var ret = this._super();
+    var ret = this._super.apply(this, arguments);
     this._contentDidChange();
     return ret;
   },
@@ -282,7 +282,7 @@ var CollectionView = ContainerView.extend({
     @method destroy
   */
   destroy: function() {
-    if (!this._super()) { return; }
+    if (!this._super.apply(this, arguments)) { return; }
 
     var content = get(this, 'content');
     if (content) { content.removeArrayObserver(this); }
@@ -355,14 +355,37 @@ var CollectionView = ContainerView.extend({
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
-
+        itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
-        itemViewProps._blockArguments = [item];
         itemViewProps.contentIndex = idx;
 
         view = this.createChildView(itemViewClass, itemViewProps);
 
+        if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+          if (this.blockParams > 1) {
+            view._blockArguments = [item, view.getStream('_view.contentIndex')];
+          } else if (this.blockParams === 1) {
+            view._blockArguments = [item];
+          }
+        } else {
+          if (this.blockParams > 0) {
+            view._blockArguments = [item];
+          }
+        }
+
         addedViews.push(view);
+      }
+
+      this.replace(start, 0, addedViews);
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+        if (this.blockParams > 1) {
+          var childViews = this._childViews;
+          for (idx = start+added; idx < len; idx++) {
+            view = childViews[idx];
+            set(view, 'contentIndex', idx);
+          }
+        }
       }
     } else {
       emptyView = get(this, 'emptyView');
@@ -381,9 +404,9 @@ var CollectionView = ContainerView.extend({
       if (CoreView.detect(emptyView)) {
         this._createdEmptyView = emptyView;
       }
-    }
 
-    this.replace(start, 0, addedViews);
+      this.replace(start, 0, addedViews);
+    }
   },
 
   /**
@@ -401,8 +424,8 @@ var CollectionView = ContainerView.extend({
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
-  createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+  createChildView: function(_view, attrs) {
+    var view = this._super(_view, attrs);
 
     var itemTagName = get(view, 'tagName');
 

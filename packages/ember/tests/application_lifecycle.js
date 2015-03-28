@@ -9,7 +9,7 @@ QUnit.module("Application Lifecycle", {
         rootElement: '#qunit-fixture'
       });
 
-      App.Router.extend({
+      App.Router = App.Router.extend({
         location: 'none'
       });
 
@@ -39,7 +39,7 @@ function handleURL(path) {
 }
 
 
-test("Resetting the application allows controller properties to be set when a route deactivates", function() {
+QUnit.test("Resetting the application allows controller properties to be set when a route deactivates", function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -76,7 +76,7 @@ test("Resetting the application allows controller properties to be set when a ro
   equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
 });
 
-test("Destroying the application resets the router before the container is destroyed", function() {
+QUnit.test("Destroying the application resets the router before the container is destroyed", function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });

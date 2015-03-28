@@ -12,7 +12,6 @@ import jQuery from "ember-views/system/jquery";
 */
 
 var popstateFired = false;
-var supportsHistoryState = window.history && 'state' in window.history;
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -82,7 +81,7 @@ export default EmberObject.extend({
     @param path {String}
   */
   setURL: function(path) {
-    var state = this.getState();
+    var state = this._historyState;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -99,26 +98,12 @@ export default EmberObject.extend({
     @param path {String}
   */
   replaceURL: function(path) {
-    var state = this.getState();
+    var state = this._historyState;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.replaceState(path);
     }
-  },
-
-  /**
-   Get the current `history.state`. Checks for if a polyfill is
-   required and if so fetches this._historyState. The state returned
-   from getState may be null if an iframe has changed a window's
-   history.
-
-   @private
-   @method getState
-   @return state {Object}
-  */
-  getState: function() {
-    return supportsHistoryState ? get(this, 'history').state : this._historyState;
   },
 
   /**
@@ -131,12 +116,9 @@ export default EmberObject.extend({
   pushState: function(path) {
     var state = { path: path };
 
-    get(this, 'history').pushState(state, null, path);
+    get(this, 'history').pushState(null, null, path);
 
-    // store state if browser doesn't support `history.state`
-    if (!supportsHistoryState) {
-      this._historyState = state;
-    }
+    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -151,12 +133,9 @@ export default EmberObject.extend({
   */
   replaceState: function(path) {
     var state = { path: path };
-    get(this, 'history').replaceState(state, null, path);
+    get(this, 'history').replaceState(null, null, path);
 
-    // store state if browser doesn't support `history.state`
-    if (!supportsHistoryState) {
-      this._historyState = state;
-    }
+    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -199,7 +178,7 @@ export default EmberObject.extend({
     if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');
       baseURL = baseURL.replace(/\/$/, '');
-    } else if(baseURL.match(/^\//) && rootURL.match(/^\//)) {
+    } else if (baseURL.match(/^\//) && rootURL.match(/^\//)) {
       baseURL = baseURL.replace(/\/$/, '');
     }
 

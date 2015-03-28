@@ -12,8 +12,6 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   teardown: function() {
     runDestroy(view);
@@ -23,7 +21,7 @@ QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   }
 });
 
-test('wraps provided function so that original path params are provided to the helper', function() {
+QUnit.test('wraps provided function so that original path params are provided to the helper', function() {
   expect(2);
 
   function someHelper(param1, param2, options) {
@@ -43,7 +41,7 @@ test('wraps provided function so that original path params are provided to the h
   runAppend(view);
 });
 
-test('combines `env` and `options` for the wrapped helper', function() {
+QUnit.test('combines `env` and `options` for the wrapped helper', function() {
   expect(1);
 
   function someHelper(options) {
@@ -62,7 +60,7 @@ test('combines `env` and `options` for the wrapped helper', function() {
   runAppend(view);
 });
 
-test('adds `hash` into options `options` for the wrapped helper', function() {
+QUnit.test('adds `hash` into options `options` for the wrapped helper', function() {
   expect(1);
 
   function someHelper(options) {
@@ -81,7 +79,7 @@ test('adds `hash` into options `options` for the wrapped helper', function() {
   runAppend(view);
 });
 
-test('bound `hash` params are provided with their original paths', function() {
+QUnit.test('bound `hash` params are provided with their original paths', function() {
   expect(1);
 
   function someHelper(options) {
@@ -100,7 +98,7 @@ test('bound `hash` params are provided with their original paths', function() {
   runAppend(view);
 });
 
-test('bound ordered params are provided with their original paths', function() {
+QUnit.test('bound ordered params are provided with their original paths', function() {
   expect(2);
 
   function someHelper(param1, param2, options) {
@@ -121,7 +119,7 @@ test('bound ordered params are provided with their original paths', function() {
   runAppend(view);
 });
 
-test('allows unbound usage within an element', function() {
+QUnit.test('allows unbound usage within an element', function() {
   expect(4);
 
   function someHelper(param1, param2, options) {
@@ -147,7 +145,7 @@ test('allows unbound usage within an element', function() {
   equal(view.$('.foo').length, 1, 'class attribute was added by helper');
 });
 
-test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
+QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
   expect(1);
 
   var ViewHelperComponent = Component.extend({
@@ -166,7 +164,7 @@ test('registering a helper created from `Ember.Handlebars.makeViewHelper` does n
   equal(view.$().text(), 'woot!');
 });
 
-test('does not add `options.fn` if no block was specified', function() {
+QUnit.test('does not add `options.fn` if no block was specified', function() {
   expect(1);
 
   function someHelper(options) {
@@ -185,7 +183,7 @@ test('does not add `options.fn` if no block was specified', function() {
   runAppend(view);
 });
 
-test('does not return helper result if block was specified', function() {
+QUnit.test('does not return helper result if block was specified', function() {
   expect(1);
 
   function someHelper(options) {
@@ -206,7 +204,7 @@ test('does not return helper result if block was specified', function() {
   equal(view.$().text(), '');
 });
 
-test('allows usage of the template fn', function() {
+QUnit.test('allows usage of the template fn', function() {
   expect(1);
 
   function someHelper(options) {
@@ -269,6 +267,3 @@ QUnit.test('`hash` params are to options.hashTypes', function() {
 
   runAppend(view);
 });
-
-// jscs:enable validateIndentation
-}

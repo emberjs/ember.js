@@ -4,10 +4,9 @@ import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ActionManager from "ember-views/system/action_manager";
 
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import { default as EmberController } from "ember-runtime/controllers/controller";
-import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import compile from "ember-template-compiler/system/compile";
@@ -53,7 +52,7 @@ QUnit.module("ember-routing-htmlbars: action helper", {
   }
 });
 
-test("should output a data attribute with a guid", function() {
+QUnit.test("should output a data attribute with a guid", function() {
   view = EmberView.create({
     template: compile('<a href="#" {{action "edit"}}>edit</a>')
   });
@@ -63,7 +62,7 @@ test("should output a data attribute with a guid", function() {
   ok(view.$('a').attr('data-ember-action').match(/\d+/), "A data-ember-action attribute with a guid was added");
 });
 
-test("should by default register a click event", function() {
+QUnit.test("should by default register a click event", function() {
   var registeredEventName;
 
   ActionHelper.registerAction = function(actionName, options) {
@@ -79,7 +78,7 @@ test("should by default register a click event", function() {
   equal(registeredEventName, 'click', "The click event was properly registered");
 });
 
-test("should allow alternative events to be handled", function() {
+QUnit.test("should allow alternative events to be handled", function() {
   var registeredEventName;
 
   ActionHelper.registerAction = function(actionName, options) {
@@ -95,7 +94,7 @@ test("should allow alternative events to be handled", function() {
   equal(registeredEventName, 'mouseUp', "The alternative mouseUp event was properly registered");
 });
 
-test("should by default target the view's controller", function() {
+QUnit.test("should by default target the view's controller", function() {
   var registeredTarget;
   var controller = {};
 
@@ -113,7 +112,7 @@ test("should by default target the view's controller", function() {
   equal(registeredTarget, controller, "The controller was registered as the target");
 });
 
-test("Inside a yield, the target points at the original target", function() {
+QUnit.test("Inside a yield, the target points at the original target", function() {
   var watted = false;
 
   var component = EmberComponent.extend({
@@ -144,15 +143,14 @@ test("Inside a yield, the target points at the original target", function() {
   equal(watted, true, "The action was called on the right context");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
+QUnit.test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
     registeredTarget = options.target.value();
   };
 
-  var itemController = EmberObjectController.create();
+  var itemController = EmberController.create();
 
   var ArrayController = EmberArrayController.extend({
     itemController: 'stub',
@@ -167,7 +165,7 @@ test("should target the current controller inside an {{each}} loop [DEPRECATED]"
 
   view = EmberView.create({
     controller: controller,
-    template: compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
+    template: compile('{{#each controller}}<button {{action "editTodo"}}>Edit</button>{{/each}}')
   });
 
   expectDeprecation(function() {
@@ -176,17 +174,17 @@ test("should target the current controller inside an {{each}} loop [DEPRECATED]"
 
   equal(registeredTarget, itemController, "the item controller is the target of action");
 });
-}
 
-test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
+QUnit.test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
     registeredTarget = options.target.value();
   };
 
-  var PersonController = EmberObjectController.extend();
-  var container = new Container();
+  var PersonController = EmberController.extend();
+  var registry = new Registry();
+  var container = registry.container();
   var parentController = EmberObject.create({
     container: container
   });
@@ -198,7 +196,7 @@ test("should target the with-controller inside an {{#with controller='person'}} 
     controller: parentController
   });
 
-  container.register('controller:person', PersonController);
+  registry.register('controller:person', PersonController);
 
   expectDeprecation(function() {
     runAppend(view);
@@ -207,7 +205,7 @@ test("should target the with-controller inside an {{#with controller='person'}} 
   ok(registeredTarget instanceof PersonController, "the with-controller is the target of action");
 });
 
-test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
+QUnit.test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
@@ -220,12 +218,13 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
     }
   });
 
-  var container = new Container();
+  var registry = new Registry();
+  var container = registry.container();
   var parentController = EmberObject.create({
     container: container,
     people: Ember.A([
-      {name: 'robert'},
-      {name: 'brian'}
+      { name: 'robert' },
+      { name: 'brian' }
     ])
   });
 
@@ -235,7 +234,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
     controller: parentController
   });
 
-  container.register('controller:people', PeopleController);
+  registry.register('controller:people', PeopleController);
 
   runAppend(view);
 
@@ -244,7 +243,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
   deepEqual(eventsCalled, ['robert', 'brian'], 'the events are fired properly');
 });
 
-test("should allow a target to be specified", function() {
+QUnit.test("should allow a target to be specified", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
@@ -266,7 +265,7 @@ test("should allow a target to be specified", function() {
   runDestroy(anotherTarget);
 });
 
-test("should lazily evaluate the target", function() {
+QUnit.test("should lazily evaluate the target", function() {
   var firstEdit = 0;
   var secondEdit = 0;
   var controller = {};
@@ -309,7 +308,7 @@ test("should lazily evaluate the target", function() {
   equal(secondEdit, 1);
 });
 
-test("should register an event handler", function() {
+QUnit.test("should register an event handler", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -332,7 +331,7 @@ test("should register an event handler", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("handles whitelisted modifier keys", function() {
+QUnit.test("handles whitelisted modifier keys", function() {
   var eventHandlerWasCalled = false;
   var shortcutHandlerWasCalled = false;
 
@@ -367,7 +366,7 @@ test("handles whitelisted modifier keys", function() {
   ok(shortcutHandlerWasCalled, "The \"any\" shortcut's event handler was called");
 });
 
-test("should be able to use action more than once for the same event within a view", function() {
+QUnit.test("should be able to use action more than once for the same event within a view", function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
   var originalEventHandlerWasCalled = false;
@@ -409,7 +408,7 @@ test("should be able to use action more than once for the same event within a vi
   equal(deleteWasCalled, false, "The delete action was not called");
 });
 
-test("the event should not bubble if `bubbles=false` is passed", function() {
+QUnit.test("the event should not bubble if `bubbles=false` is passed", function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
   var originalEventHandlerWasCalled = false;
@@ -454,7 +453,7 @@ test("the event should not bubble if `bubbles=false` is passed", function() {
   equal(originalEventHandlerWasCalled, true, "The original event handler was called");
 });
 
-test("should work properly in an #each block", function() {
+QUnit.test("should work properly in an #each block", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -474,7 +473,7 @@ test("should work properly in an #each block", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should work properly in a {{#with foo as bar}} block", function() {
+QUnit.test("should work properly in a {{#with foo as bar}} block", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -483,7 +482,7 @@ test("should work properly in a {{#with foo as bar}} block", function() {
 
   view = EmberView.create({
     controller: controller,
-    something: {ohai: 'there'},
+    something: { ohai: 'there' },
     template: compile('{{#with view.something as somethingElse}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
@@ -494,7 +493,7 @@ test("should work properly in a {{#with foo as bar}} block", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should work properly in a #with block [DEPRECATED]", function() {
+QUnit.test("should work properly in a #with block [DEPRECATED]", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -503,7 +502,7 @@ test("should work properly in a #with block [DEPRECATED]", function() {
 
   view = EmberView.create({
     controller: controller,
-    something: {ohai: 'there'},
+    something: { ohai: 'there' },
     template: compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
@@ -516,7 +515,7 @@ test("should work properly in a #with block [DEPRECATED]", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should unregister event handlers on rerender", function() {
+QUnit.test("should unregister event handlers on rerender", function() {
   var eventHandlerWasCalled = false;
 
   view = EmberView.extend({
@@ -539,7 +538,7 @@ test("should unregister event handlers on rerender", function() {
   ok(ActionManager.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
-test("should unregister event handlers on inside virtual views", function() {
+QUnit.test("should unregister event handlers on inside virtual views", function() {
   var things = Ember.A([
     {
       name: 'Thingy'
@@ -561,7 +560,7 @@ test("should unregister event handlers on inside virtual views", function() {
   ok(!ActionManager.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
 });
 
-test("should properly capture events on child elements of a container with an action", function() {
+QUnit.test("should properly capture events on child elements of a container with an action", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -580,7 +579,7 @@ test("should properly capture events on child elements of a container with an ac
   ok(eventHandlerWasCalled, "Event on a child element triggered the action of its parent");
 });
 
-test("should allow bubbling of events from action helper to original parent event", function() {
+QUnit.test("should allow bubbling of events from action helper to original parent event", function() {
   var eventHandlerWasCalled = false;
   var originalEventHandlerWasCalled = false;
 
@@ -601,7 +600,7 @@ test("should allow bubbling of events from action helper to original parent even
   ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
 });
 
-test("should not bubble an event from action helper to original parent event if `bubbles=false` is passed", function() {
+QUnit.test("should not bubble an event from action helper to original parent event if `bubbles=false` is passed", function() {
   var eventHandlerWasCalled = false;
   var originalEventHandlerWasCalled = false;
 
@@ -623,7 +622,7 @@ test("should not bubble an event from action helper to original parent event if 
   ok(!originalEventHandlerWasCalled, "The parent handler was not called");
 });
 
-test("should allow 'send' as action name (#594)", function() {
+QUnit.test("should allow 'send' as action name (#594)", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -643,7 +642,7 @@ test("should allow 'send' as action name (#594)", function() {
 });
 
 
-test("should send the view, event and current context to the action", function() {
+QUnit.test("should send the view, event and current context to the action", function() {
   var passedTarget;
   var passedContext;
 
@@ -671,7 +670,7 @@ test("should send the view, event and current context to the action", function()
   strictEqual(passedContext, aContext, "the parameter is passed along");
 });
 
-test("should only trigger actions for the event they were registered on", function() {
+QUnit.test("should only trigger actions for the event they were registered on", function() {
   var editWasCalled = false;
 
   view = EmberView.extend({
@@ -686,10 +685,10 @@ test("should only trigger actions for the event they were registered on", functi
   ok(!editWasCalled, "The action wasn't called");
 });
 
-test("should unwrap controllers passed as a context", function() {
+QUnit.test("should unwrap controllers passed as a context", function() {
   var passedContext;
   var model = EmberObject.create();
-  var controller = EmberObjectController.extend({
+  var controller = EmberController.extend({
     model: model,
     actions: {
       edit: function(context) {
@@ -710,10 +709,10 @@ test("should unwrap controllers passed as a context", function() {
   equal(passedContext, model, "the action was passed the unwrapped model");
 });
 
-test("should not unwrap controllers passed as `controller`", function() {
+QUnit.test("should not unwrap controllers passed as `controller`", function() {
   var passedContext;
   var model = EmberObject.create();
-  var controller = EmberObjectController.extend({
+  var controller = EmberController.extend({
     model: model,
     actions: {
       edit: function(context) {
@@ -734,7 +733,7 @@ test("should not unwrap controllers passed as `controller`", function() {
   equal(passedContext, controller, "the action was passed the controller");
 });
 
-test("should allow multiple contexts to be specified", function() {
+QUnit.test("should allow multiple contexts to be specified", function() {
   var passedContexts;
   var models = [EmberObject.create(), EmberObject.create()];
 
@@ -760,7 +759,7 @@ test("should allow multiple contexts to be specified", function() {
   deepEqual(passedContexts, models, "the action was called with the passed contexts");
 });
 
-test("should allow multiple contexts to be specified mixed with string args", function() {
+QUnit.test("should allow multiple contexts to be specified mixed with string args", function() {
   var passedParams;
   var model = EmberObject.create();
 
@@ -785,7 +784,7 @@ test("should allow multiple contexts to be specified mixed with string args", fu
   deepEqual(passedParams, ["herp", model], "the action was called with the passed contexts");
 });
 
-test("it does not trigger action with special clicks", function() {
+QUnit.test("it does not trigger action with special clicks", function() {
   var showCalled = false;
 
   view = EmberView.create({
@@ -828,7 +827,7 @@ test("it does not trigger action with special clicks", function() {
   checkClick('which', undefined, true); // IE <9
 });
 
-test("it can trigger actions for keyboard events", function() {
+QUnit.test("it can trigger actions for keyboard events", function() {
   var showCalled = false;
 
   view = EmberView.create({
@@ -855,80 +854,7 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
-  test("it can trigger actions for key events with specific key codes", function() {
-    var showCalled = false;
-
-    view = EmberView.create({
-      template: compile("<input type='text' class='keyup-with-key-codes' {{action 'show' on='keyUp' withKeyCode='13'}}>" +
-        "<input type='text' class='keydown-with-key-codes' {{action 'show' on='keyDown' withKeyCode='13'}}>" +
-        "<input type='text' class='keypress-with-key-codes' {{action 'show' on='keyPress' withKeyCode='13'}}>" +
-        "<input type='text' class='keyup-without-key-codes' {{action 'show' on='keyUp'}}>")
-    });
-
-    var controller = EmberController.extend({
-      actions: {
-        show: function() {
-          showCalled = true;
-        }
-      }
-    }).create();
-
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    function enterEvent(eventType) {
-      var event = jQuery.Event(eventType);
-      event.char = '\n';
-      event.which = 13;
-      return event;
-    }
-
-    function nonEnterEvent(eventType) {
-      var event = jQuery.Event(eventType);
-      event.char = 'a';
-      event.which = 65;
-      return event;
-    }
-
-    view.$('input.keyup-with-key-codes').trigger(nonEnterEvent('keyup'));
-    ok(!showCalled, "should not call action with a's keyup");
-
-
-    view.$('input.keyup-with-key-codes').trigger(enterEvent('keyup'));
-    ok(showCalled, "should call action with enter's keyup");
-
-    showCalled = false;
-
-    view.$('input.keydown-with-key-codes').trigger(nonEnterEvent('keydown'));
-    ok(!showCalled, "should not call action with a's keydown");
-
-    view.$('input.keydown-with-key-codes').trigger(enterEvent('keydown'));
-    ok(showCalled, "should call action with enter's keydown");
-
-    showCalled = false;
-
-    view.$('input.keypress-with-key-codes').trigger(nonEnterEvent('keypress'));
-    ok(!showCalled, "should not call action with a's keypress");
-
-
-    view.$('input.keypress-with-key-codes').trigger(enterEvent('keypress'));
-    ok(showCalled, "should call action with enter's keypress");
-
-    showCalled = false;
-
-    view.$('input.keyup-without-key-codes').trigger(nonEnterEvent('keyup'));
-    ok(showCalled, "should call action with a's keyup");
-
-    showCalled = false;
-
-    view.$('input.keyup-without-key-codes').trigger(enterEvent('keyup'));
-    ok(showCalled, "should call action with enter's keyup");
-  });
-}
-test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
+QUnit.test("a quoteless parameter should allow dynamic lookup of the actionName", function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -948,7 +874,7 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -960,12 +886,12 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
     view.appendTo('#qunit-fixture');
   });
 
-  var testBoundAction = function(propertyValue){
+  var testBoundAction = function(propertyValue) {
     run(function() {
       controller.set('hookMeUp', propertyValue);
     });
 
-    run(function(){
+    run(function() {
       view.$("#woot-bound-param").click();
     });
 
@@ -979,7 +905,7 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function(){
+QUnit.test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function() {
   expect(5);
   var lastAction;
   var actionOrder = [];
@@ -989,9 +915,9 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{title: 'Biggity Boom',name: 'biggityBoom'},
-                         {title: 'Whomp Whomp',name: 'whompWhomp'},
-                         {title: 'Sloopy Dookie',name: 'sloopyDookie'}]),
+    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
+                         { title: 'Whomp Whomp',name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
     actions: {
       biggityBoom: function() {
         lastAction = 'biggityBoom';
@@ -1001,7 +927,7 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -1015,8 +941,8 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
     });
   }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
 
-  var testBoundAction = function(propertyValue){
-    run(function(){
+  var testBoundAction = function(propertyValue) {
+    run(function() {
       view.$("#"+propertyValue).click();
     });
 
@@ -1030,7 +956,7 @@ test("a quoteless parameter should lookup actionName in context [DEPRECATED]", f
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should resolve actionName, including path", function(){
+QUnit.test("a quoteless parameter should resolve actionName, including path", function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -1040,9 +966,9 @@ test("a quoteless parameter should resolve actionName, including path", function
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{title: 'Biggity Boom',name: 'biggityBoom'},
-                         {title: 'Whomp Whomp',name: 'whompWhomp'},
-                         {title: 'Sloopy Dookie',name: 'sloopyDookie'}]),
+    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
+                         { title: 'Whomp Whomp',name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
     actions: {
       biggityBoom: function() {
         lastAction = 'biggityBoom';
@@ -1052,7 +978,7 @@ test("a quoteless parameter should resolve actionName, including path", function
         lastAction = 'whompWhomp';
         actionOrder.push(lastAction);
       },
-      sloopyDookie: function(){
+      sloopyDookie: function() {
         lastAction = 'sloopyDookie';
         actionOrder.push(lastAction);
       }
@@ -1064,8 +990,8 @@ test("a quoteless parameter should resolve actionName, including path", function
     view.appendTo('#qunit-fixture');
   });
 
-  var testBoundAction = function(propertyValue){
-    run(function(){
+  var testBoundAction = function(propertyValue) {
+    run(function() {
       view.$("#"+propertyValue).click();
     });
 
@@ -1079,7 +1005,7 @@ test("a quoteless parameter should resolve actionName, including path", function
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter that does not resolve to a value asserts", function(){
+QUnit.test("a quoteless parameter that does not resolve to a value asserts", function() {
   var triggeredAction;
 
   view = EmberView.create({
@@ -1099,8 +1025,8 @@ test("a quoteless parameter that does not resolve to a value asserts", function(
     view.appendTo('#qunit-fixture');
   });
 
-  expectAssertion(function(){
-    run(function(){
+  expectAssertion(function() {
+    run(function() {
       view.$("#oops-bound-param").click();
     });
   }, "You specified a quoteless path to the {{action}} helper " +
@@ -1126,7 +1052,7 @@ QUnit.module("ember-routing-htmlbars: action helper - deprecated invoking direct
   }
 });
 
-test("should respect preventDefault=false option if provided", function(){
+QUnit.test("should respect preventDefault=false option if provided", function() {
   view = EmberView.create({
     template: compile("<a {{action 'show' preventDefault=false}}>Hi</a>")
   });

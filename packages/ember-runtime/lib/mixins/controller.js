@@ -1,5 +1,5 @@
 import { Mixin } from "ember-metal/mixin";
-import { computed } from "ember-metal/computed";
+import alias from 'ember-metal/alias';
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import ControllerContentModelAliasDeprecation from "ember-runtime/mixins/controller_content_model_alias_deprecation";
 
@@ -54,7 +54,7 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
   /**
     @private
    */
-  content: computed.alias('model')
+  content: alias('model')
 
 });
 

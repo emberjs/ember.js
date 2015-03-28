@@ -15,7 +15,10 @@ suite.test('any should should invoke callback on each item as long as you return
   var found = [];
   var result;
 
-  result = obj.any(function(i) { found.push(i); return false; });
+  result = obj.any(function(i) {
+    found.push(i);
+    return false;
+  });
   equal(result, false, 'return value of obj.any');
   deepEqual(found, ary, 'items passed during any() should match');
 });
@@ -28,10 +31,13 @@ suite.test('any should stop invoking when you return true', function() {
   var found = [];
   var result;
 
-  result = obj.any(function(i) { found.push(i); return --cnt <= 0; });
+  result = obj.any(function(i) {
+    found.push(i);
+    return --cnt <= 0;
+  });
   equal(result, true, 'return value of obj.any');
   equal(found.length, exp, 'should invoke proper number of times');
-  deepEqual(found, ary.slice(0,-2), 'items passed during any() should match');
+  deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
 });
 
 
@@ -64,23 +70,35 @@ suite.test('any should produce correct results even if the matching element is u
 
 suite.test('any should be aliased to some', function() {
   var obj = this.newObject();
-      var ary = this.toArray(obj);
-      var anyFound = [];
-      var someFound = [];
-      var cnt = ary.length - 2;
-      var anyResult, someResult;
+  var ary = this.toArray(obj);
+  var anyFound = [];
+  var someFound = [];
+  var cnt = ary.length - 2;
+  var anyResult, someResult;
 
-  anyResult = obj.any(function(i) { anyFound.push(i); return false; });
-  someResult = obj.some(function(i) { someFound.push(i); return false; });
+  anyResult = obj.any(function(i) {
+    anyFound.push(i);
+    return false;
+  });
+  someResult = obj.some(function(i) {
+    someFound.push(i);
+    return false;
+  });
   equal(someResult, anyResult);
 
   anyFound = [];
   someFound = [];
 
   cnt = ary.length - 2;
-  anyResult = obj.any(function(i) { anyFound.push(i); return --cnt <= 0; });
+  anyResult = obj.any(function(i) {
+    anyFound.push(i);
+    return --cnt <= 0;
+  });
   cnt = ary.length - 2;
-  someResult = obj.some(function(i) { someFound.push(i); return --cnt <= 0; });
+  someResult = obj.some(function(i) {
+    someFound.push(i);
+    return --cnt <= 0;
+  });
 
   equal(someResult, anyResult);
 });

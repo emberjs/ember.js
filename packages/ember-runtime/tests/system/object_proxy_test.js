@@ -48,15 +48,15 @@ testBoth("should proxy properties to content", function(get, set) {
   equal(get(content, 'lastName'), 'Huda', 'content should have new value from set on proxy');
   equal(get(proxy, 'lastName'), 'Huda', 'proxy should have new value from set on proxy');
 
-  set(proxy, 'content', {firstName: 'Yehuda', lastName: 'Katz'});
+  set(proxy, 'content', { firstName: 'Yehuda', lastName: 'Katz' });
 
   equal(get(proxy, 'firstName'), 'Yehuda', 'proxy should reflect updated content');
   equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
 });
 
 testBoth("should work with watched properties", function(get, set) {
-  var content1 = {firstName: 'Tom', lastName: 'Dale'};
-  var content2 = {firstName: 'Yehuda', lastName: 'Katz'};
+  var content1 = { firstName: 'Tom', lastName: 'Dale' };
+  var content2 = { firstName: 'Yehuda', lastName: 'Katz' };
   var count = 0;
   var Proxy, proxy, last;
 
@@ -115,9 +115,9 @@ testBoth("should work with watched properties", function(get, set) {
   equal(get(content2, 'lastName'), 'Katzdale');
 });
 
-test("set and get should work with paths", function () {
-  var content = {foo: {bar: 'baz'}};
-  var proxy = ObjectProxy.create({content: content});
+QUnit.test("set and get should work with paths", function () {
+  var content = { foo: { bar: 'baz' } };
+  var proxy = ObjectProxy.create({ content: content });
   var count = 0;
 
   proxy.set('foo.bar', 'hello');
@@ -136,8 +136,8 @@ test("set and get should work with paths", function () {
 });
 
 testBoth("should transition between watched and unwatched strategies", function(get, set) {
-  var content = {foo: 'foo'};
-  var proxy = ObjectProxy.create({content: content});
+  var content = { foo: 'foo' };
+  var proxy = ObjectProxy.create({ content: content });
   var count = 0;
 
   function observer() {

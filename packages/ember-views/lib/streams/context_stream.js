@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 
 import merge from "ember-metal/merge";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import { isGlobal } from "ember-metal/path_cache";
 import Stream from "ember-metal/streams/stream";
 import SimpleStream from "ember-metal/streams/simple";

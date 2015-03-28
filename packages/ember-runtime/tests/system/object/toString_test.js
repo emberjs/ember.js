@@ -15,7 +15,7 @@ QUnit.module('system/object/toString', {
   }
 });
 
-test("toString() returns the same value if called twice", function() {
+QUnit.test("toString() returns the same value if called twice", function() {
   var Foo = Namespace.create();
   Foo.toString = function() { return "Foo"; };
 
@@ -32,7 +32,7 @@ test("toString() returns the same value if called twice", function() {
   equal(Foo.Bar.toString(), "Foo.Bar");
 });
 
-test("toString on a class returns a useful value when nested in a namespace", function() {
+QUnit.test("toString on a class returns a useful value when nested in a namespace", function() {
   var obj;
 
   var Foo = Namespace.create();
@@ -54,13 +54,13 @@ test("toString on a class returns a useful value when nested in a namespace", fu
   equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
 });
 
-test("toString on a namespace finds the namespace in Ember.lookup", function() {
+QUnit.test("toString on a namespace finds the namespace in Ember.lookup", function() {
   var Foo = lookup.Foo = Namespace.create();
 
   equal(Foo.toString(), "Foo");
 });
 
-test("toString on a namespace finds the namespace in Ember.lookup", function() {
+QUnit.test("toString on a namespace finds the namespace in Ember.lookup", function() {
   var Foo = lookup.Foo = Namespace.create();
   var obj;
 
@@ -72,13 +72,13 @@ test("toString on a namespace finds the namespace in Ember.lookup", function() {
   equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
 });
 
-test("toString on a namespace falls back to modulePrefix, if defined", function() {
+QUnit.test("toString on a namespace falls back to modulePrefix, if defined", function() {
   var Foo = Namespace.create({ modulePrefix: 'foo' });
 
   equal(Foo.toString(), "foo");
 });
 
-test('toString includes toStringExtension if defined', function() {
+QUnit.test('toString includes toStringExtension if defined', function() {
   var Foo = EmberObject.extend({
         toStringExtension: function() {
           return "fooey";

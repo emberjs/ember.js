@@ -12,7 +12,7 @@ export default function inline(env, morph, view, path, params, hash) {
 
   Ember.assert("A helper named '"+path+"' could not be found", helper);
 
-  var result = helper.helperFunction.call(view, params, hash, {morph: morph}, env);
+  var result = helper.helperFunction.call(undefined, params, hash, { morph: morph }, env);
 
   if (isStream(result)) {
     appendSimpleBoundView(view, morph, result);

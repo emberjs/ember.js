@@ -5,7 +5,7 @@ import ContainerView from "ember-views/views/container_view";
 
 QUnit.module("EmberView - context property");
 
-test("setting a controller on an inner view should change it context", function() {
+QUnit.test("setting a controller on an inner view should change it context", function() {
   var App = {};
   var a = { name: 'a' };
   var b = { name: 'b' };

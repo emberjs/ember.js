@@ -9,7 +9,6 @@ import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
-import { indexOf } from "ember-metal/array";
 import { isStream } from "ember-metal/streams/utils";
 
 function actionArgs(parameters, actionName) {
@@ -65,14 +64,6 @@ var isAllowedEvent = function(event, allowedKeys) {
   return true;
 };
 
-var keyEvents = ['keyUp', 'keyPress', 'keyDown'];
-
-function ignoreKeyEvent(eventName, event, keyCode) {
-  var any = 'any';
-  keyCode = keyCode || any;
-  return indexOf.call(keyEvents, eventName) !== -1 && keyCode !== any && keyCode !== event.which.toString();
-}
-
 ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys) {
   var actionId = uuid();
   var eventName = options.eventName;
@@ -92,12 +83,6 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
       }
 
       var target = options.target.value();
-
-      if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
-        if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
-          return;
-        }
-      }
 
       var actionName;
 
@@ -264,7 +249,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   ```javascript
   App.ApplicationView = Ember.View.extend({
     actions: {
-      anActionName: function(){}
+      anActionName: function() {}
     }
   });
 
@@ -294,14 +279,14 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   @param {Hash} options
 */
 export function actionHelper(params, hash, options, env) {
-
+  var view = env.data.view;
   var target;
   if (!hash.target) {
-    target = this.getStream('controller');
+    target = view.getStream('controller');
   } else if (isStream(hash.target)) {
     target = hash.target;
   } else {
-    target = this.getStream(hash.target);
+    target = view.getStream(hash.target);
   }
 
   // Ember.assert("You specified a quoteless path to the {{action}} helper which did not resolve to an action name (a string). Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).", !params[0].isStream);
@@ -310,7 +295,7 @@ export function actionHelper(params, hash, options, env) {
   var actionOptions = {
     eventName: hash.on || "click",
     parameters: params.slice(1),
-    view: this,
+    view: view,
     bubbles: hash.bubbles,
     preventDefault: hash.preventDefault,
     target: target,

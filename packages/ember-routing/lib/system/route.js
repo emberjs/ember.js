@@ -3,10 +3,7 @@ import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
-import {
-  forEach,
-  replace
-}from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 import isNone from "ember-metal/is_none";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
@@ -43,8 +40,9 @@ function K() { return this; }
   @namespace Ember
   @extends Ember.Object
   @uses Ember.ActionHandler
+  @uses Ember.Evented
 */
-var Route = EmberObject.extend(ActionHandler, {
+var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     Configuration hash for this route's queryParams. The possible
     configuration options and their defaults are as follows
@@ -100,7 +98,9 @@ var Route = EmberObject.extend(ActionHandler, {
     var qpProps = get(controllerProto, '_normalizedQueryParams');
     var cacheMeta = get(controllerProto, '_cacheMeta');
 
-    var qps = [], map = {}, self = this;
+    var qps = [];
+    var map = {};
+    var self = this;
     for (var propName in qpProps) {
       if (!qpProps.hasOwnProperty(propName)) { continue; }
 
@@ -231,7 +231,7 @@ var Route = EmberObject.extend(ActionHandler, {
     variable and getQueryParamsFor, using the supplied routeName.
 
     @method paramsFor
-    @param {String} routename
+    @param {String} name
 
   */
   paramsFor: function(name) {
@@ -354,9 +354,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   exit: function() {
     this.deactivate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('deactivate');
-    }
+    this.trigger('deactivate');
     this.teardownViews();
   },
 
@@ -380,10 +378,9 @@ var Route = EmberObject.extend(ActionHandler, {
     @method enter
   */
   enter: function() {
+    this.connections = [];
     this.activate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('activate');
-    }
+    this.trigger('activate');
   },
 
   /**
@@ -598,6 +595,38 @@ var Route = EmberObject.extend(ActionHandler, {
     @event error
     @param {Error} error
     @param {Transition} transition
+  */
+
+  /**
+    This event is triggered when the router enters the route. It is
+    not executed when the model for the route changes.
+
+    ```javascript
+    App.ApplicationRoute = Ember.Route.extend({
+      collectAnalytics: function(){
+        collectAnalytics();
+      }.on('activate')
+    });
+    ```
+
+    @event activate
+    @since 1.9.0
+  */
+
+  /**
+    This event is triggered when the router completely exits this
+    route. It is not executed when the model for the route changes.
+
+    ```javascript
+    App.IndexRoute = Ember.Route.extend({
+      trackPageLeaveAnalytics: function(){
+        trackPageLeaveAnalytics();
+      }.on('deactivate')
+    });
+    ```
+
+    @event deactivate
+    @since 1.9.0
   */
 
   /**
@@ -1312,8 +1341,9 @@ var Route = EmberObject.extend(ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return copy(params); }
-    else if (!name) {
+    if (!name && sawParams) {
+      return copy(params);
+    } else if (!name) {
       if (transition.resolveIndex < 1) { return; }
 
       var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
@@ -1343,7 +1373,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {String} type the model type
     @param {Object} value the value passed to find
   */
-  findModel: function(){
+  findModel: function() {
     var store = get(this, 'store');
     return store.find.apply(store, arguments);
   },
@@ -1361,7 +1391,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @method store
     @param {Object} store
   */
-  store: computed(function(){
+  store: computed(function() {
     var container = this.container;
     var routeName = this.routeName;
     var namespace = get(this, 'router.namespace');
@@ -1424,7 +1454,8 @@ var Route = EmberObject.extend(ActionHandler, {
     if (params.length < 1) { return; }
     if (!model) { return; }
 
-    var name = params[0], object = {};
+    var name = params[0];
+    var object = {};
 
     if (params.length === 1) {
       if (name in model) {
@@ -1695,7 +1726,7 @@ var Route = EmberObject.extend(ActionHandler, {
     ```javascript
     // posts route
     Ember.Route.extend({
-      renderTemplate: function(){
+      renderTemplate: function() {
         this.render('photos', {
           into: 'application',
           outlet: 'anOutletName'
@@ -1776,15 +1807,16 @@ var Route = EmberObject.extend(ActionHandler, {
                     referenced by name. Defaults to the parent template
     @param {String} [options.outlet] the outlet inside `options.template` to render into.
                     Defaults to 'main'
-    @param {String} [options.controller] the controller to use for this template,
-                    referenced by name. Defaults to the Route's paired controller
-    @param {String} [options.model] the model object to set on `options.controller`
+    @param {String|Object} [options.controller] the controller to use for this template,
+                    referenced by name or as a controller instance. Defaults to the Route's paired controller
+    @param {Object} [options.model] the model object to set on `options.controller`.
                     Defaults to the return value of the Route's model hook
   */
   render: function(_name, options) {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
+    var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
     var name;
 
     if (typeof _name === 'object' && !options) {
@@ -1794,53 +1826,9 @@ var Route = EmberObject.extend(ActionHandler, {
       name = _name;
     }
 
-    var templateName;
-
-    if (name) {
-      name = name.replace(/\//g, '.');
-      templateName = name;
-    } else {
-      name = this.routeName;
-      templateName = this.templateName || name;
-    }
-
-    var renderOptions = buildRenderOptions(this, namePassed, name, options);
-
-    var LOG_VIEW_LOOKUPS = get(this.router, 'namespace.LOG_VIEW_LOOKUPS');
-    var viewName = options && options.view || namePassed && name || this.viewName || name;
-    var view, template;
-
-    var ViewClass = this.container.lookupFactory('view:' + viewName);
-    if (ViewClass) {
-      view = setupView(ViewClass, renderOptions);
-      if (!get(view, 'template')) {
-        view.set('template', this.container.lookup('template:' + templateName));
-      }
-      if (LOG_VIEW_LOOKUPS) {
-        Ember.Logger.info("Rendering " + renderOptions.name + " with " + view, { fullName: 'view:' + renderOptions.name });
-      }
-    } else {
-      template = this.container.lookup('template:' + templateName);
-      if (!template) {
-        Ember.assert("Could not find \"" + name + "\" template or view.", arguments.length === 0 || Ember.isEmpty(arguments[0]));
-        if (LOG_VIEW_LOOKUPS) {
-          Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
-        }
-        return;
-      }
-      var defaultView = renderOptions.into ? 'view:default' : 'view:toplevel';
-      ViewClass = this.container.lookupFactory(defaultView);
-      view = setupView(ViewClass, renderOptions);
-      if (!get(view, 'template')) {
-        view.set('template', template);
-      }
-      if (LOG_VIEW_LOOKUPS) {
-        Ember.Logger.info("Rendering " + renderOptions.name + " with default view " + view, { fullName: 'view:' + renderOptions.name });
-      }
-    }
-
-    if (renderOptions.outlet === 'main') { this.lastRenderedTemplate = name; }
-    appendView(this, view, renderOptions);
+    var renderOptions = buildRenderOptions(this, namePassed, isDefaultRender, name, options);
+    this.connections.push(renderOptions);
+    run.once(this.router, '_setOutlets');
   },
 
   /**
@@ -1887,16 +1875,49 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object|String} options the options hash or outlet name
   */
   disconnectOutlet: function(options) {
+    var outletName;
+    var parentView;
     if (!options || typeof options === "string") {
-      var outletName = options;
-      options = {};
-      options.outlet = outletName;
+      outletName = options;
+    } else {
+      outletName = options.outlet;
+      parentView = options.parentView;
     }
-    options.parentView = options.parentView ? options.parentView.replace(/\//g, '.') : parentTemplate(this);
-    options.outlet = options.outlet || 'main';
+    parentView = parentView && parentView.replace(/\//g, '.');
+    outletName = outletName || 'main';
+    this._disconnectOutlet(outletName, parentView);
+    for (var i = 0; i < this.router.router.currentHandlerInfos.length; i++) {
+      // This non-local state munging is sadly necessary to maintain
+      // backward compatibility with our existing semantics, which allow
+      // any route to disconnectOutlet things originally rendered by any
+      // other route. This should all get cut in 2.0.
+      this.router.router.
+        currentHandlerInfos[i].handler._disconnectOutlet(outletName, parentView);
+    }
+  },
 
-    var parentView = this.router._lookupActiveView(options.parentView);
-    if (parentView) { parentView.disconnectOutlet(options.outlet); }
+  _disconnectOutlet: function(outletName, parentView) {
+    var parent = parentRoute(this);
+    if (parent && parentView === parent.routeName) {
+      parentView = undefined;
+    }
+    for (var i = 0; i < this.connections.length; i++) {
+      var connection = this.connections[i];
+      if (connection.outlet === outletName && connection.into === parentView) {
+        // This neuters the disconnected outlet such that it doesn't
+        // render anything, but it leaves an entry in the outlet
+        // hierarchy so that any existing other renders that target it
+        // don't suddenly blow up. They will still stick themselves
+        // into its outlets, which won't render anywhere. All of this
+        // statefulness should get the machete in 2.0.
+        this.connections[i] = {
+          into: connection.into,
+          outlet: connection.outlet,
+          name: connection.name
+        };
+        run.once(this.router, '_setOutlets');
+      }
+    }
   },
 
   willDestroy: function() {
@@ -1909,26 +1930,12 @@ var Route = EmberObject.extend(ActionHandler, {
     @method teardownViews
   */
   teardownViews: function() {
-    // Tear down the top level view
-    if (this.teardownTopLevelView) { this.teardownTopLevelView(); }
-
-    // Tear down any outlets rendered with 'into'
-    var teardownOutletViews = this.teardownOutletViews || [];
-    forEach(teardownOutletViews, function(teardownOutletView) {
-      teardownOutletView();
-    });
-
-    delete this.teardownTopLevelView;
-    delete this.teardownOutletViews;
-    delete this.lastRenderedTemplate;
+    if (this.connections && this.connections.length > 0) {
+      this.connections = [];
+      run.once(this.router, '_setOutlets');
+    }
   }
 });
-
-if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-  // TODO add mixin directly to `Route` class definition above, once this
-  // feature is merged:
-  Route.reopen(Evented);
-}
 
 var defaultQPMeta = {
   qps: [],
@@ -1952,21 +1959,23 @@ function handlerInfoFor(route, handlerInfos, _offset) {
   }
 }
 
-function parentTemplate(route) {
-  var parent = parentRoute(route);
-  var template;
-
-  if (!parent) { return; }
-
-  if (template = parent.lastRenderedTemplate) {
-    return template;
-  } else {
-    return parentTemplate(parent);
-  }
-}
-
-function buildRenderOptions(route, namePassed, name, options) {
+function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   var controller = options && options.controller;
+  var templateName;
+  var viewName;
+  var ViewClass;
+  var template;
+  var LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
+  var into = options && options.into && options.into.replace(/\//g, '.');
+  var outlet = (options && options.outlet) || 'main';
+
+  if (name) {
+    name = name.replace(/\//g, '.');
+    templateName = name;
+  } else {
+    name = route.routeName;
+    templateName = route.templateName || name;
+  }
 
   if (!controller) {
     if (namePassed) {
@@ -1988,55 +1997,31 @@ function buildRenderOptions(route, namePassed, name, options) {
     controller.set('model', options.model);
   }
 
-  var renderOptions = {
-    into: options && options.into ? options.into.replace(/\//g, '.') : parentTemplate(route),
-    outlet: (options && options.outlet) || 'main',
-    name: name,
-    controller: controller
-  };
+  viewName = options && options.view || namePassed && name || route.viewName || name;
+  ViewClass = route.container.lookupFactory('view:' + viewName);
+  template = route.container.lookup('template:' + templateName);
+  if (!ViewClass && !template) {
+    Ember.assert("Could not find \"" + name + "\" template or view.", isDefaultRender);
+    if (LOG_VIEW_LOOKUPS) {
+      Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+    }
+  }
 
-  Ember.assert("An outlet ("+renderOptions.outlet+") was specified but was not found.", renderOptions.outlet === 'main' || renderOptions.into);
+  var parent;
+  if (into && (parent = parentRoute(route)) && into === parentRoute(route).routeName) {
+    into = undefined;
+  }
+
+  var renderOptions = {
+    into: into,
+    outlet: outlet,
+    name: name,
+    controller: controller,
+    ViewClass: ViewClass,
+    template: template
+  };
 
   return renderOptions;
-}
-
-function setupView(ViewClass, options) {
-  return ViewClass.create({
-    _debugTemplateName: options.name,
-    renderedName: options.name,
-    controller: options.controller
-  });
-}
-
-function appendView(route, view, options) {
-  if (options.into) {
-    var parentView = route.router._lookupActiveView(options.into);
-    var teardownOutletView = generateOutletTeardown(parentView, options.outlet);
-    if (!route.teardownOutletViews) { route.teardownOutletViews = []; }
-    replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
-    parentView.connectOutlet(options.outlet, view);
-  } else {
-    var rootElement = get(route.router, 'namespace.rootElement');
-    // tear down view if one is already rendered
-    if (route.teardownTopLevelView) {
-      route.teardownTopLevelView();
-    }
-    route.router._connectActiveView(options.name, view);
-    route.teardownTopLevelView = generateTopLevelTeardown(view);
-    view.appendTo(rootElement);
-  }
-}
-
-function generateTopLevelTeardown(view) {
-  return function() {
-    view.destroy();
-  };
-}
-
-function generateOutletTeardown(parentView, outlet) {
-  return function() {
-    parentView.disconnectOutlet(outlet);
-  };
 }
 
 function getFullQueryParams(router, state) {

@@ -1,8 +1,10 @@
+import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import Test from "ember-testing/test";
+import RSVP from "ember-runtime/ext/rsvp";
 
 /**
 * @module ember
@@ -11,54 +13,35 @@ import Test from "ember-testing/test";
 
 var helper = Test.registerHelper;
 var asyncHelper = Test.registerAsyncHelper;
-var countAsync = 0;
 
-function currentRouteName(app){
+function currentRouteName(app) {
   var appController = app.__container__.lookup('controller:application');
 
   return get(appController, 'currentRouteName');
 }
 
-function currentPath(app){
+function currentPath(app) {
   var appController = app.__container__.lookup('controller:application');
 
   return get(appController, 'currentPath');
 }
 
-function currentURL(app){
+function currentURL(app) {
   var router = app.__container__.lookup('router:main');
 
   return get(router, 'location').getURL();
 }
 
-function pauseTest(){
+function pauseTest() {
   Test.adapter.asyncStart();
-  return new Ember.RSVP.Promise(function(){ }, 'TestAdapter paused promise');
+  return new Ember.RSVP.Promise(function() { }, 'TestAdapter paused promise');
 }
 
-function visit(app, url) {
-  var router = app.__container__.lookup('router:main');
-  router.location.setURL(url);
-
-  if (app._readinessDeferrals > 0) {
-    router['initialURL'] = url;
-    run(app, 'advanceReadiness');
-    delete router['initialURL'];
-  } else {
-    run(app, app.handleURL, url);
-  }
-
-  return app.testHelpers.wait();
-}
-
-function click(app, selector, context) {
-  var $el = app.testHelpers.findWithAssert(selector, context);
-  run($el, 'mousedown');
-
-  if ($el.is(':input, [contenteditable=true]')) {
-    var type = $el.prop('type');
+function focus(el) {
+  if (el && el.is(':input, [contenteditable=true]')) {
+    var type = el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      run($el, function(){
+      run(el, function() {
         // Firefox does not trigger the `focusin` event if the window
         // does not have focus. If the document doesn't have focus just
         // use trigger('focusin') instead.
@@ -70,6 +53,28 @@ function click(app, selector, context) {
       });
     }
   }
+}
+
+function visit(app, url) {
+  var router = app.__container__.lookup('router:main');
+  router.location.setURL(url);
+
+  if (app._readinessDeferrals > 0) {
+    router['initialURL'] = url;
+    run(app, 'advanceReadiness');
+    delete router['initialURL'];
+  } else {
+    run(app.__deprecatedInstance__, 'handleURL', url);
+  }
+
+  return app.testHelpers.wait();
+}
+
+function click(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  run($el, 'mousedown');
+
+  focus($el);
 
   run($el, 'mouseup');
   run($el, 'click');
@@ -77,7 +82,35 @@ function click(app, selector, context) {
   return app.testHelpers.wait();
 }
 
-function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions){
+function check(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  Ember.assert('To check \'' + selector +
+      '\', the input must be a checkbox', type === 'checkbox');
+
+  if (!$el.prop('checked')) {
+    app.testHelpers.click(selector, context);
+  }
+
+  return app.testHelpers.wait();
+}
+
+function uncheck(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  Ember.assert('To uncheck \'' + selector +
+      '\', the input must be a checkbox', type === 'checkbox');
+
+  if ($el.prop('checked')) {
+    app.testHelpers.click(selector, context);
+  }
+
+  return app.testHelpers.wait();
+}
+
+function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions) {
   var arity = arguments.length;
   var context, type, options;
 
@@ -138,6 +171,7 @@ function fillIn(app, selector, contextOrText, text) {
     context = contextOrText;
   }
   $el = app.testHelpers.findWithAssert(selector, context);
+  focus($el);
   run(function() {
     $el.val(text).change();
   });
@@ -165,12 +199,7 @@ function andThen(app, callback) {
 }
 
 function wait(app, value) {
-  return Test.promise(function(resolve) {
-    // If this is the first async promise, kick off the async test
-    if (++countAsync === 1) {
-      Test.adapter.asyncStart();
-    }
-
+  return new RSVP.Promise(function(resolve) {
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
       var router = app.__container__.lookup('router:main');
@@ -188,14 +217,11 @@ function wait(app, value) {
         var context = waiter[0];
         var callback = waiter[1];
         return !callback.call(context);
-      })) { return; }
+      })) {
+        return;
+      }
       // Stop polling
       clearInterval(watcher);
-
-      // If this is the last async promise, end the async test
-      if (--countAsync === 0) {
-        Test.adapter.asyncEnd();
-      }
 
       // Synchronously resolve the promise
       run(null, resolve, value);
@@ -242,6 +268,43 @@ asyncHelper('visit', visit);
 */
 asyncHelper('click', click);
 
+if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+  /**
+  * Checks a checkbox. Ensures the presence of the `checked` attribute
+  *
+  * Example:
+  *
+  * ```javascript
+  * check('#remember-me').then(function() {
+  *   // assert something
+  * });
+  * ```
+  *
+  * @method check
+  * @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+  * element on the DOM to check
+  * @return {RSVP.Promise}
+  */
+  asyncHelper('check', check);
+
+  /**
+  * Unchecks a checkbox. Ensures the absence of the `checked` attribute
+  *
+  * Example:
+  *
+  * ```javascript
+  * uncheck('#remember-me').then(function() {
+  *   // assert something
+  * });
+  * ```
+  *
+  * @method check
+  * @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+  * element on the DOM to uncheck
+  * @return {RSVP.Promise}
+  */
+  asyncHelper('uncheck', uncheck);
+}
 /**
 * Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode
 *
@@ -347,8 +410,8 @@ asyncHelper('andThen', andThen);
 Example:
 
 ```javascript
-function validateRouteName(){
-equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
+function validateRouteName() {
+  equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
 }
 
 visit('/some/path').then(validateRouteName)
@@ -366,8 +429,8 @@ helper('currentRouteName', currentRouteName);
 Example:
 
 ```javascript
-function validateURL(){
-equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+function validateURL() {
+  equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
 }
 
 click('#some-link-id').then(validateURL);
@@ -385,8 +448,8 @@ helper('currentPath', currentPath);
 Example:
 
 ```javascript
-function validateURL(){
-equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+function validateURL() {
+  equal(currentURL(), '/some/path', "correct URL was transitioned into.");
 }
 
 click('#some-link-id').then(validateURL);
@@ -398,26 +461,24 @@ click('#some-link-id').then(validateURL);
 */
 helper('currentURL', currentURL);
 
-if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
-  /**
-   Pauses the current test - this is useful for debugging while testing or for test-driving.
-   It allows you to inspect the state of your application at any point.
+/**
+ Pauses the current test - this is useful for debugging while testing or for test-driving.
+ It allows you to inspect the state of your application at any point.
 
-   Example (The test will pause before clicking the button):
+ Example (The test will pause before clicking the button):
 
-   ```javascript
-   visit('/')
-   return pauseTest();
+ ```javascript
+ visit('/')
+ return pauseTest();
 
-   click('.btn');
-   ```
+ click('.btn');
+ ```
 
-   @since 1.9.0
-   @method pauseTest
-   @return {Object} A promise that will never resolve
-   */
-  helper('pauseTest', pauseTest);
-}
+ @since 1.9.0
+ @method pauseTest
+ @return {Object} A promise that will never resolve
+ */
+helper('pauseTest', pauseTest);
 
 /**
   Triggers the given DOM event on the element identified by the provided selector.

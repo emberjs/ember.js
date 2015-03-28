@@ -7,14 +7,13 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { ViewHelper } from "ember-htmlbars/helpers/view";
 import CollectionView from "ember-views/views/collection_view";
 import { readViewFactory } from "ember-views/streams/utils";
 import { map } from 'ember-metal/enumerable_utils';
 import {
   streamifyClassNameBinding
 } from "ember-views/streams/class_name_binding";
-import { Binding } from 'ember-metal/binding';
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -43,7 +42,7 @@ import { Binding } from 'ember-metal/binding';
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });
@@ -76,7 +75,7 @@ import { Binding } from 'ember-metal/binding';
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function(){
+    model: function() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });
@@ -137,16 +136,16 @@ import { Binding } from 'ember-metal/binding';
 
   @method collection
   @for Ember.Handlebars.helpers
-  @param {String} path
-  @param {Hash} options
-  @return {String} HTML string
   @deprecated Use `{{each}}` helper instead.
 */
 export function collectionHelper(params, hash, options, env) {
   var path = params[0];
 
-  Ember.deprecate("Using the {{collection}} helper without specifying a class has been" +
-                  " deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+  Ember.deprecate(
+    "Using the {{collection}} helper without specifying a class has been" +
+    " deprecated as the {{each}} helper now supports the same functionality.",
+    path !== 'collection'
+  );
 
   Ember.assert("You cannot pass more than one argument to the collection helper", params.length <= 1);
 
@@ -166,8 +165,7 @@ export function collectionHelper(params, hash, options, env) {
   if (path) {
     collectionClass = readViewFactory(path, container);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
-  }
-  else {
+  } else {
     collectionClass = CollectionView;
   }
 
@@ -233,17 +231,11 @@ export function collectionHelper(params, hash, options, env) {
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  if (hash.keyword) {
-    itemHash._contextBinding = Binding.oneWay('_parentView.context');
-  } else {
-    itemHash._contextBinding = Binding.oneWay('content');
-  }
-
-  var viewOptions = ViewHelper.propertiesFromHTMLOptions(itemHash, {}, { data: data });
+  var viewOptions = mergeViewBindings(view, {}, itemHash);
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');
-    viewOptions.classNameBindings = map(itemClassBindings, function(classBinding){
+    viewOptions.classNameBindings = map(itemClassBindings, function(classBinding) {
       return streamifyClassNameBinding(view, classBinding);
     });
   }

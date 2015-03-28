@@ -189,9 +189,9 @@ TrackedArray.prototype = {
     var rightOp = rightArrayOperation && rightArrayOperation.type;
 
     if (leftOp === INSERT) {
-        // merge left
-        leftArrayOperation.count += newArrayOperation.count;
-        leftArrayOperation.items = leftArrayOperation.items.concat(newArrayOperation.items);
+      // merge left
+      leftArrayOperation.count += newArrayOperation.count;
+      leftArrayOperation.items = leftArrayOperation.items.concat(newArrayOperation.items);
 
       if (rightOp === INSERT) {
         // also merge right (we have split an insert with an insert)
@@ -298,7 +298,7 @@ TrackedArray.prototype = {
   @param {Array} items The items of the operation, if included.  RETAIN and
   INSERT include their items, DELETE does not.
 */
-function ArrayOperation (operation, count, items) {
+function ArrayOperation(operation, count, items) {
   this.type = operation; // RETAIN | INSERT | DELETE
   this.count = count;
   this.items = items;

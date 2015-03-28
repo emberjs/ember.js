@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ember-source (1.10.0)
+    ember-source (1.11.0.beta.1)
 
 GEM
   remote: https://rubygems.org/

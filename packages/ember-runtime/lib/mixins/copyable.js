@@ -5,9 +5,8 @@
 
 
 import { get } from "ember-metal/property_get";
-import { required } from "ember-metal/mixin";
+import { required, Mixin } from "ember-metal/mixin";
 import { Freezable } from "ember-runtime/mixins/freezable";
-import { Mixin } from 'ember-metal/mixin';
 import { fmt } from "ember-runtime/system/string";
 import EmberError from 'ember-metal/error';
 

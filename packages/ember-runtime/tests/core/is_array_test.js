@@ -4,7 +4,7 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 
 QUnit.module("Ember Type Checking");
 
-test("Ember.isArray" ,function() {
+QUnit.test("Ember.isArray", function() {
   var arrayProxy = ArrayProxy.create({ content: Ember.A() });
 
   equal(isArray(arrayProxy), true, "[]");

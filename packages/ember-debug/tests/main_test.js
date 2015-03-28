@@ -2,7 +2,15 @@ import Ember from 'ember-metal/core';
 
 QUnit.module('ember-debug');
 
-test('Ember.deprecate throws deprecation if second argument is falsy', function() {
+QUnit.test('Ember.deprecate throws deprecation with one argument', function() {
+  expect(1);
+
+  throws(function() {
+    Ember.deprecate('Deprecation is thrown');
+  });
+});
+
+QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
   expect(3);
 
   throws(function() {
@@ -18,7 +26,7 @@ test('Ember.deprecate throws deprecation if second argument is falsy', function(
   });
 });
 
-test('Ember.deprecate does not throw deprecation if second argument is a function and it returns true', function() {
+QUnit.test('Ember.deprecate does not throw deprecation if second argument is a function and it returns true', function() {
   expect(1);
 
   Ember.deprecate('Deprecation is thrown', function() {
@@ -28,7 +36,7 @@ test('Ember.deprecate does not throw deprecation if second argument is a functio
   ok(true, 'deprecation was not thrown');
 });
 
-test('Ember.deprecate throws if second argument is a function and it returns false', function() {
+QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
   expect(1);
 
   throws(function() {
@@ -38,7 +46,7 @@ test('Ember.deprecate throws if second argument is a function and it returns fal
   });
 });
 
-test('Ember.deprecate does not throw deprecations if second argument is truthy', function() {
+QUnit.test('Ember.deprecate does not throw deprecations if second argument is truthy', function() {
   expect(1);
 
   Ember.deprecate('Deprecation is thrown', true);
@@ -48,7 +56,7 @@ test('Ember.deprecate does not throw deprecations if second argument is truthy',
   ok(true, 'deprecations were not thrown');
 });
 
-test('Ember.assert throws if second argument is falsy', function() {
+QUnit.test('Ember.assert throws if second argument is falsy', function() {
   expect(3);
 
   throws(function() {
@@ -64,7 +72,7 @@ test('Ember.assert throws if second argument is falsy', function() {
   });
 });
 
-test('Ember.assert does not throw if second argument is a function and it returns true', function() {
+QUnit.test('Ember.assert does not throw if second argument is a function and it returns true', function() {
   expect(1);
 
   Ember.assert('Assertion is thrown', function() {
@@ -74,7 +82,7 @@ test('Ember.assert does not throw if second argument is a function and it return
   ok(true, 'assertion was not thrown');
 });
 
-test('Ember.assert throws if second argument is a function and it returns false', function() {
+QUnit.test('Ember.assert throws if second argument is a function and it returns false', function() {
   expect(1);
 
   throws(function() {
@@ -84,7 +92,7 @@ test('Ember.assert throws if second argument is a function and it returns false'
   });
 });
 
-test('Ember.assert does not throw if second argument is truthy', function() {
+QUnit.test('Ember.assert does not throw if second argument is truthy', function() {
   expect(1);
 
   Ember.assert('Assertion is thrown', true);
@@ -94,7 +102,7 @@ test('Ember.assert does not throw if second argument is truthy', function() {
   ok(true, 'assertions were not thrown');
 });
 
-test('Ember.assert does not throw if second argument is an object', function() {
+QUnit.test('Ember.assert does not throw if second argument is an object', function() {
   expect(1);
   var Igor = Ember.Object.extend();
 

@@ -9,7 +9,6 @@ import EmberError from "ember-metal/error";
 import { inspect } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import ControllerMixin from "ember-runtime/mixins/controller";
-import { meta } from "ember-metal/utils";
 import controllerFor from "ember-routing/system/controller_for";
 
 function verifyNeedsDependencies(controller, container, needs) {
@@ -27,7 +26,7 @@ function verifyNeedsDependencies(controller, container, needs) {
     }
 
     // Structure assert to still do verification but not string concat in production
-    if (!container.has(dependency)) {
+    if (!container._registry.has(dependency)) {
       missing.push(dependency);
     }
   }
@@ -132,7 +131,7 @@ ControllerMixin.reopen({
       Ember.assert(' `' + inspect(this) + ' specifies `needs`, but does ' +
                    "not have a container. Please ensure this controller was " +
                    "instantiated with a container.",
-                   this.container || meta(this, false).descs.controllers !== defaultControllersComputedProperty);
+                   this.container || this.controllers !== defaultControllersComputedProperty);
 
       if (this.container) {
         verifyNeedsDependencies(this, this.container, needs);
@@ -163,7 +162,7 @@ ControllerMixin.reopen({
     ```javascript
     App.CommentsController = Ember.ArrayController.extend({
       needs: ['post'],
-      postTitle: function(){
+      postTitle: function() {
         var currentPost = this.get('controllers.post'); // instance of App.PostController
         return currentPost.get('title');
       }.property('controllers.post.title')

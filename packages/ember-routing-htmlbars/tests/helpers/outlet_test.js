@@ -1,24 +1,8 @@
-import Ember from 'ember-metal/core'; // TEMPLATES
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
-import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
-import {
-  decamelize,
-  classify
-} from "ember-runtime/system/string";
-import Controller from "ember-runtime/controllers/controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController from "ember-runtime/controllers/array_controller";
 
-import EmberRouter from "ember-routing/system/router";
-import HashLocation from "ember-routing/location/hash_location";
-
-import _MetamorphView from "ember-views/views/metamorph_view";
-import EmberView from "ember-routing/ext/view";
-import EmberContainerView from "ember-views/views/container_view";
+import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
 import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
@@ -27,366 +11,251 @@ import compile from "ember-template-compiler/system/compile";
 import { registerHelper } from "ember-htmlbars/helpers";
 import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var buildContainer = function(namespace) {
-  var container = new Container();
-
-  container.set = set;
-  container.resolver = resolverFor(namespace);
-  container.optionsForType('view', { singleton: false });
-  container.optionsForType('template', { instantiate: false });
-  container.register('application:main', namespace, { instantiate: false });
-  container.injection('router:main', 'namespace', 'application:main');
-
-  container.register('location:hash', HashLocation);
-
-  container.register('controller:basic', Controller, { instantiate: false });
-  container.register('controller:object', ObjectController, { instantiate: false });
-  container.register('controller:array', ArrayController, { instantiate: false });
-
-  container.typeInjection('route', 'router', 'router:main');
-
-  return container;
-};
-
-function resolverFor(namespace) {
-  return function(fullName) {
-    var nameParts = fullName.split(":");
-    var type = nameParts[0];
-    var name = nameParts[1];
-
-    if (type === 'template') {
-      var templateName = decamelize(name);
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
-      }
-    }
-
-    var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
-
-    if (factory) { return factory; }
-  };
-}
+import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
 
 var trim = jQuery.trim;
 
-var view, container, originalOutletHelper;
+var registry, container, originalOutletHelper, top;
 
 QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
-
   setup: function() {
     originalOutletHelper = helpers['outlet'];
     registerHelper('outlet', outletHelper);
 
     var namespace = Namespace.create();
-    container = buildContainer(namespace);
-    container.register('view:default', _MetamorphView);
-    container.register('router:main', EmberRouter.extend());
+    registry = buildRegistry(namespace);
+    container = registry.container();
+
+    var CoreOutlet = container.lookupFactory('view:core-outlet');
+    top = CoreOutlet.create();
   },
+
   teardown: function() {
     delete helpers['outlet'];
     helpers['outlet'] = originalOutletHelper;
 
     runDestroy(container);
-    runDestroy(view);
+    runDestroy(top);
+    registry = container = top = null;
   }
 });
 
-test("view should support connectOutlet for the main outlet", function() {
-  var template = "<h1>HI</h1>{{outlet}}";
-  view = EmberView.create({
-    template: compile(template)
-  });
+QUnit.test("view should render the outlet when set after dom insertion", function() {
+  var routerState = withTemplate("<h1>HI</h1>{{outlet}}");
+  top.setOutletState(routerState);
+  runAppend(top);
 
-  runAppend(view);
+  equal(top.$().text(), 'HI');
 
-  equal(view.$().text(), 'HI');
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
 
   run(function() {
-    view.connectOutlet('main', EmberView.create({
-      template: compile("<p>BYE</p>")
-    }));
+    top.setOutletState(routerState);
   });
 
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
+  equal(trim(top.$().text()), 'HIBYE');
 });
 
-test("outlet should support connectOutlet in slots in prerender state", function() {
-  var template = "<h1>HI</h1>{{outlet}}";
-  view = EmberView.create({
-    template: compile(template)
-  });
+QUnit.test("view should render the outlet when set before dom insertion", function() {
+  var routerState = withTemplate("<h1>HI</h1>{{outlet}}");
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
+  top.setOutletState(routerState);
+  runAppend(top);
 
-  view.connectOutlet('main', EmberView.create({
-    template: compile("<p>BYE</p>")
-  }));
-
-  runAppend(view);
-
-  equal(view.$().text(), 'HIBYE');
+  // Replace whitespace for older IE
+  equal(trim(top.$().text()), 'HIBYE');
 });
 
-test("outlet should support an optional name", function() {
-  var template = "<h1>HI</h1>{{outlet 'mainView'}}";
-  view = EmberView.create({
-    template: compile(template)
-  });
 
-  runAppend(view);
+QUnit.test("outlet should support an optional name", function() {
+  var routerState = withTemplate("<h1>HI</h1>{{outlet 'mainView'}}");
+  top.setOutletState(routerState);
+  runAppend(top);
 
-  equal(view.$().text(), 'HI');
+  equal(top.$().text(), 'HI');
+
+  routerState.outlets.mainView = withTemplate("<p>BYE</p>");
 
   run(function() {
-    view.connectOutlet('mainView', EmberView.create({
-      template: compile("<p>BYE</p>")
-    }));
+    top.setOutletState(routerState);
   });
 
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
+  equal(trim(top.$().text()), 'HIBYE');
 });
 
 
-test("outlet should correctly lookup a view", function() {
-
-  var template,
-      ContainerView,
-      childView;
-
-  ContainerView = EmberContainerView.extend();
-
-  container.register("view:containerView", ContainerView);
-
-  template = "<h1>HI</h1>{{outlet view='containerView'}}";
-
-  view = EmberView.create({
-    template: compile(template),
-    container : container
+QUnit.test("outlet should correctly lookup a view", function() {
+  var CoreOutlet = container.lookupFactory('view:core-outlet');
+  var SpecialOutlet = CoreOutlet.extend({
+    classNames: ['special']
   });
 
-  childView = EmberView.create({
-    template: compile("<p>BYE</p>")
-  });
+  registry.register("view:special-outlet", SpecialOutlet);
 
-  runAppend(view);
+  var routerState = withTemplate("<h1>HI</h1>{{outlet view='special-outlet'}}");
+  top.setOutletState(routerState);
+  runAppend(top);
 
-  equal(view.$().text(), 'HI');
+  equal(top.$().text(), 'HI');
 
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
   run(function() {
-    view.connectOutlet('main', childView);
+    top.setOutletState(routerState);
   });
-
-  ok(ContainerView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
-
+  equal(trim(top.$().text()), 'HIBYE');
+  equal(top.$().find('.special').length, 1, "expected to find .special element");
 });
 
-test("outlet should assert view is specified as a string", function() {
-
-  var template = "<h1>HI</h1>{{outlet view=containerView}}";
+QUnit.test("outlet should assert view is specified as a string", function() {
+  top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view=containerView}}"));
 
   expectAssertion(function () {
-
-    view = EmberView.create({
-      template: compile(template),
-      container : container
-    });
-
-    runAppend(view);
-
-  });
+    runAppend(top);
+  }, /Using a quoteless view parameter with {{outlet}} is not supported/);
 
 });
 
-test("outlet should assert view path is successfully resolved", function() {
-
-  var template = "<h1>HI</h1>{{outlet view='someViewNameHere'}}";
+QUnit.test("outlet should assert view path is successfully resolved", function() {
+  top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view='someViewNameHere'}}"));
 
   expectAssertion(function () {
-
-    view = EmberView.create({
-      template: compile(template),
-      container : container
-    });
-
-    runAppend(view);
-
-  });
+    runAppend(top);
+  }, "The view name you supplied 'someViewNameHere' did not resolve to a view.");
 
 });
 
-test("outlet should support an optional view class", function() {
-  var template = "<h1>HI</h1>{{outlet viewClass=view.outletView}}";
-  view = EmberView.create({
-    template: compile(template),
-    outletView: EmberContainerView.extend()
+QUnit.test("outlet should support an optional view class", function() {
+  var CoreOutlet = container.lookupFactory('view:core-outlet');
+  var SpecialOutlet = CoreOutlet.extend({
+    classNames: ['very-special']
   });
+  var routerState = {
+    render: {
+      ViewClass: EmberView.extend({
+        template: compile("<h1>HI</h1>{{outlet viewClass=view.outletView}}"),
+        outletView: SpecialOutlet
+      })
+    },
+    outlets: {}
+  };
+  top.setOutletState(routerState);
 
-  runAppend(view);
+  runAppend(top);
 
-  equal(view.$().text(), 'HI');
+  equal(top.$().text(), 'HI');
+  equal(top.$().find('.very-special').length, 1, "Should find .very-special");
 
-  var childView = EmberView.create({
-    template: compile("<p>BYE</p>")
-  });
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
 
   run(function() {
-    view.connectOutlet('main', childView);
+    top.setOutletState(routerState);
   });
-
-  ok(view.outletView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
+  equal(trim(top.$().text()), 'HIBYE');
 });
 
 
-test("Outlets bind to the current view, not the current concrete view", function() {
-  var parentTemplate = "<h1>HI</h1>{{outlet}}";
-  var middleTemplate = "<h2>MIDDLE</h2>{{outlet}}";
-  var bottomTemplate = "<h3>BOTTOM</h3>";
-
-  view = EmberView.create({
-    template: compile(parentTemplate)
-  });
-
-  var middleView = _MetamorphView.create({
-    template: compile(middleTemplate)
-  });
-
-  var bottomView = _MetamorphView.create({
-    template: compile(bottomTemplate)
-  });
-
-  runAppend(view);
-
+QUnit.test("Outlets bind to the current view, not the current concrete view", function() {
+  var routerState = withTemplate("<h1>HI</h1>{{outlet}}");
+  top.setOutletState(routerState);
+  runAppend(top);
+  routerState.outlets.main = withTemplate("<h2>MIDDLE</h2>{{outlet}}");
   run(function() {
-    view.connectOutlet('main', middleView);
+    top.setOutletState(routerState);
   });
-
+  routerState.outlets.main.outlets.main = withTemplate("<h3>BOTTOM</h3>");
   run(function() {
-    middleView.connectOutlet('main', bottomView);
+    top.setOutletState(routerState);
   });
 
   var output = jQuery('#qunit-fixture h1 ~ h2 ~ h3').text();
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-test("view should support disconnectOutlet for the main outlet", function() {
-  var template = "<h1>HI</h1>{{outlet}}";
-  view = EmberView.create({
-    template: compile(template)
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'HI');
-
-  run(function() {
-    view.connectOutlet('main', EmberView.create({
-      template: compile("<p>BYE</p>")
-    }));
-  });
-
-  // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
-
-  run(function() {
-    view.disconnectOutlet('main');
-  });
-
-  // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HI');
-});
-
-// TODO: Remove flag when {{with}} is fixed.
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
-test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
-  var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
+QUnit.test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
+  var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{outlet}}{{/if}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
 
-  view = EmberView.create({
-    alwaysTrue: true,
-    template: compile(parentTemplate)
-  });
+  var routerState = {
+    render: {
+      ViewClass: EmberView.extend({
+        alwaysTrue: true,
+        template: compile(parentTemplate)
+      })
+    },
+    outlets: {}
+  };
 
-  var bottomView = _MetamorphView.create({
-    template: compile(bottomTemplate)
-  });
+  top.setOutletState(routerState);
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  runAppend(top);
+
+  routerState.outlets.main = withTemplate(bottomTemplate);
 
   run(function() {
-    view.connectOutlet('main', bottomView);
+    top.setOutletState(routerState);
   });
 
   var output = jQuery('#qunit-fixture h1 ~ h3').text();
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-}
-
-test("should support layouts", function() {
+QUnit.test("should support layouts", function() {
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
+  var routerState = {
+    render: {
+      ViewClass: EmberView.extend({
+        template: compile(template),
+        layout: compile(layout)
+      })
+    },
+    outlets: {}
+  };
+  top.setOutletState(routerState);
+  runAppend(top);
 
-  view = EmberView.create({
-    template: compile(template),
-    layout: compile(layout)
-  });
+  equal(top.$().text(), 'HI');
 
-  runAppend(view);
-
-  equal(view.$().text(), 'HI');
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
 
   run(function() {
-    view.connectOutlet('main', EmberView.create({
-      template: compile("<p>BYE</p>")
-    }));
+    top.setOutletState(routerState);
   });
+
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
+  equal(trim(top.$().text()), 'HIBYE');
 });
 
-test("should not throw deprecations if {{outlet}} is used without a name", function() {
+QUnit.test("should not throw deprecations if {{outlet}} is used without a name", function() {
   expectNoDeprecation();
-  view = EmberView.create({
-    template: compile("{{outlet}}")
-  });
-  runAppend(view);
+  top.setOutletState(withTemplate("{{outlet}}"));
+  runAppend(top);
 });
 
-test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
+QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
   expectNoDeprecation();
-  view = EmberView.create({
-    template: compile("{{outlet \"foo\"}}")
-  });
-  runAppend(view);
+  top.setOutletState(withTemplate("{{outlet \"foo\"}}"));
+  runAppend(top);
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  test("should throw an assertion if {{outlet}} used with unquoted name", function() {
-    view = EmberView.create({
-      template: compile("{{outlet foo}}")
-    });
-    expectAssertion(function() {
-      runAppend(view);
-    }, "Using {{outlet}} with an unquoted name is not supported.");
-  });
-} else {
-  test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
-    view = EmberView.create({
-      template: compile("{{outlet foo}}")
-    });
-    expectDeprecation(function() {
-      runAppend(view);
-    }, 'Using {{outlet}} with an unquoted name is not supported. Please update to quoted usage \'{{outlet "foo"}}\'.');
-  });
+QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+  top.setOutletState(withTemplate("{{outlet foo}}"));
+  expectAssertion(function() {
+    runAppend(top);
+  }, "Using {{outlet}} with an unquoted name is not supported.");
+});
+
+function withTemplate(string) {
+  return {
+    render: {
+      template: compile(string)
+    },
+    outlets: {}
+  };
 }

@@ -1,7 +1,7 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-// REMOVE_USE_STRICT: true
+"REMOVE_USE_STRICT: true";
 
 /**
 @module ember-metal
@@ -13,7 +13,7 @@ import {
   apply,
   applyStr
 } from "ember-metal/utils";
-import { create } from "ember-metal/platform";
+import create from "ember-metal/platform/create";
 
 var a_slice = [].slice;
 
@@ -47,7 +47,8 @@ function indexOf(array, target, method) {
   // of the array and search in reverse
   for (var i = array.length - 3 ; i >=0; i -= 3) {
     if (target === array[i] && method === array[i + 1]) {
-         index = i; break;
+      index = i;
+      break;
     }
   }
   return index;
@@ -127,9 +128,13 @@ export function addListener(obj, eventName, target, method, once) {
   var actionIndex = indexOf(actions, target, method);
   var flags = 0;
 
-  if (once) flags |= ONCE;
+  if (once) {
+    flags |= ONCE;
+  }
 
-  if (actionIndex !== -1) { return; }
+  if (actionIndex !== -1) {
+    return;
+  }
 
   actions.push(target, method, flags);
 
@@ -216,7 +221,7 @@ export function suspendListener(obj, eventName, target, method, callback) {
     actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
   }
 
-  function tryable()   { return callback.call(target); }
+  function tryable() { return callback.call(target); }
   function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
 
   return tryFinally(tryable, finalizer);
@@ -278,7 +283,8 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  var listeners = obj['__ember_meta__'].listeners, ret = [];
+  var listeners = obj['__ember_meta__'].listeners;
+  var ret = [];
 
   if (listeners) {
     for (var eventName in listeners) {
@@ -319,7 +325,10 @@ export function sendEvent(obj, eventName, params, actions) {
   if (!actions) { return; }
 
   for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
-    var target = actions[i], method = actions[i+1], flags = actions[i+2];
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+
     if (!method) { continue; }
     if (flags & SUSPENDED) { continue; }
     if (flags & ONCE) { removeListener(obj, eventName, target, method); }
@@ -401,7 +410,7 @@ export function listenersFor(obj, eventName) {
   @param {Function} func
   @return func
 */
-export function on(){
+export function on() {
   var func = a_slice.call(arguments, -1)[0];
   var events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;

@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 
 QUnit.module('system/run_loop/once_test');
 
-test('calling invokeOnce more than once invokes only once', function() {
+QUnit.test('calling invokeOnce more than once invokes only once', function() {
 
   var count = 0;
   run(function() {
@@ -15,7 +15,7 @@ test('calling invokeOnce more than once invokes only once', function() {
   equal(count, 1, 'should have invoked once');
 });
 
-test('should differentiate based on target', function() {
+QUnit.test('should differentiate based on target', function() {
 
   var A = { count: 0 };
   var B = { count: 0 };
@@ -32,7 +32,7 @@ test('should differentiate based on target', function() {
 });
 
 
-test('should ignore other arguments - replacing previous ones', function() {
+QUnit.test('should ignore other arguments - replacing previous ones', function() {
 
   var A = { count: 0 };
   var B = { count: 0 };
@@ -48,7 +48,7 @@ test('should ignore other arguments - replacing previous ones', function() {
   equal(B.count, 40, 'should have invoked once on B');
 });
 
-test('should be inside of a runloop when running', function() {
+QUnit.test('should be inside of a runloop when running', function() {
 
   run(function() {
     run.once(function() {

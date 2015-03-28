@@ -15,7 +15,7 @@ QUnit.module('ember-htmlbars: element hook', {
   }
 });
 
-test('allows unbound usage within an element', function() {
+QUnit.test('allows unbound usage within an element', function() {
   expect(4);
 
   function someHelper(params, hash, options, env) {
@@ -41,7 +41,7 @@ test('allows unbound usage within an element', function() {
   equal(view.$('.foo').length, 1, 'class attribute was added by helper');
 });
 
-test('allows unbound usage within an element from property', function() {
+QUnit.test('allows unbound usage within an element from property', function() {
   expect(2);
 
   view = EmberView.create({
@@ -58,7 +58,7 @@ test('allows unbound usage within an element from property', function() {
   equal(view.$('.foo').length, 1, 'class attribute was added by helper');
 });
 
-test('allows unbound usage within an element creating multiple attributes', function() {
+QUnit.test('allows unbound usage within an element creating multiple attributes', function() {
   expect(2);
 
   view = EmberView.create({

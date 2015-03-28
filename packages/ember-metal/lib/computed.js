@@ -112,9 +112,29 @@ function UNDEFINED() { }
   @extends Ember.Descriptor
   @constructor
 */
-function ComputedProperty(func, opts) {
-  func.__ember_arity__ = func.length;
-  this.func = func;
+function ComputedProperty(config, opts) {
+  this.isDescriptor = true;
+  if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
+    if (typeof config === "function") {
+      config.__ember_arity = config.length;
+      this._getter = config;
+      if (config.__ember_arity > 1) {
+        this._setter = config;
+      }
+    } else {
+      this._getter = config.get;
+      this._setter = config.set;
+      if (this._setter && this._setter.__ember_arity === undefined) {
+        this._setter.__ember_arity = this._setter.length;
+      }
+    }
+  } else {
+    config.__ember_arity = config.length;
+    this._getter = config;
+    if (config.__ember_arity > 1) {
+      this._setter = config;
+    }
+  }
 
   this._dependentKeys = undefined;
   this._suspended = undefined;
@@ -283,15 +303,14 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
     var meta = metaFor(obj);
-    if (meta.cache[keyName] !== undefined) {
+    if (meta.cache && meta.cache[keyName] !== undefined) {
       meta.cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
 };
 
-function finishChains(chainNodes)
-{
+function finishChains(chainNodes) {
   for (var i=0, l=chainNodes.length; i<l; i++) {
     chainNodes[i].didChange(null);
   }
@@ -329,15 +348,19 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     meta = metaFor(obj);
     cache = meta.cache;
 
-    var result = cache[keyName];
+    var result = cache && cache[keyName];
 
     if (result === UNDEFINED) {
       return undefined;
-    }  else if (result !== undefined) {
+    } else if (result !== undefined) {
       return result;
     }
 
-    ret = this.func.call(obj, keyName);
+    ret = this._getter.call(obj, keyName);
+    cache = meta.cache;
+    if (!cache) {
+      cache = meta.cache = {};
+    }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
     } else {
@@ -350,7 +373,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     }
     addDependentKeys(this, obj, keyName, meta);
   } else {
-    ret = this.func.call(obj, keyName);
+    ret = this._getter.call(obj, keyName);
   }
   return ret;
 };
@@ -417,43 +440,35 @@ ComputedPropertyPrototype.set = function computedPropertySetWithSuspend(obj, key
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
   var cacheable      = this._cacheable;
-  var func           = this.func;
+  var setter         = this._setter;
   var meta           = metaFor(obj, cacheable);
   var cache          = meta.cache;
   var hadCachedValue = false;
 
-  var funcArgLength, cachedValue, ret;
+  var cachedValue, ret;
 
   if (this._readOnly) {
     throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
   }
 
-  if (cacheable && cache[keyName] !== undefined) {
-    if(cache[keyName] !== UNDEFINED) {
+  if (cacheable && cache && cache[keyName] !== undefined) {
+    if (cache[keyName] !== UNDEFINED) {
       cachedValue = cache[keyName];
     }
 
     hadCachedValue = true;
   }
 
-  // Check if the CP has been wrapped. If it has, use the
-  // length from the wrapped function.
-
-  funcArgLength = func.wrappedFunction ? func.wrappedFunction.__ember_arity__ : func.__ember_arity__;
-
-  // For backwards-compatibility with computed properties
-  // that check for arguments.length === 2 to determine if
-  // they are being get or set, only pass the old cached
-  // value if the computed property opts into a third
-  // argument.
-  if (funcArgLength === 3) {
-    ret = func.call(obj, keyName, value, cachedValue);
-  } else if (funcArgLength === 2) {
-    ret = func.call(obj, keyName, value);
-  } else {
+  if (!setter) {
     defineProperty(obj, keyName, null, cachedValue);
     set(obj, keyName, value);
     return;
+  } else if (setter.__ember_arity === 2) {
+    // Is there any way of deprecate this in a sensitive way?
+    // Maybe now that getters and setters are the prefered options we can....
+    ret = setter.call(obj, keyName, value);
+  } else {
+    ret = setter.call(obj, keyName, value, cachedValue);
   }
 
   if (hadCachedValue && cachedValue === ret) { return; }
@@ -470,6 +485,9 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   if (cacheable) {
     if (!hadCachedValue) {
       addDependentKeys(this, obj, keyName, meta);
+    }
+    if (!cache) {
+      cache = meta.cache = {};
     }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
@@ -489,11 +507,13 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  if (keyName in meta.cache) {
-    removeDependentKeys(this, obj, keyName, meta);
-  }
+  if (meta.cache) {
+    if (keyName in meta.cache) {
+      removeDependentKeys(this, obj, keyName, meta);
+    }
 
-  if (this._cacheable) { delete meta.cache[keyName]; }
+    if (this._cacheable) { delete meta.cache[keyName]; }
+  }
 
   return null; // no value to restore
 };
@@ -560,11 +580,16 @@ function computed(func) {
     func = args.pop();
   }
 
-  if (typeof func !== "function") {
-    throw new EmberError("Computed Property declared without a property function");
-  }
-
   var cp = new ComputedProperty(func);
+  // jscs:disable
+  if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
+    // Empty block on purpose
+  } else {
+    // jscs:enable
+    if (typeof func !== "function") {
+      throw new EmberError("Computed Property declared without a property function");
+    }
+  }
 
   if (args) {
     cp.property.apply(cp, args);

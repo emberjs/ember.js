@@ -131,7 +131,8 @@ export default EmberObject.extend({
     @param addedEvents {Hash}
   */
   setup: function(addedEvents, rootElement) {
-    var event, events = get(this, 'events');
+    var event;
+    var events = get(this, 'events');
 
     merge(events, addedEvents || {});
 
@@ -222,8 +223,7 @@ export default EmberObject.extend({
       result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
-    }
-    else {
+    } else {
       result = this._bubbleEvent(view, evt, eventName);
     }
 
@@ -237,7 +237,7 @@ export default EmberObject.extend({
   destroy: function() {
     var rootElement = get(this, 'rootElement');
     jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
-    return this._super();
+    return this._super.apply(this, arguments);
   },
 
   toString: function() {

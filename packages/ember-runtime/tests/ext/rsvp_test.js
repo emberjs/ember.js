@@ -5,17 +5,17 @@ import RSVP from "ember-runtime/ext/rsvp";
 
 QUnit.module('Ember.RSVP');
 
-test('Ensure that errors thrown from within a promise are sent to the console', function(){
+QUnit.test('Ensure that errors thrown from within a promise are sent to the console', function() {
   var error = new Error('Error thrown in a promise for testing purposes.');
 
   try {
-    run(function(){
-      new RSVP.Promise(function(resolve, reject){
+    run(function() {
+      new RSVP.Promise(function(resolve, reject) {
         throw error;
       });
     });
     ok(false, 'expected assertion to be thrown');
-  } catch (e) {
+  } catch(e) {
     equal(e, error, "error was re-thrown");
   }
 });
@@ -54,7 +54,7 @@ QUnit.module("Deferred RSVP's async + Testing", {
   }
 });
 
-test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
+QUnit.test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
   expect(19);
 
   ok(!run.currentRunLoop, 'expect no run-loop');
@@ -71,24 +71,24 @@ test("given `Ember.testing = true`, correctly informs the test suite about async
   equal(asyncStarted, 0);
   equal(asyncEnded, 0);
 
-  user.then(function(user){
+  user.then(function(user) {
     equal(asyncStarted, 1);
     equal(asyncEnded, 1);
 
     equal(user.name, 'tomster');
 
-    return Promise.resolve(1).then(function(){
+    return Promise.resolve(1).then(function() {
       equal(asyncStarted, 1);
       equal(asyncEnded, 1);
     });
 
-  }).then(function(){
+  }).then(function() {
     equal(asyncStarted, 1);
     equal(asyncEnded, 1);
 
-    return new Promise(function(resolve){
+    return new Promise(function(resolve) {
       QUnit.stop(); // raw async, we must inform the test framework manually
-      setTimeout(function(){
+      setTimeout(function() {
         QUnit.start(); // raw async, we must inform the test framework manually
 
         equal(asyncStarted, 1);
@@ -102,14 +102,14 @@ test("given `Ember.testing = true`, correctly informs the test suite about async
         equal(asyncEnded, 1);
       }, 0);
     });
-  }).then(function(user){
+  }).then(function(user) {
     equal(user.name, 'async tomster');
     equal(asyncStarted, 2);
     equal(asyncEnded, 2);
   });
 });
 
-test('TransitionAborted errors are not re-thrown', function() {
+QUnit.test('TransitionAborted errors are not re-thrown', function() {
   expect(1);
   var fakeTransitionAbort = { name: 'TransitionAborted' };
 
@@ -118,7 +118,7 @@ test('TransitionAborted errors are not re-thrown', function() {
   ok(true, 'did not throw an error when dealing with TransitionAborted');
 });
 
-test('rejections like jqXHR which have errorThrown property work', function() {
+QUnit.test('rejections like jqXHR which have errorThrown property work', function() {
   expect(2);
 
   var wasEmberTesting = Ember.testing;
@@ -139,12 +139,12 @@ test('rejections like jqXHR which have errorThrown property work', function() {
     run(RSVP, 'reject', jqXHR);
   } finally {
     Ember.onerror = wasOnError;
-    Ember.testing = wasEmberTesting ;
+    Ember.testing = wasEmberTesting;
   }
 });
 
 
-test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
+QUnit.test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
   expect(2);
 
   var wasEmberTesting = Ember.testing;

@@ -1,6 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { indexOf } from "ember-metal/enumerable_utils";
-import { meta } from "ember-metal/utils";
 import InjectedProperty from "ember-metal/injected_property";
 import keys from "ember-metal/keys";
 
@@ -9,6 +8,7 @@ import keys from "ember-metal/keys";
 
   @class inject
   @namespace Ember
+  @static
   */
 function inject() {
   Ember.assert("Injected properties must be created through helpers, see `" +
@@ -25,7 +25,8 @@ var typeValidators = {};
 
   @private
   @method createInjectionHelper
-  @namespace Ember
+  @since 1.10.0
+  @for Ember
   @param {String} type The container type the helper will inject
   @param {Function} validator A validation callback that is executed at mixin-time
 */
@@ -43,17 +44,17 @@ export function createInjectionHelper(type, validator) {
 
   @private
   @method validatePropertyInjections
-  @namespace Ember
+  @since 1.10.0
+  @for Ember
   @param {Object} factory The factory object
 */
 export function validatePropertyInjections(factory) {
   var proto = factory.proto();
-  var descs = meta(proto).descs;
   var types = [];
   var key, desc, validator, i, l;
 
-  for (key in descs) {
-    desc = descs[key];
+  for (key in proto) {
+    desc = proto[key];
     if (desc instanceof InjectedProperty && indexOf(types, desc.type) === -1) {
       types.push(desc.type);
     }

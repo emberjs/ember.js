@@ -4,7 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 
 QUnit.module('system/object/subclasses');
 
-test('chains should copy forward to subclasses when prototype created', function () {
+QUnit.test('chains should copy forward to subclasses when prototype created', function () {
   var ObjectWithChains, objWithChains, SubWithChains, SubSub, subSub;
   run(function () {
     ObjectWithChains = EmberObject.extend({

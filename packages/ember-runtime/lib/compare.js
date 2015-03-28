@@ -74,7 +74,7 @@ export default function compare(v, w) {
   switch (type1) {
     case 'boolean':
     case 'number':
-      return spaceship(v,w);
+      return spaceship(v, w);
 
     case 'string':
       return spaceship(v.localeCompare(w), 0);

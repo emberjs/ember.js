@@ -9,7 +9,9 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 
 function performTest(binding, a, b, get, set, connect) {
-  if (connect === undefined) connect = function() {binding.connect(a);};
+  if (connect === undefined) {
+    connect = function() {binding.connect(a);};
+  }
 
   ok(!run.currentRunLoop, 'performTest should not have a currentRunLoop');
 
@@ -36,11 +38,11 @@ function performTest(binding, a, b, get, set, connect) {
 var originalLookup, lookup, GlobalB;
 
 QUnit.module("Ember.Binding", {
-  setup: function(){
+  setup: function() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
   },
-  teardown: function(){
+  teardown: function() {
     lookup = null;
     Ember.lookup = originalLookup;
   }
@@ -102,7 +104,7 @@ testBoth('Calling connect more than once', function(get, set) {
   });
 });
 
-test('inherited bindings should sync on create', function() {
+QUnit.test('inherited bindings should sync on create', function() {
   var a;
   run(function () {
     var A = function() {

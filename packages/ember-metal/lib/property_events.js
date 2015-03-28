@@ -35,7 +35,8 @@ function propertyWillChange(obj, keyName) {
   var m = obj['__ember_meta__'];
   var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
   var proto = m && m.proto;
-  var desc = m && m.descs[keyName];
+  var possibleDesc = obj[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   if (!watching) {
     return;
@@ -73,7 +74,8 @@ function propertyDidChange(obj, keyName) {
   var m = obj['__ember_meta__'];
   var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
   var proto = m && m.proto;
-  var desc = m && m.descs[keyName];
+  var possibleDesc = obj[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   if (proto === obj) {
     return;
@@ -150,7 +152,7 @@ function keysOf(obj) {
 }
 
 function iterDeps(method, obj, deps, depKey, seen, meta) {
-  var keys, key, i, desc;
+  var keys, key, i, possibleDesc, desc;
   var guid = guidFor(obj);
   var current = seen[guid];
 
@@ -166,10 +168,10 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 
   if (deps) {
     keys = keysOf(deps);
-    var descs = meta.descs;
     for (i=0; i<keys.length; i++) {
       key = keys[i];
-      desc = descs[key];
+      possibleDesc = obj[key];
+      desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
       if (desc && desc._suspended === obj) {
         continue;
@@ -190,7 +192,7 @@ function chainsWillChange(obj, keyName, m) {
   var events = [];
   var i, l;
 
-  for(i = 0, l = nodes.length; i < l; i++) {
+  for (i = 0, l = nodes.length; i < l; i++) {
     nodes[i].willChange(events);
   }
 
@@ -209,7 +211,7 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
   var events = suppressEvents ? null : [];
   var i, l;
 
-  for(i = 0, l = nodes.length; i < l; i++) {
+  for (i = 0, l = nodes.length; i < l; i++) {
     nodes[i].didChange(events);
   }
 

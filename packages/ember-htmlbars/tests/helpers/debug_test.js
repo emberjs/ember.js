@@ -28,7 +28,7 @@ QUnit.module("Handlebars {{log}} helper", {
   }
 });
 
-test("should be able to log multiple properties", function() {
+QUnit.test("should be able to log multiple properties", function() {
   var context = {
     value: 'one',
     valueTwo: 'two'
@@ -46,7 +46,7 @@ test("should be able to log multiple properties", function() {
   equal(logCalls[1], 'two');
 });
 
-test("should be able to log primitives", function() {
+QUnit.test("should be able to log primitives", function() {
   var context = {
     value: 'one',
     valueTwo: 'two'

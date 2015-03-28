@@ -54,7 +54,7 @@ import Application from "ember-application/system/application";
 */
 export default EmberObject.extend({
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.releaseMethods = emberA();
   },
 
@@ -183,7 +183,10 @@ export default EmberObject.extend({
     @return {Function} Method to call to remove all observers
   */
   watchRecords: function(type, recordsAdded, recordsUpdated, recordsRemoved) {
-    var self = this, releaseMethods = emberA(), records = this.getRecords(type), release;
+    var self = this;
+    var releaseMethods = emberA();
+    var records = this.getRecords(type);
+    var release;
 
     var recordUpdated = function(updatedRecord) {
       recordsUpdated([updatedRecord]);
@@ -229,7 +232,7 @@ export default EmberObject.extend({
     @method willDestroy
   */
   willDestroy: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.releaseMethods.forEach(function(fn) {
       fn();
     });
@@ -486,6 +489,6 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove all observers.
   */
   observeRecord: function(record, recordUpdated) {
-    return function(){};
+    return function() {};
   }
 });

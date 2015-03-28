@@ -19,7 +19,7 @@ QUnit.module("ember-testing Adapters", {
   }
 });
 
-test("Setting a test adapter manually", function() {
+QUnit.test("Setting a test adapter manually", function() {
   expect(1);
   var CustomAdapter;
 
@@ -38,7 +38,7 @@ test("Setting a test adapter manually", function() {
   Test.adapter.asyncStart();
 });
 
-test("QUnitAdapter is used by default", function() {
+QUnit.test("QUnitAdapter is used by default", function() {
   expect(1);
 
   Test.adapter = null;

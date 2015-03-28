@@ -1,4 +1,4 @@
-/*globals Ember:true,ENV,EmberENV,MetamorphENV:true */
+/*globals Ember:true,ENV,EmberENV */
 
 /**
 @module ember
@@ -32,12 +32,13 @@ if ('undefined' === typeof Ember) {
 }
 
 // Default imports, exports and lookup to the global object;
-Ember.imports = Ember.imports || this;
-Ember.lookup  = Ember.lookup  || this;
-var exports   = Ember.exports = Ember.exports || this;
+var global = mainContext || {}; // jshint ignore:line
+Ember.imports = Ember.imports || global;
+Ember.lookup  = Ember.lookup  || global;
+var emExports   = Ember.exports = Ember.exports || global;
 
 // aliases needed to keep minifiers from removing the global context
-exports.Em = exports.Ember = Ember;
+emExports.Em = emExports.Ember = Ember;
 
 // Make sure these are set whether Ember was already defined or not
 
@@ -67,9 +68,10 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
 if (Ember.ENV) {
   // do nothing if Ember.ENV is already setup
+  Ember.assert('Ember.ENV should be an object.', 'object' !== typeof Ember.ENV);
 } else if ('undefined' !== typeof EmberENV) {
   Ember.ENV = EmberENV;
-} else if('undefined' !== typeof ENV) {
+} else if ('undefined' !== typeof ENV) {
   Ember.ENV = ENV;
 } else {
   Ember.ENV = {};
@@ -82,12 +84,6 @@ if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
   Ember.ENV.DISABLE_RANGE_API = true;
 }
 
-if ("undefined" === typeof MetamorphENV) {
-  exports.MetamorphENV = {};
-}
-
-MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
-
 /**
   Hash of enabled Canary features. Add to this before creating your application.
 
@@ -99,7 +95,11 @@ MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
   @since 1.1.0
 */
 
-Ember.FEATURES = Ember.ENV.FEATURES || {};
+Ember.FEATURES = Ember.ENV.FEATURES;
+
+if (!Ember.FEATURES) {
+  Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
+}
 
 /**
   Test that a feature is enabled. Parsed by Ember's build tools to leave

@@ -10,8 +10,10 @@ import {
   generateControllerFactory,
   default as generateController
 } from "ember-routing/system/generate_controller";
-import { ViewHelper } from "ember-htmlbars/helpers/view";
 import { isStream } from "ember-metal/streams/utils";
+import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
+import appendTemplatedView from "ember-htmlbars/system/append-templated-view";
+import create from 'ember-metal/platform/create';
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -84,12 +86,13 @@ You could render it inside the `post` template using the `render` helper.
   @return {String} HTML string
 */
 export function renderHelper(params, hash, options, env) {
+  var currentView = env.data.view;
   var container, router, controller, view, initialContext;
 
   var name = params[0];
   var context = params[1];
 
-  container = this._keywords.controller.value().container;
+  container = currentView._keywords.controller.value().container;
   router = container.lookup('router:main');
 
   Ember.assert(
@@ -105,8 +108,11 @@ export function renderHelper(params, hash, options, env) {
 
   if (params.length === 1) {
     // use the singleton controller
-    Ember.assert("You can only use the {{render}} helper once without a model object as its" +
-                 " second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
+    Ember.assert(
+      "You can only use the {{render}} helper once without a model object as " +
+      "its second argument, as in {{render \"post\" post}}.",
+      !router || !router._lookupActiveView(name)
+    );
   } else if (params.length === 2) {
     // create a new controller
     initialContext = context.value();
@@ -118,17 +124,40 @@ export function renderHelper(params, hash, options, env) {
   name = name.replace(/\//g, '.');
   // \ legacy slash as namespace support
 
+  var templateName = 'template:' + name;
+  Ember.assert(
+    "You used `{{render '" + name + "'}}`, but '" + name + "' can not be " +
+    "found as either a template or a view.",
+    container._registry.has("view:" + name) || container._registry.has(templateName) || !!options.template
+  );
 
-  view = container.lookup('view:' + name) || container.lookup('view:default');
+  var template = options.template;
+  view = container.lookup('view:' + name);
+  if (!view) {
+    view = container.lookup('view:default');
+    template = template || container.lookup(templateName);
+  }
 
   // provide controller override
-  var controllerName = hash.controller || name;
-  var controllerFullName = 'controller:' + controllerName;
+  var controllerName;
+  var controllerFullName;
 
-  Ember.assert("The controller name you supplied '" + controllerName +
-               "' did not resolve to a controller.", !hash.controller || container.has(controllerFullName));
+  if (hash.controller) {
+    controllerName = hash.controller;
+    controllerFullName = 'controller:' + controllerName;
+    delete hash.controller;
 
-  var parentController = this._keywords.controller.value();
+    Ember.assert(
+      "The controller name you supplied '" + controllerName + "' " +
+      "did not resolve to a controller.",
+      container._registry.has(controllerFullName)
+    );
+  } else {
+    controllerName = name;
+    controllerFullName = 'controller:' + controllerName;
+  }
+
+  var parentController = currentView._keywords.controller.value();
 
   // choose name
   if (params.length > 1) {
@@ -156,18 +185,61 @@ export function renderHelper(params, hash, options, env) {
 
   hash.viewName = camelize(name);
 
-  var templateName = 'template:' + name;
-  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
-               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.template);
-  hash.template = container.lookup(templateName);
-
-  hash.controller = controller;
-
   if (router && !initialContext) {
     router._connectActiveView(name, view);
   }
 
-  options.helperName = options.helperName || ('render "' + name + '"');
+  var props = {
+    template: template,
+    controller: controller,
+    helperName: 'render "' + name + '"'
+  };
 
-  ViewHelper.instanceHelper(view, hash, options, env);
+  impersonateAnOutlet(currentView, view, name);
+  mergeViewBindings(currentView, props, hash);
+  appendTemplatedView(currentView, options.morph, view, props);
+}
+
+// Megahax to make outlets inside the render helper work, until we
+// can kill that behavior at 2.0.
+function impersonateAnOutlet(currentView, view, name) {
+  view._childOutlets = Ember.A();
+  view._isOutlet = true;
+  view._outletName = '__ember_orphans__';
+  view._matchOutletName = name;
+  view.setOutletState = function(state) {
+    var ownState;
+    if (state && (ownState = state.outlets[this._matchOutletName])) {
+      this._outletState = {
+        render: { name: 'render helper stub' },
+        outlets: create(null)
+      };
+      this._outletState.outlets[ownState.render.outlet] = ownState;
+      ownState.wasUsed = true;
+    } else {
+      this._outletState = null;
+    }
+    for (var i = 0; i < this._childOutlets.length; i++) {
+      var child = this._childOutlets[i];
+      child.setOutletState(this._outletState && this._outletState.outlets[child._outletName]);
+    }
+  };
+
+  var pointer = currentView;
+  var po;
+  while (pointer && !pointer._isOutlet) {
+    pointer = pointer._parentView;
+  }
+  while (pointer && (po = pointer._parentOutlet())) {
+    pointer = po;
+  }
+  if (pointer) {
+    // we've found the toplevel outlet. Subscribe to its
+    // __ember_orphan__ child outlet, which is our hack convention for
+    // stashing outlet state that may target the render helper.
+    pointer._childOutlets.push(view);
+    if (pointer._outletState) {
+      view.setOutletState(pointer._outletState.outlets[view._outletName]);
+    }
+  }
 }

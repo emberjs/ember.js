@@ -1,12 +1,12 @@
-import {EnumerableTests, ObserverClass} from 'ember-runtime/tests/suites/enumerable';
+import {
+  EnumerableTests,
+  ObserverClass as EnumerableTestsObserverClass
+} from 'ember-runtime/tests/suites/enumerable';
 import indexOfTests from 'ember-runtime/tests/suites/array/indexOf';
 import lastIndexOfTests from 'ember-runtime/tests/suites/array/lastIndexOf';
 import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
 
-
-var EnumerableTestsObserverClass = ObserverClass;
-
-ObserverClass = EnumerableTestsObserverClass.extend({
+var ObserverClass = EnumerableTestsObserverClass.extend({
 
    observeArray: function(obj) {
     obj.addArrayObserver(this);

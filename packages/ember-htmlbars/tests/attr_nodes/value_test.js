@@ -9,18 +9,19 @@ function appendView(view) {
 }
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+// jscs:disable validateIndentation
 
 QUnit.module("ember-htmlbars: value attribute", {
-  teardown: function(){
+  teardown: function() {
     if (view) {
       run(view, view.destroy);
     }
   }
 });
 
-test("property is output", function() {
+QUnit.test("property is output", function() {
   view = EmberView.create({
-    context: {name: 'rick'},
+    context: { name: 'rick' },
     template: compile("<input value={{name}}>")
   });
   appendView(view);
@@ -30,9 +31,9 @@ test("property is output", function() {
         'property is set true');
 });
 
-test("string property is output", function() {
+QUnit.test("string property is output", function() {
   view = EmberView.create({
-    context: {name: 'rick'},
+    context: { name: 'rick' },
     template: compile("<input value='{{name}}'>")
   });
   appendView(view);
@@ -42,4 +43,17 @@ test("string property is output", function() {
         'property is set true');
 });
 
+QUnit.test("blank property is output", function() {
+  view = EmberView.create({
+    context: { name: '' },
+    template: compile("<input value={{name}}>")
+  });
+  appendView(view);
+
+  equal(view.element.firstChild.tagName, 'INPUT', "input element is created");
+  equal(view.element.firstChild.value, "",
+        'property is set true');
+});
+
+// jscs:enable validateIndentation
 }

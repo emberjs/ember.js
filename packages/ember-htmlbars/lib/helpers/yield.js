@@ -90,18 +90,19 @@ import { get } from "ember-metal/property_get";
   @return {String} HTML string
 */
 export function yieldHelper(params, hash, options, env) {
-  var view = this;
+  var view = env.data.view;
+  var layoutView = view;
 
   // Yea gods
-  while (view && !get(view, 'layout')) {
-    if (view._contextView) {
-      view = view._contextView;
+  while (layoutView && !get(layoutView, 'layout')) {
+    if (layoutView._contextView) {
+      layoutView = layoutView._contextView;
     } else {
-      view = get(view, '_parentView');
+      layoutView = layoutView._parentView;
     }
   }
 
-  Ember.assert("You called yield in a template that was not a layout", !!view);
+  Ember.assert("You called yield in a template that was not a layout", !!layoutView);
 
-  return view._yield(this, env, options.morph, params);
+  return layoutView._yield(view, env, options.morph, params);
 }

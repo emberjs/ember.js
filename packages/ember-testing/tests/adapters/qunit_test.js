@@ -12,10 +12,10 @@ QUnit.module("ember-testing QUnitAdapter", {
   }
 });
 
-test("asyncStart calls stop", function() {
+QUnit.test("asyncStart calls stop", function() {
   var originalStop = QUnit.stop;
   try {
-    QUnit.stop = function(){
+    QUnit.stop = function() {
       ok(true, "stop called");
     };
     adapter.asyncStart();
@@ -24,10 +24,10 @@ test("asyncStart calls stop", function() {
   }
 });
 
-test("asyncEnd calls start", function() {
+QUnit.test("asyncEnd calls start", function() {
   var originalStart = QUnit.start;
   try {
-    QUnit.start = function(){
+    QUnit.start = function() {
       ok(true, "start called");
     };
     adapter.asyncEnd();
@@ -36,10 +36,11 @@ test("asyncEnd calls start", function() {
   }
 });
 
-test("exception causes a failing assertion", function() {
-  var error = {err: 'hai'}, originalOk = window.ok;
+QUnit.test("exception causes a failing assertion", function() {
+  var error = { err: 'hai' };
+  var originalOk = window.ok;
   try {
-    window.ok = function(val, msg){
+    window.ok = function(val, msg) {
       originalOk(!val, "ok is called with false");
       originalOk(msg, '{err: "hai"}');
     };

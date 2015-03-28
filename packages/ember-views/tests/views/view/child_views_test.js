@@ -30,7 +30,7 @@ QUnit.module('tests/views/view/child_views_tests.js', {
 // parent element
 
 // no parent element, no buffer, no element
-test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
+QUnit.test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
   run(function() {
     parentView.append();
   });
@@ -38,7 +38,7 @@ test("should render an inserted child view when the child is inserted before a D
   equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
 });
 
-test("should not duplicate childViews when rerendering", function() {
+QUnit.test("should not duplicate childViews when rerendering", function() {
 
   var Inner = EmberView.extend({
     template: function() { return ''; }

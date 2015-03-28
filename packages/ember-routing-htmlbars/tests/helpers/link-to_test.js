@@ -8,14 +8,14 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-QUnit.module("Handlebars {{link-to}} helper", {
+QUnit.module("ember-routing-htmlbars: link-to helper", {
   teardown: function() {
     runDestroy(view);
   }
 });
 
 
-test("should be able to be inserted in DOM when the router is not present", function() {
+QUnit.test("should be able to be inserted in DOM when the router is not present", function() {
   var template = "{{#link-to 'index'}}Go to Index{{/link-to}}";
   view = EmberView.create({
     template: compile(template)
@@ -26,7 +26,7 @@ test("should be able to be inserted in DOM when the router is not present", func
   equal(view.$().text(), 'Go to Index');
 });
 
-test("re-renders when title changes", function() {
+QUnit.test("re-renders when title changes", function() {
   var template = "{{link-to title routeName}}";
   view = EmberView.create({
     controller: {
@@ -47,7 +47,7 @@ test("re-renders when title changes", function() {
   equal(view.$().text(), 'bar');
 });
 
-test("can read bound title", function() {
+QUnit.test("can read bound title", function() {
   var template = "{{link-to title routeName}}";
   view = EmberView.create({
     controller: {
@@ -62,10 +62,9 @@ test("can read bound title", function() {
   equal(view.$().text(), 'foo');
 });
 
-test("escapes title in non-block form", function() {
+QUnit.test("escaped inline form (double curlies) escapes link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
-
     template: compile("{{link-to view.title}}")
   });
 
@@ -74,11 +73,10 @@ test("escapes title in non-block form", function() {
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-test("does not escape title in non-block form when `unescaped` is true", function() {
+QUnit.test("unescaped inline form (triple curlies) does not escape link title", function() {
   view = EmberView.create({
     title: "<b>blah</b>",
-
-    template: compile("{{link-to view.title unescaped=true}}")
+    template: compile("{{{link-to view.title}}}")
   });
 
   runAppend(view);
@@ -86,7 +84,7 @@ test("does not escape title in non-block form when `unescaped` is true", functio
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-test("unwraps controllers", function() {
+QUnit.test("unwraps controllers", function() {
   var template = "{{#link-to 'index' view.otherController}}Text{{/link-to}}";
 
   view = EmberView.create({
@@ -97,7 +95,9 @@ test("unwraps controllers", function() {
     template: compile(template)
   });
 
-  runAppend(view);
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./);
 
   equal(view.$().text(), 'Text');
 });

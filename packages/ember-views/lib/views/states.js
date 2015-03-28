@@ -1,4 +1,4 @@
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import _default from "ember-views/views/states/default";
 import preRender from "ember-views/views/states/pre_render";

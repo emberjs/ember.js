@@ -49,7 +49,7 @@ export default function makeBoundHelper(fn, compatMode) {
   }
 
   function helperFunc(params, hash, options, env) {
-    var view = this;
+    var view = env.data.view;
     var numParams = params.length;
     var param;
 
@@ -85,10 +85,7 @@ export default function makeBoundHelper(fn, compatMode) {
     // If none of the hash parameters are bound, act as an unbound helper.
     // This prevents views from being unnecessarily created
     var hasStream = scanArray(params) || scanHash(hash);
-
-    if (env.data.isUnbound || !hasStream){
-      return valueFn();
-    } else {
+    if (hasStream) {
       var lazyValue = new Stream(valueFn);
 
       for (i = 0; i < numParams; i++) {
@@ -123,6 +120,8 @@ export default function makeBoundHelper(fn, compatMode) {
       }
 
       return lazyValue;
+    } else {
+      return valueFn();
     }
   }
 

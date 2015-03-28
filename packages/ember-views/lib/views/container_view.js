@@ -187,7 +187,7 @@ var states = cloneStates(EmberViewStates);
 var ContainerView = View.extend(MutableArray, {
   _states: states,
 
-  willWatchProperty: function(prop){
+  willWatchProperty: function(prop) {
     Ember.deprecate(
       "ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.",
       !prop.match(/\[]/) && prop.indexOf('@') !== 0
@@ -195,7 +195,7 @@ var ContainerView = View.extend(MutableArray, {
   },
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
 
     var childViews = get(this, 'childViews');
     Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(childViews));
@@ -229,13 +229,13 @@ var ContainerView = View.extend(MutableArray, {
   replace: function(idx, removedCount, addedViews) {
     var addedCount = addedViews ? get(addedViews, 'length') : 0;
     var self = this;
-    Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
+    Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !item._parentView || item._parentView === self; }));
 
     this.arrayContentWillChange(idx, removedCount, addedCount);
     this.childViewsWillChange(this._childViews, idx, removedCount);
 
     if (addedCount === 0) {
-      this._childViews.splice(idx, removedCount) ;
+      this._childViews.splice(idx, removedCount);
     } else {
       var args = [idx, removedCount].concat(addedViews);
       if (addedViews.length && !this._childViews.length) { this._childViews = this._childViews.slice(); }
@@ -272,7 +272,7 @@ var ContainerView = View.extend(MutableArray, {
       buffer._element = element;
       this._childViewsMorph = dom.appendMorph(element, this._morph.contextualElement);
     } else {
-      this._childViewsMorph = dom.createMorph(element, element.lastChild, null);
+      this._childViewsMorph = dom.appendMorph(element);
     }
 
     return element;
@@ -356,7 +356,7 @@ var ContainerView = View.extend(MutableArray, {
   _currentViewDidChange: observer('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
-      Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !get(currentView, '_parentView'));
+      Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !currentView._parentView);
       this.pushObject(currentView);
     }
   }),
@@ -395,12 +395,13 @@ merge(states.hasElement, {
     var childViews = view._childViews;
     var renderer = view._renderer;
 
-    var i, len, childView;
-    for (i = 0, len = childViews.length; i < len; i++) {
-      childView = childViews[i];
+    var refMorph = null;
+    for (var i = childViews.length-1; i >= 0; i--) {
+      var childView = childViews[i];
       if (!childView._elementCreated) {
-        renderer.renderTree(childView, view, i);
+        renderer.renderTree(childView, view, refMorph);
       }
+      refMorph = childView._morph;
     }
   }
 });

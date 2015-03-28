@@ -20,7 +20,7 @@ import Observable from 'ember-runtime/mixins/observable';
 
   * Added ObservableObject which applies the Ember.Observable mixin.
   * Changed reference to Ember.T_FUNCTION to 'function'
-  * Changed all references to sc_super to this._super()
+  * Changed all references to sc_super to this._super.apply(this, arguments)
   * Changed Ember.objectForPropertyPath() to Ember.getPath()
   * Removed allPropertiesDidChange test - no longer supported
   * Changed test that uses 'ObjectE' as path to 'objectE' to reflect new
@@ -62,8 +62,8 @@ QUnit.module("object.get()", {
       nullProperty: null,
 
       unknownProperty: function(key, value) {
-        this.lastUnknownProperty = key ;
-        return "unknown" ;
+        this.lastUnknownProperty = key;
+        return "unknown";
       }
 
     });
@@ -71,26 +71,26 @@ QUnit.module("object.get()", {
 
 });
 
-test("should get normal properties", function() {
-  equal(object.get('normal'), 'value') ;
+QUnit.test("should get normal properties", function() {
+  equal(object.get('normal'), 'value');
 });
 
-test("should call computed properties and return their result", function() {
-  equal(object.get("computed"), "value") ;
+QUnit.test("should call computed properties and return their result", function() {
+  equal(object.get("computed"), "value");
 });
 
-test("should return the function for a non-computed property", function() {
-  var value = object.get("method") ;
-  equal(typeOf(value), 'function') ;
+QUnit.test("should return the function for a non-computed property", function() {
+  var value = object.get("method");
+  equal(typeOf(value), 'function');
 });
 
-test("should return null when property value is null", function() {
-  equal(object.get("nullProperty"), null) ;
+QUnit.test("should return null when property value is null", function() {
+  equal(object.get("nullProperty"), null);
 });
 
-test("should call unknownProperty when value is undefined", function() {
-  equal(object.get("unknown"), "unknown") ;
-  equal(object.lastUnknownProperty, "unknown") ;
+QUnit.test("should call unknownProperty when value is undefined", function() {
+  equal(object.get("unknown"), "unknown");
+  equal(object.lastUnknownProperty, "unknown");
 });
 
 // ..........................................................
@@ -111,8 +111,8 @@ QUnit.module("Ember.get()", {
       nullProperty: null,
 
       unknownProperty: function(key, value) {
-        this.lastUnknownProperty = key ;
-        return "unknown" ;
+        this.lastUnknownProperty = key;
+        return "unknown";
       }
 
     });
@@ -125,51 +125,51 @@ QUnit.module("Ember.get()", {
   }
 });
 
-test("should get normal properties on Ember.Observable", function() {
-  equal(get(objectA, 'normal'), 'value') ;
+QUnit.test("should get normal properties on Ember.Observable", function() {
+  equal(get(objectA, 'normal'), 'value');
 });
 
-test("should call computed properties on Ember.Observable and return their result", function() {
-  equal(get(objectA, "computed"), "value") ;
+QUnit.test("should call computed properties on Ember.Observable and return their result", function() {
+  equal(get(objectA, "computed"), "value");
 });
 
-test("should return the function for a non-computed property on Ember.Observable", function() {
-  var value = get(objectA, "method") ;
-  equal(typeOf(value), 'function') ;
+QUnit.test("should return the function for a non-computed property on Ember.Observable", function() {
+  var value = get(objectA, "method");
+  equal(typeOf(value), 'function');
 });
 
-test("should return null when property value is null on Ember.Observable", function() {
-  equal(get(objectA, "nullProperty"), null) ;
+QUnit.test("should return null when property value is null on Ember.Observable", function() {
+  equal(get(objectA, "nullProperty"), null);
 });
 
-test("should call unknownProperty when value is undefined on Ember.Observable", function() {
-  equal(get(object, "unknown"), "unknown") ;
-  equal(object.lastUnknownProperty, "unknown") ;
+QUnit.test("should call unknownProperty when value is undefined on Ember.Observable", function() {
+  equal(get(object, "unknown"), "unknown");
+  equal(object.lastUnknownProperty, "unknown");
 });
 
-test("should get normal properties on standard objects", function() {
+QUnit.test("should get normal properties on standard objects", function() {
   equal(get(objectB, 'normal'), 'value');
 });
 
-test("should return null when property is null on standard objects", function() {
+QUnit.test("should return null when property is null on standard objects", function() {
   equal(get(objectB, 'nullProperty'), null);
 });
 
 /*
-test("raise if the provided object is null", function() {
-  raises(function() {
+QUnit.test("raise if the provided object is null", function() {
+  throws(function() {
     get(null, 'key');
   });
 });
 */
 
-test("raise if the provided object is undefined", function() {
+QUnit.test("raise if the provided object is undefined", function() {
   expectAssertion(function() {
     get(undefined, 'key');
   }, /Cannot call get with 'key' on an undefined object/i);
 });
 
-test("should work when object is Ember (used in Ember.get)", function() {
+QUnit.test("should work when object is Ember (used in Ember.get)", function() {
   equal(get('Ember.RunLoop'), Ember.RunLoop, 'Ember.get');
   equal(get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
@@ -184,7 +184,7 @@ QUnit.module("Ember.get() with paths", {
   }
 });
 
-test("should return a property at a given path relative to the lookup", function() {
+QUnit.test("should return a property at a given path relative to the lookup", function() {
   lookup.Foo = ObservableObject.create({
     Bar: ObservableObject.createWithMixins({
       Baz: computed(function() { return "blargh"; }).volatile()
@@ -194,7 +194,7 @@ test("should return a property at a given path relative to the lookup", function
   equal(get('Foo.Bar.Baz'), "blargh");
 });
 
-test("should return a property at a given path relative to the passed object", function() {
+QUnit.test("should return a property at a given path relative to the passed object", function() {
   var foo = ObservableObject.create({
     bar: ObservableObject.createWithMixins({
       baz: computed(function() { return "blargh"; }).volatile()
@@ -204,7 +204,7 @@ test("should return a property at a given path relative to the passed object", f
   equal(get(foo, 'bar.baz'), "blargh");
 });
 
-test("should return a property at a given path relative to the lookup - JavaScript hash", function() {
+QUnit.test("should return a property at a given path relative to the lookup - JavaScript hash", function() {
   lookup.Foo = {
     Bar: {
       Baz: "blargh"
@@ -214,7 +214,7 @@ test("should return a property at a given path relative to the lookup - JavaScri
   equal(get('Foo.Bar.Baz'), "blargh");
 });
 
-test("should return a property at a given path relative to the passed object - JavaScript hash", function() {
+QUnit.test("should return a property at a given path relative to the passed object - JavaScript hash", function() {
   var foo = {
     bar: {
       baz: "blargh"
@@ -240,18 +240,18 @@ QUnit.module("object.set()", {
       _computed: "computed",
       computed: computed(function(key, value) {
         if (value !== undefined) {
-          this._computed = value ;
+          this._computed = value;
         }
-        return this._computed ;
+        return this._computed;
       }).volatile(),
 
       // method, but not a property
       _method: "method",
       method: function(key, value) {
         if (value !== undefined) {
-          this._method = value ;
+          this._method = value;
         }
-        return this._method ;
+        return this._method;
       },
 
       // null property
@@ -260,53 +260,53 @@ QUnit.module("object.set()", {
       // unknown property
       _unknown: 'unknown',
       unknownProperty: function(key) {
-        return this._unknown ;
+        return this._unknown;
       },
 
       setUnknownProperty: function(key, value) {
-        this._unknown = value ;
-        return this._unknown ;
+        this._unknown = value;
+        return this._unknown;
       }
     });
   }
 
 });
 
-test("should change normal properties and return this", function() {
-  var ret = object.set("normal", "changed") ;
-  equal(object.normal, "changed") ;
-  equal(ret, object) ;
+QUnit.test("should change normal properties and return this", function() {
+  var ret = object.set("normal", "changed");
+  equal(object.normal, "changed");
+  equal(ret, object);
 });
 
-test("should call computed properties passing value and return this", function() {
-  var ret = object.set("computed", "changed") ;
-  equal(object._computed, "changed") ;
-  equal(ret, object) ;
+QUnit.test("should call computed properties passing value and return this", function() {
+  var ret = object.set("computed", "changed");
+  equal(object._computed, "changed");
+  equal(ret, object);
 });
 
-test("should change normal properties when passing undefined", function() {
+QUnit.test("should change normal properties when passing undefined", function() {
   var ret = object.set('normal', undefined);
   equal(object.normal, undefined);
   equal(ret, object);
 });
 
-test("should replace the function for a non-computed property and return this", function() {
-  var ret = object.set("method", "changed") ;
-  equal(object._method, "method") ; // make sure this was NOT run
-  ok(typeOf(object.method) !== 'function') ;
-  equal(ret, object) ;
+QUnit.test("should replace the function for a non-computed property and return this", function() {
+  var ret = object.set("method", "changed");
+  equal(object._method, "method"); // make sure this was NOT run
+  ok(typeOf(object.method) !== 'function');
+  equal(ret, object);
 });
 
-test("should replace prover when property value is null", function() {
-  var ret = object.set("nullProperty", "changed") ;
-  equal(object.nullProperty, "changed") ;
-  equal(ret, object) ;
+QUnit.test("should replace prover when property value is null", function() {
+  var ret = object.set("nullProperty", "changed");
+  equal(object.nullProperty, "changed");
+  equal(ret, object);
 });
 
-test("should call unknownProperty with value when property is undefined", function() {
-  var ret = object.set("unknown", "changed") ;
-  equal(object._unknown, "changed") ;
-  equal(ret, object) ;
+QUnit.test("should call unknownProperty with value when property is undefined", function() {
+  var ret = object.set("unknown", "changed");
+  equal(object._unknown, "changed");
+  equal(ret, object);
 });
 
 // ..........................................................
@@ -372,23 +372,28 @@ QUnit.module("Computed properties", {
       // two computed properties that depend on a third property
       state: 'on',
       isOn: computed(function(key, value) {
-        if (value !== undefined) this.set('state', 'on');
+        if (value !== undefined) {
+          this.set('state', 'on');
+        }
+
         return this.get('state') === 'on';
       }).property('state').volatile(),
 
       isOff: computed(function(key, value) {
-        if (value !== undefined) this.set('state', 'off');
+        if (value !== undefined) {
+          this.set('state', 'off');
+        }
         return this.get('state') === 'off';
       }).property('state').volatile()
 
-    }) ;
+    });
   },
   teardown: function() {
     Ember.lookup = originalLookup;
   }
 });
 
-test("getting values should call function return value", function() {
+QUnit.test("getting values should call function return value", function() {
 
   // get each property twice. Verify return.
   var keys = w('computed computedCached dependent dependentFront dependentCached');
@@ -409,7 +414,7 @@ test("getting values should call function return value", function() {
 
 });
 
-test("setting values should call function return value", function() {
+QUnit.test("setting values should call function return value", function() {
 
   // get each property twice. Verify return.
   var keys = w('computed dependent dependentFront computedCached dependentCached');
@@ -435,14 +440,14 @@ test("setting values should call function return value", function() {
     // property. Other properties blindly call set.
     expectedLength = 3;
     equal(calls.length, expectedLength, fmt('set(%@) should be called the right amount of times', [key]));
-    for(idx=0;idx<2;idx++) {
+    for (idx=0;idx<2;idx++) {
       equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
     }
   });
 
 });
 
-test("notify change should clear cache", function() {
+QUnit.test("notify change should clear cache", function() {
 
   // call get several times to collect call count
   object.get('computedCached'); // should run func
@@ -455,7 +460,7 @@ test("notify change should clear cache", function() {
   equal(object.computedCachedCalls.length, 2, 'should have invoked method 2x');
 });
 
-test("change dependent should clear cache", function() {
+QUnit.test("change dependent should clear cache", function() {
 
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
@@ -466,7 +471,7 @@ test("change dependent should clear cache", function() {
   equal(object.get('inc'), ret1+1, 'should increment after dependent key changes'); // should run again
 });
 
-test("just notifying change of dependent should clear cache", function() {
+QUnit.test("just notifying change of dependent should clear cache", function() {
 
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
@@ -477,7 +482,7 @@ test("just notifying change of dependent should clear cache", function() {
   equal(object.get('inc'), ret1+1, 'should increment after dependent key changes'); // should run again
 });
 
-test("changing dependent should clear nested cache", function() {
+QUnit.test("changing dependent should clear nested cache", function() {
 
   // call get several times to collect call count
   var ret1 = object.get('nestedInc'); // should run func
@@ -489,7 +494,7 @@ test("changing dependent should clear nested cache", function() {
 
 });
 
-test("just notifying change of dependent should clear nested cache", function() {
+QUnit.test("just notifying change of dependent should clear nested cache", function() {
 
   // call get several times to collect call count
   var ret1 = object.get('nestedInc'); // should run func
@@ -504,7 +509,7 @@ test("just notifying change of dependent should clear nested cache", function() 
 
 // This verifies a specific bug encountered where observers for computed
 // properties would fire before their prop caches were cleared.
-test("change dependent should clear cache when observers of dependent are called", function() {
+QUnit.test("change dependent should clear cache when observers of dependent are called", function() {
 
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
@@ -520,7 +525,7 @@ test("change dependent should clear cache when observers of dependent are called
 
 });
 
-test('setting one of two computed properties that depend on a third property should clear the kvo cache', function() {
+QUnit.test('setting one of two computed properties that depend on a third property should clear the kvo cache', function() {
   // we have to call set twice to fill up the cache
   object.set('isOff', true);
   object.set('isOn', true);
@@ -531,7 +536,7 @@ test('setting one of two computed properties that depend on a third property sho
   equal(object.get('isOn'), false, 'object.isOn should be false');
 });
 
-test("dependent keys should be able to be specified as property paths", function() {
+QUnit.test("dependent keys should be able to be specified as property paths", function() {
   var depObj = ObservableObject.createWithMixins({
     menu: ObservableObject.create({
       price: 5
@@ -549,7 +554,7 @@ test("dependent keys should be able to be specified as property paths", function
   equal(depObj.get('menuPrice'), 6, "cache is properly invalidated after nested property changes");
 });
 
-test("nested dependent keys should propagate after they update", function() {
+QUnit.test("nested dependent keys should propagate after they update", function() {
   var bindObj;
   run(function () {
     lookup.DepObj = ObservableObject.createWithMixins({
@@ -586,7 +591,7 @@ test("nested dependent keys should propagate after they update", function() {
   equal(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
 });
 
-test("cacheable nested dependent keys should clear after their dependencies update", function() {
+QUnit.test("cacheable nested dependent keys should clear after their dependencies update", function() {
   ok(true);
 
   var DepObj;
@@ -658,13 +663,13 @@ QUnit.module("Observable objects & object properties ", {
       getEach: function() {
         var keys = ['normal','abnormal'];
         var ret = [];
-        for(var idx=0; idx<keys.length;idx++) {
+        for (var idx=0; idx<keys.length;idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
-        return ret ;
+        return ret;
       },
 
-      newObserver:function() {
+      newObserver: function() {
         this.abnormal = 'changedValueObserved';
       },
 
@@ -681,22 +686,22 @@ QUnit.module("Observable objects & object properties ", {
 
 });
 
-test('incrementProperty and decrementProperty',function() {
+QUnit.test('incrementProperty and decrementProperty', function() {
   var newValue = object.incrementProperty('numberVal');
 
-  equal(25,newValue,'numerical value incremented');
+  equal(25, newValue, 'numerical value incremented');
   object.numberVal = 24;
   newValue = object.decrementProperty('numberVal');
-  equal(23,newValue,'numerical value decremented');
+  equal(23, newValue, 'numerical value decremented');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', 5);
-  equal(30,newValue,'numerical value incremented by specified increment');
+  equal(30, newValue, 'numerical value incremented by specified increment');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', -5);
-  equal(20,newValue,'minus numerical value incremented by specified increment');
+  equal(20, newValue, 'minus numerical value incremented by specified increment');
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', 0);
-  equal(25,newValue,'zero numerical value incremented by specified increment');
+  equal(25, newValue, 'zero numerical value incremented by specified increment');
 
   expectAssertion(function() {
     newValue = object.incrementProperty('numberVal', (0 - void(0))); // Increment by NaN
@@ -710,17 +715,17 @@ test('incrementProperty and decrementProperty',function() {
     newValue = object.incrementProperty('numberVal', 1/0); // Increment by Infinity
   }, /Must pass a numeric value to incrementProperty/i);
 
-  equal(25,newValue,'Attempting to increment by non-numeric values should not increment value');
+  equal(25, newValue, 'Attempting to increment by non-numeric values should not increment value');
 
   object.numberVal = 25;
-  newValue = object.decrementProperty('numberVal',5);
-  equal(20,newValue,'numerical value decremented by specified increment');
+  newValue = object.decrementProperty('numberVal', 5);
+  equal(20, newValue, 'numerical value decremented by specified increment');
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal', -5);
-  equal(30,newValue,'minus numerical value decremented by specified increment');
+  equal(30, newValue, 'minus numerical value decremented by specified increment');
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal', 0);
-  equal(25,newValue,'zero numerical value decremented by specified increment');
+  equal(25, newValue, 'zero numerical value decremented by specified increment');
 
   expectAssertion(function() {
     newValue = object.decrementProperty('numberVal', (0 - void(0))); // Decrement by NaN
@@ -734,17 +739,17 @@ test('incrementProperty and decrementProperty',function() {
     newValue = object.decrementProperty('numberVal', 1/0); // Decrement by Infinity
   }, /Must pass a numeric value to decrementProperty/i);
 
-  equal(25,newValue,'Attempting to decrement by non-numeric values should not decrement value');
+  equal(25, newValue, 'Attempting to decrement by non-numeric values should not decrement value');
 });
 
-test('toggle function, should be boolean',function() {
-  equal(object.toggleProperty('toggleVal',true,false),object.get('toggleVal'));
-  equal(object.toggleProperty('toggleVal',true,false),object.get('toggleVal'));
-  equal(object.toggleProperty('toggleVal',undefined,undefined),object.get('toggleVal'));
+QUnit.test('toggle function, should be boolean', function() {
+  equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+  equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+  equal(object.toggleProperty('toggleVal', undefined, undefined), object.get('toggleVal'));
 });
 
-test('should notify array observer when array changes',function() {
-  get(object, 'normalArray').replace(0,0,6);
+QUnit.test('should notify array observer when array changes', function() {
+  get(object, 'normalArray').replace(0, 0, 6);
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 
@@ -753,8 +758,8 @@ QUnit.module("object.addObserver()", {
 
     ObjectC = ObservableObject.create({
 
-      objectE:ObservableObject.create({
-        propertyVal:"chainedProperty"
+      objectE: ObservableObject.create({
+        propertyVal: "chainedProperty"
       }),
 
       normal: 'value',
@@ -770,35 +775,35 @@ QUnit.module("object.addObserver()", {
         this.incrementor= this.incrementor+1;
       },
 
-      chainedObserver:function() {
-        this.normal2 = 'chainedPropertyObserved' ;
+      chainedObserver: function() {
+        this.normal2 = 'chainedPropertyObserved';
       }
 
     });
   }
 });
 
-test("should register an observer for a property", function() {
+QUnit.test("should register an observer for a property", function() {
   ObjectC.addObserver('normal', ObjectC, 'action');
-  ObjectC.set('normal','newValue');
+  ObjectC.set('normal', 'newValue');
   equal(ObjectC.normal1, 'newZeroValue');
 });
 
-test("should register an observer for a property - Special case of chained property", function() {
-  ObjectC.addObserver('objectE.propertyVal',ObjectC,'chainedObserver');
-  ObjectC.objectE.set('propertyVal',"chainedPropertyValue");
-  equal('chainedPropertyObserved',ObjectC.normal2);
+QUnit.test("should register an observer for a property - Special case of chained property", function() {
+  ObjectC.addObserver('objectE.propertyVal', ObjectC, 'chainedObserver');
+  ObjectC.objectE.set('propertyVal', "chainedPropertyValue");
+  equal('chainedPropertyObserved', ObjectC.normal2);
   ObjectC.normal2 = 'dependentValue';
-  ObjectC.set('objectE','');
-  equal('chainedPropertyObserved',ObjectC.normal2);
+  ObjectC.set('objectE', '');
+  equal('chainedPropertyObserved', ObjectC.normal2);
 });
 
 QUnit.module("object.removeObserver()", {
   setup: function() {
     ObjectD = ObservableObject.create({
 
-      objectF:ObservableObject.create({
-        propertyVal:"chainedProperty"
+      objectF: ObservableObject.create({
+        propertyVal: "chainedProperty"
       }),
 
       normal: 'value',
@@ -812,8 +817,8 @@ QUnit.module("object.removeObserver()", {
       removeAction: function() {
         this.normal2 = 'newDependentValue';
       },
-      removeChainedObserver:function() {
-        this.normal2 = 'chainedPropertyObserved' ;
+      removeChainedObserver: function() {
+        this.normal2 = 'chainedPropertyObserved';
       },
 
       observableValue: "hello world",
@@ -835,32 +840,32 @@ QUnit.module("object.removeObserver()", {
   }
 });
 
-test("should unregister an observer for a property", function() {
+QUnit.test("should unregister an observer for a property", function() {
   ObjectD.addObserver('normal', ObjectD, 'addAction');
-  ObjectD.set('normal','newValue');
+  ObjectD.set('normal', 'newValue');
   equal(ObjectD.normal1, 'newZeroValue');
 
-  ObjectD.set('normal1','zeroValue');
+  ObjectD.set('normal1', 'zeroValue');
 
   ObjectD.removeObserver('normal', ObjectD, 'addAction');
-  ObjectD.set('normal','newValue');
+  ObjectD.set('normal', 'newValue');
   equal(ObjectD.normal1, 'zeroValue');
 });
 
 
-test("should unregister an observer for a property - special case when key has a '.' in it.", function() {
-  ObjectD.addObserver('objectF.propertyVal',ObjectD,'removeChainedObserver');
-  ObjectD.objectF.set('propertyVal',"chainedPropertyValue");
-  ObjectD.removeObserver('objectF.propertyVal',ObjectD,'removeChainedObserver');
+QUnit.test("should unregister an observer for a property - special case when key has a '.' in it.", function() {
+  ObjectD.addObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
+  ObjectD.objectF.set('propertyVal', "chainedPropertyValue");
+  ObjectD.removeObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
   ObjectD.normal2 = 'dependentValue';
-  ObjectD.objectF.set('propertyVal',"removedPropertyValue");
-  equal('dependentValue',ObjectD.normal2);
-  ObjectD.set('objectF','');
-  equal('dependentValue',ObjectD.normal2);
+  ObjectD.objectF.set('propertyVal', "removedPropertyValue");
+  equal('dependentValue', ObjectD.normal2);
+  ObjectD.set('objectF', '');
+  equal('dependentValue', ObjectD.normal2);
 });
 
 
-test("removing an observer inside of an observer shouldn’t cause any problems", function() {
+QUnit.test("removing an observer inside of an observer shouldn’t cause any problems", function() {
   // The observable system should be protected against clients removing
   // observers in the middle of observer notification.
   var encounteredError = false;
@@ -891,10 +896,10 @@ QUnit.module("Bind function ", {
 
     objectB = ObservableObject.create({
       normal: "value",
-      computed:function() {
+      computed: function() {
         this.normal = 'newValue';
       }
-    }) ;
+    });
 
     lookup = Ember.lookup = {
       'Namespace': {
@@ -909,26 +914,26 @@ QUnit.module("Bind function ", {
   }
 });
 
-test("should bind property with method parameter as undefined", function() {
+QUnit.test("should bind property with method parameter as undefined", function() {
   // creating binding
   run(function() {
-    objectA.bind("name", "Namespace.objectB.normal",undefined) ;
+    objectA.bind("name", "Namespace.objectB.normal", undefined);
   });
 
   // now make a change to see if the binding triggers.
   run(function() {
-    objectB.set("normal", "changedValue") ;
+    objectB.set("normal", "changedValue");
   });
 
   // support new-style bindings if available
-  equal("changedValue", objectA.get("name"), "objectA.name is binded");
+  equal("changedValue", objectA.get("name"), "objectA.name is bound");
 });
 
 // ..........................................................
 // SPECIAL CASES
 //
 
-test("changing chained observer object to null should not raise exception", function() {
+QUnit.test("changing chained observer object to null should not raise exception", function() {
 
   var obj = ObservableObject.create({
     foo: ObservableObject.create({

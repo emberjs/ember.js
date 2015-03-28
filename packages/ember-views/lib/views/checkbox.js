@@ -56,12 +56,12 @@ export default View.extend({
   indeterminate: false,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.on('change', this, this._updateElementValue);
   },
 
   didInsertElement: function() {
-    this._super();
+    this._super.apply(this, arguments);
     get(this, 'element').indeterminate = !!get(this, 'indeterminate');
   },
 

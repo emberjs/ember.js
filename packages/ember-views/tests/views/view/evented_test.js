@@ -12,7 +12,7 @@ QUnit.module("EmberView evented helpers", {
   }
 });
 
-test("fire should call method sharing event name if it exists on the view", function() {
+QUnit.test("fire should call method sharing event name if it exists on the view", function() {
   var eventFired = false;
 
   view = EmberView.create({
@@ -32,7 +32,7 @@ test("fire should call method sharing event name if it exists on the view", func
   equal(eventFired, true, "fired the view method sharing the event name");
 });
 
-test("fire does not require a view method with the same name", function() {
+QUnit.test("fire does not require a view method with the same name", function() {
   var eventFired = false;
 
   view = EmberView.create({

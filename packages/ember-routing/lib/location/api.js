@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // deprecate, assert
+import environment from "ember-metal/environment";
 
 /**
 @module ember
@@ -172,13 +173,13 @@ export default {
   */
   registerImplementation: function(name, implementation) {
     Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
-                    ' Register your custom location implementation with the container instead.', false);
+                    ' Register your custom location implementation with the container instead.');
 
     this.implementations[name] = implementation;
   },
 
   implementations: {},
-  _location: window.location,
+  _location: environment.location,
 
   /**
     Returns the current `location.hash` by parsing location.href since browsers

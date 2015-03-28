@@ -1,12 +1,14 @@
 import Ember from "ember-metal/core"; // FEATURES, assert
+import { indexOf } from "ember-metal/array";
 
 /**
 @module ember
 @submodule ember-routing
 */
 
-function DSL(name) {
+function DSL(name, options) {
   this.parent = name;
+  this.enableLoadingSubstates = options && options.enableLoadingSubstates;
   this.matches = [];
 }
 export default DSL;
@@ -23,16 +25,28 @@ DSL.prototype = {
     }
 
     var type = options.resetNamespace === true ? 'resource' : 'route';
-    Ember.assert("'basic' cannot be used as a " + type + " name.", name !== 'basic');
+    Ember.assert(
+      "'" + name + "' cannot be used as a " + type + " name.",
+      (function() {
+        if (options.overrideNameAssertion === true) { return true; }
+
+        return indexOf.call(['array', 'basic', 'object', 'application'], name) === -1;
+      })()
+    );
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
-      createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
+      if (this.enableLoadingSubstates) {
+        createRoute(this, name + '_loading', { resetNamespace: options.resetNamespace });
+        createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+      }
     }
 
     if (callback) {
       var fullName = getFullName(this, name, options.resetNamespace);
-      var dsl = new DSL(fullName);
+      var dsl = new DSL(fullName, {
+        enableLoadingSubstates: this.enableLoadingSubstates
+      });
+
       createRoute(dsl, 'loading');
       createRoute(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
 

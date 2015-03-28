@@ -2,15 +2,14 @@
   "name": "ember",
   "dependencies": {
     "jquery": "~1.11.1",
-    "qunit": "~1.12.0",
+    "qunit": "~1.17.1",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
   "devDependencies": {
     "backburner": "https://github.com/ebryn/backburner.js.git#f4bd6a2df221240ed36d140f0c53c036a7ecacad",
     "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.14",
-    "router.js": "https://github.com/tildeio/router.js.git#9471aaaa28c11907d8fdf8969b70c6a93ad19fd1",
-    "route-recognizer": "https://github.com/tildeio/route-recognizer.git#404b8485948120330f4c262a5cc997ac782d5466",
+    "router.js": "https://github.com/tildeio/router.js.git#ed45bc5c5e055af0ab875ef2c52feda792ee23e4",
     "dag-map": "https://github.com/krisselden/dag-map.git#e307363256fe918f426e5a646cb5f5062d3245be",
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#1c30a1666273ab2a9b134a42bad28c774f9ecdfc"
+    "ember-dev": "https://github.com/emberjs/ember-dev.git#1a1ef3e1806be21dd554d285521abc0b13cdfe20"
   }
 }

@@ -161,17 +161,11 @@ export default EmberObject.extend({
     var resolveMethodName = parsedName.resolveMethodName;
     var resolved;
 
-    if (!(parsedName.name && parsedName.type)) {
-      throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
-    }
-
     if (this[resolveMethodName]) {
       resolved = this[resolveMethodName](parsedName);
     }
 
-    if (!resolved) {
-      resolved = this.resolveOther(parsedName);
-    }
+    resolved = resolved || this.resolveOther(parsedName);
 
     if (parsedName.root && parsedName.root.LOG_RESOLVER) {
       this._logLookup(resolved, parsedName);
@@ -179,6 +173,7 @@ export default EmberObject.extend({
 
     return resolved;
   },
+
   /**
     Convert the string name of the form 'type:name' to
     a Javascript object with the parsed aspects of the name
@@ -197,7 +192,8 @@ export default EmberObject.extend({
 
   _parseName: function(fullName) {
     var nameParts = fullName.split(':');
-    var type = nameParts[0], fullNameWithoutType = nameParts[1];
+    var type = nameParts[0];
+    var fullNameWithoutType = nameParts[1];
     var name = fullNameWithoutType;
     var namespace = get(this, 'namespace');
     var root = namespace;
@@ -213,13 +209,19 @@ export default EmberObject.extend({
                    ' namespace, but the namespace could not be found', root);
     }
 
+    var resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
+
+    if (!(name && type)) {
+      throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
+    }
+
     return {
       fullName: fullName,
       type: type,
       fullNameWithoutType: fullNameWithoutType,
       name: name,
       root: root,
-      resolveMethodName: 'resolve' + classify(type)
+      resolveMethodName: 'resolve' + resolveMethodName
     };
   },
 
@@ -253,6 +255,7 @@ export default EmberObject.extend({
   makeToString: function(factory, fullName) {
     return factory.toString();
   },
+
   /**
     Given a parseName object (output from `parseName`), apply
     the conventions expected by `Ember.Router`
@@ -339,7 +342,7 @@ export default EmberObject.extend({
     var className = classify(parsedName.name);
     var factory = get(parsedName.root, className);
 
-     if (factory) { return factory; }
+    if (factory) { return factory; }
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
@@ -368,6 +371,11 @@ export default EmberObject.extend({
     if (factory) { return factory; }
   },
 
+  resolveMain: function(parsedName) {
+    var className = classify(parsedName.type);
+    return get(parsedName.root, className);
+  },
+
   /**
    @method _logLookup
    @param {Boolean} found
@@ -377,8 +385,11 @@ export default EmberObject.extend({
   _logLookup: function(found, parsedName) {
     var symbol, padding;
 
-    if (found) { symbol = '[✓]'; }
-    else       { symbol = '[ ]'; }
+    if (found) {
+      symbol = '[✓]';
+    } else {
+      symbol = '[ ]';
+    }
 
     if (parsedName.fullName.length > 60) {
       padding = '.';

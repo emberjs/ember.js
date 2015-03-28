@@ -1,4 +1,3 @@
-/* global navigator */
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import "ember-metal";
@@ -9,7 +8,9 @@ import "ember-application";
 import "ember-extension-support";
 import "ember-htmlbars";
 import "ember-routing-htmlbars";
+import "ember-routing-views";
 
+import environment from "ember-metal/environment";
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 if (Ember.__loader.registry['ember-template-compiler']) {
@@ -30,4 +31,7 @@ Ember
 @module ember
 */
 
-Ember.deprecate('Usage of Ember is deprecated for Internet Explorer 6 and 7, support will be removed in the next major version.', !navigator.userAgent.match(/MSIE [67]/));
+Ember.deprecate(
+  'Usage of Ember is deprecated for Internet Explorer 6 and 7, support will be removed in the next major version.',
+  !environment.userAgent.match(/MSIE [67]/)
+);

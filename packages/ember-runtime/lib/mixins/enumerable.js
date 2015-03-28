@@ -96,7 +96,7 @@ export default Mixin.create({
   /**
     Implement this method to make your class enumerable.
 
-    This method will be call repeatedly during enumeration. The index value
+    This method will be called repeatedly during enumeration. The index value
     will always begin with 0 and increment monotonically. You don't have to
     rely on the index value to determine what object to return, but you should
     always check the value and start from the beginning when you see the
@@ -221,7 +221,7 @@ export default Mixin.create({
     var found = this.find(function(item) {
       return item === obj;
     });
-    
+
     return found !== undefined;
   },
 
@@ -263,16 +263,16 @@ export default Mixin.create({
       target = null;
     }
 
-    for(var idx = 0; idx < len; idx++) {
-      var next = this.nextObject(idx, last, context) ;
+    for (var idx = 0; idx < len; idx++) {
+      var next = this.nextObject(idx, last, context);
       callback.call(target, next, idx, this);
-      last = next ;
+      last = next;
     }
 
-    last = null ;
+    last = null;
     context = pushCtx(context);
 
-    return this ;
+    return this;
   },
 
   /**
@@ -282,9 +282,7 @@ export default Mixin.create({
     @param {String} key name of the property
     @return {Array} The mapped array.
   */
-  getEach: function(key) {
-    return this.mapBy(key);
-  },
+  getEach: aliasMethod('mapBy'),
 
   /**
     Sets the value on the named property for each member. This is more
@@ -333,10 +331,10 @@ export default Mixin.create({
     var ret = Ember.A();
 
     this.forEach(function(x, idx, i) {
-      ret[idx] = callback.call(target, x, idx,i);
+      ret[idx] = callback.call(target, x, idx, i);
     });
 
-    return ret ;
+    return ret;
   },
 
   /**
@@ -402,12 +400,12 @@ export default Mixin.create({
       }
     });
 
-    return ret ;
+    return ret;
   },
 
   /**
     Returns an array with all of the items in the enumeration where the passed
-    function returns false for. This method is the inverse of filter().
+    function returns true. This method is the inverse of filter().
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -541,7 +539,7 @@ export default Mixin.create({
     var last = null;
     var next, ret;
 
-    for(var idx = 0; idx < len && !found; idx++) {
+    for (var idx = 0; idx < len && !found; idx++) {
       next = this.nextObject(idx, last, context);
 
       if (found = callback.call(target, next, idx, this)) {
@@ -955,7 +953,7 @@ export default Mixin.create({
 
   /**
     This property will trigger anytime the enumerable's content changes.
-    You can observe this property to be notified of changes to the enumerables
+    You can observe this property to be notified of changes to the enumerable's
     content.
 
     For plain enumerables, this property is read only. `Array` overrides
@@ -987,7 +985,7 @@ export default Mixin.create({
     var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
 
-    if (!hasObservers) { 
+    if (!hasObservers) {
       propertyWillChange(this, 'hasEnumerableObservers');
     }
 
@@ -1066,7 +1064,7 @@ export default Mixin.create({
     if ('number' === typeof adding) {
       addCnt = adding;
     } else if (adding) {
-      addCnt = get(adding,'length');
+      addCnt = get(adding, 'length');
     } else {
       addCnt = adding = -1;
     }
@@ -1143,7 +1141,7 @@ export default Mixin.create({
 
     propertyDidChange(this, '[]');
 
-    return this ;
+    return this;
   },
 
   /**
@@ -1161,7 +1159,7 @@ export default Mixin.create({
     var sortKeys = arguments;
 
     return this.toArray().sort(function(a, b) {
-      for(var i = 0; i < sortKeys.length; i++) {
+      for (var i = 0; i < sortKeys.length; i++) {
         var key = sortKeys[i];
         var propA = get(a, key);
         var propB = get(b, key);

@@ -53,7 +53,7 @@ testWithDefault('complex depndent keys', function(get, set) {
   var MyClass = EmberObject.extend({
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
@@ -87,12 +87,12 @@ testWithDefault('complex depndent keys', function(get, set) {
   equal(get(obj2, 'foo'), 'BOOM 22');
 });
 
-testWithDefault('complex depndent keys changing complex dependent keys', function(get, set) {
+testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
 
   var MyClass = EmberObject.extend({
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
@@ -108,7 +108,7 @@ testWithDefault('complex depndent keys changing complex dependent keys', functio
   var Subclass = MyClass.extend({
 
     init: function() {
-      this._super();
+      this._super.apply(this, arguments);
       set(this, 'bar2', { baz: 'BIFF2' });
     },
 
@@ -131,7 +131,7 @@ testWithDefault('complex depndent keys changing complex dependent keys', functio
   equal(get(obj2, 'foo'), 'BLARG 2', 'should invalidate property');
 });
 
-test("can retrieve metadata for a computed property", function() {
+QUnit.test("can retrieve metadata for a computed property", function() {
   var MyClass = EmberObject.extend({
     computedProperty: computed(function() {
     }).meta({ key: 'keyValue' })
@@ -157,7 +157,7 @@ test("can retrieve metadata for a computed property", function() {
   }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
 });
 
-test("can iterate over a list of computed properties for a class", function() {
+QUnit.test("can iterate over a list of computed properties for a class", function() {
   var MyClass = EmberObject.extend({
     foo: computed(function() {
 
@@ -207,7 +207,7 @@ test("can iterate over a list of computed properties for a class", function() {
   deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], "all inherited properties are included");
 });
 
-test("list of properties updates when an additional property is added (such cache busting)", function() {
+QUnit.test("list of properties updates when an additional property is added (such cache busting)", function() {
   var MyClass = EmberObject.extend({
     foo: computed(K),
 

@@ -1,4 +1,4 @@
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 
@@ -13,7 +13,7 @@ QUnit.module("views/view/state_deprecation", {
 });
 
 if (hasPropertyAccessors) {
-  test("view.state should be an alias of view._state with a deprecation", function() {
+  QUnit.test("view.state should be an alias of view._state with a deprecation", function() {
     expect(2);
     view = EmberView.create();
 
@@ -22,7 +22,7 @@ if (hasPropertyAccessors) {
     }, 'Usage of `state` is deprecated, use `_state` instead.');
   });
 
-  test("view.states should be an alias of view._states with a deprecation", function() {
+  QUnit.test("view.states should be an alias of view._states with a deprecation", function() {
     expect(2);
     view = EmberView.create();
 
@@ -32,7 +32,7 @@ if (hasPropertyAccessors) {
   });
 }
 
-test("no deprecation is printed if view.state or view._state is not looked up", function() {
+QUnit.test("no deprecation is printed if view.state or view._state is not looked up", function() {
   expect(2);
   expectNoDeprecation();
 

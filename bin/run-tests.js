@@ -135,6 +135,9 @@ switch (process.env.TEST_SUITE) {
     generateExtendPrototypeTests();
     generateEachPackageTests();
     break;
+  case 'node':
+    require('./run-node-tests');
+    return;
   default:
     generateEachPackageTests();
 }

@@ -1,8 +1,8 @@
 import Ember from 'ember-metal/core';
-import {computed} from "ember-metal/computed";
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
 import ArrayController from "ember-runtime/controllers/array_controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
 
 QUnit.module("ember-runtime/controllers/array_controller_test");
 
@@ -25,34 +25,39 @@ MutableArrayTests.extend({
   }
 }).run();
 
-test("defaults its `model` to an empty array", function () {
+QUnit.module("ember-runtime: array_controller");
+
+QUnit.test("defaults its `model` to an empty array", function () {
   var Controller = ArrayController.extend();
   deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults its model to an empty array");
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
   equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });
 
-
-test("Ember.ArrayController length property works even if model was not set initially", function() {
+QUnit.test("Ember.ArrayController length property works even if model was not set initially", function() {
   var controller = ArrayController.create();
   controller.pushObject('item');
   equal(controller.get('length'), 1);
 });
 
-if (Ember.FEATURES.isEnabled("ember-runtime-item-controller-inline-class")) {
-  test("Ember.ArrayController can accept a controller class directly as the value for itemController", function() {
-    var controller = ArrayController.create({
-      itemController: ObjectController.extend({
-        expand: computed(function() {
-          return this.get('text') + ' is working!';
-        }).property('text')
-      })
-    });
+QUnit.test('works properly when model is set to an Ember.A()', function() {
+  var controller = ArrayController.create();
 
-    controller.pushObjects([{
-      text: 'itemController'
-    }]);
+  set(controller, 'model', Ember.A(['red', 'green']));
 
-    strictEqual(controller.get('firstObject.expand'), 'itemController is working!');
-  });
-}
+  deepEqual(get(controller, 'model'), ['red', 'green'], "can set model as an Ember.Array");
+});
+
+QUnit.test('works properly when model is set to a plain array', function() {
+  var controller = ArrayController.create();
+
+  if (Ember.EXTEND_PROTOTYPES) {
+    set(controller, 'model', ['red', 'green']);
+
+    deepEqual(get(controller, 'model'), ['red', 'green'], "can set model as a plain array");
+  } else {
+    expectAssertion(function() {
+      set(controller, 'model', ['red', 'green']);
+    }, /ArrayController expects `model` to implement the Ember.Array mixin. This can often be fixed by wrapping your model with `Ember\.A\(\)`./);
+  }
+});

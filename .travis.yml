@@ -11,11 +11,10 @@ cache:
 
 install:
   - "npm install"
-  - "npm run docs"
 
 after_success:
-  - "./bin/publish_to_s3.js"
-  - "./bin/bower_ember_build"
+  - "./bin/publish_builds"
+
 script:
   - npm test
 
@@ -38,6 +37,7 @@ env:
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
     - TEST_SUITE=each-package-tests
-    - TEST_SUITE=built-tests
+    - TEST_SUITE=built-tests EMBER_ENV=production
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
+    - TEST_SUITE=node EMBER_ENV=production

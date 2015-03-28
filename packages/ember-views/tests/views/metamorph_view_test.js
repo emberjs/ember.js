@@ -32,7 +32,7 @@ QUnit.module("Metamorph views", {
   }
 });
 
-test("a Metamorph view is not a view's parentView", function() {
+QUnit.test("a Metamorph view is not a view's parentView", function() {
   childView = EmberView.create({
     render: function(buffer) {
       buffer.push("<p>Bye bros</p>");
@@ -90,13 +90,13 @@ QUnit.module("Metamorph views correctly handle DOM", {
   }
 });
 
-test("a metamorph view generates without a DOM node", function() {
+QUnit.test("a metamorph view generates without a DOM node", function() {
   var meta = jQuery("> h2", "#" + get(view, 'elementId'));
 
   equal(meta.length, 1, "The metamorph element should be directly inside its parent");
 });
 
-test("a metamorph view can be removed from the DOM", function() {
+QUnit.test("a metamorph view can be removed from the DOM", function() {
   run(function() {
     metamorphView.destroy();
   });
@@ -105,7 +105,7 @@ test("a metamorph view can be removed from the DOM", function() {
   equal(meta.length, 0, "the associated DOM was removed");
 });
 
-test("a metamorph view can be rerendered", function() {
+QUnit.test("a metamorph view can be rerendered", function() {
   equal(jQuery('#from-meta').text(), "Jason", "precond - renders to the DOM");
 
   set(metamorphView, 'powerRanger', 'Trini');
@@ -120,7 +120,7 @@ test("a metamorph view can be rerendered", function() {
 // Redefining without setup/teardown
 QUnit.module("Metamorph views correctly handle DOM");
 
-test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function() {
+QUnit.test("a metamorph view calls its children's willInsertElement and didInsertElement", function() {
   var parentView;
   var willInsertElementCalled = false;
   var didInsertElementCalled = false;
@@ -160,7 +160,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
 
 });
 
-test("replacing a Metamorph should invalidate childView elements", function() {
+QUnit.test("replacing a Metamorph should invalidate childView elements", function() {
   var elementOnDidInsert;
 
   view = EmberView.create({
@@ -168,7 +168,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 
     CustomView: EmberView.extend({
       init: function() {
-        this._super();
+        this._super.apply(this, arguments);
         // This will be called in preRender
         // We want it to cache a null value
         // Hopefully it will be invalidated when `show` is toggled
@@ -192,7 +192,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
   run(function() { view.destroy(); });
 });
 
-test("trigger rerender of parent and SimpleBoundView", function () {
+QUnit.test("trigger rerender of parent and SimpleBoundView", function () {
   var view = EmberView.create({
     show: true,
     foo: 'bar',
@@ -215,7 +215,7 @@ test("trigger rerender of parent and SimpleBoundView", function () {
   });
 });
 
-test("re-rendering and then changing the property does not raise an exception", function() {
+QUnit.test("re-rendering and then changing the property does not raise an exception", function() {
   view = EmberView.create({
     show: true,
     foo: 'bar',
@@ -228,8 +228,8 @@ test("re-rendering and then changing the property does not raise an exception", 
   equal(view.$().text(), 'truth');
 
   run(function() {
-    view.get('_childViews')[0].rerender();
-    view.get('_childViews')[0].rerender();
+    view._childViews[0].rerender();
+    view._childViews[0].rerender();
   });
 
   equal(view.$().text(), 'truth');

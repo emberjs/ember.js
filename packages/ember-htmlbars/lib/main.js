@@ -7,17 +7,6 @@ import {
   registerPlugin
 } from "ember-template-compiler";
 
-import inline from "ember-htmlbars/hooks/inline";
-import content from "ember-htmlbars/hooks/content";
-import component from "ember-htmlbars/hooks/component";
-import block from "ember-htmlbars/hooks/block";
-import element from "ember-htmlbars/hooks/element";
-import subexpr from "ember-htmlbars/hooks/subexpr";
-import attribute from "ember-htmlbars/hooks/attribute";
-import concat from "ember-htmlbars/hooks/concat";
-import get from "ember-htmlbars/hooks/get";
-import set from "ember-htmlbars/hooks/set";
-import { DOMHelper } from "morph";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
@@ -25,8 +14,8 @@ import {
   registerHelper,
   default as helpers
 } from "ember-htmlbars/helpers";
-import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
+import { componentHelper } from "ember-htmlbars/helpers/component";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
 import { withHelper } from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
@@ -37,9 +26,7 @@ import {
 } from "ember-htmlbars/helpers/bind-attr";
 import {
   ifHelper,
-  unlessHelper,
-  unboundIfHelper,
-  boundIfHelper
+  unlessHelper
 } from "ember-htmlbars/helpers/if_unless";
 import { locHelper } from "ember-htmlbars/helpers/loc";
 import { partialHelper } from "ember-htmlbars/helpers/partial";
@@ -58,15 +45,14 @@ import "ember-htmlbars/system/bootstrap";
 // Ember.Handlebars global if htmlbars is enabled
 import "ember-htmlbars/compat";
 
-registerHelper('bindHelper', bindHelper);
-registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
+if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+  registerHelper('component', componentHelper);
+}
 registerHelper('yield', yieldHelper);
 registerHelper('with', withHelper);
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
-registerHelper('unboundIf', unboundIfHelper);
-registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
 registerHelper('debugger', debuggerHelper);
 registerHelper('loc', locHelper);
@@ -79,37 +65,13 @@ registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
-registerHelper('concat', concat);
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  Ember.HTMLBars = {
-    _registerHelper: registerHelper,
-    template: template,
-    compile: compile,
-    precompile: precompile,
-    makeViewHelper: makeViewHelper,
-    makeBoundHelper: makeBoundHelper,
-    registerPlugin: registerPlugin
-  };
-
-}
-
-export var defaultEnv = {
-  dom: new DOMHelper(),
-
-  hooks: {
-    get: get,
-    set: set,
-    inline: inline,
-    content: content,
-    block: block,
-    element: element,
-    subexpr: subexpr,
-    component: component,
-    attribute: attribute,
-    concat: concat
-  },
-
-  helpers: helpers,
-  useFragmentCache: true
+Ember.HTMLBars = {
+  _registerHelper: registerHelper,
+  template: template,
+  compile: compile,
+  precompile: precompile,
+  makeViewHelper: makeViewHelper,
+  makeBoundHelper: makeBoundHelper,
+  registerPlugin: registerPlugin
 };

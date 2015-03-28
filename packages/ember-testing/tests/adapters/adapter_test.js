@@ -21,7 +21,7 @@ QUnit.module("ember-testing Adapter", {
 //   equal(adapter.asyncEnd, K);
 // });
 
-test("exception throws", function() {
+QUnit.test("exception throws", function() {
   var error = "Hai";
   var thrown;
 

@@ -26,8 +26,10 @@ export default {
   },
 
   destroyElement: function(view) {
-    if (view._renderer)
+    if (view._renderer) {
       view._renderer.remove(view, false);
+    }
+
     return view;
   },
 

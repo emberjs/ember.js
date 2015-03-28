@@ -17,5 +17,5 @@
 var S3Publisher = require('ember-publisher');
 var configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
 
-publisher = new S3Publisher({projectConfigPath: configPath});
+var publisher = new S3Publisher({projectConfigPath: configPath});
 publisher.publish();

@@ -11,15 +11,15 @@ import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
-import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   routeArgs,
   getActiveTargetName,
   stashParamNames
 } from "ember-routing/utils";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
+
+import RouterState from "./router_state";
 
 /**
 @module ember
@@ -68,16 +68,40 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
+  _initRouterJs: function(moduleBasedResolver) {
+    var router = this.router = new Router();
+    router.triggerEvent = triggerEvent;
+
+    router._triggerWillChangeContext = K;
+    router._triggerWillLeave = K;
+
+    var dslCallbacks = this.constructor.dslCallbacks || [K];
+    var dsl = new EmberRouterDSL(null, {
+      enableLoadingSubstates: !!moduleBasedResolver
+    });
+
+    function generateDSL() {
+      this.resource('application', { path: "/", overrideNameAssertion: true }, function() {
+        for (var i=0; i < dslCallbacks.length; i++) {
+          dslCallbacks[i].call(this);
+        }
+      });
+    }
+
+    generateDSL.call(dsl);
+
+    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      router.log = Ember.Logger.debug;
+    }
+
+    router.map(dsl.generate());
+  },
+
   init: function() {
-    this.router = this.constructor.router || this.constructor.map(K);
     this._activeViews = {};
     this._setupLocation();
     this._qpCache = {};
     this._queuedQPChanges = {};
-
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      this.router.log = Ember.Logger.debug;
-    }
   },
 
   /**
@@ -100,38 +124,41 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting: function() {
-    this.router = this.router || this.constructor.map(K);
+  startRouting: function(moduleBasedResolver) {
+    var initialURL = get(this, 'initialURL');
+    var location = get(this, 'location');
+
+    if (this.setupRouter(moduleBasedResolver, location)) {
+      if (typeof initialURL === "undefined") {
+        initialURL = get(this, 'location').getURL();
+      }
+      var initialTransition = this.handleURL(initialURL);
+      if (initialTransition && initialTransition.error) {
+        throw initialTransition.error;
+      }
+    }
+  },
+
+  setupRouter: function(moduleBasedResolver) {
+    this._initRouterJs(moduleBasedResolver);
 
     var router = this.router;
     var location = get(this, 'location');
-    var container = this.container;
     var self = this;
-    var initialURL = get(this, 'initialURL');
-    var initialTransition;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
     if (get(location, 'cancelRouterSetup')) {
-      return;
+      return false;
     }
 
     this._setupRouter(router, location);
-
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
 
     location.onUpdateURL(function(url) {
       self.handleURL(url);
     });
 
-    if (typeof initialURL === "undefined") {
-      initialURL = location.getURL();
-    }
-    initialTransition = this.handleURL(initialURL);
-    if (initialTransition && initialTransition.error) {
-      throw initialTransition.error;
-    }
+    return true;
   },
 
   /**
@@ -147,9 +174,10 @@ var EmberRouter = EmberObject.extend(Evented, {
   didTransition: function(infos) {
     updatePaths(this);
 
-    this._cancelLoadingEvent();
+    this._cancelSlowTransitionTimer();
 
     this.notifyPropertyChange('url');
+    this.set('currentState', this.targetState);
 
     // Put this in the runloop so url will be accurate. Seems
     // less surprising than didTransition being out of sync.
@@ -157,6 +185,59 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Ember.Logger.log("Transitioned into '" + EmberRouter._routePath(infos) + "'");
+    }
+  },
+
+  _setOutlets: function() {
+    var handlerInfos = this.router.currentHandlerInfos;
+    var route;
+    var defaultParentState;
+    var liveRoutes = null;
+
+    if (!handlerInfos) {
+      return;
+    }
+
+    for (var i = 0; i < handlerInfos.length; i++) {
+      route = handlerInfos[i].handler;
+      var connections = route.connections;
+      var ownState;
+      for (var j = 0; j < connections.length; j++) {
+        var appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
+        liveRoutes = appended.liveRoutes;
+        if (appended.ownState.render.name === route.routeName || appended.ownState.render.outlet === 'main') {
+          ownState = appended.ownState;
+        }
+      }
+      if (connections.length === 0) {
+        ownState = representEmptyRoute(liveRoutes, defaultParentState, route);
+      }
+      defaultParentState = ownState;
+    }
+    if (!this._toplevelView) {
+      var OutletView = this.container.lookupFactory('view:-outlet');
+      this._toplevelView = OutletView.create({ _isTopLevel: true });
+      var instance = this.container.lookup('-application-instance:main');
+      instance.didCreateRootView(this._toplevelView);
+    }
+    this._toplevelView.setOutletState(liveRoutes);
+  },
+
+  /**
+    Handles notifying any listeners of an impending URL
+    change.
+
+    Triggers the router level `willTransition` hook.
+
+    @method willTransition
+    @private
+    @since 1.11.0
+  */
+  willTransition: function(oldInfos, newInfos, transition) {
+    run.once(this, this.trigger, 'willTransition', transition);
+
+    if (get(this, 'namespace').LOG_TRANSITIONS) {
+      Ember.Logger.log("Preparing to transition from '" + EmberRouter._routePath(oldInfos) + "' to '" + EmberRouter._routePath(newInfos) + "'");
     }
   },
 
@@ -169,7 +250,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doURLTransition: function(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
-    listenForTransitionErrors(transition);
+    didBeginTransition(transition, this);
     return transition;
   },
 
@@ -238,8 +319,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @since 1.7.0
   */
   isActiveIntent: function(routeName, models, queryParams) {
-    var router = this.router;
-    return router.isActive.apply(router, arguments);
+    return this.currentState.isActiveIntent(routeName, models, queryParams);
   },
 
   send: function(name, context) {
@@ -265,7 +345,18 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method reset
    */
   reset: function() {
-    this.router.reset();
+    if (this.router) {
+      this.router.reset();
+    }
+  },
+
+  willDestroy: function() {
+    if (this._toplevelView) {
+      this._toplevelView.destroy();
+      this._toplevelView = null;
+    }
+    this._super.apply(this, arguments);
+    this.reset();
   },
 
   _lookupActiveView: function(templateName) {
@@ -292,8 +383,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
 
-    if (rootURL && this.container && !this.container.has('-location-setting:root-url')) {
-      this.container.register('-location-setting:root-url', rootURL, {
+    if (rootURL && this.container && !this.container._registry.has('-location-setting:root-url')) {
+      this.container._registry.register('-location-setting:root-url', rootURL, {
         instantiate: false
       });
     }
@@ -343,7 +434,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        container.register(routeName, DefaultRoute.extend());
+        container._registry.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
         if (get(self, 'namespace.LOG_ACTIVE_GENERATION')) {
@@ -357,7 +448,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setupRouter: function(router, location) {
-    var lastURL, emberRouter = this;
+    var lastURL;
+    var emberRouter = this;
 
     router.getHandler = this._getHandlerFunction();
 
@@ -384,6 +476,12 @@ var EmberRouter = EmberObject.extend(Evented, {
     router.didTransition = function(infos) {
       emberRouter.didTransition(infos);
     };
+
+    if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+      router.willTransition = function(oldInfos, newInfos, transition) {
+        emberRouter.willTransition(oldInfos, newInfos, transition);
+      };
+    }
   },
 
   _serializeQueryParams: function(targetRouteName, queryParams) {
@@ -442,7 +540,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
     var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
 
-    listenForTransitionErrors(transitionPromise);
+    didBeginTransition(transitionPromise, this);
 
     return transitionPromise;
   },
@@ -462,7 +560,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
-    var map = {}, qps = [];
+    var map = {};
+    var qps = [];
     this._qpCache[leafRouteName] = {
       map: map,
       qps: qps
@@ -540,25 +639,34 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _scheduleLoadingEvent: function(transition, originRoute) {
-    this._cancelLoadingEvent();
-    this._loadingStateTimer = run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
+    this._cancelSlowTransitionTimer();
+    this._slowTransitionTimer = run.scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
   },
 
-  _fireLoadingEvent: function(transition, originRoute) {
+  currentState: null,
+  targetState: null,
+
+  _handleSlowTransition: function(transition, originRoute) {
     if (!this.router.activeTransition) {
       // Don't fire an event if we've since moved on from
       // the transition that put us in a loading state.
       return;
     }
 
+    this.set('targetState', RouterState.create({
+      emberRouter: this,
+      routerJs: this.router,
+      routerJsState: this.router.activeTransition.state
+    }));
+
     transition.trigger(true, 'loading', transition, originRoute);
   },
 
-  _cancelLoadingEvent: function () {
-    if (this._loadingStateTimer) {
-      run.cancel(this._loadingStateTimer);
+  _cancelSlowTransitionTimer: function () {
+    if (this._slowTransitionTimer) {
+      run.cancel(this._slowTransitionTimer);
     }
-    this._loadingStateTimer = null;
+    this._slowTransitionTimer = null;
   }
 });
 
@@ -654,14 +762,20 @@ var defaultActionHandlers = {
   }
 };
 
-function logError(error, initialMessage) {
+function logError(_error, initialMessage) {
   var errorArgs = [];
+  var error;
+  if (_error && typeof _error === 'object' && typeof _error.errorThrown === 'object') {
+    error = _error.errorThrown;
+  } else {
+    error = _error;
+  }
 
   if (initialMessage) { errorArgs.push(initialMessage); }
 
   if (error) {
     if (error.message) { errorArgs.push(error.message); }
-    if (error.stack)   { errorArgs.push(error.stack); }
+    if (error.stack) { errorArgs.push(error.stack); }
 
     if (typeof error === "string") { errorArgs.push(error); }
   }
@@ -693,7 +807,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 function routeHasBeenDefined(router, name) {
   var container = router.container;
   return router.hasRoute(name) &&
-         (container.has('template:' + name) || container.has('route:' + name));
+         (container._registry.has('template:' + name) || container._registry.has('route:' + name));
 }
 
 function triggerEvent(handlerInfos, ignoreFailure, args) {
@@ -794,34 +908,15 @@ EmberRouter.reopenClass({
     @param callback
   */
   map: function(callback) {
-    var router = this.router;
-    if (!router) {
-      router = new Router();
 
-      if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
-        router._willChangeContextEvent = 'willChangeModel';
-      } else {
-        router._triggerWillChangeContext = K;
-        router._triggerWillLeave = K;
-      }
-
-      router.callbacks = [];
-      router.triggerEvent = triggerEvent;
-      this.reopenClass({ router: router });
+    if (!this.dslCallbacks) {
+      this.dslCallbacks = [];
+      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
-    var dsl = EmberRouterDSL.map(function() {
-      this.resource('application', { path: "/" }, function() {
-        for (var i=0; i < router.callbacks.length; i++) {
-          router.callbacks[i].call(this);
-        }
-        callback.call(this);
-      });
-    });
+    this.dslCallbacks.push(callback);
 
-    router.callbacks.push(callback);
-    router.map(dsl.generate());
-    return router;
+    return this;
   },
 
   _routePath: function(handlerInfos) {
@@ -860,7 +955,18 @@ EmberRouter.reopenClass({
   }
 });
 
-function listenForTransitionErrors(transition) {
+function didBeginTransition(transition, router) {
+  var routerState = RouterState.create({
+    emberRouter: router,
+    routerJs: router.router,
+    routerJsState: transition.state
+  });
+
+  if (!router.currentState) {
+    router.set('currentState', routerState);
+  }
+  router.set('targetState', routerState);
+
   transition.then(null, function(error) {
     if (!error || !error.name) { return; }
 
@@ -885,6 +991,94 @@ function forEachQueryParam(router, targetRouteName, queryParams, callback) {
     if (qp) {
       callback(key, value, qp);
     }
+  }
+}
+
+function findLiveRoute(liveRoutes, name) {
+  if (!liveRoutes) { return; }
+  var stack = [liveRoutes];
+  while (stack.length > 0) {
+    var test = stack.shift();
+    if (test.render.name === name) {
+      return test;
+    }
+    var outlets = test.outlets;
+    for (var outletName in outlets) {
+      stack.push(outlets[outletName]);
+    }
+  }
+}
+
+function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
+  var target;
+  var myState = {
+    render: renderOptions,
+    outlets: create(null)
+  };
+  if (renderOptions.into) {
+    target = findLiveRoute(liveRoutes, renderOptions.into);
+  } else {
+    target = defaultParentState;
+  }
+  if (target) {
+    set(target.outlets, renderOptions.outlet, myState);
+  } else {
+    if (renderOptions.into) {
+      // Megahax time. Post-2.0-breaking-changes, we will just assert
+      // right here that the user tried to target a nonexistent
+      // thing. But for now we still need to support the `render`
+      // helper, and people are allowed to target templates rendered
+      // by the render helper. So instead we defer doing anyting with
+      // these orphan renders until afterRender.
+      appendOrphan(liveRoutes, renderOptions.into, myState);
+    } else {
+      liveRoutes = myState;
+    }
+  }
+  return {
+    liveRoutes: liveRoutes,
+    ownState: myState
+  };
+}
+
+function appendOrphan(liveRoutes, into, myState) {
+  if (!liveRoutes.outlets.__ember_orphans__) {
+    liveRoutes.outlets.__ember_orphans__ = {
+      render: {
+        name: '__ember_orphans__'
+      },
+      outlets: create(null)
+    };
+  }
+  liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
+  Ember.run.schedule('afterRender', function() {
+    // `wasUsed` gets set by the render helper. See the function
+    // `impersonateAnOutlet`.
+    Ember.assert("You attempted to render into '" + into + "' but it was not found",
+                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
+  });
+}
+
+function representEmptyRoute(liveRoutes, defaultParentState, route) {
+  // the route didn't render anything
+  var alreadyAppended = findLiveRoute(liveRoutes, route.routeName);
+  if (alreadyAppended) {
+    // But some other route has already rendered our default
+    // template, so that becomes the default target for any
+    // children we may have.
+    return alreadyAppended;
+  } else {
+    // Create an entry to represent our default template name,
+    // just so other routes can target it and inherit its place
+    // in the outlet hierarchy.
+    defaultParentState.outlets.main = {
+      render: {
+        name: route.routeName,
+        outlet: 'main'
+      },
+      outlets: {}
+    };
+    return defaultParentState;
   }
 }
 

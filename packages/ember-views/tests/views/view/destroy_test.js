@@ -4,10 +4,10 @@ import EmberView from "ember-views/views/view";
 
 QUnit.module("Ember.View#destroy");
 
-test("should teardown viewName on parentView when childView is destroyed", function() {
+QUnit.test("should teardown viewName on parentView when childView is destroyed", function() {
   var viewName = "someChildView";
   var parentView = EmberView.create();
-  var childView = parentView.createChildView(EmberView, {viewName: viewName});
+  var childView = parentView.createChildView(EmberView, { viewName: viewName });
 
   equal(get(parentView, viewName), childView, "Precond - child view was registered on parent");
 

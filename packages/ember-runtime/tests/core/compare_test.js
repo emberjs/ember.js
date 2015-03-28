@@ -25,7 +25,7 @@ QUnit.module('Ember.compare()', {
     data[8]  = [1, 2];
     data[9]  = [1, 2, 3];
     data[10] = [1, 3];
-    data[11] = {a: 'hash'};
+    data[11] = { a: 'hash' };
     data[12] = EmberObject.create();
     data[13] = function (a) {return a;};
     data[14] = new Date('2012/01/01');
@@ -33,7 +33,7 @@ QUnit.module('Ember.compare()', {
   }
 });
 
-test('ordering should work', function() {
+QUnit.test('ordering should work', function() {
   var suspect, comparable, failureMessage,
       suspectIndex, comparableIndex;
 
@@ -54,7 +54,7 @@ test('ordering should work', function() {
   }
 });
 
-test('comparables should return values in the range of -1, 0, 1', function() {
+QUnit.test('comparables should return values in the range of -1, 0, 1', function() {
   var negOne = Comp.create({
     val: -1
   });
@@ -68,10 +68,10 @@ test('comparables should return values in the range of -1, 0, 1', function() {
   });
 
   equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
-  equal(compare(zero, 'b'),    0, 'First item comparable - returns  0 (not negated)');
-  equal(compare(one, 'c'),     1, 'First item comparable - returns  1 (not negated)');
+  equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
+  equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
 
-  equal(compare('a', negOne),  1, 'Second item comparable - returns -1 (negated)');
-  equal(compare('b', zero),    0, 'Second item comparable - returns  0 (negated)');
-  equal(compare('c', one),    -1, 'Second item comparable - returns  1 (negated)');
+  equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
+  equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
+  equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
 });

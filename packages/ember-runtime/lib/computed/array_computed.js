@@ -3,7 +3,7 @@ import {
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
 import { forEach } from 'ember-metal/enumerable_utils';
-import { create as o_create } from 'ember-metal/platform';
+import o_create from 'ember-metal/platform/create';
 import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
 
@@ -14,7 +14,7 @@ function ArrayComputedProperty() {
 
   ReduceComputedProperty.apply(this, arguments);
 
-  this.func = (function(reduceFunc) {
+  this._getter = (function(reduceFunc) {
     return function (propertyName) {
       if (!cp._hasInstanceMeta(this, propertyName)) {
         // When we recompute an array computed property, we need already
@@ -29,7 +29,7 @@ function ArrayComputedProperty() {
 
       return reduceFunc.apply(this, arguments);
     };
-  })(this.func);
+  })(this._getter);
 
   return this;
 }
@@ -164,7 +164,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   @param {Object} options
   @return {Ember.ComputedProperty}
 */
-function arrayComputed (options) {
+function arrayComputed(options) {
   var args;
 
   if (arguments.length > 1) {

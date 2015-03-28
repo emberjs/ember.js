@@ -43,7 +43,7 @@ QUnit.module("EmberView#instrumentation", {
   }
 });
 
-test("generates the proper instrumentation details when called directly", function() {
+QUnit.test("generates the proper instrumentation details when called directly", function() {
   var payload = {};
 
   view.instrumentDetails(payload);
@@ -51,7 +51,7 @@ test("generates the proper instrumentation details when called directly", functi
   confirmPayload(payload, view);
 });
 
-test("should add ember-view to views", function() {
+QUnit.test("should add ember-view to views", function() {
   run(view, 'createElement');
 
   confirmPayload(beforeCalls[0], view);

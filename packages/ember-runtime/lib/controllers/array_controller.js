@@ -14,6 +14,7 @@ import SortableMixin from 'ember-runtime/mixins/sortable';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
+import EmberArray from 'ember-runtime/mixins/array';
 
 
 /**
@@ -173,7 +174,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   arrangedContentDidChange: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this._resetSubControllers();
   },
 
@@ -199,11 +200,21 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this._subControllers = [];
   },
 
-  model: computed(function () {
+  model: computed(function (key, value) {
+    if (arguments.length > 1) {
+      Ember.assert(
+        'ArrayController expects `model` to implement the Ember.Array mixin. ' +
+        'This can often be fixed by wrapping your model with `Ember.A()`.',
+        EmberArray.detect(value)
+      );
+
+      return value;
+    }
+
     return Ember.A();
   }),
 
@@ -220,7 +231,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   controllerAt: function(idx, object, controllerClass) {
     var container = get(this, 'container');
     var subControllers = this._subControllers;
-    var fullName, subController, subControllerFactory, parentController, options;
+    var fullName, subController, parentController;
 
     if (subControllers.length > idx) {
       subController = subControllers[idx];
@@ -236,40 +247,17 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
       parentController = this;
     }
 
-    if (Ember.FEATURES.isEnabled("ember-runtime-item-controller-inline-class")) {
-      options = {
-        target: parentController,
-        parentController: parentController,
-        model: object
-      };
+    fullName = 'controller:' + controllerClass;
 
-      if (typeof controllerClass === 'string') {
-        fullName = 'controller:' + controllerClass;
-
-        if (!container.has(fullName)) {
-          throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
-        }
-
-        subControllerFactory = container.lookupFactory(fullName);
-      } else {
-        subControllerFactory = controllerClass;
-        options.container = container;
-      }
-
-      subController = subControllerFactory.create(options);
-    } else {
-      fullName = 'controller:' + controllerClass;
-
-      if (!container.has(fullName)) {
-        throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
-      }
-
-      subController = container.lookupFactory(fullName).create({
-        target: parentController,
-        parentController: parentController,
-        model: object
-      });
+    if (!container._registry.has(fullName)) {
+      throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
+
+    subController = container.lookupFactory(fullName).create({
+      target: parentController,
+      parentController: parentController,
+      model: object
+    });
 
     subControllers[idx] = subController;
 
@@ -297,6 +285,6 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   willDestroy: function() {
     this._resetSubControllers();
-    this._super();
+    this._super.apply(this, arguments);
   }
 });

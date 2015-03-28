@@ -20,12 +20,18 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;
   for (var i = 0, l = handlerInfos.length; i < l; i++) {
     req = req + handlerInfos[i].names.length;
-    if (handlerInfos[i].handler === handler)
+    if (handlerInfos[i].handler === handler) {
       break;
+    }
   }
 
   return req;
 };
+
+var linkViewClassNameBindings = ['active', 'loading', 'disabled'];
+if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+  linkViewClassNameBindings = ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'];
+}
 
 /**
   `Ember.LinkView` renders an element whose `click` event triggers a
@@ -41,7 +47,7 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   @extends Ember.View
   @see {Handlebars.helpers.link-to}
 **/
-var LinkView = Ember.LinkView = EmberComponent.extend({
+var LinkView = EmberComponent.extend({
   tagName: 'a',
 
   /**
@@ -140,7 +146,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @type Array | String
     @default ['href', 'title', 'rel', 'tabindex', 'target']
    **/
-  attributeBindings: ['href', 'title', 'rel', 'tabindex'],
+  attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
   /**
     By default the `{{link-to}}` helper will bind to the `active`, `loading`, and
@@ -150,7 +156,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @type Array
     @default ['active', 'loading', 'disabled']
    **/
-  classNameBindings: ['active', 'loading', 'disabled'],
+  classNameBindings: linkViewClassNameBindings,
 
   /**
     By default the `{{link-to}}` helper responds to the `click` event. You
@@ -186,14 +192,14 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     ```javascript
     App.MyLinkView = Ember.LinkView.extend({
       init: function() {
-        this._super();
+        this._super.apply(this, arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
       }
     });
     ```
 
     NOTE: If you do override `init` for a framework class like `Ember.View` or
-    `Ember.ArrayController`, be sure to call `this._super()` in your
+    `Ember.ArrayController`, be sure to call `this._super.apply(this, arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.
@@ -203,7 +209,10 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   init: function() {
     this._super.apply(this, arguments);
 
-    Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
+    Ember.deprecate(
+      'Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.',
+      !this.currentWhen
+    );
 
     // Map desired event name to invoke function
     var eventName = get(this, 'eventName');
@@ -229,7 +238,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
    @method _setupPathObservers
    @since 1.3.0
   **/
-  _setupPathObservers: function(){
+  _setupPathObservers: function() {
     var params = this.params;
 
     var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
@@ -251,7 +260,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     }
   },
 
-  afterRender: function(){
+  afterRender: function() {
     this._super.apply(this, arguments);
     this._setupPathObservers();
   },
@@ -284,62 +293,32 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @property active
   **/
   active: computed('loadedParams', function computeLinkViewActive() {
-    if (get(this, 'loading')) { return false; }
-
     var router = get(this, 'router');
-    var loadedParams = get(this, 'loadedParams');
-    var contexts = loadedParams.models;
-    var currentWhen = this['current-when'] || this.currentWhen;
-    var isCurrentWhenSpecified = Boolean(currentWhen);
-    currentWhen = currentWhen || loadedParams.targetRouteName;
+    if (!router) { return; }
+    return computeActive(this, router.currentState);
+  }),
 
-    function isActiveForRoute(routeName) {
-      var handlers = router.router.recognizer.handlersFor(routeName);
-      var leafName = handlers[handlers.length-1].handler;
-      var maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
+  willBeActive: computed('router.targetState', function() {
+    var router = get(this, 'router');
+    if (!router) { return; }
+    var targetState = router.targetState;
+    if (router.currentState === targetState) { return; }
 
-      // NOTE: any ugliness in the calculation of activeness is largely
-      // due to the fact that we support automatic normalizing of
-      // `resource` -> `resource.index`, even though there might be
-      // dynamic segments / query params defined on `resource.index`
-      // which complicates (and makes somewhat ambiguous) the calculation
-      // of activeness for links that link to `resource` instead of
-      // directly to `resource.index`.
+    return !!computeActive(this, targetState);
+  }),
 
-      // if we don't have enough contexts revert back to full route name
-      // this is because the leaf route will use one of the contexts
-      if (contexts.length > maximumContexts) {
-        routeName = leafName;
-      }
+  transitioningIn: computed('active', 'willBeActive', function() {
+    var willBeActive = get(this, 'willBeActive');
+    if (typeof willBeActive === 'undefined') { return false; }
 
-      var args = routeArgs(routeName, contexts, null);
-      var isActive = router.isActive.apply(router, args);
-      if (!isActive) { return false; }
+    return !get(this, 'active') && willBeActive && 'ember-transitioning-in';
+  }),
 
-      var emptyQueryParams = Ember.isEmpty(Ember.keys(loadedParams.queryParams));
+  transitioningOut: computed('active', 'willBeActive', function() {
+    var willBeActive = get(this, 'willBeActive');
+    if (typeof willBeActive === 'undefined') { return false; }
 
-      if (!isCurrentWhenSpecified && !emptyQueryParams && isActive) {
-        var visibleQueryParams = {};
-        merge(visibleQueryParams, loadedParams.queryParams);
-        router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
-        isActive = shallowEqual(visibleQueryParams, router.router.state.queryParams);
-      }
-
-      return isActive;
-    }
-
-    if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
-      currentWhen = currentWhen.split(' ');
-      for (var i = 0, len = currentWhen.length; i < len; i++) {
-        if (isActiveForRoute(currentWhen[i])) {
-          return get(this, 'activeClass');
-        }
-      }
-    } else {
-      if (isActiveForRoute(currentWhen)) {
-        return get(this, 'activeClass');
-      }
-    }
+    return get(this, 'active') && !willBeActive && 'ember-transitioning-out';
   }),
 
   /**
@@ -381,12 +360,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     if (!isSimpleClick(event)) { return true; }
 
     if (this.preventDefault !== false) {
-      if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-        var targetAttribute = get(this, 'target');
-        if (!targetAttribute || targetAttribute === '_self') {
-          event.preventDefault();
-        }
-      } else {
+      var targetAttribute = get(this, 'target');
+      if (!targetAttribute || targetAttribute === '_self') {
         event.preventDefault();
       }
     }
@@ -400,11 +375,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return false;
     }
 
-    if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-      var targetAttribute2 = get(this, 'target');
-      if (targetAttribute2 && targetAttribute2 !== '_self') {
-        return false;
-      }
+    var targetAttribute2 = get(this, 'target');
+    if (targetAttribute2 && targetAttribute2 !== '_self') {
+      return false;
     }
 
     var router = get(this, 'router');
@@ -413,6 +386,10 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var transition = router._doTransition(loadedParams.targetRouteName, loadedParams.models, loadedParams.queryParams);
     if (get(this, 'replace')) {
       transition.method('replace');
+    }
+
+    if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+      return;
     }
 
     // Schedule eager URL update, but after we've given the transition
@@ -573,20 +550,6 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
 
 LinkView.toString = function() { return "LinkView"; };
 
-if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-  LinkView.reopen({
-    attributeBindings: ['target'],
-
-    /**
-      Sets the `target` attribute of the `LinkView`'s anchor element.
-
-      @property target
-      @default null
-    **/
-    target: null
-  });
-}
-
 function getResolvedQueryParams(linkView, targetRouteName) {
   var queryParamsObject = linkView.queryParamsObject;
   var resolvedQueryParams = {};
@@ -612,15 +575,46 @@ function paramsAreLoaded(params) {
   return true;
 }
 
-function shallowEqual(a, b) {
-  var k;
-  for (k in a) {
-    if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+function computeActive(route, routerState) {
+  if (get(route, 'loading')) { return false; }
+
+  var currentWhen = route['current-when'] || route.currentWhen;
+  var isCurrentWhenSpecified = !!currentWhen;
+  currentWhen = currentWhen || get(route, 'loadedParams').targetRouteName;
+  currentWhen = currentWhen.split(' ');
+  for (var i = 0, len = currentWhen.length; i < len; i++) {
+    if (isActiveForRoute(route, currentWhen[i], isCurrentWhenSpecified, routerState)) {
+      return get(route, 'activeClass');
+    }
   }
-  for (k in b) {
-    if (b.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+
+  return false;
+}
+
+function isActiveForRoute(route, routeName, isCurrentWhenSpecified, routerState) {
+  var router = get(route, 'router');
+  var loadedParams = get(route, 'loadedParams');
+  var contexts = loadedParams.models;
+
+  var handlers = router.router.recognizer.handlersFor(routeName);
+  var leafName = handlers[handlers.length-1].handler;
+  var maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
+
+  // NOTE: any ugliness in the calculation of activeness is largely
+  // due to the fact that we support automatic normalizing of
+  // `resource` -> `resource.index`, even though there might be
+  // dynamic segments / query params defined on `resource.index`
+  // which complicates (and makes somewhat ambiguous) the calculation
+  // of activeness for links that link to `resource` instead of
+  // directly to `resource.index`.
+
+  // if we don't have enough contexts revert back to full route name
+  // this is because the leaf route will use one of the contexts
+  if (contexts.length > maximumContexts) {
+    routeName = leafName;
   }
-  return true;
+
+  return routerState.isActiveIntent(routeName, contexts, loadedParams.queryParams, !isCurrentWhenSpecified);
 }
 
 export {

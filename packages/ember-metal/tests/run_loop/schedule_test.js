@@ -2,30 +2,30 @@ import run from 'ember-metal/run_loop';
 
 QUnit.module('system/run_loop/schedule_test');
 
-test('scheduling item in queue should defer until finished', function() {
+QUnit.test('scheduling item in queue should defer until finished', function() {
   var cnt = 0;
 
   run(function() {
     run.schedule('actions', function() { cnt++; });
     run.schedule('actions', function() { cnt++; });
-    equal(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet');
   });
 
   equal(cnt, 2, 'should flush actions now');
 
 });
 
-test('nested runs should queue each phase independently', function() {
+QUnit.test('nested runs should queue each phase independently', function() {
   var cnt = 0;
 
   run(function() {
     run.schedule('actions', function() { cnt++; });
-    equal(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet');
 
     run(function() {
       run.schedule('actions', function() { cnt++; });
     });
-    equal(cnt, 1, 'should not run action yet') ;
+    equal(cnt, 1, 'should not run action yet');
 
   });
 
@@ -33,7 +33,7 @@ test('nested runs should queue each phase independently', function() {
 
 });
 
-test('prior queues should be flushed before moving on to next queue', function() {
+QUnit.test('prior queues should be flushed before moving on to next queue', function() {
   var order = [];
 
   run(function() {
@@ -67,7 +67,7 @@ test('prior queues should be flushed before moving on to next queue', function()
   deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
 });
 
-test('makes sure it does not trigger an autorun during testing', function() {
+QUnit.test('makes sure it does not trigger an autorun during testing', function() {
   expectAssertion(function() {
     run.schedule('actions', function() {});
   }, /wrap any code with asynchronous side-effects in a run/);

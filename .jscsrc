@@ -1,0 +1,60 @@
+{
+  "esnext": true,
+  "excludeFiles": ["ember-runtime/ext/rsvp.js"],
+  "additionalRules": [ "lib/jscs-rules/*.js" ],
+  "disallowSpacesInsideArrayBrackets": "all",
+  "disallowMultipleVarDeclWithAssignment": true,
+  "requireSpaceBeforeObjectValues": true,
+  "requireCommaBeforeLineBreak": true,
+  "requireBlocksOnNewline": 1,
+  "disallowKeywordsOnNewLine": ["else"],
+  "disallowSpacesBeforeSemicolons": true,
+  "disallowNewlineBeforeBlockStatements": true,
+  "requireSpacesInConditionalExpression": {
+    "afterTest": true,
+    "beforeConsequent": true,
+    "afterConsequent": true,
+    "beforeAlternate": true
+  },
+  "disallowSpacesInCallExpression": true,
+  "disallowSpacesInsideRoundBracesInCallExpression": true,
+  "disallowEmptyBlocks": true,
+  "requireSpacesInsideObjectBrackets": "all",
+  "requireCurlyBraces": [
+    "if",
+    "else",
+    "for",
+    "while",
+    "do",
+    "try",
+    "catch"
+  ],
+  "requireLineFeedAtFileEnd": true,
+  "disallowTrailingWhitespace": true,
+  "disallowTrailingComma": true,
+  "requireSpaceBeforeBlockStatements": true,
+  "validateIndentation": 2,
+  "validateParameterSeparator": ", ",
+  "requireSpaceBeforeKeywords": [
+    "else",
+    "while",
+    "catch"
+  ],
+  "requireSpaceAfterKeywords": [
+    "do",
+    "for",
+    "if",
+    "else",
+    "switch",
+    "case",
+    "try",
+    "while",
+    "with",
+    "return"
+  ],
+  "requireSpaceBetweenArguments": true,
+  "requireSpacesAfterClosingParenthesisInFunctionDeclaration": {
+    "beforeOpeningRoundBrace": false,
+    "beforeOpeningCurlyBrace": true
+  }
+}

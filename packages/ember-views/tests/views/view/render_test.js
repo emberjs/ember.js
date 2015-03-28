@@ -20,7 +20,7 @@ QUnit.module("EmberView#render", {
   }
 });
 
-test("default implementation does not render child views", function() {
+QUnit.test("default implementation does not render child views", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var rendered = 0;
@@ -51,7 +51,7 @@ test("default implementation does not render child views", function() {
 
 });
 
-test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
+QUnit.test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var rendered = 0;
@@ -94,7 +94,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   });
 });
 
-test("should render child views with a different tagName", function() {
+QUnit.test("should render child views with a different tagName", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -112,7 +112,7 @@ test("should render child views with a different tagName", function() {
   equal(view.$('aside').length, 1);
 });
 
-test("should add ember-view to views", function() {
+QUnit.test("should add ember-view to views", function() {
   view = EmberView.create();
 
   run(function() {
@@ -122,14 +122,14 @@ test("should add ember-view to views", function() {
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
-test("should allow tagName to be a computed property [DEPRECATED]", function() {
+QUnit.test("should allow tagName to be a computed property [DEPRECATED]", function() {
   view = EmberView.extend({
     tagName: computed(function() {
       return 'span';
     })
   }).create();
 
-  expectDeprecation(function(){
+  expectDeprecation(function() {
     run(function() {
       view.createElement();
     });
@@ -144,7 +144,7 @@ test("should allow tagName to be a computed property [DEPRECATED]", function() {
   equal(view.element.tagName, 'SPAN', "the tagName cannot be changed after initial render");
 });
 
-test("should allow hX tags as tagName", function() {
+QUnit.test("should allow hX tags as tagName", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -162,7 +162,7 @@ test("should allow hX tags as tagName", function() {
   ok(view.$('h3').length, "does not render the h3 tag correctly");
 });
 
-test("should not add role attribute unless one is specified", function() {
+QUnit.test("should not add role attribute unless one is specified", function() {
   view = EmberView.create();
 
   run(function() {
@@ -172,7 +172,7 @@ test("should not add role attribute unless one is specified", function() {
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
 
-test("should re-render if the context is changed", function() {
+QUnit.test("should re-render if the context is changed", function() {
   view = EmberView.create({
     elementId: 'template-context-test',
     context: { foo: "bar" },
@@ -197,7 +197,7 @@ test("should re-render if the context is changed", function() {
   equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });
 
-test("renders contained view with omitted start tag and parent view context", function() {
+QUnit.test("renders contained view with omitted start tag and parent view context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.createWithMixins({
@@ -219,7 +219,7 @@ test("renders contained view with omitted start tag and parent view context", fu
   equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
 });
 
-test("renders a contained view with omitted start tag and tagless parent view context", function() {
+QUnit.test("renders a contained view with omitted start tag and tagless parent view context", function() {
   view = EmberView.createWithMixins({
     tagName: 'table',
     template: compile("{{view view.pivot}}"),

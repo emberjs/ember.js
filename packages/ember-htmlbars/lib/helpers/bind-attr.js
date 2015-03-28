@@ -147,7 +147,7 @@ function bindAttrHelper(params, hash, options, env) {
 
   Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(hash).length);
 
-  var view = this;
+  var view = env.data.view;
 
   // Handle classes differently, as we can bind multiple classes
   var classNameBindings = hash['class'];
@@ -222,11 +222,7 @@ function applyClassNameBindings(classNameBindings, view) {
 function bindAttrHelperDeprecated() {
   Ember.deprecate("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
 
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    return helpers['bind-attr'].helperFunction.apply(this, arguments);
-  } else {
-    return helpers['bind-attr'].apply(this, arguments);
-  }
+  return helpers['bind-attr'].helperFunction.apply(this, arguments);
 }
 
 export default bindAttrHelper;

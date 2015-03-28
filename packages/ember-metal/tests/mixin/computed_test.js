@@ -8,7 +8,7 @@ function K() { return this; }
 
 QUnit.module('Mixin Computed Properties');
 
-test('overriding computed properties', function() {
+QUnit.test('overriding computed properties', function() {
   var MixinA, MixinB, MixinC, MixinD;
   var obj;
 
@@ -20,19 +20,19 @@ test('overriding computed properties', function() {
 
   MixinB = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super()+'B';
+      return this._super.apply(this, arguments)+'B';
     })
   });
 
   MixinC = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super()+'C';
+      return this._super.apply(this, arguments)+'C';
     })
   });
 
   MixinD = Mixin.create({
     aProp: computed(function() {
-      return this._super()+'D';
+      return this._super.apply(this, arguments)+'D';
     })
   });
 
@@ -58,7 +58,7 @@ test('overriding computed properties', function() {
   equal(get(obj, 'aProp'), "objD", "should preserve original computed property");
 });
 
-test('calling set on overridden computed properties', function() {
+QUnit.test('calling set on overridden computed properties', function() {
   var SuperMixin, SubMixin;
   var obj;
 
@@ -100,7 +100,7 @@ test('calling set on overridden computed properties', function() {
   ok(superSetOccurred, 'should pass set to _super after getting');
 });
 
-test('setter behavior works properly when overriding computed properties', function() {
+QUnit.test('setter behavior works properly when overriding computed properties', function() {
   var obj = {};
 
   var MixinA = Mixin.create({

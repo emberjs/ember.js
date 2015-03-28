@@ -4,8 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import isNone from 'ember-metal/is_none';
-import { bind } from "ember-htmlbars/helpers/binding";
 import WithView from "ember-views/views/with_view";
 
 /**
@@ -67,6 +65,7 @@ export function withHelper(params, hash, options, env) {
     !!options.template
   );
 
+  var view = env.data.view;
   var preserveContext;
 
   if (options.template.blockParams) {
@@ -81,9 +80,14 @@ export function withHelper(params, hash, options, env) {
     preserveContext = false;
   }
 
-  bind.call(this, params[0], hash, options, env, preserveContext, exists, undefined, undefined, WithView);
-}
-
-function exists(value) {
-  return !isNone(value);
+  view.appendChild(WithView, {
+    _morph: options.morph,
+    withValue: params[0],
+    preserveContext: preserveContext,
+    previousContext: view.get('context'),
+    controllerName: hash.controller,
+    mainTemplate: options.template,
+    inverseTemplate: options.inverse,
+    helperName: options.helperName || 'with'
+  });
 }

@@ -83,7 +83,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   */
   clear: function () {
     var len = get(this, 'length');
-    if (len === 0) return this;
+    if (len === 0) {
+      return this;
+    }
+
     this.replace(0, len, EMPTY);
     return this;
   },
@@ -104,7 +107,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @return {Ember.Array} receiver
   */
   insertAt: function(idx, object) {
-    if (idx > get(this, 'length')) throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    if (idx > get(this, 'length')) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
     this.replace(idx, 0, [object]);
     return this;
   },
@@ -136,7 +142,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       }
 
       // fast case
-      if (len === undefined) len = 1;
+      if (len === undefined) {
+        len = 1;
+      }
+
       this.replace(start, len, EMPTY);
     }
 
@@ -198,7 +207,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   */
   popObject: function() {
     var len = get(this, 'length');
-    if (len === 0) return null;
+    if (len === 0) {
+      return null;
+    }
 
     var ret = this.objectAt(len-1);
     this.removeAt(len-1, 1);
@@ -219,7 +230,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @return object
   */
   shiftObject: function() {
-    if (get(this, 'length') === 0) return null;
+    if (get(this, 'length') === 0) {
+      return null;
+    }
+
     var ret = this.objectAt(0);
     this.removeAt(0);
     return ret;
@@ -272,7 +286,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
    */
   reverseObjects: function() {
     var len = get(this, 'length');
-    if (len === 0) return this;
+    if (len === 0) {
+      return this;
+    }
+
     var objects = this.toArray().reverse();
     this.replace(0, len, objects);
     return this;
@@ -294,7 +311,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @return {Ember.Array} receiver with the new content
    */
   setObjects: function(objects) {
-    if (objects.length === 0) return this.clear();
+    if (objects.length === 0) {
+      return this.clear();
+    }
 
     var len = get(this, 'length');
     this.replace(0, len, objects);
@@ -321,9 +340,12 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   */
   removeObject: function(obj) {
     var loc = get(this, 'length') || 0;
-    while(--loc >= 0) {
+    while (--loc >= 0) {
       var curObject = this.objectAt(loc);
-      if (curObject === obj) this.removeAt(loc);
+
+      if (curObject === obj) {
+        this.removeAt(loc);
+      }
     }
     return this;
   },
@@ -343,7 +365,10 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @return {Ember.Array} receiver
   */
   addObject: function(obj) {
-    if (!this.contains(obj)) this.pushObject(obj);
+    if (!this.contains(obj)) {
+      this.pushObject(obj);
+    }
+
     return this;
   }
 

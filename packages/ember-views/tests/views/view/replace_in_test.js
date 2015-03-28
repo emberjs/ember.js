@@ -18,7 +18,7 @@ QUnit.module("EmberView - replaceIn()", {
   }
 });
 
-test("should be added to the specified element when calling replaceIn()", function() {
+QUnit.test("should be added to the specified element when calling replaceIn()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -33,7 +33,7 @@ test("should be added to the specified element when calling replaceIn()", functi
   ok(viewElem.length > 0, "creates and replaces the view's element");
 });
 
-test("raises an assert when a target does not exist in the DOM", function() {
+QUnit.test("raises an assert when a target does not exist in the DOM", function() {
   view = View.create();
 
   expectAssertion(function() {
@@ -44,7 +44,7 @@ test("raises an assert when a target does not exist in the DOM", function() {
 });
 
 
-test("should remove previous elements when calling replaceIn()", function() {
+QUnit.test("should remove previous elements when calling replaceIn()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"><p>Foo</p></div>');
   var viewElem = jQuery('#menu').children();
 
@@ -60,7 +60,7 @@ test("should remove previous elements when calling replaceIn()", function() {
 
 });
 
-test("should move the view to the inDOM state after replacing", function() {
+QUnit.test("should move the view to the inDOM state after replacing", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
   view = View.create();
 
@@ -90,7 +90,7 @@ QUnit.module("EmberView - replaceIn() in a view hierarchy", {
   }
 });
 
-test("should be added to the specified element when calling replaceIn()", function() {
+QUnit.test("should be added to the specified element when calling replaceIn()", function() {
   jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();

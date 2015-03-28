@@ -7,13 +7,13 @@ var DELETE = TrackedArray.DELETE;
 
 QUnit.module('Ember.TrackedArray');
 
-test("operations for a tracked array of length n are initially retain:n", function() {
+QUnit.test("operations for a tracked array of length n are initially retain:n", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   equal("r:4", trackedArray.toString(), "initial mutation is retain n");
 });
 
-test("insert zero items is a no-op", function() {
+QUnit.test("insert zero items is a no-op", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, []);
@@ -23,7 +23,7 @@ test("insert zero items is a no-op", function() {
   deepEqual(trackedArray._operations[0].items, [1,2,3,4], "after a no-op, existing operation has right items");
 });
 
-test("inserts can split retains", function() {
+QUnit.test("inserts can split retains", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['a']);
@@ -35,7 +35,7 @@ test("inserts can split retains", function() {
   deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
-test("inserts can expand (split/compose) inserts", function() {
+QUnit.test("inserts can expand (split/compose) inserts", function() {
   trackedArray = new TrackedArray([]);
 
   trackedArray.addItems(0, [1,2,3,4]);
@@ -46,7 +46,7 @@ test("inserts can expand (split/compose) inserts", function() {
   deepEqual(trackedArray._operations[0].items, [1,2,'a',3,4], "expanded inserts have the right items");
 });
 
-test("inserts left of inserts compose", function() {
+QUnit.test("inserts left of inserts compose", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['b']);
@@ -59,7 +59,7 @@ test("inserts left of inserts compose", function() {
   deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
-test("inserts right of inserts compose", function() {
+QUnit.test("inserts right of inserts compose", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['a']);
@@ -72,7 +72,7 @@ test("inserts right of inserts compose", function() {
   deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
-test("delete zero items is a no-op", function() {
+QUnit.test("delete zero items is a no-op", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, []);
@@ -82,7 +82,7 @@ test("delete zero items is a no-op", function() {
   deepEqual(trackedArray._operations[0].items, [1,2,3,4], "after a no-op, existing operation has right items");
 });
 
-test("deletes compose with several inserts and retains", function() {
+QUnit.test("deletes compose with several inserts and retains", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e']);
@@ -95,7 +95,7 @@ test("deletes compose with several inserts and retains", function() {
   equal(trackedArray.toString(), "d:4", "deletes compose with several inserts and retains");
 });
 
-test("deletes compose with several inserts and retains and an adjacent delete", function() {
+QUnit.test("deletes compose with several inserts and retains and an adjacent delete", function() {
   trackedArray = new TrackedArray([1,2,3,4,5]);
 
   trackedArray.removeItems(0, 1);
@@ -109,7 +109,7 @@ test("deletes compose with several inserts and retains and an adjacent delete", 
   equal(trackedArray.toString(), "d:5", "deletes compose with several inserts, retains, and a single prior delete");
 });
 
-test("deletes compose with several inserts and retains and can reduce the last one", function() {
+QUnit.test("deletes compose with several inserts and retains and can reduce the last one", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e', 'f']);
@@ -123,7 +123,7 @@ test("deletes compose with several inserts and retains and can reduce the last o
   deepEqual(trackedArray._operations[1].items, ['f'], "last mutation's items is correct");
 });
 
-test("deletes can split retains", function() {
+QUnit.test("deletes can split retains", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
   trackedArray.removeItems(0, 2);
 
@@ -131,7 +131,7 @@ test("deletes can split retains", function() {
   deepEqual(trackedArray._operations[1].items, [3,4], "retains reduced by delete have the right items");
 });
 
-test("deletes can trim retains on the right", function() {
+QUnit.test("deletes can trim retains on the right", function() {
   trackedArray = new TrackedArray([1,2,3]);
   trackedArray.removeItems(2, 1);
 
@@ -139,7 +139,7 @@ test("deletes can trim retains on the right", function() {
   deepEqual(trackedArray._operations[0].items, [1,2], "retains reduced by delete have the right items");
 });
 
-test("deletes can trim retains on the left", function() {
+QUnit.test("deletes can trim retains on the left", function() {
   trackedArray = new TrackedArray([1,2,3]);
   trackedArray.removeItems(0, 1);
 
@@ -147,7 +147,7 @@ test("deletes can trim retains on the left", function() {
   deepEqual(trackedArray._operations[1].items, [2,3], "retains reduced by delete have the right items");
 });
 
-test("deletes can split inserts", function() {
+QUnit.test("deletes can split inserts", function() {
   trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(0, 1);
@@ -156,7 +156,7 @@ test("deletes can split inserts", function() {
   deepEqual(trackedArray._operations[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
 });
 
-test("deletes can trim inserts on the right", function() {
+QUnit.test("deletes can trim inserts on the right", function() {
   trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(2, 1);
@@ -165,7 +165,7 @@ test("deletes can trim inserts on the right", function() {
   deepEqual(trackedArray._operations[0].items, ['a', 'b'], "inserts reduced by delete have the right items");
 });
 
-test("deletes can trim inserts on the left", function() {
+QUnit.test("deletes can trim inserts on the left", function() {
   trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(0, 1);
@@ -174,7 +174,7 @@ test("deletes can trim inserts on the left", function() {
   deepEqual(trackedArray._operations[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
 });
 
-test("deletes can trim inserts on the left while composing with a delete on the left", function() {
+QUnit.test("deletes can trim inserts on the left while composing with a delete on the left", function() {
   trackedArray = new TrackedArray(['a']);
   trackedArray.removeItems(0, 1);
   trackedArray.addItems(0, ['b', 'c']);
@@ -184,7 +184,7 @@ test("deletes can trim inserts on the left while composing with a delete on the 
   deepEqual(trackedArray._operations[1].items, ['c'], "inserts reduced by delete have the right items");
 });
 
-test("deletes can reduce an insert or retain, compose with several mutations of different types and reduce the last mutation if it is non-delete", function() {
+QUnit.test("deletes can reduce an insert or retain, compose with several mutations of different types and reduce the last mutation if it is non-delete", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e', 'f']);    // 1234ef
@@ -199,12 +199,12 @@ test("deletes can reduce an insert or retain, compose with several mutations of 
   deepEqual(trackedArray._operations[2].items, ['f'], "last reduced mutation's items is correct");
 });
 
-test("removeItems returns the removed items", function() {
+QUnit.test("removeItems returns the removed items", function() {
   trackedArray = new TrackedArray([1,2,3,4]);
   deepEqual(trackedArray.removeItems(1, 2), [2,3], "`removeItems` returns the removed items");
 });
 
-test("apply invokes the callback with each group of items and the mutation's calculated offset", function() {
+QUnit.test("apply invokes the callback with each group of items and the mutation's calculated offset", function() {
   var i = 0;
   trackedArray = new TrackedArray([1,2,3,4]);
 

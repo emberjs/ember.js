@@ -1,5 +1,9 @@
+import Ember from 'ember-metal/core';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
+
+export var objectControllerDeprecation = 'Ember.ObjectController is deprecated, ' +
+  'please use Ember.Controller and use `model.propertyName`.';
 
 /**
 @module ember
@@ -18,5 +22,14 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
   @namespace Ember
   @extends Ember.ObjectProxy
   @uses Ember.ControllerMixin
+  @deprecated
 **/
-export default ObjectProxy.extend(ControllerMixin);
+export default ObjectProxy.extend(ControllerMixin, {
+  init: function() {
+    this._super();
+
+    Ember.deprecate(objectControllerDeprecation, this.isGenerated, {
+      url: 'http://emberjs.com/guides/deprecations/#toc_objectcontroller'
+    });
+  }
+});

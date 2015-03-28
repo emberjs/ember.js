@@ -2,12 +2,16 @@
 
 This is the issue tracker for Ember.js. The Ember.js community uses this site
 to collect and track bugs and discussions of new features. If you are having
-difficulties using Ember.js or have a question about usage please ask a
+difficulties using Ember.js or have a question about usage, please ask a
 question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js
 
 The Ember.js community is very active on Stack Overflow and most questions
 receive attention the same day they're posted:
 http://stackoverflow.com/questions/tagged/ember.js
+
+# Issue Labeling
+
+Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
 
 # Issues
 
@@ -23,7 +27,7 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
-Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
+Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/j1njm36w/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
 If it is not possible to produce a fiddle, please make sure you provide very
 specific steps to reproduce the error. If we cannot reproduce it, we will
 close the ticket.
@@ -67,6 +71,7 @@ Building Ember is quite simple.
 ```sh
 cd ember.js
 npm install
+bower install
 npm run-script build
 ```
 
@@ -77,7 +82,7 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `npm install && npm test`.
+to know that you have a clean slate: `npm install && bower install && npm test`.
 (To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
@@ -85,9 +90,14 @@ require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
 [wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
 
-4. Make the test pass.
+4. Make sure to check out the
+   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
+   ensure that your code complies with the rules. If you missed a rule or two, don't worry, our
+   tests will warn you.
 
-5. Commit your changes. Please use an appropriate commit prefix.
+5. Make the test pass.
+
+6. Commit your changes. Please use an appropriate commit prefix.
 If your pull request fixes an issue specify it in the commit message. Some examples:
 
   ```
@@ -101,7 +111,7 @@ If your pull request fixes an issue specify it in the commit message. Some examp
   [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
 
 
-6. Push to your fork and submit a pull request. Please provide us with some
+7. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
 explain a standard use case to us.
 

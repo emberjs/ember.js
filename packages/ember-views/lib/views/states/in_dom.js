@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
 import { addBeforeObserver } from 'ember-metal/observer';
@@ -35,8 +35,25 @@ merge(inDOM, {
   exit: function(view) {
     if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
-    if (!this.isVirtual) delete View.views[view.elementId];
+    if (!this.isVirtual) {
+      delete View.views[view.elementId];
+    }
+  },
+
+  appendAttr: function(view, attrNode) {
+    var _childViews = view._childViews;
+
+    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
+    _childViews.push(attrNode);
+
+    attrNode._parentView = view;
+    view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);
+
+    view.propertyDidChange('childViews');
+
+    return attrNode;
   }
+
 });
 
 export default inDOM;

@@ -17,7 +17,7 @@ var ObserverClass = EmberObject.extend({
   isEnabled: true,
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this.reset();
   },
 
@@ -55,7 +55,10 @@ var ObserverClass = EmberObject.extend({
   observeBefore: function(obj) {
     var keys = Array.prototype.slice.call(arguments, 1);
     var loc  = keys.length;
-    while(--loc>=0) addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
+    while (--loc>=0) {
+      addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
+    }
+
     return this;
   },
 
@@ -73,7 +76,9 @@ var ObserverClass = EmberObject.extend({
       var keys = Array.prototype.slice.call(arguments, 1);
       var loc  = keys.length;
 
-      while(--loc>=0) obj.addObserver(keys[loc], this, 'propertyDidChange');
+      while (--loc >= 0) {
+        obj.addObserver(keys[loc], this, 'propertyDidChange');
+      }
     } else {
       this.isEnabled = false;
     }
@@ -93,10 +98,19 @@ var ObserverClass = EmberObject.extend({
     @returns {Boolean}
   */
   validate: function(key, value) {
-    if (!this.isEnabled) return true;
-    if (!this._keys[key]) return false;
-    if (arguments.length>1) return this._values[key] === value;
-    else return true;
+    if (!this.isEnabled) {
+      return true;
+    }
+
+    if (!this._keys[key]) {
+      return false;
+    }
+
+    if (arguments.length>1) {
+      return this._values[key] === value;
+    } else {
+      return true;
+    }
   },
 
   /**
@@ -169,7 +183,10 @@ var EnumerableTests = Suite.extend({
   */
   newFixture: function(cnt) {
     var ret = [];
-    while(--cnt >= 0) ret.push(generateGuid());
+    while (--cnt >= 0) {
+      ret.push(generateGuid());
+    }
+
     return ret;
   },
 
@@ -185,7 +202,7 @@ var EnumerableTests = Suite.extend({
   newObjectsFixture: function(cnt) {
     var ret = [];
     var item;
-    while(--cnt >= 0) {
+    while (--cnt >= 0) {
       item = {};
       guidFor(item);
       ret.push(item);
@@ -246,8 +263,14 @@ var EnumerableTests = Suite.extend({
   */
   newObserver: function(obj) {
     var ret = get(this, 'observerClass').create();
-    if (arguments.length>0) ret.observeBefore.apply(ret, arguments);
-    if (arguments.length>0) ret.observe.apply(ret, arguments);
+    if (arguments.length>0) {
+      ret.observeBefore.apply(ret, arguments);
+    }
+
+    if (arguments.length>0) {
+      ret.observe.apply(ret, arguments);
+    }
+
     return ret;
   },
 

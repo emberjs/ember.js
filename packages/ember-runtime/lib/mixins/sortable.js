@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.A
 
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
-import { Mixin } from "ember-metal/mixin";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import compare from "ember-runtime/compare";
 import {
@@ -15,7 +14,9 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import { computed } from "ember-metal/computed";
+import { notEmpty } from "ember-metal/computed_macros";
 import {
+  Mixin,
   beforeObserver,
   observer
 } from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
@@ -149,10 +150,10 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    return this._super();
+    return this._super.apply(this, arguments);
   },
 
-  isSorted: computed.notEmpty('sortProperties'),
+  isSorted: notEmpty('sortProperties'),
 
   /**
     Overrides the default `arrangedContent` from `ArrayProxy` in order to sort by `sortFunction`.
@@ -194,7 +195,7 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    this._super();
+    this._super.apply(this, arguments);
   }),
 
   sortPropertiesWillChange: beforeObserver('sortProperties', function() {

@@ -25,7 +25,10 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
   },
 
   addObject: function(obj) {
-    if (indexOf(this._content, obj)>=0) return this;
+    if (indexOf(this._content, obj)>=0) {
+      return this;
+    }
+
     this._content.push(obj);
     this.enumerableContentDidChange();
   },
@@ -67,31 +70,31 @@ EnumerableTests.extend({
 
 QUnit.module('Ember.Enumerable');
 
-test("should apply Ember.Array to return value of map", function() {
+QUnit.test("should apply Ember.Array to return value of map", function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.map(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of filter", function() {
+QUnit.test("should apply Ember.Array to return value of filter", function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.filter(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of invoke", function() {
+QUnit.test("should apply Ember.Array to return value of invoke", function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.invoke(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of toArray", function() {
+QUnit.test("should apply Ember.Array to return value of toArray", function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.toArray(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of without", function() {
+QUnit.test("should apply Ember.Array to return value of without", function() {
   var x = EmberObject.createWithMixins(Enumerable, {
     contains: function() {
       return true;
@@ -101,13 +104,13 @@ test("should apply Ember.Array to return value of without", function() {
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of uniq", function() {
+QUnit.test("should apply Ember.Array to return value of uniq", function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.uniq(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
-test('any', function() {
+QUnit.test('any', function() {
   var kittens = Ember.A([{
     color: 'white'
   }, {
@@ -122,15 +125,17 @@ test('any', function() {
   equal(foundWhite2, true);
 });
 
-test('any with NaN', function() {
+QUnit.test('any with NaN', function() {
   var numbers = Ember.A([1,2,NaN,4]);
 
-  var hasNaN = numbers.any(function(n){ return isNaN(n); });
+  var hasNaN = numbers.any(function(n) {
+    return isNaN(n);
+  });
 
   equal(hasNaN, true, "works when matching NaN");
 });
 
-test('every', function() {
+QUnit.test('every', function() {
   var allColorsKittens = Ember.A([{
     color: 'white'
   }, {
@@ -178,7 +183,7 @@ var obj, observer;
 
 QUnit.module('mixins/enumerable/enumerableContentDidChange');
 
-test('should notify observers of []', function() {
+QUnit.test('should notify observers of []', function() {
 
   var obj = EmberObject.createWithMixins(Enumerable, {
     nextObject: function() {}, // avoid exceptions
@@ -218,7 +223,7 @@ QUnit.module('notify observers of length', {
   }
 });
 
-test('should notify observers when call with no params', function() {
+QUnit.test('should notify observers when call with no params', function() {
   obj.enumerableContentWillChange();
   equal(obj._after, 0);
 
@@ -227,7 +232,7 @@ test('should notify observers when call with no params', function() {
 });
 
 // API variation that included items only
-test('should not notify when passed arrays of same length', function() {
+QUnit.test('should not notify when passed arrays of same length', function() {
   var added = ['foo'];
   var removed = ['bar'];
 
@@ -238,7 +243,7 @@ test('should not notify when passed arrays of same length', function() {
   equal(obj._after, 0);
 });
 
-test('should notify when passed arrays of different length', function() {
+QUnit.test('should notify when passed arrays of different length', function() {
   var added = ['foo'];
   var removed = ['bar', 'baz'];
 
@@ -250,7 +255,7 @@ test('should notify when passed arrays of different length', function() {
 });
 
 // API variation passes indexes only
-test('should not notify when passed with indexes', function() {
+QUnit.test('should not notify when passed with indexes', function() {
   obj.enumerableContentWillChange(1, 1);
   equal(obj._after, 0);
 
@@ -258,7 +263,7 @@ test('should not notify when passed with indexes', function() {
   equal(obj._after, 0);
 });
 
-test('should notify when passed old index API with delta', function() {
+QUnit.test('should notify when passed old index API with delta', function() {
   obj.enumerableContentWillChange(1, 2);
   equal(obj._after, 0);
 
@@ -298,7 +303,7 @@ QUnit.module('notify enumerable observers', {
   }
 });
 
-test('should notify enumerable observers when called with no params', function() {
+QUnit.test('should notify enumerable observers when called with no params', function() {
   obj.enumerableContentWillChange();
   deepEqual(observer._before, [obj, null, null]);
 
@@ -307,7 +312,7 @@ test('should notify enumerable observers when called with no params', function()
 });
 
 // API variation that included items only
-test('should notify when called with same length items', function() {
+QUnit.test('should notify when called with same length items', function() {
   var added = ['foo'];
   var removed = ['bar'];
 
@@ -318,7 +323,7 @@ test('should notify when called with same length items', function() {
   deepEqual(observer._after, [obj, removed, added]);
 });
 
-test('should notify when called with diff length items', function() {
+QUnit.test('should notify when called with diff length items', function() {
   var added = ['foo', 'baz'];
   var removed = ['bar'];
 
@@ -329,7 +334,7 @@ test('should notify when called with diff length items', function() {
   deepEqual(observer._after, [obj, removed, added]);
 });
 
-test('should not notify when passed with indexes only', function() {
+QUnit.test('should not notify when passed with indexes only', function() {
   obj.enumerableContentWillChange(1, 2);
   deepEqual(observer._before, [obj, 1, 2]);
 
@@ -337,7 +342,7 @@ test('should not notify when passed with indexes only', function() {
   deepEqual(observer._after, [obj, 1, 2]);
 });
 
-test('removing enumerable observer should disable', function() {
+QUnit.test('removing enumerable observer should disable', function() {
   obj.removeEnumerableObserver(observer);
   obj.enumerableContentWillChange();
   deepEqual(observer._before, null);

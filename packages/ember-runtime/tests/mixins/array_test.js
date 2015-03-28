@@ -67,7 +67,7 @@ ArrayTests.extend({
 
 }).run();
 
-test("the return value of slice has Ember.Array applied", function() {
+QUnit.test("the return value of slice has Ember.Array applied", function() {
   var x = EmberObject.createWithMixins(EmberArray, {
     length: 0
   });
@@ -75,21 +75,21 @@ test("the return value of slice has Ember.Array applied", function() {
   equal(EmberArray.detect(y), true, "mixin should be applied");
 });
 
-test("slice supports negative index arguments", function() {
+QUnit.test("slice supports negative index arguments", function() {
   var testArray = new TestArray([1,2,3,4]);
 
-  deepEqual(testArray.slice(-2),      [3, 4],     'slice(-2)');
-  deepEqual(testArray.slice(-2, -1),  [3],        'slice(-2, -1');
-  deepEqual(testArray.slice(-2, -2),  [],         'slice(-2, -2)');
-  deepEqual(testArray.slice(-1, -2),  [],         'slice(-1, -2)');
+  deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
+  deepEqual(testArray.slice(-2, -1), [3], 'slice(-2, -1');
+  deepEqual(testArray.slice(-2, -2), [], 'slice(-2, -2)');
+  deepEqual(testArray.slice(-1, -2), [], 'slice(-1, -2)');
 
-  deepEqual(testArray.slice(-4, 1),   [1],        'slice(-4, 1)');
-  deepEqual(testArray.slice(-4, 5),   [1,2,3,4],  'slice(-4, 5)');
-  deepEqual(testArray.slice(-4),      [1,2,3,4],  'slice(-4)');
+  deepEqual(testArray.slice(-4, 1), [1], 'slice(-4, 1)');
+  deepEqual(testArray.slice(-4, 5), [1,2,3,4], 'slice(-4, 5)');
+  deepEqual(testArray.slice(-4), [1,2,3,4], 'slice(-4)');
 
-  deepEqual(testArray.slice(0, -1),   [1,2,3],    'slice(0, -1)');
-  deepEqual(testArray.slice(0, -4),   [],         'slice(0, -4)');
-  deepEqual(testArray.slice(0, -3),   [1],        'slice(0, -3)');
+  deepEqual(testArray.slice(0, -1), [1,2,3], 'slice(0, -1)');
+  deepEqual(testArray.slice(0, -4), [], 'slice(0, -4)');
+  deepEqual(testArray.slice(0, -3), [1], 'slice(0, -3)');
 
 });
 
@@ -112,7 +112,7 @@ var obj, observer;
 
 QUnit.module('mixins/array/arrayContent[Will|Did]Change');
 
-test('should notify observers of []', function() {
+QUnit.test('should notify observers of []', function() {
 
   obj = DummyArray.createWithMixins({
     _count: 0,
@@ -152,7 +152,7 @@ QUnit.module('notify observers of length', {
   }
 });
 
-test('should notify observers when call with no params', function() {
+QUnit.test('should notify observers when call with no params', function() {
   obj.arrayContentWillChange();
   equal(obj._after, 0);
 
@@ -161,7 +161,7 @@ test('should notify observers when call with no params', function() {
 });
 
 // API variation that included items only
-test('should not notify when passed lengths are same', function() {
+QUnit.test('should not notify when passed lengths are same', function() {
   obj.arrayContentWillChange(0, 1, 1);
   equal(obj._after, 0);
 
@@ -169,7 +169,7 @@ test('should not notify when passed lengths are same', function() {
   equal(obj._after, 0);
 });
 
-test('should notify when passed lengths are different', function() {
+QUnit.test('should notify when passed lengths are different', function() {
   obj.arrayContentWillChange(0, 1, 2);
   equal(obj._after, 0);
 
@@ -209,7 +209,7 @@ QUnit.module('notify array observers', {
   }
 });
 
-test('should notify enumerable observers when called with no params', function() {
+QUnit.test('should notify enumerable observers when called with no params', function() {
   obj.arrayContentWillChange();
   deepEqual(observer._before, [obj, 0, -1, -1]);
 
@@ -218,7 +218,7 @@ test('should notify enumerable observers when called with no params', function()
 });
 
 // API variation that included items only
-test('should notify when called with same length items', function() {
+QUnit.test('should notify when called with same length items', function() {
   obj.arrayContentWillChange(0, 1, 1);
   deepEqual(observer._before, [obj, 0, 1, 1]);
 
@@ -226,7 +226,7 @@ test('should notify when called with same length items', function() {
   deepEqual(observer._after, [obj, 0, 1, 1]);
 });
 
-test('should notify when called with diff length items', function() {
+QUnit.test('should notify when called with diff length items', function() {
   obj.arrayContentWillChange(0, 2, 1);
   deepEqual(observer._before, [obj, 0, 2, 1]);
 
@@ -234,7 +234,7 @@ test('should notify when called with diff length items', function() {
   deepEqual(observer._after, [obj, 0, 2, 1]);
 });
 
-test('removing enumerable observer should disable', function() {
+QUnit.test('removing enumerable observer should disable', function() {
   obj.removeArrayObserver(observer);
   obj.arrayContentWillChange();
   deepEqual(observer._before, null);
@@ -274,7 +274,7 @@ QUnit.module('notify enumerable observers as well', {
   }
 });
 
-test('should notify enumerable observers when called with no params', function() {
+QUnit.test('should notify enumerable observers when called with no params', function() {
   obj.arrayContentWillChange();
   deepEqual(observer._before, [obj, null, null], 'before');
 
@@ -283,7 +283,7 @@ test('should notify enumerable observers when called with no params', function()
 });
 
 // API variation that included items only
-test('should notify when called with same length items', function() {
+QUnit.test('should notify when called with same length items', function() {
   obj.arrayContentWillChange(0, 1, 1);
   deepEqual(observer._before, [obj, ['ITEM-0'], 1], 'before');
 
@@ -291,7 +291,7 @@ test('should notify when called with same length items', function() {
   deepEqual(observer._after, [obj, 1, ['ITEM-0']], 'after');
 });
 
-test('should notify when called with diff length items', function() {
+QUnit.test('should notify when called with diff length items', function() {
   obj.arrayContentWillChange(0, 2, 1);
   deepEqual(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
 
@@ -299,7 +299,7 @@ test('should notify when called with diff length items', function() {
   deepEqual(observer._after, [obj, 2, ['ITEM-0']], 'after');
 });
 
-test('removing enumerable observer should disable', function() {
+QUnit.test('removing enumerable observer should disable', function() {
   obj.removeEnumerableObserver(observer);
   obj.arrayContentWillChange();
   deepEqual(observer._before, null, 'before');
@@ -317,9 +317,9 @@ var ary;
 QUnit.module('EmberArray.@each support', {
   setup: function() {
     ary = new TestArray([
-      { isDone: true,  desc: 'Todo 1' },
+      { isDone: true, desc: 'Todo 1' },
       { isDone: false, desc: 'Todo 2' },
-      { isDone: true,  desc: 'Todo 3' },
+      { isDone: true, desc: 'Todo 3' },
       { isDone: false, desc: 'Todo 4' }
     ]);
   },
@@ -329,7 +329,7 @@ QUnit.module('EmberArray.@each support', {
   }
 });
 
-test('adding an object should notify (@each)', function() {
+QUnit.test('adding an object should notify (@each)', function() {
 
   var called = 0;
 
@@ -351,7 +351,7 @@ test('adding an object should notify (@each)', function() {
 
 });
 
-test('adding an object should notify (@each.isDone)', function() {
+QUnit.test('adding an object should notify (@each.isDone)', function() {
 
   var called = 0;
 
@@ -372,7 +372,7 @@ test('adding an object should notify (@each.isDone)', function() {
 
 });
 
-test('using @each to observe arrays that does not return objects raise error', function() {
+QUnit.test('using @each to observe arrays that does not return objects raise error', function() {
 
   var called = 0;
 
@@ -400,7 +400,7 @@ test('using @each to observe arrays that does not return objects raise error', f
   equal(called, 0, 'not calls observer when object is pushed');
 });
 
-test('modifying the array should also indicate the isDone prop itself has changed', function() {
+QUnit.test('modifying the array should also indicate the isDone prop itself has changed', function() {
   // NOTE: we never actually get the '@each.isDone' property here.  This is
   // important because it tests the case where we don't have an isDone
   // EachArray materialized but just want to know when the property has

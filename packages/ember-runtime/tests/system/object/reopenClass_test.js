@@ -3,7 +3,7 @@ import EmberObject from "ember-runtime/system/object";
 
 QUnit.module('system/object/reopenClass');
 
-test('adds new properties to subclass', function() {
+QUnit.test('adds new properties to subclass', function() {
 
   var Subclass = EmberObject.extend();
   Subclass.reopenClass({
@@ -15,7 +15,7 @@ test('adds new properties to subclass', function() {
   equal(get(Subclass, 'bar'), 'BAR', 'Adds property');
 });
 
-test('class properties inherited by subclasses', function() {
+QUnit.test('class properties inherited by subclasses', function() {
 
   var Subclass = EmberObject.extend();
   Subclass.reopenClass({

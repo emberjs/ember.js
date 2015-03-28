@@ -1,9 +1,9 @@
-import { create }  from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import { Renderer } from "ember-metal-views";
 
 var renderer;
 
-function MetalRenderer () {
+function MetalRenderer() {
   MetalRenderer._super.call(this);
 }
 MetalRenderer._super = Renderer;
@@ -47,15 +47,13 @@ MetalRenderer.prototype.createElement = function (view, contextualElement) {
     }
   }
   if (view.childViews) {
-    view._childViewsMorph = this._dom.createMorph(el, null, null);
+    view._childViewsMorph = this._dom.appendMorph(el);
   } else if (view.textContent) {
     setElementText(el, view.textContent);
   } else if (view.innerHTML) {
     this._dom.detectNamespace(el);
-    var nodes = this._dom.parseHTML(view.innerHTML, el);
-    while (nodes[0]) {
-      el.appendChild(nodes[0]);
-    }
+    var frag = this._dom.parseHTML(view.innerHTML, el);
+    el.appendChild(frag);
   }
   return el;
 };
@@ -123,7 +121,7 @@ export function equalHTML(element, expectedHTML, message) {
   }
 
   var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
-  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag){
+  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag) {
     return tag.toLowerCase();
   });
   actualHTML = actualHTML.replace(/\r\n/gm, '');

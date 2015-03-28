@@ -1,4 +1,5 @@
-import Rerender from "ember-views/system/renderer";
+import Renderer from "ember-views/system/renderer";
+import DOMHelper from "dom-helper";
 
 import {
   cloneStates,
@@ -15,11 +16,17 @@ import { typeOf } from "ember-metal/utils";
 
 function K() { return this; }
 
+// Normally, the renderer is injected by the container when the view is looked
+// up. However, if someone creates a view without looking it up via the
+// container (e.g. `Ember.View.create().append()`) then we create a fallback
+// DOM renderer that is shared. In general, this path should be avoided since
+// views created this way cannot run in a node environment.
+var renderer;
+
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
-  to both Ember's main view class `Ember.View` and other classes like
-  `Ember._SimpleMetamorphView` that don't need the fully functionaltiy of
-  `Ember.View`.
+  to both Ember's main view class `Ember.View` and other classes that don't need
+  the fully functionaltiy of `Ember.View`.
 
   Unless you have specific needs for `CoreView`, you will use `Ember.View`
   in your applications.
@@ -37,10 +44,17 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   _states: cloneStates(states),
 
   init: function() {
-    this._super();
+    this._super.apply(this, arguments);
     this._state = 'preRender';
     this.currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
+
+    // Fallback for legacy cases where the view was created directly
+    // via `create()` instead of going through the container.
+    if (!this.renderer) {
+      renderer = renderer || new Renderer(new DOMHelper());
+      this.renderer = renderer;
+    }
   },
 
   /**
@@ -67,8 +81,11 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   // return the current view, not including virtual views
   concreteView: computed('parentView', function() {
-    if (!this.isVirtual) { return this; }
-    else { return get(this, 'parentView.concreteView'); }
+    if (!this.isVirtual) {
+      return this;
+    } else {
+      return get(this, 'parentView.concreteView');
+    }
   }),
 
   instrumentName: 'core_view',
@@ -108,7 +125,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   destroy: function() {
     var parent = this._parentView;
 
-    if (!this._super()) { return; }
+    if (!this._super.apply(this, arguments)) { return; }
 
 
     // destroy the element -- this will avoid each child view destroying
@@ -133,7 +150,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 });
 
 CoreView.reopenClass({
-  renderer: new Rerender()
+  isViewClass: true
 });
 
 export default CoreView;

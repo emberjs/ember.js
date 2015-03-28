@@ -54,7 +54,7 @@ export function runLoadHooks(name, object) {
   loaded[name] = object;
 
   if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === "function") {
-    var event = new CustomEvent(name, {detail: object, name: name});
+    var event = new CustomEvent(name, { detail: object, name: name });
     window.dispatchEvent(event);
   }
 

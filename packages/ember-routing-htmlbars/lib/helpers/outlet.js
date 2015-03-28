@@ -4,8 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // assert
-import { set } from "ember-metal/property_set";
-import { OutletView } from "ember-routing-views/views/outlet";
 
 /**
   The `outlet` helper is a placeholder that the router will fill in with
@@ -71,10 +69,10 @@ import { OutletView } from "ember-routing-views/views/outlet";
   @return {String} HTML string
 */
 export function outletHelper(params, hash, options, env) {
-  var outletSource;
   var viewName;
   var viewClass;
   var viewFullName;
+  var view = env.data.view;
 
   Ember.assert(
     "Using {{outlet}} with an unquoted name is not supported.",
@@ -83,11 +81,6 @@ export function outletHelper(params, hash, options, env) {
 
   var property = params[0] || 'main';
 
-  outletSource = this;
-  while (!outletSource.get('template.isTop')) {
-    outletSource = outletSource.get('_parentView');
-  }
-  set(this, 'outletSource', outletSource);
 
   // provide controller override
   viewName = hash.view;
@@ -101,15 +94,12 @@ export function outletHelper(params, hash, options, env) {
     );
     Ember.assert(
       "The view name you supplied '" + viewName + "' did not resolve to a view.",
-      this.container.has(viewFullName)
+      view.container._registry.has(viewFullName)
     );
   }
 
-  viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || OutletView;
-
-  hash.currentViewBinding = '_view.outletSource._outlets.' + property;
-
+  viewClass = viewName ? view.container.lookupFactory(viewFullName) : hash.viewClass || view.container.lookupFactory('view:-outlet');
+  hash._outletName = property;
   options.helperName = options.helperName || 'outlet';
-
   return env.helpers.view.helperFunction.call(this, [viewClass], hash, options, env);
 }

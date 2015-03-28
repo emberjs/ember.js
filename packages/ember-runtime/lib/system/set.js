@@ -197,13 +197,19 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   */
   isEqual: function(obj) {
     // fail fast
-    if (!Enumerable.detect(obj)) return false;
+    if (!Enumerable.detect(obj)) {
+      return false;
+    }
 
     var loc = get(this, 'length');
-    if (get(obj, 'length') !== loc) return false;
+    if (get(obj, 'length') !== loc) {
+      return false;
+    }
 
-    while(--loc >= 0) {
-      if (!obj.contains(this[loc])) return false;
+    while (--loc >= 0) {
+      if (!obj.contains(this[loc])) {
+        return false;
+      }
     }
 
     return true;
@@ -263,7 +269,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @return {Object} The removed object from the set or null.
   */
   pop: function() {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
     var obj = this.length > 0 ? this[this.length-1] : null;
     this.remove(obj);
     return obj;
@@ -360,8 +369,11 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   init: function(items) {
     Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
-    this._super();
-    if (items) this.addObjects(items);
+    this._super.apply(this, arguments);
+
+    if (items) {
+      this.addObjects(items);
+    }
   },
 
   // implement Ember.Enumerable
@@ -381,15 +393,22 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   // implements Ember.MutableEnumerable
   addObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
-    if (isNone(obj)) return this; // nothing to do
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
+    if (isNone(obj)) {
+      return this; // nothing to do
+    }
 
     var guid = guidFor(obj);
     var idx  = this[guid];
     var len  = get(this, 'length');
     var added;
 
-    if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
+    if (idx>=0 && idx<len && (this[idx] === obj)) {
+      return this; // added
+    }
 
     added = [obj];
 
@@ -409,8 +428,13 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   // implements Ember.MutableEnumerable
   removeObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
-    if (isNone(obj)) return this; // nothing to do
+    if (get(this, 'isFrozen')) {
+      throw new EmberError(FROZEN_ERROR);
+    }
+
+    if (isNone(obj)) {
+      return this; // nothing to do
+    }
 
     var guid = guidFor(obj);
     var idx  = this[guid];
@@ -425,7 +449,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
       this.enumerableContentWillChange(removed, null);
       if (isFirst) { propertyWillChange(this, 'firstObject'); }
-      if (isLast)  { propertyWillChange(this, 'lastObject'); }
+      if (isLast) { propertyWillChange(this, 'lastObject'); }
 
       // swap items - basically move the item to the end so it can be removed
       if (idx < len-1) {
@@ -439,7 +463,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
       set(this, 'length', len-1);
 
       if (isFirst) { propertyDidChange(this, 'firstObject'); }
-      if (isLast)  { propertyDidChange(this, 'lastObject'); }
+      if (isLast) { propertyDidChange(this, 'lastObject'); }
       this.enumerableContentDidChange(removed, null);
     }
 
@@ -452,9 +476,12 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   copy: function() {
-    var C = this.constructor, ret = new C(), loc = get(this, 'length');
+    var C = this.constructor;
+    var ret = new C();
+    var loc = get(this, 'length');
+
     set(ret, 'length', loc);
-    while(--loc>=0) {
+    while (--loc >= 0) {
       ret[loc] = this[loc];
       ret[guidFor(this[loc])] = loc;
     }
@@ -462,8 +489,11 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   },
 
   toString: function() {
-    var len = this.length, idx, array = [];
-    for(idx = 0; idx < len; idx++) {
+    var len = this.length;
+    var array = [];
+    var idx;
+
+    for (idx = 0; idx < len; idx++) {
       array[idx] = this[idx];
     }
     return fmt("Ember.Set<%@>", [array.join(',')]);

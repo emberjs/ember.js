@@ -1,15 +1,15 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-// REMOVE_USE_STRICT: true
+"REMOVE_USE_STRICT: true";
 
 import Ember from "ember-metal/core";
+import o_create from 'ember-metal/platform/create';
 import {
-  defineProperty as o_defineProperty,
-  canDefineNonEnumerableProperties,
   hasPropertyAccessors,
-  create as o_create
-} from "ember-metal/platform";
+  defineProperty as o_defineProperty,
+  canDefineNonEnumerableProperties
+} from 'ember-metal/platform/define_property';
 
 import {
   forEach
@@ -72,8 +72,8 @@ var stringCache  = {};
   manipulation like splitting.
 
   Unfortunately checking equality of different ropes can be quite costly as
-  runtimes must resort to clever string comparison algorithims. These
-  algorithims typically cost in proportion to the length of the string.
+  runtimes must resort to clever string comparison algorithms. These
+  algorithms typically cost in proportion to the length of the string.
   Luckily, this is where the Symbols (interned strings) shine. As Symbols are
   unique by their string content, equality checks can be done by pointer
   comparison.
@@ -98,7 +98,9 @@ function intern(str) {
   var obj = {};
   obj[str] = 1;
   for (var key in obj) {
-    if (key === str) return key;
+    if (key === str) {
+      return key;
+    }
   }
   return str;
 }
@@ -119,12 +121,49 @@ function intern(str) {
 */
 var GUID_KEY = intern('__ember' + (+ new Date()));
 
-var GUID_DESC = {
-  writable:    false,
-  configurable: false,
-  enumerable:  false,
+export var GUID_DESC = {
+  writable:     true,
+  configurable: true,
+  enumerable:   false,
   value: null
 };
+
+var undefinedDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: undefined
+};
+
+var nullDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: null
+};
+
+var META_DESC = {
+  writable: true,
+  configurable: true,
+  enumerable: false,
+  value: null
+};
+
+export var EMBER_META_PROPERTY = {
+  name: '__ember_meta__',
+  descriptor: META_DESC
+};
+
+export var GUID_KEY_PROPERTY = {
+  name: GUID_KEY,
+  descriptor: nullDescriptor
+};
+
+export var NEXT_SUPER_PROPERTY = {
+  name: '__nextSuper',
+  descriptor: undefinedDescriptor
+};
+
 
 /**
   Generates a new guid, optionally saving the guid to the object that you
@@ -144,14 +183,21 @@ var GUID_DESC = {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix) {
-  if (!prefix) prefix = GUID_PREFIX;
+  if (!prefix) {
+    prefix = GUID_PREFIX;
+  }
+
   var ret = (prefix + uuid());
   if (obj) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
     } else {
       GUID_DESC.value = ret;
-      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+      } else {
+        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      }
     }
   }
   return ret;
@@ -174,38 +220,65 @@ export function generateGuid(obj, prefix) {
 export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
-  if (obj === undefined) return "(undefined)";
-  if (obj === null) return "(null)";
+  if (obj === undefined) {
+    return "(undefined)";
+  }
+
+  if (obj === null) {
+    return "(null)";
+  }
 
   var ret;
   var type = typeof obj;
 
   // Don't allow prototype changes to String etc. to change the guidFor
-  switch(type) {
+  switch (type) {
     case 'number':
       ret = numberCache[obj];
-      if (!ret) ret = numberCache[obj] = 'nu'+obj;
+
+      if (!ret) {
+        ret = numberCache[obj] = 'nu'+obj;
+      }
+
       return ret;
 
     case 'string':
       ret = stringCache[obj];
-      if (!ret) ret = stringCache[obj] = 'st' + uuid();
+
+      if (!ret) {
+        ret = stringCache[obj] = 'st' + uuid();
+      }
+
       return ret;
 
     case 'boolean':
       return obj ? '(true)' : '(false)';
 
     default:
-      if (obj[GUID_KEY]) return obj[GUID_KEY];
-      if (obj === Object) return '(Object)';
-      if (obj === Array)  return '(Array)';
+      if (obj[GUID_KEY]) {
+        return obj[GUID_KEY];
+      }
+
+      if (obj === Object) {
+        return '(Object)';
+      }
+
+      if (obj === Array) {
+        return '(Array)';
+      }
+
       ret = GUID_PREFIX + uuid();
 
       if (obj[GUID_KEY] === null) {
         obj[GUID_KEY] = ret;
       } else {
         GUID_DESC.value = ret;
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+
+        if (obj.__defineNonEnumerable) {
+          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+        } else {
+          o_defineProperty(obj, GUID_KEY, GUID_DESC);
+        }
       }
       return ret;
   }
@@ -214,19 +287,10 @@ export function guidFor(obj) {
 // ..........................................................
 // META
 //
-
-var META_DESC = {
-  writable: true,
-  configurable: false,
-  enumerable: false,
-  value: null
-};
-
 function Meta(obj) {
-  this.descs = {};
   this.watching = {};
-  this.cache = {};
-  this.cacheMeta = {};
+  this.cache = undefined;
+  this.cacheMeta = undefined;
   this.source = obj;
   this.deps = undefined;
   this.listeners = undefined;
@@ -238,7 +302,7 @@ function Meta(obj) {
 }
 
 Meta.prototype = {
-  chainWatchers: null
+  chainWatchers: null // FIXME
 };
 
 if (!canDefineNonEnumerableProperties) {
@@ -281,11 +345,19 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-  var ret = obj['__ember_meta__'];
-  if (writable===false) return ret || EMPTY_META;
+  var ret = obj.__ember_meta__;
+  if (writable===false) {
+    return ret || EMPTY_META;
+  }
 
   if (!ret) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (canDefineNonEnumerableProperties) {
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+      } else {
+        o_defineProperty(obj, '__ember_meta__', META_DESC);
+      }
+    }
 
     ret = new Meta(obj);
 
@@ -295,19 +367,18 @@ function meta(obj, writable) {
       }
     }
 
-    obj['__ember_meta__'] = ret;
-
-    // make sure we don't accidentally try to create constructor like desc
-    ret.descs.constructor = null;
-
+    obj.__ember_meta__ = ret;
   } else if (ret.source !== obj) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      o_defineProperty(obj, '__ember_meta__', META_DESC);
+    }
 
     ret = o_create(ret);
-    ret.descs     = o_create(ret.descs);
     ret.watching  = o_create(ret.watching);
-    ret.cache     = {};
-    ret.cacheMeta = {};
+    ret.cache     = undefined;
+    ret.cacheMeta = undefined;
     ret.source    = obj;
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
@@ -434,7 +505,6 @@ export function wrap(func, superFunc) {
   }
 
   superWrapper.wrappedFunction = func;
-  superWrapper.wrappedFunction.__ember_arity__ = func.length;
   superWrapper.__ember_observes__ = func.__ember_observes__;
   superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;
@@ -564,12 +634,14 @@ export function tryInvoke(obj, methodName, args) {
 // https://github.com/emberjs/ember.js/pull/1617
 var needsFinallyFix = (function() {
   var count = 0;
-  try{
-    try { }
-    finally {
+  try {
+    // jscs:disable
+    try {
+    } finally {
       count++;
       throw new Error('needsFinallyFixTest');
     }
+    // jscs:enable
   } catch (e) {}
 
   return count !== 1;
@@ -726,7 +798,7 @@ if (needsFinallyFix) {
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
 forEach.call(t, function(name) {
-  TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
+  TYPE_MAP["[object " + name + "]"] = name.toLowerCase();
 });
 
 var toString = Object.prototype.toString;
@@ -799,11 +871,17 @@ function typeOf(item) {
   ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
-    if (EmberObject && EmberObject.detect(item)) ret = 'class';
+    if (EmberObject && EmberObject.detect(item)) {
+      ret = 'class';
+    }
   } else if (ret === 'object') {
-    if (item instanceof Error) ret = 'error';
-    else if (EmberObject && item instanceof EmberObject) ret = 'instance';
-    else if (item instanceof Date) ret = 'date';
+    if (item instanceof Error) {
+      ret = 'error';
+    } else if (EmberObject && item instanceof EmberObject) {
+      ret = 'instance';
+    } else if (item instanceof Date) {
+      ret = 'date';
+    }
   }
 
   return ret;
@@ -833,7 +911,7 @@ export function inspect(obj) {
 
   var v;
   var ret = [];
-  for(var key in obj) {
+  for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
@@ -851,8 +929,12 @@ export function inspect(obj) {
 
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
-
-export function apply(t /* target */, m /* method */, a /* args */) {
+/**
+  @param {Object} target
+  @param {Function} method
+  @param {Array} args
+*/
+export function apply(t, m, a) {
   var l = a && a.length;
   if (!a || !l) { return m.call(t); }
   switch (l) {
@@ -865,7 +947,12 @@ export function apply(t /* target */, m /* method */, a /* args */) {
   }
 }
 
-export function applyStr(t /* target */, m /* method */, a /* args */) {
+/**
+  @param {Object} target
+  @param {String} method
+  @param {Array} args
+*/
+export function applyStr(t, m, a) {
   var l = a && a.length;
   if (!a || !l) { return t[m](); }
   switch (l) {

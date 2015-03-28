@@ -4,7 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import Namespace from "ember-runtime/system/namespace";
-import Container from "ember-runtime/system/container";
+import { Registry } from "ember-runtime/system/container";
 import { A } from "ember-runtime/system/native_array";
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
@@ -20,7 +20,7 @@ var trim = jQuery.trim;
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, container, lookup;
+var TemplateTests, registry, container, lookup;
 
 
 function nthChild(view, nth) {
@@ -37,23 +37,25 @@ QUnit.module("collection helper", {
   setup: function() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    // container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = registry.container();
+
+    registry.optionsForType('template', { instantiate: false });
+    // registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
 
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
   }
 });
 
-test("Collection views that specify an example view class have their children be of that class", function() {
+QUnit.test("Collection views that specify an example view class have their children be of that class", function() {
   var ExampleViewCollection = CollectionView.extend({
     itemViewClass: EmberView.extend({
       isCustom: true
@@ -72,7 +74,7 @@ test("Collection views that specify an example view class have their children be
   ok(firstGrandchild(view).isCustom, "uses the example view class");
 });
 
-test("itemViewClass works in the #collection helper with a global (DEPRECATED)", function() {
+QUnit.test("itemViewClass works in the #collection helper with a global (DEPRECATED)", function() {
   TemplateTests.ExampleItemView = EmberView.extend({
     isAlsoCustom: true
   });
@@ -84,18 +86,15 @@ test("itemViewClass works in the #collection helper with a global (DEPRECATED)",
     template: compile('{{#collection content=view.exampleController itemViewClass=TemplateTests.ExampleItemView}}beta{{/collection}}')
   });
 
-  var deprecation = /Resolved the view "TemplateTests.ExampleItemView" on the global context/;
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    deprecation = /Global lookup of TemplateTests.ExampleItemView from a Handlebars template is deprecated/;
-  }
-  expectDeprecation(function(){
+  var deprecation = /Global lookup of TemplateTests.ExampleItemView from a Handlebars template is deprecated/;
+  expectDeprecation(function() {
     runAppend(view);
   }, deprecation);
 
   ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
 });
 
-test("itemViewClass works in the #collection helper with a property", function() {
+QUnit.test("itemViewClass works in the #collection helper with a property", function() {
   var ExampleItemView = EmberView.extend({
     isAlsoCustom: true
   });
@@ -116,8 +115,8 @@ test("itemViewClass works in the #collection helper with a property", function()
   ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
 });
 
-test("itemViewClass works in the #collection via container", function() {
-  container.register('view:example-item', EmberView.extend({
+QUnit.test("itemViewClass works in the #collection via container", function() {
+  registry.register('view:example-item', EmberView.extend({
     isAlsoCustom: true
   }));
 
@@ -136,7 +135,7 @@ test("itemViewClass works in the #collection via container", function() {
 });
 
 
-test("passing a block to the collection helper sets it as the template for example views", function() {
+QUnit.test("passing a block to the collection helper sets it as the template for example views", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -152,17 +151,18 @@ test("passing a block to the collection helper sets it as the template for examp
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
-test("collection helper should try to use container to resolve view", function() {
-  var container = new Container();
+QUnit.test("collection helper should try to use container to resolve view", function() {
+  var registry = new Registry();
+  var container = registry.container();
 
   var ACollectionView = CollectionView.extend({
         tagName: 'ul',
         content: A(['foo', 'bar', 'baz'])
   });
 
-  container.register('view:collectionTest', ACollectionView);
+  registry.register('view:collectionTest', ACollectionView);
 
-  var controller = {container: container};
+  var controller = { container: container };
   view = EmberView.create({
     controller: controller,
     template: compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
@@ -173,7 +173,7 @@ test("collection helper should try to use container to resolve view", function()
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
-test("collection helper should accept relative paths", function() {
+QUnit.test("collection helper should accept relative paths", function() {
   view = EmberView.create({
     template: compile('{{#collection view.collection}} <label></label> {{/collection}}'),
     collection: CollectionView.extend({
@@ -187,7 +187,7 @@ test("collection helper should accept relative paths", function() {
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
-test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
+QUnit.test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
   var EmptyView = EmberView.extend({
     template : compile("<td>No Rows Yet</td>")
   });
@@ -211,14 +211,14 @@ test("empty views should be removed when content is added to the collection (reg
   equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
 
   run(function() {
-    listController.pushObject({title : "Go Away, Placeholder Row!"});
+    listController.pushObject({ title : "Go Away, Placeholder Row!" });
   });
 
   equal(view.$('tr').length, 1, 'has one row');
   equal(view.$('tr:nth-child(1) td').text(), 'Go Away, Placeholder Row!', 'The content is the updated data.');
 });
 
-test("should be able to specify which class should be used for the empty view", function() {
+QUnit.test("should be able to specify which class should be used for the empty view", function() {
   var App;
 
   run(function() {
@@ -231,7 +231,7 @@ test("should be able to specify which class should be used for the empty view", 
 
   view = EmberView.create({
     container: {
-      lookupFactory: function(){
+      lookupFactory: function() {
         return EmptyView;
       }
     },
@@ -245,7 +245,7 @@ test("should be able to specify which class should be used for the empty view", 
   runDestroy(App);
 });
 
-test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
+QUnit.test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A()
@@ -261,7 +261,7 @@ test("if no content is passed, and no 'else' is specified, nothing is rendered",
   equal(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
 });
 
-test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
+QUnit.test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A()
@@ -277,7 +277,7 @@ test("if no content is passed, and 'else' is specified, the else block is render
   equal(view.$('li:has(del)').length, 1, 'the else block is rendered');
 });
 
-test("a block passed to a collection helper defaults to the content property of the context", function() {
+QUnit.test("a block passed to a collection helper defaults to the content property of the context", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -298,7 +298,7 @@ test("a block passed to a collection helper defaults to the content property of 
   equal(view.$('li:nth-child(3) label').text(), 'baz');
 });
 
-test("a block passed to a collection helper defaults to the view", function() {
+QUnit.test("a block passed to a collection helper defaults to the view", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -325,7 +325,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   equal(view.$('label').length, 0, "all list item views should be removed from DOM");
 });
 
-test("should include an id attribute if id is set in the options hash", function() {
+QUnit.test("should include an id attribute if id is set in the options hash", function() {
   var CollectionTestView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -341,7 +341,7 @@ test("should include an id attribute if id is set in the options hash", function
   equal(view.$('ul#baz').length, 1, "adds an id attribute");
 });
 
-test("should give its item views the class specified by itemClass", function() {
+QUnit.test("should give its item views the class specified by itemClass", function() {
   var ItemClassTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -356,7 +356,7 @@ test("should give its item views the class specified by itemClass", function() {
   equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
-test("should give its item views the classBinding specified by itemClassBinding", function() {
+QUnit.test("should give its item views the class specified by itemClass", function() {
   var ItemClassBindingTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })])
@@ -365,7 +365,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
   view = EmberView.create({
     itemClassBindingTestCollectionView: ItemClassBindingTestCollectionView,
     isBar: true,
-    template: compile('{{#collection view.itemClassBindingTestCollectionView itemClassBinding="view.isBar"}}foo{{/collection}}')
+    template: compile('{{#collection view.itemClassBindingTestCollectionView itemClass=view.isBar}}foo{{/collection}}')
   });
 
   runAppend(view);
@@ -376,7 +376,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
   // to introduce a new keyword that could be used from within `itemClassBinding`. For instance, `itemClassBinding="item.isBaz"`.
 });
 
-test("should give its item views the property specified by itemPropertyBinding", function() {
+QUnit.test("should give its item views the property specified by itemProperty", function() {
   var ItemPropertyBindingTestItemView = EmberView.extend({
     tagName: 'li'
   });
@@ -387,11 +387,11 @@ test("should give its item views the property specified by itemPropertyBinding",
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
     container: {
-      lookupFactory: function(){
+      lookupFactory: function() {
         return ItemPropertyBindingTestItemView;
       }
     },
-    template: compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="item-property-binding-test-item-view" itemPropertyBinding="view.baz" preserveContext=false}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection content=view.content tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
@@ -409,11 +409,11 @@ test("should give its item views the property specified by itemPropertyBinding",
   equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
-test("should unsubscribe stream bindings", function() {
+QUnit.test("should unsubscribe stream bindings", function() {
   view = EmberView.create({
     baz: "baz",
     content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    template: compile('{{#collection contentBinding="view.content" itemPropertyBinding="view.baz"}}{{view.property}}{{/collection}}')
+    template: compile('{{#collection content=view.content itemProperty=view.baz}}{{view.property}}{{/collection}}')
   });
 
   runAppend(view);
@@ -429,7 +429,7 @@ test("should unsubscribe stream bindings", function() {
   equal(barStreamBinding.subscribers.length, 2*2, "removes 1 subscriber");
 });
 
-test("should work inside a bound {{#if}}", function() {
+QUnit.test("should work inside a bound {{#if}}", function() {
   var testData = A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })]);
   var IfTestCollectionView = CollectionView.extend({
     tagName: 'ul',
@@ -453,7 +453,7 @@ test("should work inside a bound {{#if}}", function() {
   equal(view.$('ul li').length, 3, "collection renders when conditional changes to true");
 });
 
-test("should pass content as context when using {{#each}} helper [DEPRECATED]", function() {
+QUnit.test("should pass content as context when using {{#each}} helper [DEPRECATED]", function() {
   view = EmberView.create({
     template: compile('{{#each view.releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
 
@@ -474,7 +474,7 @@ test("should pass content as context when using {{#each}} helper [DEPRECATED]", 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
 
-test("should re-render when the content object changes", function() {
+QUnit.test("should re-render when the content object changes", function() {
   var RerenderTest = CollectionView.extend({
     tagName: 'ul',
     content: A()
@@ -499,7 +499,7 @@ test("should re-render when the content object changes", function() {
   equal(trim(view.$('li:eq(0)').text()), "ramalamadingdong");
 });
 
-test("select tagName on collection helper automatically sets child tagName to option", function() {
+QUnit.test("select tagName on collection helper automatically sets child tagName to option", function() {
   var RerenderTest = CollectionView.extend({
     content: A(['foo'])
   });
@@ -514,7 +514,7 @@ test("select tagName on collection helper automatically sets child tagName to op
   equal(view.$('option').length, 1, "renders the correct child tag name");
 });
 
-test("tagName works in the #collection helper", function() {
+QUnit.test("tagName works in the #collection helper", function() {
   var RerenderTest = CollectionView.extend({
     content: A(['foo', 'bar'])
   });
@@ -537,15 +537,15 @@ test("tagName works in the #collection helper", function() {
   equal(trim(view.$('li:eq(0)').text()), "bing");
 });
 
-test("should render nested collections", function() {
-
-  var container = new Container();
-  container.register('view:inner-list', CollectionView.extend({
+QUnit.test("should render nested collections", function() {
+  var registry = new Registry();
+  var container = registry.container();
+  registry.register('view:inner-list', CollectionView.extend({
     tagName: 'ul',
     content: A(['one','two','three'])
   }));
 
-  container.register('view:outer-list', CollectionView.extend({
+  registry.register('view:outer-list', CollectionView.extend({
     tagName: 'ul',
     content: A(['foo'])
   }));
@@ -563,7 +563,7 @@ test("should render nested collections", function() {
 
 });
 
-test("should render multiple, bound nested collections (#68)", function() {
+QUnit.test("should render multiple, bound nested collections (#68)", function() {
   var view;
 
   run(function() {
@@ -606,7 +606,7 @@ test("should render multiple, bound nested collections (#68)", function() {
   runDestroy(view);
 });
 
-test("should allow view objects to be swapped out without throwing an error (#78)", function() {
+QUnit.test("should allow view objects to be swapped out without throwing an error (#78)", function() {
   var view, dataset, secondDataset;
 
   run(function() {
@@ -638,14 +638,14 @@ test("should allow view objects to be swapped out without throwing an error (#78
       ready: true,
       items: A([1,2,3])
     });
-    TemplateTests.datasetController.set('dataset',dataset);
+    TemplateTests.datasetController.set('dataset', dataset);
   });
 
   equal(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
 
   run(function() {
-    secondDataset = EmberObject.create({ready: false});
-    TemplateTests.datasetController.set('dataset',secondDataset);
+    secondDataset = EmberObject.create({ ready: false });
+    TemplateTests.datasetController.set('dataset', secondDataset);
   });
 
   equal(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
@@ -653,18 +653,19 @@ test("should allow view objects to be swapped out without throwing an error (#78
   runDestroy(view);
 });
 
-test("context should be content", function() {
+QUnit.test("context should be content", function() {
   var view;
 
-  var container = new Container();
+  registry = new Registry();
+  container = registry.container();
 
   var items = A([
-    EmberObject.create({name: 'Dave'}),
-    EmberObject.create({name: 'Mary'}),
-    EmberObject.create({name: 'Sara'})
+    EmberObject.create({ name: 'Dave' }),
+    EmberObject.create({ name: 'Mary' }),
+    EmberObject.create({ name: 'Sara' })
   ]);
 
-  container.register('view:an-item', EmberView.extend({
+  registry.register('view:an-item', EmberView.extend({
     template: compile("Greetings {{name}}")
   }));
 
@@ -673,7 +674,7 @@ test("context should be content", function() {
     controller: {
       items: items
     },
-    template: compile('{{collection contentBinding="items" itemViewClass="an-item"}}')
+    template: compile('{{collection content=items itemViewClass="an-item"}}')
   });
 
   runAppend(view);

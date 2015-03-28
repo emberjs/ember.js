@@ -2,7 +2,7 @@ import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";
 
 import jQuery from "ember-views/system/jquery";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 
 /**
@@ -46,6 +46,23 @@ merge(inBuffer, {
     view.propertyDidChange('childViews');
 
     return childView;
+  },
+
+  appendAttr: function(view, attrNode) {
+    var buffer = view.buffer;
+    var _childViews = view._childViews;
+
+    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
+    _childViews.push(attrNode);
+
+    if (!attrNode._morph) {
+      Ember.assert("bound attributes that do not have a morph must have a buffer", !!buffer);
+      buffer.pushAttrNode(attrNode);
+    }
+
+    view.propertyDidChange('childViews');
+
+    return attrNode;
   },
 
   invokeObserver: function(target, observer) {

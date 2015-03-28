@@ -14,7 +14,10 @@ suite.test('find should invoke callback on each item as long as you return false
   var found = [];
   var result;
 
-  result = obj.find(function(i) { found.push(i); return false; });
+  result = obj.find(function(i) {
+    found.push(i);
+    return false;
+  });
   equal(result, undefined, 'return value of obj.find');
   deepEqual(found, ary, 'items passed during find() should match');
 });
@@ -27,10 +30,13 @@ suite.test('every should stop invoking when you return true', function() {
   var found = [];
   var result;
 
-  result = obj.find(function(i) { found.push(i); return --cnt >= 0; });
+  result = obj.find(function(i) {
+    found.push(i);
+    return --cnt >= 0;
+  });
   equal(result, ary[exp-1], 'return value of obj.find');
   equal(found.length, exp, 'should invoke proper number of times');
-  deepEqual(found, ary.slice(0,-2), 'items passed during find() should match');
+  deepEqual(found, ary.slice(0, -2), 'items passed during find() should match');
 });
 
 // ..........................................................
@@ -54,7 +60,7 @@ suite.test('should return first object of property matches', function() {
 });
 
 suite.test('should return first object with truthy prop', function() {
-  var ary, obj ;
+  var ary, obj;
 
   ary = [
     { foo: 'foo', bar: false },

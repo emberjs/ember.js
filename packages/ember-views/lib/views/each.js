@@ -15,8 +15,10 @@ import {
   removeBeforeObserver
 } from "ember-metal/observer";
 
-import _MetamorphView from "ember-views/views/metamorph_view";
-import { _Metamorph } from "ember-views/views/metamorph_view";
+import {
+  default as _MetamorphView,
+  _Metamorph
+} from "ember-views/views/metamorph_view";
 
 export default CollectionView.extend(_Metamorph, {
 
@@ -39,7 +41,7 @@ export default CollectionView.extend(_Metamorph, {
         binding.connect(controller);
       });
 
-      set(this, '_arrayController', controller);
+      this._arrayController = controller;
     } else {
       this.disableContentObservers(function() {
         binding = new Binding('content', 'dataSource').oneWay();
@@ -47,7 +49,7 @@ export default CollectionView.extend(_Metamorph, {
       });
     }
 
-    return this._super();
+    return this._super.apply(this, arguments);
   },
 
   _assertArrayLike: function(content) {
@@ -77,8 +79,8 @@ export default CollectionView.extend(_Metamorph, {
   itemViewClass: _MetamorphView,
   emptyViewClass: _MetamorphView,
 
-  createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+  createChildView: function(_view, attrs) {
+    var view = this._super(_view, attrs);
 
     var content = get(view, 'content');
     var keyword = get(this, 'keyword');
@@ -97,12 +99,10 @@ export default CollectionView.extend(_Metamorph, {
   },
 
   destroy: function() {
-    if (!this._super()) { return; }
+    if (!this._super.apply(this, arguments)) { return; }
 
-    var arrayController = get(this, '_arrayController');
-
-    if (arrayController) {
-      arrayController.destroy();
+    if (this._arrayController) {
+      this._arrayController.destroy();
     }
 
     return this;

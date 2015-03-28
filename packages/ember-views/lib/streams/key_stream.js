@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 
 import merge from "ember-metal/merge";
-import { create } from "ember-metal/platform";
+import create from 'ember-metal/platform/create';
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import {

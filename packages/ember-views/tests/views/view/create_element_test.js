@@ -14,7 +14,7 @@ QUnit.module("Ember.View#createElement", {
   }
 });
 
-test("returns the receiver", function() {
+QUnit.test("returns the receiver", function() {
   var ret;
 
   view = EmberView.create();
@@ -26,7 +26,7 @@ test("returns the receiver", function() {
   equal(ret, view, 'returns receiver');
 });
 
-test('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
+QUnit.test('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
   expect(1);
 
   view = EmberView.create({
@@ -35,14 +35,14 @@ test('should assert if `tagName` is an empty string and `classNameBindings` are 
     classNameBindings: ['foo:is-foo:is-bar']
   });
 
-  expectAssertion(function(){
-    run(function(){
+  expectAssertion(function() {
+    run(function() {
       view.createElement();
     });
   }, /You cannot use `classNameBindings` on a tag-less view/);
 });
 
-test("calls render and turns resultant string into element", function() {
+QUnit.test("calls render and turns resultant string into element", function() {
   view = EmberView.create({
     tagName: 'span',
 
@@ -63,12 +63,12 @@ test("calls render and turns resultant string into element", function() {
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
-test("calls render and parses the buffer string in the right context", function() {
+QUnit.test("calls render and parses the buffer string in the right context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
     tagName: 'table',
-    childViews: [ EmberView.create({
+    childViews: [EmberView.create({
       tagName: '',
       render: function(buffer) {
         // Emulate a metamorph
@@ -91,7 +91,7 @@ test("calls render and parses the buffer string in the right context", function(
   equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
-test("does not wrap many tr children in tbody elements", function() {
+QUnit.test("does not wrap many tr children in tbody elements", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -124,11 +124,11 @@ test("does not wrap many tr children in tbody elements", function() {
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
 });
 
-test("generated element include HTML from child views as well", function() {
+QUnit.test("generated element include HTML from child views as well", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
-    childViews: [ EmberView.create({ elementId: "foo" })]
+    childViews: [EmberView.create({ elementId: "foo" })]
   });
 
   run(function() {

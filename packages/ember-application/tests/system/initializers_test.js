@@ -2,6 +2,7 @@ import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import { indexOf } from "ember-metal/array";
 import jQuery from "ember-views/system/jquery";
+import Registry from "container/registry";
 
 var app;
 
@@ -16,30 +17,49 @@ QUnit.module("Ember.Application initializers", {
   }
 });
 
-test("initializers require proper 'name' and 'initialize' properties", function() {
+QUnit.test("initializers require proper 'name' and 'initialize' properties", function() {
   var MyApplication = Application.extend();
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.initializer({name:'initializer'});
+      MyApplication.initializer({ name: 'initializer' });
     });
   });
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.initializer({initialize:Ember.K});
+      MyApplication.initializer({ initialize: Ember.K });
     });
   });
 
 });
 
-test("initializers can be registered in a specified order", function() {
+QUnit.test("initializers are passed a registry and App", function() {
+  var MyApplication = Application.extend();
+
+  MyApplication.initializer({
+    name: 'initializer',
+    initialize: function(registry, App) {
+      ok(registry instanceof Registry, "initialize is passed a registry");
+      ok(App instanceof Application, "initialize is passed an Application");
+    }
+  });
+
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
+    });
+  });
+});
+
+QUnit.test("initializers can be registered in a specified order", function() {
   var order = [];
   var MyApplication = Application.extend();
   MyApplication.initializer({
     name: 'fourth',
     after: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('fourth');
     }
   });
@@ -48,7 +68,7 @@ test("initializers can be registered in a specified order", function() {
     name: 'second',
     after: 'first',
     before: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('second');
     }
   });
@@ -57,7 +77,7 @@ test("initializers can be registered in a specified order", function() {
     name: 'fifth',
     after: 'fourth',
     before: 'sixth',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('fifth');
     }
   });
@@ -65,21 +85,21 @@ test("initializers can be registered in a specified order", function() {
   MyApplication.initializer({
     name: 'first',
     before: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('first');
     }
   });
 
   MyApplication.initializer({
     name: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('third');
     }
   });
 
   MyApplication.initializer({
     name: 'sixth',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('sixth');
     }
   });
@@ -94,39 +114,102 @@ test("initializers can be registered in a specified order", function() {
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
 });
 
-test("initializers can have multiple dependencies", function () {
+QUnit.test("initializers can be registered in a specified order as an array", function() {
+  var order = [];
+  var MyApplication = Application.extend();
+
+
+  MyApplication.initializer({
+    name: 'third',
+    initialize: function(registry) {
+      order.push('third');
+    }
+  });
+
+  MyApplication.initializer({
+    name: 'second',
+    after: 'first',
+    before: ['third', 'fourth'],
+    initialize: function(registry) {
+      order.push('second');
+    }
+  });
+
+  MyApplication.initializer({
+    name: 'fourth',
+    after: ['second', 'third'],
+    initialize: function(registry) {
+      order.push('fourth');
+    }
+  });
+
+  MyApplication.initializer({
+    name: 'fifth',
+    after: 'fourth',
+    before: 'sixth',
+    initialize: function(registry) {
+      order.push('fifth');
+    }
+  });
+
+  MyApplication.initializer({
+    name: 'first',
+    before: ['second'],
+    initialize: function(registry) {
+      order.push('first');
+    }
+  });
+
+  MyApplication.initializer({
+    name: 'sixth',
+    initialize: function(registry) {
+      order.push('sixth');
+    }
+  });
+
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
+    });
+  });
+
+  deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
+});
+
+QUnit.test("initializers can have multiple dependencies", function () {
   var order = [];
   var a = {
     name: "a",
     before: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('a');
     }
   };
   var b = {
     name: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('b');
     }
   };
   var c = {
     name: "c",
     after: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('c');
     }
   };
   var afterB = {
     name: "after b",
     after: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push("after b");
     }
   };
   var afterC = {
     name: "after c",
     after: "c",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push("after c");
     }
   };
@@ -150,20 +233,20 @@ test("initializers can have multiple dependencies", function () {
   ok(indexOf.call(order, c.name) < indexOf.call(order, afterC.name), 'c < afterC');
 });
 
-test("initializers set on Application subclasses should not be shared between apps", function(){
+QUnit.test("initializers set on Application subclasses should not be shared between apps", function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
-    initialize: function(container) {
+    initialize: function(registry) {
       firstInitializerRunCount++;
     }
   });
   var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       secondInitializerRunCount++;
     }
   });
@@ -186,13 +269,13 @@ test("initializers set on Application subclasses should not be shared between ap
   equal(secondInitializerRunCount, 1, 'second initializer only was run');
 });
 
-test("initializers are concatenated", function(){
+QUnit.test("initializers are concatenated", function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
-    initialize: function(container) {
+    initialize: function(registry) {
       firstInitializerRunCount++;
     }
   });
@@ -200,7 +283,7 @@ test("initializers are concatenated", function(){
   var SecondApp = FirstApp.extend();
   SecondApp.initializer({
     name: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       secondInitializerRunCount++;
     }
   });
@@ -225,17 +308,39 @@ test("initializers are concatenated", function(){
   equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
 });
 
-test("initializers are per-app", function(){
+QUnit.test("initializers are per-app", function() {
   expect(0);
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'shouldNotCollide',
-    initialize: function(container) {}
+    initialize: function(registry) {}
   });
 
   var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'shouldNotCollide',
-    initialize: function(container) {}
+    initialize: function(registry) {}
   });
 });
+
+if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+  QUnit.test("initializers should be executed in their own context", function() {
+    expect(1);
+    var MyApplication = Application.extend();
+
+    MyApplication.initializer({
+      name: 'coolBabeInitializer',
+      myProperty: 'coolBabe',
+      initialize: function(registry, application) {
+        equal(this.myProperty, 'coolBabe', 'should have access to its own context');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  });
+}

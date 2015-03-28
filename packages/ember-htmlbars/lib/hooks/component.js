@@ -11,6 +11,6 @@ export default function component(env, morph, view, tagName, attrs, template) {
 
   Ember.assert('You specified `' + tagName + '` in your template, but a component for `' + tagName + '` could not be found.', !!helper);
 
-  return helper.helperFunction.call(view, [], attrs, {morph: morph, template: template}, env);
+  return helper.helperFunction.call(undefined, [], attrs, { morph: morph, template: template }, env);
 }
 

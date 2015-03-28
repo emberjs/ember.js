@@ -4,7 +4,7 @@
 */
 
 /**
-  Augments the detault precompiled output of an HTMLBars template with
+  Augments the default precompiled output of an HTMLBars template with
   additional information needed by Ember.
 
   @private

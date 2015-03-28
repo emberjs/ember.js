@@ -5,12 +5,12 @@ import jQuery from "ember-views/system/jquery";
 
 var Test, requests;
 
-function incrementAjaxPendingRequests(_, xhr){
+function incrementAjaxPendingRequests(_, xhr) {
   requests.push(xhr);
   Test.pendingAjaxRequests = requests.length;
 }
 
-function decrementAjaxPendingRequests(_, xhr){
+function decrementAjaxPendingRequests(_, xhr) {
   for (var i=0;i<requests.length;i++) {
     if (xhr === requests[i]) {
       requests.splice(i, 1);

@@ -22,7 +22,7 @@ QUnit.module('watch', {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
   }
 });
@@ -41,7 +41,10 @@ function addListeners(obj, keyPath) {
 testBoth('watching a computed property', function(get, set) {
   var obj = {};
   Ember.defineProperty(obj, 'foo', Ember.computed(function(keyName, value) {
-    if (value !== undefined) this.__foo = value;
+    if (value !== undefined) {
+      this.__foo = value;
+    }
+
     return this.__foo;
   }));
   addListeners(obj, 'foo');
@@ -98,7 +101,7 @@ testBoth('watches should inherit', function(get, set) {
   equal(didCount, 2, 'should have invoked didCount once only');
 });
 
-test("watching an object THEN defining it should work also", function() {
+QUnit.test("watching an object THEN defining it should work also", function() {
   var obj = {};
   addListeners(obj, 'foo');
 
@@ -113,9 +116,9 @@ test("watching an object THEN defining it should work also", function() {
 
 });
 
-test("watching a chain then defining the property", function () {
+QUnit.test("watching a chain then defining the property", function () {
   var obj = {};
-  var foo = {bar: 'bar'};
+  var foo = { bar: 'bar' };
   addListeners(obj, 'foo.bar');
   addListeners(foo, 'bar');
 
@@ -130,10 +133,10 @@ test("watching a chain then defining the property", function () {
   equal(didCount, 2, 'should have invoked didChange twice');
 });
 
-test("watching a chain then defining the nested property", function () {
+QUnit.test("watching a chain then defining the nested property", function () {
   var bar = {};
-  var obj = {foo: bar};
-  var baz = {baz: 'baz'};
+  var obj = { foo: bar };
+  var baz = { baz: 'baz' };
   addListeners(obj, 'foo.bar.baz');
   addListeners(baz, 'baz');
 
@@ -190,7 +193,7 @@ testBoth('watching a global object that does not yet exist should queue', functi
   lookup['Global'] = Global = null; // reset
 });
 
-test('when watching a global object, destroy should remove chain watchers from the global object', function() {
+QUnit.test('when watching a global object, destroy should remove chain watchers from the global object', function() {
   lookup['Global'] = Global = { foo: 'bar' };
   var obj = {};
   addListeners(obj, 'Global.foo');
@@ -213,9 +216,9 @@ test('when watching a global object, destroy should remove chain watchers from t
   lookup['Global'] = Global = null; // reset
 });
 
-test('when watching another object, destroy should remove chain watchers from the other object', function() {
+QUnit.test('when watching another object, destroy should remove chain watchers from the other object', function() {
   var objA = {};
-  var objB = {foo: 'bar'};
+  var objB = { foo: 'bar' };
   objA.b = objB;
   addListeners(objA, 'b.foo');
 

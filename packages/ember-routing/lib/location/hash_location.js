@@ -52,7 +52,7 @@ export default EmberObject.extend({
   getURL: function() {
     var originalPath = this.getHash().substr(1);
     var outPath = originalPath;
-    
+
     if (outPath.charAt(0) !== '/') {
       outPath = '/';
 

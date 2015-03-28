@@ -1,14 +1,16 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-// REMOVE_USE_STRICT: true
+"REMOVE_USE_STRICT: true";
 
 /**
   @module ember
   @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core";
+// using ember-metal/lib/main here to ensure that ember-debug is setup
+// if present
+import Ember from "ember-metal";
 import merge from "ember-metal/merge";
 // Ember.assert, Ember.config
 
@@ -19,10 +21,11 @@ import {
   guidFor,
   apply
 } from "ember-metal/utils";
-import { create as o_create } from "ember-metal/platform";
+import o_create from 'ember-metal/platform/create';
 import {
   generateGuid,
-  GUID_KEY,
+  GUID_KEY_PROPERTY,
+  NEXT_SUPER_PROPERTY,
   meta,
   makeArray
 } from "ember-metal/utils";
@@ -35,7 +38,7 @@ import {
 } from "ember-metal/mixin";
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
-import { defineProperty as o_defineProperty } from "ember-metal/platform";
+import { defineProperty as o_defineProperty } from "ember-metal/platform/define_property";
 import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import { defineProperty } from "ember-metal/properties";
@@ -47,7 +50,7 @@ import { destroy } from "ember-metal/watching";
 import {
   K
 } from 'ember-metal/core';
-import { hasPropertyAccessors } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { validatePropertyInjections } from "ember-runtime/inject";
 
 var schedule = run.schedule;
@@ -55,20 +58,6 @@ var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var hasCachedComputedProperties = false;
-
-var undefinedDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: undefined
-};
-
-var nullDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: null
-};
 
 function makeCtor() {
 
@@ -83,8 +72,8 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    o_defineProperty(this, GUID_KEY, nullDescriptor);
-    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
+    this.__defineNonEnumerable(GUID_KEY_PROPERTY);
+    this.__defineNonEnumerable(NEXT_SUPER_PROPERTY);
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
@@ -129,7 +118,8 @@ function makeCtor() {
             bindings[keyName] = value;
           }
 
-          var desc = m.descs[keyName];
+          var possibleDesc = this[keyName];
+          var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().", !(value instanceof ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
@@ -270,7 +260,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     ```
 
     NOTE: If you do override `init` for a framework class like `Ember.View` or
-    `Ember.ArrayController`, be sure to call `this._super()` in your
+    `Ember.ArrayController`, be sure to call `this._super.apply(this, arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.
@@ -278,6 +268,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method init
   */
   init: function() {},
+  __defineNonEnumerable: function(property) {
+    o_defineProperty(this, property.name, property.descriptor);
+    //this[property.name] = property.descriptor.value;
+  },
 
   /**
     Defines the properties that will be concatenated from the superclass
@@ -721,7 +715,7 @@ var ClassMixinProps = {
     ```javascript
     App.Person = Ember.Object.extend({
       name : "",
-      sayHello : function(){
+      sayHello : function() {
         alert("Hello. My name is " + this.get('name'));
       }
     });
@@ -770,7 +764,7 @@ var ClassMixinProps = {
 
   detect: function(obj) {
     if ('function' !== typeof obj) { return false; }
-    while(obj) {
+    while (obj) {
       if (obj===this) { return true; }
       obj = obj.superclass;
     }
@@ -804,14 +798,15 @@ var ClassMixinProps = {
     ```
 
     This will return the original hash that was passed to `meta()`.
-    
+
     @static
     @method metaForProperty
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()['__ember_meta__'];
-    var desc = meta && meta.descs[key];
+    var proto = this.proto();
+    var possibleDesc = proto[key];
+    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
@@ -820,12 +815,11 @@ var ClassMixinProps = {
   _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
     var proto = this.proto();
-    var descs = meta(proto).descs;
     var property;
     var properties = [];
 
-    for (var name in descs) {
-      property = descs[name];
+    for (var name in proto) {
+      property = proto[name];
 
       if (property instanceof ComputedProperty) {
         properties.push({
@@ -840,7 +834,7 @@ var ClassMixinProps = {
   /**
     Iterate over each computed property for the class, passing its name
     and any associated metadata (see `metaForProperty`) to the callback.
-    
+
     @static
     @method eachComputedProperty
     @param {Function} callback
@@ -864,44 +858,37 @@ function injectedPropertyAssertion() {
   Ember.assert("Injected properties are invalid", validatePropertyInjections(this));
 }
 
-function addOnLookupHandler() {
-  Ember.runInDebug(function() {
-    /**
-      Provides lookup-time type validation for injected properties.
-
-      @private
-      @method _onLookup
-      */
-    ClassMixinProps._onLookup = injectedPropertyAssertion;
-  });
-}
-
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  addOnLookupHandler();
-
+Ember.runInDebug(function() {
   /**
-    Returns a hash of property names and container names that injected
-    properties will lookup on the container lazily.
+    Provides lookup-time type validation for injected properties.
 
-    @method _lazyInjections
-    @return {Object} Hash of all lazy injected property keys to container names
-  */
-  ClassMixinProps._lazyInjections = function() {
-    var injections = {};
-    var proto = this.proto();
-    var descs = meta(proto).descs;
-    var key, desc;
+    @private
+    @method _onLookup
+    */
+  ClassMixinProps._onLookup = injectedPropertyAssertion;
+});
 
-    for (key in descs) {
-      desc = descs[key];
-      if (desc instanceof InjectedProperty) {
-        injections[key] = desc.type + ':' + (desc.name || key);
-      }
+/**
+  Returns a hash of property names and container names that injected
+  properties will lookup on the container lazily.
+
+  @method _lazyInjections
+  @return {Object} Hash of all lazy injected property keys to container names
+*/
+ClassMixinProps._lazyInjections = function() {
+  var injections = {};
+  var proto = this.proto();
+  var key, desc;
+
+  for (key in proto) {
+    desc = proto[key];
+    if (desc instanceof InjectedProperty) {
+      injections[key] = desc.type + ':' + (desc.name || key);
     }
+  }
 
-    return injections;
-  };
-}
+  return injections;
+};
 
 var ClassMixin = Mixin.create(ClassMixinProps);
 
@@ -917,7 +904,7 @@ CoreObject.reopen({
     if (value instanceof Ember.ComputedProperty) {
       var cache = Ember.meta(this.constructor).cache;
 
-      if (cache._computedProperties !== undefined) {
+      if (cache && cache._computedProperties !== undefined) {
         cache._computedProperties = undefined;
       }
     }

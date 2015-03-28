@@ -12,7 +12,7 @@ suite.test("[].replace(0,0,'X') => ['X'] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(0,0,exp) ;
+  obj.replace(0, 0, exp);
 
   deepEqual(this.toArray(obj), exp, 'post item results');
 
@@ -34,7 +34,7 @@ suite.test("[A,B,C,D].replace(1,2,X) => [A,X,D] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(1,2,replace) ;
+  obj.replace(1, 2, replace);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 
@@ -57,7 +57,7 @@ suite.test("[A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(1,2,replace) ;
+  obj.replace(1, 2, replace);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 
@@ -80,7 +80,7 @@ suite.test("[A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(1,0,replace) ;
+  obj.replace(1, 0, replace);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 
@@ -102,7 +102,7 @@ suite.test("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(2,2);
+  obj.replace(2, 2);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 

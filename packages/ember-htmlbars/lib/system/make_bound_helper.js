@@ -18,7 +18,7 @@ import {
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
   from the template. If a bound property was provided in the template it will be resolved to its
-  value and any changes to the bound property cause the helper function to be re-ran with the updated
+  value and any changes to the bound property cause the helper function to be re-run with the updated
   values.
 
   * `params` - An array of resolved ordered parameters.
@@ -26,7 +26,7 @@ import {
 
   For example:
 
-  * With an unqouted ordered parameter:
+  * With an unquoted ordered parameter:
 
     ```javascript
     {{x-capitalize foo}}
@@ -60,7 +60,7 @@ import {
 */
 export default function makeBoundHelper(fn) {
   function helperFunc(params, hash, options, env) {
-    var view = this;
+    var view = env.data.view;
     var numParams = params.length;
     var param, prop;
 
@@ -73,10 +73,7 @@ export default function makeBoundHelper(fn) {
     // If none of the hash parameters are bound, act as an unbound helper.
     // This prevents views from being unnecessarily created
     var hasStream = scanArray(params) || scanHash(hash);
-
-    if (env.data.isUnbound || !hasStream) {
-      return valueFn();
-    } else {
+    if (hasStream) {
       var lazyValue = new Stream(valueFn);
 
       for (var i = 0; i < numParams; i++) {
@@ -90,6 +87,8 @@ export default function makeBoundHelper(fn) {
       }
 
       return lazyValue;
+    } else {
+      return valueFn();
     }
   }
 

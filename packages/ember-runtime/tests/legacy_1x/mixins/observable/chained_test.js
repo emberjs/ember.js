@@ -18,7 +18,7 @@ import {addObserver}  from "ember-metal/observer";
 
 QUnit.module("Ember.Observable - Observing with @each");
 
-test("chained observers on enumerable properties are triggered when the observed property of any item changes", function() {
+QUnit.test("chained observers on enumerable properties are triggered when the observed property of any item changes", function() {
   var family = EmberObject.create({ momma: null });
   var momma = EmberObject.create({ children: [] });
 

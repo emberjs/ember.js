@@ -4,10 +4,10 @@
 */
 
 import jQuery from "ember-views/system/jquery";
-import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
-import { create } from "ember-metal/platform";
-import { normalizeProperty } from "morph/dom-helper/prop";
+import o_create from 'ember-metal/platform/create';
+import { normalizeProperty } from "dom-helper/prop";
+import { canSetNameOnInputs } from "ember-views/system/platform";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -36,14 +36,15 @@ import { normalizeProperty } from "morph/dom-helper/prop";
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-tbody-element
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-colgroup-element
 //
-var omittedStartTagChildren = {
-  tr: document.createElement('tbody'),
-  col: document.createElement('colgroup')
-};
-
+var omittedStartTagChildren;
 var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
 
-function detectOmittedStartTag(string, contextualElement){
+function detectOmittedStartTag(dom, string, contextualElement) {
+  omittedStartTagChildren = omittedStartTagChildren || {
+    tr: dom.createElement('tbody'),
+    col: dom.createElement('colgroup')
+  };
+
   // Omitted start tags are only inside table tags.
   if (contextualElement.tagName === 'TABLE') {
     var omittedStartTagChildMatch = omittedStartTagChildTest.exec(string);
@@ -56,7 +57,7 @@ function detectOmittedStartTag(string, contextualElement){
 }
 
 function ClassSet() {
-  this.seen = create(null);
+  this.seen = o_create(null);
   this.list = [];
 }
 
@@ -104,49 +105,35 @@ function escapeAttribute(value) {
 
   var string = value.toString();
 
-  if(!POSSIBLE_CHARS_REGEXP.test(string)) { return string; }
+  if (!POSSIBLE_CHARS_REGEXP.test(string)) { return string; }
   return string.replace(BAD_CHARS_REGEXP, escapeChar);
 }
 
-// IE 6/7 have bugs around setting names on inputs during creation.
-// From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
-// "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
-var canSetNameOnInputs = (function() {
-  var div = document.createElement('div');
-  var el = document.createElement('input');
-
-  el.setAttribute('name', 'foo');
-  div.appendChild(el);
-
-  return !!div.innerHTML.match('foo');
-})();
-
 /**
-  `Ember.renderBuffer` gathers information regarding the view and generates the
-  final representation. `Ember.renderBuffer` will generate HTML which can be pushed
+  `Ember.RenderBuffer` gathers information regarding the view and generates the
+  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
 
    ```javascript
-   var buffer = Ember.renderBuffer('div', contextualElement);
+   var buffer = new Ember.RenderBuffer('div', contextualElement);
   ```
 
   @method renderBuffer
   @namespace Ember
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function renderBuffer(tagName, contextualElement) {
-  return new _RenderBuffer(tagName, contextualElement); // jshint ignore:line
-}
 
-function _RenderBuffer(tagName, contextualElement) {
-  this.tagName = tagName;
-  this._outerContextualElement = contextualElement;
+var RenderBuffer = function(domHelper) {
   this.buffer = null;
   this.childViews = [];
-  this.dom = new DOMHelper();
-}
+  this.attrNodes = [];
 
-_RenderBuffer.prototype = {
+  Ember.assert("RenderBuffer requires a DOM helper to be passed to its constructor.", !!domHelper);
+
+  this.dom = domHelper;
+};
+
+RenderBuffer.prototype = {
 
   reset: function(tagName, contextualElement) {
     this.tagName = tagName;
@@ -160,6 +147,7 @@ _RenderBuffer.prototype = {
     this.elementTag = null;
     this.elementStyle = null;
     this.childViews.length = 0;
+    this.attrNodes.length = 0;
   },
 
   // The root view's element
@@ -269,6 +257,11 @@ _RenderBuffer.prototype = {
     var index = this.childViews.length;
     this.childViews[index] = view;
     this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
+  },
+
+  pushAttrNode: function (node) {
+    var index = this.attrNodes.length;
+    this.attrNodes[index] = node;
   },
 
   hydrateMorphs: function (contextualElement) {
@@ -452,7 +445,7 @@ _RenderBuffer.prototype = {
     var styleBuffer = '';
     var attr, prop, tagString;
 
-    if (attrs && attrs.name && !canSetNameOnInputs) {
+    if (!canSetNameOnInputs && attrs && attrs.name) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
       tagString = '<'+stripTagName(tagName)+' name="'+escapeAttribute(attrs.name)+'">';
     } else {
@@ -508,10 +501,20 @@ _RenderBuffer.prototype = {
       of this buffer
   */
   element: function() {
+
+    if (this._element && this.attrNodes.length > 0) {
+      var i, l, attrMorph, attrNode;
+      for (i=0, l=this.attrNodes.length; i<l; i++) {
+        attrNode = this.attrNodes[i];
+        attrMorph = this.dom.createAttrMorph(this._element, attrNode.attrName);
+        attrNode._morph = attrMorph;
+      }
+    }
+
     var content = this.innerContent();
     // No content means a text node buffer, with the content
     // in _element. Ember._BoundView is an example.
-    if (content === null)  {
+    if (content === null) {
       return this._element;
     }
 
@@ -519,18 +522,16 @@ _RenderBuffer.prototype = {
     this.dom.detectNamespace(contextualElement);
 
     if (!this._element) {
-      this._element = document.createDocumentFragment();
+      this._element = this.dom.createDocumentFragment();
     }
 
     if (content.nodeType) {
       this._element.appendChild(content);
     } else {
-      var nodes;
-      nodes = this.dom.parseHTML(content, contextualElement);
-      while (nodes[0]) {
-        this._element.appendChild(nodes[0]);
-      }
+      var frag = this.dom.parseHTML(content, contextualElement);
+      this._element.appendChild(frag);
     }
+
     // This should only happen with legacy string buffers
     if (this.childViews.length > 0) {
       this.hydrateMorphs(contextualElement);
@@ -560,7 +561,7 @@ _RenderBuffer.prototype = {
   },
 
   outerContextualElement: function() {
-    if (!this._outerContextualElement) {
+    if (this._outerContextualElement === undefined) {
       Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
                       " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
                       " Defaulting to document.body, but this will be removed in the future");
@@ -579,7 +580,7 @@ _RenderBuffer.prototype = {
 
     var omittedStartTag;
     if (html) {
-      omittedStartTag = detectOmittedStartTag(html, innerContextualElement);
+      omittedStartTag = detectOmittedStartTag(this.dom, html, innerContextualElement);
     }
     return omittedStartTag || innerContextualElement;
   },
@@ -595,3 +596,5 @@ _RenderBuffer.prototype = {
     return this.buffer;
   }
 };
+
+export default RenderBuffer;

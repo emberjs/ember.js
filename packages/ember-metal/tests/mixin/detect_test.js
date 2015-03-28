@@ -2,7 +2,7 @@ import { Mixin } from "ember-metal/mixin";
 
 QUnit.module('Mixin.detect');
 
-test('detect() finds a directly applied mixin', function() {
+QUnit.test('detect() finds a directly applied mixin', function() {
 
   var MixinA = Mixin.create();
   var obj = {};
@@ -13,7 +13,7 @@ test('detect() finds a directly applied mixin', function() {
   equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
 });
 
-test('detect() finds nested mixins', function() {
+QUnit.test('detect() finds nested mixins', function() {
   var MixinA = Mixin.create({});
   var MixinB = Mixin.create(MixinA);
   var obj = {};
@@ -24,14 +24,14 @@ test('detect() finds nested mixins', function() {
   equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
 });
 
-test('detect() finds mixins on other mixins', function() {
+QUnit.test('detect() finds mixins on other mixins', function() {
   var MixinA = Mixin.create({});
   var MixinB = Mixin.create(MixinA);
   equal(MixinA.detect(MixinB), true, 'MixinA is part of MixinB');
   equal(MixinB.detect(MixinA), false, 'MixinB is not part of MixinA');
 });
 
-test('detect handles null values', function() {
+QUnit.test('detect handles null values', function() {
   var MixinA = Mixin.create();
   equal(MixinA.detect(null), false);
 });

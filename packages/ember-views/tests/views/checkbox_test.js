@@ -32,7 +32,7 @@ QUnit.module("Ember.Checkbox", {
   }
 });
 
-test("should begin disabled if the disabled attribute is true", function() {
+QUnit.test("should begin disabled if the disabled attribute is true", function() {
   checkboxView = Checkbox.create({});
 
   checkboxView.set('disabled', true);
@@ -41,7 +41,7 @@ test("should begin disabled if the disabled attribute is true", function() {
   ok(checkboxView.$().is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is changed", function() {
+QUnit.test("should become disabled if the disabled attribute is changed", function() {
   checkboxView = Checkbox.create({});
 
   append();
@@ -54,7 +54,7 @@ test("should become disabled if the disabled attribute is changed", function() {
   ok(checkboxView.$().is(":not(:disabled)"));
 });
 
-test("should begin indeterminate if the indeterminate attribute is true", function() {
+QUnit.test("should begin indeterminate if the indeterminate attribute is true", function() {
   checkboxView = Checkbox.create({});
 
   checkboxView.set('indeterminate', true);
@@ -63,7 +63,7 @@ test("should begin indeterminate if the indeterminate attribute is true", functi
   equal(checkboxView.$().prop('indeterminate'), true, "Checkbox should be indeterminate");
 });
 
-test("should become indeterminate if the indeterminate attribute is changed", function() {
+QUnit.test("should become indeterminate if the indeterminate attribute is changed", function() {
   checkboxView = Checkbox.create({});
 
   append();
@@ -77,7 +77,7 @@ test("should become indeterminate if the indeterminate attribute is changed", fu
   equal(checkboxView.$().prop('indeterminate'), false, "Checkbox should not be indeterminate");
 });
 
-test("should support the tabindex property", function() {
+QUnit.test("should support the tabindex property", function() {
   checkboxView = Checkbox.create({});
 
   run(function() { checkboxView.set('tabindex', 6); });
@@ -89,7 +89,7 @@ test("should support the tabindex property", function() {
   equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
-test("checkbox name is updated when setting name property of view", function() {
+QUnit.test("checkbox name is updated when setting name property of view", function() {
   checkboxView = Checkbox.create({});
 
   run(function() { checkboxView.set('name', 'foo'); });
@@ -102,7 +102,7 @@ test("checkbox name is updated when setting name property of view", function() {
   equal(checkboxView.$().attr('name'), "bar", "updates checkbox after name changes");
 });
 
-test("checked property mirrors input value", function() {
+QUnit.test("checked property mirrors input value", function() {
   checkboxView = Checkbox.create({});
   run(function() { checkboxView.append(); });
 
@@ -125,7 +125,7 @@ test("checked property mirrors input value", function() {
   equal(checkboxView.$().prop('checked'), false, "changing the value property changes the DOM");
 });
 
-test("checking the checkbox updates the value", function() {
+QUnit.test("checking the checkbox updates the value", function() {
   checkboxView = Checkbox.create({ checked: true });
   append();
 

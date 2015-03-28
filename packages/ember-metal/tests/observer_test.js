@@ -12,7 +12,7 @@ import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import { create } from 'ember-metal/platform';
+import create from 'ember-metal/platform/create';
 import { defineProperty } from 'ember-metal/properties';
 import {
   computed,
@@ -38,7 +38,7 @@ import {
 
 QUnit.module('addObserver');
 
-testBoth('observer should fire when property is modified', function(get,set) {
+testBoth('observer should fire when property is modified', function(get, set) {
 
   var obj = {};
   var count = 0;
@@ -55,7 +55,7 @@ testBoth('observer should fire when property is modified', function(get,set) {
 testBoth('observer should fire when dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toUpperCase();
+    return get(this, 'bar').toUpperCase();
   }).property('bar'));
 
   get(obj, 'foo');
@@ -115,11 +115,11 @@ if (Ember.EXTEND_PROTOTYPES) {
     var count = 0;
 
     defineProperty(obj, 'foo', computed(function() {
-      return get(this,'bar').toLowerCase();
+      return get(this, 'bar').toLowerCase();
     }).property('bar'));
 
     defineProperty(obj, 'bar', computed(function() {
-      return get(this,'baz').toUpperCase();
+      return get(this, 'baz').toUpperCase();
     }).property('baz'));
 
     mixin(obj, {
@@ -163,11 +163,11 @@ testBoth('observers watching multiple properties via brace expansion should fire
   var count = 0;
 
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toLowerCase();
+    return get(this, 'bar').toLowerCase();
   }).property('bar'));
 
   defineProperty(obj, 'bar', computed(function() {
-    return get(this,'baz').toUpperCase();
+    return get(this, 'baz').toUpperCase();
   }).property('baz'));
 
   mixin(obj, {
@@ -185,12 +185,12 @@ testBoth('observers watching multiple properties via brace expansion should fire
   equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('nested observers should fire in order', function(get,set) {
+testBoth('nested observers should fire in order', function(get, set) {
   var obj = { foo: 'foo', bar: 'bar' };
   var fooCount = 0;
   var barCount = 0;
 
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
   addObserver(obj, 'bar', function() {
     set(obj, 'foo', 'BAZ');
     equal(fooCount, 1, 'fooCount should have fired already');
@@ -203,7 +203,7 @@ testBoth('nested observers should fire in order', function(get,set) {
 
 });
 
-testBoth('removing an chain observer on change should not fail', function(get,set) {
+testBoth('removing an chain observer on change should not fail', function(get, set) {
   var foo = { bar: 'bar' };
   var obj1 = { foo: foo };
   var obj2 = { foo: foo };
@@ -237,7 +237,7 @@ testBoth('removing an chain observer on change should not fail', function(get,se
   equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('removing an chain before observer on change should not fail', function(get,set) {
+testBoth('removing an chain before observer on change should not fail', function(get, set) {
   var foo = { bar: 'bar' };
   var obj1 = { foo: foo };
   var obj2 = { foo: foo };
@@ -271,7 +271,7 @@ testBoth('removing an chain before observer on change should not fail', function
   equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('suspending an observer should not fire during callback', function(get,set) {
+testBoth('suspending an observer should not fire during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -289,12 +289,12 @@ testBoth('suspending an observer should not fire during callback', function(get,
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -308,7 +308,7 @@ testBoth('suspending an observer should not fire during callback', function(get,
 });
 
 
-testBoth('suspending an observer should not defer change notifications during callback', function(get,set) {
+testBoth('suspending an observer should not defer change notifications during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -326,12 +326,12 @@ testBoth('suspending an observer should not defer change notifications during ca
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -346,7 +346,7 @@ testBoth('suspending an observer should not defer change notifications during ca
   deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
-testBoth('suspending observers should not fire during callback', function(get,set) {
+testBoth('suspending observers should not fire during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -364,12 +364,12 @@ testBoth('suspending observers should not fire during callback', function(get,se
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -383,7 +383,7 @@ testBoth('suspending observers should not fire during callback', function(get,se
 });
 
 
-testBoth('suspending observers should not defer change notifications during callback', function(get,set) {
+testBoth('suspending observers should not defer change notifications during callback', function(get, set) {
   var obj = {};
   var target, otherTarget;
 
@@ -401,12 +401,12 @@ testBoth('suspending observers should not defer change notifications during call
   addObserver(obj, 'foo', otherTarget, otherTarget.method);
 
   function callback() {
-      /*jshint validthis:true */
-      equal(this, target);
+    /*jshint validthis:true */
+    equal(this, target);
 
-      set(obj, 'foo', '2');
+    set(obj, 'foo', '2');
 
-      return 'result';
+    return 'result';
   }
 
   set(obj, 'foo', '1');
@@ -421,11 +421,11 @@ testBoth('suspending observers should not defer change notifications during call
   deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
-testBoth('deferring property change notifications', function(get,set) {
+testBoth('deferring property change notifications', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
@@ -435,13 +435,13 @@ testBoth('deferring property change notifications', function(get,set) {
   equal(fooCount, 1, 'foo should have fired once');
 });
 
-testBoth('deferring property change notifications safely despite exceptions', function(get,set) {
+testBoth('deferring property change notifications safely despite exceptions', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
   var exc = new Error("Something unexpected happened!");
 
   expect(2);
-  addObserver(obj, 'foo' ,function() { fooCount++; });
+  addObserver(obj, 'foo', function() { fooCount++; });
 
   try {
     changeProperties(function() {
@@ -450,8 +450,9 @@ testBoth('deferring property change notifications safely despite exceptions', fu
       throw exc;
     });
   } catch(err) {
-    if (err !== exc)
+    if (err !== exc) {
       throw err;
+    }
   }
 
   equal(fooCount, 1, 'foo should have fired once');
@@ -464,11 +465,11 @@ testBoth('deferring property change notifications safely despite exceptions', fu
   equal(fooCount, 2, 'foo should have fired again once');
 });
 
-testBoth('deferring property change notifications will not defer before observers', function(get,set) {
+testBoth('deferring property change notifications will not defer before observers', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  addBeforeObserver(obj, 'foo' ,function() { fooCount++; });
+  addBeforeObserver(obj, 'foo', function() { fooCount++; });
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
@@ -505,7 +506,7 @@ testBoth('implementing sendEvent on object should invoke when deferring property
   equal(events[1], 'foo:change');
 });
 
-testBoth('addObserver should propagate through prototype', function(get,set) {
+testBoth('addObserver should propagate through prototype', function(get, set) {
   var obj = { foo: 'foo', count: 0 };
   var obj2;
 
@@ -523,7 +524,7 @@ testBoth('addObserver should propagate through prototype', function(get,set) {
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addObserver should respect targets with methods', function(get,set) {
+testBoth('addObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -561,7 +562,8 @@ testBoth('addObserver should respect targets with methods', function(get,set) {
 
 });
 
-testBoth('addObserver should allow multiple objects to observe a property', function(get, set) { var observed = { foo: 'foo' };
+testBoth('addObserver should allow multiple objects to observe a property', function(get, set) {
+  var observed = { foo: 'foo' };
 
   var target1 = {
     count: 0,
@@ -593,7 +595,7 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 
 QUnit.module('removeObserver');
 
-testBoth('removing observer should stop firing', function(get,set) {
+testBoth('removing observer should stop firing', function(get, set) {
 
   var obj = {};
   var count = 0;
@@ -636,7 +638,7 @@ testBoth('local observers can be removed', function(get, set) {
   equal(barObserved, 1, 'removed observers should not be called');
 });
 
-testBoth('removeObserver should respect targets with methods', function(get,set) {
+testBoth('removeObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -677,7 +679,7 @@ testBoth('removeObserver should respect targets with methods', function(get,set)
 
 QUnit.module('addBeforeObserver');
 
-testBoth('observer should fire before a property is modified', function(get,set) {
+testBoth('observer should fire before a property is modified', function(get, set) {
 
   var obj = { foo: 'foo' };
   var count = 0;
@@ -694,7 +696,7 @@ testBoth('observer should fire before a property is modified', function(get,set)
 testBoth('observer should fire before dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toUpperCase();
+    return get(this, 'bar').toUpperCase();
   }).property('bar'));
 
   get(obj, 'foo');
@@ -735,11 +737,11 @@ if (Ember.EXTEND_PROTOTYPES) {
     var count = 0;
 
     defineProperty(obj, 'foo', computed(function() {
-      return get(this,'bar').toLowerCase();
+      return get(this, 'bar').toLowerCase();
     }).property('bar'));
 
     defineProperty(obj, 'bar', computed(function() {
-      return get(this,'baz').toUpperCase();
+      return get(this, 'baz').toUpperCase();
     }).property('baz'));
 
     mixin(obj, {
@@ -758,7 +760,7 @@ if (Ember.EXTEND_PROTOTYPES) {
   });
 }
 
-testBoth('before observer watching multiple properties via brce expansion should fire when properties change', function (get, set) {
+testBoth('before observer watching multiple properties via brace expansion should fire when properties change', function (get, set) {
   var obj = {};
   var count = 0;
 
@@ -783,11 +785,11 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   var count = 0;
 
   defineProperty(obj, 'foo', computed(function() {
-    return get(this,'bar').toLowerCase();
+    return get(this, 'bar').toLowerCase();
   }).property('bar'));
 
   defineProperty(obj, 'bar', computed(function() {
-    return get(this,'baz').toUpperCase();
+    return get(this, 'baz').toUpperCase();
   }).property('baz'));
 
   mixin(obj, {
@@ -805,7 +807,7 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('addBeforeObserver should propagate through prototype', function(get,set) {
+testBoth('addBeforeObserver should propagate through prototype', function(get, set) {
   var obj = { foo: 'foo', count: 0 };
   var obj2;
 
@@ -818,11 +820,11 @@ testBoth('addBeforeObserver should propagate through prototype', function(get,se
 
   obj2.count = 0;
   set(obj, 'foo', 'baz');
-  equal(obj.count, 1, 'should have invoked oberver on parent');
+  equal(obj.count, 1, 'should have invoked observer on parent');
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addBeforeObserver should respect targets with methods', function(get,set) {
+testBoth('addBeforeObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -901,9 +903,9 @@ QUnit.module('addObserver - dependentkey with chained properties', {
 });
 
 
-testBoth('depending on a chain with a computed property', function (get, set){
+testBoth('depending on a chain with a computed property', function (get, set) {
   defineProperty(obj, 'computed', computed(function () {
-    return {foo: 'bar'};
+    return { foo: 'bar' };
   }));
 
   var changed = 0;
@@ -920,7 +922,7 @@ testBoth('depending on a chain with a computed property', function (get, set){
 
 testBoth('depending on a simple chain', function(get, set) {
 
-  var val ;
+  var val;
   addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
     val = get(target, key);
     count++;
@@ -965,15 +967,15 @@ testBoth('depending on a Global chain', function(get, set) {
     count++;
   });
 
-  set(get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 1);
 
-  set(get(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
+  set(get(Global, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equal(val, 'BLARG');
   equal(count, 2);
 
-  set(get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
+  set(get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equal(val, 'BOOM');
   equal(count, 3);
 
@@ -981,7 +983,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(val, 'BLARG');
   equal(count, 4);
 
-  set(get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 5);
 
@@ -1161,7 +1163,7 @@ testBoth("immediate observers are for internal properties only", function(get, s
 
 QUnit.module("changeProperties");
 
-testBoth("observers added/removed during changeProperties should do the right thing.", function(get,set) {
+testBoth("observers added/removed during changeProperties should do the right thing.", function(get, set) {
   var obj = {
     foo: 0
   };
@@ -1216,15 +1218,15 @@ testBoth("observers added/removed during changeProperties should do the right th
   });
 
   equal(removedBeforeFirstChangeObserver.willChangeCount, 0, 'removeBeforeObserver called before the first change sees none');
-  equal(removedBeforeFirstChangeObserver.didChangeCount,  0, 'removeObserver called before the first change sees none');
-  equal(addedBeforeFirstChangeObserver.willChangeCount,   1, 'addBeforeObserver called before the first change sees only 1');
-  equal(addedBeforeFirstChangeObserver.didChangeCount,    1, 'addObserver called before the first change sees only 1');
-  equal(addedAfterFirstChangeObserver.willChangeCount,    1, 'addBeforeObserver called after the first change sees 1');
-  equal(addedAfterFirstChangeObserver.didChangeCount,     1, 'addObserver called after the first change sees 1');
-  equal(addedAfterLastChangeObserver.willChangeCount,     0, 'addBeforeObserver called after the last change sees none');
-  equal(addedAfterLastChangeObserver.didChangeCount,      0, 'addObserver called after the last change sees none');
-  equal(removedBeforeLastChangeObserver.willChangeCount,  1, 'removeBeforeObserver called before the last change still sees 1');
-  equal(removedBeforeLastChangeObserver.didChangeCount,   1, 'removeObserver called before the last change still sees 1');
-  equal(removedAfterLastChangeObserver.willChangeCount,   1, 'removeBeforeObserver called after the last change still sees 1');
-  equal(removedAfterLastChangeObserver.didChangeCount,    1, 'removeObserver called after the last change still sees 1');
+  equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
+  equal(addedBeforeFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called before the first change sees only 1');
+  equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
+  equal(addedAfterFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called after the first change sees 1');
+  equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
+  equal(addedAfterLastChangeObserver.willChangeCount, 0, 'addBeforeObserver called after the last change sees none');
+  equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
+  equal(removedBeforeLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called before the last change still sees 1');
+  equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
+  equal(removedAfterLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called after the last change still sees 1');
+  equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
 });
