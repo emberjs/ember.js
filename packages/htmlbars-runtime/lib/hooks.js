@@ -795,7 +795,11 @@ export function range(morph, env, scope, path, value, visitor) {
   to be superseded by component syntax and the
   `attribute` hook.
 */
-export function element(morph, env, scope, path, params, hash /*, visitor */) {
+export function element(morph, env, scope, path, params, hash, visitor) {
+  if (handleRedirect(morph, env, scope, path, params, hash, null, null, visitor)) {
+    return;
+  }
+
   var helper = env.hooks.lookupHelper(env, scope, path);
   if (helper) {
     env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { element: morph.element });
