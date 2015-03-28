@@ -26,8 +26,8 @@ QUnit.module("ember-htmlbars: style attribute", {
   }
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 if (!EmberDev.runningProdBuild) {
   QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
@@ -75,5 +75,5 @@ QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a S
   deepEqual(warnings, [ ]);
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation
