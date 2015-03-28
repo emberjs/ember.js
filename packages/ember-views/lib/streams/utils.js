@@ -41,7 +41,7 @@ export function readUnwrappedModel(object) {
     var result = object.value();
 
     // If the path is exactly `controller` then we don't unwrap it.
-    if (!object._isController) {
+    if (object.label !== 'controller') {
       while (ControllerMixin.detect(result)) {
         result = get(result, 'model');
       }
