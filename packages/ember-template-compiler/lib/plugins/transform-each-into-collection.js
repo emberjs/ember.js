@@ -22,13 +22,14 @@ function validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
     node.sexpr.path.original === 'each' &&
     any(node.sexpr.hash.pairs, pair => {
-    return pair.key === 'itemController' ||
-           pair.key === 'itemView' ||
-           pair.key === 'itemViewClass' ||
-           pair.key === 'tagName' ||
-           pair.key === 'emptyView' ||
-           pair.key === 'emptyViewClass';
-  });
+      let key = pair.key;
+      return key === 'itemController' ||
+             key === 'itemView' ||
+             key === 'itemViewClass' ||
+             key === 'tagName' ||
+             key === 'emptyView' ||
+             key === 'emptyViewClass';
+    });
 }
 
 function any(list, predicate) {
