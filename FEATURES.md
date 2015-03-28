@@ -129,31 +129,6 @@ for a detailed explanation.
 
   Added in [#9919](https://github.com/emberjs/ember.js/pull/9919)
 
-* `new-computed-syntax`
-
-  Enables the new computed property syntax. In this new syntax, instead of passing
-  a function that acts both as getter and setter for the property, `Ember.computed`
-  receives an object with `get` and `set` keys, each one containing a function.
-
-  For example,
-
-  ```js
-  visible: Ember.computed('visibility', {
-    get: function(key) {
-      return this.get('visibility') !== 'hidden';
-    },
-    set: function(key, boolValue) {
-      this.set('visibility', boolValue ? 'visible' : 'hidden');
-      return boolValue;
-    }
-  })
-  ```
-
-  If the object does not contain a `set` key, the property will simply be overridden.
-  Passing just function is still supported, and is equivalent to passing only a getter.
-
-  Added in [#9527](https://github.com/emberjs/ember.js/pull/9527).
-
 * `ember-metal-stream`
 
   Exposes the basic internal stream implementation as `Ember.Stream`.
