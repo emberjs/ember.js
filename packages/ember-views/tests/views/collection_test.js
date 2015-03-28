@@ -45,7 +45,7 @@ QUnit.test("should render a view for each item in its content array", function()
   equal(view.$('div').length, 4);
 });
 
-QUnit.test("should render the emptyView if content array is empty (view class)", function() {
+QUnit.skip("should render the emptyView if content array is empty (view class)", function() {
   view = CollectionView.create({
     tagName: 'del',
     content: Ember.A(),
@@ -573,7 +573,7 @@ QUnit.test("when a collection view is emptied, deeply nested views elements are 
   deepEqual(gotDestroyed, ['parent', 'child'], "The child view was destroyed");
 });
 
-QUnit.test("should render the emptyView if content array is empty and emptyView is given as string", function() {
+QUnit.skip("should render the emptyView if content array is empty and emptyView is given as string", function() {
   expectDeprecation(/Resolved the view "App.EmptyView" on the global context/);
 
   Ember.lookup = {
@@ -640,7 +640,7 @@ QUnit.test("should lookup only global path against the container if itemViewClas
   equal(view.$().text(), 'hi');
 });
 
-QUnit.test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
+QUnit.skip("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
   var EmptyView = View.extend({
     tagName: 'kbd',
     template: compile('THIS IS AN EMPTY VIEW')
