@@ -608,10 +608,10 @@ QUnit.test("should render the emptyView if content array is empty and emptyView 
   Ember.lookup = {
     App: {
       EmptyView: View.extend({
-      tagName: 'kbd',
-      render(buf) {
-        buf.push("THIS IS AN EMPTY VIEW");
-      }
+        tagName: 'kbd',
+        render(buf) {
+          buf.push("THIS IS AN EMPTY VIEW");
+        }
       })
     }
   };
