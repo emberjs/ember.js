@@ -1,39 +1,37 @@
 # Ember Changelog
 
-### 1.11.0-beta.5 (March 8, 2015)
+### 1.11.0 (March 28, 2015)
 
+- [#10736](https://github.com/emberjs/ember.js/pull/10736) [BUGFIX] Fix issue with Query Params when using `Ember.ObjectController` (regression from `ObjectController` deprecation).
+- [#10726](https://github.com/emberjs/ember.js/pull/10726) / [router.js#ed45bc](https://github.com/tildeio/router.js/commit/ed45bc5c5e055af0ab875ef2c52feda792ee23e4) [BUGFIX] Fix issue with nested `{{link-to}}` active and transition classes getting out of sync.
+- [#10709](https://github.com/emberjs/ember.js/pull/10709) [BUGFIX] Clear `src` attributes that are set to `null` or `undefined`.
+- [#10695](https://github.com/emberjs/ember.js/pull/10695) [SECURITY] Add `<base>` and `<embed>` to list of tags where `src` and `href` are sanitized.
+- [#10683](https://github.com/emberjs/ember.js/pull/10683) / [#10703](https://github.com/emberjs/ember.js/pull/10703) / [#10712](https://github.com/emberjs/ember.js/pull/10712) [BUGFIX] Fix regressions added during the `{{outlet}}` refactor.
+- [#10663](https://github.com/emberjs/ember.js/pull/10663) / [#10711](https://github.com/emberjs/ember.js/pull/10711) [SECURITY] Warn when using dynamic style attributes without a `SafeString` value. [See here](http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes) for more details.
+- [#10463](https://github.com/emberjs/ember.js/pull/10463) [BUGFIX] Make async test helpers more robust. Fixes hanging test when elements are not found.
+- [#10631](https://github.com/emberjs/ember.js/pull/10631) Deprecate using `fooBinding` syntax (`{{some-thing nameBinding="model.name"}}`) in templates.
+- [#10627](https://github.com/emberjs/ember.js/pull/10627) [BUGFIX] Ensure specifying `class` as a sub-expression (`{{input value=foo class=(some-sub-expr)}}`) works properly.
+- [#10613](https://github.com/emberjs/ember.js/pull/10613) [BUGFIX] Ensure `{{view id=bar}}` sets `id` on the view.
+- [#10612](https://github.com/emberjs/ember.js/pull/10612) [BUGFIX] Ensure `Ember.inject.controller()` works for all Controller types.
+- [#10604](https://github.com/emberjs/ember.js/pull/10604) [BUGFIX] Fix regression on iOS 8 crashing on certain platforms.
 - [#10556](https://github.com/emberjs/ember.js/pull/10556) [BUGFIX] Deprecate `{{link-to}}` unwrapping a controllers model.
-
-### 1.11.0-beta.4 (March 1, 2015)
-
 - [#10528](https://github.com/emberjs/ember.js/pull/10528) [BUGFIX] Ensure custom Router can be passed to Ember.Application.
 - [#10530](https://github.com/emberjs/ember.js/pull/10530) [BUGFIX] Add assertion when calling `this.$()` in a tagless view/component.
 - [#10533](https://github.com/emberjs/ember.js/pull/10533) [BUGFIX] Do not allow manually specifying `application` resource in the `Router.map`.
 - [#10544](https://github.com/emberjs/ember.js/pull/10544) / [#10550](https://github.com/emberjs/ember.js/pull/10550) [BUGFIX] Ensure that `{{input}}` can be updated multiple times, and does not loose cursor position.
 - [#10553](https://github.com/emberjs/ember.js/pull/10553) [BUGFIX] Fix major regression in the non-block form of `{{link-to}}` that caused an application crash after a period of time.
 - [#10554](https://github.com/emberjs/ember.js/pull/10554) [BUGFIX] Remove access to `this` in HTMLBars helpers. To fix any usages of `this` in a helper, you can access the view from `env.data.view` instead.
-
-### 1.11.0-beta.3 (February 25, 2015)
-
 - [#10475](https://github.com/emberjs/ember.js/pull/10475) [BUGFIX] Ensure wrapped errors are logged properly.
 - [#10489](https://github.com/emberjs/ember.js/pull/10489) [BUGFIX] Fix an issue with bindings inside of a yielded template when the yield helper is nested inside of another view
 - [#10493](https://github.com/emberjs/ember.js/pull/10493) [BUGFIX] Fix nested simple bindings inside of nested yields within views.
 - [#10527](https://github.com/emberjs/ember.js/pull/10527) [BUGFIX] Ensure that Component context is not forced to parent context.
 - [#10525](https://github.com/emberjs/ember.js/pull/10525) [BUGFIX] Fix issue causing cursor position to be lost while entering into an `{{input}}` / `Ember.TextField`.
-
-### 1.11.0-beta.2 (February 15, 2015)
-
 - [#10372](https://github.com/emberjs/ember.js/pull/10372) / [#10431](https://github.com/emberjs/ember.js/pull/10431) / [#10439](https://github.com/emberjs/ember.js/pull/10439) / [#10442](https://github.com/emberjs/ember.js/pull/10442) Decouple route transition from view creation.
 - [#10436](https://github.com/emberjs/ember.js/pull/10436) [BUGFIX] Ensure `instrument.{subscribe,unsubscribe,reset}` aren’t accidentally clobbered.
 - [#10462](https://github.com/emberjs/ember.js/pull/10462) [BUGFIX] Fix incorrect export of `Ember.OutletView`.
 - [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr shoud remove attributes.
 - [#10413](https://github.com/emberjs/ember.js/pull/10413) Update to use inclusive `morph-range` (via HTMLBars v0.11.1).
 - [#10464](https://github.com/emberjs/ember.js/pull/10464) Add helpful assertion if templates are compiled with a different template compiler revision.
-
-
-
-### 1.11.0-beta.1 (February 07, 2015)
-
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
 - [#10186](https://github.com/emberjs/ember.js/pull/10186) Port attributeBindings to AttrNode views [@mixonic](https://github.com/mixonic)
 - [#10184](https://github.com/emberjs/ember.js/pull/10184) Initial support basic Node.js rendering.
