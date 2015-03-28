@@ -1,7 +1,4 @@
-import {
-  Mixin,
-  required
-} from "ember-metal/mixin";
+import { Mixin } from "ember-metal/mixin";
 
 /**
 @module ember
@@ -21,6 +18,8 @@ import {
 export default Mixin.create({
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Override to return the result of the comparison of the two parameters. The
     compare method should return:
 
@@ -35,5 +34,5 @@ export default Mixin.create({
     @param b {Object} the second object to compare
     @return {Integer} the result of the comparison
   */
-  compare: required(Function)
+  compare: null
 });

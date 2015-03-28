@@ -2,8 +2,68 @@
 @module ember
 @submodule ember-views
 */
+import Ember from "ember-metal/core";
+import { computed  } from "ember-metal/computed";
+import environment from "ember-metal/environment";
+import create from "ember-metal/platform/create";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-views/mixins/text_support";
+
+var inputTypeTestElement;
+var inputTypes = create(null);
+function canSetTypeOfInput(type) {
+  if (type in inputTypes) {
+    return inputTypes[type];
+  }
+
+  // if running in outside of a browser always return the
+  // original type
+  if (!environment.hasDOM) {
+    inputTypes[type] = type;
+
+    return type;
+  }
+
+  if (!inputTypeTestElement) {
+    inputTypeTestElement = document.createElement('input');
+  }
+
+  try {
+    inputTypeTestElement.type = type;
+  } catch(e) { }
+
+  return inputTypes[type] = inputTypeTestElement.type === type;
+}
+
+function getTypeComputed() {
+  if (Ember.FEATURES.isEnabled('new-computed-syntax')) {
+    return computed({
+      get: function() {
+        return 'text';
+      },
+
+      set: function(key, value) {
+        var type = 'text';
+
+        if (canSetTypeOfInput(value)) {
+          type = value;
+        }
+
+        return type;
+      }
+    });
+  } else {
+    return computed(function(key, value) {
+      var type = 'text';
+
+      if (arguments.length > 1 && canSetTypeOfInput(value)) {
+        type = value;
+      }
+
+      return type;
+    });
+  }
+}
 
 /**
 
@@ -73,7 +133,7 @@ export default Component.extend(TextSupport, {
     @type String
     @default "text"
   */
-  type: "text",
+  type: getTypeComputed(),
 
   /**
     The `size` of the text field in characters.

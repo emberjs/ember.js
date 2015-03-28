@@ -8,7 +8,7 @@ var view;
 var controller;
 
 QUnit.module("{{input type='text'}}", {
-  setup: function() {
+  setup() {
     controller = {
       val: "hello",
       place: "Enter some text",
@@ -26,7 +26,7 @@ QUnit.module("{{input type='text'}}", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -124,7 +124,7 @@ QUnit.test("input can be updated multiple times", function() {
 
 
 QUnit.module("{{input type='text'}} - static values", {
-  setup: function() {
+  setup() {
     controller = {};
 
     view = View.extend({
@@ -135,7 +135,7 @@ QUnit.module("{{input type='text'}} - static values", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -173,7 +173,7 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
 });
 
 QUnit.module("{{input type='text'}} - dynamic type", {
-  setup: function() {
+  setup() {
     controller = {
       someProperty: 'password'
     };
@@ -186,7 +186,7 @@ QUnit.module("{{input type='text'}} - dynamic type", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -196,7 +196,7 @@ QUnit.test("should insert a text field into DOM", function() {
 });
 
 QUnit.module("{{input}} - default type", {
-  setup: function() {
+  setup() {
     controller = {};
 
     view = View.extend({
@@ -207,7 +207,7 @@ QUnit.module("{{input}} - default type", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -217,7 +217,7 @@ QUnit.test("should have the default type", function() {
 });
 
 QUnit.module("{{input type='checkbox'}}", {
-  setup: function() {
+  setup() {
     controller = {
       tab: 6,
       name: 'hello',
@@ -232,7 +232,7 @@ QUnit.module("{{input type='checkbox'}}", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -266,14 +266,14 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
-  setup: function() {
+  setup() {
     view = View.extend({
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
     }).create();
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -285,7 +285,7 @@ QUnit.test("It asserts the presence of checked=", function() {
 });
 
 QUnit.module("{{input type=boundType}}", {
-  setup: function() {
+  setup() {
     controller = {
       inputType: "checkbox",
       isChecked: true
@@ -299,7 +299,7 @@ QUnit.module("{{input type=boundType}}", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -315,7 +315,7 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='checkbox'}} - static values", {
-  setup: function() {
+  setup() {
     controller = {
       tab: 6,
       name: 'hello',
@@ -330,7 +330,7 @@ QUnit.module("{{input type='checkbox'}} - static values", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
@@ -352,7 +352,7 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='text'}} - null/undefined values", {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

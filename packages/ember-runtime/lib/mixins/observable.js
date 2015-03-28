@@ -9,7 +9,6 @@ import {
   getWithDefault
 } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { apply } from "ember-metal/utils";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
 import { Mixin } from "ember-metal/mixin";
@@ -29,8 +28,6 @@ import {
 import { cacheFor } from "ember-metal/computed";
 import isNone from "ember-metal/is_none";
 
-
-var slice = Array.prototype.slice;
 /**
   ## Overview
 
@@ -136,7 +133,7 @@ export default Mixin.create({
     @param {String} keyName The property to retrieve
     @return {Object} The property value or undefined.
   */
-  get: function(keyName) {
+  get(keyName) {
     return get(this, keyName);
   },
 
@@ -160,8 +157,8 @@ export default Mixin.create({
     @param {String...|Array} list of keys to get
     @return {Hash}
   */
-  getProperties: function() {
-    return apply(null, getProperties, [this].concat(slice.call(arguments)));
+  getProperties(...args) {
+    return getProperties.apply(null, [this].concat(args));
   },
 
   /**
@@ -212,7 +209,7 @@ export default Mixin.create({
     @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
   */
-  set: function(keyName, value) {
+  set(keyName, value) {
     set(this, keyName, value);
     return this;
   },
@@ -231,7 +228,7 @@ export default Mixin.create({
     @param {Hash} hash the hash of keys and values to set
     @return {Ember.Observable}
   */
-  setProperties: function(hash) {
+  setProperties(hash) {
     return setProperties(this, hash);
   },
 
@@ -249,7 +246,7 @@ export default Mixin.create({
     @method beginPropertyChanges
     @return {Ember.Observable}
   */
-  beginPropertyChanges: function() {
+  beginPropertyChanges() {
     beginPropertyChanges();
     return this;
   },
@@ -267,7 +264,7 @@ export default Mixin.create({
     @method endPropertyChanges
     @return {Ember.Observable}
   */
-  endPropertyChanges: function() {
+  endPropertyChanges() {
     endPropertyChanges();
     return this;
   },
@@ -290,7 +287,7 @@ export default Mixin.create({
     @param {String} keyName The property key that is about to change.
     @return {Ember.Observable}
   */
-  propertyWillChange: function(keyName) {
+  propertyWillChange(keyName) {
     propertyWillChange(this, keyName);
     return this;
   },
@@ -313,7 +310,7 @@ export default Mixin.create({
     @param {String} keyName The property key that has just changed.
     @return {Ember.Observable}
   */
-  propertyDidChange: function(keyName) {
+  propertyDidChange(keyName) {
     propertyDidChange(this, keyName);
     return this;
   },
@@ -326,18 +323,14 @@ export default Mixin.create({
     @param {String} keyName The property key to be notified about.
     @return {Ember.Observable}
   */
-  notifyPropertyChange: function(keyName) {
+  notifyPropertyChange(keyName) {
     this.propertyWillChange(keyName);
     this.propertyDidChange(keyName);
     return this;
   },
 
-  addBeforeObserver: function(key, target, method) {
-    Ember.deprecate(
-      'Before observers are deprecated and will be removed in a future release. If you want to keep track of previous values you have to implement it yourself.',
-      false,
-      { url: 'http://emberjs.com/guides/deprecations/#toc_beforeobserver' }
-    );
+  addBeforeObserver(key, target, method) {
+    Ember.deprecate('Before observers are deprecated and will be removed in a future release. If you want to keep track of previous values you have to implement it yourself.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-beforeobservers' });
     addBeforeObserver(this, key, target, method);
   },
 
@@ -388,7 +381,7 @@ export default Mixin.create({
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
   */
-  addObserver: function(key, target, method) {
+  addObserver(key, target, method) {
     addObserver(this, key, target, method);
   },
 
@@ -402,7 +395,7 @@ export default Mixin.create({
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
   */
-  removeObserver: function(key, target, method) {
+  removeObserver(key, target, method) {
     removeObserver(this, key, target, method);
   },
 
@@ -416,7 +409,7 @@ export default Mixin.create({
     @param {String} key Key to check
     @return {Boolean}
   */
-  hasObserverFor: function(key) {
+  hasObserverFor(key) {
     return hasListeners(this, key+':change');
   },
 
@@ -433,7 +426,7 @@ export default Mixin.create({
     @param {Object} defaultValue The value to return if the property value is undefined
     @return {Object} The property value or the defaultValue.
   */
-  getWithDefault: function(keyName, defaultValue) {
+  getWithDefault(keyName, defaultValue) {
     return getWithDefault(this, keyName, defaultValue);
   },
 
@@ -450,7 +443,7 @@ export default Mixin.create({
     @param {Number} increment The amount to increment by. Defaults to 1
     @return {Number} The new property value
   */
-  incrementProperty: function(keyName, increment) {
+  incrementProperty(keyName, increment) {
     if (isNone(increment)) { increment = 1; }
     Ember.assert("Must pass a numeric value to incrementProperty", (!isNaN(parseFloat(increment)) && isFinite(increment)));
     set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
@@ -470,7 +463,7 @@ export default Mixin.create({
     @param {Number} decrement The amount to decrement by. Defaults to 1
     @return {Number} The new property value
   */
-  decrementProperty: function(keyName, decrement) {
+  decrementProperty(keyName, decrement) {
     if (isNone(decrement)) { decrement = 1; }
     Ember.assert("Must pass a numeric value to decrementProperty", (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
     set(this, keyName, (get(this, keyName) || 0) - decrement);
@@ -489,7 +482,7 @@ export default Mixin.create({
     @param {String} keyName The name of the property to toggle
     @return {Object} The new property value
   */
-  toggleProperty: function(keyName) {
+  toggleProperty(keyName) {
     set(this, keyName, !get(this, keyName));
     return get(this, keyName);
   },
@@ -504,12 +497,12 @@ export default Mixin.create({
     @param {String} keyName
     @return {Object} The cached value of the computed property, if any
   */
-  cacheFor: function(keyName) {
+  cacheFor(keyName) {
     return cacheFor(this, keyName);
   },
 
   // intended for debugging purposes
-  observersForKey: function(keyName) {
+  observersForKey(keyName) {
     return observersFor(this, keyName);
   }
 });

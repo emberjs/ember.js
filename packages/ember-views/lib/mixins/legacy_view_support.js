@@ -3,11 +3,11 @@ import { Mixin } from "ember-metal/mixin";
 import { get } from "ember-metal/property_get";
 
 var LegacyViewSupport = Mixin.create({
-  beforeRender: function(buffer) {},
+  beforeRender(buffer) {},
 
-  afterRender: function(buffer) {},
+  afterRender(buffer) {},
 
-  mutateChildViews: function(callback) {
+  mutateChildViews(callback) {
     var childViews = this._childViews;
     var idx = childViews.length;
     var view;
@@ -26,13 +26,13 @@ var LegacyViewSupport = Mixin.create({
     @method removeAllChildren
     @return {Ember.View} receiver
   */
-  removeAllChildren: function() {
+  removeAllChildren() {
     return this.mutateChildViews(function(parentView, view) {
       parentView.removeChild(view);
     });
   },
 
-  destroyAllChildren: function() {
+  destroyAllChildren() {
     return this.mutateChildViews(function(parentView, view) {
       view.destroy();
     });
@@ -47,7 +47,7 @@ var LegacyViewSupport = Mixin.create({
     @return Ember.View
     @deprecated
   */
-  nearestChildOf: function(klass) {
+  nearestChildOf(klass) {
     Ember.deprecate("nearestChildOf has been deprecated.");
 
     var view = get(this, 'parentView');
@@ -67,7 +67,7 @@ var LegacyViewSupport = Mixin.create({
     @return Ember.View
     @deprecated
   */
-  nearestInstanceOf: function(klass) {
+  nearestInstanceOf(klass) {
     Ember.deprecate("nearestInstanceOf is deprecated and will be removed from future releases. Use nearestOfType.");
     var view = get(this, 'parentView');
 

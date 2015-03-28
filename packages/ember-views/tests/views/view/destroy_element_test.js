@@ -6,7 +6,7 @@ import ContainerView from "ember-views/views/container_view";
 var view;
 
 QUnit.module("EmberView#destroyElement", {
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });
@@ -16,7 +16,7 @@ QUnit.module("EmberView#destroyElement", {
 QUnit.test("if it has no element, does nothing", function() {
   var callCount = 0;
   view = EmberView.create({
-    willDestroyElement: function() { callCount++; }
+    willDestroyElement() { callCount++; }
   });
 
   ok(!get(view, 'element'), 'precond - does NOT have element');
@@ -35,11 +35,11 @@ QUnit.test("if it has a element, calls willDestroyElement on receiver and child 
   var childCount = 0;
 
   view = ContainerView.create({
-    willDestroyElement: function() { parentCount++; },
+    willDestroyElement() { parentCount++; },
     childViews: [ContainerView.extend({
       // no willDestroyElement here... make sure no errors are thrown
       childViews: [EmberView.extend({
-        willDestroyElement: function() { childCount++; }
+        willDestroyElement() { childCount++; }
       })]
     })]
   });

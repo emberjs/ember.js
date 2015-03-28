@@ -83,11 +83,11 @@ if (hasPropertyAccessors) {
 
     var desc = {
       enumerable: true,
-      get: function() {
+      get() {
         getCnt++;
         return v;
       },
-      set: function(val) {
+      set(val) {
         setCnt++;
         v = val;
       }
@@ -107,8 +107,8 @@ if (hasPropertyAccessors) {
     throws(function() {
       defineProperty(obj, 'foo', {
         enumerable: true,
-        get: function() {},
-        set: function() {},
+        get() {},
+        set() {},
         writable: true
       });
     }, Error, 'defining writable and get/set should throw exception');
@@ -119,8 +119,8 @@ if (hasPropertyAccessors) {
     throws(function() {
       defineProperty(obj, 'foo', {
         enumerable: true,
-        get: function() {},
-        set: function() {},
+        get() {},
+        set() {},
         value: 'FOO'
       });
     }, Error, 'defining value and get/set should throw exception');

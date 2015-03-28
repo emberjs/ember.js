@@ -71,7 +71,7 @@ function superFunction() {
 // ensure we prime superFunction to mitigate
 // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
 var primer = {
-  __nextSuper: function(a, b, c, d ) { }
+  __nextSuper(a, b, c, d) { }
 };
 
 superFunction.call(primer);
@@ -226,8 +226,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
-  Ember.assert("You passed in `" + JSON.stringify(value) + "` as the value for `" + key +
-               "` but `" + key + "` cannot be an Array", !isArray(value));
+  Ember.assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !isArray(value));
 
   if (!baseValue) { return value; }
 
@@ -292,7 +291,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 
   for (var i=0, l=mixins.length; i<l; i++) {
     currentMixin = mixins[i];
-    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(currentMixin),
+    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
                  typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]');
 
     props = mixinProperties(m, currentMixin);
@@ -488,8 +487,7 @@ function applyMixin(obj, mixins, partial) {
   @param mixins*
   @return obj
 */
-export function mixin(obj) {
-  var args = a_slice.call(arguments, 1);
+export function mixin(obj, ...args) {
   applyMixin(obj, args, false);
   return obj;
 }
@@ -590,15 +588,10 @@ Ember.anyUnprocessedMixins = false;
   @static
   @param arguments*
 */
-Mixin.create = function() {
+Mixin.create = function(...args) {
   // ES6TODO: this relies on a global state?
   Ember.anyUnprocessedMixins = true;
   var M = this;
-  var length = arguments.length;
-  var args = new Array(length);
-  for (var i = 0; i < length; i++) {
-    args[i] = arguments[i];
-  }
   return new M(args, undefined);
 };
 
@@ -625,7 +618,7 @@ MixinPrototype.reopen = function() {
 
   for (idx=0; idx < len; idx++) {
     currentMixin = arguments[idx];
-    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(currentMixin),
+    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
                  typeof currentMixin === 'object' && currentMixin !== null &&
                    Object.prototype.toString.call(currentMixin) !== '[object Array]');
 
@@ -683,9 +676,9 @@ MixinPrototype.detect = function(obj) {
   return false;
 };
 
-MixinPrototype.without = function() {
+MixinPrototype.without = function(...args) {
   var ret = new Mixin([this]);
-  ret._without = a_slice.call(arguments);
+  ret._without = args;
   return ret;
 };
 
@@ -699,7 +692,9 @@ function _keys(ret, mixin, seen) {
       if (props.hasOwnProperty(key)) { ret[key] = true; }
     }
   } else if (mixin.mixins) {
-    a_forEach.call(mixin.mixins, function(x) { _keys(ret, x, seen); });
+    a_forEach.call(mixin.mixins, (x) => {
+      _keys(ret, x, seen);
+    });
   }
 }
 
@@ -745,6 +740,7 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @for Ember
 */
 export function required() {
+  Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false);
   return REQUIRED;
 }
 
@@ -775,7 +771,6 @@ Alias.prototype = new Descriptor();
   @method aliasMethod
   @for Ember
   @param {String} methodName name of the method to alias
-  @return {Ember.Descriptor}
 */
 export function aliasMethod(methodName) {
   return new Alias(methodName);
@@ -808,18 +803,18 @@ export function aliasMethod(methodName) {
   @param {Function} func
   @return func
 */
-export function observer() {
-  var func  = a_slice.call(arguments, -1)[0];
+export function observer(...args) {
+  var func  = args.slice(-1)[0];
   var paths;
 
-  var addWatchedProperty = function (path) { paths.push(path); };
-  var _paths = a_slice.call(arguments, 0, -1);
+  var addWatchedProperty = function(path) { paths.push(path); };
+  var _paths = args.slice(0, -1);
 
   if (typeof func !== "function") {
     // revert to old, soft-deprecated argument ordering
 
-    func  = arguments[0];
-    _paths = a_slice.call(arguments, 1);
+    func  = args[0];
+    _paths = args.slice(1);
   }
 
   paths = [];
@@ -911,19 +906,19 @@ export function immediateObserver() {
   @param {Function} func
   @return func
 */
-export function beforeObserver() {
-  var func  = a_slice.call(arguments, -1)[0];
+export function beforeObserver(...args) {
+  var func  = args.slice(-1)[0];
   var paths;
 
   var addWatchedProperty = function(path) { paths.push(path); };
 
-  var _paths = a_slice.call(arguments, 0, -1);
+  var _paths = args.slice(0, -1);
 
   if (typeof func !== "function") {
     // revert to old, soft-deprecated argument ordering
 
-    func  = arguments[0];
-    _paths = a_slice.call(arguments, 1);
+    func  = args[0];
+    _paths = args.slice(1);
   }
 
   paths = [];
@@ -942,5 +937,7 @@ export function beforeObserver() {
 
 export {
   IS_BINDING,
-  Mixin
+  Mixin,
+  required,
+  REQUIRED
 };

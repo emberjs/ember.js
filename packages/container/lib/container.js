@@ -109,7 +109,7 @@ Container.prototype = {
    @param {Object} options
    @return {any}
    */
-  lookup: function(fullName, options) {
+  lookup(fullName, options) {
     Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
     return lookup(this, this._registry.normalize(fullName), options);
   },
@@ -121,7 +121,7 @@ Container.prototype = {
    @param {String} fullName
    @return {any}
    */
-  lookupFactory: function(fullName) {
+  lookupFactory(fullName) {
     Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
     return factoryFor(this, this._registry.normalize(fullName));
   },
@@ -132,7 +132,7 @@ Container.prototype = {
 
    @method destroy
    */
-  destroy: function() {
+  destroy() {
     eachDestroyable(this, function(item) {
       if (item.destroy) {
         item.destroy();
@@ -148,7 +148,7 @@ Container.prototype = {
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
    */
-  reset: function(fullName) {
+  reset(fullName) {
     if (arguments.length > 0) {
       resetMember(this, this._registry.normalize(fullName));
     } else {

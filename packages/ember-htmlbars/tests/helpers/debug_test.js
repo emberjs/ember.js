@@ -11,7 +11,7 @@ var originalLog, logCalls;
 var view;
 
 QUnit.module("Handlebars {{log}} helper", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     originalLog = EmberLogger.log;
@@ -19,7 +19,7 @@ QUnit.module("Handlebars {{log}} helper", {
     EmberLogger.log = function() { logCalls.push.apply(logCalls, arguments); };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     view = null;
 

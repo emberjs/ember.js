@@ -3,14 +3,14 @@ import { canInvoke } from "ember-metal/utils";
 var obj;
 
 QUnit.module("Ember.canInvoke", {
-  setup: function() {
+  setup() {
     obj = {
       foobar: "foobar",
-      aMethodThatExists: function() {}
+      aMethodThatExists() {}
     };
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
   }
 });

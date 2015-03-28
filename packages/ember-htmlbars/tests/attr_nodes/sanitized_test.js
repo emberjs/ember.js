@@ -9,14 +9,14 @@ import environment from "ember-metal/environment";
 var view;
 
 QUnit.module("ember-htmlbars: sanitized attribute", {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
 // jscs:disable disallowTrailingWhitespace
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 var badTags = [
   { tag: 'a', attr: 'href',
@@ -28,12 +28,12 @@ var badTags = [
     unquotedTemplate: compile("<base href={{url}} />"),
     quotedTemplate: compile("<base href='{{url}}'/>"),
     multipartTemplate: compile("<base href='{{protocol}}{{path}}'/>") },
- 
+
   { tag: 'embed', attr: 'src',
     unquotedTemplate: compile("<embed src={{url}} />"),
     quotedTemplate: compile("<embed src='{{url}}'/>"),
     multipartTemplate: compile("<embed src='{{protocol}}{{path}}'/>") },
- 
+
   { tag: 'body', attr: 'background',
     unquotedTemplate: compile("<body background={{url}}></body>"),
     quotedTemplate: compile("<body background='{{url}}'></body>"),
@@ -123,5 +123,6 @@ for (var i=0, l=badTags.length; i<l; i++) {
   })(); //jshint ignore:line
 }
 
-// jscs:enable validateIndentation
 }
+// jscs:enable disallowTrailingWhitespace
+// jscs:enable validateIndentation

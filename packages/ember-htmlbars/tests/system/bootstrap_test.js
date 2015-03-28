@@ -10,10 +10,10 @@ var originalLookup = Ember.lookup;
 var lookup, App, view;
 
 QUnit.module("ember-htmlbars: bootstrap", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
   },
-  teardown: function() {
+  teardown() {
     Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
     runDestroy(App);

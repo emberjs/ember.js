@@ -27,17 +27,17 @@ QUnit.test("default store utilizes the container to acquire the model factory", 
   var post = {};
 
   Post.reopenClass({
-    find: function(id) {
+    find(id) {
       return post;
     }
   });
 
   route.container = {
-    has: function() {
+    has() {
       return true;
     },
 
-    lookupFactory: function(fullName) {
+    lookupFactory(fullName) {
       equal(fullName, "model:post", "correct factory was looked up");
 
       return Post;
@@ -61,7 +61,7 @@ QUnit.test("'store' can be injected by data persistence frameworks", function() 
   };
 
   var Store = EmberObject.extend({
-    find: function(type, value) {
+    find(type, value) {
       ok(true, 'injected model was called');
       equal(type, 'post', 'correct type was called');
       equal(value, 1, 'correct value was called');
@@ -154,14 +154,14 @@ QUnit.test(".send just calls an action if the router is absent", function() {
   expect(7);
   var route = EmberRoute.createWithMixins({
     actions: {
-      returnsTrue: function(foo, bar) {
+      returnsTrue(foo, bar) {
         equal(foo, 1);
         equal(bar, 2);
         equal(this, route);
         return true;
       },
 
-      returnsFalse: function() {
+      returnsFalse() {
         ok(true, "returnsFalse was called");
         return false;
       }
@@ -202,9 +202,9 @@ QUnit.test("returns undefined if model is not set", function() {
 });
 
 QUnit.module("Ember.Route interaction", {
-  setup: function() {
+  setup() {
     var container = {
-      lookup: function(fullName) {
+      lookup(fullName) {
         return lookupHash[fullName];
       }
     };
@@ -218,7 +218,7 @@ QUnit.module("Ember.Route interaction", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(routeOne);
     runDestroy(routeTwo);
   }

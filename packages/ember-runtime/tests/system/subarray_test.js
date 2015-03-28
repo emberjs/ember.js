@@ -4,7 +4,7 @@ import SubArray from "ember-runtime/system/subarray";
 var subarray;
 
 QUnit.module('SubArray', {
-  setup: function () {
+  setup() {
     subarray = new SubArray();
   }
 });

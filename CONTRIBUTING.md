@@ -27,7 +27,7 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
-Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/j1njm36w/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
+Preconfigured starting points for the latest Ember: [JSFiddle](https://jsfiddle.net/dfcaus7t/1/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
 If it is not possible to produce a fiddle, please make sure you provide very
 specific steps to reproduce the error. If we cannot reproduce it, we will
 close the ticket.
@@ -107,8 +107,7 @@ If your pull request fixes an issue specify it in the commit message. Some examp
   [SECURITY CVE-111-1111] Message
   ```
 
-  For more information about commit prefixes see
-  [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
+  For more information about commit prefixes see [the appendix](#commit-tagging).
 
 
 7. Push to your fork and submit a pull request. Please provide us with some
@@ -162,3 +161,33 @@ Code words are:
 And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md
+
+
+# Appendix
+
+## Commit Tagging
+
+All commits should be tagged. Tags are denoted by square brackets (`[]`) and come at the start of the commit message.
+
+### Bug Fixes
+
+In general bug fixes are pulled into the beta branch. As such, the prefix is: `[BUGFIX beta]`. If a bug fix is a serious regression that requires a new patch relese, `[BUGFIX release]` can be used instead.
+
+For bugs releated to canary features, follow the prefixing rules for features.
+
+### Features
+
+All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature.
+
+### Documentation
+
+Documentation commits are tagged as `[DOC channel]` where channel is `canary`,
+`beta`, or `release`. If no release is provided `canary` is assumed. The channel should be the most stable release that this documentation change applies to.
+
+### Security
+
+Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](http://emberjs.com/security/) for more information.
+
+### Other
+
+In general almost all commits should fall into one of these categories. In the cases where they don't please submit your PR untagged. An Ember contributor will let you know if tagging is required.

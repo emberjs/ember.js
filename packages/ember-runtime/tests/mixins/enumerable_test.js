@@ -20,11 +20,11 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
 
   _content: null,
 
-  init: function(ary) {
+  init(ary) {
     this._content = ary || [];
   },
 
-  addObject: function(obj) {
+  addObject(obj) {
     if (indexOf(this._content, obj)>=0) {
       return this;
     }
@@ -33,7 +33,7 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
     this.enumerableContentDidChange();
   },
 
-  nextObject: function(idx) {
+  nextObject(idx) {
     return idx >= get(this, 'length') ? undefined : this._content[idx];
   },
 
@@ -41,7 +41,7 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
     return this._content.length;
   }),
 
-  slice: function() {
+  slice() {
     return this._content.slice();
   }
 
@@ -52,17 +52,17 @@ EnumerableTests.extend({
 
   name: 'Basic Enumerable',
 
-  newObject: function(ary) {
+  newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
     return new TestEnumerable(ary);
   },
 
   // allows for testing of the basic enumerable after an internal mutation
-  mutate: function(obj) {
+  mutate(obj) {
     obj.addObject(obj._content.length+1);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.slice();
   }
 
@@ -96,7 +96,7 @@ QUnit.test("should apply Ember.Array to return value of toArray", function() {
 
 QUnit.test("should apply Ember.Array to return value of without", function() {
   var x = EmberObject.createWithMixins(Enumerable, {
-    contains: function() {
+    contains() {
       return true;
     }
   });
@@ -171,7 +171,7 @@ QUnit.test('every', function() {
 //
 
 var DummyEnum = EmberObject.extend(Enumerable, {
-  nextObject: function() {},
+  nextObject() {},
   length: 0
 });
 
@@ -186,7 +186,7 @@ QUnit.module('mixins/enumerable/enumerableContentDidChange');
 QUnit.test('should notify observers of []', function() {
 
   var obj = EmberObject.createWithMixins(Enumerable, {
-    nextObject: function() {}, // avoid exceptions
+    nextObject() {}, // avoid exceptions
 
     _count: 0,
     enumerablePropertyDidChange: emberObserver('[]', function() {
@@ -206,7 +206,7 @@ QUnit.test('should notify observers of []', function() {
 //
 
 QUnit.module('notify observers of length', {
-  setup: function() {
+  setup() {
     obj = DummyEnum.createWithMixins({
       _after: 0,
       lengthDidChange: emberObserver('length', function() {
@@ -218,7 +218,7 @@ QUnit.module('notify observers of length', {
     equal(obj._after, 0, 'should not have fired yet');
   },
 
-  teardown: function() {
+  teardown() {
     obj = null;
   }
 });
@@ -277,19 +277,19 @@ QUnit.test('should notify when passed old index API with delta', function() {
 //
 
 QUnit.module('notify enumerable observers', {
-  setup: function() {
+  setup() {
     obj = DummyEnum.create();
 
     observer = EmberObject.createWithMixins({
       _before: null,
       _after: null,
 
-      enumerableWillChange: function() {
+      enumerableWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
       },
 
-      enumerableDidChange: function() {
+      enumerableDidChange() {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
@@ -298,7 +298,7 @@ QUnit.module('notify enumerable observers', {
     obj.addEnumerableObserver(observer);
   },
 
-  teardown: function() {
+  teardown() {
     obj = observer = null;
   }
 });

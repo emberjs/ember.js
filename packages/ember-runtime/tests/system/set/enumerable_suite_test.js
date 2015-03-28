@@ -6,7 +6,7 @@ MutableEnumerableTests.extend({
 
   name: 'Ember.Set',
 
-  newObject: function(ary) {
+  newObject(ary) {
     var ret;
     ary = ary ? ary.slice() : this.newFixture(3);
 
@@ -18,13 +18,13 @@ MutableEnumerableTests.extend({
     return ret;
   },
 
-  mutate: function(obj) {
+  mutate(obj) {
     ignoreDeprecation(function() {
       obj.addObject(get(obj, 'length')+1);
     });
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     var ret;
 
     ignoreDeprecation(function() {

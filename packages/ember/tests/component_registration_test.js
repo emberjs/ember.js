@@ -92,7 +92,7 @@ QUnit.test("Late-registered components can be rendered with custom `template` pr
   boot(function() {
     registry.register('component:my-hero', Ember.Component.extend({
       classNames: 'testing123',
-      template: function() { return "watch him as he GOES"; }
+      template() { return "watch him as he GOES"; }
     }));
   });
 
@@ -254,7 +254,7 @@ QUnit.test("Components without a block should have the proper content", function
     }));
 
     registry.register('component:my-component', Ember.Component.extend({
-      didInsertElement: function() {
+      didInsertElement() {
         this.$().html('Some text inserted by jQuery');
       }
     }));
@@ -273,7 +273,7 @@ QUnit.test("properties of a component  without a template should not collide wit
     }));
 
     registry.register('component:my-component', Ember.Component.extend({
-      didInsertElement: function() {
+      didInsertElement() {
         this.$().html(this.get('data'));
       }
     }));
@@ -288,7 +288,7 @@ QUnit.test("Components trigger actions in the parents context when called from w
   boot(function() {
     registry.register('controller:application', Ember.Controller.extend({
       actions: {
-        fizzbuzz: function() {
+        fizzbuzz() {
           ok(true, 'action triggered on parent');
         }
       }
@@ -309,7 +309,7 @@ QUnit.test("Components trigger actions in the components context when called fro
   boot(function() {
     registry.register('controller:application', Ember.Controller.extend({
       actions: {
-        fizzbuzz: function() {
+        fizzbuzz() {
           ok(false, 'action triggered on the wrong context');
         }
       }
@@ -317,7 +317,7 @@ QUnit.test("Components trigger actions in the components context when called fro
 
     registry.register('component:my-component', Ember.Component.extend({
       actions: {
-        fizzbuzz: function() {
+        fizzbuzz() {
           ok(true, 'action triggered on component');
         }
       }

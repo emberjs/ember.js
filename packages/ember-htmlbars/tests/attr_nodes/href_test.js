@@ -9,11 +9,11 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: href attribute", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }
@@ -31,5 +31,5 @@ QUnit.test("href is set", function() {
                  "attribute is output");
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

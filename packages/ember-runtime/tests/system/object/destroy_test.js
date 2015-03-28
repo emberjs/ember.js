@@ -83,7 +83,7 @@ QUnit.test("destroyed objects should not see each others changes during teardown
   var A = EmberObject.extend({
     objs: objs,
     isAlive: true,
-    willDestroy: function () {
+    willDestroy() {
       this.set('isAlive', false);
     },
     bDidChange: observer('objs.b.isAlive', function () {
@@ -97,7 +97,7 @@ QUnit.test("destroyed objects should not see each others changes during teardown
   var B = EmberObject.extend({
     objs: objs,
     isAlive: true,
-    willDestroy: function () {
+    willDestroy() {
       this.set('isAlive', false);
     },
     aDidChange: observer('objs.a.isAlive', function () {
@@ -111,7 +111,7 @@ QUnit.test("destroyed objects should not see each others changes during teardown
   var C = EmberObject.extend({
     objs: objs,
     isAlive: true,
-    willDestroy: function () {
+    willDestroy() {
       this.set('isAlive', false);
     },
     aDidChange: observer('objs.a.isAlive', function () {
@@ -151,7 +151,7 @@ QUnit.test("destroyed objects should not see each others changes during teardown
 QUnit.test("bindings should be synced when are updated in the willDestroy hook", function() {
   var bar = EmberObject.create({
     value: false,
-    willDestroy: function() {
+    willDestroy() {
       this.set('value', true);
     }
   });

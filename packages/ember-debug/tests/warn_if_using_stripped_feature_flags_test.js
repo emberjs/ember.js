@@ -26,7 +26,7 @@ function confirmWarns(expectedMsg) {
 }
 
 QUnit.module("ember-debug - _warnIfUsingStrippedFeatureFlags", {
-  setup: function() {
+  setup() {
     oldWarn            = Ember.warn;
     oldRunInDebug      = Ember.runInDebug;
     origEnvFeatures    = Ember.ENV.FEATURES;
@@ -34,7 +34,7 @@ QUnit.module("ember-debug - _warnIfUsingStrippedFeatureFlags", {
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
-  teardown: function() {
+  teardown() {
     Ember.warn                         = oldWarn;
     Ember.runInDebug                   = oldRunInDebug;
     Ember.ENV.FEATURES                 = origEnvFeatures;

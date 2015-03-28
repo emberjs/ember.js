@@ -5,7 +5,7 @@
 import Ember from "ember-metal/core";
 import EmberError from "ember-metal/error";
 import {
-  isGlobalPath,
+  isGlobal as detectIsGlobal,
   isPath,
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
@@ -52,19 +52,14 @@ export function get(obj, keyName) {
 
   if (!keyName && 'string' === typeof obj) {
     keyName = obj;
-    obj = null;
+    obj = Ember.lookup;
   }
 
-  Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
-  Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
+  Ember.assert(`Cannot call get with ${keyName} key.`, !!keyName);
+  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined);
 
-  if (obj === null) {
-    var value = _getPath(obj, keyName);
-    Ember.deprecate(
-      "Ember.get fetched '"+keyName+"' from the global context. This behavior will change in the future (issue #3852)",
-      !value || (obj && obj !== Ember.lookup) || isPath(keyName) || isGlobalPath(keyName+".") // Add a . to ensure simple paths are matched.
-    );
-    return value;
+  if (!obj) {
+    return _getPath(obj, keyName);
   }
 
   var meta = obj['__ember_meta__'];
@@ -113,45 +108,42 @@ export function get(obj, keyName) {
 */
 export function normalizeTuple(target, path) {
   var hasThis  = pathHasThis(path);
-  var isGlobal = !hasThis && isGlobalPath(path);
+  var isGlobal = !hasThis && detectIsGlobal(path);
   var key;
 
-  if (!target || isGlobal) {
-    target = Ember.lookup;
+  if (!target && !isGlobal) {
+    return [undefined, ''];
   }
 
   if (hasThis) {
     path = path.slice(5);
   }
 
-  Ember.deprecate(
-    "normalizeTuple will return '"+path+"' as a non-global. This behavior will change in the future (issue #3852)",
-    target === Ember.lookup || !target || hasThis || isGlobal || !isGlobalPath(path+'.')
-  );
+  if (!target || isGlobal) {
+    target = Ember.lookup;
+  }
 
-  if (target === Ember.lookup) {
+  if (isGlobal && isPath(path)) {
     key = path.match(FIRST_KEY)[0];
     target = get(target, key);
     path   = path.slice(key.length+1);
   }
 
   // must return some kind of path to be valid else other things will break.
-  if (!path || path.length===0) {
-    throw new EmberError('Path cannot be empty');
-  }
+  validateIsPath(path);
 
   return [target, path];
 }
 
+
+function validateIsPath(path) {
+  if (!path || path.length===0) {
+    throw new EmberError(`Object in path ${path} could not be found or was destroyed.`);
+  }
+}
+
 export function _getPath(root, path) {
   var hasThis, parts, tuple, idx, len;
-
-  // If there is no root and path is a key name, return that
-  // property from the global object.
-  // E.g. get('Ember') -> Ember
-  if (root === null && !isPath(path)) {
-    return get(Ember.lookup, path);
-  }
 
   // detect complicated paths and normalize them
   hasThis = pathHasThis(path);

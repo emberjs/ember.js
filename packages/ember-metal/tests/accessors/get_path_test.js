@@ -2,16 +2,9 @@
 
 import { get } from 'ember-metal/property_get';
 
-function expectGlobalContextDeprecation(assertion) {
-  expectDeprecation(
-    assertion,
-    "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)"
-  );
-}
-
 var obj;
 var moduleOpts = {
-  setup: function() {
+  setup() {
     obj = {
       foo: {
         bar: {
@@ -23,7 +16,10 @@ var moduleOpts = {
           baz: { biff: 'BIFF' }
         }
       },
-      falseValue: false
+      falseValue: false,
+      Wuz: {
+        nar: 'foo'
+      }
     };
 
     window.Foo = {
@@ -32,20 +28,20 @@ var moduleOpts = {
       }
     };
 
+    window.aProp = 'aPropy';
+
     window.$foo = {
       bar: {
         baz: { biff: '$FOOBIFF' }
       }
     };
-
-    window.localPathGlobal = 5;
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
     window.Foo = undefined;
+    window.aProp = undefined;
     window.$foo = undefined;
-    window.localPathGlobal = undefined;
   }
 };
 
@@ -75,39 +71,66 @@ QUnit.test('[obj, this.foo.bar] -> obj.foo.bar', function() {
   deepEqual(get(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
-QUnit.test('[obj, this.Foo.bar] -> (null)', function() {
-  deepEqual(get(obj, 'this.Foo.bar'), undefined);
+QUnit.test('[obj, this.Foo.bar] -> (undefined)', function() {
+  equal(get(obj, 'this.Foo.bar'), undefined);
 });
 
-QUnit.test('[obj, falseValue.notDefined] -> (null)', function() {
-  deepEqual(get(obj, 'falseValue.notDefined'), undefined);
+QUnit.test('[obj, falseValue.notDefined] -> (undefined)', function() {
+  equal(get(obj, 'falseValue.notDefined'), undefined);
 });
 
 // ..........................................................
-// LOCAL PATHS WITH NO TARGET DEPRECATION
+// GLOBAL PATHS TREATED LOCAL WITH GET
 //
 
-QUnit.test('[null, length] returning data is deprecated', function() {
-  expectGlobalContextDeprecation(function() {
-    equal(5, get(null, 'localPathGlobal'));
-  });
+QUnit.test('[obj, Wuz] -> obj.Wuz', function() {
+  deepEqual(get(obj, 'Wuz'), obj.Wuz);
 });
 
-QUnit.test('[length] returning data is deprecated', function() {
-  expectGlobalContextDeprecation(function() {
-    equal(5, get('localPathGlobal'));
-  });
+QUnit.test('[obj, Wuz.nar] -> obj.Wuz.nar', function() {
+  deepEqual(get(obj, 'Wuz.nar'), obj.Wuz.nar);
+});
+
+QUnit.test('[obj, Foo] -> (undefined)', function() {
+  equal(get(obj, 'Foo'), undefined);
+});
+
+QUnit.test('[obj, Foo.bar] -> (undefined)', function() {
+  equal(get(obj, 'Foo.bar'), undefined);
+});
+
+// ..........................................................
+// NULL TARGET
+//
+
+QUnit.test('[null, Foo] -> Foo', function() {
+  equal(get(null, 'Foo'), Foo);
+});
+
+QUnit.test('[null, Foo.bar] -> Foo.bar', function() {
+  deepEqual(get(null, 'Foo.bar'), Foo.bar);
+});
+
+QUnit.test('[null, $foo] -> $foo', function() {
+  equal(get(null, '$foo'), window.$foo);
+});
+
+QUnit.test('[null, aProp] -> null', function() {
+  equal(get(null, 'aProp'), null);
 });
 
 // ..........................................................
 // NO TARGET
 //
 
-QUnit.test('[null, Foo] -> Foo', function() {
+QUnit.test('[Foo] -> Foo', function() {
   deepEqual(get('Foo'), Foo);
 });
 
-QUnit.test('[null, Foo.bar] -> Foo.bar', function() {
-  deepEqual(get('Foo.bar'), Foo.bar);
+QUnit.test('[aProp] -> aProp', function() {
+  deepEqual(get('aProp'), window.aProp);
 });
 
+QUnit.test('[Foo.bar] -> Foo.bar', function() {
+  deepEqual(get('Foo.bar'), Foo.bar);
+});

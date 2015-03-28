@@ -16,13 +16,6 @@ import { overrideChains } from "ember-metal/property_events";
 /**
   Objects of this type can implement an interface to respond to requests to
   get and set. The default implementation handles simple properties.
-
-  You generally won't need to create or subclass this directly.
-
-  @class Descriptor
-  @namespace Ember
-  @private
-  @constructor
 */
 export function Descriptor() {
   this.isDescriptor = true;
@@ -34,7 +27,7 @@ export function Descriptor() {
 
 export function MANDATORY_SETTER_FUNCTION(name) {
   return function SETTER_FUNCTION(value) {
-    Ember.assert("You must use Ember.set() to set the `" + name + "` property (of " + this + ") to `" + value + "`.", false);
+    Ember.assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
   };
 }
 
@@ -55,7 +48,7 @@ export function DEFAULT_GETTER_FUNCTION(name) {
   properties and other special descriptors.
 
   Normally this method takes only three parameters. However if you pass an
-  instance of `Ember.Descriptor` as the third param then you can pass an
+  instance of `Descriptor` as the third param then you can pass an
   optional value as the fourth parameter. This is often more efficient than
   creating new descriptor hashes for each property.
 
@@ -84,7 +77,7 @@ export function DEFAULT_GETTER_FUNCTION(name) {
   @for Ember
   @param {Object} obj the object to define this property on. This may be a prototype.
   @param {String} keyName the name of the property
-  @param {Ember.Descriptor} [desc] an instance of `Ember.Descriptor` (typically a
+  @param {Descriptor} [desc] an instance of `Descriptor` (typically a
     computed property) or an ES5 descriptor.
     You must provide this or `data` but not both.
   @param {*} [data] something other than a descriptor, that will

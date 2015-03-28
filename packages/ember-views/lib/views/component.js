@@ -9,9 +9,8 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
+import { bool } from "ember-metal/computed_macros";
 import defaultComponentLayout from "ember-htmlbars/templates/component";
-
-var a_slice = Array.prototype.slice;
 
 /**
 @module ember
@@ -118,8 +117,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }),
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this._keywords.view = this;
     set(this, 'context', this);
     set(this, 'controller', this);
@@ -146,15 +145,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @deprecated
   @property template
   */
-  template: computed(function(key, value) {
-    if (value !== undefined) { return value; }
+  template: computed({
+    get: function() {
+      var templateName = get(this, 'templateName');
+      var template = this.templateForName(templateName, 'template');
 
-    var templateName = get(this, 'templateName');
-    var template = this.templateForName(templateName, 'template');
+      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-
-    return template || get(this, 'defaultTemplate');
+      return template || get(this, 'defaultTemplate');
+    },
+    set: function(key, value) {
+      return value;
+    }
   }).property('templateName'),
 
   /**
@@ -166,9 +168,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   templateName: null,
 
-  _setupKeywords: function() {},
+  _setupKeywords() {},
 
-  _yield: function(context, options, morph, blockArguments) {
+  _yield(context, options, morph, blockArguments) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -282,9 +284,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
   */
-  sendAction: function(action) {
+  sendAction(action, ...contexts) {
     var actionName;
-    var contexts = a_slice.call(arguments, 1);
 
     // Send the default action
     if (action === undefined) {
@@ -309,8 +310,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     });
   },
 
-  send: function(actionName) {
-    var args = [].slice.call(arguments, 1);
+  send(actionName, ...args) {
     var target;
     var hasAction = this._actions && this._actions[actionName];
 
@@ -322,7 +322,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     if (target = get(this, 'target')) {
       Ember.assert("The `target` for " + this + " (" + target +
                    ") does not have a `send` method", typeof target.send === 'function');
-      target.send.apply(target, arguments);
+      target.send(...arguments);
     } else {
       if (!hasAction) {
         throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
@@ -330,5 +330,87 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
+  Component.reopen({
+    /**
+      Returns true when the component was invoked with a block template.
+
+     Example (`hasBlock` will be `false`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlock}}
+        This will not be printed, because no block was provided
+      {{/if}}
+      ```
+
+     Example (`hasBlock` will be `true`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar}}
+        Hi!
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlock}}
+        This will be printed because a block was provided
+        {{yield}}
+      {{/if}}
+      ```
+      @public
+      @property hasBlock
+      @returns Boolean
+    */
+    hasBlock: bool('template'),
+
+    /**
+      Returns true when the component was invoked with a block parameter
+      supplied.
+
+      Example (`hasBlockParams` will be `false`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar}}
+        No block parameter.
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlockParams}}
+        This will not be printed, because no block was provided
+        {{yield this}}
+      {{/if}}
+      ```
+
+      Example (`hasBlockParams` will be `true`):
+
+      ```hbs
+      {{! templates/application.hbs }}
+
+      {{#foo-bar as |foo|}}
+        Hi!
+      {{/foo-bar}}
+
+      {{! templates/components/foo-bar.js }}
+      {{#if hasBlockParams}}
+        This will be printed because a block was provided
+        {{yield this}}
+      {{/if}}
+      ```
+      @public
+      @property hasBlockParams
+      @returns Boolean
+    */
+    hasBlockParams: bool('template.blockParams')
+  });
+}
 
 export default Component;

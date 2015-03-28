@@ -15,11 +15,11 @@ function canSetFalsyMaxLength() {
   return input.maxLength === 0;
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: property", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }
@@ -69,5 +69,5 @@ QUnit.test("array value can be set as property", function() {
   ok(true, "no legacy assertion prohibited setting an array");
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

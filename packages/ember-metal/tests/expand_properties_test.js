@@ -7,7 +7,7 @@ function addProperty(property) {
 }
 
 QUnit.module('Property Brace Expansion Test', {
-  setup: function() {
+  setup() {
     foundProperties = [];
   }
 });

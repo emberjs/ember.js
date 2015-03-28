@@ -44,9 +44,9 @@ function expectDeprecationInHTMLBars() {
 }
 
 QUnit.module("ember-htmlbars: makeBoundHelper", {
-  setup: function() {
+  setup() {
   },
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }

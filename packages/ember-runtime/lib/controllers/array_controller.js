@@ -146,11 +146,11 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     @param {Object} object
     @return {String}
   */
-  lookupItemController: function(object) {
+  lookupItemController(object) {
     return get(this, 'itemController');
   },
 
-  objectAtContent: function(idx) {
+  objectAtContent(idx) {
     var length = get(this, 'length');
     var arrangedContent = get(this, 'arrangedContent');
     var object = arrangedContent && arrangedContent.objectAt(idx);
@@ -173,12 +173,12 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     return object;
   },
 
-  arrangedContentDidChange: function() {
-    this._super.apply(this, arguments);
+  arrangedContentDidChange() {
+    this._super(...arguments);
     this._resetSubControllers();
   },
 
-  arrayContentDidChange: function(idx, removedCnt, addedCnt) {
+  arrayContentDidChange(idx, removedCnt, addedCnt) {
     var subControllers = this._subControllers;
 
     if (subControllers.length) {
@@ -199,13 +199,16 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     this._super(idx, removedCnt, addedCnt);
   },
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this._subControllers = [];
   },
 
-  model: computed(function (key, value) {
-    if (arguments.length > 1) {
+  model: computed({
+    get: function(key) {
+      return Ember.A();
+    },
+    set: function(key, value) {
       Ember.assert(
         'ArrayController expects `model` to implement the Ember.Array mixin. ' +
         'This can often be fixed by wrapping your model with `Ember.A()`.',
@@ -214,8 +217,6 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
       return value;
     }
-
-    return Ember.A();
   }),
 
   /**
@@ -228,7 +229,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
    */
   _isVirtual: false,
 
-  controllerAt: function(idx, object, controllerClass) {
+  controllerAt(idx, object, controllerClass) {
     var container = get(this, 'container');
     var subControllers = this._subControllers;
     var fullName, subController, parentController;
@@ -266,7 +267,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   _subControllers: null,
 
-  _resetSubControllers: function() {
+  _resetSubControllers() {
     var controller;
     var subControllers = this._subControllers;
 
@@ -283,8 +284,8 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     }
   },
 
-  willDestroy: function() {
+  willDestroy() {
     this._resetSubControllers();
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });

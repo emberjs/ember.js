@@ -19,27 +19,27 @@ function mockBrowserLocation(path) {
   var pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
 
   return {
-      hash: tmp.hash,
-      host: tmp.host || 'localhost',
-      hostname: tmp.hostname || 'localhost',
-      href: tmp.href,
-      pathname: pathname,
-      port: tmp.port || '',
-      protocol: protocol,
-      search: tmp.search
+    hash: tmp.hash,
+    host: tmp.host || 'localhost',
+    hostname: tmp.hostname || 'localhost',
+    href: tmp.href,
+    pathname: pathname,
+    port: tmp.port || '',
+    protocol: protocol,
+    search: tmp.search
   };
 }
 
 QUnit.module("Ember.HistoryLocation", {
-  setup: function() {
+  setup() {
     FakeHistory = {
       state: null,
       _states: [],
-      replaceState: function(state, title, url) {
+      replaceState(state, title, url) {
         this.state = state;
         this._states[0] = state;
       },
-      pushState: function(state, title, url) {
+      pushState(state, title, url) {
         this.state = state;
         this._states.unshift(state);
       }
@@ -50,7 +50,7 @@ QUnit.module("Ember.HistoryLocation", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       if (location) { location.destroy(); }
     });
@@ -61,11 +61,11 @@ QUnit.test("HistoryLocation initState does not get fired on init", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       ok(true, 'init was called');
       this._super.apply(this, arguments);
     },
-    initState: function() {
+    initState() {
       ok(false, 'initState() should not be called automatically');
     }
   });
@@ -77,7 +77,7 @@ QUnit.test("webkit doesn't fire popstate on page load", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    initState: function() {
+    initState() {
       this._super.apply(this, arguments);
       // these two should be equal to be able
       // to successfully detect webkit initial popstate
@@ -93,14 +93,14 @@ QUnit.test("base URL is removed when retrieving the current pathname", function(
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'baseURL', '/base/');
     },
 
-    initState: function() {
+    initState() {
       this._super.apply(this, arguments);
 
       equal(this.getURL(), '/foo/bar');
@@ -115,7 +115,7 @@ QUnit.test("base URL is preserved when moving around", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
@@ -158,7 +158,7 @@ QUnit.test("HistoryLocation.getURL() returns the current url, excluding both roo
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
@@ -176,7 +176,7 @@ QUnit.test("HistoryLocation.getURL() includes location.search", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
     }
@@ -191,7 +191,7 @@ QUnit.test("HistoryLocation.getURL() includes location.hash", function() {
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
     }
@@ -206,7 +206,7 @@ QUnit.test("HistoryLocation.getURL() includes location.hash and location.search"
   expect(1);
 
   HistoryTestLocation.reopen({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
     }

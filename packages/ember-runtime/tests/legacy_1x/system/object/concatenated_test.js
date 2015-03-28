@@ -19,7 +19,7 @@ function K() { return this; }
 var klass;
 
 QUnit.module("EmberObject Concatenated Properties", {
-  setup: function() {
+  setup() {
     klass = EmberObject.extend({
       concatenatedProperties: ['values', 'functions'],
       values: ['a', 'b', 'c'],

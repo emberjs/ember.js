@@ -4,7 +4,7 @@ import EmberView from "ember-views/views/view";
 var view;
 
 QUnit.module("ember-views: streams", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, 'destroy');
     }

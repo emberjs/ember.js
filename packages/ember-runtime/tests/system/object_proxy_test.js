@@ -8,11 +8,12 @@ QUnit.module("ObjectProxy");
 
 testBoth("should not proxy properties passed to create", function (get, set) {
   var Proxy = ObjectProxy.extend({
-    cp: computed(function (key, value) {
-      if (value) {
+    cp: computed({
+      get: function(key) { return this._cp; },
+      set: function(key, value) {
         this._cp = value;
+        return this._cp;
       }
-      return this._cp;
     })
   });
   var proxy = Proxy.create({
@@ -28,7 +29,7 @@ testBoth("should proxy properties to content", function(get, set) {
   var content = {
         firstName: 'Tom',
         lastName: 'Dale',
-        unknownProperty: function (key) { return key + ' unknown';}
+        unknownProperty(key) { return key + ' unknown';}
       };
   var proxy = ObjectProxy.create();
 

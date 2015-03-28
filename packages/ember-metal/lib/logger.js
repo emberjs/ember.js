@@ -40,7 +40,7 @@ function assertPolyfill(test, message) {
       // attempt to preserve the stack
       throw new EmberError("assertion failed: " + message);
     } catch(error) {
-      setTimeout(function() {
+      setTimeout(() => {
         throw error;
       }, 0);
     }

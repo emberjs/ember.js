@@ -48,7 +48,7 @@ var TestNamespace, fromObject, toObject, binding, Bon1, bon2, root; // global va
 var originalLookup, lookup;
 
 QUnit.module("basic object binding", {
-  setup: function() {
+  setup() {
     fromObject = EmberObject.create({ value: 'start' });
     toObject = EmberObject.create({ value: 'end' });
     root = { fromObject: fromObject, toObject: toObject };
@@ -127,7 +127,7 @@ QUnit.test("binding disconnection actually works", function() {
 
 QUnit.module("one way binding", {
 
-  setup: function() {
+  setup() {
     run(function() {
       fromObject = EmberObject.create({ value: 'start' });
       toObject = EmberObject.create({ value: 'end' });
@@ -135,7 +135,7 @@ QUnit.module("one way binding", {
       binding = oneWay(root, 'toObject.value', 'fromObject.value');
     });
   },
-  teardown: function() {
+  teardown() {
     run.cancelTimers();
   }
 });
@@ -164,7 +164,7 @@ var first, second, third, binding1, binding2; // global variables
 
 QUnit.module("chained binding", {
 
-  setup: function() {
+  setup() {
     run(function() {
       first = EmberObject.create({ output: 'first' });
 
@@ -184,7 +184,7 @@ QUnit.module("chained binding", {
       binding2 = bind(root, 'second.output', 'third.input');
     });
   },
-  teardown: function() {
+  teardown() {
     run.cancelTimers();
   }
 });
@@ -207,7 +207,7 @@ QUnit.test("changing first output should propagate to third after flush", functi
 //
 
 QUnit.module("Custom Binding", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -228,7 +228,7 @@ QUnit.module("Custom Binding", {
       Bon1: Bon1
     };
   },
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
     Bon1 = bon2 = TestNamespace  = null;
     run.cancelTimers();
@@ -254,7 +254,7 @@ QUnit.test("two bindings to the same value should sync in the order they are ini
       fooBinding: "owner.foo"
     }),
 
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       set(this, 'c', this.C.create({ owner: this }));
     }
@@ -273,7 +273,7 @@ QUnit.test("two bindings to the same value should sync in the order they are ini
 //
 
 QUnit.module("propertyNameBinding with longhand", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -284,13 +284,13 @@ QUnit.module("propertyNameBinding with longhand", {
       });
 
       TestNamespace.toObject = EmberObject.createWithMixins({
-          valueBinding: Binding.from('TestNamespace.fromObject.value'),
-          localValue: "originalLocal",
-          relativeBinding: Binding.from('localValue')
+        valueBinding: Binding.from('TestNamespace.fromObject.value'),
+        localValue: "originalLocal",
+        relativeBinding: Binding.from('localValue')
       });
     });
   },
-  teardown: function() {
+  teardown() {
     TestNamespace = undefined;
     Ember.lookup = originalLookup;
   }

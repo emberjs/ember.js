@@ -41,7 +41,7 @@ function viewClass(options) {
 var firstChild = nthChild;
 
 QUnit.module("ember-htmlbars: {{#view}} helper", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -53,7 +53,7 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -70,7 +70,7 @@ QUnit.test("should not enter an infinite loop when binding an attribute in Handl
     attributeBindings: ['href'],
     href: '#none',
 
-    click: function() {
+    click() {
       return false;
     }
   });
@@ -285,7 +285,7 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
   var subview;
 
   var Subview = EmberView.extend({
-    init: function() {
+    init() {
       subview = this;
       return this._super.apply(this, arguments);
     },
@@ -329,7 +329,7 @@ QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
   var subview;
 
   var Subview = EmberView.extend({
-    init: function() {
+    init() {
       subview = this;
       return this._super.apply(this, arguments);
     },

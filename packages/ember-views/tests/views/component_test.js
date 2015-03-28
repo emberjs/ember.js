@@ -14,10 +14,10 @@ var a_slice = Array.prototype.slice;
 var component, controller, actionCounts, sendCount, actionArguments;
 
 QUnit.module("Ember.Component", {
-  setup: function() {
+  setup() {
     component = Component.create();
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       if (component) { component.destroy(); }
       if (controller) { controller.destroy(); }
@@ -93,13 +93,13 @@ QUnit.test("Specifying a templateName on a component with a layoutName specified
 });
 
 QUnit.module("Ember.Component - Actions", {
-  setup: function() {
+  setup() {
     actionCounts = {};
     sendCount = 0;
     actionArguments = null;
 
     controller = EmberObject.create({
-      send: function(actionName) {
+      send(actionName) {
         sendCount++;
         actionCounts[actionName] = actionCounts[actionName] || 0;
         actionCounts[actionName]++;
@@ -114,7 +114,7 @@ QUnit.module("Ember.Component - Actions", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       component.destroy();
       controller.destroy();
@@ -215,7 +215,7 @@ QUnit.test('something', function() {
 
   var appComponent = Component.extend({
     actions: {
-      foo: function(message) {
+      foo(message) {
         equal('bar', message);
       }
     }
@@ -232,7 +232,7 @@ QUnit.test('component with target', function() {
   expect(2);
 
   var target = {
-    send: function(message, payload) {
+    send(message, payload) {
       equal('foo', message);
       equal('baz', payload);
     }
@@ -244,3 +244,24 @@ QUnit.test('component with target', function() {
 
   appComponent.send('foo', 'baz');
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-component-has-block')) {
+  QUnit.test('component with a template will report hasBlock: true', function() {
+    expect(1);
+
+    var appComponent = Component.create({
+      template: 'some-thing-yolo'
+    });
+
+    equal(get(appComponent, 'hasBlock'), true);
+  });
+
+  QUnit.test('component without a template will report hasBlock: false', function() {
+    expect(1);
+
+    var appComponent = Component.create({
+    });
+
+    equal(get(appComponent, 'hasBlock'), false);
+  });
+}

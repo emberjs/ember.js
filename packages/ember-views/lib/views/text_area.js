@@ -53,8 +53,8 @@ export default Component.extend(TextSupport, {
     }
   }),
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this.on("didInsertElement", this, this._updateElementValue);
   }
 });

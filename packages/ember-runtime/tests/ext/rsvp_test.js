@@ -28,24 +28,24 @@ var EmberTest;
 var EmberTesting;
 
 QUnit.module("Deferred RSVP's async + Testing", {
-  setup: function() {
+  setup() {
     EmberTest = Ember.Test;
     EmberTesting = Ember.testing;
 
     Ember.Test = {
       adapter: {
-        asyncStart: function() {
+        asyncStart() {
           asyncStarted++;
           QUnit.stop();
         },
-        asyncEnd: function() {
+        asyncEnd() {
           asyncEnded++;
           QUnit.start();
         }
       }
     };
   },
-  teardown: function() {
+  teardown() {
     asyncStarted = 0;
     asyncEnded = 0;
 

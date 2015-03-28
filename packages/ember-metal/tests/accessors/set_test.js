@@ -32,11 +32,11 @@ QUnit.test('should call setUnknownProperty if defined and value is undefined', f
   var obj = {
     count: 0,
 
-    unknownProperty: function(key, value) {
+    unknownProperty(key, value) {
       ok(false, 'should not invoke unknownProperty if setUnknownProperty is defined');
     },
 
-    setUnknownProperty: function(key, value) {
+    setUnknownProperty(key, value) {
       equal(key, 'foo', 'should pass key');
       equal(value, 'BAR', 'should pass key');
       this.count++;

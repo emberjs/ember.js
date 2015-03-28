@@ -21,7 +21,7 @@ function handleURL(path) {
 }
 
 QUnit.module("Router.map", {
-  setup: function() {
+  setup() {
     Ember.run(function() {
       App = Ember.Application.create({
         name: "App",
@@ -40,7 +40,7 @@ QUnit.module("Router.map", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     Ember.run(function() {
       App.destroy();
       App = null;

@@ -40,7 +40,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // because length is a built-in property we need to know to just get the
   // original property.
-  get: function(key) {
+  get(key) {
     if (key==='length') {
       return this.length;
     } else if ('number' === typeof key) {
@@ -50,12 +50,12 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     }
   },
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     return this[idx];
   },
 
   // primitive for array support.
-  replace: function(idx, amt, objects) {
+  replace(idx, amt, objects) {
 
     if (this.isFrozen) {
       throw FROZEN_ERROR;
@@ -79,7 +79,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // If you ask for an unknown property, then try to collect the value
   // from member items.
-  unknownProperty: function(key, value) {
+  unknownProperty(key, value) {
     var ret;// = this.reducedProperty(key, value);
     if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
@@ -91,7 +91,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   lastIndexOf: lastIndexOf,
 
-  copy: function(deep) {
+  copy(deep) {
     if (deep) {
       return this.map(function(item) { return copy(item, true); });
     }

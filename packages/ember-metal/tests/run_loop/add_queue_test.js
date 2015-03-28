@@ -5,10 +5,10 @@ var originalQueues = run.queues;
 var queues;
 
 QUnit.module('system/run_loop/add_queue_test', {
-  setup: function() {
+  setup() {
     run.queues = queues = ['blork', 'bleep'];
   },
-  teardown: function() {
+  teardown() {
     run.queues = originalQueues;
   }
 });

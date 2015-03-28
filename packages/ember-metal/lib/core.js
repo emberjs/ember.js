@@ -44,7 +44,7 @@ emExports.Em = emExports.Ember = Ember;
 
 Ember.isNamespace = true;
 
-Ember.toString = function() { return "Ember"; };
+Ember.toString = function() { return 'Ember'; };
 
 
 /**

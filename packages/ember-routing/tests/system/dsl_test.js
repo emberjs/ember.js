@@ -4,10 +4,10 @@ import { forEach } from "ember-metal/enumerable_utils";
 var Router;
 
 QUnit.module("Ember Router DSL", {
-  setup: function() {
+  setup() {
     Router = EmberRouter.extend();
   },
-  teardown: function() {
+  teardown() {
     Router = null;
   }
 });
@@ -78,8 +78,8 @@ QUnit.test("should retain resource namespace if nested with routes", function() 
   ok(router.router.recognizer.names['bleep.bloop.blork'], 'parent name was used as base of nested routes');
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
 QUnit.test("should add loading and error routes if _isRouterMapResult is true", function() {
   Router.map(function() {
@@ -107,5 +107,5 @@ QUnit.test("should not add loading and error routes if _isRouterMapResult is fal
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

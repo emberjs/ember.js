@@ -5,7 +5,7 @@ import compile from "ember-template-compiler/system/compile";
 
 var view;
 QUnit.module('ember-htmlbars: appendTemplatedView', {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

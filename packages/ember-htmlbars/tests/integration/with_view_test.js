@@ -13,7 +13,7 @@ var view, registry, container;
 var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
@@ -21,7 +21,7 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;

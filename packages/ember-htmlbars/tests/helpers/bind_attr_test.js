@@ -31,7 +31,7 @@ var TemplateTests, registry, container, lookup, warnings, originalWarn;
   file in which to test.
 */
 QUnit.module("ember-htmlbars: {{bind-attr}}", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -49,7 +49,7 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -218,7 +218,7 @@ QUnit.test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
 
   try {
     helpers['bind-attr'] = {
-      helperFunction: function() {
+      helperFunction() {
         equal(arguments[0], 'foo', 'First arg match');
         equal(arguments[1], 'bar', 'Second arg match');
 
@@ -553,7 +553,7 @@ QUnit.test("property before didInsertElement", function() {
   view = EmberView.create({
     name: 'bob',
     template: compile('<div {{bind-attr alt=view.name}}></div>'),
-    didInsertElement: function() {
+    didInsertElement() {
       matchingElement = this.$('div[alt=bob]');
     }
   });

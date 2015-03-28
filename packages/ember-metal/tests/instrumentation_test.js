@@ -6,10 +6,10 @@ import {
 } from "ember-metal/instrumentation";
 
 QUnit.module("Ember Instrumentation", {
-  setup: function() {
+  setup() {
 
   },
-  teardown: function() {
+  teardown() {
     reset();
   }
 });
@@ -28,7 +28,7 @@ QUnit.test("subscribing to a simple path receives the listener", function() {
   var count = 0;
 
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       if (count === 0) {
         strictEqual(name, "render");
       } else {
@@ -39,7 +39,7 @@ QUnit.test("subscribing to a simple path receives the listener", function() {
       strictEqual(payload, sentPayload);
     },
 
-    after: function(name, timestamp, payload) {
+    after(name, timestamp, payload) {
       if (count === 0) {
         strictEqual(name, "render");
       } else {
@@ -69,19 +69,19 @@ QUnit.test("returning a value from the before callback passes it to the after ca
   var passthru2 = {};
 
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       return passthru1;
     },
-    after: function(name, timestamp, payload, beforeValue) {
+    after(name, timestamp, payload, beforeValue) {
       strictEqual(beforeValue, passthru1);
     }
   });
 
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       return passthru2;
     },
-    after: function(name, timestamp, payload, beforeValue) {
+    after(name, timestamp, payload, beforeValue) {
       strictEqual(beforeValue, passthru2);
     }
   });
@@ -93,10 +93,10 @@ QUnit.test("instrument with 2 args (name, callback) no payload", function() {
   expect(1);
 
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       deepEqual(payload, {});
     },
-    after: function() {}
+    after() {}
   });
 
   instrument("render", function() {});
@@ -107,10 +107,10 @@ QUnit.test("instrument with 3 args (name, callback, binding) no payload", functi
 
   var binding = {};
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       deepEqual(payload, {});
     },
-    after: function() {}
+    after() {}
   });
 
   instrument("render", function() {
@@ -124,10 +124,10 @@ QUnit.test("instrument with 3 args (name, payload, callback) with payload", func
 
   var expectedPayload = { hi: 1 };
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
     },
-    after: function() {}
+    after() {}
   });
 
   instrument("render", expectedPayload, function() {});
@@ -139,10 +139,10 @@ QUnit.test("instrument with 4 args (name, payload, callback, binding) with paylo
   var expectedPayload = { hi: 1 };
   var binding = {};
   subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
     },
-    after: function() {}
+    after() {}
   });
 
   instrument("render", expectedPayload, function() {
@@ -157,15 +157,15 @@ QUnit.test("raising an exception in the instrumentation attaches it to the paylo
   var error = new Error("Instrumentation");
 
   subscribe("render", {
-    before: function() {},
-    after: function(name, timestamp, payload) {
+    before() {},
+    after(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
 
   subscribe("render", {
-    before: function() {},
-    after: function(name, timestamp, payload) {
+    before() {},
+    after(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
@@ -179,10 +179,10 @@ QUnit.test("it is possible to add a new subscriber after the first instrument", 
   instrument("render.handlebars", null, function() {});
 
   subscribe("render", {
-    before: function() {
+    before() {
       ok(true, "Before callback was called");
     },
-    after: function() {
+    after() {
       ok(true, "After callback was called");
     }
   });
@@ -196,11 +196,11 @@ QUnit.test("it is possible to remove a subscriber", function() {
   var count = 0;
 
   var subscriber = subscribe("render", {
-    before: function() {
+    before() {
       equal(count, 0);
       ok(true, "Before callback was called");
     },
-    after: function() {
+    after() {
       equal(count, 0);
       ok(true, "After callback was called");
       count++;

@@ -107,7 +107,7 @@ var TargetActionSupport = Mixin.create({
   @param opts {Hash} (optional, with the optional keys action, target and/or actionContext)
   @return {Boolean} true if the action was sent successfully and did not return false
   */
-  triggerAction: function(opts) {
+  triggerAction(opts) {
     opts = opts || {};
     var action = opts.action || get(this, 'action');
     var target = opts.target || get(this, 'targetObject');

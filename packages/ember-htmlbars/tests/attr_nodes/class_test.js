@@ -14,11 +14,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
   isInlineIfEnabled = true;
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 // jscs:disable validateIndentation
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: class attribute", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }
@@ -28,7 +28,7 @@ QUnit.module("ember-htmlbars: class attribute", {
 QUnit.test("class renders before didInsertElement", function() {
   var matchingElement;
   view = EmberView.create({
-    didInsertElement: function() {
+    didInsertElement() {
       matchingElement = this.$('div.blue');
     },
     context: { color: 'blue' },
@@ -151,5 +151,5 @@ QUnit.test("class attribute stays in order", function() {
   ok(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
 
-// jscs:enable validateIndentation
 }
+// jscs:enable validateIndentation

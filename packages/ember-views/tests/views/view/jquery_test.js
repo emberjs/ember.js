@@ -4,9 +4,9 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 QUnit.module("EmberView#$", {
-  setup: function() {
+  setup() {
     view = EmberView.extend({
-      render: function(context, firstTime) {
+      render(context, firstTime) {
         context.push('<span></span>');
       }
     }).create();
@@ -14,7 +14,7 @@ QUnit.module("EmberView#$", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

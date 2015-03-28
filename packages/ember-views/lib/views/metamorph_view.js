@@ -23,7 +23,7 @@ export var _Metamorph = Mixin.create({
 
   instrumentName: 'metamorph',
 
-  init: function() {
+  init() {
     this._super.apply(this, arguments);
     Ember.deprecate(
       'Supplying a tagName to Metamorph views is unreliable and is deprecated.' +

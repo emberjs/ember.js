@@ -11,8 +11,8 @@ import EmberError from "ember-metal/error";
 import ContainerView from "ember-views/views/container_view";
 
 export default ContainerView.extend(_Metamorph, {
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     var componentNameStream = this._boundComponentOptions.componentNameStream;
     var container = this.container;
     this.componentClassStream = chain(componentNameStream, function() {
@@ -22,14 +22,14 @@ export default ContainerView.extend(_Metamorph, {
     subscribe(this.componentClassStream, this._updateBoundChildComponent, this);
     this._updateBoundChildComponent();
   },
-  willDestroy: function() {
+  willDestroy() {
     unsubscribe(this.componentClassStream, this._updateBoundChildComponent, this);
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
-  _updateBoundChildComponent: function() {
+  _updateBoundChildComponent() {
     this.replace(0, 1, [this._createNewComponent()]);
   },
-  _createNewComponent: function() {
+  _createNewComponent() {
     var componentClass = read(this.componentClassStream);
     if (!componentClass) {
       throw new EmberError('HTMLBars error: Could not find component named "' + read(this._boundComponentOptions.componentNameStream) + '".');

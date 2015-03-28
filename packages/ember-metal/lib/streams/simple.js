@@ -15,11 +15,11 @@ function SimpleStream(source) {
 SimpleStream.prototype = create(Stream.prototype);
 
 merge(SimpleStream.prototype, {
-  valueFn: function() {
+  valueFn() {
     return read(this.source);
   },
 
-  setValue: function(value) {
+  setValue(value) {
     var source = this.source;
 
     if (isStream(source)) {
@@ -27,7 +27,7 @@ merge(SimpleStream.prototype, {
     }
   },
 
-  setSource: function(nextSource) {
+  setSource(nextSource) {
     var prevSource = this.source;
     if (nextSource !== prevSource) {
       if (isStream(prevSource)) {
@@ -49,7 +49,7 @@ merge(SimpleStream.prototype, {
 
   _super$destroy: Stream.prototype.destroy,
 
-  destroy: function() {
+  destroy() {
     if (this._super$destroy()) {
       if (isStream(this.source)) {
         this.source.unsubscribe(this._didChange, this);

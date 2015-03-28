@@ -63,7 +63,7 @@ function append() {
 }
 
 QUnit.module("Ember.TextField", {
-  setup: function() {
+  setup() {
     TestObject = window.TestObject = EmberObject.create({
       value: null
     });
@@ -71,7 +71,7 @@ QUnit.module("Ember.TextField", {
     textField = TextField.create();
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       textField.destroy();
     });
@@ -287,7 +287,7 @@ QUnit.test("should send an action if one is defined when the return key is press
   expect(2);
 
   var StubController = EmberObject.extend({
-    send: function(actionName, value, sender) {
+    send(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
     }
@@ -311,7 +311,7 @@ QUnit.test("should send an action on keyPress if one is defined with onEvent=key
   expect(2);
 
   var StubController = EmberObject.extend({
-    send: function(actionName, value, sender) {
+    send(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
     }
@@ -346,7 +346,7 @@ QUnit.test("bubbling of handled actions can be enabled via bubbles property", fu
   var stopPropagationCount = 0;
   var event = {
     keyCode: 13,
-    stopPropagation: function() {
+    stopPropagation() {
       stopPropagationCount++;
     }
   };
@@ -362,20 +362,20 @@ QUnit.test("bubbling of handled actions can be enabled via bubbles property", fu
 
 var dispatcher, StubController;
 QUnit.module("Ember.TextField - Action events", {
-  setup: function() {
+  setup() {
 
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
 
     StubController = EmberObject.extend({
-      send: function(actionName, value, sender) {
+      send(actionName, value, sender) {
         equal(actionName, 'doSomething', "text field sent correct action name");
       }
     });
 
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       dispatcher.destroy();
 
@@ -503,7 +503,7 @@ QUnit.test("when the user presses a key, the `key-down` action is sent to the co
   textField = TextField.create({
     'key-down': 'doSomething',
     targetObject: StubController.create({
-      send: function(actionName, value, evt) {
+      send(actionName, value, evt) {
         equal(actionName, 'doSomething', "text field sent correct action name");
         equal(value, '', 'value was blank in key-down');
         equal(evt, event, 'event was received as param');
@@ -528,7 +528,7 @@ QUnit.test("when the user releases a key, the `key-up` action is sent to the con
   textField = TextField.create({
     'key-up': 'doSomething',
     targetObject: StubController.create({
-      send: function(actionName, value, evt) {
+      send(actionName, value, evt) {
         equal(actionName, 'doSomething', "text field sent correct action name");
         equal(value, 'bar', 'value was received');
         equal(evt, event, 'event was received as param');
@@ -560,4 +560,16 @@ QUnit.test('should not reset cursor position when text field receives keyUp even
   });
 
   equal(caretPosition(view.$()), 5, 'The keyUp event should not result in the cursor being reset due to the bind-attr observers');
+});
+
+QUnit.test('an unsupported type defaults to `text`', function() {
+  view = TextField.create({
+    type: 'blahblah'
+  });
+
+  equal(get(view, 'type'), 'text', 'should default to text if the type is not a valid type');
+
+  appendView(view);
+
+  equal(view.element.type, 'text');
 });

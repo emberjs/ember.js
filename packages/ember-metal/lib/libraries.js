@@ -21,7 +21,7 @@ function Libraries() {
 Libraries.prototype = {
   constructor: Libraries,
 
-  _getLibraryByName: function(name) {
+  _getLibraryByName(name) {
     var libs = this._registry;
     var count = libs.length;
 
@@ -32,7 +32,7 @@ Libraries.prototype = {
     }
   },
 
-  register: function(name, version, isCoreLibrary) {
+  register(name, version, isCoreLibrary) {
     var index = this._registry.length;
 
     if (!this._getLibraryByName(name)) {
@@ -41,15 +41,15 @@ Libraries.prototype = {
       }
       this._registry.splice(index, 0, { name: name, version: version });
     } else {
-      Ember.warn('Library "' + name + '" is already registered with Ember.');
+      Ember.warn(`Library "${name}" is already registered with Ember.`);
     }
   },
 
-  registerCoreLibrary: function(name, version) {
+  registerCoreLibrary(name, version) {
     this.register(name, version, true);
   },
 
-  deRegister: function(name) {
+  deRegister(name) {
     var lib = this._getLibraryByName(name);
     var index;
 
@@ -59,12 +59,18 @@ Libraries.prototype = {
     }
   },
 
-  each: function(callback) {
+  each(callback) {
     Ember.deprecate('Using Ember.libraries.each() is deprecated. Access to a list of registered libraries is currently a private API. If you are not knowingly accessing this method, your out-of-date Ember Inspector may be doing so.');
-    forEach(this._registry, function(lib) {
+    forEach(this._registry, (lib) => {
       callback(lib.name, lib.version);
     });
   }
 };
+
+if (Ember.FEATURES.isEnabled("ember-libraries-isregistered")) {
+  Libraries.prototype.isRegistered = function(name) {
+    return !!this._getLibraryByName(name);
+  };
+}
 
 export default Libraries;

@@ -53,8 +53,8 @@ import Application from "ember-application/system/application";
   @extends EmberObject
 */
 export default EmberObject.extend({
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this.releaseMethods = emberA();
   },
 
@@ -112,7 +112,7 @@ export default EmberObject.extend({
     @return {Array} List of objects defining filters.
      The object should have a `name` and `desc` property.
   */
-  getFilters: function() {
+  getFilters() {
     return emberA();
   },
 
@@ -130,7 +130,7 @@ export default EmberObject.extend({
 
     @return {Function} Method to call to remove all observers
   */
-  watchModelTypes: function(typesAdded, typesUpdated) {
+  watchModelTypes(typesAdded, typesUpdated) {
     var modelTypes = this.getModelTypes();
     var self = this;
     var releaseMethods = emberA();
@@ -153,7 +153,7 @@ export default EmberObject.extend({
     return release;
   },
 
-  _nameToClass: function(type) {
+  _nameToClass(type) {
     if (typeof type === 'string') {
       type = this.container.lookupFactory('model:' + type);
     }
@@ -182,7 +182,7 @@ export default EmberObject.extend({
 
     @return {Function} Method to call to remove all observers
   */
-  watchRecords: function(type, recordsAdded, recordsUpdated, recordsRemoved) {
+  watchRecords(type, recordsAdded, recordsUpdated, recordsRemoved) {
     var self = this;
     var releaseMethods = emberA();
     var records = this.getRecords(type);
@@ -211,7 +211,7 @@ export default EmberObject.extend({
       }
     };
 
-    var observer = { didChange: contentDidChange, willChange: function() { return this; } };
+    var observer = { didChange: contentDidChange, willChange() { return this; } };
     records.addArrayObserver(self, observer);
 
     release = function() {
@@ -231,8 +231,8 @@ export default EmberObject.extend({
     @private
     @method willDestroy
   */
-  willDestroy: function() {
-    this._super.apply(this, arguments);
+  willDestroy() {
+    this._super(...arguments);
     this.releaseMethods.forEach(function(fn) {
       fn();
     });
@@ -249,7 +249,7 @@ export default EmberObject.extend({
     @param {Class} klass The class to test
     @return boolean Whether the class is a model class or not
   */
-  detect: function(klass) {
+  detect(klass) {
     return false;
   },
 
@@ -263,7 +263,7 @@ export default EmberObject.extend({
      name: {String} name of the column
      desc: {String} Humanized description (what would show in a table column name)
   */
-  columnsForType: function(type) {
+  columnsForType(type) {
     return emberA();
   },
 
@@ -277,7 +277,7 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove observers
   */
 
-  observeModelType: function(type, typesUpdated) {
+  observeModelType(type, typesUpdated) {
     var self = this;
     var records = this.getRecords(type);
 
@@ -285,10 +285,10 @@ export default EmberObject.extend({
       typesUpdated([self.wrapModelType(type)]);
     };
     var observer = {
-      didChange: function() {
+      didChange() {
         run.scheduleOnce('actions', this, onChange);
       },
-      willChange: function() { return this; }
+      willChange() { return this; }
     };
 
     records.addArrayObserver(this, observer);
@@ -318,7 +318,7 @@ export default EmberObject.extend({
           object: {Class} the actual Model type class
       release: {Function} The function to remove observers
   */
-  wrapModelType: function(type, name) {
+  wrapModelType(type, name) {
     var records = this.getRecords(type);
     var typeToSend;
 
@@ -341,7 +341,7 @@ export default EmberObject.extend({
     @method getModelTypes
     @return {Array} Array of model types
   */
-  getModelTypes: function() {
+  getModelTypes() {
     var self = this;
     var containerDebugAdapter = this.get('containerDebugAdapter');
     var types;
@@ -374,7 +374,7 @@ export default EmberObject.extend({
     @method _getObjectsOnNamespaces
     @return {Array} Array of model type strings
   */
-  _getObjectsOnNamespaces: function() {
+  _getObjectsOnNamespaces() {
     var namespaces = emberA(Namespace.NAMESPACES);
     var types = emberA();
     var self = this;
@@ -405,7 +405,7 @@ export default EmberObject.extend({
      This array will be observed for changes,
      so it should update when new records are added/removed.
   */
-  getRecords: function(type) {
+  getRecords(type) {
     return emberA();
   },
 
@@ -419,7 +419,7 @@ export default EmberObject.extend({
     columnValues: {Array}
     searchKeywords: {Array}
   */
-  wrapRecord: function(record) {
+  wrapRecord(record) {
     var recordToSend = { object: record };
 
     recordToSend.columnValues = this.getRecordColumnValues(record);
@@ -438,7 +438,7 @@ export default EmberObject.extend({
     @return {Object} Keys should match column names defined
     by the model type.
   */
-  getRecordColumnValues: function(record) {
+  getRecordColumnValues(record) {
     return {};
   },
 
@@ -449,7 +449,7 @@ export default EmberObject.extend({
     @method getRecordKeywords
     @return {Array} Relevant keywords for search.
   */
-  getRecordKeywords: function(record) {
+  getRecordKeywords(record) {
     return emberA();
   },
 
@@ -461,7 +461,7 @@ export default EmberObject.extend({
     @param {Object} record The record instance
     @return {Object} The filter values
   */
-  getRecordFilterValues: function(record) {
+  getRecordFilterValues(record) {
     return {};
   },
 
@@ -474,7 +474,7 @@ export default EmberObject.extend({
     @return {String} The record's color
       Possible options: black, red, blue, green
   */
-  getRecordColor: function(record) {
+  getRecordColor(record) {
     return null;
   },
 
@@ -488,7 +488,7 @@ export default EmberObject.extend({
     @param {Function} recordUpdated The callback to call when a record is updated.
     @return {Function} The function to call to remove all observers.
   */
-  observeRecord: function(record, recordUpdated) {
+  observeRecord(record, recordUpdated) {
     return function() {};
   }
 });

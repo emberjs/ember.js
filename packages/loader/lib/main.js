@@ -5,7 +5,6 @@ var mainContext = this;
 
   Ember = this.Ember = this.Ember || {};
   if (typeof Ember === 'undefined') { Ember = {}; };
-  function UNDEFINED() { }
 
   if (typeof Ember.__loader === 'undefined') {
     var registry = {};
@@ -26,35 +25,43 @@ var mainContext = this;
     };
 
     requirejs = require = requireModule = function(name) {
-      var s = seen[name];
+      return internalRequire(name, null);
+    }
 
-      if (s !== undefined) { return seen[name]; }
-      if (s === UNDEFINED) { return undefined;  }
+    function internalRequire(name, referrerName) {
+      var exports = seen[name];
 
-      seen[name] = {};
+      if (exports !== undefined) {
+        return exports;
+      }
+
+      exports = seen[name] = {};
 
       if (!registry[name]) {
-        throw new Error('Could not find module ' + name);
+        if (referrerName) {
+          throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
+        } else {
+          throw new Error('Could not find module ' + name);
+        }
       }
 
       var mod = registry[name];
       var deps = mod.deps;
       var callback = mod.callback;
       var reified = [];
-      var exports;
       var length = deps.length;
 
       for (var i=0; i<length; i++) {
         if (deps[i] === 'exports') {
-          reified.push(exports = {});
+          reified.push(exports);
         } else {
-          reified.push(requireModule(resolve(deps[i], name)));
+          reified.push(internalRequire(resolve(deps[i], name), name));
         }
       }
 
-      var value = length === 0 ? callback.call(this) : callback.apply(this, reified);
+      callback.apply(this, reified);
 
-      return seen[name] = exports || (value === undefined ? UNDEFINED : value);
+      return exports;
     };
 
     function resolve(child, name) {

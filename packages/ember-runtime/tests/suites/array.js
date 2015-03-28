@@ -8,22 +8,22 @@ import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
 
 var ObserverClass = EnumerableTestsObserverClass.extend({
 
-   observeArray: function(obj) {
+  observeArray(obj) {
     obj.addArrayObserver(this);
     return this;
   },
 
-  stopObserveArray: function(obj) {
+  stopObserveArray(obj) {
     obj.removeArrayObserver(this);
     return this;
   },
 
-  arrayWillChange: function() {
+  arrayWillChange() {
     equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
-  arrayDidChange: function() {
+  arrayDidChange() {
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }

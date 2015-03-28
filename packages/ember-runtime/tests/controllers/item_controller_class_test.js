@@ -14,7 +14,7 @@ var lannisters, arrayController, controllerClass, otherControllerClass, registry
     tywin, jaime, cersei, tyrion;
 
 QUnit.module("Ember.ArrayController - itemController", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
 
@@ -26,18 +26,18 @@ QUnit.module("Ember.ArrayController - itemController", {
 
     itemControllerCount = 0;
     controllerClass = Controller.extend({
-      init: function() {
+      init() {
         ++itemControllerCount;
         this._super.apply(this, arguments);
       },
 
-      toString: function() {
+      toString() {
         return "itemController for " + this.get('name');
       }
     });
 
     otherControllerClass = Controller.extend({
-      toString: function() {
+      toString() {
         return "otherItemController for " + this.get('name');
       }
     });
@@ -45,7 +45,7 @@ QUnit.module("Ember.ArrayController - itemController", {
     registry.register("controller:Item", controllerClass);
     registry.register("controller:OtherItem", otherControllerClass);
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       container.destroy();
     });
@@ -71,7 +71,7 @@ function createArrayController() {
 function createDynamicArrayController() {
   arrayController = ArrayController.create({
     container: container,
-    lookupItemController: function(object) {
+    lookupItemController(object) {
       if ("Tywin" === object.get("name")) {
         return "Item";
       } else {
@@ -99,7 +99,7 @@ QUnit.test("when `itemController` is set, `objectAtContent` returns an instance 
 
 QUnit.test("when `idx` is out of range, `objectAtContent` does not create a controller", function() {
   controllerClass.reopen({
-    init: function() {
+    init() {
       ok(false, "Controllers should not be created when `idx` is out of range");
     }
   });
@@ -240,7 +240,7 @@ QUnit.test("`itemController` can be dynamic by overwriting `lookupItemController
 QUnit.test("when `idx` is out of range, `lookupItemController` is not called", function() {
   arrayController = ArrayController.create({
     container: container,
-    lookupItemController: function(object) {
+    lookupItemController(object) {
       ok(false, "`lookupItemController` should not be called when `idx` is out of range");
     },
     model: lannisters
@@ -253,7 +253,7 @@ QUnit.test("when `idx` is out of range, `lookupItemController` is not called", f
 QUnit.test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
   arrayController = ArrayController.create({
     container: container,
-    lookupItemController: function(object) {
+    lookupItemController(object) {
       return "NonExistent";
     },
     model: lannisters
@@ -302,8 +302,8 @@ QUnit.test("array observers can invoke `objectAt` without overwriting existing i
   var arrayObserverCalled = false;
 
   arrayController.reopen({
-    lannistersWillChange: function() { return this; },
-    lannistersDidChange: function(_, idx, removedAmt, addedAmt) {
+    lannistersWillChange() { return this; },
+    lannistersDidChange(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
       equal(this.objectAt(idx).get('model.name'), "Tyrion", "Array observers get the right object via `objectAt`");
     }
@@ -334,7 +334,7 @@ QUnit.test("`itemController`'s life cycle should be entangled with its parent co
 });
 
 QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
 
@@ -350,14 +350,14 @@ QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
         }
       }).property('name'),
 
-      toString: function() {
+      toString() {
         return "itemController for " + this.get('name');
       }
     });
 
     registry.register("controller:Item", controllerClass);
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       container.destroy();
     });

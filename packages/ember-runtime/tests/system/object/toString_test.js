@@ -6,11 +6,11 @@ import Namespace from "ember-runtime/system/namespace";
 var originalLookup, lookup;
 
 QUnit.module('system/object/toString', {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     lookup = Ember.lookup = {};
   },
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -80,7 +80,7 @@ QUnit.test("toString on a namespace falls back to modulePrefix, if defined", fun
 
 QUnit.test('toString includes toStringExtension if defined', function() {
   var Foo = EmberObject.extend({
-        toStringExtension: function() {
+        toStringExtension() {
           return "fooey";
         }
       });

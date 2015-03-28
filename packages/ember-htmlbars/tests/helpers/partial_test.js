@@ -11,14 +11,14 @@ var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
 
 QUnit.module("Support for {{partial}} helper", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }

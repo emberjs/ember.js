@@ -34,10 +34,10 @@ var defineProperty = (function checkCompliance(defineProperty) {
     defineProperty(obj, 'a', {
       configurable: true,
       enumerable: true,
-      get: function () {
+      get() {
         return a;
       },
-      set: function (v) {
+      set(v) {
         a = v;
       }
     });

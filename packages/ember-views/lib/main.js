@@ -24,7 +24,7 @@ import {
   states
 } from "ember-views/views/states";
 
-import CoreView from "ember-views/views/core_view";
+import { DeprecatedCoreView } from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
@@ -39,8 +39,8 @@ import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
 import SimpleBoundView from "ember-views/views/simple_bound_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
-  default as _MetamorphView,
   _Metamorph
 } from "ember-views/views/metamorph_view";
 import {
@@ -68,7 +68,7 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-Ember.CoreView = CoreView;
+Ember.CoreView = DeprecatedCoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;

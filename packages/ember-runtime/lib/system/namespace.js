@@ -35,12 +35,12 @@ import EmberObject from "ember-runtime/system/object";
 var Namespace = EmberObject.extend({
   isNamespace: true,
 
-  init: function() {
+  init() {
     Namespace.NAMESPACES.push(this);
     Namespace.PROCESSED = false;
   },
 
-  toString: function() {
+  toString() {
     var name = get(this, 'name') || get(this, 'modulePrefix');
     if (name) { return name; }
 
@@ -48,11 +48,11 @@ var Namespace = EmberObject.extend({
     return this[NAME_KEY];
   },
 
-  nameClasses: function() {
+  nameClasses() {
     processNamespace([this.toString()], this, {});
   },
 
-  destroy: function() {
+  destroy() {
     var namespaces = Namespace.NAMESPACES;
     var toString = this.toString();
 
@@ -61,7 +61,7 @@ var Namespace = EmberObject.extend({
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
     namespaces.splice(indexOf.call(namespaces, this), 1);
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });
 
@@ -70,7 +70,7 @@ Namespace.reopenClass({
   NAMESPACES_BY_ID: {},
   PROCESSED: false,
   processAll: processAllNamespaces,
-  byName: function(name) {
+  byName(name) {
     if (!Ember.BOOTED) {
       processAllNamespaces();
     }

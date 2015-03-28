@@ -10,8 +10,6 @@ import alias from 'ember-metal/alias';
 @module ember-metal
 */
 
-var a_slice = [].slice;
-
 function getProperties(self, propertyNames) {
   var ret = {};
   for (var i = 0; i < propertyNames.length; i++) {
@@ -21,9 +19,7 @@ function getProperties(self, propertyNames) {
 }
 
 function generateComputedWithProperties(macro) {
-  return function() {
-    var properties = a_slice.call(arguments);
-
+  return function(...properties) {
     var computedFunc = computed(function() {
       return macro.apply(this, [getProperties(this, properties)]);
     });
@@ -60,7 +56,7 @@ function generateComputedWithProperties(macro) {
   the original value for property
 */
 export function empty(dependentKey) {
-  return computed(dependentKey + '.length', function () {
+  return computed(dependentKey + '.length', function() {
     return isEmpty(get(this, dependentKey));
   });
 }
@@ -90,7 +86,7 @@ export function empty(dependentKey) {
   original value for property is not empty.
 */
 export function notEmpty(dependentKey) {
-  return computed(dependentKey + '.length', function () {
+  return computed(dependentKey + '.length', function() {
     return !isEmpty(get(this, dependentKey));
   });
 }
@@ -123,7 +119,7 @@ export function notEmpty(dependentKey) {
   returns true if original value for property is null or undefined.
 */
 export function none(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return isNone(get(this, dependentKey));
   });
 }
@@ -153,7 +149,7 @@ export function none(dependentKey) {
   inverse of the original value for property
 */
 export function not(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return !get(this, dependentKey);
   });
 }
@@ -185,7 +181,7 @@ export function not(dependentKey) {
   to boolean the original value for property
 */
 export function bool(dependentKey) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return !!get(this, dependentKey);
   });
 }
@@ -219,7 +215,7 @@ export function bool(dependentKey) {
   the original value for property against a given RegExp
 */
 export function match(dependentKey, regexp) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     var value = get(this, dependentKey);
 
     return typeof value === 'string' ? regexp.test(value) : false;
@@ -254,7 +250,7 @@ export function match(dependentKey, regexp) {
   the original value for property is equal to the given value.
 */
 export function equal(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) === value;
   });
 }
@@ -287,7 +283,7 @@ export function equal(dependentKey, value) {
   the original value for property is greater than given value.
 */
 export function gt(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) > value;
   });
 }
@@ -320,7 +316,7 @@ export function gt(dependentKey, value) {
   the original value for property is greater or equal then given value.
 */
 export function gte(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) >= value;
   });
 }
@@ -353,7 +349,7 @@ export function gte(dependentKey, value) {
   the original value for property is less then given value.
 */
 export function lt(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) < value;
   });
 }
@@ -386,7 +382,7 @@ export function lt(dependentKey, value) {
   the original value for property is less or equal than given value.
 */
 export function lte(dependentKey, value) {
-  return computed(dependentKey, function () {
+  return computed(dependentKey, function() {
     return get(this, dependentKey) <= value;
   });
 }
@@ -678,13 +674,16 @@ export function readOnly(dependentKey) {
   @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
 */
 export function defaultTo(defaultPath) {
-  return computed(function(key, newValue, cachedValue) {
-    Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
-
-    if (arguments.length === 1) {
+  return computed({
+    get: function(key) {
+      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
       return get(this, defaultPath);
+    },
+
+    set: function(key, newValue, cachedValue) {
+      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
+      return newValue != null ? newValue : get(this, defaultPath);
     }
-    return newValue != null ? newValue : get(this, defaultPath);
   });
 }
 
@@ -702,14 +701,15 @@ export function defaultTo(defaultPath) {
   @since 1.7.0
 */
 export function deprecatingAlias(dependentKey) {
-  return computed(dependentKey, function(key, value) {
-    Ember.deprecate('Usage of `' + key + '` is deprecated, use `' + dependentKey + '` instead.');
-
-    if (arguments.length > 1) {
+  return computed(dependentKey, {
+    get: function(key) {
+      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
+      return get(this, dependentKey);
+    },
+    set: function(key, value) {
+      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`);
       set(this, dependentKey, value);
       return value;
-    } else {
-      return get(this, dependentKey);
     }
   });
 }

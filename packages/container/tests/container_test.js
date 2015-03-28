@@ -7,10 +7,10 @@ import Registry from 'container/registry';
 var originalModelInjections;
 
 QUnit.module("Container", {
-  setup: function() {
+  setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
   },
-  teardown: function() {
+  teardown() {
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
@@ -267,8 +267,8 @@ QUnit.test("Injecting a failed lookup raises an error", function() {
   var fooFactory  = {};
 
   var Foo = {
-    create: function(args) { return fooInstance; },
-    extend: function(args) { return fooFactory;  }
+    create(args) { return fooInstance; },
+    extend(args) { return fooFactory;  }
   };
 
   registry.register('model:foo', Foo);
@@ -468,7 +468,7 @@ QUnit.test("The `_onLookup` hook is called on factories when looked up the first
   var Apple = factory();
 
   Apple.reopenClass({
-    _onLookup: function(fullName) {
+    _onLookup(fullName) {
       equal(fullName, 'apple:main', 'calls lazy injection method with the lookup full name');
       equal(this, Apple, 'calls lazy injection method in the factory context');
     }
@@ -487,7 +487,7 @@ QUnit.test("A factory's lazy injections are validated when first instantiated", 
   var Orange = factory();
 
   Apple.reopenClass({
-    _lazyInjections: function() {
+    _lazyInjections() {
       return ['orange:main', 'banana:main'];
     }
   });
@@ -509,7 +509,7 @@ QUnit.test("Lazy injection validations are cached", function() {
   var Orange = factory();
 
   Apple.reopenClass({
-    _lazyInjections: function() {
+    _lazyInjections() {
       ok(true, 'should call lazy injection method');
       return ['orange:main'];
     }

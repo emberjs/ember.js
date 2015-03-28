@@ -7,7 +7,7 @@ QUnit.test("Ember.typeOf", function() {
   var a = null;
   var arr = [1,2,3];
   var obj = {};
-  var object = EmberObject.create({ method: function() {} });
+  var object = EmberObject.create({ method() {} });
 
   equal(typeOf(undefined), 'undefined', "item of type undefined");
   equal(typeOf(a), 'null', "item of type null");

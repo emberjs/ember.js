@@ -35,7 +35,7 @@ QUnit.test("getting should return a lookup on the container", function() {
 
   var obj = {
     container: {
-      lookup: function(key) {
+      lookup(key) {
         ok(true, 'should call container.lookup');
         return key;
       }
@@ -49,7 +49,7 @@ QUnit.test("getting should return a lookup on the container", function() {
 QUnit.test("omitting the lookup name should default to the property name", function() {
   var obj = {
     container: {
-      lookup: function(key) {
+      lookup(key) {
         return key;
       }
     }

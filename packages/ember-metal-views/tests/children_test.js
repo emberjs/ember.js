@@ -30,7 +30,7 @@ QUnit.test("didInsertElement fires after children are rendered", function() {
       { isView: true, tagName: 'li', textContent: 'ohai' }
     ],
 
-    didInsertElement: function() {
+    didInsertElement() {
       equalHTML(this.element, "<ul><li>ohai</li></ul>", "Children are rendered");
     }
   };

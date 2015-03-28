@@ -34,6 +34,7 @@ var renderer;
   @class CoreView
   @namespace Ember
   @extends Ember.Object
+  @deprecated Use `Ember.View` instead.
   @uses Ember.Evented
   @uses Ember.ActionHandler
 */
@@ -43,7 +44,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   _states: cloneStates(states),
 
-  init: function() {
+  init() {
     this._super.apply(this, arguments);
     this._state = 'preRender';
     this.currentState = this._states.preRender;
@@ -90,7 +91,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   instrumentName: 'core_view',
 
-  instrumentDetails: function(hash) {
+  instrumentDetails(hash) {
     hash.object = this.toString();
     hash.containerKey = this._debugContainerKey;
     hash.view = this;
@@ -104,7 +105,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger: function() {
+  trigger() {
     this._super.apply(this, arguments);
     var name = arguments[0];
     var method = this[name];
@@ -118,14 +119,14 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
   },
 
-  has: function(name) {
+  has(name) {
     return typeOf(this[name]) === 'function' || this._super(name);
   },
 
-  destroy: function() {
+  destroy() {
     var parent = this._parentView;
 
-    if (!this._super.apply(this, arguments)) { return; }
+    if (!this._super(...arguments)) { return; }
 
 
     // destroy the element -- this will avoid each child view destroying
@@ -151,6 +152,13 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
 CoreView.reopenClass({
   isViewClass: true
+});
+
+export var DeprecatedCoreView = CoreView.extend({
+  init() {
+    Ember.deprecate('Ember.CoreView is deprecated. Please use Ember.View.', false);
+    this._super.apply(this, arguments);
+  }
 });
 
 export default CoreView;

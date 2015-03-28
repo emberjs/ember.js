@@ -8,24 +8,24 @@ function K() { return this; }
 */
 export default {
   // appendChild is only legal while rendering the buffer.
-  appendChild: function() {
+  appendChild() {
     throw new EmberError("You can't use appendChild outside of the rendering process");
   },
 
-  $: function() {
+  $() {
     return undefined;
   },
 
-  getElement: function() {
+  getElement() {
     return null;
   },
 
   // Handle events from `Ember.EventDispatcher`
-  handleEvent: function() {
+  handleEvent() {
     return true; // continue event propagation
   },
 
-  destroyElement: function(view) {
+  destroyElement(view) {
     if (view._renderer) {
       view._renderer.remove(view, false);
     }

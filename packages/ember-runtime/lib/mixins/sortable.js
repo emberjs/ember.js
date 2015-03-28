@@ -118,7 +118,7 @@ export default Mixin.create(MutableEnumerable, {
   */
   sortFunction: compare,
 
-  orderBy: function(item1, item2) {
+  orderBy(item1, item2) {
     var result = 0;
     var sortProperties = get(this, 'sortProperties');
     var sortAscending = get(this, 'sortAscending');
@@ -138,7 +138,7 @@ export default Mixin.create(MutableEnumerable, {
     return result;
   },
 
-  destroy: function() {
+  destroy() {
     var content = get(this, 'content');
     var sortProperties = get(this, 'sortProperties');
 
@@ -150,7 +150,7 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    return this._super.apply(this, arguments);
+    return this._super(...arguments);
   },
 
   isSorted: notEmpty('sortProperties'),
@@ -161,26 +161,28 @@ export default Mixin.create(MutableEnumerable, {
 
     @property arrangedContent
   */
-  arrangedContent: computed('content', 'sortProperties.@each', function(key, value) {
-    var content = get(this, 'content');
-    var isSorted = get(this, 'isSorted');
-    var sortProperties = get(this, 'sortProperties');
-    var self = this;
+  arrangedContent: computed('content', 'sortProperties.@each', {
+    get: function(key) {
+      var content = get(this, 'content');
+      var isSorted = get(this, 'isSorted');
+      var sortProperties = get(this, 'sortProperties');
+      var self = this;
 
-    if (content && isSorted) {
-      content = content.slice();
-      content.sort(function(item1, item2) {
-        return self.orderBy(item1, item2);
-      });
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+      if (content && isSorted) {
+        content = content.slice();
+        content.sort(function(item1, item2) {
+          return self.orderBy(item1, item2);
+        });
+        forEach(content, function(item) {
+          forEach(sortProperties, function(sortProperty) {
+            addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+          }, this);
         }, this);
-      }, this);
-      return Ember.A(content);
-    }
+        return Ember.A(content);
+      }
 
-    return content;
+      return content;
+    }
   }),
 
   _contentWillChange: beforeObserver('content', function() {
@@ -195,7 +197,7 @@ export default Mixin.create(MutableEnumerable, {
       }, this);
     }
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }),
 
   sortPropertiesWillChange: beforeObserver('sortProperties', function() {
@@ -217,7 +219,7 @@ export default Mixin.create(MutableEnumerable, {
     }
   }),
 
-  contentArrayWillChange: function(array, idx, removedCount, addedCount) {
+  contentArrayWillChange(array, idx, removedCount, addedCount) {
     var isSorted = get(this, 'isSorted');
 
     if (isSorted) {
@@ -237,7 +239,7 @@ export default Mixin.create(MutableEnumerable, {
     return this._super(array, idx, removedCount, addedCount);
   },
 
-  contentArrayDidChange: function(array, idx, removedCount, addedCount) {
+  contentArrayDidChange(array, idx, removedCount, addedCount) {
     var isSorted = get(this, 'isSorted');
     var sortProperties = get(this, 'sortProperties');
 
@@ -256,7 +258,7 @@ export default Mixin.create(MutableEnumerable, {
     return this._super(array, idx, removedCount, addedCount);
   },
 
-  insertItemSorted: function(item) {
+  insertItemSorted(item) {
     var arrangedContent = get(this, 'arrangedContent');
     var length = get(arrangedContent, 'length');
 
@@ -264,7 +266,7 @@ export default Mixin.create(MutableEnumerable, {
     arrangedContent.insertAt(idx, item);
   },
 
-  contentItemSortPropertyDidChange: function(item) {
+  contentItemSortPropertyDidChange(item) {
     var arrangedContent = get(this, 'arrangedContent');
     var oldIndex = arrangedContent.indexOf(item);
     var leftItem = arrangedContent.objectAt(oldIndex - 1);
@@ -278,7 +280,7 @@ export default Mixin.create(MutableEnumerable, {
     }
   },
 
-  _binarySearch: function(item, low, high) {
+  _binarySearch(item, low, high) {
     var mid, midItem, res, arrangedContent;
 
     if (low === high) {

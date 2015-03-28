@@ -18,11 +18,11 @@ var PublicProperty = Mixin.create({
 });
 
 var PrivateMethod = Mixin.create({
-  _fooMethod: function() {}
+  _fooMethod() {}
 });
 
 var PublicMethod = Mixin.create({
-  fooMethod: function() {}
+  fooMethod() {}
 });
 
 var BarProperties = Mixin.create({
@@ -31,8 +31,8 @@ var BarProperties = Mixin.create({
 });
 
 var BarMethods = Mixin.create({
-  _barMethod: function() {},
-  barMethod: function() {}
+  _barMethod() {},
+  barMethod() {}
 });
 
 var Combined = Mixin.create(BarProperties, BarMethods);
@@ -40,7 +40,7 @@ var Combined = Mixin.create(BarProperties, BarMethods);
 var obj;
 
 QUnit.module('Basic introspection', {
-  setup: function() {
+  setup() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }

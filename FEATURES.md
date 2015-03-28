@@ -5,6 +5,22 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-libraries-isregistered`
+
+  Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
+  a library is registered with Ember or not.
+
+* `ember-routing-core-outlet`
+
+  Provides a non-virtual version of OutletView named
+  CoreOutletView. You would use CoreOutletView just like you're use
+  OutletView: by extending it with whatever behavior you want and then
+  passing it to the `{{outlet}}` helper's `view` property.
+
+  The only difference between them is that OutletView has no element
+  of its own (it is a "virtual" view), whereas CoreOutletView has an
+  element.
+
 * `ember-application-visit`
 
   Provides an API for creating an application instance and specifying
@@ -82,35 +98,6 @@ for a detailed explanation.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
 
-* `composable-computed-properties`
-
-  This feature allows you to combine (compose) different computed
-  properties together. So it gives you a really nice "functional
-  programming" like syntax to deal with complex expressions.
-
-  Added in [#3696](https://github.com/emberjs/ember.js/pull/3696).
-
-* `ember-metal-is-present`
-
-  Adds `Ember.isPresent` as the inverse of `Ember.isBlank`. This convenience
-  method can lead to more semantic and clearer code.
-
-  Added in [#5136](https://github.com/emberjs/ember.js/pull/5136)
-
-* `property-brace-expansion-improvement`
-
-  Property brace expansion now allows multiple sets of braces to be used,
-  as well as not restricting their location in the string.
-
-  Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)
-
-* `ember-routing-multi-current-when`
-
-  Allows the `link-to` helper's currentWhen property to accept multiple routes
-  using a ` ` (space) delimiter, for more control over a link's active state.
-
-  Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
-
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
@@ -129,17 +116,6 @@ for a detailed explanation.
   Works with arbitrary attributes and properties.
 
   Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
-
-* `ember-metal-injected-properties`
-
-  Enables the injection of properties onto objects coming from a container,
-  and adds the `Ember.Service` class.  Use the `Ember.inject.service` method to
-  inject services onto any object, or `Ember.inject.controller` to inject
-  controllers onto any other controller. The first argument to `Ember.inject`
-  methods is optional, and if left blank the key of the property will be used
-  to perform the lookup instead.  Replaces the need for `needs` in controllers.
-
-  Added in [#5162](https://github.com/emberjs/ember.js/pull/5162).
 
 * `ember-routing-transitioning-classes`
 
@@ -201,7 +177,7 @@ for a detailed explanation.
   Added in [#10160](https://github.com/emberjs/ember.js/pull/10160)
 
 * `ember-router-willtransition`
-  
+
   Adds `willTransition` hook to `Ember.Router`. For example,
 
   ```js
@@ -213,3 +189,80 @@ for a detailed explanation.
   ```
 
   Added in [#10274](https://github.com/emberjs/ember.js/pull/10274)
+
+* `ember-views-component-block-info`
+
+  Adds a couple utility methods to detect block/block param presence:
+
+  * `hasBlock`
+
+    Adds the ability to easily detect if a component was invoked with or
+    without a block.
+
+    Example (`hasBlock` will be `false`):
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{foo-bar}}
+
+    {{! templates/components/foo-bar.js }}
+    {{#if hasBlock}}
+      This will not be printed, because no block was provided
+    {{/if}}
+    ```
+
+    Example (`hasBlock` will be `true`):
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{#foo-bar}}
+      Hi!
+    {{/foo-bar}}
+
+    {{! templates/components/foo-bar.js }}
+    {{#if hasBlock}}
+      This will be printed because a block was provided
+      {{yield}}
+    {{/if}}
+    ```
+
+  * `hasBlockParams`
+
+  Adds the ability to easily detect if a component was invoked with block parameter
+  supplied.
+
+  Example (`hasBlockParams` will be `false`):
+
+  ```hbs
+  {{! templates/application.hbs }}
+
+  {{#foo-bar}}
+    Hi!.
+  {{/foo-bar}}
+
+  {{! templates/components/foo-bar.js }}
+  {{#if hasBlockParams}}
+    {{yield this}}
+    This will not be printed, because no block was provided
+  {{/if}}
+  ```
+
+  Example (`hasBlockParams` will be `true`):
+
+  ```hbs
+  {{! templates/application.hbs }}
+
+  {{#foo-bar as |foo|}}
+    Hi!
+  {{/foo-bar}}
+
+  {{! templates/components/foo-bar.js }}
+  {{#if hasBlockParams}}
+    {{yield this}}
+    This will be printed because a block was provided
+  {{/if}}
+  ```
+
+  Addd in [#10461](https://github.com/emberjs/ember.js/pull/10461)

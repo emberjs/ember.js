@@ -15,14 +15,14 @@ import {
   removeBeforeObserver
 } from "ember-metal/observer";
 
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
-  default as _MetamorphView,
   _Metamorph
 } from "ember-views/views/metamorph_view";
 
 export default CollectionView.extend(_Metamorph, {
 
-  init: function() {
+  init() {
     var itemController = get(this, 'itemController');
     var binding;
 
@@ -52,7 +52,7 @@ export default CollectionView.extend(_Metamorph, {
     return this._super.apply(this, arguments);
   },
 
-  _assertArrayLike: function(content) {
+  _assertArrayLike(content) {
     Ember.assert(fmt("The value that #each loops over must be an Array. You " +
                      "passed %@, but it should have been an ArrayController",
                      [content.constructor]),
@@ -66,7 +66,7 @@ export default CollectionView.extend(_Metamorph, {
                      EmberArray.detect(content));
   },
 
-  disableContentObservers: function(callback) {
+  disableContentObservers(callback) {
     removeBeforeObserver(this, 'content', null, '_contentWillChange');
     removeObserver(this, 'content', null, '_contentDidChange');
 
@@ -79,7 +79,7 @@ export default CollectionView.extend(_Metamorph, {
   itemViewClass: _MetamorphView,
   emptyViewClass: _MetamorphView,
 
-  createChildView: function(_view, attrs) {
+  createChildView(_view, attrs) {
     var view = this._super(_view, attrs);
 
     var content = get(view, 'content');
@@ -98,7 +98,7 @@ export default CollectionView.extend(_Metamorph, {
     return view;
   },
 
-  destroy: function() {
+  destroy() {
     if (!this._super.apply(this, arguments)) { return; }
 
     if (this._arrayController) {

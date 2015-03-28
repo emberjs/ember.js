@@ -13,13 +13,13 @@ var destroyingError = "You can't call %@ on a view being destroyed";
 var destroying = create(_default);
 
 merge(destroying, {
-  appendChild: function() {
+  appendChild() {
     throw new EmberError(fmt(destroyingError, ['appendChild']));
   },
-  rerender: function() {
+  rerender() {
     throw new EmberError(fmt(destroyingError, ['rerender']));
   },
-  destroyElement: function() {
+  destroyElement() {
     throw new EmberError(fmt(destroyingError, ['destroyElement']));
   }
 });

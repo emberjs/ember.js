@@ -42,7 +42,7 @@ TrackedArray.prototype = {
     @param index
     @param newItems
   */
-  addItems: function (index, newItems) {
+  addItems(index, newItems) {
     var count = get(newItems, 'length');
     if (count < 1) { return; }
 
@@ -79,7 +79,7 @@ TrackedArray.prototype = {
     @param index
     @param count
   */
-  removeItems: function (index, count) {
+  removeItems(index, count) {
     if (count < 1) { return; }
 
     var match = this._findArrayOperation(index);
@@ -115,7 +115,7 @@ TrackedArray.prototype = {
     @method apply
     @param {Function} callback
   */
-  apply: function (callback) {
+  apply(callback) {
     var items = [];
     var offset = 0;
 
@@ -140,7 +140,7 @@ TrackedArray.prototype = {
     should be returned.
     @private
   */
-  _findArrayOperation: function (index) {
+  _findArrayOperation(index) {
     var split = false;
     var arrayOperationIndex, arrayOperation,
         arrayOperationRangeStart, arrayOperationRangeEnd,
@@ -168,7 +168,7 @@ TrackedArray.prototype = {
     return new ArrayOperationMatch(arrayOperation, arrayOperationIndex, split, arrayOperationRangeStart);
   },
 
-  _split: function (arrayOperationIndex, splitIndex, newArrayOperation) {
+  _split(arrayOperationIndex, splitIndex, newArrayOperation) {
     var arrayOperation = this._operations[arrayOperationIndex];
     var splitItems = arrayOperation.items.slice(splitIndex);
     var splitArrayOperation = new ArrayOperation(arrayOperation.type, splitItems.length, splitItems);
@@ -181,7 +181,7 @@ TrackedArray.prototype = {
   },
 
   // see SubArray for a better implementation.
-  _composeInsert: function (index) {
+  _composeInsert(index) {
     var newArrayOperation = this._operations[index];
     var leftArrayOperation = this._operations[index-1]; // may be undefined
     var rightArrayOperation = this._operations[index+1]; // may be undefined
@@ -210,7 +210,7 @@ TrackedArray.prototype = {
     }
   },
 
-  _composeDelete: function (index) {
+  _composeDelete(index) {
     var arrayOperation = this._operations[index];
     var deletesToGo = arrayOperation.count;
     var leftArrayOperation = this._operations[index-1]; // may be undefined
@@ -278,7 +278,7 @@ TrackedArray.prototype = {
     return removedItems;
   },
 
-  toString: function () {
+  toString() {
     var str = "";
     forEach(this._operations, function (operation) {
       str += " " + operation.type + ":" + operation.count;

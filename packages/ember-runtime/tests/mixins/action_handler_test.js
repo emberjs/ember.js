@@ -7,7 +7,7 @@ QUnit.test("passing a function for the actions hash triggers an assertion", func
   expect(1);
 
   var controller = Controller.extend({
-    actions: function() {}
+    actions() {}
   });
 
   expectAssertion(function() {

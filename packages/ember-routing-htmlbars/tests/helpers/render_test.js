@@ -6,7 +6,7 @@ import { observer } from 'ember-metal/mixin';
 
 import Namespace from "ember-runtime/system/namespace";
 
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import { registerHelper } from "ember-htmlbars/helpers";
@@ -33,7 +33,7 @@ function runSet(object, key, value) {
 var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
 
 QUnit.module("ember-routing-htmlbars: {{render}} helper", {
-  setup: function() {
+  setup() {
     originalOutletHelper = helpers['outlet'];
     registerHelper('outlet', outletHelper);
 
@@ -49,7 +49,7 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
     container = registry.container();
   },
 
-  teardown: function() {
+  teardown() {
     delete helpers['render'];
     helpers['render'] = originalRenderHelper;
 
@@ -396,7 +396,7 @@ QUnit.test("{{render}} helper should link child controllers to the parent contro
   var controller = EmberController.extend({
     container: container,
     actions: {
-      parentPlease: function() {
+      parentPlease() {
         parentTriggered++;
       }
     },

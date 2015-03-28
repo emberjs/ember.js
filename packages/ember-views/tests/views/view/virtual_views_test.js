@@ -6,7 +6,7 @@ import EmberView from "ember-views/views/view";
 var rootView, childView;
 
 QUnit.module("virtual views", {
-  teardown: function() {
+  teardown() {
     run(function() {
       rootView.destroy();
       childView.destroy();
@@ -18,7 +18,7 @@ QUnit.test("a virtual view does not appear as a view's parentView", function() {
   rootView = EmberView.create({
     elementId: 'root-view',
 
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<h1>Hi</h1>");
       this.appendChild(virtualView);
     }
@@ -28,14 +28,14 @@ QUnit.test("a virtual view does not appear as a view's parentView", function() {
     isVirtual: true,
     tagName: '',
 
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<h2>Virtual</h2>");
       this.appendChild(childView);
     }
   });
 
   childView = EmberView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<p>Bye!</p>");
     }
   });
@@ -58,7 +58,7 @@ QUnit.test("when a virtual view's child views change, the parent's childViews sh
   rootView = EmberView.create({
     elementId: 'root-view',
 
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<h1>Hi</h1>");
       this.appendChild(virtualView);
     }
@@ -68,14 +68,14 @@ QUnit.test("when a virtual view's child views change, the parent's childViews sh
     isVirtual: true,
     tagName: '',
 
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<h2>Virtual</h2>");
       this.appendChild(childView);
     }
   });
 
   childView = EmberView.create({
-    render: function(buffer) {
+    render(buffer) {
       buffer.push("<p>Bye!</p>");
     }
   });

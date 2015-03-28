@@ -10,10 +10,10 @@ function Cache(limit, func) {
   this.func   = func;
 }
 
-var UNDEFINED = function() { };
+var UNDEFINED = function() {};
 
 Cache.prototype = {
-  set: function(key, value) {
+  set(key, value) {
     if (this.limit > this.size) {
       this.size ++;
       if (value === undefined) {
@@ -26,7 +26,7 @@ Cache.prototype = {
     return value;
   },
 
-  get: function(key) {
+  get(key) {
     var value = this.store[key];
 
     if (value === undefined) {
@@ -43,7 +43,7 @@ Cache.prototype = {
     return value;
   },
 
-  purge: function() {
+  purge() {
     this.store  = dictionary(null);
     this.size   = 0;
     this.hits   = 0;

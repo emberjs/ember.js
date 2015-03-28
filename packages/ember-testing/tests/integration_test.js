@@ -15,7 +15,7 @@ var App, find, visit;
 var originalAdapter = Test.adapter;
 
 QUnit.module("ember-testing Integration", {
-  setup: function() {
+  setup() {
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
       App = EmberApplication.create({
@@ -27,7 +27,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.PeopleRoute = EmberRoute.extend({
-        model: function() {
+        model() {
           return App.Person.find();
         }
       });
@@ -43,7 +43,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.Person.reopenClass({
-        find: function() {
+        find() {
           return Ember.A();
         }
       });
@@ -65,7 +65,7 @@ QUnit.module("ember-testing Integration", {
     visit = window.visit;
   },
 
-  teardown: function() {
+  teardown() {
     App.removeTestHelpers();
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);

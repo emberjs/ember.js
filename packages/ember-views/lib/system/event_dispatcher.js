@@ -130,7 +130,7 @@ export default EmberObject.extend({
     @method setup
     @param addedEvents {Hash}
   */
-  setup: function(addedEvents, rootElement) {
+  setup(addedEvents, rootElement) {
     var event;
     var events = get(this, 'events');
 
@@ -171,7 +171,7 @@ export default EmberObject.extend({
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler: function(rootElement, event, eventName) {
+  setupHandler(rootElement, event, eventName) {
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
@@ -202,7 +202,7 @@ export default EmberObject.extend({
     });
   },
 
-  _findNearestEventManager: function(view, eventName) {
+  _findNearestEventManager(view, eventName) {
     var manager = null;
 
     while (view) {
@@ -215,7 +215,7 @@ export default EmberObject.extend({
     return manager;
   },
 
-  _dispatchEvent: function(object, evt, eventName, view) {
+  _dispatchEvent(object, evt, eventName, view) {
     var result = true;
 
     var handler = object[eventName];
@@ -230,17 +230,17 @@ export default EmberObject.extend({
     return result;
   },
 
-  _bubbleEvent: function(view, evt, eventName) {
+  _bubbleEvent(view, evt, eventName) {
     return run.join(view, view.handleEvent, eventName, evt);
   },
 
-  destroy: function() {
+  destroy() {
     var rootElement = get(this, 'rootElement');
     jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
-    return this._super.apply(this, arguments);
+    return this._super(...arguments);
   },
 
-  toString: function() {
+  toString() {
     return '(EventDispatcher)';
   }
 });

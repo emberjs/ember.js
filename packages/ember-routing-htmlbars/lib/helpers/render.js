@@ -6,9 +6,9 @@
 import Ember from "ember-metal/core"; // assert, deprecate
 import EmberError from "ember-metal/error";
 import { camelize } from "ember-runtime/system/string";
+import generateController from "ember-routing/system/generate_controller";
 import {
-  generateControllerFactory,
-  default as generateController
+  generateControllerFactory
 } from "ember-routing/system/generate_controller";
 import { isStream } from "ember-metal/streams/utils";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";

@@ -27,7 +27,7 @@ var TestNamespace, originalLookup, lookup;
 
 var bindModuleOpts = {
 
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -52,7 +52,7 @@ var bindModuleOpts = {
     };
   },
 
-  teardown: function() {
+  teardown() {
     testObject = fromObject = extraObject = null;
     Ember.lookup = originalLookup;
   }
@@ -87,7 +87,7 @@ QUnit.test("bind(.bar) should bind to relative path", function() {
 
 var fooBindingModuleOpts = {
 
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -112,10 +112,10 @@ var fooBindingModuleOpts = {
     };
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
     TestObject = fromObject = extraObject = null;
-  //  delete TestNamespace;
+    //  delete TestNamespace;
   }
 
 };

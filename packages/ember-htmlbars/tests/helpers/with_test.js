@@ -5,8 +5,8 @@ import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
+import ObjectController from "ember-runtime/controllers/object_controller";
 import {
-  default as ObjectController,
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
 import EmberController from 'ember-runtime/controllers/controller';
@@ -19,7 +19,7 @@ var originalLookup = Ember.lookup;
 
 function testWithAs(moduleName, templateString) {
   QUnit.module(moduleName, {
-    setup: function() {
+    setup() {
       Ember.lookup = lookup = { Ember: Ember };
 
       view = EmberView.create({
@@ -33,7 +33,7 @@ function testWithAs(moduleName, templateString) {
       runAppend(view);
     },
 
-    teardown: function() {
+    teardown() {
       runDestroy(view);
       Ember.lookup = originalLookup;
     }
@@ -75,7 +75,7 @@ function testWithAs(moduleName, templateString) {
 testWithAs("ember-htmlbars: {{#with}} helper", "{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}");
 
 QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
@@ -89,7 +89,7 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
 
     Ember.lookup = originalLookup;
@@ -126,7 +126,7 @@ QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", 
 });
 
 QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     lookup.Foo = { bar: 'baz' };
@@ -135,7 +135,7 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }
@@ -364,7 +364,7 @@ QUnit.test("it should wrap keyword with object controller [DEPRECATED]", functio
 QUnit.test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
   var destroyed = false;
   var Controller = EmberController.extend({
-    willDestroy: function() {
+    willDestroy() {
       this._super.apply(this, arguments);
       destroyed = true;
     }
@@ -400,7 +400,7 @@ QUnit.test("destroys the controller generated with {{with foo controller='blah'}
 QUnit.test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
   var destroyed = false;
   var Controller = EmberController.extend({
-    willDestroy: function() {
+    willDestroy() {
       this._super.apply(this, arguments);
       destroyed = true;
     }
@@ -432,7 +432,7 @@ QUnit.test("destroys the controller generated with {{with foo as bar controller=
 });
 
 QUnit.module("{{#with}} helper binding to view keyword", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
@@ -446,7 +446,7 @@ QUnit.module("{{#with}} helper binding to view keyword", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }
@@ -459,7 +459,7 @@ QUnit.test("{{with}} helper can bind to keywords with 'as'", function() {
 testWithAs("ember-htmlbars: {{#with x as |y|}}", "{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}");
 
 QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
@@ -473,7 +473,7 @@ QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }

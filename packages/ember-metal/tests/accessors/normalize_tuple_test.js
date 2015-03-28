@@ -3,7 +3,7 @@ import { normalizeTuple } from "ember-metal/property_get";
 
 var obj;
 var moduleOpts = {
-  setup: function() {
+  setup() {
     obj = {
       foo: {
         bar: {
@@ -25,7 +25,7 @@ var moduleOpts = {
     };
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
     window.Foo = undefined;
     window.$foo = undefined;
@@ -74,10 +74,8 @@ QUnit.test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
 // GLOBAL PATHS
 //
 
-QUnit.test('[obj, Foo] -> [obj, Foo]', function() {
-  expectDeprecation(function() {
-    deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
-  }, "normalizeTuple will return 'Foo' as a non-global. This behavior will change in the future (issue #3852)");
+QUnit.test('[obj, Foo] -> [Ember.lookup, Foo]', function() {
+  deepEqual(normalizeTuple(obj, 'Foo'), [Ember.lookup, 'Foo']);
 });
 
 QUnit.test('[obj, Foo.bar] -> [Foo, bar]', function() {
@@ -92,12 +90,26 @@ QUnit.test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
 // NO TARGET
 //
 
-QUnit.test('[null, Foo] -> EXCEPTION', function() {
-  throws(function() {
-    normalizeTuple(null, 'Foo');
-  }, Error);
+QUnit.test('[null, Foo] -> [Ember.lookup, Foo]', function() {
+  deepEqual(normalizeTuple(null, 'Foo'), [Ember.lookup, 'Foo']);
 });
 
 QUnit.test('[null, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
+});
+
+QUnit.test("[null, foo] -> [undefined, '']", function() {
+  deepEqual(normalizeTuple(null, 'foo'), [undefined, '']);
+});
+
+QUnit.test("[null, foo.bar] -> [undefined, '']", function() {
+  deepEqual(normalizeTuple(null, 'foo'), [undefined, '']);
+});
+
+QUnit.test('[null, $foo] -> [Ember.lookup, $foo]', function() {
+  deepEqual(normalizeTuple(null, '$foo'), [Ember.lookup, '$foo']);
+});
+
+QUnit.test('[null, $foo.bar] -> [$foo, bar]', function() {
+  deepEqual(normalizeTuple(null, '$foo.bar'), [$foo, 'bar']);
 });

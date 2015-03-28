@@ -13,7 +13,7 @@ var willCount, didCount,
     originalLookup, lookup, Global;
 
 QUnit.module('watch', {
-  setup: function() {
+  setup() {
     willCount = didCount = 0;
     willKeys = [];
     didKeys = [];
@@ -22,7 +22,7 @@ QUnit.module('watch', {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -40,12 +40,16 @@ function addListeners(obj, keyPath) {
 
 testBoth('watching a computed property', function(get, set) {
   var obj = {};
-  Ember.defineProperty(obj, 'foo', Ember.computed(function(keyName, value) {
-    if (value !== undefined) {
-      this.__foo = value;
+  Ember.defineProperty(obj, 'foo', Ember.computed({
+    get: function() {
+      return this.__foo;
+    },
+    set: function(keyName, value) {
+      if (value !== undefined) {
+        this.__foo = value;
+      }
+      return this.__foo;
     }
-
-    return this.__foo;
   }));
   addListeners(obj, 'foo');
 

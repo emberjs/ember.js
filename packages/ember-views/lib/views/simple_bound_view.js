@@ -29,7 +29,7 @@ SimpleBoundView.prototype = {
   isView: true,
   tagName: '',
 
-  destroy: function () {
+  destroy() {
     if (this.updateId) {
       run.cancel(this.updateId);
       this.updateId = null;
@@ -45,7 +45,7 @@ SimpleBoundView.prototype = {
 
   propertyDidChange: K,
 
-  normalizedValue: function() {
+  normalizedValue() {
     var result = this.stream.value();
 
     if (result === null || result === undefined) {
@@ -55,13 +55,13 @@ SimpleBoundView.prototype = {
     }
   },
 
-  render: function(buffer) {
+  render(buffer) {
     var value = this.normalizedValue();
     this._lastNormalizedValue = value;
     buffer._element = value;
   },
 
-  rerender: function() {
+  rerender() {
     switch (this.state) {
       case 'preRender':
       case 'destroyed':
@@ -76,7 +76,7 @@ SimpleBoundView.prototype = {
     return this;
   },
 
-  update: function () {
+  update() {
     this.updateId = null;
     var value = this.normalizedValue();
     // doesn't diff SafeString instances
@@ -86,7 +86,7 @@ SimpleBoundView.prototype = {
     }
   },
 
-  _transitionTo: function(state) {
+  _transitionTo(state) {
     this.state = state;
   }
 };

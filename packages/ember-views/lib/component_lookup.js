@@ -1,7 +1,7 @@
 import EmberObject from "ember-runtime/system/object";
 
 export default EmberObject.extend({
-  lookupFactory: function(name, container) {
+  lookupFactory(name, container) {
 
     container = container || this.container;
 

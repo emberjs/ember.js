@@ -1,5 +1,6 @@
 import Ember from "ember-metal/core"; // deprecate, assert
 import environment from "ember-metal/environment";
+import { getHash } from "ember-routing/location/util";
 
 /**
 @module ember
@@ -111,6 +112,10 @@ import environment from "ember-metal/environment";
   * replaceURL(path): replace the current URL (optional).
   * onUpdateURL(callback): triggers the callback when the URL changes.
   * formatURL(url): formats `url` to be placed into `href` attribute.
+  * detect() (optional): instructs the location to do any feature detection
+      necessary. If the location needs to redirect to a different URL, it
+      can cancel routing by setting the `cancelRouterSetup` property on itself
+      to `false`.
 
   Calling setURL or replaceURL will not trigger onUpdateURL callbacks.
 
@@ -139,14 +144,14 @@ export default {
     @deprecated Use the container to lookup the location implementation that you
     need.
   */
-  create: function(options) {
+  create(options) {
     var implementation = options && options.implementation;
     Ember.assert("Ember.Location.create: you must specify a 'implementation' option", !!implementation);
 
     var implementationClass = this.implementations[implementation];
     Ember.assert("Ember.Location.create: " + implementation + " is not a valid implementation", !!implementationClass);
 
-    return implementationClass.create.apply(implementationClass, arguments);
+    return implementationClass.create(...arguments);
   },
 
   /**
@@ -171,7 +176,7 @@ export default {
    @deprecated Register your custom location implementation with the
    container directly.
   */
-  registerImplementation: function(name, implementation) {
+  registerImplementation(name, implementation) {
     Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
                     ' Register your custom location implementation with the container instead.');
 
@@ -191,16 +196,7 @@ export default {
     @method getHash
     @since 1.4.0
   */
-  _getHash: function () {
-    // AutoLocation has it at _location, HashLocation at .location.
-    // Being nice and not changing
-    var href = (this._location || this.location).href;
-    var hashIndex = href.indexOf('#');
-
-    if (hashIndex === -1) {
-      return '';
-    } else {
-      return href.substr(hashIndex);
-    }
+  _getHash() {
+    return getHash(this.location);
   }
 };

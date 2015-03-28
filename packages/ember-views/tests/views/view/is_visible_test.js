@@ -9,7 +9,7 @@ var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 
 QUnit.module("EmberView#isVisible", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() { view.destroy(); });
     }
@@ -72,7 +72,7 @@ QUnit.test("should hide element if isVisible is false before element is created"
 });
 
 QUnit.module("EmberView#isVisible with Container", {
-  setup: function() {
+  setup() {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
     parentBecameVisible=0;
@@ -84,24 +84,24 @@ QUnit.module("EmberView#isVisible with Container", {
 
     View = ContainerView.extend({
       childViews: ['child'],
-      becameVisible: function() { parentBecameVisible++; },
-      becameHidden: function() { parentBecameHidden++; },
+      becameVisible() { parentBecameVisible++; },
+      becameHidden() { parentBecameHidden++; },
 
       child: ContainerView.extend({
         childViews: ['grandchild'],
-        becameVisible: function() { childBecameVisible++; },
-        becameHidden: function() { childBecameHidden++; },
+        becameVisible() { childBecameVisible++; },
+        becameHidden() { childBecameHidden++; },
 
         grandchild: EmberView.extend({
-          template: function() { return "seems weird bro"; },
-          becameVisible: function() { grandchildBecameVisible++; },
-          becameHidden: function() { grandchildBecameHidden++; }
+          template() { return "seems weird bro"; },
+          becameVisible() { grandchildBecameVisible++; },
+          becameHidden() { grandchildBecameHidden++; }
         })
       })
     });
   },
 
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() { view.destroy(); });
     }

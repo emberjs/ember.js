@@ -9,11 +9,11 @@ import { addObserver, removeObserver } from "ember-metal/observer";
 var obj, count;
 
 QUnit.module('ember-metal/alias', {
-  setup: function() {
+  setup() {
     obj = { foo: { faz: 'FOO' } };
     count = 0;
   },
-  teardown: function() {
+  teardown() {
     obj = null;
   }
 });

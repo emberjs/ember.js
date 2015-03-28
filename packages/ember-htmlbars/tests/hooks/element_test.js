@@ -1,6 +1,6 @@
 import EmberView from "ember-views/views/view";
+import helpers from "ember-htmlbars/helpers";
 import {
-  default as helpers,
   registerHelper
 } from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -9,7 +9,7 @@ import compile from "ember-template-compiler/system/compile";
 var view;
 
 QUnit.module('ember-htmlbars: element hook', {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     delete helpers.test;
   }

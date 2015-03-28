@@ -44,12 +44,12 @@ function sharedSetup() {
   updateCount = replaceCount = 0;
   App.Router.reopen({
     location: Ember.NoneLocation.createWithMixins({
-      setURL: function(path) {
+      setURL(path) {
         updateCount++;
         set(this, 'path', path);
       },
 
-      replaceURL: function(path) {
+      replaceURL(path) {
         replaceCount++;
         set(this, 'path', path);
       }
@@ -67,7 +67,7 @@ function sharedTeardown() {
 }
 
 QUnit.module("The {{link-to}} helper", {
-  setup: function() {
+  setup() {
     Ember.run(function() {
 
       sharedSetup();
@@ -387,7 +387,7 @@ QUnit.test("The {{link-to}} helper defaults to bubbling", function() {
 
   App.AboutRoute = Ember.Route.extend({
     actions: {
-      hide: function() {
+      hide() {
         hidden++;
       }
     }
@@ -422,7 +422,7 @@ QUnit.test("The {{link-to}} helper supports bubbles=false", function() {
 
   App.AboutRoute = Ember.Route.extend({
     actions: {
-      hide: function() {
+      hide() {
         hidden++;
       }
     }
@@ -452,7 +452,7 @@ QUnit.test("The {{link-to}} helper moves into the named route with context", fun
   Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in model}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return Ember.A([
         { id: "yehuda", name: "Yehuda Katz" },
         { id: "tom", name: "Tom Dale" },
@@ -462,7 +462,7 @@ QUnit.test("The {{link-to}} helper moves into the named route with context", fun
   });
 
   App.ItemRoute = Ember.Route.extend({
-    serialize: function(object) {
+    serialize(object) {
       return { id: object.id };
     }
   });
@@ -609,7 +609,7 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
   });
 
   App.LobbyIndexRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       equal(params.lobby_id, 'foobar');
       return params.lobby_id;
     }
@@ -640,18 +640,18 @@ QUnit.test("The {{link-to}} helper unwraps controllers", function() {
   var indexObject = { filter: 'popular' };
 
   App.FilterRoute = Ember.Route.extend({
-    model: function(params) {
+    model(params) {
       return indexObject;
     },
 
-    serialize: function(passedObject) {
+    serialize(passedObject) {
       equal(passedObject, indexObject, "The unwrapped object is passed");
       return { filter: 'popular' };
     }
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return indexObject;
     }
   });
@@ -741,7 +741,7 @@ QUnit.test("link-to with null/undefined dynamic parameters are put in a loading 
   });
 
   App.AboutRoute = Ember.Route.extend({
-    activate: function() {
+    activate() {
       ok(true, "About was entered");
     }
   });
@@ -1039,7 +1039,7 @@ QUnit.test("The non-block form {{link-to}} helper moves into the named route wit
   });
 
   App.IndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return Ember.A([
         { id: "yehuda", name: "Yehuda Katz" },
         { id: "tom", name: "Tom Dale" },
@@ -1049,7 +1049,7 @@ QUnit.test("The non-block form {{link-to}} helper moves into the named route wit
   });
 
   App.ItemRoute = Ember.Route.extend({
-    serialize: function(object) {
+    serialize(object) {
       return { id: object.id };
     }
   });
@@ -1291,7 +1291,7 @@ QUnit.test("{{link-to}} populates href with fully supplied query param values", 
 });
 
 QUnit.module("The {{link-to}} helper: invoking with query params", {
-  setup: function() {
+  setup() {
     Ember.run(function() {
       sharedSetup();
 
@@ -1655,7 +1655,7 @@ var aboutDefer, otherDefer;
 
 if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
   QUnit.module("The {{link-to}} helper: eager URL updating", {
-    setup: function() {
+    setup() {
       Ember.run(function() {
         sharedSetup();
 
@@ -1667,7 +1667,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
         });
 
         App.AboutRoute = Ember.Route.extend({
-          model: function() {
+          model() {
             aboutDefer = Ember.RSVP.defer();
             return aboutDefer.promise;
           }
@@ -1677,7 +1677,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       });
     },
 
-    teardown: function() {
+    teardown() {
       sharedTeardown();
       aboutDefer = null;
     }
@@ -1704,14 +1704,14 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       },
 
       // Don't actually touch the URL
-      replaceState: function(path) {},
-      pushState: function(path) {},
+      replaceState(path) {},
+      pushState(path) {},
 
-      setURL: function(path) {
+      setURL(path) {
         set(this, 'path', path);
       },
 
-      replaceURL: function(path) {
+      replaceURL(path) {
         set(this, 'path', path);
       }
     });
@@ -1740,7 +1740,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
 
   QUnit.test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
     App.AboutRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return Ember.RSVP.reject();
       }
     });
@@ -1756,7 +1756,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
   QUnit.test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
     App.IndexRoute = Ember.Route.extend({
       actions: {
-        willTransition: function(transition) {
+        willTransition(transition) {
           ok(true, "aborting transition");
           transition.abort();
         }
@@ -1776,7 +1776,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
 if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
 
   QUnit.module("The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes", {
-    setup: function() {
+    setup() {
       Ember.run(function() {
         sharedSetup();
 
@@ -1789,14 +1789,14 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
         });
 
         App.AboutRoute = Ember.Route.extend({
-          model: function () {
+          model() {
             aboutDefer = Ember.RSVP.defer();
             return aboutDefer.promise;
           }
         });
 
         App.OtherRoute = Ember.Route.extend({
-          model: function () {
+          model() {
             otherDefer = Ember.RSVP.defer();
             return otherDefer.promise;
           }
@@ -1807,7 +1807,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
       });
     },
 
-    teardown: function() {
+    teardown() {
       sharedTeardown();
       aboutDefer = null;
     }
@@ -1855,20 +1855,31 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     });
 
     App.ParentRouteAboutRoute = Ember.Route.extend({
-      model: function () {
+      model() {
         aboutDefer = Ember.RSVP.defer();
         return aboutDefer.promise;
       }
     });
 
     App.ParentRouteOtherRoute = Ember.Route.extend({
-      model: function () {
+      model() {
         otherDefer = Ember.RSVP.defer();
         return otherDefer.promise;
       }
     });
 
-    Ember.TEMPLATES.application = compile("{{outlet}} {{#link-to 'index' tagName='li'}} {{link-to 'Index' 'index' id='index-link'}} {{/link-to}} {{#link-to 'parent-route.about' tagName='li'}} {{link-to 'About' 'parent-route.about' id='about-link'}} {{/link-to}} {{#link-to 'parent-route.other' tagName='li'}} {{link-to 'Other' 'parent-route.other' id='other-link'}} {{/link-to}}");
+    Ember.TEMPLATES.application = compile(`
+      {{outlet}}
+      {{#link-to 'index' tagName='li'}}
+        {{link-to 'Index' 'index' id='index-link'}}
+      {{/link-to}}
+      {{#link-to 'parent-route.about' tagName='li'}}
+        {{link-to 'About' 'parent-route.about' id='about-link'}}
+      {{/link-to}}
+      {{#link-to 'parent-route.other' tagName='li'}}
+        {{link-to 'Other' 'parent-route.other' id='other-link'}}
+      {{/link-to}}
+    `);
 
     bootApplication();
 

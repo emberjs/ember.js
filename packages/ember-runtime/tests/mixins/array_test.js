@@ -17,27 +17,27 @@ var TestArray = EmberObject.extend(EmberArray, {
 
   _content: null,
 
-  init: function(ary) {
+  init(ary) {
     this._content = ary || [];
   },
 
   // some methods to modify the array so we can test changes.  Note that
   // arrays can be modified even if they don't implement MutableArray.  The
   // MutableArray is just a standard API for mutation but not required.
-  addObject: function(obj) {
+  addObject(obj) {
     var idx = this._content.length;
     this.arrayContentWillChange(idx, 0, 1);
     this._content.push(obj);
     this.arrayContentDidChange(idx, 0, 1);
   },
 
-  removeFirst: function(idx) {
+  removeFirst(idx) {
     this.arrayContentWillChange(0, 1, 0);
     this._content.shift();
     this.arrayContentDidChange(0, 1, 0);
   },
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     return this._content[idx];
   },
 
@@ -51,17 +51,17 @@ ArrayTests.extend({
 
   name: 'Basic Mutable Array',
 
-  newObject: function(ary) {
+  newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
     return new TestArray(ary);
   },
 
   // allows for testing of the basic enumerable after an internal mutation
-  mutate: function(obj) {
+  mutate(obj) {
     obj.addObject(this.getFixture(1)[0]);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.slice();
   }
 
@@ -98,9 +98,9 @@ QUnit.test("slice supports negative index arguments", function() {
 //
 
 var DummyArray = EmberObject.extend(EmberArray, {
-  nextObject: function() {},
+  nextObject() {},
   length: 0,
-  objectAt: function(idx) { return 'ITEM-'+idx; }
+  objectAt(idx) { return 'ITEM-'+idx; }
 });
 
 var obj, observer;
@@ -135,7 +135,7 @@ QUnit.test('should notify observers of []', function() {
 //
 
 QUnit.module('notify observers of length', {
-  setup: function() {
+  setup() {
     obj = DummyArray.createWithMixins({
       _after: 0,
       lengthDidChange: emberObserver('length', function() {
@@ -147,7 +147,7 @@ QUnit.module('notify observers of length', {
     equal(obj._after, 0, 'should not have fired yet');
   },
 
-  teardown: function() {
+  teardown() {
     obj = null;
   }
 });
@@ -183,19 +183,19 @@ QUnit.test('should notify when passed lengths are different', function() {
 //
 
 QUnit.module('notify array observers', {
-  setup: function() {
+  setup() {
     obj = DummyArray.create();
 
     observer = EmberObject.createWithMixins({
       _before: null,
       _after: null,
 
-      arrayWillChange: function() {
+      arrayWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
       },
 
-      arrayDidChange: function() {
+      arrayDidChange() {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
@@ -204,7 +204,7 @@ QUnit.module('notify array observers', {
     obj.addArrayObserver(observer);
   },
 
-  teardown: function() {
+  teardown() {
     obj = observer = null;
   }
 });
@@ -248,19 +248,19 @@ QUnit.test('removing enumerable observer should disable', function() {
 //
 
 QUnit.module('notify enumerable observers as well', {
-  setup: function() {
+  setup() {
     obj = DummyArray.create();
 
     observer = EmberObject.createWithMixins({
       _before: null,
       _after: null,
 
-      enumerableWillChange: function() {
+      enumerableWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
       },
 
-      enumerableDidChange: function() {
+      enumerableDidChange() {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
@@ -269,7 +269,7 @@ QUnit.module('notify enumerable observers as well', {
     obj.addEnumerableObserver(observer);
   },
 
-  teardown: function() {
+  teardown() {
     obj = observer = null;
   }
 });
@@ -315,7 +315,7 @@ QUnit.test('removing enumerable observer should disable', function() {
 var ary;
 
 QUnit.module('EmberArray.@each support', {
-  setup: function() {
+  setup() {
     ary = new TestArray([
       { isDone: true, desc: 'Todo 1' },
       { isDone: false, desc: 'Todo 2' },
@@ -324,7 +324,7 @@ QUnit.module('EmberArray.@each support', {
     ]);
   },
 
-  teardown: function() {
+  teardown() {
     ary = null;
   }
 });
@@ -334,7 +334,7 @@ QUnit.test('adding an object should notify (@each)', function() {
   var called = 0;
 
   var observerObject = EmberObject.create({
-    wasCalled: function() {
+    wasCalled() {
       called++;
     }
   });
@@ -356,7 +356,7 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
   var called = 0;
 
   var observerObject = EmberObject.create({
-    wasCalled: function() {
+    wasCalled() {
       called++;
     }
   });
@@ -377,13 +377,13 @@ QUnit.test('using @each to observe arrays that does not return objects raise err
   var called = 0;
 
   var observerObject = EmberObject.create({
-    wasCalled: function() {
+    wasCalled() {
       called++;
     }
   });
 
   ary = TestArray.create({
-    objectAt: function(idx) {
+    objectAt(idx) {
       return get(this._content[idx], 'desc');
     }
   });
@@ -420,7 +420,7 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
 
 testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
   var obj = EmberObject.createWithMixins({
-    init: function() {
+    init() {
       set(this, 'resources', Ember.A());
     },
 
@@ -440,7 +440,7 @@ testBoth("observers that contain @each in the path should fire only once the fir
   var count = 0;
 
   var obj = EmberObject.createWithMixins({
-    init: function() {
+    init() {
       // Observer does not fire on init
       set(this, 'resources', Ember.A());
     },
