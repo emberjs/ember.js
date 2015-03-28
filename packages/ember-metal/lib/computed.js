@@ -117,7 +117,9 @@ function ComputedProperty(config, opts) {
       config.__ember_arity = config.length;
       this._getter = config;
       if (config.__ember_arity > 1) {
-        Ember.deprecate("Using the same function as getter and setter is deprecated");
+        Ember.deprecate("Using the same function as getter and setter is deprecated.", false, {
+          url: "http://emberjs.com/deprecations/v1.x/#toc_deprecate-using-the-same-function-as-getter-and-setter-in-computed-properties"
+        });
         this._setter = config;
       }
     } else {
