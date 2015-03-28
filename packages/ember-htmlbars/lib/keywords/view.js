@@ -64,8 +64,11 @@ function swapKey(hash, original, update) {
   var newHash = {};
 
   for (var prop in hash) {
-    if (prop === original) { newHash[update] = hash[prop]; }
-    else { newHash[prop] = hash[prop]; }
+    if (prop === original) {
+      newHash[update] = hash[prop];
+    } else {
+      newHash[prop] = hash[prop];
+    }
   }
 
   return newHash;

@@ -322,7 +322,7 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
 
 QUnit.skip("yield with nested components (#3220)", function() {
   var InnerComponent = Component.extend({
-    layout: compile("{{yield}}"),
+    layout: compile("{{yield}}")
   });
 
   registerHelper('inner-component', makeViewHelper(InnerComponent));

@@ -153,7 +153,7 @@ QUnit.test("View lookup - 'fu'", function() {
 
   view = EmberView.extend({
     template: compile("{{view 'fu'}}"),
-    container: container,
+    container: container
   }).create();
 
   runAppend(view);
