@@ -8,7 +8,6 @@
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
-    "new-computed-syntax": true,
     "ember-testing-checkbox-helpers": false,
     "ember-metal-stream": false,
     "ember-application-instance-initializers": true,

@@ -112,28 +112,20 @@ function UNDEFINED() { }
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
-  if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
-    if (typeof config === "function") {
-      config.__ember_arity = config.length;
-      this._getter = config;
-      if (config.__ember_arity > 1) {
-        Ember.deprecate("Using the same function as getter and setter is deprecated.", false, {
-          url: "http://emberjs.com/deprecations/v1.x/#toc_computed-properties-with-a-shared-getter-and-setter"
-        });
-        this._setter = config;
-      }
-    } else {
-      this._getter = config.get;
-      this._setter = config.set;
-      if (this._setter && this._setter.__ember_arity === undefined) {
-        this._setter.__ember_arity = this._setter.length;
-      }
-    }
-  } else {
+  if (typeof config === "function") {
     config.__ember_arity = config.length;
     this._getter = config;
     if (config.__ember_arity > 1) {
+      Ember.deprecate("Using the same function as getter and setter is deprecated.", false, {
+        url: "http://emberjs.com/deprecations/v1.x/#toc_deprecate-using-the-same-function-as-getter-and-setter-in-computed-properties"
+      });
       this._setter = config;
+    }
+  } else {
+    this._getter = config.get;
+    this._setter = config.set;
+    if (this._setter && this._setter.__ember_arity === undefined) {
+      this._setter.__ember_arity = this._setter.length;
     }
   }
 
@@ -583,15 +575,6 @@ function computed(func) {
   }
 
   var cp = new ComputedProperty(func);
-  // jscs:disable
-  if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
-    // Empty block on purpose
-  } else {
-    // jscs:enable
-    if (typeof func !== "function") {
-      throw new EmberError("Computed Property declared without a property function");
-    }
-  }
 
   if (args) {
     cp.property.apply(cp, args);
