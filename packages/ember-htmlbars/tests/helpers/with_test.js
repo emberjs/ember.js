@@ -244,7 +244,7 @@ QUnit.test("it should wrap context with object controller [DEPRECATED]", functio
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 
@@ -390,7 +390,7 @@ QUnit.test("destroys the controller generated with {{with foo controller='blah'}
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   runDestroy(view);
 

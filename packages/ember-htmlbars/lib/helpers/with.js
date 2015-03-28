@@ -13,12 +13,12 @@ import WithView from "ember-views/views/with_view";
 
   ```handlebars
   // posts might not be
-  {{#with user.posts as blogPosts}}
+  {{#with user.posts as |blogPosts|}}
     <div class="notice">
       There are {{blogPosts.length}} blog posts written by {{user.name}}.
     </div>
 
-    {{#each post in blogPosts}}
+    {{#each blogPosts as |post|}}
       <li>{{post.title}}</li>
     {{/each}}
   {{/with}}
@@ -27,7 +27,7 @@ import WithView from "ember-views/views/with_view";
   Without the `as` operator, it would be impossible to reference `user.name` in the example above.
 
   NOTE: The alias should not reuse a name from the bound property path.
-  For example: `{{#with foo.bar as foo}}` is not supported because it attempts to alias using
+  For example: `{{#with foo as |foo.bar|}}` is not supported because it attempts to alias using
   the first part of the property path, `foo`. Instead, use `{{#with foo.bar as baz}}`.
 
   ### `controller` option
@@ -55,8 +55,7 @@ import WithView from "ember-views/views/with_view";
 */
 export function withHelper(params, hash, options, env) {
   Ember.assert(
-    "{{#with foo}} must be called with a single argument or the use the " +
-    "{{#with foo as bar}} syntax",
+    "{{#with}} must be called with an argument. For example, `{{#with foo as |bar|}}{{/with}}`",
     params.length === 1
   );
 
@@ -73,7 +72,7 @@ export function withHelper(params, hash, options, env) {
   } else {
     Ember.deprecate(
       "Using the context switching form of `{{with}}` is deprecated. " +
-      "Please use the keyword form (`{{with foo as bar}}`) instead.",
+      "Please use the block param form (`{{#with bar as |foo|}}`) instead.",
       false,
       { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
     );
