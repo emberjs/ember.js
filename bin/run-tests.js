@@ -138,6 +138,9 @@ switch (process.env.TEST_SUITE) {
   case 'node':
     require('./run-node-tests');
     return;
+  case 'sauce':
+    require('./run-sauce-tests');
+    return;
   default:
     generateEachPackageTests();
 }

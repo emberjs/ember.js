@@ -16,6 +16,7 @@
     "chalk": "^0.5.1",
     "ember-cli": "^0.2.0",
     "ember-cli-dependency-checker": "0.0.7",
+    "ember-cli-sauce": "^1.0.0",
     "ember-cli-yuidoc": "^0.4.0",
     "ember-publisher": "0.0.7",
     "emberjs-build": "0.0.43",
@@ -28,6 +29,8 @@
     "qunitjs": "^1.16.0",
     "route-recognizer": "0.1.5",
     "rsvp": "~3.0.6",
-    "simple-dom": "^0.1.1"
+    "saucie": "^0.1.3",
+    "simple-dom": "^0.1.1",
+    "testem": "^0.7.6"
   }
 }

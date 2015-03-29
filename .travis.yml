@@ -10,6 +10,11 @@ cache:
     - node_modules
     - bower_components
 
+before_install:
+  - "npm config set spin false"
+  - "npm install -g npm@^2"
+  - "npm --version"
+
 install:
   - "npm install"
 
@@ -19,8 +24,13 @@ after_success:
 script:
   - npm test
 
+after_script:
+    - ember stop-sauce-connect
+
 env:
   global:
+    - SAUCE_USERNAME=ember-ci
+    - SAUCE_ACCESS_KEY=b5cff982-069f-4a0d-ac34-b77e57c2e295
     - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
     - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
@@ -43,3 +53,4 @@ env:
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
     - TEST_SUITE=node EMBER_ENV=production
+    - TEST_SUITE=sauce
