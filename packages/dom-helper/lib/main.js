@@ -1,4 +1,4 @@
-import Morph from "../htmlbars-runtime/morph";
+import Morph from "./htmlbars-runtime/morph";
 import AttrMorph from "./morph-attr";
 import {
   buildHTMLDOM,
