@@ -782,6 +782,21 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       set(testObject, 'isOld', true);
       ok(true, 'No errors were thrown');
     });
+
+    QUnit.test('computed properties with a setter cannot be marked as overridable', function() {
+      throws(function() {
+        var testObject = Ember.Object.extend({
+          age: 25,
+          isOld: computed('age', {
+            get: function() { return this.get('age') >= 30; },
+            set: function(key, value) {
+              this.set('age', value ? 40 : 20);
+              return value;
+            }
+          }).overridable();
+        }).create();
+      }, /Overridable cannot be used on computed properties that define a setter/);
+    });
   }
 }
 
