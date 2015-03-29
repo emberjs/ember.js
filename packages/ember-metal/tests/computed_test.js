@@ -773,29 +773,42 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
 
     QUnit.test('computed properties with a getter marked as overridable can be set', function() {
       var testObject = Ember.Object.extend({
-        age: 25,
-        isOld: computed('age', {
-          get: function() { return this.get('age') >= 30; }
-        }).overridable()
+        isOld: computed('age', function() { return false; }).overridable()
       }).create();
 
       set(testObject, 'isOld', true);
       ok(true, 'No errors were thrown');
+      ok(get(testObject, 'isOld'), 'The property has been overrided');
     });
 
     QUnit.test('computed properties with a setter cannot be marked as overridable', function() {
       throws(function() {
-        var testObject = Ember.Object.extend({
-          age: 25,
+        Ember.Object.extend({
           isOld: computed('age', {
-            get: function() { return this.get('age') >= 30; },
-            set: function(key, value) {
-              this.set('age', value ? 40 : 20);
-              return value;
-            }
-          }).overridable();
-        }).create();
+            get: function() { },
+            set: function() { }
+          }).overridable()
+        });
       }, /Overridable cannot be used on computed properties that define a setter/);
+    });
+
+    QUnit.test('readOnly called over a CP with no getter throws an error', function() {
+      throws(function() {
+        Ember.Object.extend({
+          isOld: computed('age', function() { return true; }).readOnly()
+        });
+      }, /Computed properties with no setter defined are already readOnly by default/);
+    });
+
+    QUnit.test('readOnly called over a CP with a getter throws an error', function() {
+      throws(function() {
+        Ember.Object.extend({
+          isOld: computed('age', {
+            get: function() { },
+            set: function() { }
+          }).readOnly()
+        });
+      }, /Computed properties with a setter defined cannot be marked as readOnly/);
     });
   }
 }
