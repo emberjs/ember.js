@@ -45,7 +45,6 @@ import {
 import { isStream } from "ember-metal/streams/utils";
 
 var REQUIRED;
-var a_slice = [].slice;
 
 function superFunction() {
   var func = this.__nextSuper;
@@ -573,8 +572,7 @@ function Mixin(args, properties) {
 
 Mixin._apply = applyMixin;
 
-Mixin.applyPartial = function(obj) {
-  var args = a_slice.call(arguments, 1);
+Mixin.applyPartial = function(obj, ...args) {
   return applyMixin(obj, args, true);
 };
 

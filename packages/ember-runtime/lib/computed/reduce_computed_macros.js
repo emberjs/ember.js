@@ -386,9 +386,7 @@ export var filterProperty = filterBy;
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
 */
-export function uniq() {
-  var args = a_slice.call(arguments);
-
+export function uniq(...args) {
   args.push({
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};

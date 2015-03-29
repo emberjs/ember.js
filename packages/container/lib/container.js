@@ -202,13 +202,12 @@ function buildInjections(container) {
   var hash = {};
 
   if (arguments.length > 1) {
-    var injectionArgs = Array.prototype.slice.call(arguments, 1);
     var injections = [];
     var injection;
 
-    for (var i = 0, l = injectionArgs.length; i < l; i++) {
-      if (injectionArgs[i]) {
-        injections = injections.concat(injectionArgs[i]);
+    for (var i = 1, l = arguments.length; i < l; i++) {
+      if (arguments[i]) {
+        injections = injections.concat(arguments[i]);
       }
     }
 

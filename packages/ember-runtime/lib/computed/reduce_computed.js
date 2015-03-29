@@ -843,8 +843,11 @@ export function reduceComputed(options) {
   var args;
 
   if (arguments.length > 1) {
-    args = a_slice.call(arguments, 0, -1);
-    options = a_slice.call(arguments, -1)[0];
+    args = new Array(arguments.length - 1);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    options = arguments[i];
   }
 
   if (typeof options !== 'object') {

@@ -42,12 +42,7 @@ import {
   @since 1.2.0
   @deprecated
 */
-export default function makeBoundHelper(fn, compatMode) {
-  var dependentKeys = [];
-  for (var i = 1; i < arguments.length; i++) {
-    dependentKeys.push(arguments[i]);
-  }
-
+export default function makeBoundHelper(fn, ...dependentKeys) {
   function helperFunc(params, hash, options, env) {
     var view = env.data.view;
     var numParams = params.length;
@@ -88,7 +83,7 @@ export default function makeBoundHelper(fn, compatMode) {
     if (hasStream) {
       var lazyValue = new Stream(valueFn);
 
-      for (i = 0; i < numParams; i++) {
+      for (var i = 0; i < numParams; i++) {
         param = params[i];
         if (isStream(param)) {
           param.subscribe(lazyValue.notify, lazyValue);
