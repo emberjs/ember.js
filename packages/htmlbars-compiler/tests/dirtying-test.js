@@ -427,7 +427,7 @@ function testEachHelper(testName, templateSource) {
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
       { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
-      { key: "5", name: "Robert Jackson", "class": "rwjblue" },
+      { key: "5", name: "Robert Jackson", "class": "rwjblue" }
     ]};
 
     rerender(object);
@@ -449,7 +449,7 @@ function testEachHelper(testName, templateSource) {
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
       { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
-      { key: "5", name: "Robert Jackson", "class": "rwjblue" },
+      { key: "5", name: "Robert Jackson", "class": "rwjblue" }
     ]};
 
     rerender(object);
@@ -461,7 +461,7 @@ function testEachHelper(testName, templateSource) {
     nameNode = getNameNode('mmun');
 
     object = { list: [
-      { key: "1", name: "Martin Muñoz", "class": "mmun" },
+      { key: "1", name: "Martin Muñoz", "class": "mmun" }
     ]};
 
     rerender(object);
