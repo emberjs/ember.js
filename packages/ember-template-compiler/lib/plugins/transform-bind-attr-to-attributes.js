@@ -40,12 +40,12 @@ TransformBindAttrToAttributes.prototype.transform = function TransformBindAttrTo
 
   walker.visit(ast, function(node) {
     if (node.type === 'ElementNode') {
-      for (var i = 0; i < node.helpers.length; i++) {
-        var modifier = node.helpers[i];
+      for (var i = 0; i < node.modifiers.length; i++) {
+        var modifier = node.modifiers[i];
 
         if (isBindAttrModifier(modifier)) {
-          node.helpers.splice(i--, 1);
-          plugin.assignAttrs(node, modifier.hash);
+          node.modifiers.splice(i--, 1);
+          plugin.assignAttrs(node, modifier.sexpr.hash);
         }
       }
     }
@@ -157,7 +157,7 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
 };
 
 function isBindAttrModifier(modifier) {
-  var name = modifier.path.original;
+  var name = modifier.sexpr.path.original;
 
   if (name === 'bind-attr' || name === 'bindAttr') {
     Ember.deprecate(
