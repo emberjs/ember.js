@@ -294,6 +294,10 @@ function linkToHelper(params, hash, options, env) {
 
   var lastParam = params[params.length - 1];
 
+  if (isStream(lastParam)) {
+    lastParam = lastParam.value();
+  }
+
   if (lastParam && lastParam.isQueryParams) {
     hash.queryParamsObject = queryParamsObject = params.pop();
   }
