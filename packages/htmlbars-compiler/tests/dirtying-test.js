@@ -648,8 +648,8 @@ test("Setting up a manual element renders and revalidates", function() {
     render: function(morph, env, scope, params, hash, template, inverse, visitor) {
       var attributes = {
         title: "Tom Dale",
-        disabled: ['get', 'isDisabled'],
-        href: ['concat', ['http://tomdale.', ['get', 'tld']]]
+        href: ['concat', ['http://tomdale.', ['get', 'tld']]],
+        'data-bar': ['get', 'bar']
       };
 
       var layout = manualElement('aside', attributes);
@@ -664,10 +664,10 @@ test("Setting up a manual element renders and revalidates", function() {
     isStable: function() { return true; }
   };
 
-  var template = compile("{{#manual-element isDisabled=true tld='net'}}Hello {{world}}!{{/manual-element}}");
+  var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'>Hello world!</aside>");
+  equalTokens(result.fragment, "<aside title='Tom Dale' data-bar='baz' href='http://tomdale.net'>Hello world!</aside>");
 });
 
 test("It is possible to nest multiple templates into a manual element", function() {
@@ -675,8 +675,8 @@ test("It is possible to nest multiple templates into a manual element", function
     render: function(morph, env, scope, params, hash, template, inverse, visitor) {
       var attributes = {
         title: "Tom Dale",
-        disabled: ['get', 'isDisabled'],
-        href: ['concat', ['http://tomdale.', ['get', 'tld']]]
+        href: ['concat', ['http://tomdale.', ['get', 'tld']]],
+        'data-bar': ['get', 'bar']
       };
 
       var elementTemplate = manualElement('aside', attributes);
@@ -700,9 +700,9 @@ test("It is possible to nest multiple templates into a manual element", function
   };
 
   var layout = compile("<manual-element>{{attrs.foo}}. {{yield}}</manual-element>");
-  var template = compile("{{#manual-element foo='foo' isDisabled=true tld='net'}}Hello {{world}}!{{/manual-element}}");
+  var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<aside title='Tom Dale' disabled='true' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
+  equalTokens(result.fragment, "<aside title='Tom Dale' data-bar='baz' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
 });
 
