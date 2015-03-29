@@ -5,6 +5,7 @@ import HydrationJavaScriptCompiler from './hydration-javascript-compiler';
 import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
 import { repeat } from "../htmlbars-util/quoting";
+import { map } from "../htmlbars-util/array-utils";
 
 function TemplateCompiler(options) {
   this.options = options || {};
@@ -119,13 +120,13 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     templateSignature += ', blockArguments';
   }
 
-  var statements = hydrationPrograms.statements.map(function(s) {
+  var statements = map(hydrationPrograms.statements, function(s) {
     return indent+'      '+JSON.stringify(s);
   }).join(",\n");
 
   var locals = JSON.stringify(hydrationPrograms.locals);
 
-  var templates = this.childTemplates.map(function(_, index) {
+  var templates = map(this.childTemplates, function(_, index) {
     return 'child' + index;
   }).join(', ');
 
