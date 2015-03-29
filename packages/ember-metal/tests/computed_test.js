@@ -738,24 +738,52 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
 // RFC #12: Getter CPs readonly by default
 //
 
-// if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
-//   if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
-//     QUnit.module('computed - getter CPs readonly by default');
+if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
+  if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+    QUnit.module('computed - getter CPs readonly by default');
 
-//     QUnit.test('getter-only computed properties cannot be set by default', function() {
-//       var testObject = Ember.Object.extend({
-//         age: 25,
-//         isOld: computed('age', {
-//           get: function() { return this.get('age') >= 30; }
-//         }).create()
-//       });
+    QUnit.test('computed properties with only a getter cannot be set', function() {
+      var testObject = Ember.Object.extend({
+        age: 25,
+        isOld: computed('age', {
+          get: function() { return this.get('age') >= 30; }
+        })
+      }).create();
 
-//       throws(function() {
-//         set(testObject, 'isOld', true);
-//       }, /Cannot set read-only property "isOld" on object:/);
-//     });
-//   }
-// }
+      throws(function() {
+        set(testObject, 'isOld', true);
+      }, /Cannot set read-only property "isOld" on object:/);
+    });
+
+    QUnit.test('computed properties with a getter can be set', function() {
+      var testObject = Ember.Object.extend({
+        age: 25,
+        isOld: computed('age', {
+          get: function() { return this.get('age') >= 30; },
+          set: function(key, value) {
+            this.set('age', value ? 40 : 20);
+            return value;
+          }
+        })
+      }).create();
+
+      set(testObject, 'isOld', true);
+      ok(true, 'No errors were thrown');
+    });
+
+    QUnit.test('computed properties with a getter marked as overridable can be set', function() {
+      var testObject = Ember.Object.extend({
+        age: 25,
+        isOld: computed('age', {
+          get: function() { return this.get('age') >= 30; }
+        }).overridable()
+      }).create();
+
+      set(testObject, 'isOld', true);
+      ok(true, 'No errors were thrown');
+    });
+  }
+}
 
 // ..........................................................
 // BUGS
