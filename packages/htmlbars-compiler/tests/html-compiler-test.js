@@ -392,8 +392,8 @@ test("Morphs are escaped correctly", function() {
 
   compilesTo('<div>{{{testing-unescaped "<span>hi</span>"}}}</div>', '<div><span>hi</span></div>');
   compilesTo('<div>{{testing-escaped "<hi>"}}</div>', '<div>&lt;hi&gt;</div>');
-  compilesTo('<div>{{#testing-escaped}}<hi></hi>{{/testing-escaped}}</div>', '<div><hi></hi></div>');
-  compilesTo('<div><testing-escaped><hi></hi></testing-escaped></div>', '<div><hi></hi></div>');
+  compilesTo('<div>{{#testing-escaped}}<em></em>{{/testing-escaped}}</div>', '<div><em></em></div>');
+  compilesTo('<div><testing-escaped><em></em></testing-escaped></div>', '<div><em></em></div>');
 });
 
 test("Attributes can use computed values", function() {

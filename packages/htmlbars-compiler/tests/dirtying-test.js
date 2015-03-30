@@ -652,13 +652,13 @@ test("Setting up a manual element renders and revalidates", function() {
         'data-bar': ['get', 'bar']
       };
 
-      var layout = manualElement('aside', attributes);
+      var layout = manualElement('span', attributes);
 
       hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
         options.templates.template.yieldIn({ raw: layout }, hash);
       });
 
-      manualElement(env, scope, 'aside', attributes, morph);
+      manualElement(env, scope, 'span', attributes, morph);
     },
 
     isStable: function() { return true; }
@@ -667,7 +667,7 @@ test("Setting up a manual element renders and revalidates", function() {
   var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<aside title='Tom Dale' data-bar='baz' href='http://tomdale.net'>Hello world!</aside>");
+  equalTokens(result.fragment, "<span title='Tom Dale' data-bar='baz' href='http://tomdale.net'>Hello world!</span>");
 });
 
 test("It is possible to nest multiple templates into a manual element", function() {
@@ -679,7 +679,7 @@ test("It is possible to nest multiple templates into a manual element", function
         'data-bar': ['get', 'bar']
       };
 
-      var elementTemplate = manualElement('aside', attributes);
+      var elementTemplate = manualElement('span', attributes);
 
       var contentBlock = blockFor(render, template, { scope: scope });
 
@@ -699,10 +699,10 @@ test("It is possible to nest multiple templates into a manual element", function
     isStable: function() { return true; }
   };
 
-  var layout = compile("<manual-element>{{attrs.foo}}. {{yield}}</manual-element>");
+  var layout = compile("<em>{{attrs.foo}}. {{yield}}</em>");
   var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<aside title='Tom Dale' data-bar='baz' href='http://tomdale.net'><manual-element>foo. Hello world!</manual-element></aside>");
+  equalTokens(result.fragment, "<span title='Tom Dale' data-bar='baz' href='http://tomdale.net'><em>foo. Hello world!</em></span>");
 });
 
