@@ -700,10 +700,10 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       })
     }).create();
 
-    ok(testObj.get('aInt') === 1, 'getter works');
-    ok(testObj.get('a') === '1');
-    testObj.set('aInt', '123');
-    ok(testObj.get('aInt') === '123', 'cp has been updated too');
+    equal(testObj.get('aInt'), 1, 'getter works');
+    equal(testObj.get('a'), '1');
+    testObj.set('a', '999');
+    equal(testObj.get('aInt'), '999', 'cp has been updated too');
   });
 
   QUnit.test('the return value of the setter gets cached', function() {
