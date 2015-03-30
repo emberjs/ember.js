@@ -33,8 +33,9 @@ Ember Debug
   @method assert
   @param {String} desc A description of the assertion. This will become
     the text of the Error thrown if the assertion fails.
-  @param {Boolean} test Must be truthy for the assertion to pass. If
-    falsy, an exception will be thrown.
+  @param {Boolean|Function} test Must be truthy for the assertion to pass. If
+    falsy, an exception will be thrown. If this is a function, it will be executed and
+    its return value will be used as condition.
 */
 Ember.assert = function(desc, test) {
   var throwAssertion;
@@ -91,8 +92,9 @@ Ember.debug = function(message) {
 
   @method deprecate
   @param {String} message A description of the deprecation.
-  @param {Boolean} test An optional boolean. If falsy, the deprecation
-    will be displayed.
+  @param {Boolean|Function} test An optional boolean. If falsy, the deprecation
+    will be displayed. If this is a function, it will be executed and its return
+    value will be used as condition.
   @param {Object} options An optional object that can be used to pass
     in a `url` to the transition guide on the emberjs.com website.
 */
