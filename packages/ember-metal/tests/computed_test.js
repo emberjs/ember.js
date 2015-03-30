@@ -900,6 +900,15 @@ QUnit.test('is chainable', function() {
   ok(cp instanceof ComputedProperty);
 });
 
+QUnit.test('throws assertion if called over a CP with a setter', function() {
+  expectAssertion(function() {
+    computed({
+      get: function() { },
+      set: function() { }
+    }).readOnly();
+  }, /Computed properties that define a setter cannot be read-only/);
+});
+
 testBoth('protects against setting', function(get, set) {
   var obj = {  };
 
