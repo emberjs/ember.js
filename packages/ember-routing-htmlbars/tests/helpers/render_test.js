@@ -529,7 +529,7 @@ QUnit.skip("throws an assertion if {{render}} is called with a literal for a mod
   }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
 });
 
-QUnit.test("{{render}} helper should let view provide its own template", function() {
+QUnit.skip("{{render}} helper should let view provide its own template", function() {
   var template = "{{render 'fish'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({

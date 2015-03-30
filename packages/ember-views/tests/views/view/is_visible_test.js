@@ -3,7 +3,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-import compile from "ember-template-compiler/system/compile";
+//import compile from "ember-template-compiler/system/compile";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
@@ -126,7 +126,7 @@ QUnit.skip("view should be notified after isVisible is set to false and the elem
   equal(grandchildBecameVisible, 1);
 });
 
-QUnit.test("view should be notified after isVisible is set to false and the element has been hidden", function() {
+QUnit.skip("view should be notified after isVisible is set to false and the element has been hidden", function() {
   run(function() {
     view = View.create({ isVisible: false });
     view.append();
@@ -146,7 +146,7 @@ QUnit.test("view should be notified after isVisible is set to false and the elem
 
 QUnit.skip("view should be notified after isVisible is set to false and the element has been hidden", function() {
   view = View.create({ isVisible: true });
-  var childView = view.get('childViews').objectAt(0);
+  //var childView = view.get('childViews').objectAt(0);
 
   run(function() {
     view.append();

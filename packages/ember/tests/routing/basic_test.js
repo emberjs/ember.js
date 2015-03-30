@@ -3747,7 +3747,7 @@ QUnit.test("Allows any route to disconnectOutlet another route's templates", fun
   equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
 });
 
-QUnit.test("Can render({into:...}) the render helper", function() {
+QUnit.skip("Can render({into:...}) the render helper", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('other');
@@ -3774,7 +3774,7 @@ QUnit.test("Can render({into:...}) the render helper", function() {
   equal(Ember.$('#qunit-fixture .foo').text(), 'bar');
 });
 
-QUnit.test("Can disconnect from the render helper", function() {
+QUnit.skip("Can disconnect from the render helper", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('other');
@@ -3800,7 +3800,7 @@ QUnit.test("Can disconnect from the render helper", function() {
 });
 
 
-QUnit.test("Can render({into:...}) the render helper's children", function() {
+QUnit.skip("Can render({into:...}) the render helper's children", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('<div class="index">{{outlet}}</div>');
@@ -3830,7 +3830,7 @@ QUnit.test("Can render({into:...}) the render helper's children", function() {
 
 });
 
-QUnit.test("Can disconnect from the render helper's children", function() {
+QUnit.skip("Can disconnect from the render helper's children", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('<div class="index">{{outlet}}</div>');
