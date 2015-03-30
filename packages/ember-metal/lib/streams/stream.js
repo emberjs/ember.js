@@ -119,6 +119,9 @@ Stream.prototype = {
     this.cache = undefined;
     this.subscriberHead = null;
     this.subscriberTail = null;
+    this.dependencyHead = null;
+    this.dependencyTail = null;
+    this.dependency = null;
     this.children = undefined;
     this.dependencies = undefined;
     this.label = label;
@@ -178,7 +181,8 @@ Stream.prototype = {
     } else if (this.state === 'dirty') {
       var value = this.compute();
       this.state = 'clean';
-      return this.cache = this.valueFn();
+      this.cache = value;
+      return value;
     }
     // TODO: Ensure value is never called on a destroyed stream
     // so that we can uncomment this assertion.
@@ -289,6 +293,7 @@ Stream.prototype = {
     var subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {
       this.subscriberHead = this.subscriberTail = subscriber;
+      this.maybeActivate();
     } else {
       var tail = this.subscriberTail;
       tail.next = subscriber;

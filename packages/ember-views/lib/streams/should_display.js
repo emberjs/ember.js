@@ -55,6 +55,7 @@ ShouldDisplayStream.prototype.valueFn = function() {
     }
     this.oldPredicate = newPredicate;
   }
+};
 
 ShouldDisplayStream.prototype.compute = function() {
   var truthy = read(this.isTruthyStream);
@@ -67,7 +68,7 @@ ShouldDisplayStream.prototype.compute = function() {
     return length !== 0;
   }
 
-  return !!newPredicate;
+  return !!read(this.predicateStream);
 };
 
 ShouldDisplayStream.prototype._super$destroy = Stream.prototype.destroy;

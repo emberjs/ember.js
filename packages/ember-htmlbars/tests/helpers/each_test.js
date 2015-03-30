@@ -529,10 +529,6 @@ QUnit.test("it defers all normalization of itemView names to the resolver", func
   });
 
   registry.register('view:an-item-view', itemView);
-  //registry.resolve = function(fullname) {
-    //equal(fullname, "view:an-item-view", "leaves fullname untouched");
-    //return Registry.prototype.resolve.call(this, fullname);
-  //};
   runAppend(view);
 
   assertText(view, 'itemView:Steve HoltitemView:Annabelle');

@@ -45,9 +45,6 @@ merge(SimpleStream.prototype, {
 
   destroy() {
     if (this._super$destroy()) {
-      if (isStream(this.source)) {
-        this.source.unsubscribe(this._didChange, this);
-      }
       this.source = undefined;
       return true;
     }

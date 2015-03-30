@@ -46,6 +46,7 @@ merge(KeyStream.prototype, {
       addObserver(object, this.key, this, this.notify);
       this.observedObject = object;
     }
+  },
 
   becameInactive() {
     if (this.observedObject) {

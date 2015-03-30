@@ -398,13 +398,18 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='text'}} - null/undefined values", {
+  setup() {
+    commonSetup();
+  },
+
   teardown() {
     runDestroy(view);
   }
 });
 
-QUnit.test("placeholder attribute bound to undefined is not present", function() {
+QUnit.skip("placeholder attribute bound to undefined is not present", function() {
   view = View.extend({
+    container: container,
     controller: {},
     template: compile('{{input placeholder=someThingNotThere}}')
   }).create();
@@ -420,6 +425,7 @@ QUnit.test("placeholder attribute bound to undefined is not present", function()
 
 QUnit.test("placeholder attribute bound to null is not present", function() {
   view = View.extend({
+    container: container,
     controller: {
       someNullProperty: null
     },
