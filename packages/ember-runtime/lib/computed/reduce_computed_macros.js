@@ -763,7 +763,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
           changeMeta.property.itemPropertyKey(itemsKey, sortProperty);
         });
 
-        sortPropertyDefinitions.addObserver('@each', this, updateSortPropertiesOnce);
+        this.addObserver(sortPropertiesKey + '.@each', this, updateSortPropertiesOnce);
       }
 
       function updateSortPropertiesOnce() {
