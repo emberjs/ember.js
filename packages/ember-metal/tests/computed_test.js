@@ -771,26 +771,26 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       ok(true, 'No errors were thrown');
     });
 
-    // QUnit.test('computed properties with a getter marked as overridable can be set', function() {
-    //   var testObject = Ember.Object.extend({
-    //     isOld: computed('age', function() { return false; }).overridable()
-    //   }).create();
+    QUnit.test('computed properties with a getter marked as overridable can be set', function() {
+      var testObject = Ember.Object.extend({
+        isOld: computed('age', function() { return false; }).overridable()
+      }).create();
 
-    //   set(testObject, 'isOld', true);
-    //   ok(true, 'No errors were thrown');
-    //   ok(get(testObject, 'isOld'), 'The property has been overrided');
-    // });
+      set(testObject, 'isOld', true);
+      ok(true, 'No errors were thrown');
+      ok(get(testObject, 'isOld'), 'The property has been overrided');
+    });
 
-    // QUnit.test('overridable called on a CP with a setter throws an error', function() {
-    //   throws(function() {
-    //     Ember.Object.extend({
-    //       isOld: computed('age', {
-    //         get: function() { },
-    //         set: function() { }
-    //       }).overridable()
-    //     });
-    //   }, /Overridable cannot be used on computed properties that define a setter/);
-    // });
+    QUnit.test('overridable called on a CP with a setter throws an error', function() {
+      throws(function() {
+        Ember.Object.extend({
+          isOld: computed('age', {
+            get: function() { },
+            set: function() { }
+          }).overridable()
+        });
+      }, /Overridable cannot be used on computed properties that define a setter/);
+    });
 
     // QUnit.test('readOnly called on a CP with no setter throws an error', function() {
     //   throws(function() {

@@ -227,6 +227,34 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 };
 
 /**
+  Call on a computed property to set it into overridable mode. When in this
+  mode the computed property will allow to be replaced by a different value.
+  Note that when overriden the computed property will no longer track changes
+  in its dependent keys.
+
+  ```javascript
+  var Person = Ember.Object.extend({
+    guid: function() {
+      return 'guid-guid-guid';
+    }.property().overridable()
+  });
+
+  var person = Person.create();
+
+  person.set('guid', 'new-guid');
+  person.get('guid') // 'new-guid'
+  ```
+
+  @method overridable
+  @return {Ember.ComputedProperty} this
+  @chainable
+*/
+ComputedPropertyPrototype.overridable = function() {
+  this._readOnly = false;
+  return this;
+};
+
+/**
   Sets the dependent keys on this computed property. Pass any number of
   arguments containing key paths that this computed property depends on.
 
