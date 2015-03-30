@@ -28,7 +28,6 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
-  this.attrMorphNum = 0;
   this.element = null;
   this.elementNum = -1;
 }
@@ -60,7 +59,6 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
-  this.attrMorphNum = 0;
 
   var blockParams = program.blockParams || [];
 
@@ -71,6 +69,10 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   if (blankChildTextNodes.length > 0) {
     this.opcode('repairClonedNode', blankChildTextNodes);
   }
+};
+
+HydrationOpcodeCompiler.prototype.insertBoundary = function(first) {
+  this.opcode(first ? 'openBoundary' : 'closeBoundary');
 };
 
 HydrationOpcodeCompiler.prototype.endProgram = function() {
@@ -95,8 +97,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, must
 
   // If our parent reference will be used more than once, cache its reference.
   if (mustacheCount > 1) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null; // Set element to null so we don't cache it twice
+    shareElement(this);
   }
 
   var isElementChecked = detectIsElementChecked(element);
@@ -121,27 +122,31 @@ HydrationOpcodeCompiler.prototype.closeElement = function() {
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
-  
+
   var sexpr = mustache.sexpr;
+  var opcode;
+
+  if (isHelper(sexpr)) {
+    prepareSexpr(this, sexpr);
+    opcode = 'printInlineHook';
+  } else {
+    preparePath(this, sexpr.path);
+    opcode = 'printContentHook';
+  }
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
   var end = this.currentDOMChildIndex;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  if (isHelper(sexpr)) {
-    prepareSexpr(this, sexpr);
-    this.opcode('printInlineHook', morphNum);
-  } else {
-    preparePath(this, sexpr.path);
-    this.opcode('printContentHook', morphNum);
-  }
+  this.opcode(opcode);
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
 
   var sexpr = block.sexpr;
+  prepareSexpr(this, sexpr);
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
@@ -151,8 +156,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  prepareSexpr(this, sexpr);
-  this.opcode('printBlockHook', morphNum, templateId, inverseId);
+  this.opcode('printBlockHook', templateId, inverseId);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childCount) {
@@ -160,11 +164,6 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 
   var program = component.program || {};
   var blockParams = program.blockParams || [];
-
-  var morphNum = this.morphNum++;
-  var start = this.currentDOMChildIndex;
-  var end = this.currentDOMChildIndex;
-  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   var attrs = component.attributes;
   for (var i = attrs.length - 1; i >= 0; i--) {
@@ -178,15 +177,20 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
       this.accept(unwrapMustache(value));
     } else if (value.type === 'ConcatStatement') {
       prepareParams(this, value.parts);
-      this.opcode('pushConcatHook');
+      this.opcode('pushConcatHook', this.morphNum);
     }
 
     this.opcode('pushLiteral', name);
   }
 
+  var morphNum = this.morphNum++;
+  var start = this.currentDOMChildIndex;
+  var end = this.currentDOMChildIndex;
+  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
+
   this.opcode('prepareObject', attrs.length);
   this.opcode('pushLiteral', component.tag);
-  this.opcode('printComponentHook', morphNum, this.templateId++, blockParams.length);
+  this.opcode('printComponentHook', this.templateId++, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
@@ -202,19 +206,19 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.accept(unwrapMustache(value));
   } else if (value.type === 'ConcatStatement') {
     prepareParams(this, value.parts);
-    this.opcode('pushConcatHook');
+    this.opcode('pushConcatHook', this.morphNum);
   }
 
   this.opcode('pushLiteral', attr.name);
 
+  var attrMorphNum = this.morphNum++;
+
   if (this.element !== null) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null;
+    shareElement(this);
   }
 
-  var attrMorphNum = this.attrMorphNum++;
   this.opcode('createAttrMorph', attrMorphNum, this.elementNum, attr.name, escaped, namespace);
-  this.opcode('printAttributeHook', attrMorphNum, this.elementNum);
+  this.opcode('printAttributeHook');
 };
 
 HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
@@ -222,11 +226,11 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
-    this.opcode('shareElement', ++this.elementNum);
-    this.element = null; // Reset element so we don't cache it more than once
+    shareElement(this);
   }
 
-  this.opcode('printElementHook', this.elementNum);
+  publishElementMorph(this);
+  this.opcode('printElementHook');
 };
 
 HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
@@ -293,6 +297,16 @@ function prepareSexpr(compiler, sexpr) {
   prepareHash(compiler, sexpr.hash);
   prepareParams(compiler, sexpr.params);
   preparePath(compiler, sexpr.path);
+}
+
+function shareElement(compiler) {
+  compiler.opcode('shareElement', ++compiler.elementNum);
+  compiler.element = null; // Set element to null so we don't cache it twice
+}
+
+function publishElementMorph(compiler) {
+  var morphNum = compiler.morphNum++;
+  compiler.opcode('createElementMorph', morphNum, compiler.elementNum);
 }
 
 function distributeMorphs(morphs, opcodes) {

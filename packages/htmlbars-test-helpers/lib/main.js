@@ -1,3 +1,6 @@
+import { tokenize } from "../simple-html-tokenizer";
+import { forEach } from "../htmlbars-util/array-utils";
+
 export function equalInnerHTML(fragment, html) {
   var actualHTML = normalizeInnerHTML(fragment.innerHTML);
   QUnit.push(actualHTML === html, actualHTML, html);
@@ -18,6 +21,61 @@ export function equalHTML(node, html) {
   div.appendChild(fragment.cloneNode(true));
 
   equalInnerHTML(div, html);
+}
+
+// IE8 removes comments and does other unspeakable things with innerHTML
+var ie8GenerateTokensNeeded = (function() {
+  var div = document.createElement("div");
+  div.innerHTML = "<!-- foobar -->";
+  return div.innerHTML === "";
+})();
+
+function generateTokens(fragmentOrHtml) {
+  var div = document.createElement("div");
+  if (typeof fragmentOrHtml === 'string') {
+    div.innerHTML = fragmentOrHtml;
+  } else {
+    div.appendChild(fragmentOrHtml.cloneNode(true));
+  }
+  if (ie8GenerateTokensNeeded) {
+    // IE8 drops comments and does other unspeakable things on `innerHTML`.
+    // So in that case we do it to both the expected and actual so that they match.
+    var div2 = document.createElement("div");
+    div2.innerHTML = div.innerHTML;
+    div.innerHTML = div2.innerHTML;
+  }
+  return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
+}
+
+export function equalTokens(fragment, html, message) {
+  if (fragment.fragment) { fragment = fragment.fragment; }
+  if (html.fragment) { html = html.fragment; }
+
+  var fragTokens = generateTokens(fragment);
+  var htmlTokens = generateTokens(html);
+
+  function normalizeTokens(token) {
+    if (token.type === 'StartTag') {
+      token.attributes = token.attributes.sort(function(a,b){
+        if (a.name > b.name) {
+          return 1;
+        }
+        if (a.name < b.name) {
+          return -1;
+        }
+        return 0;
+      });
+    }
+  }
+
+  forEach(fragTokens.tokens, normalizeTokens);
+  forEach(htmlTokens.tokens, normalizeTokens);
+
+  var msg = "Expected: " + html + "; Actual: " + fragTokens.html;
+
+  if (message) { msg += " (" + message + ")"; }
+
+  deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
 // detect weird IE8 html strings

@@ -5,6 +5,7 @@ import HydrationJavaScriptCompiler from './hydration-javascript-compiler';
 import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
 import { repeat } from "../htmlbars-util/quoting";
+import { map } from "../htmlbars-util/array-utils";
 
 function TemplateCompiler(options) {
   this.options = options || {};
@@ -19,11 +20,37 @@ function TemplateCompiler(options) {
 
 export default TemplateCompiler;
 
+var dynamicNodes = {
+  mustache: true,
+  block: true,
+  component: true
+};
+
 TemplateCompiler.prototype.compile = function(ast) {
   var templateVisitor = new TemplateVisitor();
   templateVisitor.visit(ast);
 
-  processOpcodes(this, templateVisitor.actions);
+  var normalizedActions = [];
+  var actions = templateVisitor.actions;
+
+  for (var i=0, l=actions.length - 1; i<l; i++) {
+    var action = actions[i];
+    var nextAction = actions[i + 1];
+
+    normalizedActions.push(action);
+
+    if (action[0] === "startProgram" && nextAction[0] in dynamicNodes) {
+      normalizedActions.push(['insertBoundary', [true]]);
+    }
+
+    if (nextAction[0] === "endProgram" && action[0] in dynamicNodes) {
+      normalizedActions.push(['insertBoundary', [false]]);
+    }
+  }
+
+  normalizedActions.push(actions[actions.length - 1]);
+
+  processOpcodes(this, normalizedActions);
 
   return this.templates.pop();
 };
@@ -36,6 +63,10 @@ TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, 
   while(childTemplateCount--) {
     this.childTemplates.push(this.templates.pop());
   }
+};
+
+TemplateCompiler.prototype.insertBoundary = function(first) {
+  this.hydrationOpcodeCompiler.insertBoundary(first);
 };
 
 TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
@@ -77,17 +108,27 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   );
 
   // function hydrate(fragment) { return mustaches; }
-  var hydrationProgram = this.hydrationCompiler.compile(
+  var hydrationPrograms = this.hydrationCompiler.compile(
     this.hydrationOpcodeCompiler.opcodes,
     options
   );
 
   var blockParams = program.blockParams || [];
 
-  var templateSignature = 'context, env, contextualElement';
+  var templateSignature = 'context, rootNode, env, options';
   if (blockParams.length > 0) {
     templateSignature += ', blockArguments';
   }
+
+  var statements = map(hydrationPrograms.statements, function(s) {
+    return indent+'      '+JSON.stringify(s);
+  }).join(",\n");
+
+  var locals = JSON.stringify(hydrationPrograms.locals);
+
+  var templates = map(this.childTemplates, function(_, index) {
+    return 'child' + index;
+  }).join(', ');
 
   var template =
     '(function() {\n' +
@@ -95,33 +136,15 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'  return {\n' +
     indent+'    isHTMLBars: true,\n' +
     indent+'    revision: "' + this.revision + '",\n' +
-    indent+'    blockParams: ' + blockParams.length + ',\n' +
+    indent+'    arity: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
-    indent+'    build: ' + fragmentProgram + ',\n' +
-    indent+'    render: function render(' + templateSignature + ') {\n' +
-    indent+'      var dom = env.dom;\n' +
-    this.getHydrationHooks(indent + '      ', this.hydrationCompiler.hooks) +
-    indent+'      dom.detectNamespace(contextualElement);\n' +
-    indent+'      var fragment;\n' +
-    indent+'      if (env.useFragmentCache && dom.canClone) {\n' +
-    indent+'        if (this.cachedFragment === null) {\n' +
-    indent+'          fragment = this.build(dom);\n' +
-    indent+'          if (this.hasRendered) {\n' +
-    indent+'            this.cachedFragment = fragment;\n' +
-    indent+'          } else {\n' +
-    indent+'            this.hasRendered = true;\n' +
-    indent+'          }\n' +
-    indent+'        }\n' +
-    indent+'        if (this.cachedFragment) {\n' +
-    indent+'          fragment = dom.cloneNode(this.cachedFragment, true);\n' +
-    indent+'        }\n' +
-    indent+'      } else {\n' +
-    indent+'        fragment = this.build(dom);\n' +
-    indent+'      }\n' +
-    hydrationProgram +
-    indent+'      return fragment;\n' +
-    indent+'    }\n' +
+    indent+'    buildFragment: ' + fragmentProgram + ',\n' +
+    indent+'    buildRenderNodes: ' + hydrationPrograms.createMorphsProgram + ',\n' +
+    indent+'    statements: [\n' + statements + '\n' +
+    indent+'    ],\n' +
+    indent+'    locals: ' + locals + ',\n' +
+    indent+'    templates: [' + templates + ']\n' +
     indent+'  };\n' +
     indent+'}())';
 

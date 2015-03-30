@@ -33,10 +33,12 @@
       var compiler    = requireModule('htmlbars-compiler'),
           DOMHelper   = requireModule('dom-helper').default,
           hooks       = requireModule('htmlbars-runtime').hooks,
-          helpers     = requireModule('htmlbars-runtime').helpers;
+          helpers     = requireModule('htmlbars-runtime').helpers,
+          render      = requireModule('htmlbars-runtime').render;
 
       var templateSource = localStorage.getItem('templateSource');
       var data = localStorage.getItem('templateData');
+      var shouldRender = localStorage.getItem('shouldRender');
 
       if (templateSource) {
         textarea.value = templateSource;
@@ -46,13 +48,19 @@
         dataarea.value = data;
       }
 
+      if (shouldRender === "false") {
+        skipRender.checked = true;
+      }
+
       button.addEventListener('click', function() {
         var source = textarea.value,
             data = dataarea.value,
+            shouldRender = !skipRender.checked,
             compileOptions;
 
         localStorage.setItem('templateSource', source);
         localStorage.setItem('templateData', data);
+        localStorage.setItem('shouldRender', shouldRender);
 
         try {
           data = JSON.parse(data);
@@ -70,10 +78,10 @@
           var templateSpec = compiler.compileSpec(source, compileOptions);
           output.innerHTML = '<pre><code>' + templateSpec + '</code></pre>';
 
-          if (!skipRender.checked) {
+          if (shouldRender) {
             var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
-            var template = compiler.compile(source, compileOptions);
-            var dom = template.render(data, env, output);
+            var template = compiler.template(templateSpec);
+            var dom = render(template, data, env, { contextualElement: output }).fragment;
 
             output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
             output.appendChild(dom);

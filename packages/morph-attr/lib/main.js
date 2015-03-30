@@ -27,7 +27,12 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.element = element;
   this.domHelper = domHelper;
   this.namespace = namespace !== undefined ? namespace : getAttrNamespace(attrName);
+  this.state = {};
+  this.isDirty = false;
   this.escaped = true;
+  this.lastValue = null;
+  this.linkedParams = null;
+  this.rendered = false;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);
   if (this.namespace) {
