@@ -20,7 +20,7 @@ FragmentJavaScriptCompiler.prototype.compile = function(opcodes, options) {
   this.namespaceFrameStack = [{namespace: null, depth: null}];
   this.domNamespace = null;
 
-  this.source.push('function build(dom) {\n');
+  this.source.push('function buildFragment(dom) {\n');
   processOpcodes(this, opcodes);
   this.source.push(this.indent+'}');
 

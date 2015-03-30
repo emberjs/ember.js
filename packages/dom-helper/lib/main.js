@@ -1,4 +1,4 @@
-import Morph from "./morph-range";
+import Morph from "./htmlbars-runtime/morph";
 import AttrMorph from "./morph-attr";
 import {
   buildHTMLDOM,
@@ -103,6 +103,15 @@ function buildSVGDOM(html, dom){
   var div = dom.document.createElement('div');
   div.innerHTML = '<svg>'+html+'</svg>';
   return div.firstChild.childNodes;
+}
+
+function ElementMorph(element, dom, namespace) {
+  this.element = element;
+  this.dom = dom;
+  this.namespace = namespace;
+
+  this.state = {};
+  this.isDirty = true;
 }
 
 /*
@@ -342,8 +351,16 @@ prototype.cloneNode = function(element, deep){
   return clone;
 };
 
+prototype.AttrMorphClass = AttrMorph;
+
 prototype.createAttrMorph = function(element, attrName, namespace){
-  return new AttrMorph(element, attrName, this, namespace);
+  return new this.AttrMorphClass(element, attrName, this, namespace);
+};
+
+prototype.ElementMorphClass = ElementMorph;
+
+prototype.createElementMorph = function(element, namespace){
+  return new this.ElementMorphClass(element, this, namespace);
 };
 
 prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
@@ -352,20 +369,43 @@ prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
   return morph;
 };
 
+prototype.MorphClass = Morph;
+
 prototype.createMorph = function(parent, start, end, contextualElement){
   if (contextualElement && contextualElement.nodeType === 11) {
     throw new Error("Cannot pass a fragment as the contextual element to createMorph");
   }
 
-  if (!contextualElement && parent.nodeType === 1) {
+  if (!contextualElement && parent && parent.nodeType === 1) {
     contextualElement = parent;
   }
-  var morph = new Morph(this, contextualElement);
+  var morph = new this.MorphClass(this, contextualElement);
   morph.firstNode = start;
   morph.lastNode = end;
-  morph.state = {};
-  morph.isDirty = true;
   return morph;
+};
+
+prototype.createFragmentMorph = function(contextualElement) {
+  if (contextualElement && contextualElement.nodeType === 11) {
+    throw new Error("Cannot pass a fragment as the contextual element to createMorph");
+  }
+
+  var fragment = this.createDocumentFragment();
+  return Morph.create(this, contextualElement, fragment);
+};
+
+prototype.replaceContentWithMorph = function(element)  {
+  var firstChild = element.firstChild;
+
+  if (!firstChild) {
+    var comment = this.createComment('');
+    this.appendChild(element, comment);
+    return Morph.create(this, element, comment);
+  } else {
+    var morph = Morph.attach(this, element, firstChild, element.lastChild);
+    morph.clear();
+    return morph;
+  }
 };
 
 prototype.createUnsafeMorph = function(parent, start, end, contextualElement){

@@ -14,20 +14,46 @@ function keys(obj) {
 
 test("hooks are present", function () {
   var hookNames = [
-    "content",
-    "inline",
+    "keywords",
+    "linkRenderNode",
+    "createScope",
+    "classify",
+    "createFreshScope",
+    "createChildScope",
+    "bindShadowScope",
+    "bindScope",
+    "bindSelf",
+    "bindLocal",
+    "bindBlock",
+    "updateScope",
+    "updateSelf",
+    "updateLocal",
+    "lookupHelper",
+    "hasHelper",
+    "invokeHelper",
+    "range",
     "block",
+    "inline",
+    "keyword",
+    "partial",
     "component",
     "element",
     "attribute",
     "subexpr",
     "concat",
     "get",
-    "set"
+    "getRoot",
+    "getChild",
+    "getValue",
+    "cleanupRenderNode",
+    "destroyRenderNode",
+    "willCleanupTree",
+    "didCleanupTree"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {
-    ok(hooks[hookNames[i]], "hook " + hookNames[i] + " is present");
+    var hook = hooks[hookNames[i]];
+    ok(hook !== undefined, "hook " + hookNames[i] + " is present");
   }
 
   equal(keys(hooks).length, hookNames.length, "Hooks length match");
