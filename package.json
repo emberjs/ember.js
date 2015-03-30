@@ -1,6 +1,6 @@
 {
   "name": "htmlbars",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "description": "HTMLBars compiles Handlebars templates into document fragments rather than string buffers",
   "main": "dist/cjs/htmlbars.js",
   "scripts": {
