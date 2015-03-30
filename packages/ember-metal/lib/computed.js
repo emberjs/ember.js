@@ -250,6 +250,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @chainable
 */
 ComputedPropertyPrototype.overridable = function() {
+  Ember.assert('Overridable cannot be used on computed properties that define a setter', !this._setter);
   this._readOnly = false;
   return this;
 };
