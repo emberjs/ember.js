@@ -130,8 +130,8 @@ export default EmberObject.extend({
       implementation = 'none';
     }
 
-    var concrete = this.container.lookup('location:' + implementation);
-    Ember.assert("Could not find location '" + implementation + "'.", !!concrete);
+    var concrete = this.container.lookup(`location:${implementation}`);
+    Ember.assert(`Could not find location '${implementation}'.`, !!concrete);
 
     set(this, 'concreteImplementation', concrete);
   },
@@ -239,7 +239,7 @@ export function getHistoryPath(rootURL, location) {
   var rootURLIndex = path.indexOf(rootURL);
   var routeHash, hashParts;
 
-  Ember.assert('Path ' + path + ' does not start with the provided rootURL ' + rootURL, rootURLIndex === 0);
+  Ember.assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should
@@ -260,7 +260,7 @@ export function getHistoryPath(rootURL, location) {
     path = path + routeHash + query;
 
     if (hashParts.length) {
-      path += '#' + hashParts.join('#');
+      path += `#${hashParts.join('#')}`;
     }
   } else {
     path = path + query + hash;

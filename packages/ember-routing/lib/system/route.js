@@ -93,7 +93,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   _qp: computed(function() {
     var controllerName = this.controllerName || this.routeName;
-    var controllerClass = this.container.lookupFactory('controller:' + controllerName);
+    var controllerClass = this.container.lookupFactory(`controller:${controllerName}`);
 
     if (!controllerClass) {
       return defaultQPMeta;
@@ -105,7 +105,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     var qps = [];
     var map = {};
-    var self = this;
     for (var propName in qpProps) {
       if (!qpProps.hasOwnProperty(propName)) { continue; }
 
@@ -119,7 +118,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var type = typeOf(defaultValue);
       var defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
-      var fprop = controllerName + ':' + propName;
+      var fprop = `${controllerName}:${propName}`;
       var qp = {
         def: defaultValue,
         sdef: defaultValueSerialized,
@@ -143,14 +142,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       qps: qps,
       map: map,
       states: {
-        active(controller, prop) {
-          return self._activeQPChanged(controller, map[prop]);
+        active: (controller, prop) => {
+          return this._activeQPChanged(controller, map[prop]);
         },
-        allowOverrides(controller, prop) {
-          return self._updatingQPChanged(controller, map[prop]);
+        allowOverrides: (controller, prop) => {
+          return this._updatingQPChanged(controller, map[prop]);
         },
-        changingKeys(controller, prop) {
-          return self._updateSerializedQPValue(controller, map[prop]);
+        changingKeys: (controller, prop) => {
+          return this._updateSerializedQPValue(controller, map[prop]);
         }
       }
     };
@@ -183,7 +182,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     var namePaths = new Array(names.length);
     for (var a = 0, nlen = names.length; a < nlen; ++a) {
-      namePaths[a] = handlerInfo.name + '.' + names[a];
+      namePaths[a] = `${handlerInfo.name}.${names[a]}`;
     }
 
     for (var i = 0; i < len; ++i) {
@@ -240,7 +239,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
   */
   paramsFor(name) {
-    var route = this.container.lookup('route:' + name);
+    var route = this.container.lookup(`route:${name}`);
 
     if (!route) {
       return {};
@@ -281,7 +280,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     if (defaultValueType === 'array') {
       return JSON.stringify(value);
     }
-    return '' + value;
+    return `${value}`;
   },
 
   /**
@@ -325,7 +324,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @property _optionsForQueryParam
   */
   _optionsForQueryParam(qp) {
-    return get(this, 'queryParams.' + qp.urlKey) || get(this, 'queryParams.' + qp.prop) || {};
+    return get(this, `queryParams.${qp.urlKey}`) || get(this, `queryParams.${qp.prop}`) || {};
   },
 
   /**
@@ -1058,12 +1057,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the action to trigger
     @param {...*} args
   */
-  send() {
+  send(...args) {
     if (this.router || !Ember.testing) {
-      this.router.send(...arguments);
+      this.router.send(...args);
     } else {
-      var name = arguments[0];
-      var args = slice.call(arguments, 1);
+      var name = args[0];
+      args = slice.call(args, 1);
       var action = this._actions[name];
       if (action) {
         return this._actions[name].apply(this, args);
@@ -1403,16 +1402,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     return {
       find(name, value) {
-        var modelClass = container.lookupFactory('model:' + name);
+        var modelClass = container.lookupFactory(`model:${name}`);
 
-        Ember.assert("You used the dynamic segment " + name + "_id in your route " +
-                     routeName + ", but " + namespace + "." + classify(name) +
-                     " did not exist and you did not override your route's `model` " +
-                     "hook.", !!modelClass);
+        Ember.assert(
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
 
         if (!modelClass) { return; }
 
-        Ember.assert(classify(name) + ' has no method `find`.', typeof modelClass.find === 'function');
+        Ember.assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       }
@@ -1570,23 +1567,19 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   */
   controllerFor(name, _skipAssert) {
     var container = this.container;
-    var route = container.lookup('route:'+name);
+    var route = container.lookup(`route:${name}`);
     var controller;
 
     if (route && route.controllerName) {
       name = route.controllerName;
     }
 
-    controller = container.lookup('controller:' + name);
+    controller = container.lookup(`controller:${name}`);
 
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    Ember.assert("The controller named '"+name+"' could not be found. Make sure " +
-                 "that this route exists and has already been entered at least " +
-                 "once. If you are accessing a controller not associated with a " +
-                 "route, make sure the controller class is explicitly defined.",
-                 controller || _skipAssert === true);
+    Ember.assert(`The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`, controller || _skipAssert === true);
 
     return controller;
   },
@@ -1650,7 +1643,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Object} the model object
   */
   modelFor(name) {
-    var route = this.container.lookup('route:' + name);
+    var route = this.container.lookup(`route:${name}`);
     var transition = this.router ? this.router.router.activeTransition : null;
 
     // If we are mid-transition, we want to try and look up
@@ -1984,17 +1977,17 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
 
   if (!controller) {
     if (namePassed) {
-      controller = route.container.lookup('controller:' + name) || route.controllerName || route.routeName;
+      controller = route.container.lookup(`controller:${name}`) || route.controllerName || route.routeName;
     } else {
-      controller = route.controllerName || route.container.lookup('controller:' + name);
+      controller = route.controllerName || route.container.lookup(`controller:${name}`);
     }
   }
 
   if (typeof controller === 'string') {
     var controllerName = controller;
-    controller = route.container.lookup('controller:' + controllerName);
+    controller = route.container.lookup(`controller:${controllerName}`);
     if (!controller) {
-      throw new EmberError("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
+      throw new EmberError(`You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`);
     }
   }
 
@@ -2003,12 +1996,13 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   }
 
   viewName = options && options.view || namePassed && name || route.viewName || name;
-  ViewClass = route.container.lookupFactory('view:' + viewName);
-  template = route.container.lookup('template:' + templateName);
+  ViewClass = route.container.lookupFactory(`view:${viewName}`);
+  template = route.container.lookup(`template:${templateName}`);
   if (!ViewClass && !template) {
-    Ember.assert("Could not find \"" + name + "\" template or view.", isDefaultRender);
+    Ember.assert(`Could not find "${name}" template or view.`, isDefaultRender);
     if (LOG_VIEW_LOOKUPS) {
-      Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+      var fullName = `template:${name}`;
+      Ember.Logger.info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
     }
   }
 

@@ -61,7 +61,7 @@ export default EmberObject.extend({
       // is only included (conventionally) when
       // the location.hash has a value
       if (originalPath) {
-        outPath += '#' + originalPath;
+        outPath += `#${originalPath}`;
       }
     }
 
@@ -91,7 +91,7 @@ export default EmberObject.extend({
     @param path {String}
   */
   replaceURL(path) {
-    get(this, 'location').replace('#' + path);
+    get(this, 'location').replace(`#${path}`);
     set(this, 'lastSetURL', path);
   },
 
@@ -105,15 +105,14 @@ export default EmberObject.extend({
     @param callback {Function}
   */
   onUpdateURL(callback) {
-    var self = this;
     var guid = guidFor(this);
 
-    Ember.$(window).on('hashchange.ember-location-'+guid, function() {
+    Ember.$(window).on(`hashchange.ember-location-${guid}`, () => {
       run(function() {
-        var path = self.getURL();
-        if (get(self, 'lastSetURL') === path) { return; }
+        var path = this.getURL();
+        if (get(this, 'lastSetURL') === path) { return; }
 
-        set(self, 'lastSetURL', null);
+        set(this, 'lastSetURL', null);
 
         callback(path);
       });
@@ -132,7 +131,7 @@ export default EmberObject.extend({
     @param url {String}
   */
   formatURL(url) {
-    return '#' + url;
+    return `#${url}`;
   },
 
   /**
@@ -144,6 +143,6 @@ export default EmberObject.extend({
   willDestroy() {
     var guid = guidFor(this);
 
-    Ember.$(window).off('hashchange.ember-location-'+guid);
+    Ember.$(window).off(`hashchange.ember-location-${guid}`);
   }
 });
