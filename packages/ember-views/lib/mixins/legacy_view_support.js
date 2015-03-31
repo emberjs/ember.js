@@ -1,7 +1,15 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 import { get } from "ember-metal/property_get";
 
+/**
+  @class LegacyViewSupport
+  @namespace Ember
+*/
 var LegacyViewSupport = Mixin.create({
   beforeRender(buffer) {},
 

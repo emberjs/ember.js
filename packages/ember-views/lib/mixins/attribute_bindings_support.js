@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import { Mixin } from "ember-metal/mixin";
 import AttrNode from "ember-views/attr_nodes/attr_node";
 import { defineProperty } from "ember-metal/properties";
@@ -7,6 +11,10 @@ import { set } from "ember-metal/property_set";
 
 var EMPTY_ARRAY = [];
 
+/**
+  @class AttributeBindingsSupport
+  @namespace Ember
+*/
 var AttributeBindingsSupport = Mixin.create({
   concatenatedProperties: ['attributeBindings'],
 
