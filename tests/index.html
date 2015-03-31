@@ -5,6 +5,7 @@
     <title>Ember</title>
     <link rel="stylesheet" href="../qunit/qunit.css">
     <script src="../qunit/qunit.js"></script>
+    <script src="/testem.js"></script>
 
     <script type="text/javascript">
       window.loadScript = function(url) {
@@ -109,7 +110,7 @@
         setupQUnit(testHelpers);
 
         // Tests should time out after 5 seconds
-        QUnit.config.testTimeout = 5000;
+        QUnit.config.testTimeout = 7500;
         // Hide passed tests by default
         QUnit.config.hidepassed = true;
         // Handle testing feature flags
