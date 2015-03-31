@@ -67,6 +67,15 @@ var defaultControllersComputedProperty = computed(function() {
   };
 });
 
+if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+  // TODO: This only is necesary in tests, because we want to allow people
+  // to stub they `needs`. In any other situation I can think about this is
+  // not desirable.
+  //
+  // How to enable this in tests only?
+  defaultControllersComputedProperty.overridable();
+}
+
 /**
   @class ControllerMixin
   @namespace Ember
