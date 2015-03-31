@@ -666,6 +666,14 @@ var EMPTY_ARRAY = [];
   @class View
   @namespace Ember
   @extends Ember.CoreView
+  @uses Ember.ViewContextSupport
+  @uses Ember.ViewChildViewsSupport
+  @uses Ember.TemplateRenderingSupport
+  @uses Ember.ClassNamesSupport
+  @uses Ember.AttributeBindingsSupport
+  @uses Ember.LegacyViewSupport
+  @uses Ember.InstrumentationSupport
+  @uses Ember.VisibilitySupport
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(

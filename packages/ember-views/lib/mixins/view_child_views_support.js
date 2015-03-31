@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
@@ -8,6 +12,10 @@ import EmberError from "ember-metal/error";
 import { forEach, removeObject } from "ember-metal/enumerable_utils";
 import { A as emberA } from "ember-runtime/system/native_array";
 
+/**
+  @class ViewChildViewsSupport
+  @namespace Ember
+*/
 var childViewsProperty = computed(function() {
   var childViews = this._childViews;
   var ret = emberA();

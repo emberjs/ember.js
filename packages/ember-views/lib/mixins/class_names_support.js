@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 import { A as emberA } from "ember-runtime/system/native_array";
@@ -17,6 +21,10 @@ import {
 
 var EMPTY_ARRAY = [];
 
+/**
+  @class ClassNamesSupport
+  @namespace Ember
+*/
 var ClassNamesSupport = Mixin.create({
   concatenatedProperties: ['classNames', 'classNameBindings'],
 
