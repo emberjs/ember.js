@@ -226,34 +226,36 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   return this;
 };
 
-/**
-  Call on a computed property to set it into overridable mode. When in this
-  mode the computed property will allow to be replaced by a different value.
-  Note that when overriden the computed property will no longer track changes
-  in its dependent keys.
+if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+  /**
+    Call on a computed property to set it into overridable mode. When in this
+    mode the computed property will allow to be replaced by a different value.
+    Note that when overriden the computed property will no longer track changes
+    in its dependent keys.
 
-  ```javascript
-  var Person = Ember.Object.extend({
-    guid: function() {
-      return 'guid-guid-guid';
-    }.property().overridable()
-  });
+    ```javascript
+    var Person = Ember.Object.extend({
+      guid: function() {
+        return 'guid-guid-guid';
+      }.property().overridable()
+    });
 
-  var person = Person.create();
+    var person = Person.create();
 
-  person.set('guid', 'new-guid');
-  person.get('guid') // 'new-guid'
-  ```
+    person.set('guid', 'new-guid');
+    person.get('guid') // 'new-guid'
+    ```
 
-  @method overridable
-  @return {Ember.ComputedProperty} this
-  @chainable
-*/
-ComputedPropertyPrototype.overridable = function() {
-  Ember.assert('Overridable cannot be used on computed properties that define a setter', !this._setter);
-  this._readOnly = false;
-  return this;
-};
+    @method overridable
+    @return {Ember.ComputedProperty} this
+    @chainable
+  */
+  ComputedPropertyPrototype.overridable = function() {
+    Ember.assert('Overridable cannot be used on computed properties that define a setter', !this._setter);
+    this._readOnly = false;
+    return this;
+  };
+}
 
 /**
   Sets the dependent keys on this computed property. Pass any number of
