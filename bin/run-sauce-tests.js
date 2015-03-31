@@ -38,8 +38,14 @@ RSVP.resolve()
     return run('./node_modules/.bin/ember', [ 'start-sauce-connect' ]);
   })
   .then(function() {
-    return run('./node_modules/.bin/ember', [ 'test' ]);
+    // calling testem directly here instead of `ember test` so that
+    // we do not have to do a double build (by the time this is run
+    // we have already ran `ember build`).
+    return run('./node_modules/.bin/testem', [ 'ci' ]);
   })
-  .catch(function(error) {
+  .finally(function() {
+    return run('./node_modules/.bin/ember', [ 'stop-sauce-connect' ]);
+  })
+  .catch(function() {
     process.exit(1);
   });

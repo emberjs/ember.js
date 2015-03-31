@@ -29,6 +29,7 @@
     "qunitjs": "^1.16.0",
     "route-recognizer": "0.1.5",
     "rsvp": "~3.0.6",
-    "simple-dom": "^0.1.1"
+    "simple-dom": "^0.1.1",
+    "testem": "^0.7.6"
   }
 }
