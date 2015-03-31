@@ -1,8 +1,16 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
+/**
+  @class ViewsContextSupport
+  @namespace Ember
+*/
 var ViewContextSupport = Mixin.create({
   /**
     The object from which templates should access properties.
