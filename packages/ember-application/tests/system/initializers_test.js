@@ -344,3 +344,49 @@ if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
     });
   });
 }
+
+if (Ember.FEATURES.isEnabled("ember-application-instance-initializers")) {
+  QUnit.test("initializers should throw a deprecation warning when performing a lookup on the registry", function() {
+    expect(1);
+
+    var MyApplication = Application.extend();
+
+    MyApplication.initializer({
+      name: 'initializer',
+      initialize(registry, application) {
+        registry.lookup('router:main');
+      }
+    });
+
+    expectDeprecation(function() {
+      run(function() {
+        app = MyApplication.create({
+          router: false,
+          rootElement: '#qunit-fixture'
+        });
+      });
+    }, /`lookup` was called on a Registry\. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container\./);
+  });
+
+  QUnit.test("initializers should throw a deprecation warning when performing a factory lookup on the registry", function() {
+    expect(1);
+
+    var MyApplication = Application.extend();
+
+    MyApplication.initializer({
+      name: 'initializer',
+      initialize(registry, application) {
+        registry.lookupFactory('application:controller');
+      }
+    });
+
+    expectDeprecation(function() {
+      run(function() {
+        app = MyApplication.create({
+          router: false,
+          rootElement: '#qunit-fixture'
+        });
+      });
+    }, /`lookupFactory` was called on a Registry\. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container\./);
+  });
+}
