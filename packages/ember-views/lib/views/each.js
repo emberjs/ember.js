@@ -7,7 +7,9 @@ import { Binding } from "ember-metal/binding";
 import ControllerMixin from "ember-runtime/mixins/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
-
+import {
+  isArray
+} from "ember-metal/utils";
 import {
   addObserver,
   removeObserver,
@@ -68,12 +70,12 @@ export default CollectionView.extend(_Metamorph, {
     if (ControllerMixin.detect(content) && content.get('model') !== undefined) {
       theArrayStr = fmt("'%@' (wrapped in %@)", [content.get('model'), content]);
       shouldShowError = !Ember.EXTEND_PROTOTYPES &&
-                        Array.isArray(content.get("model")) &&
+                        isArray(content.get("model")) &&
                         !hasDetectedArray;
     } else {
       theArrayStr = fmt("%@", [content]);
       shouldShowError = !Ember.EXTEND_PROTOTYPES &&
-                        Array.isArray(content) &&
+                        isArray(content) &&
                         !hasDetectedArray;
     }
 
