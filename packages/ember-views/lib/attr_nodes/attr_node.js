@@ -18,7 +18,7 @@ export default function AttrNode(attrName, attrValue) {
 export var styleWarning = 'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
                           'please ensure that values being bound are properly escaped. For more information, ' +
                           'including how to disable this warning, see ' +
-                          'http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes.';
+                          'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
 
 AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isAttrNode = true;
@@ -121,4 +121,3 @@ AttrNode.prototype._notifyBecameHidden = function render() {
 
 AttrNode.prototype._notifyBecameVisible = function render() {
 };
-
