@@ -53,17 +53,38 @@ export default CollectionView.extend(_Metamorph, {
   },
 
   _assertArrayLike(content) {
+    var theArrayStr;
+    var shouldShowError;
+    var hasDetectedArray;
+
     Ember.assert(fmt("The value that #each loops over must be an Array. You " +
                      "passed %@, but it should have been an ArrayController",
                      [content.constructor]),
                      !ControllerMixin.detect(content) ||
                        (content && content.isGenerated) ||
                        content instanceof ArrayController);
+
+    hasDetectedArray = EmberArray.detect(content);
+    if (ControllerMixin.detect(content) && content.get('model') !== undefined) {
+      theArrayStr = fmt("'%@' (wrapped in %@)", [content.get('model'), content]);
+      shouldShowError = !Ember.EXTEND_PROTOTYPES &&
+                        Array.isArray(content.get("model")) &&
+                        !hasDetectedArray;
+    } else {
+      theArrayStr = fmt("%@", [content]);
+      shouldShowError = !Ember.EXTEND_PROTOTYPES &&
+                        Array.isArray(content) &&
+                        !hasDetectedArray;
+    }
+
+    Ember.assert(fmt("You passed in an array $@, but Ember.EXTEND_PROTOTYPES is " +
+                     "false and you forgot to wrap your array in Ember.A()",
+                     [theArrayStr]),
+                     !shouldShowError);
+
     Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@",
-                     [(ControllerMixin.detect(content) &&
-                       content.get('model') !== undefined) ?
-                       fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]),
-                     EmberArray.detect(content));
+                     [theArrayStr]),
+                     hasDetectedArray);
   },
 
   disableContentObservers(callback) {

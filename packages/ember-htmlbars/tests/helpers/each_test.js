@@ -276,6 +276,20 @@ QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
   equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
 });
 
+QUnit.test("it should give the proper assertion error - Issue #3734 from ember-cli", function() {
+  equal(Ember.EXTEND_PROTOTYPES, false, "Ember should not be extending prototypes");
+
+  throws(function() {
+    var badView = EmberView.create({
+      template: templateFor('<div>{{#each host in view.unfunnyHosts}}<span>{{host}}</span>{{/each}}</div>'),
+      unfunnyHosts: ["Jimmy Fallon"]
+    });
+
+    runAppend(badView);
+    runDestroy(badView);
+  }, /false and you forgot to wrap your array in Ember.A()/);
+});
+
 QUnit.test("it works inside a ul element", function() {
   var ulView = EmberView.create({
     template: templateFor('<ul>{{#each view.people}}<li>{{name}}</li>{{/each}}</ul>'),
