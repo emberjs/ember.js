@@ -33,7 +33,7 @@ QUnit.module("ViewUtils", {
 });
 
 
-QUnit.skip("getViewClientRects", function() {
+QUnit.test("getViewClientRects", function() {
   if (!hasGetClientRects || !ClientRectListCtor) {
     ok(true, "The test environment does not support the DOM API required to run this test.");
     return;
@@ -50,7 +50,7 @@ QUnit.skip("getViewClientRects", function() {
   ok(Ember.ViewUtils.getViewClientRects(view) instanceof ClientRectListCtor);
 });
 
-QUnit.skip("getViewBoundingClientRect", function() {
+QUnit.test("getViewBoundingClientRect", function() {
   if (!hasGetBoundingClientRect || !ClientRectCtor) {
     ok(true, "The test environment does not support the DOM API required to run this test.");
     return;
