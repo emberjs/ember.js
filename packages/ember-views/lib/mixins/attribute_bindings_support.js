@@ -46,6 +46,8 @@ var AttributeBindingsSupport = Mixin.create({
   */
   attributeBindings: EMPTY_ARRAY,
 
+  _attrNodes: EMPTY_ARRAY,
+
   _unspecifiedAttributeBindings: null,
 
   /**
