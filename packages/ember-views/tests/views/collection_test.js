@@ -750,3 +750,22 @@ QUnit.test("should lookup from only global path against the container if emptyVi
     return EmptyView;
   }
 });
+
+QUnit.test('Collection with style attribute supports changing content', function() {
+  view = CollectionView.create({
+    attributeBindings: ['style'],
+    style: "width: 100px;",
+    content: Ember.A(['foo', 'bar'])
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().attr('style'), 'width: 100px;', "width is applied to the element");
+
+  run(function() {
+    view.get('content').pushObject('baz');
+  });
+
+});
