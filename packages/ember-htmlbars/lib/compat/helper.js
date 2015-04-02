@@ -33,7 +33,7 @@ function calculateCompatType(item) {
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
     var param, blockResult, fnResult;
-    var context = this;
+    var context = env.data.view;
     var handlebarsOptions = {
       hash: { },
       types: new Array(params.length),
@@ -49,6 +49,12 @@ function HandlebarsCompatibleHelper(fn) {
       handlebarsOptions.fn = function() {
         blockResult = options.template.render(context, env, options.morph.contextualElement);
       };
+
+      if (options.inverse) {
+        handlebarsOptions.inverse = function() {
+          blockResult = options.inverse.render(context, env, options.morph.contextualElement);
+        };
+      }
     }
 
     for (var prop in hash) {
