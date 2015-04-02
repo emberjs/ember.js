@@ -508,6 +508,7 @@ helpers.upcase = function(params) {
 };
 
 helpers['format-person'] = function(params) {
+  var person = params[0];
   return person.salutation + '. ' + person.first + ' ' + person.last;
 };
 ```
