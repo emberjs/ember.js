@@ -297,10 +297,10 @@ Ember.runInDebug(function() {
         unfunnyHosts: ["Jimmy Fallon"]
       });
 
-      throws(function() {
+      expectAssertion(function() {
         runAppend(badView);
-        runDestroy(badView);
       }, /false and you forgot to wrap your array in Ember\.A/);
+      runDestroy(badView);
     });
   }
 });
