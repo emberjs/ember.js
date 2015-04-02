@@ -33,7 +33,7 @@ function calculateCompatType(item) {
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
     var param, blockResult, fnResult;
-    var context = this;
+    var context = env.data.view;
     var handlebarsOptions = {
       hash: { },
       types: new Array(params.length),
