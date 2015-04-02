@@ -55,5 +55,9 @@ export default {
     }
 
     internal.continueBlock(morph, env, scope, 'with', params, hash, template, inverse, visitor);
+  },
+
+  rerender(morph, env, scope, params, hash, template, inverse, visitor) {
+    internal.continueBlock(morph, env, scope, 'with', params, hash, template, inverse, visitor);
   }
 };

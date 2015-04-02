@@ -70,7 +70,7 @@ QUnit.test("block should work properly even when templates are not hard-coded", 
 
 QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
-    layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
+    layout: compile('<div class="times">{{#each view.index as |item|}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
       var n = this.attrs.n;
@@ -92,7 +92,7 @@ QUnit.test("templates should yield to block, when the yield is embedded in a hie
   equal(view.$('div#container div.times-item').length, 5, 'times-item is embedded within wrapping container 5 times, as expected');
 });
 
-QUnit.skip("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
+QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
   var NestingView = EmberView.extend({
     layout: compile('{{#view tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
   });
@@ -191,10 +191,9 @@ QUnit.test("inner keyword doesn't mask yield property", function() {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "outer property isn't masked by inner keyword");
 });
 
-QUnit.skip("can bind a keyword to a component and use it in yield", function() {
+QUnit.test("can bind a keyword to a component and use it in yield", function() {
   var component = Component.extend({
-    content: null,
-    layout: compile("<p>{{content}}</p><p>{{yield}}</p>")
+    layout: compile("<p>{{attrs.content}}</p><p>{{yield}}</p>")
   });
 
   view = EmberView.create({

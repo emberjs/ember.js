@@ -3611,8 +3611,6 @@ QUnit.test("Can render into a named outlet at the top level, later", function() 
 
   Ember.run(router, 'send', 'launch');
 
-  //debugger;
-  //router._setOutlets();
   equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "second render");
 });
 

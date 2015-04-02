@@ -113,6 +113,7 @@ function normalizeComponentAttributes(component, attrs) {
     }
   }
 
+
   if (attrs.id) {
     // Do not allow binding to the `id`
     normalized.id = read(attrs.id);
@@ -125,7 +126,7 @@ function normalizeComponentAttributes(component, attrs) {
     component.tagName = attrs.tagName;
   }
 
-  var normalizedClass = normalizeClass(component, attrs.class);
+  var normalizedClass = normalizeClass(component, attrs);
 
   if (normalizedClass) {
     normalized.class = normalizedClass;
@@ -134,123 +135,18 @@ function normalizeComponentAttributes(component, attrs) {
   return normalized;
 }
 
-function normalizeClass(component, classAttr) {
+function normalizeClass(component, attrs) {
   var i, l;
   var normalizedClass = [];
   var classNames = get(component, 'classNames');
   var classNameBindings = get(component, 'classNameBindings');
 
-  if (classAttr) {
-    normalizedClass.push(['value', classAttr]);
+  if (attrs.class) {
+    normalizedClass.push(['value', attrs.class]);
   }
 
-  if (classNames) {
-    for (i=0, l=classNames.length; i<l; i++) {
-      normalizedClass.push(classNames[i]);
-    }
-  }
-
-  if (classNameBindings) {
-    for (i=0, l=classNameBindings.length; i<l; i++) {
-      var className = classNameBindings[i];
-      var microsyntax = className.split(':');
-      var prop = 'view.' + microsyntax[0];
-      var activeClass, inactiveClass;
-
-      if (microsyntax.length === 1) {
-        activeClass = prop;
-      } else if (microsyntax.length === 2) {
-        activeClass = microsyntax[1];
-      } else {
-        activeClass = microsyntax[1];
-        inactiveClass = microsyntax[2];
-      }
-
-      normalizedClass.push(['subexpr', '-normalize-class', [
-        // params
-        ['get', prop]
-      ], [
-        // hash
-        'activeClass', activeClass,
-        'inactiveClass', inactiveClass
-      ]]);
-    }
-  }
-
-  var last = normalizedClass.length - 1;
-  var output = [];
-  for (i=0, l=normalizedClass.length; i<l; i++) {
-    output.push(normalizedClass[i]);
-    if (i !== last) { output.push(' '); }
-  }
-
-  if (output.length) {
-    return ['concat', output];
-  }
-}
-function normalizeClass(component, classAttr) {
-  var i, l;
-  var normalizedClass = [];
-  var classNames = get(component, 'classNames');
-  var classNameBindings = get(component, 'classNameBindings');
-
-  if (classAttr) {
-    normalizedClass.push(['value', classAttr]);
-  }
-
-  if (classNames) {
-    for (i=0, l=classNames.length; i<l; i++) {
-      normalizedClass.push(classNames[i]);
-    }
-  }
-
-  if (classNameBindings) {
-    for (i=0, l=classNameBindings.length; i<l; i++) {
-      var className = classNameBindings[i];
-      var microsyntax = className.split(':');
-      var prop = 'view.' + microsyntax[0];
-      var activeClass, inactiveClass;
-
-      if (microsyntax.length === 1) {
-        activeClass = prop;
-      } else if (microsyntax.length === 2) {
-        activeClass = microsyntax[1];
-      } else {
-        activeClass = microsyntax[1];
-        inactiveClass = microsyntax[2];
-      }
-
-      normalizedClass.push(['subexpr', '-normalize-class', [
-        // params
-        ['get', prop]
-      ], [
-        // hash
-        'activeClass', activeClass,
-        'inactiveClass', inactiveClass
-      ]]);
-    }
-  }
-
-  var last = normalizedClass.length - 1;
-  var output = [];
-  for (i=0, l=normalizedClass.length; i<l; i++) {
-    output.push(normalizedClass[i]);
-    if (i !== last) { output.push(' '); }
-  }
-
-  if (output.length) {
-    return ['concat', output];
-  }
-}
-
-function normalizeClass(component, classAttr) {
-  var i, l;
-  var normalizedClass = [];
-  var classNames = get(component, 'classNames');
-  var classNameBindings = get(component, 'classNameBindings');
-
-  if (classAttr) {
-    normalizedClass.push(['value', classAttr]);
+  if (attrs.classNames) {
+    normalizedClass.push(['value', attrs.classNames]);
   }
 
   if (classNames) {
