@@ -5,7 +5,8 @@ import Component from "ember-views/views/component";
 
 function generateEnv(helpers) {
   return {
-    helpers: (helpers ? helpers : {})
+    helpers: (helpers ? helpers : {}),
+    data: { view: { } }
   };
 }
 
@@ -92,7 +93,11 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
   var fakeOptions = {
     morph: { update: function() { } }
   };
-  var fakeEnv = {};
+  var fakeEnv = {
+    data: {
+      view: { }
+    }
+  };
   actual.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
