@@ -217,7 +217,7 @@ QUnit.test('allows usage of the template fn', function() {
     controller: {
       value: 'foo'
     },
-    template: compile('{{#test}}foo{{/test}}')
+    template: compile('{{#test}}{{value}}{{/test}}')
   });
 
   runAppend(view);
