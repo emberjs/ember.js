@@ -149,6 +149,41 @@ QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", functio
   Ember.$ = oldJquery;
 });
 
+QUnit.test("HashLocation.onUpdateURL callback executes as expected", function() {
+  expect(1);
+
+  createLocation({
+    _location: mockBrowserLocation('/#/foo/bar')
+  });
+
+  var callback = function (param) {
+    equal(param, '/foo/bar', 'path is passed as param');
+  };
+
+  location.onUpdateURL(callback);
+
+  Ember.$(window).trigger('hashchange');
+});
+
+QUnit.test("HashLocation.onUpdateURL doesnt execute callback if lastSetURL === path", function() {
+  expect(0);
+
+  createLocation({
+    _location: {
+      href: '/#/foo/bar'
+    },
+    lastSetURL: '/foo/bar'
+  });
+
+  var callback = function (param) {
+    ok(false, 'callback should not be called');
+  };
+
+  location.onUpdateURL(callback);
+
+  Ember.$(window).trigger('hashchange');
+});
+
 QUnit.test("HashLocation.formatURL() prepends a # to the provided string", function() {
   expect(1);
 

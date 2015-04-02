@@ -108,7 +108,7 @@ export default EmberObject.extend({
     var guid = guidFor(this);
 
     Ember.$(window).on(`hashchange.ember-location-${guid}`, () => {
-      run(function() {
+      run(() => {
         var path = this.getURL();
         if (get(this, 'lastSetURL') === path) { return; }
 
