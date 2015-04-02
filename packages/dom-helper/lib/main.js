@@ -242,6 +242,14 @@ if (canRemoveSvgViewBoxAttribute){
 }
 
 prototype.setPropertyStrict = function(element, name, value) {
+  if (value === undefined) {
+    value = null;
+  }
+
+  if (value === null && (name === 'value' || name === 'type' || name === 'src')) {
+    value = '';
+  }
+
   element[name] = value;
 };
 

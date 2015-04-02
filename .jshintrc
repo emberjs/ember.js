@@ -5,6 +5,7 @@
     "test": true,
     "expect": true,
     "equal": true,
+    "notEqual": true,
     "strictEqual": true,
     "deepEqual": true,
     "ok": true

@@ -114,7 +114,33 @@ test('#setPropertyStrict', function(){
   ok(node.getAttribute('disabled') !== disabledAbsentValue, 'disabled is present');
   dom.setPropertyStrict(node, 'disabled', false);
   ok(node.getAttribute('disabled') === disabledAbsentValue, 'disabled has been removed');
+});
 
+// IE dislikes undefined or null for value
+test('#setPropertyStrict value', function(){
+  var node = dom.createElement('input');
+  dom.setPropertyStrict(node, 'value', undefined);
+  equal(node.value, '', 'blank string is set for undefined');
+  dom.setPropertyStrict(node, 'value', null);
+  equal(node.value, '', 'blank string is set for undefined');
+});
+
+// IE dislikes undefined or null for type
+test('#setPropertyStrict type', function(){
+  var node = dom.createElement('input');
+  dom.setPropertyStrict(node, 'type', undefined);
+  equal(node.type, 'text', 'text default is set for undefined');
+  dom.setPropertyStrict(node, 'type', null);
+  equal(node.type, 'text', 'text default is set for undefined');
+});
+
+// setting undefined or null to src makes a network request
+test('#setPropertyStrict src', function(){
+  var node = dom.createElement('img');
+  dom.setPropertyStrict(node, 'src', undefined);
+  notEqual(node.src, undefined, 'blank string is set for undefined');
+  dom.setPropertyStrict(node, 'src', null);
+  notEqual(node.src, null, 'blank string is set for undefined');
 });
 
 test('#removeAttribute', function(){
