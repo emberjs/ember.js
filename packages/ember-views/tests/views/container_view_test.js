@@ -789,3 +789,60 @@ QUnit.test("ContainerView is observable [DEPRECATED]", function() {
   container.pushObject(View.create());
   ok(observerFired, 'View pushed, observer fired');
 });
+
+QUnit.test('ContainerView supports bound attributes', function() {
+  container = ContainerView.create({
+    attributeBindings: ['width'],
+    width: "100px"
+  });
+
+  run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().attr('width'), '100px', "width is applied to the element");
+
+  run(function() {
+    container.set('width', '200px');
+  });
+
+  equal(container.$().attr('width'), '200px', "width is applied to the element");
+});
+
+QUnit.test('ContainerView supports bound style attribute', function() {
+  container = ContainerView.create({
+    attributeBindings: ['style'],
+    style: "width: 100px;"
+  });
+
+  run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().attr('style'), 'width: 100px;', "width is applied to the element");
+
+  run(function() {
+    container.set('style', 'width: 200px;');
+  });
+
+  equal(container.$().attr('style'), 'width: 200px;', "width is applied to the element");
+});
+
+QUnit.test('ContainerView supports changing children with style attribute', function() {
+  container = ContainerView.create({
+    attributeBindings: ['style'],
+    style: "width: 100px;"
+  });
+
+  run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().attr('style'), 'width: 100px;', "width is applied to the element");
+
+  view = View.create();
+
+  run(function() {
+    container.pushObject(view);
+  });
+});

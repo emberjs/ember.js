@@ -209,7 +209,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
 
     this.beforeRemove(removeQueue[idx]);
 
-    childViews = view._childViews;
+    childViews = this.childViews(view);
     if (childViews) {
       for (i=0,l=childViews.length; i<l; i++) {
         queue.push(childViews[i]);
@@ -222,7 +222,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
 
     this.beforeRemove(destroyQueue[idx]);
 
-    childViews = view._childViews;
+    childViews = this.childViews(view);
     if (childViews) {
       for (i=0,l=childViews.length; i<l; i++) {
         destroyQueue.push(childViews[i]);
