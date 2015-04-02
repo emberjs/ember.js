@@ -212,7 +212,7 @@ QUnit.test("can bind a keyword to a component and use it in yield", function() {
   equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
 });
 
-QUnit.skip("yield view should be a virtual view", function() {
+QUnit.test("yield view should be a virtual view", function() {
   var component = Component.extend({
     isParentComponent: true,
 

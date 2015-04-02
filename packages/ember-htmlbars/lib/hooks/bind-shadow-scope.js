@@ -10,10 +10,11 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
 
   var view = options.view;
   if (view && !(view instanceof Component)) {
-    shadowScope.view = view;
     newStream(shadowScope.locals, 'view', view, null);
     newStream(shadowScope.locals, 'controller', shadowScope.locals.view.getKey('controller'));
   }
+
+  shadowScope.view = view;
 
   if (view && options.attrs) {
     shadowScope.component = view;

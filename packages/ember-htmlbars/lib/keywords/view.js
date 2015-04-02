@@ -14,7 +14,7 @@ export default {
 
     return {
       componentNode: state.componentNode,
-      parentView: read(scope.locals.view),
+      parentView: scope.view,
       viewClassOrInstance: getView(read(params[0]), env.container)
     };
   },
