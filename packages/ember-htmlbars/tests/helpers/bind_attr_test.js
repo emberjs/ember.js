@@ -576,7 +576,7 @@ QUnit.test("asserts for <div data-bar='foo' {{bind-attr data-bar='blah'}}></div>
   });
 });
 
-QUnit.skip("src attribute bound to undefined is empty", function() {
+QUnit.test("src attribute bound to undefined is empty", function() {
   var template;
   ignoreDeprecation(function() {
     template = compile("<img {{bind-attr src=view.undefinedValue}}>");
@@ -592,7 +592,7 @@ QUnit.skip("src attribute bound to undefined is empty", function() {
   equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
 });
 
-QUnit.skip("src attribute bound to null is not present", function() {
+QUnit.test("src attribute bound to null is not present", function() {
   ignoreDeprecation(function() {
     view = EmberView.create({
       template: compile("<img {{bind-attr src=view.nullValue}}>"),
@@ -602,10 +602,10 @@ QUnit.skip("src attribute bound to null is not present", function() {
 
   runAppend(view);
 
-  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
+  equal(view.element.firstChild.getAttribute('src'), null, "src attribute is empty");
 });
 
-QUnit.skip("src attribute will be cleared when the value is set to null or undefined", function() {
+QUnit.test("src attribute will be cleared when the value is set to null or undefined", function() {
   var template;
   ignoreDeprecation(function() {
     template = compile("<img {{bind-attr src=view.value}}>");

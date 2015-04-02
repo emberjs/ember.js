@@ -295,7 +295,7 @@ QUnit.test("handles attribute bindings for properties", function() {
   equal(!!view.$().prop('checked'), false, 'changes to unchecked');
 });
 
-QUnit.skip("handles `undefined` value for properties", function() {
+QUnit.test("handles `undefined` value for properties", function() {
   view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value'],
