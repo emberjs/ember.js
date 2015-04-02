@@ -13,5 +13,5 @@ Gem::Specification.new do |gem|
 
   gem.version       = Ember.rubygems_version_string
 
-  gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
+  gem.files = %w(VERSION) + Dir['dist/*.{js,map}', 'lib/ember/*.rb']
 end
