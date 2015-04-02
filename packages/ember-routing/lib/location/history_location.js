@@ -27,6 +27,7 @@ export default EmberObject.extend({
   init() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, 'baseURL', jQuery('base').attr('href') || '');
+
   },
 
   /**
@@ -36,7 +37,13 @@ export default EmberObject.extend({
     @method initState
   */
   initState() {
-    set(this, 'history', get(this, 'history') || window.history);
+    var history = get(this, 'history') || window.history;
+    set(this, 'history', history);
+
+    if (history && 'state' in history) {
+      this.supportsHistory = true;
+    }
+
     this.replaceState(this.formatURL(this.getURL()));
   },
 
@@ -81,7 +88,7 @@ export default EmberObject.extend({
     @param path {String}
   */
   setURL(path) {
-    var state = this._historyState;
+    var state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -98,12 +105,30 @@ export default EmberObject.extend({
     @param path {String}
   */
   replaceURL(path) {
-    var state = this._historyState;
+    var state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.replaceState(path);
     }
+  },
+
+  /**
+    Get the current `history.state`. Checks for if a polyfill is
+    required and if so fetches this._historyState. The state returned
+    from getState may be null if an iframe has changed a window's
+    history.
+
+    @private
+    @method getState
+    @return state {Object}
+  */
+  getState() {
+    if (this.supportsHistory) {
+      return get(this, 'history').state;
+    }
+
+    return this._historyState;
   },
 
   /**
@@ -116,7 +141,7 @@ export default EmberObject.extend({
   pushState(path) {
     var state = { path: path };
 
-    get(this, 'history').pushState(null, null, path);
+    get(this, 'history').pushState(state, null, path);
 
     this._historyState = state;
 
@@ -133,7 +158,7 @@ export default EmberObject.extend({
   */
   replaceState(path) {
     var state = { path: path };
-    get(this, 'history').replaceState(null, null, path);
+    get(this, 'history').replaceState(state, null, path);
 
     this._historyState = state;
 
