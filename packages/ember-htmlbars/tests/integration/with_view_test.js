@@ -28,7 +28,7 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   }
 });
 
-QUnit.skip('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
+QUnit.test('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
   registry.register('template:foo', compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
   view = EmberView.create({

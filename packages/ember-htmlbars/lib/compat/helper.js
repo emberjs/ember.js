@@ -9,6 +9,7 @@ import Component from "ember-views/views/component";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 import { isStream } from "ember-metal/streams/utils";
+import { registerKeyword } from "ember-htmlbars/keywords";
 
 var slice = [].slice;
 
@@ -101,6 +102,14 @@ HandlebarsCompatibleHelper.prototype = {
 };
 
 export function registerHandlebarsCompatibleHelper(name, value) {
+  if (value && value.isLegacyViewHelper) {
+    registerKeyword(name, function(morph, env, scope, params, hash, template, inverse, visitor) {
+      env.hooks.keyword('view', morph, env, scope, [value.viewClass], hash, template, inverse, visitor);
+      return true;
+    });
+    return;
+  }
+
   var helper;
 
   if (value && value.isHTMLBars) {

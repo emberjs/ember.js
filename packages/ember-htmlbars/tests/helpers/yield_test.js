@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { computed } from "ember-metal/computed";
 import { Registry } from "ember-runtime/system/container";
-import { set } from "ember-metal/property_set";
+//import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import helpers from "ember-htmlbars/helpers";
@@ -107,7 +107,7 @@ QUnit.test("templates should yield to block, when the yield is embedded in a hie
   equal(view.$('div#container div.nesting div#block').length, 1, 'nesting view yields correctly even within a view hierarchy in the nesting view');
 });
 
-QUnit.skip("block should not be required", function() {
+QUnit.test("block should not be required", function() {
   var YieldingView = EmberView.extend({
     layout: compile('{{#view tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
   });
@@ -237,37 +237,7 @@ QUnit.test("yield view should be a virtual view", function() {
 });
 
 
-QUnit.skip("adding a layout should not affect the context of normal views", function() {
-  var parentView = EmberView.create({
-    context: "ParentContext"
-  });
-
-  view = EmberView.create({
-    template:     compile("View context: {{this}}"),
-    context:      "ViewContext",
-    parentView:  parentView
-  });
-
-  run(function() {
-    view.createElement();
-  });
-
-  equal(view.$().text(), "View context: ViewContext");
-
-
-  set(view, 'layout', compile("Layout: {{yield}}"));
-
-  run(function() {
-    view.destroyElement();
-    view.createElement();
-  });
-
-  equal(view.$().text(), "Layout: View context: ViewContext");
-
-  runDestroy(parentView);
-});
-
-QUnit.skip("yield should work for views even if parentView is null", function() {
+QUnit.test("yield should work for views even if parentView is null", function() {
   view = EmberView.create({
     layout:   compile('Layout: {{yield}}'),
     template: compile("View Content")
@@ -281,7 +251,7 @@ QUnit.skip("yield should work for views even if parentView is null", function() 
 
 });
 
-QUnit.skip("simple bindings inside of a yielded template should work properly when the yield is nested inside of another view", function() {
+QUnit.test("simple bindings inside of a yielded template should work properly when the yield is nested inside of another view", function() {
   view = EmberView.create({
     layout:   compile('{{#if view.falsy}}{{else}}{{yield}}{{/if}}'),
     template: compile("{{view.text}}"),
@@ -295,7 +265,7 @@ QUnit.skip("simple bindings inside of a yielded template should work properly wh
   equal(view.$().text(), "ohai");
 });
 
-QUnit.skip("nested simple bindings inside of a yielded template should work properly when the yield is nested inside of another view", function() {
+QUnit.test("nested simple bindings inside of a yielded template should work properly when the yield is nested inside of another view", function() {
   view = EmberView.create({
     layout:   compile('{{#if view.falsy}}{{else}}{{yield}}{{/if}}'),
     template: compile("{{#if view.falsy}}{{else}}{{view.text}}{{/if}}"),
@@ -318,7 +288,7 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
   }
 });
 
-QUnit.skip("yield with nested components (#3220)", function() {
+QUnit.test("yield with nested components (#3220)", function() {
   var InnerComponent = Component.extend({
     layout: compile("{{yield}}")
   });
@@ -331,11 +301,11 @@ QUnit.skip("yield with nested components (#3220)", function() {
 
   registerHelper('outer-component', makeViewHelper(OuterComponent));
 
-  view = EmberView.create({
+  view = EmberView.extend({
     template: compile(
       "{{#outer-component}}Hello world{{/outer-component}}"
     )
-  });
+  }).create();
 
   runAppend(view);
 

@@ -43,7 +43,7 @@ function testWithAs(moduleName, templateString) {
     equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
   });
 
-  QUnit.skip("updating the context should update the alias", function() {
+  QUnit.test("updating the context should update the alias", function() {
     run(function() {
       view.set('context.person', {
         name: "Yehuda Katz"
@@ -142,7 +142,7 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   }
 });
 
-QUnit.skip("it should support #with Foo.bar as qux [DEPRECATED]", function() {
+QUnit.test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of Foo from a Handlebars template is deprecated/);
@@ -176,7 +176,7 @@ QUnit.test("it should support #with view as foo", function() {
   runDestroy(view);
 });
 
-QUnit.skip("it should support #with name as food, then #with foo as bar", function() {
+QUnit.test("it should support #with name as foo, then #with foo as bar", function() {
   var view = EmberView.create({
     template: compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
     context: { name: "caterpillar" }

@@ -16,8 +16,10 @@ Renderer.prototype.renderTopLevelView =
     view.ownerView = renderNode.emberView = view;
     view.renderNode = renderNode;
 
-    var template = get(view, 'layout') || get(view, 'template');
-    var componentInfo = { component: view };
+    var layout = get(view, 'layout');
+    var template = get(view, 'template');
+
+    var componentInfo = { component: view, layout: layout };
 
     var block = buildComponentTemplate(componentInfo, {}, {
       self: view,
