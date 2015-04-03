@@ -25,6 +25,7 @@ if (hasDOM) {
   environment = {
     hasDOM: true,
     isChrome: !!window.chrome && !window.opera,
+    isFirefox: typeof InstallTrigger !== 'undefined',
     location: window.location,
     history: window.history,
     userAgent: window.navigator.userAgent,
@@ -34,6 +35,7 @@ if (hasDOM) {
   environment = {
     hasDOM: false,
     isChrome: false,
+    isFirefox: false,
     location: null,
     history: null,
     userAgent: "Lynx (textmode)",
