@@ -16,7 +16,9 @@ export function blockFor(render, template, blockOptions) {
         env.hooks.bindSelf(env, shadowScope, blockOptions.self);
       }
 
-      env.hooks.bindBlock(env, shadowScope, blockOptions.yieldTo);
+      if (blockOptions.yieldTo !== undefined) {
+        env.hooks.bindBlock(env, shadowScope, blockOptions.yieldTo);
+      }
 
       renderAndCleanup(renderNode, env, options, null, function() {
         options.renderState.clearMorph = null;
