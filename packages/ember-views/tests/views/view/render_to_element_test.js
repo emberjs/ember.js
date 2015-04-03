@@ -34,7 +34,7 @@ QUnit.test("should render into and return a body element", function() {
   equal(element.tagName, "BODY", "returns a body element");
   equal(element.firstChild.tagName, "DIV", "renders the view div");
   equal(element.firstChild.firstChild.tagName, "H1", "renders the view div");
-  equal(element.firstChild.firstChild.nextSibling.textContent, " goodbye world", "renders the text node");
+  equal(element.firstChild.firstChild.nextSibling.nodeValue, " goodbye world", "renders the text node");
 });
 
 QUnit.test("should create and render into an element with a provided tagName", function() {
@@ -51,5 +51,5 @@ QUnit.test("should create and render into an element with a provided tagName", f
   equal(element.tagName, "DIV", "returns a body element");
   equal(element.firstChild.tagName, "DIV", "renders the view div");
   equal(element.firstChild.firstChild.tagName, "H1", "renders the view div");
-  equal(element.firstChild.firstChild.nextSibling.textContent, " goodbye world", "renders the text node");
+  equal(element.firstChild.firstChild.nextSibling.nodeValue, " goodbye world", "renders the text node");
 });
