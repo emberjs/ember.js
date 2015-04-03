@@ -71,7 +71,7 @@ QUnit.test('it can lookup a path from the current keywords', function() {
     controller: {
       foo: 'bar'
     },
-    template: compile('{{#with foo as bar}}{{handlebars-get "bar"}}{{/with}}')
+    template: compile('{{#with foo as |bar|}}{{handlebars-get "bar"}}{{/with}}')
   });
 
   runAppend(view);

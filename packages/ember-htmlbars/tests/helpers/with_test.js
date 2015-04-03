@@ -17,13 +17,23 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view, lookup;
 var originalLookup = Ember.lookup;
 
-function testWithAs(moduleName, templateString) {
+function testWithAs(moduleName, templateString, deprecated) {
   QUnit.module(moduleName, {
     setup() {
       Ember.lookup = lookup = { Ember: Ember };
 
+      var template;
+      if (deprecated) {
+        expectDeprecation(function() {
+          template = compile(templateString);
+        }, "Using {{with}} without block syntax is deprecated. Please use standard block form (`{{#with foo as |bar|}}`) instead.");
+      } else {
+        template = compile(templateString);
+      }
+
+
       view = EmberView.create({
-        template: compile(templateString),
+        template: template,
         context: {
           title: "Señor Engineer",
           person: { name: "Tom Dale" }
@@ -72,14 +82,14 @@ function testWithAs(moduleName, templateString) {
   });
 }
 
-testWithAs("ember-htmlbars: {{#with}} helper", "{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}");
+testWithAs("ember-htmlbars: {{#with}} helper", "{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}", true);
 
 QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
-      template: compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
+      template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
       context: {
         admin: { name: "Tom Dale" },
         user: { name: "Yehuda Katz" }
@@ -102,7 +112,7 @@ QUnit.test("re-using the same variable with different #with blocks does not over
 
 QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
   run(function() {
-    view.set('template', compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
+    view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
       name: 'Stef',
       other: 'Yehuda'
@@ -114,7 +124,7 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
 
 QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   run(function() {
-    view.set('template', compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
+    view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {
       first: 'Limbo',
       fifth: 'Wrath',
@@ -131,7 +141,7 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
 
     lookup.Foo = { bar: 'baz' };
     view = EmberView.create({
-      template: compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
+      template: compile("{{#with Foo.bar as |qux|}}{{qux}}{{/with}}")
     });
   },
 
@@ -155,11 +165,11 @@ QUnit.test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   equal(view.$().text(), "updated", "should update");
 });
 
-QUnit.module("Handlebars {{#with keyword as foo}}");
+QUnit.module("Handlebars {{#with keyword as |foo|}}");
 
 QUnit.test("it should support #with view as foo", function() {
   var view = EmberView.create({
-    template: compile("{{#with view as myView}}{{myView.name}}{{/with}}"),
+    template: compile("{{#with view as |myView|}}{{myView.name}}{{/with}}"),
     name: "Sonics"
   });
 
@@ -177,7 +187,7 @@ QUnit.test("it should support #with view as foo", function() {
 
 QUnit.test("it should support #with name as food, then #with foo as bar", function() {
   var view = EmberView.create({
-    template: compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
+    template: compile("{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}"),
     context: { name: "caterpillar" }
   });
 
@@ -193,11 +203,11 @@ QUnit.test("it should support #with name as food, then #with foo as bar", functi
   runDestroy(view);
 });
 
-QUnit.module("Handlebars {{#with this as foo}}");
+QUnit.module("Handlebars {{#with this as |foo|}}");
 
 QUnit.test("it should support #with this as qux", function() {
   var view = EmberView.create({
-    template: compile("{{#with this as person}}{{person.name}}{{/with}}"),
+    template: compile("{{#with this as |person|}}{{person.name}}{{/with}}"),
     controller: EmberObject.create({ name: "Los Pivots" })
   });
 
@@ -328,7 +338,7 @@ QUnit.test("it should wrap keyword with object controller [DEPRECATED]", functio
 
   view = EmberView.create({
     container: container,
-    template: compile('{{#with person as steve controller="person"}}{{name}} - {{steve.name}}{{/with}}'),
+    template: compile('{{#with person controller="person" as |steve|}}{{name}} - {{steve.name}}{{/with}}'),
     controller: parentController
   });
 
@@ -418,7 +428,7 @@ QUnit.test("destroys the controller generated with {{with foo as bar controller=
 
   view = EmberView.create({
     container: container,
-    template: compile('{{#with person as steve controller="person"}}{{controllerName}}{{/with}}'),
+    template: compile('{{#with person controller="person" as |steve|}}{{controllerName}}{{/with}}'),
     controller: parentController
   });
 
@@ -436,7 +446,7 @@ QUnit.module("{{#with}} helper binding to view keyword", {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
-      template: compile("We have: {{#with view.thing as fromView}}{{fromView.name}} and {{fromContext.name}}{{/with}}"),
+      template: compile("We have: {{#with view.thing as |fromView|}}{{fromView.name}} and {{fromContext.name}}{{/with}}"),
       thing: { name: 'this is from the view' },
       context: {
         fromContext: { name: "this is from the context" }

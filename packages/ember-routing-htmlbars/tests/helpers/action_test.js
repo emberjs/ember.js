@@ -473,7 +473,7 @@ QUnit.test("should work properly in an #each block", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-QUnit.test("should work properly in a {{#with foo as bar}} block", function() {
+QUnit.test("should work properly in a {{#with foo as |bar|}} block", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -483,7 +483,7 @@ QUnit.test("should work properly in a {{#with foo as bar}} block", function() {
   view = EmberView.create({
     controller: controller,
     something: { ohai: 'there' },
-    template: compile('{{#with view.something as somethingElse}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
+    template: compile('{{#with view.something as |somethingElse|}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
   runAppend(view);
