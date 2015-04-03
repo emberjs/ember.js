@@ -104,7 +104,7 @@ QUnit.test('bindings can be `this`, in which case they *are* the current context
 
 QUnit.test('child views can be inserted inside a bind block', function() {
   registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
-  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
+  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as |thing|}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
   registry.register('template:other', compile('cruel'));
 
   var context = {
@@ -143,7 +143,7 @@ QUnit.test('child views can be inserted inside a bind block', function() {
 });
 
 QUnit.test('views render their template in the context of the parent view\'s context', function() {
-  registry.register('template:parent', compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with content as |person|}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -163,7 +163,7 @@ QUnit.test('views render their template in the context of the parent view\'s con
 });
 
 QUnit.test('views make a view keyword available that allows template to reference view context', function() {
-  registry.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with view.content as |person|}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,

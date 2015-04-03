@@ -28,7 +28,7 @@ import WithView from "ember-views/views/with_view";
 
   NOTE: The alias should not reuse a name from the bound property path.
   For example: `{{#with foo as |foo.bar|}}` is not supported because it attempts to alias using
-  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as baz}}`.
+  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
 
   ### `controller` option
 
@@ -38,7 +38,7 @@ import WithView from "ember-views/views/with_view";
   This is very similar to using an `itemController` option with the `{{each}}` helper.
 
   ```handlebars
-  {{#with users.posts as posts controller='userBlogPosts'}}
+  {{#with users.posts controller='userBlogPosts' as |posts|}}
     {{!- `posts` is wrapped in our controller instance }}
   {{/with}}
   ```
