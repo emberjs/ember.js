@@ -555,3 +555,20 @@ QUnit.test("{{render}} helper should let view provide its own template", functio
 
   equal(view.$().text(), 'Hello other!');
 });
+
+QUnit.test("{{render}} helper should not require view to provide its own template", function() {
+  var template = "{{render 'fish'}}";
+  var controller = EmberController.extend({ container: container });
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  container._registry.register('template:fish', compile('Hello fish!'));
+
+  container._registry.register('view:fish', EmberView.extend());
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Hello fish!');
+});
