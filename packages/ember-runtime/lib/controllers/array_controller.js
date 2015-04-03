@@ -212,7 +212,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
       Ember.assert(
         'ArrayController expects `model` to implement the Ember.Array mixin. ' +
         'This can often be fixed by wrapping your model with `Ember.A()`.',
-        EmberArray.detect(value)
+        EmberArray.detect(value) || !value
       );
 
       return value;
