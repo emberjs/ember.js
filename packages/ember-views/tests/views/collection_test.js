@@ -10,6 +10,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
 import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
+import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 
 var trim = jQuery.trim;
 var view;
@@ -762,7 +763,9 @@ QUnit.test('Collection with style attribute supports changing content', function
     view.appendTo('#qunit-fixture');
   });
 
-  equal(view.$().attr('style'), 'width: 100px;', "width is applied to the element");
+  var style = getElementStyle(view.element);
+
+  equal(style, 'WIDTH: 100PX;', "width is applied to the element");
 
   run(function() {
     view.get('content').pushObject('baz');
