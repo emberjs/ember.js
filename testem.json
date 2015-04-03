@@ -41,6 +41,7 @@
   "launch_in_ci": [
     "SL_Chrome_Current",
     "SL_IE_11",
-    "SL_IE_10"
+    "SL_IE_10",
+    "SL_IE_9"
   ]
 }
