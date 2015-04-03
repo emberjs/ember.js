@@ -259,7 +259,7 @@ QUnit.test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function(
 });
 
 QUnit.test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
-  var template = compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
+  var template = compile('{{#with view.content as |image|}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
 
   view = EmberView.create({
     template: template,
