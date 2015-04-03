@@ -61,3 +61,16 @@ QUnit.test('works properly when model is set to a plain array', function() {
     }, /ArrayController expects `model` to implement the Ember.Array mixin. This can often be fixed by wrapping your model with `Ember\.A\(\)`./);
   }
 });
+
+QUnit.test('works properly when model is set to `null`', function() {
+  var controller = ArrayController.create();
+
+  set(controller, 'model', null);
+  equal(get(controller, 'model'), null, "can set model to `null`");
+
+  set(controller, 'model', undefined);
+  equal(get(controller, 'model'), undefined, "can set model to `undefined`");
+
+  set(controller, 'model', false);
+  equal(get(controller, 'model'), false, "can set model to `undefined`");
+});
