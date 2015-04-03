@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // assert, deprecate
+import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import { camelize } from "ember-runtime/system/string";
 import {
@@ -135,6 +136,9 @@ export function renderHelper(params, hash, options, env) {
   view = container.lookup('view:' + name);
   if (!view) {
     view = container.lookup('view:default');
+  }
+  var viewHasTemplateSpecified = !!get(view, 'template');
+  if (!viewHasTemplateSpecified) {
     template = template || container.lookup(templateName);
   }
 
