@@ -15,6 +15,7 @@
 + [Arrow Functions](#arrow-functions)
 + [Function Arguments](#function-arguments)
 + [Rest Parameters](#rest-parameters)
++ [Destructuring](#destructuring)
 + [Comments](#comments)
 
 ## Objects
@@ -339,7 +340,7 @@ function foo(...args) {
 
 ## Destructuring
 
-When decomposing simple arrays or object, prefer [destructuring](http://babeljs.io/docs/learn-es6/#destructuring);
+When decomposing simple arrays or objects, prefer [destructuring](http://babeljs.io/docs/learn-es6/#destructuring).
 
 ```javascript
 // array destructuring
