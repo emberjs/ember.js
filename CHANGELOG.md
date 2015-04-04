@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 1.11.1 (April 3, 2015)
+
+- [#10795](https://github.com/emberjs/ember.js/pull/10795) - [BUGFIX] Fix regression triggered by `CollectionView` instances with `attributeBindings`.
+- [#10805](https://github.com/emberjs/ember.js/pull/10805) - [BUGFIX] Correctly update URL after browser popstate.
+- [#10813](https://github.com/emberjs/ember.js/pull/10813) - [BUGFIX] Ensure `options.fn` can be called within in an `Ember.Handlebars` compat mode helper.
+- [#10813](https://github.com/emberjs/ember.js/pull/10813) - [BUGFIX] Ensure `options.inverse` can be called in an `Ember.Handlebars` compat mode helper.
+- [#10815](https://github.com/emberjs/ember.js/pull/10815) - [BUGFIX] Fix invalid assertion for `{{each foos as |foo|}}` when `foos` is falsey.
+- [#10822](https://github.com/emberjs/ember.js/pull/10822) - [BUGFIX] Allow `{{render}}` helper to give template to its view.
+
 ### 1.11.0 (March 28, 2015)
 
 - [#10736](https://github.com/emberjs/ember.js/pull/10736) [BUGFIX] Fix issue with Query Params when using `Ember.ObjectController` (regression from `ObjectController` deprecation).
