@@ -1,6 +1,6 @@
 import Stream from "./stream";
 
-/**
+/*
  Check whether an object is a stream or not
 
  @public
@@ -13,7 +13,7 @@ export function isStream(object) {
   return object && object.isStream;
 }
 
-/**
+/*
  A method of subscribing to a stream which is safe for use with a non-stream
  object. If a non-stream object is passed, the function does nothing.
 
@@ -31,7 +31,7 @@ export function subscribe(object, callback, context) {
   }
 }
 
-/**
+/*
  A method of unsubscribing from a stream which is safe for use with a non-stream
  object. If a non-stream object is passed, the function does nothing.
 
@@ -48,7 +48,7 @@ export function unsubscribe(object, callback, context) {
   }
 }
 
-/**
+/*
  Retrieve the value of a stream, or in the case a non-stream object is passed,
  return the object itself.
 
@@ -66,7 +66,7 @@ export function read(object) {
   }
 }
 
-/**
+/*
  Map an array, replacing any streams with their values.
 
  @public
@@ -87,7 +87,7 @@ export function readArray(array) {
   return ret;
 }
 
-/**
+/*
  Map a hash, replacing any stream property values with the current value of that
  stream.
 
@@ -108,7 +108,7 @@ export function readHash(object) {
   return ret;
 }
 
-/**
+/*
  Check whether an array contains any stream values
 
  @public
@@ -132,7 +132,7 @@ export function scanArray(array) {
   return containsStream;
 }
 
-/**
+/*
  Check whether a hash has any stream property values
 
  @public
@@ -155,7 +155,7 @@ export function scanHash(hash) {
   return containsStream;
 }
 
-/**
+/*
  Join an array, with any streams replaced by their current values
 
  @public
@@ -188,7 +188,7 @@ export function concat(array, separator) {
   }
 }
 
-/**
+/*
  Generate a new stream by providing a source stream and a function that can
  be used to transform the stream's value. In the case of a non-stream object,
  returns the result of the function.

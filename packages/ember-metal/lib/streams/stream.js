@@ -8,7 +8,7 @@ import {
 @module ember-metal
 */
 
-/**
+/*
   @public
   @class Stream
   @namespace Ember.stream
