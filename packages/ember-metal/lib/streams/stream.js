@@ -32,7 +32,7 @@ Subscriber.prototype.removeFrom = function(stream) {
   }
 };
 
-/**
+/*
   @public
   @class Stream
   @namespace Ember.stream
