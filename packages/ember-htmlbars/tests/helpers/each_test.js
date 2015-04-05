@@ -299,7 +299,7 @@ Ember.runInDebug(function() {
 
       expectAssertion(function() {
         runAppend(badView);
-      }, /false and you forgot to wrap your array in Ember\.A/);
+      }, /and you forgot to wrap your array in Ember\.A/);
       runDestroy(badView);
     });
   }
