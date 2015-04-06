@@ -1,3 +1,4 @@
+/*globals EmberDev */
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
@@ -276,7 +277,7 @@ QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
   equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
 });
 
-Ember.runInDebug(function() {
+if (EmberDev && !EmberDev.runningProdBuild) {
   if (Ember.EXTEND_PROTOTYPES) {
     QUnit.test("it should not give ye olde assertion error", function() {
       var goodView = EmberView.create({
@@ -303,7 +304,7 @@ Ember.runInDebug(function() {
       runDestroy(badView);
     });
   }
-});
+}
 
 QUnit.test("it works inside a ul element", function() {
   var ulView = EmberView.create({
