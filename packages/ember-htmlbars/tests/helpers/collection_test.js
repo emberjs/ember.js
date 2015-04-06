@@ -616,7 +616,7 @@ QUnit.test("should render multiple, bound nested collections (#68)", function() 
   runDestroy(view);
 });
 
-QUnit.skip("should allow view objects to be swapped out without throwing an error (#78)", function() {
+QUnit.test("should allow view objects to be swapped out without throwing an error (#78)", function() {
   var view, dataset, secondDataset;
 
   run(function() {
@@ -625,7 +625,7 @@ QUnit.skip("should allow view objects to be swapped out without throwing an erro
     var ExampleCollectionView = CollectionView.extend({
       contentBinding: 'parentView.items',
       tagName: 'ul',
-      template: compile("{{view.content}}")
+      _itemViewTemplate: compile("{{view.content}}")
     });
 
     var ReportingView = EmberView.extend({
