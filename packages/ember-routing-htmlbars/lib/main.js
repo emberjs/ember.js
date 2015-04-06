@@ -12,16 +12,16 @@ import merge from "ember-metal/merge";
 import { registerHelper } from "ember-htmlbars/helpers";
 import { registerKeyword } from "ember-htmlbars/keywords";
 
-import { renderHelper } from "ember-routing-htmlbars/helpers/render";
 import { queryParamsHelper } from "ember-routing-htmlbars/helpers/query-params";
 import action from "ember-routing-htmlbars/keywords/action";
 import linkTo from "ember-routing-htmlbars/keywords/link-to";
+import render from "ember-routing-htmlbars/keywords/render";
 
-registerHelper('render', renderHelper);
 registerHelper('query-params', queryParamsHelper);
 
 registerKeyword('action', action);
 registerKeyword('link-to', linkTo);
+registerKeyword('render', render);
 
 var deprecatedLinkTo = merge({}, linkTo);
 merge(deprecatedLinkTo, {
