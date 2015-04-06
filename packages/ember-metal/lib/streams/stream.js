@@ -4,6 +4,9 @@ import {
   getTailPath
 } from "ember-metal/path_cache";
 import Ember from "ember-metal/core";
+import {
+  isStream
+} from 'ember-metal/streams/utils';
 
 /**
 @module ember-metal
@@ -76,7 +79,7 @@ Dependency.prototype.removeFrom = function(stream) {
 };
 
 Dependency.prototype.replace = function(stream, callback, context) {
-  if (!stream.isStream) {
+  if (!isStream(stream)) {
     this.stream = null;
     this.callback = null;
     this.context = null;
@@ -191,7 +194,7 @@ Stream.prototype = {
   },
 
   addDependency(stream, callback, context) {
-    if (!stream || !stream.isStream) {
+    if (!isStream(stream)) {
       return null;
     }
 
@@ -371,7 +374,7 @@ Stream.prototype = {
 };
 
 Stream.wrap = function(value, Kind, param) {
-  if (value.isStream) {
+  if (isStream(value)) {
     return value;
   } else {
     return new Kind(value, param);
