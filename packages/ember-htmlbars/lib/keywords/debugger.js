@@ -39,16 +39,13 @@ import Logger from "ember-metal/logger";
   @param {String} property
 */
 export default function debuggerKeyword(morph, env, scope) {
+  /* jshint unused: false, debug: true */
 
-  /* jshint unused: false */
-  var view = scope.locals.view;
+  var view = env.hooks.getValue(scope.locals.view);
+  var context = env.hooks.getValue(scope.self);
 
-  /* jshint unused: false */
-  var context = scope.self;
-
-  /* jshint unused: false */
   function get(path) {
-    return env.hooks.getValue(env.hooks.get(path));
+    return env.hooks.getValue(env.hooks.get(env, scope, path));
   }
 
   Logger.info('Use `view`, `context`, and `get(<path>)` to debug this template.');
