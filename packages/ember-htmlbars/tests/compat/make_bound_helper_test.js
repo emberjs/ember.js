@@ -292,7 +292,7 @@ QUnit.test("bound helpers should support multiple bound properties", function() 
   equal(view.$().text(), 'WOOTYEAH', "helper correctly re-rendered after both bound helper properties changed");
 });
 
-QUnit.skip("bound helpers should expose property names in options.data.properties", function() {
+QUnit.test("bound helpers should expose property names in options.data.properties", function() {
   expectDeprecationInHTMLBars();
 
   helper('echo', function() {

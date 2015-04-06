@@ -1,3 +1,9 @@
+import {
+  readArray,
+  readHash,
+  isStream
+} from "ember-metal/streams/utils";
+
 /**
 @module ember
 @submodule ember-htmlbars
@@ -32,9 +38,23 @@
   @deprecated
 */
 export default function makeBoundHelper(fn) {
-  return function(params, hash, templates) {
-    var args = params.slice();
-    args.push({ hash: hash, templates: templates });
-    return fn.apply(undefined, args);
+  return {
+    helperFunction(params, hash, templates) {
+      var args = readArray(params);
+      var properties = new Array(params.length);
+
+      for (var i = 0, l = params.length; i < l; i++) {
+        var param = params[i];
+
+        if (isStream(param)) {
+          properties[i] = param.label;
+        } else {
+          properties[i] = param;
+        }
+      }
+
+      args.push({ hash: readHash(hash) , templates, data: { properties } });
+      return fn.apply(undefined, args);
+    }
   };
 }
