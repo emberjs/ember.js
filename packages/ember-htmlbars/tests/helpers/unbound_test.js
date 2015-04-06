@@ -210,7 +210,7 @@ QUnit.test("should be able to render unbound forms of multi-arg helpers", functi
   equal(view.$().text(), "aXc abc", "unbound helpers/properties stayed the same");
 });
 
-QUnit.skip("should be able to render an unbound helper invocation for helpers with dependent keys", function() {
+QUnit.test("should be able to render an unbound helper invocation for helpers with dependent keys", function() {
   view = EmberView.create({
     template: compile("{{capitalizeName person}} {{unbound capitalizeName person}} {{concatNames person}} {{unbound concatNames person}}"),
     context: EmberObject.create({
@@ -255,7 +255,7 @@ QUnit.test("should be able to render an unbound helper invocation in #each helpe
   equal(view.$().text(), "SHOOBY SHOOBYCINDY CINDY", "unbound rendered correctly");
 });
 
-QUnit.skip("should be able to render an unbound helper invocation with bound hash options", function() {
+QUnit.test("should be able to render an unbound helper invocation with bound hash options", function() {
   try {
     Ember.Handlebars.registerBoundHelper('repeat', function(value) {
       return [].slice.call(arguments, 0, -1).join('');

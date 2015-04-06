@@ -1,8 +1,10 @@
-export default function TransformEachIntoCollection() {
+import Ember from 'ember-metal/core';
+
+export default function TransformOldBindingSyntax() {
   this.syntax = null;
 }
 
-TransformEachIntoCollection.prototype.transform = function TransformEachIntoCollection_transform(ast) {
+TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSyntax_transform(ast) {
   var b = this.syntax.builders;
   var walker = new this.syntax.Walker();
 
@@ -11,16 +13,23 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
 
     each(node.sexpr.hash.pairs, function(pair) {
       let { key, value } = pair;
-      let { start, source } = pair.loc;
+
+      var sourceInformation = '';
+
+      if (pair.loc) {
+        let { start, source } = pair.loc;
+
+        sourceInformation = `@ ${start.line}:${start.column} in ${source || '(inline)'}`;
+      }
 
       if (key === 'classBinding') { return; }
 
-      Ember.assert(`Setting 'attributeBindings' via template helpers is not allowed @ ${start.line}:${start.column} in ${source || '(inline)'}`, key !== 'attributeBindings');
+      Ember.assert(`Setting 'attributeBindings' via template helpers is not allowed ${sourceInformation}`, key !== 'attributeBindings');
 
       if (key.substr(-7) === 'Binding') {
         let newKey = key.slice(0, -7);
 
-        Ember.deprecate(`You're using legacy binding syntax: ${key}=${exprToString(value)} at ${start.line}:${start.column} in ${source || '(inline)'}. Please replace with ${newKey}=${value.original}`);
+        Ember.deprecate(`You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`);
 
         pair.key = newKey;
         if (value.type === 'StringLiteral') {
@@ -34,8 +43,7 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
 };
 
 function validate(node) {
-  return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
-    node.sexpr.path.original === 'view';
+  return (node.type === 'BlockStatement' || node.type === 'MustacheStatement');
 }
 
 function each(list, callback) {

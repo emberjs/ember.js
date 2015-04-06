@@ -12,7 +12,11 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
     let sexpr = node.sexpr;
     let list = sexpr.params.shift();
     sexpr.path = b.path('collection');
-    sexpr.hash.pairs.push(b.pair('content', list));
+
+    let pair = b.pair('content', list);
+    pair.loc = list.loc;
+
+    sexpr.hash.pairs.push(pair);
   });
 
   return ast;

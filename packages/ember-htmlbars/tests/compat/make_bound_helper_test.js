@@ -207,12 +207,44 @@ QUnit.test("bound helper should support this keyword", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-QUnit.skip("bound helpers should support bound options", function() {
+QUnit.test("bound helpers should support bound options via `fooBinding` [DEPRECATED]", function() {
+  registerRepeatHelper();
+
+  var template;
+
+  expectDeprecation(function() {
+    template = compile('{{repeat text countBinding="numRepeats"}}');
+  }, /You're using legacy binding syntax: countBinding="numRepeats"/);
+
+  view = EmberView.create({
+    controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
+    template: template
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'ababab', "helper output is correct");
+
+  run(function() {
+    view.set('controller.numRepeats', 4);
+  });
+
+  equal(view.$().text(), 'abababab', "helper correctly re-rendered after bound option was changed");
+
+  run(function() {
+    view.set('controller.numRepeats', 2);
+    view.set('controller.text', "YES");
+  });
+
+  equal(view.$().text(), 'YESYES', "helper correctly re-rendered after both bound option and property changed");
+});
+
+QUnit.test("bound helpers should support bound hash options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
     controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
-    template: compile('{{repeat text countBinding="numRepeats"}}')
+    template: compile('{{repeat text count=numRepeats}}')
   });
 
   runAppend(view);

@@ -110,10 +110,16 @@ QUnit.test("bound helpers should support keywords", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-QUnit.test("bound helpers should not process `fooBinding` style hash properties", function() {
+QUnit.test("bound helpers should process `fooBinding` style hash properties [DEPRECATED]", function() {
   registry.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
-    equal(hash.timesBinding, "numRepeats");
+    equal(hash.times, 3);
   }));
+
+  var template;
+
+  expectDeprecation(function() {
+    template = compile('{{x-repeat text timesBinding="numRepeats"}}');
+  }, /You're using legacy binding syntax: timesBinding="numRepeats"/);
 
   view = EmberView.create({
     container: container,
@@ -121,7 +127,7 @@ QUnit.test("bound helpers should not process `fooBinding` style hash properties"
       text: 'ab',
       numRepeats: 3
     },
-    template: compile('{{x-repeat text timesBinding="numRepeats"}}')
+    template
   });
 
   runAppend(view);
