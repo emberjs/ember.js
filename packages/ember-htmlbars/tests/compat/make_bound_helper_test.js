@@ -339,7 +339,7 @@ QUnit.test("bound helpers can be invoked with zero args", function() {
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
 
-QUnit.skip("bound helpers should not be invoked with blocks", function() {
+QUnit.test("bound helpers should not be invoked with blocks", function() {
   registerRepeatHelper();
 
   view = EmberView.create({

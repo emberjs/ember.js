@@ -40,6 +40,8 @@ import {
 export default function makeBoundHelper(fn) {
   return {
     helperFunction(params, hash, templates) {
+      Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !templates.template.yield);
+
       var args = readArray(params);
       var properties = new Array(params.length);
 
