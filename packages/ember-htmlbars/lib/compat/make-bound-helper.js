@@ -37,8 +37,12 @@ import {
   @since 1.2.0
   @deprecated
 */
-export default function makeBoundHelper(fn) {
+export default function makeBoundHelper(fn, ...dependentKeys) {
   return {
+    _dependentKeys: dependentKeys,
+
+    isHandlebarsCompat: true,
+
     helperFunction(params, hash, templates) {
       Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !templates.template.yield);
 

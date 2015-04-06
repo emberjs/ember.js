@@ -113,7 +113,7 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
   equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
-QUnit.skip("should allow for computed properties with dependencies", function() {
+QUnit.test("should allow for computed properties with dependencies", function() {
   expectDeprecationInHTMLBars();
 
   helper('capitalizeName', function(value) {
@@ -352,7 +352,7 @@ QUnit.test("bound helpers should not be invoked with blocks", function() {
   }, /registerBoundHelper-generated helpers do not support use with Handlebars blocks/i);
 });
 
-QUnit.skip("should observe dependent keys passed to registerBoundHelper", function() {
+QUnit.test("should observe dependent keys passed to registerBoundHelper", function() {
   try {
     expectDeprecationInHTMLBars();
 

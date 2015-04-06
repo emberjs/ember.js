@@ -5,7 +5,8 @@
 
 import subscribe from "ember-htmlbars/utils/subscribe";
 import { isArray } from "ember-metal/utils";
-import { chain, read, isStream, addDependency } from "ember-metal/streams/utils";
+import { chain, read, readArray, isStream, addDependency } from "ember-metal/streams/utils";
+import { findHelper } from "ember-htmlbars/system/lookup-helper";
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.streamUnsubscribers) {
@@ -13,6 +14,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
   }
 
   var keyword = env.hooks.keywords[path];
+  var helper;
   if (keyword && keyword.link) {
     keyword.link(renderNode.state, params, hash);
   } else {
@@ -20,7 +22,14 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
       case 'unbound': return true;
       case 'if': params[0] = shouldDisplay(params[0]); break;
       case 'each': params[0] = eachParam(params[0]); break;
+      default:
+        helper = findHelper(path, scope.view, env);
+
+        if (helper && helper.isHandlebarsCompat && params[0]) {
+          params[0] = processHandlebarsCompatDepKeys(params[0], helper._dependentKeys);
+        }
     }
+
   }
 
   if (params.length) {
@@ -85,4 +94,27 @@ function getKey(obj, key) {
   } else {
     return obj && obj[key];
   }
+}
+
+function processHandlebarsCompatDepKeys(base, additionalKeys) {
+  if (!isStream(base) || additionalKeys.length === 0) {
+    return base;
+  }
+
+  var depKeyStreams = [];
+
+  var stream = chain(base, function() {
+    readArray(depKeyStreams);
+
+    return read(base);
+  }, 'HandlebarsCompatHelper');
+
+  for (var i = 0, l = additionalKeys.length; i < l; i++) {
+    var depKeyStream = base.get(additionalKeys[i]);
+
+    depKeyStreams.push(depKeyStream);
+    stream.addDependency(depKeyStream);
+  }
+
+  return stream;
 }
