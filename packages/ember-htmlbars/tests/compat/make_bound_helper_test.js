@@ -469,7 +469,7 @@ QUnit.skip("bound helpers can handle nulls in array (with primitives) [DEPRECATE
   equal(view.$().text(), '0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb 0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb ', "helper output is still correct");
 });
 
-QUnit.skip("bound helpers can handle nulls in array (with objects)", function() {
+QUnit.test("bound helpers can handle nulls in array (with objects)", function() {
   expectDeprecationInHTMLBars();
 
   helper('print-foo', function(val) {
