@@ -242,7 +242,7 @@ function testValueBinding(templateString) {
 }
 
 QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
-  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+  expectDeprecation(`You're using legacy binding syntax: valueBinding="view.val" @ 1:176 in (inline). Please replace with value=view.val`);
 
   testValueBinding(
     '{{view view.selectView viewName="select"' +
@@ -294,7 +294,7 @@ function testSelectionBinding(templateString) {
 }
 
 QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
-  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+  expectDeprecation(`You're using legacy binding syntax: contentBinding="view.collection" @ 1:44 in (inline). Please replace with content=view.collection`);
 
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +

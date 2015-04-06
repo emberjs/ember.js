@@ -946,16 +946,21 @@ QUnit.skip('{{view}} should evaluate class bindings set with either classBinding
   runDestroy(lookup.App);
 });
 
-QUnit.skip('{{view}} should evaluate other attribute bindings set to global paths', function() {
+QUnit.test('{{view}} should evaluate other attribute bindings set to global paths [DEPRECATED]', function() {
   run(function() {
     lookup.App = Namespace.create({
       name: 'myApp'
     });
   });
 
+  var template;
+  expectDeprecation(function() {
+    template = compile('{{view view.textField valueBinding="App.name"}}');
+  }, /You're using legacy binding syntax: valueBinding/);
+
   view = EmberView.create({
     textField: TextField,
-    template: compile('{{view view.textField valueBinding="App.name"}}')
+    template
   });
 
   expectDeprecation(function() {

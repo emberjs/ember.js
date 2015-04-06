@@ -137,7 +137,7 @@ QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
   }
 });
 
-QUnit.skip("should be able to render an unbound helper invocation", function() {
+QUnit.test("should be able to render an unbound helper invocation", function() {
   try {
     registerBoundHelper('repeat', function(value, options) {
       var count = options.hash.count;
@@ -149,7 +149,45 @@ QUnit.skip("should be able to render an unbound helper invocation", function() {
     });
 
     view = EmberView.create({
-      template: compile('{{unbound repeat foo countBinding="bar"}} {{repeat foo countBinding="bar"}} {{unbound repeat foo count=2}} {{repeat foo count=4}}'),
+      template: compile('{{unbound repeat foo count=bar}} {{repeat foo count=bar}} {{unbound repeat foo count=2}} {{repeat foo count=4}}'),
+      context: EmberObject.create({
+        foo: "X",
+        numRepeatsBinding: "bar",
+        bar: 5
+      })
+    });
+    runAppend(view);
+
+    equal(view.$().text(), "XXXXX XXXXX XX XXXX", "first render is correct");
+
+    run(function() {
+      set(view, 'context.bar', 1);
+    });
+
+    equal(view.$().text(), "XXXXX X XX XXXX", "only unbound bound options changed");
+  } finally {
+    delete helpers['repeat'];
+  }
+});
+
+QUnit.test("should be able to render an unbound helper invocation with deprecated fooBinding [DEPRECATED]", function() {
+  try {
+    registerBoundHelper('repeat', function(value, options) {
+      var count = options.hash.count;
+      var a = [];
+      while (a.length < count) {
+        a.push(value);
+      }
+      return a.join('');
+    });
+
+    var template;
+    expectDeprecation(function() {
+      template = compile('{{unbound repeat foo countBinding="bar"}} {{repeat foo countBinding="bar"}} {{unbound repeat foo count=2}} {{repeat foo count=4}}');
+    }, /You're using legacy binding syntax/);
+
+    view = EmberView.create({
+      template,
       context: EmberObject.create({
         foo: "X",
         numRepeatsBinding: "bar",
