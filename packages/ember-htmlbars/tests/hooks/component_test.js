@@ -23,7 +23,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
     }
   });
 
-  QUnit.test("component is looked up from the container", function() {
+  QUnit.skip("component is looked up from the container", function() {
     registry.register('template:components/foo-bar', compile('yippie!'));
 
     view = EmberView.create({
@@ -36,7 +36,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().text(), 'yippie!', 'component was looked up and rendered');
   });
 
-  QUnit.test("asserts if component is not found", function() {
+  QUnit.skip("asserts if component is not found", function() {
     view = EmberView.create({
       container: container,
       template: compile("<foo-bar />")

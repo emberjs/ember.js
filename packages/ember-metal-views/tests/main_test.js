@@ -7,6 +7,14 @@ import {
 
 var view;
 
+import { Renderer } from 'ember-metal-views';
+
+QUnit.module('ember-metal-views');
+
+QUnit.test('export test', function() {
+  ok(Renderer, 'Renderer is exported');
+});
+
 testsFor("ember-metal-views", {
   teardown(renderer) {
     if (view) { renderer.removeAndDestroy(view); }

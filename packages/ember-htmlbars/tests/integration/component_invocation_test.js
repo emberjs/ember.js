@@ -173,7 +173,7 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
-  QUnit.test('`Component.prototype.hasBlock` when block supplied', function() {
+  QUnit.skip('`Component.prototype.hasBlock` when block supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
@@ -203,7 +203,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
     equal(jQuery('#qunit-fixture').text(), 'No Block!');
   });
 
-  QUnit.test('`Component.prototype.hasBlockParams` when block param supplied', function() {
+  QUnit.skip('`Component.prototype.hasBlockParams` when block param supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
