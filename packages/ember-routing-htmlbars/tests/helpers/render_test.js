@@ -82,6 +82,23 @@ QUnit.test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
+QUnit.test("{{render}} helper should render nested helpers", function() {
+  var template = "<h1>HI</h1>{{render 'foo'}}";
+  var controller = EmberController.extend({ container: container });
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  Ember.TEMPLATES['foo'] = compile("<p>FOO</p>{{render 'bar'}}");
+  Ember.TEMPLATES['bar'] = compile("<p>BAR</p>{{render 'baz'}}");
+  Ember.TEMPLATES['baz'] = compile("<p>BAZ</p>");
+
+  runAppend(view);
+
+  equal(view.$().text(), 'HIFOOBARBAZ');
+});
+
 QUnit.test("{{render}} helper should have assertion if neither template nor view exists", function() {
   var template = "<h1>HI</h1>{{render 'oops'}}";
   var controller = EmberController.extend({ container: container });
