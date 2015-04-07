@@ -3849,3 +3849,57 @@ QUnit.test("Can disconnect from the render helper's children", function() {
   Ember.run(router, 'send', 'disconnect');
   equal(Ember.$('#qunit-fixture .foo .index').text(), '');
 });
+
+QUnit.test("Can render({into:...}) nested render helpers", function() {
+  Ember.TEMPLATES.application = compile('{{render "foo"}}');
+  Ember.TEMPLATES.foo = compile('<div class="foo">{{render "bar"}}</div>');
+  Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');
+  Ember.TEMPLATES.index = compile('other');
+  Ember.TEMPLATES.baz = compile('baz');
+
+  App.IndexRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render({ into: 'bar' });
+    },
+    actions: {
+      changeToBaz: function() {
+        this.disconnectOutlet({
+          parentView: 'bar',
+          outlet: 'main'
+        });
+        this.render('baz', { into: 'bar' });
+      }
+    }
+  });
+
+  bootApplication();
+  equal(Ember.$('#qunit-fixture .bar').text(), 'other');
+  Ember.run(router, 'send', 'changeToBaz');
+  equal(Ember.$('#qunit-fixture .bar').text(), 'baz');
+});
+
+QUnit.test("Can disconnect from nested render helpers", function() {
+  Ember.TEMPLATES.application = compile('{{render "foo"}}');
+  Ember.TEMPLATES.foo = compile('<div class="foo">{{render "bar"}}</div>');
+  Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');
+  Ember.TEMPLATES.index = compile('other');
+
+  App.IndexRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render({ into: 'bar' });
+    },
+    actions: {
+      disconnect: function() {
+        this.disconnectOutlet({
+          parentView: 'bar',
+          outlet: 'main'
+        });
+      }
+    }
+  });
+
+  bootApplication();
+  equal(Ember.$('#qunit-fixture .bar').text(), 'other');
+  Ember.run(router, 'send', 'disconnect');
+  equal(Ember.$('#qunit-fixture .bar').text(), '');
+});
