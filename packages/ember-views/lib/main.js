@@ -22,6 +22,7 @@ import {
   states
 } from "ember-views/views/states";
 
+import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
@@ -70,6 +71,7 @@ Ember.CoreView = DeprecatedCoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
+Ember.View._Renderer = Renderer;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;

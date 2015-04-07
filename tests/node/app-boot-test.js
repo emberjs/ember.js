@@ -26,7 +26,7 @@ global.EmberENV = {
 var Ember = require(path.join(distPath, 'ember.debug.cjs'));
 var compile = require(path.join(distPath, 'ember-template-compiler')).compile;
 Ember.testing = true;
-var DOMHelper = Ember.View.DOMHelper;
+var DOMHelper = Ember.HTMLBars.DOMHelper;
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
 
@@ -147,7 +147,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function() {
+  QUnit.skip("It is possible to render a view with a nested {{view}} helper in Node", function() {
     var View = Ember.Component.extend({
       renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
@@ -168,7 +168,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1> <div><div id="(.*)" class="ember-view"><p>The files are \*inside\* the computer\?\!<\/p><\/div><\/div>/));
   });
 
-  QUnit.test("It is possible to render a view with {{link-to}} in Node", function() {
+  QUnit.skip("It is possible to render a view with {{link-to}} in Node", function() {
     QUnit.stop();
 
     var app;
@@ -195,7 +195,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     });
   });
 
-  QUnit.test("It is possible to render outlets in Node", function() {
+  QUnit.skip("It is possible to render outlets in Node", function() {
     QUnit.stop();
     QUnit.stop();
 

@@ -23,6 +23,7 @@ import logHelper from "ember-htmlbars/helpers/log";
 import eachHelper from "ember-htmlbars/helpers/each";
 import bindAttrClassHelper from "ember-htmlbars/helpers/bind-attr-class";
 import normalizeClassHelper from "ember-htmlbars/helpers/-normalize-class";
+import DOMHelper from "ember-htmlbars/system/dom-helper";
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -48,5 +49,6 @@ Ember.HTMLBars = {
   precompile: precompile,
   makeViewHelper: makeViewHelper,
   makeBoundHelper: makeBoundHelper,
-  registerPlugin: registerPlugin
+  registerPlugin: registerPlugin,
+  DOMHelper
 };
