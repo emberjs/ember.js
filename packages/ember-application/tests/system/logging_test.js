@@ -205,7 +205,7 @@ QUnit.test("do not log when template and view are missing when flag is not true"
   });
 });
 
-QUnit.skip("log which view is used with a template", function() {
+QUnit.test("log which view is used with a template", function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -217,7 +217,7 @@ QUnit.skip("log which view is used with a template", function() {
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(logs['view:application'], 1, 'expected: Should log use of default view');
+    equal(logs['view:application'], undefined, 'expected: Should not use a view when only a template is defined');
     equal(logs['view:index'], undefined, 'expected: Should not log when index is not present.');
     equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
   });

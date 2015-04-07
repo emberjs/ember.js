@@ -4,6 +4,7 @@
 */
 
 import merge from "ember-metal/merge";
+import { get } from "ember-metal/property_get";
 import ComponentNode from "ember-htmlbars/system/component-node";
 
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
@@ -54,6 +55,8 @@ export default {
     var parentView = env.view;
     var outletState = state.outletState;
     var toRender = outletState.render;
+    var namespace = env.container.lookup('application:main');
+    var LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
 
     var ViewClass = outletState.render.ViewClass;
 
@@ -63,6 +66,10 @@ export default {
       self: toRender.controller,
       isOutlet: true
     };
+
+    if (LOG_VIEW_LOOKUPS && ViewClass) {
+      Ember.Logger.info("Rendering " + toRender.name + " with " + ViewClass, { fullName: 'view:' + toRender.name });
+    }
 
     var componentNode = ComponentNode.create(renderNode, env, {}, options, parentView, null, null, template);
     state.componentNode = componentNode;
