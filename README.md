@@ -30,7 +30,7 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 
 2. To start the development server, run `npm start`.
 
-3. To run all tests, visit <http://localhost:4200/>.
+3. To run all tests, visit <http://localhost:4200/tests>.
 
 4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
 `PACKAGE_NAME` with the name of the package you want to test. For
