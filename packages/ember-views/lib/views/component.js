@@ -164,6 +164,19 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   templateName: null,
 
   /**
+    If the component is currently inserted into the DOM of a parent view, this
+    property will point to the controller of the parent view.
+
+    @property targetObject
+    @type Ember.Controller
+    @default null
+  */
+  targetObject: computed('parentView', function(key) {
+    var parentView = get(this, 'parentView');
+    return parentView ? get(parentView, 'controller') : null;
+  }),
+
+  /**
     Triggers a named action on the controller context where the component is used if
     this controller has registered for notifications of the action.
 
