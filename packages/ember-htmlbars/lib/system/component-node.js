@@ -3,6 +3,7 @@ import Ember from "ember-metal/core";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 import { readHash, read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -36,6 +37,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
 
     if (attrs && attrs.id) { options.elementId = read(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = read(attrs.tagName); }
+    if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
     componentInfo.layout = get(component, 'layout') || get(component, 'template') || componentInfo.layout;
@@ -124,6 +126,12 @@ export function createOrUpdateComponent(component, options, renderNode) {
 
   if (options.parentView) {
     options.parentView.appendChild(component);
+
+    // don't set the property on a virtual view, as they are invisible to
+    // consumers of the view API
+    if (options.viewName) {
+      set(get(options.parentView, 'concreteView'), options.viewName, component);
+    }
   }
 
   component.renderNode = renderNode;

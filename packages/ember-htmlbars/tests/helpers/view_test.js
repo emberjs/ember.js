@@ -749,7 +749,7 @@ QUnit.test('Child views created using the view helper should have their IDs regi
   equal(EmberView.views[id], childView, 'childView with passed ID is registered with View.views so that it can properly receive events from EventDispatcher');
 });
 
-QUnit.skip('Child views created using the view helper and that have a viewName should be registered as properties on their parentView', function() {
+QUnit.test('Child views created using the view helper and that have a viewName should be registered as properties on their parentView', function() {
   var template = '{{#view}}{{view viewName="ohai"}}{{/view}}';
 
   view = EmberView.create({
