@@ -211,6 +211,13 @@ function impersonateAnOutlet(currentView, view, name) {
   view._isOutlet = true;
   view._outletName = '__ember_orphans__';
   view._matchOutletName = name;
+  view._parentOutlet = function() {
+    var parent = this._parentView;
+    while (parent && !parent._isOutlet) {
+      parent = parent._parentView;
+    }
+    return parent;
+  };
   view.setOutletState = function(state) {
     var ownState;
     if (state && (ownState = state.outlets[this._matchOutletName])) {
