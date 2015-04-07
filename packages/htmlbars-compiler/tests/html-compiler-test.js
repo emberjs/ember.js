@@ -878,11 +878,14 @@ test("A helpful error message is provided for unmatched end tags", function() {
 });
 
 test("A helpful error message is provided for end tags for void elements", function() {
-  expect(2);
+  expect(3);
 
   QUnit.throws(function() {
     compile("<input></input>");
   }, /Invalid end tag `input` \(on line 1\) \(void elements cannot have end tags\)./);
+  QUnit.throws(function() {
+    compile("<div>\n  <input></input>\n</div>");
+  }, /Invalid end tag `input` \(on line 2\) \(void elements cannot have end tags\)./);
   QUnit.throws(function() {
     compile("\n\n</br>");
   }, /Invalid end tag `br` \(on line 3\) \(void elements cannot have end tags\)./);

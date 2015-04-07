@@ -40,7 +40,7 @@ var tokenHandlers = {
 
     this.elementStack.push(element);
     if (voidMap.hasOwnProperty(tag.tagName) || tag.selfClosing) {
-      tokenHandlers.EndTag.call(this, tag);
+      tokenHandlers.EndTag.call(this, tag, true);
     }
   },
 
@@ -94,12 +94,12 @@ var tokenHandlers = {
     }
   },
 
-  EndTag: function(tag) {
+  EndTag: function(tag, selfClosing) {
     var element = this.elementStack.pop();
     var parent = this.currentElement();
     var disableComponentGeneration = this.options.disableComponentGeneration === true;
 
-    validateEndTag(tag, element);
+    validateEndTag(tag, element, selfClosing);
 
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
@@ -114,12 +114,13 @@ var tokenHandlers = {
 
 };
 
-function validateEndTag(tag, element) {
+function validateEndTag(tag, element, selfClosing) {
   var error;
 
-  if (voidMap[tag.tagName] && element.tag === undefined) {
-    // For void elements, we check element.tag is undefined because endTag is called by the startTag token handler in
-    // the normal case, so checking only voidMap[tag.tagName] would lead to an error being thrown on the opening tag.
+  if (voidMap[tag.tagName] && !selfClosing) {
+    // EngTag is also called by StartTag for void and self-closing tags (i.e.
+    // <input> or <br />, so we need to check for that here. Otherwise, we would
+    // throw an error for those cases.
     error = "Invalid end tag " + formatEndTagInfo(tag) + " (void elements cannot have end tags).";
   } else if (element.tag === undefined) {
     error = "Closing tag " + formatEndTagInfo(tag) + " without an open tag.";
