@@ -28,6 +28,10 @@ function generateComputedWithProperties(macro) {
   };
 }
 
+function toBool(dependentKey) {
+  return !!get(this, dependentKey);
+}
+
 /**
   A computed property that returns true if the value of the dependent
   property is null, an empty string, empty array, or empty function.
@@ -182,7 +186,7 @@ export function not(dependentKey) {
 */
 export function bool(dependentKey) {
   return computed(dependentKey, function() {
-    return !!get(this, dependentKey);
+    return toBool.call(this, dependentKey);
   });
 }
 
@@ -711,5 +715,39 @@ export function deprecatingAlias(dependentKey) {
       set(this, dependentKey, value);
       return value;
     }
+  });
+}
+
+/**
+  A computed property that is used as follows:
+
+  dependentProperty ? valueIfDependentPropertyTrue : valueIfDependentPropertyFalse
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    eyesOpen: true,
+    state: Ember.computed.ternary('eyesOpen', 'wide awake', 'sleepy')
+  });
+
+  var hamster = Hamster.create();
+
+  hamster.get('state'); // wide awake
+  hamster.set('eyesOpen', false);
+  hamster.get('state'); // sleepy
+  ```
+
+  @method ternary
+  @for Ember.computed
+  @param {String} dependentKey
+  @param {String|Number|Object} truthyValue
+  @param {String|Number|Object} falseyValue
+  @return {Ember.ComputedProperty} computed property which returns a value
+  based on the boolean condition of the dependentProperty
+*/
+export function ternary(dependentKey, truthyValue, falseyValue) {
+  return computed(dependentKey, function() {
+    return toBool.call(this, dependentKey) ? truthyValue : falseyValue;
   });
 }

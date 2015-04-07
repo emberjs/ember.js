@@ -25,7 +25,8 @@ import {
   and,
   or,
   any,
-  collect
+  collect,
+  ternary
 } from "ember-metal/computed_macros";
 import alias from 'ember-metal/alias';
 
@@ -1200,6 +1201,17 @@ testBoth('computed.collect', function(get, set) {
   set(obj, 'three', a);
 
   deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
+});
+
+testBoth('computed.ternary', function(get, set) {
+  var obj = { isLocked: false };
+  defineProperty(obj, 'status', ternary('isLocked', 'Locked', 'Unlocked'));
+
+  equal(get(obj, 'status'), 'Unlocked', 'is unlocked (falseyValue) since dependentProperty is false');
+
+  set(obj, 'isLocked', true);
+
+  equal(get(obj, 'status'), 'Locked', 'is locked (truthyValue) since dependentProperty is true');
 });
 
 testBoth('computed.oneWay', function(get, set) {
