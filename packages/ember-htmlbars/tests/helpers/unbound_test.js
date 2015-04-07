@@ -58,7 +58,7 @@ QUnit.test('it should not re-render if the property changes', function() {
 });
 
 QUnit.test('it should throw the helper missing error if multiple properties are provided', function() {
-  throws(function() {
+  expectAssertion(function() {
     runAppend(EmberView.create({
       template: compile('{{unbound foo bar}}'),
       context: EmberObject.create({
@@ -66,7 +66,7 @@ QUnit.test('it should throw the helper missing error if multiple properties are 
         bar: 'foo'
       })
     }));
-  }, EmberError);
+  }, /A helper named 'foo' could not be found/);
 });
 
 QUnit.skip('should property escape unsafe hrefs', function() {

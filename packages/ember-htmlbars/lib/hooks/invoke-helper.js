@@ -7,7 +7,7 @@ export default function invokeHelper(morph, env, scope, visitor, _params, _hash,
     params = readArray(_params);
     hash = readHash(_hash);
     return { value: helper.call(context, params, hash, templates) };
-  } else if (helper.helperFunction) {
+  } else if (helper && helper.helperFunction) {
     var helperFunc = helper.helperFunction;
     return { value: helperFunc.call({}, _params, _hash, templates, env, scope) };
   }

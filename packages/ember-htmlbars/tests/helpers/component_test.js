@@ -148,7 +148,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./, "Expected missing component to generate an exception");
   });
@@ -160,7 +160,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component "does-not-exist" location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
   });
