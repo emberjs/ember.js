@@ -117,6 +117,26 @@ QUnit.test("class attribute can accept multiple classes from a single value, and
   ok(view.element.firstChild.className, 'medium', 'classes are updated');
 });
 
+QUnit.test("class attribute will not remove alien classes when updating", function() {
+  view = EmberView.create({
+    context: {
+      size: 'large small'
+    },
+    template: compile("<div class='{{size}}'></div>")
+  });
+  appendView(view);
+
+  equal(view.element.firstChild.className, 'large small', 'classes are set');
+
+  view.element.firstChild.className = view.element.firstChild.className + " alf";
+
+  equal(view.element.firstChild.className, 'large small alf', 'alien class has been added');
+
+  run(view, view.set, 'context.size', 'medium');
+
+  equal(view.element.firstChild.className, 'medium alf', 'classes are updated, and the alien class has not been removed');
+});
+
 QUnit.test("class attribute can grok concatted classes, and update", function() {
   view = EmberView.create({
     context: {
