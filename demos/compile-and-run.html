@@ -33,7 +33,6 @@
       var compiler    = requireModule('htmlbars-compiler'),
           DOMHelper   = requireModule('dom-helper').default,
           hooks       = requireModule('htmlbars-runtime').hooks,
-          helpers     = requireModule('htmlbars-runtime').helpers,
           render      = requireModule('htmlbars-runtime').render;
 
       var templateSource = localStorage.getItem('templateSource');
@@ -81,7 +80,7 @@
           if (shouldRender) {
             var template = compiler.template(templateSpec);
 
-            var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
+            var env = { dom: new DOMHelper(), hooks: hooks, helpers: {} };
 
             var scope = hooks.createFreshScope();
 
