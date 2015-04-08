@@ -79,9 +79,15 @@
           output.innerHTML = '<pre><code>' + templateSpec + '</code></pre>';
 
           if (shouldRender) {
-            var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
             var template = compiler.template(templateSpec);
-            var dom = render(template, data, env, { contextualElement: output }).fragment;
+
+            var env = { dom: new DOMHelper(), hooks: hooks, helpers: helpers };
+
+            var scope = hooks.createFreshScope();
+
+            hooks.bindSelf(env, scope, data);
+
+            var dom = render(template, env, scope, { contextualElement: output }).fragment;
 
             output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
             output.appendChild(dom);
