@@ -158,6 +158,7 @@ Stream.prototype = {
     if (!this.subscriberHead && this.isActive) {
       this.isActive = false;
       this.unsubscribeDependencies();
+      this.deactivate();
     }
   },
 
@@ -165,6 +166,8 @@ Stream.prototype = {
     this.isActive = true;
     this.subscribeDependencies();
   },
+
+  deactivate() {},
 
   revalidate() {},
 
