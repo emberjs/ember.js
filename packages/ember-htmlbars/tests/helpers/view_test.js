@@ -815,13 +815,13 @@ QUnit.test('{{view}} class attribute should set class on layer', function() {
   equal(view.$('.bar').text(), 'baz', 'emits content');
 });
 
-QUnit.skip('{{view}} should not allow attributeBindings to be set', function() {
+QUnit.test('{{view}} should not allow attributeBindings to be set', function() {
   expectAssertion(function() {
     view = EmberView.create({
       template: compile('{{view attributeBindings="one two"}}')
     });
     runAppend(view);
-  }, "Setting 'attributeBindings' via template helpers is not allowed @ 1:21 in (inline)");
+  }, "Setting 'attributeBindings' via template helpers is not allowed @ 1:7 in (inline)");
 });
 
 QUnit.test('{{view}} should be able to point to a local view', function() {
