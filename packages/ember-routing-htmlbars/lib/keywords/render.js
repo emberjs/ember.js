@@ -8,16 +8,36 @@ import { generateControllerFactory } from "ember-routing/system/generate_control
 import ComponentNode from "ember-htmlbars/system/component-node";
 
 export default {
+  willRender(renderNode, env) {
+    var topLevel = toplevelOutlet(env);
+    if (topLevel) {
+      // We make sure we will get dirtied when outlet state changes.
+      topLevel._outlets.push(renderNode);
+    }
+  },
+
   setupState(prevState, env, scope, params, hash) {
+    var name = params[0];
+
+    Ember.assert(
+      "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.",
+      typeof name === 'string'
+    );
+
     return {
       parentView: scope.view,
       componentNode: prevState.componentNode,
-      controller: prevState.controller
+      controller: prevState.controller,
+      childOutletState: childOutletState(name, env)
     };
   },
 
-  isStable() {
-    return true;
+  childEnv(state) {
+    return { outletState: state.childOutletState };
+  },
+
+  isStable(lastState, nextState) {
+    return isStable(lastState.childOutletState, nextState.childOutletState);
   },
 
   isEmpty(state) {
@@ -33,11 +53,6 @@ export default {
 
     var container = env.container;
     var router = container.lookup('router:main');
-
-    Ember.assert(
-      "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.",
-      typeof name === 'string'
-    );
 
     Ember.assert(
       "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.",
@@ -136,14 +151,12 @@ export default {
       component: view,
       layout: null,
       self: controller
-      // isOutlet: true
     };
 
     var componentNode = ComponentNode.create(node, env, hash, options, currentView, null, null, template);
     state.componentNode = componentNode;
+    view._outlets = Ember.A();
     componentNode.render(env, hash, visitor);
-
-    impersonateAnOutlet(currentView, view, name);
   },
 
   rerender(node, env, scope, params, hash, template, inverse, visitor) {
@@ -152,46 +165,69 @@ export default {
   }
 };
 
-// Megahax to make outlets inside the render helper work, until we
-// can kill that behavior at 2.0.
-function impersonateAnOutlet(currentView, view, name) {
-  view._childOutlets = Ember.A();
-  view._isOutlet = true;
-  view._outletName = '__ember_orphans__';
-  view._matchOutletName = name;
-  view.setOutletState = function(state) {
-    var ownState;
-    if (state && (ownState = state.outlets[this._matchOutletName])) {
-      this._outletState = {
-        render: { name: 'render helper stub' },
-        outlets: create(null)
-      };
-      this._outletState.outlets[ownState.render.outlet] = ownState;
-      ownState.wasUsed = true;
-    } else {
-      this._outletState = null;
-    }
-    for (var i = 0; i < this._childOutlets.length; i++) {
-      var child = this._childOutlets[i];
-      child.setOutletState(this._outletState && this._outletState.outlets[child._outletName]);
-    }
-  };
-
-  var pointer = currentView;
+function toplevelOutlet(env) {
+  var pointer = env.view.ownerView;
   var po;
-  while (pointer && !pointer._isOutlet) {
-    pointer = pointer._parentView;
-  }
-  while (pointer && (po = pointer._parentOutlet())) {
+  while (pointer && (po = pointer.ownerView) && po !== pointer) {
     pointer = po;
   }
-  if (pointer) {
-    // we've found the toplevel outlet. Subscribe to its
-    // __ember_orphan__ child outlet, which is our hack convention for
-    // stashing outlet state that may target the render helper.
-    pointer._childOutlets.push(view);
-    if (pointer._outletState) {
-      view.setOutletState(pointer._outletState.outlets[view._outletName]);
+  if (pointer && pointer._outlets) {
+    return pointer;
+  }
+}
+
+
+function childOutletState(name, env) {
+  var topLevel = toplevelOutlet(env);
+  if (!topLevel) { return; }
+
+  var outletState = topLevel.outletState;
+  if (!outletState.main) { return; }
+
+  var selectedOutletState = outletState.main.outlets['__ember_orphans__'];
+  if (!selectedOutletState) { return; }
+  var matched = selectedOutletState.outlets[name];
+  if (matched) {
+    var childState = create(null);
+    childState[matched.render.outlet] = matched;
+    matched.wasUsed = true;
+    return childState;
+  }
+}
+
+function isStable(a, b) {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  for (var outletName in a) {
+    if (!isStableOutlet(a[outletName], b[outletName])) {
+      return false;
     }
   }
+  return true;
+}
+
+function isStableOutlet(a, b) {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  a = a.render;
+  b = b.render;
+  for (var key in a) {
+    if (a.hasOwnProperty(key)) {
+      // name is only here for logging & debugging. If two different
+      // names result in otherwise identical states, they're still
+      // identical.
+      if (a[key] !== b[key] && key !== 'name') {
+        return false;
+      }
+    }
+  }
+  return true;
 }
