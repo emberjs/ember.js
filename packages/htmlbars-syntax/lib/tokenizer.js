@@ -1,5 +1,5 @@
 import { Tokenizer } from "../simple-html-tokenizer";
-import { isHelper } from "./utils";
+import { unwrapMustache } from "./utils";
 import { map } from "../htmlbars-util/array-utils";
 import builders from "./builders";
 
@@ -60,7 +60,7 @@ Tokenizer.prototype.addElementModifier = function(mustache) {
     this.token.modifiers = [];
   }
 
-  var modifier = builders.elementModifier(mustache.sexpr);
+  var modifier = builders.elementModifier(mustache.path, mustache.params, mustache.hash);
   this.token.modifiers.push(modifier);
 };
 
@@ -90,14 +90,6 @@ function prepareConcatPart(node) {
 
 function formatTokenInfo(tokenizer) {
   return '`' + tokenizer.token.tagName + '` (on line ' + tokenizer.line + ')';
-}
-
-export function unwrapMustache(mustache) {
-  if (isHelper(mustache.sexpr)) {
-    return mustache.sexpr;
-  } else {
-    return mustache.sexpr.path;
-  }
 }
 
 export { Tokenizer };

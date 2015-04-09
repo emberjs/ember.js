@@ -1,26 +1,41 @@
 // Statements
 
-export function buildMustache(sexpr, raw) {
+export function buildMustache(path, params, hash, raw) {
   return {
     type: "MustacheStatement",
-    sexpr: sexpr,
+    path: path,
+    params: params || [],
+    hash: hash || buildHash([]),
     escaped: !raw
   };
 }
 
-export function buildBlock(sexpr, program, inverse) {
+export function buildBlock(path, params, hash, program, inverse) {
   return {
     type: "BlockStatement",
-    sexpr: sexpr,
+    path: path,
+    params: params || [],
+    hash: hash || buildHash([]),
     program: program || null,
     inverse: inverse || null
   };
 }
 
-export function buildPartial(sexpr, indent) {
+export function buildElementModifier(path, params, hash) {
+  return {
+    type: "ElementModifierStatement",
+    path: path,
+    params: params || [],
+    hash: hash || buildHash([])
+  };
+}
+
+export function buildPartial(name, params, hash, indent) {
   return {
     type: "PartialStatement",
-    sexpr: sexpr,
+    name: name,
+    params: params || [],
+    hash: hash || buildHash([]),
     indent: indent
   };
 }
@@ -36,13 +51,6 @@ export function buildConcat(parts) {
   return {
     type: "ConcatStatement",
     parts: parts || []
-  };
-}
-
-export function buildElementModifier(sexpr) {
-  return {
-    type: "ElementModifierStatement",
-    sexpr: sexpr
   };
 }
 

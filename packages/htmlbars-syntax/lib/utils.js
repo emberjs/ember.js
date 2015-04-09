@@ -58,7 +58,15 @@ export function appendChild(parent, node) {
   childrenFor(parent).push(node);
 }
 
-export function isHelper(sexpr) {
-  return (sexpr.params && sexpr.params.length > 0) ||
-    (sexpr.hash && sexpr.hash.pairs.length > 0);
+export function isHelper(mustache) {
+  return (mustache.params && mustache.params.length > 0) ||
+    (mustache.hash && mustache.hash.pairs.length > 0);
+}
+
+export function unwrapMustache(mustache) {
+  if (isHelper(mustache)) {
+    return mustache;
+  } else {
+    return mustache.path;
+  }
 }
