@@ -80,7 +80,7 @@ test("allow an AST with mustaches to be passed", function() {
       b.text("some")
     ]),
     b.text(" ast "),
-    b.mustache(b.sexpr(b.path('foo')))
+    b.mustache(b.path('foo'))
   ]));
 });
 
@@ -161,7 +161,7 @@ test("a piece of Handlebars with HTML", function() {
   astEqual(t, b.program([
     b.text("some "),
     b.element("div", [], [], [
-      b.mustache(b.sexpr(b.path('content')))
+      b.mustache(b.path('content'))
     ]),
     b.text(" done")
   ]));
@@ -182,7 +182,7 @@ test("Handlebars embedded in an attribute (unquoted)", function() {
   var t = 'some <div class={{foo}}>content</div> done';
   astEqual(t, b.program([
     b.text("some "),
-    b.element("div", [ b.attr("class", b.mustache(b.sexpr(b.path('foo')))) ], [], [
+    b.element("div", [ b.attr("class", b.mustache(b.path('foo'))) ], [], [
       b.text("content")
     ]),
     b.text(" done")
@@ -194,7 +194,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   astEqual(t, b.program([
     b.text("some "),
     b.element("div", [
-      b.attr("class", b.concat([ b.sexpr(b.path('foo'), [ b.sexpr(b.path('foo'), [ b.string('abc') ]) ]) ]))
+      b.attr("class", b.concat([ b.mustache(b.path('foo'), [ b.sexpr(b.path('foo'), [ b.string('abc') ]) ]) ]))
     ], [], [
       b.text("content")
     ]),
@@ -225,30 +225,30 @@ test("A more complete embedding example", function() {
           "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
           " {{more 'embed'}}";
   astEqual(t, b.program([
-    b.mustache(b.sexpr(b.path('embed'))),
+    b.mustache(b.path('embed')),
     b.text(' '),
-    b.mustache(b.sexpr(b.path('some'), [b.string('content')])),
+    b.mustache(b.path('some'), [b.string('content')]),
     b.text(' '),
     b.element("div", [
       b.attr("class", b.concat([
         b.path('foo'),
         b.string(' '),
-        b.sexpr(b.path('bind-class'), [b.path('isEnabled')], b.hash([b.pair('truthy', b.string('enabled'))]))
+        b.mustache(b.path('bind-class'), [b.path('isEnabled')], b.hash([b.pair('truthy', b.string('enabled'))]))
       ]))
     ], [], [
-      b.mustache(b.sexpr(b.path('content')))
+      b.mustache(b.path('content'))
     ]),
     b.text(' '),
-    b.mustache(b.sexpr(b.path('more'), [b.string('embed')]))
+    b.mustache(b.path('more'), [b.string('embed')])
   ]));
 });
 
 test("Simple embedded block helpers", function() {
   var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('if'), [b.path('foo')]), b.program([
+    b.block(b.path('if'), [b.path('foo')], b.hash(), b.program([
       b.element('div', [], [], [
-        b.mustache(b.sexpr(b.path('content')))
+        b.mustache(b.path('content'))
       ])
     ]))
   ]));
@@ -261,7 +261,7 @@ test("Involved block helper", function() {
       b.text('hi')
     ]),
     b.text(' content '),
-    b.block(b.sexpr(b.path('testing'), [b.path('shouldRender')]), b.program([
+    b.block(b.path('testing'), [b.path('shouldRender')], b.hash(), b.program([
       b.element('p', [], [], [
         b.text('Appears!')
       ])
@@ -278,7 +278,7 @@ test("Element modifiers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, b.program([
     b.element('p', [ b.attr('class', b.text('bar')) ], [
-      b.elementModifier(b.sexpr(b.path('action'), [b.string('boom')]))
+      b.elementModifier(b.path('action'), [b.string('boom')])
     ], [
       b.text('Some content')
     ])
@@ -288,42 +288,42 @@ test("Element modifiers", function() {
 test("Tokenizer: MustacheStatement encountered in tagName state", function() {
   var t = "<input{{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
 test("Tokenizer: MustacheStatement encountered in beforeAttributeName state", function() {
   var t = "<input {{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
 test("Tokenizer: MustacheStatement encountered in attributeName state", function() {
   var t = "<input foo{{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [ b.attr('foo', b.text('')) ], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [ b.attr('foo', b.text('')) ], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
 test("Tokenizer: MustacheStatement encountered in afterAttributeName state", function() {
   var t = "<input foo {{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [ b.attr('foo', b.text('')) ], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [ b.attr('foo', b.text('')) ], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
 test("Tokenizer: MustacheStatement encountered in afterAttributeValue state", function() {
   var t = "<input foo=1 {{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
 test("Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state", function() {
   var t = "<input foo='1'{{bar}}>";
   astEqual(t, b.program([
-    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.elementModifier(b.sexpr(b.path('bar'))) ])
+    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.elementModifier(b.path('bar')) ])
   ]));
 });
 
@@ -331,14 +331,14 @@ test("Stripping - mustaches", function() {
   var t = "foo {{~content}} bar";
   astEqual(t, b.program([
     b.text('foo'),
-    b.mustache(b.sexpr(b.path('content'))),
+    b.mustache(b.path('content')),
     b.text(' bar')
   ]));
 
   t = "foo {{content~}} bar";
   astEqual(t, b.program([
     b.text('foo '),
-    b.mustache(b.sexpr(b.path('content'))),
+    b.mustache(b.path('content')),
     b.text('bar')
   ]));
 });
@@ -347,14 +347,14 @@ test("Stripping - blocks", function() {
   var t = "foo {{~#wat}}{{/wat}} bar";
   astEqual(t, b.program([
     b.text('foo'),
-    b.block(b.sexpr(b.path('wat')), b.program()),
+    b.block(b.path('wat'), [], b.hash(), b.program()),
     b.text(' bar')
   ]));
 
   t = "foo {{#wat}}{{/wat~}} bar";
   astEqual(t, b.program([
     b.text('foo '),
-    b.block(b.sexpr(b.path('wat')), b.program()),
+    b.block(b.path('wat'), [], b.hash(), b.program()),
     b.text('bar')
   ]));
 });
@@ -363,28 +363,28 @@ test("Stripping - blocks", function() {
 test("Stripping - programs", function() {
   var t = "{{#wat~}} foo {{else}}{{/wat}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('wat')), b.program([
+    b.block(b.path('wat'), [], b.hash(), b.program([
       b.text('foo ')
     ]), b.program())
   ]));
 
   t = "{{#wat}} foo {{~else}}{{/wat}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('wat')), b.program([
+    b.block(b.path('wat'), [], b.hash(), b.program([
       b.text(' foo')
     ]), b.program())
   ]));
 
   t = "{{#wat}}{{else~}} foo {{/wat}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('wat')), b.program(), b.program([
+    b.block(b.path('wat'), [], b.hash(), b.program(), b.program([
       b.text('foo ')
     ]))
   ]));
 
   t = "{{#wat}}{{else}} foo {{~/wat}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('wat')), b.program(), b.program([
+    b.block(b.path('wat'), [], b.hash(), b.program(), b.program([
       b.text(' foo')
     ]))
   ]));
@@ -393,7 +393,7 @@ test("Stripping - programs", function() {
 test("Stripping - removes unnecessary text nodes", function() {
   var t = "{{#each~}}\n  <li> foo </li>\n{{~/each}}";
   astEqual(t, b.program([
-    b.block(b.sexpr(b.path('each')), b.program([
+    b.block(b.path('each'), [], b.hash(), b.program([
       b.element('li', [], [], [b.text(' foo ')])
     ]))
   ]));
@@ -423,16 +423,16 @@ test("Components", function() {
     b.component('x-foo', [
       b.attr('a', b.text('b')),
       b.attr('c', b.text('d')),
-      b.attr('e', b.mustache(b.sexpr(b.path('f')))),
+      b.attr('e', b.mustache(b.path('f'))),
       b.attr('id', b.concat([ b.path('bar') ])),
       b.attr('class', b.concat([ b.string('foo-'), b.path('bar') ]))
     ], b.program([
-      b.mustache(b.sexpr(b.path('a'))),
-      b.mustache(b.sexpr(b.path('b'))),
+      b.mustache(b.path('a')),
+      b.mustache(b.path('b')),
       b.text('c'),
-      b.mustache(b.sexpr(b.path('d')))
+      b.mustache(b.path('d'))
     ])),
-    b.mustache(b.sexpr(b.path('e')))
+    b.mustache(b.path('e'))
   ]));
 });
 

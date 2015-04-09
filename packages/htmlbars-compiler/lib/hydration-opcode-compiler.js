@@ -3,14 +3,7 @@ import { processOpcodes } from "./utils";
 import { getAttrNamespace } from "../htmlbars-util";
 import { forEach } from "../htmlbars-util/array-utils";
 import { isHelper } from "../htmlbars-syntax/utils";
-
-function unwrapMustache(mustache) {
-  if (isHelper(mustache.sexpr)) {
-    return mustache.sexpr;
-  } else {
-    return mustache.sexpr.path;
-  }
-}
+import { unwrapMustache } from "../htmlbars-syntax/utils";
 
 function detectIsElementChecked(element){
   for (var i=0, len=element.attributes.length;i<len;i++) {
@@ -123,14 +116,15 @@ HydrationOpcodeCompiler.prototype.closeElement = function() {
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
 
-  var sexpr = mustache.sexpr;
   var opcode;
 
-  if (isHelper(sexpr)) {
-    prepareSexpr(this, sexpr);
+  if (isHelper(mustache)) {
+    prepareHash(this, mustache.hash);
+    prepareParams(this, mustache.params);
+    preparePath(this, mustache.path);
     opcode = 'printInlineHook';
   } else {
-    preparePath(this, sexpr.path);
+    preparePath(this, mustache.path);
     opcode = 'printContentHook';
   }
 
@@ -145,8 +139,9 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
 
-  var sexpr = block.sexpr;
-  prepareSexpr(this, sexpr);
+  prepareHash(this, block.hash);
+  prepareParams(this, block.params);
+  preparePath(this, block.path);
 
   var morphNum = this.morphNum++;
   var start = this.currentDOMChildIndex;
@@ -222,7 +217,9 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
 };
 
 HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
-  prepareSexpr(this, modifier.sexpr);
+  prepareHash(this, modifier.hash);
+  prepareParams(this, modifier.params);
+  preparePath(this, modifier.path);
 
   // If we have a helper in a node, and this element has not been cached, cache it
   if (this.element !== null) {
@@ -245,8 +242,17 @@ HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex
   this.comment();
 };
 
+HydrationOpcodeCompiler.prototype.MustacheStatement = function(mustache) {
+  prepareHash(this, mustache.hash);
+  prepareParams(this, mustache.params);
+  preparePath(this, mustache.path);
+  this.opcode('pushSexprHook');
+};
+
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
-  prepareSexpr(this, sexpr);
+  prepareHash(this, sexpr.hash);
+  prepareParams(this, sexpr.params);
+  preparePath(this, sexpr.path);
   this.opcode('pushSexprHook');
 };
 
@@ -291,12 +297,6 @@ function prepareHash(compiler, hash) {
   }
 
   compiler.opcode('prepareObject', pairs.length);
-}
-
-function prepareSexpr(compiler, sexpr) {
-  prepareHash(compiler, sexpr.hash);
-  prepareParams(compiler, sexpr.params);
-  preparePath(compiler, sexpr.path);
 }
 
 function shareElement(compiler) {
