@@ -74,7 +74,7 @@ QUnit.test("class attribute concats bound values", function() {
   });
   appendView(view);
 
-  ok(view.element.firstChild.className, 'large blue round', 'classes are set');
+  equal(view.element.firstChild.className, 'large blue round', 'classes are set');
 });
 
 if (isInlineIfEnabled) {
@@ -91,12 +91,12 @@ QUnit.test("class attribute accepts nested helpers, and updates", function() {
   });
   appendView(view);
 
-  ok(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
+  equal(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
 
   run(view, view.set, 'context.hasColor', false);
   run(view, view.set, 'context.hasShape', true);
 
-  ok(view.element.firstChild.className, 'large round', 'classes are updated');
+  equal(view.element.firstChild.className, 'large round', 'classes are updated');
 });
 
 }
@@ -110,11 +110,11 @@ QUnit.test("class attribute can accept multiple classes from a single value, and
   });
   appendView(view);
 
-  ok(view.element.firstChild.className, 'large small', 'classes are set');
+  equal(view.element.firstChild.className, 'large small', 'classes are set');
 
   run(view, view.set, 'context.size', 'medium');
 
-  ok(view.element.firstChild.className, 'medium', 'classes are updated');
+  equal(view.element.firstChild.className, 'medium', 'classes are updated');
 });
 
 QUnit.test("class attribute can grok concatted classes, and update", function() {
@@ -128,11 +128,11 @@ QUnit.test("class attribute can grok concatted classes, and update", function() 
   });
   appendView(view);
 
-  ok(view.element.firstChild.className, 'btn-large pre-pre pre-post whoop', 'classes are set');
+  equal(view.element.firstChild.className, 'btn-large pre-pre pre-post whoop', 'classes are set');
 
   run(view, view.set, 'context.prefix', '');
 
-  ok(view.element.firstChild.className, 'btn-large -post whoop', 'classes are updated');
+  equal(view.element.firstChild.className, 'btn-large -post whoop', 'classes are updated');
 });
 
 QUnit.test("class attribute stays in order", function() {
@@ -148,7 +148,7 @@ QUnit.test("class attribute stays in order", function() {
   run(view, view.set, 'context.showB', false);
   run(view, view.set, 'context.showB', true);
 
-  ok(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
+  equal(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
 
 }
