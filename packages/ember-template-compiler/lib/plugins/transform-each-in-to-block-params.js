@@ -39,7 +39,7 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
   walker.visit(ast, function(node) {
     if (validate(node)) {
 
-      var removedParams = node.sexpr.params.splice(0, 2);
+      var removedParams = node.params.splice(0, 2);
       var keyword = removedParams[0].original;
 
       if (node.type === 'BlockStatement') {
@@ -49,7 +49,7 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
 
         node.program.blockParams = [keyword];
       } else {
-        node.sexpr.hash.pairs.push(b.pair(
+        node.hash.pairs.push(b.pair(
           'keyword',
           b.string(keyword)
         ));
@@ -63,10 +63,10 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
 
 function validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
-    node.sexpr.path.original === 'each' &&
-    node.sexpr.params.length === 3 &&
-    node.sexpr.params[1].type === 'PathExpression' &&
-    node.sexpr.params[1].original === 'in';
+    node.path.original === 'each' &&
+    node.params.length === 3 &&
+    node.params[1].type === 'PathExpression' &&
+    node.params[1].original === 'in';
 }
 
 export default TransformEachInToBlockParams;

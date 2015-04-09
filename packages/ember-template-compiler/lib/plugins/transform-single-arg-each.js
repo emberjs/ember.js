@@ -9,7 +9,7 @@ TransformSingleArgEach.prototype.transform = function TransformSingleArgEach_tra
   walker.visit(ast, function(node) {
     if (!validate(node)) { return; }
 
-    node.sexpr.params.push(b.path('this'));
+    node.params.push(b.path('this'));
   });
 
   return ast;
@@ -17,6 +17,6 @@ TransformSingleArgEach.prototype.transform = function TransformSingleArgEach_tra
 
 function validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
-    node.sexpr.path.original === 'each' &&
-    node.sexpr.params.length === 0;
+    node.path.original === 'each' &&
+    node.params.length === 0;
 }

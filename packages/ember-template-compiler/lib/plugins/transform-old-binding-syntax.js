@@ -11,7 +11,7 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
   walker.visit(ast, function(node) {
     if (!validate(node)) { return; }
 
-    each(node.sexpr.hash.pairs, function(pair) {
+    each(node.hash.pairs, function(pair) {
       let { key, value } = pair;
 
       var sourceInformation = '';

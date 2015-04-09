@@ -9,14 +9,13 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
   walker.visit(ast, function(node) {
     if (!validate(node)) { return; }
 
-    let sexpr = node.sexpr;
-    let list = sexpr.params.shift();
-    sexpr.path = b.path('collection');
+    let list = node.params.shift();
+    node.path = b.path('collection');
 
     let pair = b.pair('content', list);
     pair.loc = list.loc;
 
-    sexpr.hash.pairs.push(pair);
+    node.hash.pairs.push(pair);
   });
 
   return ast;
@@ -24,8 +23,8 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
 
 function validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
-    node.sexpr.path.original === 'each' &&
-    any(node.sexpr.hash.pairs, pair => {
+    node.path.original === 'each' &&
+    any(node.hash.pairs, pair => {
       let key = pair.key;
       return key === 'itemController' ||
              key === 'itemView' ||

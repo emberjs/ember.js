@@ -45,7 +45,7 @@ TransformBindAttrToAttributes.prototype.transform = function TransformBindAttrTo
 
         if (isBindAttrModifier(modifier)) {
           node.modifiers.splice(i--, 1);
-          plugin.assignAttrs(node, modifier.sexpr.hash);
+          plugin.assignAttrs(node, modifier.hash);
         }
       }
     }
@@ -78,18 +78,18 @@ TransformBindAttrToAttributes.prototype.transformValue = function transformValue
       case 'PathExpression':
         return this.parseClasses(value.original);
       case 'SubExpression':
-        return b.mustache(value);
+        return b.mustache(value.path, value.params, value.hash);
       default:
         Ember.assert("Unsupported attribute value type: " + value.type);
     }
   } else {
     switch (value.type) {
       case 'StringLiteral':
-        return b.mustache(b.sexpr(b.path(value.value)));
+        return b.mustache(b.path(value.value));
       case 'PathExpression':
-        return b.mustache(b.sexpr(value));
-      case 'SubExpression':
         return b.mustache(value);
+      case 'SubExpression':
+        return b.mustache(value.path, value.params, value.hash);
       default:
         Ember.assert("Unsupported attribute value type: " + value.type);
     }
@@ -157,7 +157,7 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
 };
 
 function isBindAttrModifier(modifier) {
-  var name = modifier.sexpr.path.original;
+  var name = modifier.path.original;
 
   if (name === 'bind-attr' || name === 'bindAttr') {
     Ember.deprecate(

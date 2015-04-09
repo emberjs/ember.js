@@ -42,7 +42,7 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
         throw new Error('You cannot use keyword (`{{with foo as bar}}`) and block params (`{{with foo as |bar|}}`) at the same time.');
       }
 
-      var removedParams = node.sexpr.params.splice(1, 2);
+      var removedParams = node.params.splice(1, 2);
       var keyword = removedParams[1].original;
       node.program.blockParams = [keyword];
     }
@@ -53,10 +53,10 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
 
 TransformWithAsToHash.prototype.validate = function TransformWithAsToHash_validate(node) {
   return node.type === 'BlockStatement' &&
-    node.sexpr.path.original === 'with' &&
-    node.sexpr.params.length === 3 &&
-    node.sexpr.params[1].type === 'PathExpression' &&
-    node.sexpr.params[1].original === 'as';
+    node.path.original === 'with' &&
+    node.params.length === 3 &&
+    node.params[1].type === 'PathExpression' &&
+    node.params[1].original === 'as';
 };
 
 export default TransformWithAsToHash;
