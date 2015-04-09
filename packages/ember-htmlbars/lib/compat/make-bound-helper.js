@@ -42,6 +42,7 @@ export default function makeBoundHelper(fn, ...dependentKeys) {
     _dependentKeys: dependentKeys,
 
     isHandlebarsCompat: true,
+    isHTMLBars: true,
 
     helperFunction(params, hash, templates) {
       Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !templates.template.yield);

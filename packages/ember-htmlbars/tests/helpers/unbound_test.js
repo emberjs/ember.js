@@ -366,7 +366,7 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   }
 });
 
-QUnit.skip("should lookup helpers in the container", function() {
+QUnit.test("should lookup helpers in the container", function() {
   expectDeprecationInHTMLBars();
 
   registry.register('helper:up-case', makeBoundHelper(function(value) {
