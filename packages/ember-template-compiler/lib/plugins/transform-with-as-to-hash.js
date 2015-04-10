@@ -21,9 +21,10 @@
   @private
   @class TransformWithAsToHash
 */
-function TransformWithAsToHash() {
+function TransformWithAsToHash(options) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
+  this.options = options;
 }
 
 /**
@@ -34,6 +35,7 @@ function TransformWithAsToHash() {
 TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_transform(ast) {
   var pluginContext = this;
   var walker = new pluginContext.syntax.Walker();
+  var moduleName = this.options.moduleName;
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {
@@ -42,9 +44,12 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
         throw new Error('You cannot use keyword (`{{with foo as bar}}`) and block params (`{{with foo as |bar|}}`) at the same time.');
       }
 
+
       Ember.deprecate(
         "Using {{with}} without block syntax is deprecated. " +
-        "Please use standard block form (`{{#with foo as |bar|}}`) instead.",
+        "Please use standard block form (`{{#with foo as |bar|}}`) " +
+        (moduleName ? " in `" + moduleName + "` " : "") +
+        "instead.",
         false,
         { url: "http://emberjs.com/deprecations/v1.x/#toc_code-as-code-sytnax-for-code-with-code" }
       );

@@ -16,7 +16,7 @@ var compileSpec;
   @method precompile
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
-export default function(templateString) {
+export default function(templateString, options) {
   if (!compileSpec && Ember.__loader.registry['htmlbars-compiler/compiler']) {
     compileSpec = requireModule('htmlbars-compiler/compiler').compileSpec;
   }
@@ -25,5 +25,5 @@ export default function(templateString) {
     throw new Error('Cannot call `compileSpec` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compileSpec`.');
   }
 
-  return compileSpec(templateString, compileOptions());
+  return compileSpec(templateString, compileOptions(options));
 }
