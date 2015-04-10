@@ -1,17 +1,31 @@
 /*globals __dirname*/
 
 var path = require('path');
+var distPath = path.join(__dirname, '../../dist');
+var emberPath = path.join(distPath, 'ember.debug.cjs');
+var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 var module = QUnit.module;
 var ok = QUnit.ok;
 var equal = QUnit.equal;
 
 var distPath = path.join(__dirname, '../../dist');
+var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
 
-module('ember-template-compiler.js');
+var compile;
+
+module('ember-template-compiler.js', {
+  setup: function() {
+    compile = require(templateCompilerPath).compile;
+  },
+
+  teardown: function() {
+    // clear the previously cached version of this module
+    delete require.cache[templateCompilerPath + '.js'];
+  }
+});
 
 test('can be required', function() {
-  var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
 
   ok(typeof templateCompiler.precompile === 'function', 'precompile function is present');
   ok(typeof templateCompiler.compile === 'function', 'compile function is present');
