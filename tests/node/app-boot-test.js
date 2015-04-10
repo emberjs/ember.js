@@ -2,6 +2,8 @@
 
 var path = require('path');
 var distPath = path.join(__dirname, '../../dist');
+var emberPath = path.join(distPath, 'ember.debug.cjs');
+var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 var defeatureifyConfig = require(path.join(__dirname, '../../features.json'));
 
@@ -15,24 +17,22 @@ if (defeatureifyConfig.features['ember-application-visit'] !== false) {
   canUseApplicationVisit = true;
 }
 
+var features = {};
+for (var feature in defeatureifyConfig.features) {
+  features[feature] = defeatureifyConfig.features[feature];
+}
+features['ember-application-instance-initializers'] = true;
+features['ember-application-visit'] =true;
+
 /*jshint -W079 */
 global.EmberENV = {
-  FEATURES: {
-    'ember-application-instance-initializers': true,
-    'ember-application-visit': true
-  }
+  FEATURES: features
 };
 
-var Ember = require(path.join(distPath, 'ember.debug.cjs'));
-var compile = require(path.join(distPath, 'ember-template-compiler')).compile;
-Ember.testing = true;
-var DOMHelper = Ember.View.DOMHelper;
+var Ember, compile, domHelper, run;
+
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
-
-var run = Ember.run;
-
-var domHelper = createDOMHelper();
 
 function createApplication() {
   var App = Ember.Application.extend().create({
@@ -98,7 +98,24 @@ function assertHTMLMatches(actualElement, expectedHTML) {
 }
 
 
-QUnit.module("App boot");
+QUnit.module("App boot", {
+  setup: function() {
+    Ember = require(emberPath);
+    compile = require(templateCompilerPath).compile;
+    Ember.testing = true;
+    DOMHelper = Ember.View.DOMHelper;
+    domHelper = createDOMHelper();
+    run = Ember.run;
+  },
+
+  teardown: function() {
+    delete global.Ember;
+
+    // clear the previously cached version of this module
+    delete require.cache[emberPath + '.js'];
+    delete require.cache[templateCompilerPath + '.js'];
+  }
+});
 
 if (canUseInstanceInitializers && canUseApplicationVisit) {
   QUnit.test("App is created without throwing an exception", function() {
