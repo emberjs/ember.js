@@ -1614,7 +1614,7 @@ QUnit.test("query params in the same route hierarchy with the same url key get a
   var self = this;
   expectAssertion(function() {
     self.boot();
-  }, "You're not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: 'other-foo' }`");
+  }, `You're not allowed to have more than one controller property map to the same query param key, but both "parent:foo" and "parent.child:bar" map to "shared". You can fix this by mapping one of the controller properties to a different query param key via the "as" config option, e.g. "foo: { as: 'other-foo' }"`);
 });
 
 QUnit.test("Support shared but overridable mixin pattern", function() {

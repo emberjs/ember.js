@@ -8,7 +8,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { isGlobalPath } from "ember-metal/binding";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { fmt } from "ember-runtime/system/string";
 import ContainerView from "ember-views/views/container_view";
 import CoreView from "ember-views/views/core_view";
 import View from "ember-views/views/view";
@@ -273,7 +272,7 @@ var CollectionView = ContainerView.extend({
     @method _assertArrayLike
   */
   _assertArrayLike(content) {
-    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), EmberArray.detect(content));
+    Ember.assert(`an Ember.CollectionView's content must implement Ember.Array. You passed ${content}`, EmberArray.detect(content));
   },
 
   /**

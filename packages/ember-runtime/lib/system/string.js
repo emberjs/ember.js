@@ -151,6 +151,7 @@ export default {
     @param {String} str The string to format
     @param {Array} formats An array of parameters to interpolate into string.
     @return {String} formatted string
+    @deprecated Use ES6 template strings instead: https://babeljs.io/docs/learn-es6/#template-strings');
   */
   fmt: fmt,
 

@@ -1,5 +1,4 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {fmt} from "ember-runtime/system/string";
 
 var suite = SuiteModuleBuilder.create();
 
@@ -13,7 +12,7 @@ suite.test("should return index of object's last occurrence", function() {
 
   for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx]), idx,
-      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      `obj.lastIndexOf(${expected[idx]}) should match idx`);
   }
 
 });
@@ -26,7 +25,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len), idx,
-      fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
+      `obj.lastIndexOfs(${expected[idx]}) should match idx`);
   }
 
 });
@@ -39,7 +38,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for (idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len + 1), idx,
-      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      `obj.lastIndexOf(${expected[idx]}) should match idx`);
   }
 
 });

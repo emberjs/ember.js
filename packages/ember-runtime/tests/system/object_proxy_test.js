@@ -36,7 +36,7 @@ testBoth("should proxy properties to content", function(get, set) {
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');
   expectAssertion(function () {
     set(proxy, 'firstName', 'Foo');
-  }, /Cannot delegate set\('firstName', Foo\) to the 'content'/i);
+  }, /Cannot delegate set\("firstName", Foo\) to the "content"/i);
 
   set(proxy, 'content', content);
 

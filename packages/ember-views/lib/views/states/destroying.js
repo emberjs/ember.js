@@ -1,6 +1,5 @@
 import merge from "ember-metal/merge";
 import create from 'ember-metal/platform/create';
-import {fmt} from "ember-runtime/system/string";
 import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";
 /**
@@ -14,15 +13,14 @@ var destroying = create(_default);
 
 merge(destroying, {
   appendChild() {
-    throw new EmberError(fmt(destroyingError, ['appendChild']));
+    throw new EmberError(`${destroyingError} appendChild`);
   },
   rerender() {
-    throw new EmberError(fmt(destroyingError, ['rerender']));
+    throw new EmberError(`${destroyingError} rerender`);
   },
   destroyElement() {
-    throw new EmberError(fmt(destroyingError, ['destroyElement']));
+    throw new EmberError(`${destroyingError} destroyElement`);
   }
 });
 
 export default destroying;
-

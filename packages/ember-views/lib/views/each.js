@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core";
-import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import CollectionView from "ember-views/views/collection_view";
@@ -53,17 +52,16 @@ export default CollectionView.extend(_Metamorph, {
   },
 
   _assertArrayLike(content) {
-    Ember.assert(fmt("The value that #each loops over must be an Array. You " +
-                     "passed %@, but it should have been an ArrayController",
-                     [content.constructor]),
-                     !ControllerMixin.detect(content) ||
-                       (content && content.isGenerated) ||
-                       content instanceof ArrayController);
-    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@",
-                     [(ControllerMixin.detect(content) &&
-                       content.get('model') !== undefined) ?
-                       fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]),
-                     EmberArray.detect(content));
+    Ember.assert("The value that #each loops over must be an Array. You " +
+                 `passed ${content.constructor}, but it should have been an ArrayController`,
+                 !ControllerMixin.detect(content) ||
+                 (content && content.isGenerated) ||
+                 content instanceof ArrayController);
+    Ember.assert("The value that #each loops over must be an Array. You passed " +
+                 (ControllerMixin.detect(content) &&
+                   content.get('model') !== undefined) ?
+                   `'${content.get('model')}' (wrapped in ${content})` : content,
+                 EmberArray.detect(content));
   },
 
   disableContentObservers(callback) {

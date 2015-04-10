@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 
-import { fmt } from "ember-runtime/system/string";
 import AttrNode from "ember-views/attr_nodes/attr_node";
 import LegacyBindAttrNode from "ember-views/attr_nodes/legacy_bind";
 import keys from "ember-metal/keys";
@@ -181,8 +180,8 @@ function bindAttrHelper(params, hash, options, env) {
       lazyValue = path;
     } else {
       Ember.assert(
-        fmt("You must provide an expression as the value of bound attribute." +
-            " You specified: %@=%@", [attr, path]),
+        "You must provide an expression as the value of bound attribute." +
+        ` You specified: ${attr}=${path}`,
         typeof path === 'string'
       );
       lazyValue = view.getStream(path);

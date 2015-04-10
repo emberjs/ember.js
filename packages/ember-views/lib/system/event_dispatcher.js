@@ -9,7 +9,6 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
 import { typeOf } from "ember-metal/utils";
-import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import ActionManager from "ember-views/system/action_manager";
@@ -142,7 +141,7 @@ export default EmberObject.extend({
 
     rootElement = jQuery(get(this, 'rootElement'));
 
-    Ember.assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
+    Ember.assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is('.ember-application'));
     Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length);
     Ember.assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.ember-application').length);
 

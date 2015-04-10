@@ -9,7 +9,6 @@ import { get } from "ember-metal/property_get";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
-import { fmt } from "ember-runtime/system/string";
 import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
@@ -499,10 +498,9 @@ var LinkView = EmberComponent.extend({
 
     if (!namedRoute) { return; }
 
-    Ember.assert(fmt("The attempt to link-to route '%@' failed. " +
-                     "The router did not find '%@' in its possible routes: '%@'",
-                     [namedRoute, namedRoute, keys(router.router.recognizer.names).join("', '")]),
-                     router.hasRoute(namedRoute));
+    Ember.assert(`The attempt to link-to route '${namedRoute}' failed. ` +
+                 `The router did not find '${namedRoute}' in its possible routes: '${keys(router.router.recognizer.names).join("', '")}'`,
+                 router.hasRoute(namedRoute));
 
     if (!paramsAreLoaded(resolvedParams.models)) { return; }
 
