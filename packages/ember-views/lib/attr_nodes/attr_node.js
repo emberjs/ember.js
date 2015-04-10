@@ -56,27 +56,50 @@ AttrNode.prototype.render = function render(buffer) {
 
   var value = read(this.attrValue);
 
-  if (this.attrName === 'value' && (value === null || value === undefined)) {
-    value = '';
-  }
-
   if (value === undefined) {
     value = null;
   }
 
+  if (this.attrName === 'value') {
+    if (value === null) {
+      value = '';
+    }
 
-  // If user is typing in a value we don't want to rerender and loose cursor position.
-  if (this.hasRenderedInitially && this.attrName === 'value' && this._morph.element.value === value) {
-    this.lastValue = value;
-    return;
+    if (this.hasRenderedInitially && this._morph.element.value === value) {
+      // If user is typing in a value we don't want to rerender and lose cursor position.
+      this.lastValue = value;
+      return;
+    }
   }
 
   if (this.lastValue !== null || value !== null) {
-    this._deprecateEscapedStyle(value);
-    this._morph.setContent(value);
+    var elementClassName = this._morph.element.className;
+    if (this.attrName === "class" && elementClassName && this.lastValue !== elementClassName && typeof elementClassName === "string") {
+      this.renderWithAlienClass(value);
+    } else {
+      this._deprecateEscapedStyle(value);
+      this._morph.setContent(value);
+    }
+
     this.lastValue = value;
     this.hasRenderedInitially = true;
   }
+};
+
+AttrNode.prototype.renderWithAlienClass = function AttrNode_renderWithAlienClass(value) {
+  var citizenClasses = this.lastValue ? this.lastValue.split(" ") : [];
+  var allClasses = this._morph.element.className.split(" ");
+  var alienClasses = [];
+  var className;
+
+  for (var i = 0; i < allClasses.length; i++) {
+    className = allClasses[i];
+    if (citizenClasses.indexOf(className) < 0) {
+      alienClasses.push(className);
+    }
+  }
+
+  this._morph.setContent(value + " " + alienClasses.join(" "));
 };
 
 AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedStyle(value) {
