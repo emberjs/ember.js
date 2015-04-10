@@ -9,10 +9,9 @@ import ComponentNode from "ember-htmlbars/system/component-node";
 
 export default {
   willRender(renderNode, env) {
-    var topLevel = toplevelOutlet(env);
-    if (topLevel) {
+    if (env.view.ownerView._outlets) {
       // We make sure we will get dirtied when outlet state changes.
-      topLevel._outlets.push(renderNode);
+      env.view.ownerView._outlets.push(renderNode);
     }
   },
 
@@ -46,8 +45,6 @@ export default {
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
     var state = node.state;
-    var currentView = state.parentView;
-
     var name = params[0];
     var context = params[1];
 
@@ -86,6 +83,7 @@ export default {
       view = container.lookup('view:default');
       template = template || container.lookup(templateName);
     }
+    view.ownerView = env.view.ownerView;
 
     // provide controller override
     var controllerName;
@@ -153,9 +151,8 @@ export default {
       self: controller
     };
 
-    var componentNode = ComponentNode.create(node, env, hash, options, currentView, null, null, template);
+    var componentNode = ComponentNode.create(node, env, hash, options, state.parentView, null, null, template);
     state.componentNode = componentNode;
-    view._outlets = Ember.A();
     componentNode.render(env, hash, visitor);
   },
 
@@ -165,21 +162,9 @@ export default {
   }
 };
 
-function toplevelOutlet(env) {
-  var pointer = env.view.ownerView;
-  var po;
-  while (pointer && (po = pointer.ownerView) && po !== pointer) {
-    pointer = po;
-  }
-  if (pointer && pointer._outlets) {
-    return pointer;
-  }
-}
-
-
 function childOutletState(name, env) {
-  var topLevel = toplevelOutlet(env);
-  if (!topLevel) { return; }
+  var topLevel = env.view.ownerView;
+  if (!topLevel || !topLevel.outletState) { return; }
 
   var outletState = topLevel.outletState;
   if (!outletState.main) { return; }

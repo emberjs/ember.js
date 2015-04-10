@@ -34,22 +34,10 @@ export var CoreOutletView = View.extend({
 
   dirtyOutlets() {
     // Dirty any render nodes that correspond to outlets
-    dirtyOutlets(this);
-  }
-});
-
-// 2.0TODO: This recursive helper was needed due to the legacy
-// `{{render}}` helper, because it is its own ownerView, so any
-// outlets in its children end up listed inside of it, and not on the
-// top-level outlet.
-function dirtyOutlets(view) {
-  for (var i = 0; i < view._outlets.length; i++) {
-    var outlet = view._outlets[i];
-    outlet.isDirty = true;
-    if (outlet.emberView && outlet.emberView._outlets) {
-      dirtyOutlets(outlet.emberView);
+    for (var i = 0; i < this._outlets.length; i++) {
+      this._outlets[i].isDirty = true;
     }
   }
-}
+});
 
 export var OutletView = CoreOutletView.extend(_Metamorph);
