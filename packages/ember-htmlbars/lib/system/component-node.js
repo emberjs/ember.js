@@ -37,6 +37,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
 
     if (attrs && attrs.id) { options.elementId = read(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = read(attrs.tagName); }
+    if (attrs && attrs._defaultTagName) { options._defaultTagName = read(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);

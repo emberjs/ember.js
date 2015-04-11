@@ -81,7 +81,7 @@ function tagNameFor(view) {
   }
 
   if (tagName === null || tagName === undefined) {
-    tagName = 'div';
+    tagName = view._defaultTagName || 'div';
   }
 
   return tagName;

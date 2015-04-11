@@ -1204,6 +1204,14 @@ var View = CoreView.extend(
   // the default case and a user-specified tag.
   tagName: null,
 
+  /*
+    Used to specify a default tagName that can be overridden when extending
+    or invoking from a template.
+
+    @property _defaultTagName
+    @private
+  */
+
   /**
     The WAI-ARIA role of the control represented by this view. For example, a
     button may have a role of type 'button', or a pane may have a role of
