@@ -5,6 +5,7 @@ import { readHash, read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
+import View from "ember-views/views/view";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -40,6 +41,10 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     if (attrs && attrs.tagName) { options.tagName = read(attrs.tagName); }
     if (attrs && attrs._defaultTagName) { options._defaultTagName = read(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
+
+    if (found.component.create && contentScope && contentScope.self) {
+      options._context = read(contentScope.self);
+    }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
 
@@ -138,10 +143,18 @@ function lookupComponent(env, tagName) {
 export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
   let snapshot = readHash(attrs);
   let props = merge({}, options);
+  let defaultController = View.proto().controller;
+  let hasSuppliedController = 'controller' in attrs;
 
   if (component.create) {
-    merge(props, shadowedAttrs(component.proto(), snapshot));
+    let proto = component.proto();
+    merge(props, shadowedAttrs(proto, snapshot));
     props.container = options.parentView ? options.parentView.container : env.container;
+
+    if (proto.controller !== defaultController || hasSuppliedController) {
+      delete props._context;
+    }
+
     component = component.create(props);
   } else {
     merge(props, shadowedAttrs(component, snapshot));
