@@ -60,6 +60,8 @@ merge(emberHooks, {
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
 import withKeyword from "ember-htmlbars/keywords/with";
 import outlet from "ember-htmlbars/keywords/outlet";
+import realOutlet from "ember-htmlbars/keywords/real_outlet";
+import customizedOutlet from "ember-htmlbars/keywords/customized_outlet";
 import unbound from "ember-htmlbars/keywords/unbound";
 import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
@@ -72,6 +74,8 @@ import templateKeyword from "ember-htmlbars/keywords/template";
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
 registerKeyword('outlet', outlet);
+registerKeyword('@real_outlet', realOutlet);
+registerKeyword('@customized_outlet', customizedOutlet);
 registerKeyword('unbound', unbound);
 registerKeyword('view', view);
 registerKeyword('component', componentKeyword);

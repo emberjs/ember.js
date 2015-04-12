@@ -76,7 +76,7 @@ QUnit.test("outlet should support an optional name", function() {
 });
 
 
-QUnit.skip("outlet should correctly lookup a view", function() {
+QUnit.test("outlet should correctly lookup a view", function() {
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['special']
