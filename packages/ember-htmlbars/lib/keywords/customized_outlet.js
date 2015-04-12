@@ -9,7 +9,8 @@ import { readViewFactory } from "ember-views/streams/utils";
 export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
-    var viewClass = readViewFactory(read(hash.view), env.container);
+    var viewClass = read(hash.viewClass) ||
+          readViewFactory(read(hash.view), env.container);
     return { viewClass };
   },
   render(renderNode, env, scope, params, hash, template, inverse, visitor) {

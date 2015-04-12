@@ -14,8 +14,7 @@ import { keyword } from "htmlbars-runtime/hooks";
 
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
   var read = env.hooks.getValue;
-  var viewName = read(hash.view);
-  if (viewName) {
+  if (read(hash.view) || read(hash.viewClass)) {
     keyword('@customized_outlet', morph, env, scope, params, hash, template, inverse, visitor);
   } else {
     keyword('@real_outlet', morph, env, scope, params, hash, template, inverse, visitor);

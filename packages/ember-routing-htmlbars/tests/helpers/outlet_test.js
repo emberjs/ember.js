@@ -118,7 +118,7 @@ QUnit.test("outlet should assert view path is successfully resolved", function()
 
 });
 
-QUnit.skip("outlet should support an optional view class", function() {
+QUnit.test("outlet should support an optional view class", function() {
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['very-special']
