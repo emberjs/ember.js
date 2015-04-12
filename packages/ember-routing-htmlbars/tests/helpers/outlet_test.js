@@ -100,7 +100,7 @@ QUnit.test("outlet should correctly lookup a view", function() {
   equal(top.$().find('.special').length, 1, "expected to find .special element");
 });
 
-QUnit.skip("outlet should assert view is specified as a string", function() {
+QUnit.test("outlet should assert view is specified as a string", function() {
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view=containerView}}"));
 
   expectAssertion(function () {
