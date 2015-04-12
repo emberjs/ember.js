@@ -316,7 +316,7 @@ QUnit.test("`wait` helper can be passed a resolution value", function() {
 
 });
 
-QUnit.skip("`click` triggers appropriate events in order", function() {
+QUnit.test("`click` triggers appropriate events in order", function() {
   expect(5);
 
   var click, wait, events;

@@ -3,6 +3,9 @@ import View from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { set as o_set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import TextArea from "ember-views/views/text_area";
+import Registry from "container/registry";
+import ComponentLookup from "ember-views/component_lookup";
 
 var textArea, controller;
 
@@ -16,7 +19,12 @@ QUnit.module("{{textarea}}", {
       val: 'Lorem ipsum dolor'
     };
 
+    var registry = new Registry();
+    registry.register('component:-text-area', TextArea);
+    registry.register('component-lookup:main', ComponentLookup);
+
     textArea = View.extend({
+      container: registry.container(),
       controller: controller,
       template: compile('{{textarea disabled=disabled value=val}}')
     }).create();
@@ -29,11 +37,11 @@ QUnit.module("{{textarea}}", {
   }
 });
 
-QUnit.skip("Should insert a textarea", function() {
+QUnit.test("Should insert a textarea", function() {
   equal(textArea.$('textarea').length, 1, "There is a single textarea");
 });
 
-QUnit.skip("Should become disabled when the controller changes", function() {
+QUnit.test("Should become disabled when the controller changes", function() {
   ok(textArea.$('textarea').is(':not(:disabled)'), "Nothing is disabled yet");
   set(controller, 'disabled', true);
   ok(textArea.$('textarea').is(':disabled'), "The disabled attribute is updated");

@@ -65,6 +65,7 @@ import view from "ember-htmlbars/keywords/view";
 import componentKeyword from "ember-htmlbars/keywords/component";
 import partial from "ember-htmlbars/keywords/partial";
 import input from "ember-htmlbars/keywords/input";
+import textarea from "ember-htmlbars/keywords/textarea";
 import collection from "ember-htmlbars/keywords/collection";
 import templateKeyword from "ember-htmlbars/keywords/template";
 
@@ -77,6 +78,7 @@ registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
 registerKeyword('template', templateKeyword);
 registerKeyword('input', input);
+registerKeyword('textarea', textarea);
 registerKeyword('collection', collection);
 
 export default {
