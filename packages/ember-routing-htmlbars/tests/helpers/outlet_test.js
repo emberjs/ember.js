@@ -109,12 +109,12 @@ QUnit.skip("outlet should assert view is specified as a string", function() {
 
 });
 
-QUnit.skip("outlet should assert view path is successfully resolved", function() {
+QUnit.test("outlet should assert view path is successfully resolved", function() {
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view='someViewNameHere'}}"));
 
   expectAssertion(function () {
     runAppend(top);
-  }, "The view name you supplied 'someViewNameHere' did not resolve to a view.");
+  }, /someViewNameHere must be a subclass or an instance of Ember.View/);
 
 });
 
