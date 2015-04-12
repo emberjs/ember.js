@@ -10,8 +10,7 @@ export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
     var viewClass = readViewFactory(read(hash.view), env.container);
-    var outletName = read(params[0]) || 'main';
-    return { viewClass, outletName };
+    return { viewClass };
   },
   render(renderNode, env, scope, params, hash, template, inverse, visitor) {
     var state = renderNode.state;
