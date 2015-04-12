@@ -234,7 +234,7 @@ QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted na
   runAppend(top);
 });
 
-QUnit.skip("should throw an assertion if {{outlet}} used with unquoted name", function() {
+QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
   top.setOutletState(withTemplate("{{outlet foo}}"));
   expectAssertion(function() {
     runAppend(top);

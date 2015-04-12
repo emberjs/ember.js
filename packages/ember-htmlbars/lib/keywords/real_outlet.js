@@ -6,6 +6,7 @@
 import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import ComponentNode from "ember-htmlbars/system/component-node";
+import { isStream } from "ember-metal/streams/utils";
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
 topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
@@ -17,6 +18,11 @@ export default {
   setupState(state, env, scope, params, hash) {
     var outletState = env.outletState;
     var read = env.hooks.getValue;
+
+    Ember.assert(
+      "Using {{outlet}} with an unquoted name is not supported.",
+      !params[0] || !isStream(params[0])
+    );
 
     var outletName = read(params[0]) || 'main';
     var selectedOutletState = outletState[outletName];
