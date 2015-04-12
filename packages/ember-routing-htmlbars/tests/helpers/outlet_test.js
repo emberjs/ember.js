@@ -76,7 +76,8 @@ QUnit.test("outlet should support an optional name", function() {
 });
 
 
-QUnit.test("outlet should correctly lookup a view", function() {
+QUnit.test("outlet should correctly lookup a view [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['special']
@@ -100,7 +101,8 @@ QUnit.test("outlet should correctly lookup a view", function() {
   equal(top.$().find('.special').length, 1, "expected to find .special element");
 });
 
-QUnit.test("outlet should assert view is specified as a string", function() {
+QUnit.test("outlet should assert view is specified as a string [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view=containerView}}"));
 
   expectAssertion(function () {
@@ -109,7 +111,8 @@ QUnit.test("outlet should assert view is specified as a string", function() {
 
 });
 
-QUnit.test("outlet should assert view path is successfully resolved", function() {
+QUnit.test("outlet should assert view path is successfully resolved [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view='someViewNameHere'}}"));
 
   expectAssertion(function () {
@@ -118,7 +121,8 @@ QUnit.test("outlet should assert view path is successfully resolved", function()
 
 });
 
-QUnit.test("outlet should support an optional view class", function() {
+QUnit.test("outlet should support an optional view class [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['very-special']
