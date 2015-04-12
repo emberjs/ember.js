@@ -15,7 +15,7 @@ function ComponentNode(component, scope, renderNode, block, expectElement) {
 
 export default ComponentNode;
 
-ComponentNode.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate, visitor) {
+ComponentNode.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
   found = found || lookupComponent(env, path);
   Ember.assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
@@ -140,4 +140,3 @@ export function createOrUpdateComponent(component, options, renderNode) {
   renderNode.emberView = component;
   return component;
 }
-
