@@ -59,7 +59,13 @@ function createContentBlock(template, scope, self, component) {
 function createLayoutBlock(template, yieldTo, self, component, attrs) {
   return blockFor(template, {
     yieldTo: yieldTo,
+
+    // If we have an old-style Controller with a template it will be
+    // passed as our `self` argument, and it should be the context for
+    // the template. Otherwise, we must have a real Component and it
+    // should be its own template context.
     self: self || component,
+
     options: { view: component, attrs: attrs }
   });
 }
