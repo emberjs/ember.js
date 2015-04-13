@@ -67,7 +67,7 @@ merge(SubexprStream.prototype, {
       params[i] = read(sourceParams[i]);
     }
 
-    for (var prop in hash) {
+    for (var prop in sourceHash) {
       hash[prop] = read(sourceHash[prop]);
     }
 

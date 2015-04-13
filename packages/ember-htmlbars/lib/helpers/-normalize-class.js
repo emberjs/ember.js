@@ -1,3 +1,5 @@
+import { dasherize } from "ember-runtime/system/string";
+
 /** @private
   This private helper is used by ComponentNode to convert the classNameBindings
   microsyntax into a class name.
@@ -6,13 +8,31 @@
   series of attribute nodes that use this helper.
 */
 export default function normalizeClass(params, hash) {
-  var value = params[0];
+  var [propName, value] = params;
+  var { activeClass, inactiveClass } = hash;
 
-  if (typeof value === 'string') {
+  // When using the colon syntax, evaluate the truthiness or falsiness
+  // of the value to determine which className to return
+  if (activeClass || inactiveClass) {
+    if (!!value) {
+      return activeClass;
+    } else {
+      return inactiveClass;
+    }
+
+  // If value is a Boolean and true, return the dasherized property
+  // name.
+  } else if (value === true) {
+    return dasherize(propName);
+
+  // If the value is not false, undefined, or null, return the current
+  // value of the property.
+  } else if (value !== false && value != null) {
     return value;
-  } else if (!!value) {
-    return hash.activeClass;
+
+  // Nothing to display. Return null so that the old class is removed
+  // but no new class is added.
   } else {
-    return hash.inactiveClass;
+    return null;
   }
 }
