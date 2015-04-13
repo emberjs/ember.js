@@ -56,6 +56,14 @@ QUnit.test('it should not re-render if the property changes', function() {
   equal(view.$().text(), 'BORK BORK', 'should not re-render if the property changes');
 });
 
+QUnit.test('it should re-render if the parent view rerenders', function() {
+  run(function() {
+    view.set('context.foo', 'OOF');
+    view.rerender();
+  });
+  equal(view.$().text(), 'OOF OOF', 'should re-render if the parent view rerenders');
+});
+
 QUnit.test('it should throw the helper missing error if multiple properties are provided', function() {
   expectAssertion(function() {
     runAppend(EmberView.create({
@@ -68,7 +76,7 @@ QUnit.test('it should throw the helper missing error if multiple properties are 
   }, /A helper named 'foo' could not be found/);
 });
 
-QUnit.skip('should property escape unsafe hrefs', function() {
+QUnit.test('should property escape unsafe hrefs', function() {
   /* jshint scripturl:true */
 
   expect(3);
@@ -96,6 +104,101 @@ QUnit.skip('should property escape unsafe hrefs', function() {
     var link = links[i];
     equal(link.protocol, 'unsafe:', 'properly escaped');
   }
+});
+
+QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    registerBoundHelper('capitalize', function(value) {
+      return value.toUpperCase();
+    });
+
+    view = EmberView.create({
+      template: compile('{{capitalize (unbound foo)}}'),
+      context: EmberObject.create({
+        foo: 'bork'
+      })
+    });
+
+    runAppend(view);
+  },
+
+  teardown() {
+    delete helpers['capitalize'];
+
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test('it should render the current value of a property on the context', function() {
+  equal(view.$().text(), 'BORK', 'should render the current value of a property');
+});
+
+QUnit.test('it should not re-render if the property changes', function() {
+  run(function() {
+    view.set('context.foo', 'oof');
+  });
+  equal(view.$().text(), 'BORK', 'should not re-render if the property changes');
+});
+
+QUnit.test('it should re-render if the parent view rerenders', function() {
+  run(function() {
+    view.set('context.foo', 'oof');
+    view.rerender();
+  });
+  equal(view.$().text(), 'OOF', 'should re-render if the parent view rerenders');
+});
+
+QUnit.module('ember-htmlbars: {{#unbound}} subexpression - helper form', {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    registerBoundHelper('capitalize', function(value) {
+      return value.toUpperCase();
+    });
+
+    registerBoundHelper('doublize', function(value) {
+      return `${value} ${value}`;
+    });
+
+    view = EmberView.create({
+      template: compile('{{capitalize (unbound doublize foo)}}'),
+      context: EmberObject.create({
+        foo: 'bork'
+      })
+    });
+
+    runAppend(view);
+  },
+
+  teardown() {
+    delete helpers['capitalize'];
+    delete helpers['doublize'];
+
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test('it should render the current value of a property on the context', function() {
+  equal(view.$().text(), 'BORK BORK', 'should render the current value of a property');
+});
+
+QUnit.test('it should not re-render if the property changes', function() {
+  run(function() {
+    view.set('context.foo', 'oof');
+  });
+  equal(view.$().text(), 'BORK BORK', 'should not re-render if the property changes');
+});
+
+QUnit.test('it should re-render if the parent view rerenders', function() {
+  run(function() {
+    view.set('context.foo', 'oof');
+    view.rerender();
+  });
+  equal(view.$().text(), 'OOF OOF', 'should re-render if the parent view rerenders');
 });
 
 QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
@@ -433,7 +536,7 @@ QUnit.test("should be able to use unbound helper in #each helper (with objects)"
   equal(view.$('li').children().length, 0, 'No markers');
 });
 
-QUnit.skip('should work properly with attributes', function() {
+QUnit.test('should work properly with attributes', function() {
   expect(4);
 
   view = EmberView.create({

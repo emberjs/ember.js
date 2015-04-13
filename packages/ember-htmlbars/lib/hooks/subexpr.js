@@ -10,6 +10,13 @@ import create from "ember-metal/platform/create";
 import { subscribe, addDependency, read, labelsFor, labelFor } from "ember-metal/streams/utils";
 
 export default function subexpr(env, scope, helperName, params, hash) {
+  // TODO: Keywords and helper invocation should be integrated into
+  // the subexpr hook upstream in HTMLBars.
+  var keyword = env.hooks.keywords[helperName];
+  if (keyword) {
+    return keyword(null, env, scope, params, hash, null, null);
+  }
+
   var helper = lookupHelper(helperName, scope.self, env);
   var invoker = function(params, hash) {
     return env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { template: {}, inverse: {} }, undefined).value;

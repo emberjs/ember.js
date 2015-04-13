@@ -10,6 +10,15 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
   var params = originalParams.slice();
   var valueStream = params.shift();
 
+  // If `morph` is `null` the keyword is being invoked as a subexpression.
+  if (morph === null) {
+    if (originalParams.length > 1) {
+      valueStream = env.hooks.subexpr(env, scope, valueStream.key, params, hash);
+    }
+
+    return new VolatileStream(valueStream);
+  }
+
   if (params.length === 0) {
     env.hooks.range(morph, env, scope, null, valueStream);
   } else if (template === null) {
@@ -20,3 +29,23 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
 
   return true;
 }
+
+import merge from "ember-metal/merge";
+import create from "ember-metal/platform/create";
+import Stream from "ember-metal/streams/stream";
+import { read } from "ember-metal/streams/utils";
+
+function VolatileStream(source) {
+  this.init(`(volatile ${source.label})`);
+  this.source = this.addDependency(source);
+}
+
+VolatileStream.prototype = create(Stream.prototype);
+
+merge(VolatileStream.prototype, {
+  value() {
+    return read(this.source);
+  },
+
+  notify() {}
+});
