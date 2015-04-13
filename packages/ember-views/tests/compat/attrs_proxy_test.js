@@ -20,7 +20,7 @@ QUnit.skip('works with properties setup in root of view', function() {
   registry.register('view:foo', View.extend({
     bar: 'qux',
 
-    template: compile('{{bar}}')
+    template: compile('{{view.bar}}')
   }));
 
   view = View.extend({
