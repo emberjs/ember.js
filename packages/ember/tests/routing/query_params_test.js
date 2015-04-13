@@ -1459,7 +1459,7 @@ QUnit.skip("'controller' stickiness shares QP state between models", function() 
   equal(this.$link3.attr('href'), '/a/a-3?q=woot&z=123');
 });
 
-QUnit.skip("'model' stickiness is scoped to current or first dynamic parent route", function() {
+QUnit.test("'model' stickiness is scoped to current or first dynamic parent route", function() {
   this.boot();
 
   Ember.run(router, 'transitionTo', 'comments', 'a-1');
@@ -1483,7 +1483,7 @@ QUnit.skip("'model' stickiness is scoped to current or first dynamic parent rout
   equal(router.get('location.path'), '/a/a-1/comments?page=3');
 });
 
-QUnit.skip("can reset query params using the resetController hook", function() {
+QUnit.test("can reset query params using the resetController hook", function() {
   App.Router.map(function() {
     this.resource('article', { path: '/a/:id' }, function() {
       this.resource('comments');

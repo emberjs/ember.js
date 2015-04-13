@@ -59,7 +59,7 @@ function createContentBlock(template, scope, self, component) {
 function createLayoutBlock(template, yieldTo, self, component, attrs) {
   return blockFor(template, {
     yieldTo: yieldTo,
-    self: component,
+    self: self || component,
     options: { view: component, attrs: attrs }
   });
 }

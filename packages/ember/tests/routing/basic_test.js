@@ -185,7 +185,7 @@ QUnit.test("The Homepage with explicit template name in renderTemplate", functio
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-QUnit.skip("An alternate template will pull in an alternate controller", function() {
+QUnit.test("An alternate template will pull in an alternate controller", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -207,7 +207,7 @@ QUnit.skip("An alternate template will pull in an alternate controller", functio
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-QUnit.skip("An alternate template will pull in an alternate controller instead of controllerName", function() {
+QUnit.test("An alternate template will pull in an alternate controller instead of controllerName", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -236,7 +236,7 @@ QUnit.skip("An alternate template will pull in an alternate controller instead o
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-QUnit.skip("The template will pull in an alternate controller via key/value", function() {
+QUnit.test("The template will pull in an alternate controller via key/value", function() {
   Router.map(function() {
     this.route("homepage", { path: "/" });
   });
@@ -258,7 +258,7 @@ QUnit.skip("The template will pull in an alternate controller via key/value", fu
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from home.)', '#qunit-fixture').length, 1, "The homepage template was rendered from data from the HomeController");
 });
 
-QUnit.skip("The Homepage with explicit template name in renderTemplate and controller", function() {
+QUnit.test("The Homepage with explicit template name in renderTemplate and controller", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -280,7 +280,7 @@ QUnit.skip("The Homepage with explicit template name in renderTemplate and contr
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-QUnit.skip("Model passed via renderTemplate model is set as controller's model", function() {
+QUnit.test("Model passed via renderTemplate model is set as controller's model", function() {
   Ember.TEMPLATES['bio'] = compile("<p>{{model.name}}</p>");
 
   App.BioController = Ember.Controller.extend();
@@ -481,7 +481,7 @@ QUnit.skip('Specifying a name to render should have precedence over everything e
   equal(Ember.$('span', '#qunit-fixture').text(), "Outertroll", "The homepage view was used");
 });
 
-QUnit.skip("The Homepage with a `setupController` hook", function() {
+QUnit.test("The Homepage with a `setupController` hook", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -524,7 +524,7 @@ QUnit.test("The route controller is still set when overriding the setupControlle
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:home'), "route controller is the home controller");
 });
 
-QUnit.skip("The route controller can be specified via controllerName", function() {
+QUnit.test("The route controller can be specified via controllerName", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -547,7 +547,7 @@ QUnit.skip("The route controller can be specified via controllerName", function(
   equal(Ember.$('p', '#qunit-fixture').text(), "foo", "The homepage template was rendered with data from the custom controller");
 });
 
-QUnit.skip("The route controller specified via controllerName is used in render", function() {
+QUnit.test("The route controller specified via controllerName is used in render", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -573,7 +573,7 @@ QUnit.skip("The route controller specified via controllerName is used in render"
   equal(Ember.$('p', '#qunit-fixture').text(), "alternative home: foo", "The homepage template was rendered with data from the custom controller");
 });
 
-QUnit.skip("The route controller specified via controllerName is used in render even when a controller with the routeName is available", function() {
+QUnit.test("The route controller specified via controllerName is used in render even when a controller with the routeName is available", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -600,7 +600,7 @@ QUnit.skip("The route controller specified via controllerName is used in render 
   equal(Ember.$('p', '#qunit-fixture').text(), "home: myController", "The homepage template was rendered with data from the custom controller");
 });
 
-QUnit.skip("The Homepage with a `setupController` hook modifying other controllers", function() {
+QUnit.test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -624,7 +624,7 @@ QUnit.skip("The Homepage with a `setupController` hook modifying other controlle
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
-QUnit.skip("The Homepage with a computed context that does not get overridden", function() {
+QUnit.test("The Homepage with a computed context that does not get overridden", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -648,7 +648,7 @@ QUnit.skip("The Homepage with a computed context that does not get overridden", 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the context intact");
 });
 
-QUnit.skip("The Homepage getting its controller context via model", function() {
+QUnit.test("The Homepage getting its controller context via model", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -678,7 +678,7 @@ QUnit.skip("The Homepage getting its controller context via model", function() {
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
-QUnit.skip("The Specials Page getting its controller context by deserializing the params hash", function() {
+QUnit.test("The Specials Page getting its controller context by deserializing the params hash", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -709,7 +709,7 @@ QUnit.skip("The Specials Page getting its controller context by deserializing th
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
 });
 
-QUnit.skip("The Specials Page defaults to looking models up via `find`", function() {
+QUnit.test("The Specials Page defaults to looking models up via `find`", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -743,7 +743,7 @@ QUnit.skip("The Specials Page defaults to looking models up via `find`", functio
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
 });
 
-QUnit.skip("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
+QUnit.test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -795,7 +795,7 @@ QUnit.skip("The Special Page returning a promise puts the app into a loading sta
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
 });
 
-QUnit.skip("The loading state doesn't get entered for promises that resolve on the same run loop", function() {
+QUnit.test("The loading state doesn't get entered for promises that resolve on the same run loop", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -1910,7 +1910,7 @@ QUnit.test("Transitioning from a parent event does not prevent currentPath from 
   equal(router.get('location').getURL(), "/foo/qux");
 });
 
-QUnit.skip("Generated names can be customized when providing routes with dot notation", function() {
+QUnit.test("Generated names can be customized when providing routes with dot notation", function() {
   expect(4);
 
   Ember.TEMPLATES.index = compile("<div>Index</div>");
@@ -2329,7 +2329,7 @@ QUnit.skip("Child routes should render inside the application template if the ap
   equal(Ember.$('#qunit-fixture > div').text(), "App posts");
 });
 
-QUnit.skip("The template is not re-rendered when the route's context changes", function() {
+QUnit.test("The template is not re-rendered when the route's context changes", function() {
   Router.map(function() {
     this.route("page", { path: "/page/:name" });
   });
@@ -2372,7 +2372,7 @@ QUnit.skip("The template is not re-rendered when the route's context changes", f
 });
 
 
-QUnit.skip("The template is not re-rendered when two routes present the exact same template, view, & controller", function() {
+QUnit.test("The template is not re-rendered when two routes present the exact same template, view, & controller", function() {
   Router.map(function() {
     this.route("first");
     this.route("second");

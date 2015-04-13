@@ -69,7 +69,7 @@ QUnit.skip("Unbound dashed helpers registered on the container can be late-invok
 });
 
 // need to make `makeBoundHelper` for HTMLBars
-QUnit.skip("Bound helpers registered on the container can be late-invoked", function() {
+QUnit.test("Bound helpers registered on the container can be late-invoked", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
 
   boot(function() {

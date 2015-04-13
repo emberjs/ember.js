@@ -125,7 +125,7 @@ QUnit.test("Late-registered components can be rendered with ONLY the template re
   ok(!helpers['borf-snorlax'], "Component wasn't saved to global helpers hash");
 });
 
-QUnit.skip("Component-like invocations are treated as bound paths if neither template nor component are registered on the container", function() {
+QUnit.test("Component-like invocations are treated as bound paths if neither template nor component are registered on the container", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{user-name}} hello {{api-key}} world</div>");
 
@@ -138,7 +138,7 @@ QUnit.skip("Component-like invocations are treated as bound paths if neither tem
   equal(Ember.$('#wrapper').text(), "machty hello  world", "The component is composed correctly");
 });
 
-QUnit.skip("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function() {
+QUnit.test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function() {
   expect(2);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
@@ -195,7 +195,7 @@ QUnit.module("Application Lifecycle - Component Context", {
   teardown: cleanup
 });
 
-QUnit.skip("Components with a block should have the proper content when a template is provided", function() {
+QUnit.test("Components with a block should have the proper content when a template is provided", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}-{{yield}}");
 
@@ -212,7 +212,7 @@ QUnit.skip("Components with a block should have the proper content when a templa
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-QUnit.skip("Components with a block should yield the proper content without a template provided", function() {
+QUnit.test("Components with a block should yield the proper content without a template provided", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
 
   boot(function() {

@@ -70,7 +70,7 @@ QUnit.module("Homepage Example", {
 });
 
 
-QUnit.skip("The example renders correctly", function() {
+QUnit.test("The example renders correctly", function() {
   Ember.run(App, 'advanceReadiness');
 
   equal($fixture.find('h1:contains(People)').length, 1);

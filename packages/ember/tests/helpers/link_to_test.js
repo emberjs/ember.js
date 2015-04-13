@@ -437,7 +437,7 @@ QUnit.skip("The {{link-to}} helper supports bubbles=false", function() {
   equal(hidden, 0, "The link didn't bubble");
 });
 
-QUnit.skip("The {{link-to}} helper moves into the named route with context", function() {
+QUnit.test("The {{link-to}} helper moves into the named route with context", function() {
   Router.map(function(match) {
     this.route("about");
     this.resource("item", { path: "/item/:id" });
@@ -566,7 +566,7 @@ QUnit.test("The {{link-to}} helper should not transition if target is not equal 
   notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
 });
 
-QUnit.skip("The {{link-to}} helper accepts string/numeric arguments", function() {
+QUnit.test("The {{link-to}} helper accepts string/numeric arguments", function() {
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
     this.route('post', { path: '/post/:post_id' });
@@ -619,7 +619,7 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
 
 });
 
-QUnit.skip("The {{link-to}} helper unwraps controllers", function() {
+QUnit.test("The {{link-to}} helper unwraps controllers", function() {
 
   if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     expect(5);
@@ -680,7 +680,7 @@ QUnit.test("The {{link-to}} helper doesn't change view context", function() {
   equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test-test', "accesses correct view");
 });
 
-QUnit.skip("Quoteless route param performs property lookup", function() {
+QUnit.test("Quoteless route param performs property lookup", function() {
   Ember.TEMPLATES.index = compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}{{#link-to view.foo id='view-link'}}{{view.foo}}{{/link-to}}");
 
   function assertEquality(href) {
@@ -718,7 +718,7 @@ QUnit.skip("Quoteless route param performs property lookup", function() {
   assertEquality('/about');
 });
 
-QUnit.skip("link-to with null/undefined dynamic parameters are put in a loading state", function() {
+QUnit.test("link-to with null/undefined dynamic parameters are put in a loading state", function() {
 
   expect(19);
 
@@ -807,7 +807,7 @@ QUnit.skip("link-to with null/undefined dynamic parameters are put in a loading 
   Ember.Logger.warn = oldWarn;
 });
 
-QUnit.skip("The {{link-to}} helper refreshes href element when one of params changes", function() {
+QUnit.test("The {{link-to}} helper refreshes href element when one of params changes", function() {
   Router.map(function() {
     this.route('post', { path: '/posts/:post_id' });
   });
@@ -914,7 +914,7 @@ QUnit.test("The {{link-to}} helper is active when a resource is active", functio
 
 });
 
-QUnit.skip("The {{link-to}} helper works in an #each'd array of string route names", function() {
+QUnit.test("The {{link-to}} helper works in an #each'd array of string route names", function() {
   Router.map(function() {
     this.route('foo');
     this.route('bar');
@@ -976,7 +976,7 @@ QUnit.test("The non-block form {{link-to}} helper moves into the named route", f
   equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
 });
 
-QUnit.skip("The non-block form {{link-to}} helper updates the link text when it is a binding", function() {
+QUnit.test("The non-block form {{link-to}} helper updates the link text when it is a binding", function() {
   expect(8);
   Router.map(function(match) {
     this.route("contact");
@@ -1066,7 +1066,7 @@ QUnit.skip("The non-block form {{link-to}} helper moves into the named route wit
 
 });
 
-QUnit.skip("The non-block form {{link-to}} performs property lookup", function() {
+QUnit.test("The non-block form {{link-to}} performs property lookup", function() {
   Ember.TEMPLATES.index = compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}{{link-to view.foo view.foo id='view-link'}}");
 
   function assertEquality(href) {
@@ -1104,7 +1104,7 @@ QUnit.skip("The non-block form {{link-to}} performs property lookup", function()
   assertEquality('/about');
 });
 
-QUnit.skip("The non-block form {{link-to}} protects against XSS", function() {
+QUnit.test("The non-block form {{link-to}} protects against XSS", function() {
   Ember.TEMPLATES.application = compile("{{link-to display 'index' id='link'}}");
 
   App.ApplicationController = Ember.Controller.extend({
