@@ -18,7 +18,6 @@
     "registry": "jspm",
     "dependencies": {
       "jquery": "github:components/jquery@^2.1.3"
-    },
-    "files": ["ember.debug.js", "ember.prod.js", "ember-template-compiler.js"]
+    }
   }
 }
