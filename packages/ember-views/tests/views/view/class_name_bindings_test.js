@@ -15,7 +15,7 @@ QUnit.module("EmberView - Class Name Bindings", {
   }
 });
 
-QUnit.skip("should apply bound class names to the element", function() {
+QUnit.test("should apply bound class names to the element", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
@@ -55,7 +55,7 @@ QUnit.skip("should apply bound class names to the element", function() {
   ok(!view.$().hasClass('disabled'), "does not add class name for negated binding");
 });
 
-QUnit.skip("should add, remove, or change class names if changed after element is created", function() {
+QUnit.test("should add, remove, or change class names if changed after element is created", function() {
   view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',

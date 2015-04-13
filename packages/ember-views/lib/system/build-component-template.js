@@ -158,21 +158,12 @@ function normalizeClass(component, attrs) {
   if (classNameBindings) {
     for (i=0, l=classNameBindings.length; i<l; i++) {
       var className = classNameBindings[i];
-      var microsyntax = className.split(':');
-      var prop = 'view.' + microsyntax[0];
-      var activeClass, inactiveClass;
-
-      if (microsyntax.length === 1) {
-        activeClass = prop;
-      } else if (microsyntax.length === 2) {
-        activeClass = microsyntax[1];
-      } else {
-        activeClass = microsyntax[1];
-        inactiveClass = microsyntax[2];
-      }
+      var [propName, activeClass, inactiveClass] = className.split(':');
+      var prop = 'view.' + propName;
 
       normalizedClass.push(['subexpr', '-normalize-class', [
         // params
+        ['value', propName],
         ['get', prop]
       ], [
         // hash
