@@ -21,25 +21,11 @@ import { computed } from "ember-metal/computed";
 import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
-import run from "ember-metal/run_loop";
 
 import htmlbarsTemplate from "ember-htmlbars/templates/select";
+import selectOptionTemplate from "ember-htmlbars/templates/select-option";
 
 var defaultTemplate = htmlbarsTemplate;
-
-var selectOptionDefaultTemplate = {
-  isHTMLBars: true,
-  revision: 'Ember@VERSION_STRING_PLACEHOLDER',
-  render(context) {
-    var lazyValue = context.getStream('view.label');
-
-    lazyValue.subscribe(context._wrapAsScheduled(function() {
-      run.scheduleOnce('render', context, 'rerender');
-    }));
-
-    return { fragment: lazyValue.value() };
-  }
-};
 
 var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',
@@ -47,7 +33,9 @@ var SelectOption = View.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
-  defaultTemplate: selectOptionDefaultTemplate,
+  defaultTemplate: selectOptionTemplate,
+
+  content: null,
 
   init() {
     this.labelPathDidChange();
@@ -490,7 +478,7 @@ var Select = View.extend({
   groupedContent: computed(function() {
     var groupPath = get(this, 'optionGroupPath');
     var groupedContent = emberA();
-    var content = get(this, 'content') || [];
+    var content = get(this, 'attrs.content') || [];
 
     forEach(content, function(item) {
       var label = get(item, groupPath);
@@ -506,7 +494,7 @@ var Select = View.extend({
     });
 
     return groupedContent;
-  }).property('optionGroupPath', 'content.@each'),
+  }).property('optionGroupPath', 'attrs.content.@each'),
 
   /**
     The view class for option.

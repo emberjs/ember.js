@@ -68,7 +68,7 @@ QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+  }, /You tried to look up an attribute directly on the component/);
 
   var select = view.get('select');
   ok(select.$().length, "Select was rendered");
@@ -89,7 +89,7 @@ QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
 
-QUnit.skip("works from a template", function() {
+QUnit.test("works from a template", function() {
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -151,7 +151,7 @@ QUnit.skip("works from a template", function() {
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
 
-QUnit.skip("upon content change, the DOM should reflect the selection (#481)", function() {
+QUnit.test("upon content change, the DOM should reflect the selection (#481)", function() {
   var userOne = { name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a' };
   var userTwo = { name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd' };
 
@@ -181,7 +181,7 @@ QUnit.skip("upon content change, the DOM should reflect the selection (#481)", f
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-QUnit.skip("upon content change with Array-like content, the DOM should reflect the selection", function() {
+QUnit.test("upon content change with Array-like content, the DOM should reflect the selection", function() {
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 
