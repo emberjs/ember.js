@@ -6,6 +6,7 @@ import {
   subscribers
 } from "ember-metal/instrumentation";
 import buildComponentTemplate from "ember-views/system/build-component-template";
+//import { deprecation } from "ember-views/compat/attrs-proxy";
 
 function Renderer(_helper) {
   this._dom = _helper;
@@ -118,6 +119,17 @@ Renderer.prototype.willInsertElement = function (view) {
 
 Renderer.prototype.setAttrs = function (view, attrs) {
   set(view, 'attrs', attrs);
+
+  // For backwards compatibility, set the component property
+  // if it has an attr with that name. Undefined attributes
+  // are handled on demand via the `unknownProperty` hook.
+  for (var attr in attrs) {
+    if (attr in view) {
+      // TODO: Should we issue a deprecation here?
+      //Ember.deprecate(deprecation(attr));
+      view.set(attr, attrs[attr]);
+    }
+  }
 }; // set attrs the first time
 
 Renderer.prototype.didInsertElement = function (view) {
@@ -141,7 +153,7 @@ Renderer.prototype.updateAttrs = function (view, attrs) {
     view.willReceiveAttrs(attrs);
   }
 
-  set(view, 'attrs', attrs);
+  this.setAttrs(view, attrs);
 }; // setting new attrs
 
 Renderer.prototype.willUpdate = function (view, attrs) {

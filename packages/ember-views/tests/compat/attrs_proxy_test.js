@@ -16,7 +16,7 @@ QUnit.module("ember-views: attrs-proxy", {
   }
 });
 
-QUnit.skip('works with properties setup in root of view', function() {
+QUnit.test('works with properties setup in root of view', function() {
   registry.register('view:foo', View.extend({
     bar: 'qux',
 
