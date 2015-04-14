@@ -24,7 +24,7 @@
 function TransformWithAsToHash(options) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
-  this.options = options;
+  this.options = options || {};
 }
 
 /**
