@@ -4,33 +4,35 @@
 */
 
 import { _Metamorph } from "ember-views/views/metamorph_view";
-import { read, chain, subscribe, unsubscribe } from "ember-metal/streams/utils";
+import { read, subscribe, unsubscribe } from "ember-metal/streams/utils";
 import { readComponentFactory } from "ember-views/streams/utils";
 import mergeViewBindings from "ember-htmlbars/system/merge-view-bindings";
 import EmberError from "ember-metal/error";
 import ContainerView from "ember-views/views/container_view";
+import View from "ember-views/views/view";
 
 export default ContainerView.extend(_Metamorph, {
   init() {
     this._super(...arguments);
-    var componentNameStream = this._boundComponentOptions.componentNameStream;
-    var container = this.container;
-    this.componentClassStream = chain(componentNameStream, function() {
-      return readComponentFactory(componentNameStream, container);
-    });
+    this.componentNameStream = this._boundComponentOptions.componentNameStream;
 
-    subscribe(this.componentClassStream, this._updateBoundChildComponent, this);
+    subscribe(this.componentNameStream, this._updateBoundChildComponent, this);
     this._updateBoundChildComponent();
   },
   willDestroy() {
-    unsubscribe(this.componentClassStream, this._updateBoundChildComponent, this);
+    unsubscribe(this.componentNameStream, this._updateBoundChildComponent, this);
     this._super(...arguments);
   },
   _updateBoundChildComponent() {
     this.replace(0, 1, [this._createNewComponent()]);
   },
   _createNewComponent() {
-    var componentClass = read(this.componentClassStream);
+    var componentName = read(this.componentNameStream);
+    if (!componentName) {
+      return this.createChildView(View);
+    }
+
+    var componentClass = readComponentFactory(componentName, this.container);
     if (!componentClass) {
       throw new EmberError('HTMLBars error: Could not find component named "' + read(this._boundComponentOptions.componentNameStream) + '".');
     }
@@ -39,7 +41,7 @@ export default ContainerView.extend(_Metamorph, {
 
     var prop;
     for (prop in hash) {
-      if (prop === '_boundComponentOptions' || prop === 'componentClassStream') { continue; }
+      if (prop === '_boundComponentOptions' || prop === 'componentNameStream') { continue; }
       hashForComponent[prop] = hash[prop];
     }
 
