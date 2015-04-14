@@ -980,6 +980,46 @@ QUnit.test("updating an item's sort properties does not error when binary search
   deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "array is sorted correctly");
 });
 
+QUnit.test("array observers do not leak", function() {
+  var jaime;
+
+  var daria = EmberObject.create({
+    name: 'Daria'
+  });
+
+  var jane = EmberObject.create({
+    name: 'Jane'
+  });
+
+  var sisters = Ember.A([jane, daria]);
+  var sortProps;
+
+  run(function() {
+    sortProps = Ember.A(['name']);
+    jaime = EmberObject.createWithMixins({
+      sisters: sisters,
+      sortedPeople: computedSort('sisters', 'sortProps'),
+      sortProps: sortProps
+    });
+  });
+
+  run(function() {
+    jaime.get('sortedPeople');
+    jaime.destroy();
+  });
+
+  run(function() {
+    try {
+      sortProps.pushObject({
+        name: 'Anna'
+      });
+      ok(true);
+    } catch (e) {
+      ok(false, e);
+    }
+  });
+});
+
 QUnit.test("property paths in sort properties update the sorted array", function () {
   var jaime, cersei, sansa;
 

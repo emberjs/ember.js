@@ -217,7 +217,28 @@ QUnit.test('allows usage of the template fn', function() {
     controller: {
       value: 'foo'
     },
-    template: compile('{{#test}}foo{{/test}}')
+    template: compile('{{#test}}{{value}}{{/test}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'foo');
+});
+
+QUnit.test('allows usage of the template inverse', function() {
+  expect(1);
+
+  function someHelper(options) {
+    options.inverse();
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      value: 'foo'
+    },
+    template: compile('{{#test}}Nothing to see here.{{else}}{{value}}{{/test}}')
   });
 
   runAppend(view);

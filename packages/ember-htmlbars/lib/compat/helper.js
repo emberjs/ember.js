@@ -47,6 +47,12 @@ function HandlebarsCompatibleHelper(fn) {
       handlebarsOptions.fn = function() {
         options.template.yield();
       };
+
+      if (options.inverse) {
+        handlebarsOptions.inverse = function() {
+          blockResult = options.inverse.render(context, env, options.morph.contextualElement);
+        };
+      }
     }
 
     for (var prop in hash) {

@@ -420,7 +420,7 @@ QUnit.skip("placeholder attribute bound to undefined is not present", function()
 
   run(null, set, view, 'controller.someThingNotThere', 'foo');
 
-  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+  equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', "attribute is present");
 });
 
 QUnit.test("placeholder attribute bound to null is not present", function() {
@@ -438,5 +438,5 @@ QUnit.test("placeholder attribute bound to null is not present", function() {
 
   run(null, set, view, 'controller.someNullProperty', 'foo');
 
-  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+  equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', "attribute is present");
 });

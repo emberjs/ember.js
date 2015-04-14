@@ -1,6 +1,7 @@
 /*global __fail__*/
 
 import Ember from "ember-metal/core";
+import { typeOf } from 'ember-metal/utils';
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
@@ -40,7 +41,7 @@ Ember Debug
 Ember.assert = function(desc, test) {
   var throwAssertion;
 
-  if (Ember.typeOf(test) === 'function') {
+  if (typeOf(test) === 'function') {
     throwAssertion = !test();
   } else {
     throwAssertion = !test;
@@ -232,7 +233,7 @@ if (!Ember.testing) {
   _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
-  var isFirefox = typeof InstallTrigger !== 'undefined';
+  var isFirefox = environment.isFirefox;
   var isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {

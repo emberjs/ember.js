@@ -730,7 +730,9 @@ QUnit.test('Collection with style attribute supports changing content', function
     view.appendTo('#qunit-fixture');
   });
 
-  equal(view.$().attr('style'), 'width: 100px;', "width is applied to the element");
+  var style = getElementStyle(view.element);
+
+  equal(style, 'WIDTH: 100PX;', "width is applied to the element");
 
   run(function() {
     view.get('content').pushObject('baz');

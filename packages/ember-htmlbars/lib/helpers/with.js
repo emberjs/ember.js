@@ -9,7 +9,7 @@
   `{{with}}` block.
   ```handlebars
   // posts might not be
-  {{#with user.posts as blogPosts}}
+  {{#with user.posts as |blogPosts|}}
     <div class="notice">
       There are {{blogPosts.length}} blog posts written by {{user.name}}.
     </div>
@@ -27,7 +27,7 @@
   the specified controller wrapping the aliased keyword.
   This is very similar to using an `itemController` option with the `{{each}}` helper.
   ```handlebars
-  {{#with users.posts as posts controller='userBlogPosts'}}
+  {{#with users.posts controller='userBlogPosts' as |posts|}}
     {{!- `posts` is wrapped in our controller instance }}
   {{/with}}
   ```

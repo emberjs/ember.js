@@ -154,7 +154,7 @@ QUnit.test("yield inside a conditional uses the outer context [DEPRECATED]", fun
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
@@ -167,7 +167,7 @@ QUnit.test("outer keyword doesn't mask inner component property", function () {
 
   view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: compile('{{#with boundText as item}}{{#view component}}{{item}}{{/view}}{{/with}}')
+    template: compile('{{#with boundText as |item|}}{{#view component}}{{item}}{{/view}}{{/with}}')
   });
 
   runAppend(view);
@@ -178,7 +178,7 @@ QUnit.test("outer keyword doesn't mask inner component property", function () {
 QUnit.test("inner keyword doesn't mask yield property", function() {
   var component = Component.extend({
     boundText: "inner",
-    layout: compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
+    layout: compile("{{#with boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
   });
 
   view = EmberView.create({
@@ -198,7 +198,7 @@ QUnit.test("can bind a keyword to a component and use it in yield", function() {
 
   view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: compile('{{#with boundText as item}}{{#view component content=item}}{{item}}{{/view}}{{/with}}')
+    template: compile('{{#with boundText as |item|}}{{#view component content=item}}{{item}}{{/view}}{{/with}}')
   });
 
   runAppend(view);

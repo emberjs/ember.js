@@ -10,17 +10,23 @@ import plugins from "ember-template-compiler/plugins";
   @private
   @property compileOptions
 */
-export default function() {
+export default function(_options) {
   var disableComponentGeneration = true;
   if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
     disableComponentGeneration = false;
   }
 
-  return {
-    revision: 'Ember@VERSION_STRING_PLACEHOLDER',
+  var options = _options || {};
+  // When calling `Ember.Handlebars.compile()` a second argument of `true`
+  // had a special meaning (long since lost), this just gaurds against
+  // `options` being true, and causing an error during compilation.
+  if (options === true) {
+    options = {};
+  }
 
-    disableComponentGeneration: disableComponentGeneration,
+  options.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+  options.disableComponentGeneration = disableComponentGeneration;
+  options.plugins = plugins;
 
-    plugins: plugins
-  };
+  return options;
 }
