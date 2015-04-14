@@ -225,7 +225,7 @@ QUnit.test('allows usage of the template fn', function() {
   equal(view.$().text(), 'foo');
 });
 
-QUnit.test('allows usage of the template inverse', function() {
+QUnit.skip('allows usage of the template inverse', function() {
   expect(1);
 
   function someHelper(options) {
