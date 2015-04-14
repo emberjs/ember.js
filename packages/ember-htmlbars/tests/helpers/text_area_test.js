@@ -47,7 +47,7 @@ QUnit.test("Should become disabled when the controller changes", function() {
   ok(textArea.$('textarea').is(':disabled'), "The disabled attribute is updated");
 });
 
-QUnit.skip("Should bind its contents to the specified value", function() {
+QUnit.test("Should bind its contents to the specified value", function() {
   equal(textArea.$('textarea').val(), "Lorem ipsum dolor", "The contents are included");
   set(controller, 'val', "sit amet");
   equal(textArea.$('textarea').val(), "sit amet", "The new contents are included");
