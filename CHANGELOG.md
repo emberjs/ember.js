@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 1.11.2 (April 14, 2015)
+
+- [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options
+
 ### 1.11.1 (April 3, 2015)
 
 - [#10795](https://github.com/emberjs/ember.js/pull/10795) - [BUGFIX] Fix regression triggered by `CollectionView` instances with `attributeBindings`.
