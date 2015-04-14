@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 1.10.1 (April 14, 2014)
+
+* [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options`
+
 ### 1.10.0 (February 7, 2015)
 
 * [BUGFIX] Ensure that property case is normalized.
