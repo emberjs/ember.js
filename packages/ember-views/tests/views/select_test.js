@@ -146,7 +146,7 @@ QUnit.test("XSS: does not escape label value when it is a SafeString", function(
   append();
 
   equal(select.$('option').length, 2, "Should have two options");
-  equal(select.$('option[value=1] b').length, 1, "Should have child elements");
+  equal(select.$('option[value=1] p').length, 1, "Should have child elements");
 
   // IE 8 adds whitespace
   equal(trim(select.$().text()), "YehudaTom", "Options should have content");
