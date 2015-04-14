@@ -98,7 +98,7 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
 
 QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
   view = EmberView.create({
-    template: compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
+    template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
     context: {
       admin: { name: "Tom Dale" },
       user: { name: "Yehuda Katz" }
@@ -111,7 +111,7 @@ QUnit.test("re-using the same variable with different #with blocks does not over
 
 QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
   view = EmberView.create({
-    template: compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"),
+    template: compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"),
     context: {
       name: 'Stef',
       other: 'Yehuda'
@@ -124,7 +124,7 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
 
 QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
   view = EmberView.create({
-    template: compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"),
+    template: compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"),
     context: {
       first: 'Limbo',
       fifth: 'Wrath',

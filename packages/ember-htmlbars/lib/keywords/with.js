@@ -48,7 +48,7 @@ export default {
     if (template && template.arity === 0) {
       Ember.deprecate(
         "Using the context switching form of `{{with}}` is deprecated. " +
-        "Please use the keyword form (`{{with foo as bar}}`) instead.",
+          "Please use the block param form (`{{#with bar as |foo|}}`) instead.",
         false,
         { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
       );
