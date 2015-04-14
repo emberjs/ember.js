@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 1.11.3 (April 14, 2015)
+
+- [#10843](https://github.com/emberjs/ember.js/pull/10843) [BUGFIX] Fix issue with nested `{{render}}` helpers.
+
+### 1.11.2 (April 14, 2015)
+
+- [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options. See [the blog post](http://emberjs.com/blog/2015/04/14/security-and-bugfix-releases-ember-1-10-1-1-11-2-1-11-3.html) for more details.
+
 ### 1.11.1 (April 3, 2015)
 
 - [#10795](https://github.com/emberjs/ember.js/pull/10795) - [BUGFIX] Fix regression triggered by `CollectionView` instances with `attributeBindings`.
