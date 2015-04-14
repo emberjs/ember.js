@@ -181,7 +181,7 @@ QUnit.test("upon content change, the DOM should reflect the selection (#481)", f
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-QUnit.test("upon content change with Array-like content, the DOM should reflect the selection", function() {
+QUnit.skip("upon content change with Array-like content, the DOM should reflect the selection", function() {
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 
