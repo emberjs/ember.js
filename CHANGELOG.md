@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 1.12.0-beta.2 (April 14, 2015)
+
+- [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options
+
 ### 1.12.0-beta.1 (March 28, 2015)
 
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
