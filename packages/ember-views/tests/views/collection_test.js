@@ -11,6 +11,7 @@ import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
 import Registry from "container/registry";
 import compile from "ember-template-compiler/system/compile";
+import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 
 var trim = jQuery.trim;
 var registry;
