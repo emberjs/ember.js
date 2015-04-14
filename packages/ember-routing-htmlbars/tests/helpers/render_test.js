@@ -58,7 +58,7 @@ QUnit.test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
-QUnit.test("{{render}} helper should render nested helpers", function() {
+QUnit.skip("{{render}} helper should render nested helpers", function() {
   var template = "<h1>HI</h1>{{render 'foo'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -569,7 +569,7 @@ QUnit.test("{{render}} helper should let view provide its own template", functio
   equal(view.$().text(), 'Hello other!');
 });
 
-QUnit.test("{{render}} helper should not require view to provide its own template", function() {
+QUnit.skip("{{render}} helper should not require view to provide its own template", function() {
   var template = "{{render 'fish'}}";
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
