@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import MutableArray from "ember-runtime/mixins/mutable_array";
-import Component from "ember-views/views/component";
+import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -17,8 +17,6 @@ containerViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 @module ember
 @submodule ember-views
 */
-
-//var states = cloneStates(EmberViewStates);
 
 /**
   A `ContainerView` is an `Ember.View` subclass that implements `Ember.MutableArray`
@@ -170,7 +168,7 @@ containerViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @namespace Ember
   @extends Ember.View
 */
-var ContainerView = Component.extend(MutableArray, {
+var ContainerView = View.extend(MutableArray, {
   willWatchProperty(prop) {
     Ember.deprecate(
       "ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.",

@@ -1,1 +1,1 @@
-{{#each childViews key='elementId' as |childView|}}{{view childView}}{{else if _emptyView}}{{view _emptyView _defaultTagName=_emptyViewTagName}}{{/each}}
+{{#each view.childViews key='elementId' as |childView|}}{{view childView}}{{else if view._emptyView}}{{view view._emptyView _defaultTagName=view._emptyViewTagName}}{{/each}}
