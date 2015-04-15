@@ -1,4 +1,5 @@
 import { dasherize } from "ember-runtime/system/string";
+import { isPath } from "ember-metal/path_cache";
 
 /** @private
   This private helper is used by ComponentNode to convert the classNameBindings
@@ -23,6 +24,12 @@ export default function normalizeClass(params, hash) {
   // If value is a Boolean and true, return the dasherized property
   // name.
   } else if (value === true) {
+    // Only apply to last segment in the path
+    if (propName && isPath(propName)) {
+      var segments = propName.split('.');
+      propName = segments[segments.length - 1];
+    }
+
     return dasherize(propName);
 
   // If the value is not false, undefined, or null, return the current

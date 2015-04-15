@@ -1,6 +1,7 @@
 import { internal, render } from "htmlbars-runtime";
 import { read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
+import { isGlobal } from "ember-metal/path_cache";
 
 export default function buildComponentTemplate(componentInfo, attrs, content) {
   var component, layoutTemplate, blockToRender;
@@ -148,7 +149,15 @@ function normalizeClass(component, attrs) {
   var classNameBindings = get(component, 'classNameBindings');
 
   if (attrs.class) {
-    normalizedClass.push(['value', attrs.class]);
+    if (typeof attrs.class === 'string') {
+      normalizedClass.push(attrs.class);
+    } else {
+      normalizedClass.push(['subexpr', '-normalize-class', [['value', attrs.class.path], ['value', attrs.class]], []]);
+    }
+  }
+
+  if (attrs.classBinding) {
+    normalizeClasses(attrs.classBinding.split(' '), normalizedClass);
   }
 
   if (attrs.classNames) {
@@ -162,21 +171,7 @@ function normalizeClass(component, attrs) {
   }
 
   if (classNameBindings) {
-    for (i=0, l=classNameBindings.length; i<l; i++) {
-      var className = classNameBindings[i];
-      var [propName, activeClass, inactiveClass] = className.split(':');
-      var prop = 'view.' + propName;
-
-      normalizedClass.push(['subexpr', '-normalize-class', [
-        // params
-        ['value', propName],
-        ['get', prop]
-      ], [
-        // hash
-        'activeClass', activeClass,
-        'inactiveClass', inactiveClass
-      ]]);
-    }
+    normalizeClasses(classNameBindings, normalizedClass);
   }
 
   var last = normalizedClass.length - 1;
@@ -188,5 +183,33 @@ function normalizeClass(component, attrs) {
 
   if (output.length) {
     return ['concat', output];
+  }
+}
+
+function normalizeClasses(classes, output) {
+  var i, l;
+
+  for (i=0, l=classes.length; i<l; i++) {
+    var className = classes[i];
+    var [propName, activeClass, inactiveClass] = className.split(':');
+
+    // Legacy :class microsyntax for static class names
+    if (propName === '') {
+      output.push(activeClass);
+      return;
+    }
+
+    // 2.0TODO: Remove deprecated global path
+    var prop = isGlobal(propName) ? propName : 'view.' + propName;
+
+    output.push(['subexpr', '-normalize-class', [
+      // params
+      ['value', propName],
+      ['get', prop]
+    ], [
+      // hash
+      'activeClass', activeClass,
+      'inactiveClass', inactiveClass
+    ]]);
   }
 }

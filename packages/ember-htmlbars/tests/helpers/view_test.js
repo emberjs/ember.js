@@ -366,11 +366,13 @@ QUnit.test("allows you to pass attributes that will be assigned to the class ins
   equal(jQuery('#bar').text(), 'Bar');
 });
 
-QUnit.skip("Should apply class without condition always", function() {
-  view = EmberView.create({
-    controller: Ember.Object.create(),
-    template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
-  });
+QUnit.test("Should apply class without condition always", function() {
+  expectDeprecation(function() {
+    view = EmberView.create({
+      controller: Ember.Object.create(),
+      template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
+    });
+  }, /legacy class binding syntax/);
 
   runAppend(view);
 
@@ -440,7 +442,7 @@ QUnit.test("Should not apply classes when bound property specified is false", fu
   ok(!jQuery('#foo').hasClass('some-prop'), "does not add class when value is falsey");
 });
 
-QUnit.skip("Should apply classes of the dasherized property name when bound property specified is true", function() {
+QUnit.test("Should apply classes of the dasherized property name when bound property specified is true", function() {
   view = EmberView.create({
     controller: {
       someProp: true
@@ -453,7 +455,7 @@ QUnit.skip("Should apply classes of the dasherized property name when bound prop
   ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
 });
 
-QUnit.skip("Should update classes from a bound property", function() {
+QUnit.test("Should update classes from a bound property", function() {
   var controller = {
     someProp: true
   };
@@ -838,7 +840,7 @@ QUnit.test('{{view}} should be able to point to a local view', function() {
   equal(view.$().text(), 'common', 'tries to look up view name locally');
 });
 
-QUnit.skip('{{view}} should evaluate class bindings set to global paths DEPRECATED', function() {
+QUnit.test('{{view}} should evaluate class bindings set to global paths DEPRECATED', function() {
   var App;
 
   run(function() {
@@ -850,10 +852,12 @@ QUnit.skip('{{view}} should evaluate class bindings set to global paths DEPRECAT
     });
   });
 
-  view = EmberView.create({
-    textField: TextField,
-    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
-  });
+  expectDeprecation(function() {
+    view = EmberView.create({
+      textField: TextField,
+      template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
+    });
+  }, /legacy class binding/);
 
   expectDeprecation(function() {
     runAppend(view);
@@ -878,15 +882,17 @@ QUnit.skip('{{view}} should evaluate class bindings set to global paths DEPRECAT
   runDestroy(lookup.App);
 });
 
-QUnit.skip('{{view}} should evaluate class bindings set in the current context', function() {
-  view = EmberView.create({
-    isView:      true,
-    isEditable:  true,
-    directClass: 'view-direct',
-    isEnabled: true,
-    textField: TextField,
-    template: compile('{{view view.textField class="unbound" classBinding="view.isEditable:editable view.directClass view.isView view.isEnabled:enabled:disabled"}}')
-  });
+QUnit.test('{{view}} should evaluate class bindings set in the current context', function() {
+  expectDeprecation(function() {
+    view = EmberView.create({
+      isView:      true,
+      isEditable:  true,
+      directClass: 'view-direct',
+      isEnabled: true,
+      textField: TextField,
+      template: compile('{{view view.textField class="unbound" classBinding="view.isEditable:editable view.directClass view.isView view.isEnabled:enabled:disabled"}}')
+    });
+  }, /legacy class binding syntax/);
 
   runAppend(view);
 
@@ -907,7 +913,7 @@ QUnit.skip('{{view}} should evaluate class bindings set in the current context',
   ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
 });
 
-QUnit.skip('{{view}} should evaluate class bindings set with either classBinding or classNameBindings from globals DEPRECATED', function() {
+QUnit.test('{{view}} should evaluate class bindings set with either classBinding or classNameBindings from globals DEPRECATED', function() {
   var App;
 
   run(function() {
@@ -917,10 +923,12 @@ QUnit.skip('{{view}} should evaluate class bindings set with either classBinding
     });
   });
 
-  view = EmberView.create({
-    textField: TextField,
-    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
-  });
+  expectDeprecation(function() {
+    view = EmberView.create({
+      textField: TextField,
+      template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
+    });
+  }, /legacy class binding/);
 
   expectDeprecation(function() {
     runAppend(view);
@@ -984,8 +992,10 @@ QUnit.test('{{view}} should evaluate other attributes bindings set in the curren
   equal(view.$('input').val(), 'myView', 'evaluates attributes bound in the current context');
 });
 
-QUnit.skip('{{view}} should be able to bind class names to truthy properties', function() {
-  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
+QUnit.test('{{view}} should be able to bind class names to truthy properties', function() {
+  expectDeprecation(function() {
+    registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
+  }, /legacy class binding syntax/);
 
   var ClassBindingView = EmberView.extend();
 
@@ -1007,8 +1017,10 @@ QUnit.skip('{{view}} should be able to bind class names to truthy properties', f
   equal(view.$('.is-truthy').length, 0, 'removes class name if bound property is set to falsey');
 });
 
-QUnit.skip('{{view}} should be able to bind class names to truthy or falsy properties', function() {
-  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
+QUnit.test('{{view}} should be able to bind class names to truthy or falsy properties', function() {
+  expectDeprecation(function() {
+    registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
+  }, /legacy class binding syntax/);
 
   var ClassBindingView = EmberView.extend();
 
@@ -1032,14 +1044,14 @@ QUnit.skip('{{view}} should be able to bind class names to truthy or falsy prope
   equal(view.$('.is-falsy').length, 1, "sets class name to falsy value");
 });
 
-QUnit.skip('a view helper\'s bindings are to the parent context', function() {
+QUnit.test('a view helper\'s bindings are to the parent context', function() {
   var Subview = EmberView.extend({
-    classNameBindings: ['color'],
+    classNameBindings: ['attrs.color'],
     controller: EmberObject.create({
       color: 'green',
       name: 'bar'
     }),
-    template: compile('{{view.someController.name}} {{name}}')
+    template: compile('{{attrs.someController.name}} {{name}}')
   });
 
   var View = EmberView.extend({
@@ -1117,7 +1129,7 @@ QUnit.test('should expose a controller keyword that can be used in conditionals'
   equal(view.$().text(), '', 'updates the DOM when the controller is changed');
 });
 
-QUnit.skip('should expose a controller keyword that persists through Ember.ContainerView', function() {
+QUnit.test('should expose a controller keyword that persists through Ember.ContainerView', function() {
   var templateString = '{{view view.containerView}}';
   view = EmberView.create({
     containerView: ContainerView,
