@@ -53,7 +53,7 @@ test('allows enabling of features', function() {
     templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
 
     templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
-    ok(templateOutput.match(/component\(env, morph0, context, "some-thing"/), 'component generation can be enabled');
+    ok(templateOutput.indexOf('["component","some-thing",[],0]') > -1, 'component generation can be enabled');
   } else {
     ok(true, 'cannot test features in feature stripped build');
   }

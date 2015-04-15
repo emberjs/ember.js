@@ -29,10 +29,7 @@ global.EmberENV = {
   FEATURES: features
 };
 
-var Ember = require(path.join(distPath, 'ember.debug.cjs'));
-var compile = require(path.join(distPath, 'ember-template-compiler')).compile;
-Ember.testing = true;
-var DOMHelper = Ember.HTMLBars.DOMHelper;
+var Ember, compile, domHelper, run;
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
 
@@ -76,6 +73,7 @@ function registerDOMHelper(app) {
 function registerTemplates(app, templates) {
   app.instanceInitializer({
     name: 'register-application-template',
+
     initialize: function(app) {
       for (var key in templates) {
         app.registry.register('template:' + key, compile(templates[key]));
@@ -105,7 +103,7 @@ QUnit.module("App boot", {
     Ember = require(emberPath);
     compile = require(templateCompilerPath).compile;
     Ember.testing = true;
-    DOMHelper = Ember.View.DOMHelper;
+    DOMHelper = Ember.HTMLBars.DOMHelper;
     domHelper = createDOMHelper();
     run = Ember.run;
   },
