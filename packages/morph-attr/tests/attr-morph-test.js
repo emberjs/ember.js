@@ -26,6 +26,24 @@ test("can update property", function(){
   equal(element.disabled, false, 'disabled property is set');
 });
 
+test("does not add undefined properties on initial render", function(){
+  var element = domHelper.createElement('div');
+  var morph = domHelper.createAttrMorph(element, 'id');
+  morph.setContent(undefined);
+  equal(element.id, '', 'property should not be set');
+  morph.setContent('foo-bar');
+  equal(element.id, 'foo-bar', 'property should be set');
+});
+
+test("does not add null properties on initial render", function(){
+  var element = domHelper.createElement('div');
+  var morph = domHelper.createAttrMorph(element, 'id');
+  morph.setContent(null);
+  equal(element.id, '', 'property should not be set');
+  morph.setContent('foo-bar');
+  equal(element.id, 'foo-bar', 'property should be set');
+});
+
 test("can update attribute", function(){
   var element = domHelper.createElement('div');
   var morph = domHelper.createAttrMorph(element, 'data-bop');
