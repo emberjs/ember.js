@@ -42,6 +42,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   The following chart is a visual representation of what takes place when the
   escape key is pressed in this scenario:
 
+  ```text
   The Template
   +---------------------------+
   |                           |
@@ -50,9 +51,9 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   +----+----------------------+          +-------------------------------+
        |                                 | cancel method                 |
        |      escape button pressed      |                               |
-       +-------------------------------> | checks for the `escape-press` |
+       +-------------------------------> | checks for the 'escape-press' |
                                          | attribute and pulls out the   |
-       +-------------------------------+ | `alertUser` value             |
+       +-------------------------------+ | 'alertUser' value             |
        |     action name 'alertUser'     +-------------------------------+
        |     sent to controller
        v
@@ -66,6 +67,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |  }                                        |
   |                                           |
   +-------------------------------------------+
+  ```
 
   Here are the events that we currently support along with the name of the
   attribute you would need to use on your field. To reiterate, you would use the
@@ -75,8 +77,8 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
     {{input attribute-name='controllerAction'}}
   ```
 
+  ```text
   +--------------------+----------------+
-  |                    |                |
   | event              | attribute name |
   +--------------------+----------------+
   | new line inserted  | insert-newline |
@@ -95,6 +97,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |                    |                |
   | keydown            | key-down       |
   +--------------------+----------------+
+  ```
 
   @class TextSupport
   @namespace Ember
