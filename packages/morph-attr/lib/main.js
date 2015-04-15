@@ -4,7 +4,12 @@ import { svgNamespace } from "./dom-helper/build-html-dom";
 import { getAttrNamespace } from "./htmlbars-util";
 
 function updateProperty(value) {
-  this.domHelper.setPropertyStrict(this.element, this.attrName, value);
+  if (this._renderedInitially === true || !isAttrRemovalValue(value)) {
+    // do not render if initial value is undefined or null
+    this.domHelper.setPropertyStrict(this.element, this.attrName, value);
+  }
+
+  this._renderedInitially = true;
 }
 
 function updateAttribute(value) {
@@ -33,6 +38,7 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.lastValue = null;
   this.linkedParams = null;
   this.rendered = false;
+  this._renderedInitially = false;
 
   var normalizedAttrName = normalizeProperty(this.element, attrName);
   if (this.namespace) {
