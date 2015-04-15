@@ -11,6 +11,7 @@ import TransformEachIntoCollection from "ember-template-compiler/plugins/transfo
 import TransformSingleArgEach from "ember-template-compiler/plugins/transform-single-arg-each";
 import TransformOldBindingSyntax from "ember-template-compiler/plugins/transform-old-binding-syntax";
 import TransformOldClassBindingSyntax from "ember-template-compiler/plugins/transform-old-class-binding-syntax";
+import TransformItemClass from "ember-template-compiler/plugins/transform-item-class";
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import "ember-template-compiler/compat";
@@ -22,6 +23,7 @@ registerPlugin('ast', TransformSingleArgEach);
 registerPlugin('ast', TransformEachIntoCollection);
 registerPlugin('ast', TransformOldBindingSyntax);
 registerPlugin('ast', TransformOldClassBindingSyntax);
+registerPlugin('ast', TransformItemClass);
 
 export {
   _Ember,

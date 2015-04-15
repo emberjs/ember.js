@@ -17,7 +17,6 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
-import { IS_BINDING } from "ember-metal/mixin";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -489,8 +488,12 @@ function buildItemViewProps(template, attrs) {
       if (match) {
         var childProp = match[1].toLowerCase() + match[2];
 
-        Ember.assert("View bindings are not yet supported in Glimmer.", !IS_BINDING.test(prop));
-        props[childProp] = attrs[prop];
+        if (childProp === 'class') {
+          props.classNames = [attrs[prop]];
+        } else {
+          props[childProp] = attrs[prop];
+        }
+
         delete attrs[prop];
       }
     }

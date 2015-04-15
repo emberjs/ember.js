@@ -339,7 +339,7 @@ QUnit.test("should include an id attribute if id is set in the options hash", fu
   equal(view.$('ul#baz').length, 1, "adds an id attribute");
 });
 
-QUnit.skip("should give its item views the class specified by itemClass", function() {
+QUnit.test("should give its item views the class specified by itemClass", function() {
   var ItemClassTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A(['foo', 'bar', 'baz'])
@@ -354,7 +354,7 @@ QUnit.skip("should give its item views the class specified by itemClass", functi
   equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
-QUnit.skip("should give its item views the class specified by itemClass binding", function() {
+QUnit.test("should give its item views the class specified by itemClass binding", function() {
   var ItemClassBindingTestCollectionView = CollectionView.extend({
     tagName: 'ul',
     content: A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })])
