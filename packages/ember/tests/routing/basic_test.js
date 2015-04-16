@@ -442,7 +442,8 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
 
 });
 
-QUnit.test('Specifying a name to render should have precedence over everything else', function() {
+QUnit.test('Specifying a name to render should have precedence over everything else [DEPRECATED]', function() {
+  expectDeprecation(/Using deprecated `template` property on a Component/);
   Router.map(function() {
     this.route("home", { path: "/" });
   });

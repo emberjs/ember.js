@@ -199,7 +199,8 @@ QUnit.test("Outlets bind to the current template's view, not inner contexts [DEP
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-QUnit.test("should support layouts", function() {
+QUnit.test("should support layouts [DEPRECATED]", function() {
+  expectDeprecation(/Using deprecated `template` property on a Component/);
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
   var routerState = {
