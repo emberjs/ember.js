@@ -25,7 +25,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   }
 });
 
-QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
+QUnit.test("works from a template with bindings [DEPRECATED]", function() {
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -66,9 +66,7 @@ QUnit.skip("works from a template with bindings [DEPRECATED]", function() {
     )
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You tried to look up an attribute directly on the component/);
+  runAppend(view);
 
   var select = view.get('select');
   ok(select.$().length, "Select was rendered");
@@ -181,7 +179,7 @@ QUnit.test("upon content change, the DOM should reflect the selection (#481)", f
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-QUnit.skip("upon content change with Array-like content, the DOM should reflect the selection", function() {
+QUnit.test("upon content change with Array-like content, the DOM should reflect the selection", function() {
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 

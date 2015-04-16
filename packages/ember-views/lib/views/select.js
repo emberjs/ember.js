@@ -31,7 +31,7 @@ var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',
 
   tagName: 'option',
-  attributeBindings: ['value', 'attrs.selected'],
+  attributeBindings: ['value', 'selected'],
 
   defaultTemplate: selectOptionTemplate,
 
