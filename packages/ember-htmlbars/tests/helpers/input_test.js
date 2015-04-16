@@ -108,7 +108,6 @@ QUnit.test("cursor position is not lost when updating content", function() {
     input.selectionStart = 3;
     input.selectionEnd = 3;
   });
-
   run(null, set, controller, 'val', 'derp');
 
   equal(view.$('input').val(), "derp", "updates text field after value changes");
@@ -407,7 +406,7 @@ QUnit.module("{{input type='text'}} - null/undefined values", {
   }
 });
 
-QUnit.skip("placeholder attribute bound to undefined is not present", function() {
+QUnit.test("placeholder attribute bound to undefined is not present", function() {
   view = View.extend({
     container: container,
     controller: {},
