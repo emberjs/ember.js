@@ -16,12 +16,12 @@ QUnit.module("View#nearest*", {
 (function() {
   var Mixin = EmberMixin.create({});
   var Parent = View.extend(Mixin, {
-    render(buffer) {
+    willRender() {
       this.appendChild(View.create());
     }
   });
 
-  QUnit.skip("nearestOfType should find the closest view by view class", function() {
+  QUnit.test("nearestOfType should find the closest view by view class", function() {
     var child;
 
     run(function() {
@@ -33,7 +33,7 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Parent), parentView, "finds closest view in the hierarchy by class");
   });
 
-  QUnit.skip("nearestOfType should find the closest view by mixin", function() {
+  QUnit.test("nearestOfType should find the closest view by mixin", function() {
     var child;
 
     run(function() {
@@ -45,13 +45,13 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-  QUnit.skip("nearestWithProperty should search immediate parent", function() {
+  QUnit.test("nearestWithProperty should search immediate parent", function() {
     var childView;
 
     view = View.create({
       myProp: true,
 
-      render(buffer) {
+      willRender() {
         this.appendChild(View.create());
       }
     });
@@ -65,7 +65,7 @@ QUnit.module("View#nearest*", {
 
   });
 
-  QUnit.skip("nearestChildOf should be deprecated", function() {
+  QUnit.test("nearestChildOf should be deprecated", function() {
     var child;
 
     run(function() {
