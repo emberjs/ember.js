@@ -589,7 +589,7 @@ QUnit.test("src attribute bound to undefined is empty", function() {
 
   runAppend(view);
 
-  equal(view.element.firstChild.getAttribute('src'), '', "src attribute is empty");
+  ok(!view.element.firstChild.hasAttribute('src'), "src attribute is empty");
 });
 
 QUnit.test("src attribute bound to null is not present", function() {
