@@ -98,7 +98,7 @@ QUnit.test("should add, remove, or change class names if changed after element i
   ok(view.$().hasClass('disabled'), "adds negated class name for negated binding");
 });
 
-QUnit.skip(":: class name syntax works with an empty true class", function() {
+QUnit.test(":: class name syntax works with an empty true class", function() {
   view = EmberView.create({
     isEnabled: false,
     classNameBindings: ['isEnabled::not-enabled']
@@ -135,7 +135,7 @@ QUnit.test("classNames should not be duplicated on rerender", function() {
   equal(view.$().attr('class'), 'ember-view high');
 });
 
-QUnit.skip("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
+QUnit.test("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
   run(function() {
     view = EmberView.create({
       classNameBindings: ['priority'],
@@ -148,23 +148,25 @@ QUnit.skip("classNameBindings should work when the binding property is updated a
     view.createElement();
   });
 
-  equal(view.$().attr('class'), 'ember-view high');
+  equal(view.$().attr('class'), 'ember-view high', "has the high class");
 
   run(function() {
     view.remove();
   });
 
-  view.set('priority', 'low');
+  run(function() {
+    view.set('priority', 'low');
+  });
 
   run(function() {
     view.append();
   });
 
-  equal(view.$().attr('class'), 'ember-view low');
+  equal(view.$().attr('class'), 'ember-view low', "has a low class");
 
 });
 
-QUnit.skip("classNames removed by a classNameBindings observer should not re-appear on rerender", function() {
+QUnit.test("classNames removed by a classNameBindings observer should not re-appear on rerender", function() {
   view = EmberView.create({
     classNameBindings: ['isUrgent'],
     isUrgent: true
