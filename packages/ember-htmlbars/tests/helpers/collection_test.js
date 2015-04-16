@@ -407,38 +407,6 @@ QUnit.test("should give its item views the property specified by itemProperty", 
   equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
-QUnit.skip("should unsubscribe stream bindings", function() {
-  view = EmberView.create({
-    baz: "baz",
-    content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    template: compile('{{#collection content=view.content itemProperty=view.baz}}{{view.property}}{{/collection}}')
-  });
-
-  runAppend(view);
-
-  var barStreamBinding = view._streamBindings['view.baz'];
-
-  equal(countSubscribers(barStreamBinding), 3, "adds 3 subscribers");
-
-  run(function() {
-    view.get('content').popObject();
-  });
-
-  equal(countSubscribers(barStreamBinding), 2, "removes 1 subscriber");
-});
-
-function countSubscribers(stream) {
-  var count = 0;
-  var subscriber = stream.subscriberHead;
-
-  while (subscriber) {
-    count++;
-    subscriber = subscriber.next;
-  }
-
-  return count;
-}
-
 QUnit.test("should work inside a bound {{#if}}", function() {
   var testData = A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })]);
   var IfTestCollectionView = CollectionView.extend({
