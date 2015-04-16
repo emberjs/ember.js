@@ -16,7 +16,7 @@ QUnit.module("EmberView#isVisible", {
   }
 });
 
-QUnit.skip("should hide views when isVisible is false", function() {
+QUnit.test("should hide views when isVisible is false", function() {
   view = EmberView.create({
     isVisible: false
   });
@@ -37,7 +37,7 @@ QUnit.skip("should hide views when isVisible is false", function() {
   });
 });
 
-QUnit.skip("should hide element if isVisible is false before element is created", function() {
+QUnit.test("should hide element if isVisible is false before element is created", function() {
   view = EmberView.create({
     isVisible: false
   });

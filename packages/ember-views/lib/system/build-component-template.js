@@ -139,6 +139,10 @@ function normalizeComponentAttributes(component, attrs) {
     normalized.class = normalizedClass;
   }
 
+  if (component.isVisible === false) {
+    normalized.style = ['value', "display: none;"];
+  }
+
   return normalized;
 }
 
