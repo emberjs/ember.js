@@ -17,7 +17,7 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
 
   layoutTemplate = componentInfo.layout;
 
-  if (layoutTemplate) {
+  if (layoutTemplate && layoutTemplate.raw) {
     blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self, component || null, attrs);
   }
 
@@ -137,6 +137,17 @@ function normalizeComponentAttributes(component, attrs) {
 
   if (normalizedClass) {
     normalized.class = normalizedClass;
+  }
+
+  if (component.isVisible === false) {
+    var hiddenStyle = ['value', "display: none;"];
+    var existingStyle = normalized.style;
+
+    if (existingStyle) {
+      normalized.style = ['subexpr', '-concat', [existingStyle, hiddenStyle], ['separator', ' ']];
+    } else {
+      normalized.style = hiddenStyle;
+    }
   }
 
   return normalized;
