@@ -160,7 +160,7 @@ QUnit.test("Assigning templateName to a component should setup the template as a
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-QUnit.skip("Assigning templateName and layoutName should use the templates specified", function() {
+QUnit.test("Assigning templateName and layoutName should use the templates specified", function() {
   expect(1);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");

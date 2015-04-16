@@ -41,7 +41,19 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
-    componentInfo.layout = get(component, 'layout') || get(component, 'template') || componentInfo.layout;
+
+    let layout = get(component, 'layout');
+    if (layout) {
+      componentInfo.layout = layout;
+      if (!contentTemplate) {
+        let template = get(component, 'template');
+        if (template) {
+          contentTemplate = template.raw;
+        }
+      }
+    } else {
+      componentInfo.layout = get(component, 'template') || componentInfo.layout;
+    }
 
     renderNode.emberView = component;
   }

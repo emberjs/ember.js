@@ -442,7 +442,7 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
 
 });
 
-QUnit.skip('Specifying a name to render should have precedence over everything else', function() {
+QUnit.test('Specifying a name to render should have precedence over everything else', function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
