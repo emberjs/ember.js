@@ -17,7 +17,7 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
 
   layoutTemplate = componentInfo.layout;
 
-  if (layoutTemplate) {
+  if (layoutTemplate && layoutTemplate.raw) {
     blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self, component || null, attrs);
   }
 
