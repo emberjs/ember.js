@@ -3,7 +3,6 @@
 @submodule ember-htmlbars
 */
 
-import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import ComponentNode from "ember-htmlbars/system/component-node";
 import { isStream } from "ember-metal/streams/utils";
@@ -45,14 +44,6 @@ export default {
 
   isEmpty(state) {
     return isEmpty(state.outletState);
-  },
-
-  rerender(morph, env, scope, params, hash, template, inverse, visitor) {
-    var newEnv = env;
-    if (morph.emberView) {
-      newEnv = merge({}, env);
-      newEnv.view = morph.emberView;
-    }
   },
 
   render(renderNode, env, scope, params, hash, template, inverse, visitor) {
