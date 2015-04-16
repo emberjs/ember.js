@@ -174,15 +174,8 @@ function normalizeClass(component, attrs) {
     normalizeClasses(classNameBindings, normalizedClass);
   }
 
-  var last = normalizedClass.length - 1;
-  var output = [];
-  for (i=0, l=normalizedClass.length; i<l; i++) {
-    output.push(normalizedClass[i]);
-    if (i !== last) { output.push(' '); }
-  }
-
-  if (output.length) {
-    return ['concat', output];
+  if (normalizeClass.length) {
+    return ['subexpr', '-join-classes', normalizedClass, []];
   }
 }
 
