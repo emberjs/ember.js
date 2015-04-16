@@ -135,7 +135,7 @@ QUnit.test("classNames should not be duplicated on rerender", function() {
   equal(view.$().attr('class'), 'ember-view high');
 });
 
-QUnit.skip("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
+QUnit.test("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function() {
   run(function() {
     view = EmberView.create({
       classNameBindings: ['priority'],
@@ -154,7 +154,9 @@ QUnit.skip("classNameBindings should work when the binding property is updated a
     view.remove();
   });
 
-  view.set('priority', 'low');
+  run(function() {
+    view.set('priority', 'low');
+  });
 
   run(function() {
     view.append();
