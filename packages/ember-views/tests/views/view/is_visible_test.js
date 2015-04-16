@@ -71,6 +71,20 @@ QUnit.test("should hide element if isVisible is false before element is created"
   });
 });
 
+QUnit.test("doesn't overwrite existing style attribute bindings", function() {
+  view = EmberView.create({
+    isVisible: false,
+    attributeBindings: ['style'],
+    style: 'color: blue;'
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  equal(view.$().attr('style'), 'color: blue; display: none;', "has concatenated style attribute");
+});
+
 QUnit.module("EmberView#isVisible with Container", {
   setup() {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");

@@ -140,7 +140,14 @@ function normalizeComponentAttributes(component, attrs) {
   }
 
   if (component.isVisible === false) {
-    normalized.style = ['value', "display: none;"];
+    var hiddenStyle = ['value', "display: none;"];
+    var existingStyle = normalized.style;
+
+    if (existingStyle) {
+      normalized.style = ['subexpr', '-concat', [existingStyle, hiddenStyle], ['separator', ' ']];
+    } else {
+      normalized.style = hiddenStyle;
+    }
   }
 
   return normalized;
