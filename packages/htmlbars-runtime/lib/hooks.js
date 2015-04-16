@@ -537,7 +537,8 @@ function handleKeyword(path, morph, env, scope, params, hash, template, inverse,
   }
 
   if (keyword.childEnv) {
-    env = merge(keyword.childEnv(morph.state), env);
+    morph.lastEnv = keyword.childEnv(morph.state);
+    env = merge(morph.lastEnv, env);
   }
 
   var firstTime = !morph.rendered;

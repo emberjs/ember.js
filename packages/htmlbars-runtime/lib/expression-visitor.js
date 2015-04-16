@@ -235,6 +235,9 @@ function dirtyCheck(env, morph, visitor, callback) {
   if (isDirty || isSubtreeDirty) {
     callback(visitor);
   } else {
+    if (morph.lastEnv) {
+      env = merge(morph.lastEnv, env);
+    }
     validateChildMorphs(env, morph, visitor);
   }
 }
