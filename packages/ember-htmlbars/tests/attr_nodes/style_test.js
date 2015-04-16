@@ -5,6 +5,7 @@ import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { styleWarning } from "ember-htmlbars/morphs/attr-morph";
 
 var view, originalWarn, warnings;
 
@@ -29,7 +30,7 @@ QUnit.module("ember-htmlbars: style attribute", {
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.skip('specifying `<div style={{userValue}}></div>` generates a warning', function() {
+  QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -37,10 +38,10 @@ if (!EmberDev.runningProdBuild) {
 
     runAppend(view);
 
-    // TODO: Add back the warning test once it is relocated from attrNode
+    deepEqual(warnings, [styleWarning]);
   });
 
-  QUnit.skip('specifying `attributeBindings: ["style"]` generates a warning', function() {
+  QUnit.test('specifying `attributeBindings: ["style"]` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -48,7 +49,7 @@ if (!EmberDev.runningProdBuild) {
 
     runAppend(view);
 
-    // TODO: Add back the warning test once it is relocated from attrNode
+    deepEqual(warnings, [styleWarning]);
   });
 }
 

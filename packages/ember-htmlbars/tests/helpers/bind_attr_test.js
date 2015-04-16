@@ -14,7 +14,7 @@ import { Registry } from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { SafeString } from "ember-htmlbars/utils/string";
-
+import { styleWarning } from "ember-htmlbars/morphs/attr-morph";
 import compile from "ember-template-compiler/system/compile";
 var view;
 
@@ -647,7 +647,7 @@ QUnit.test("src attribute will be cleared when the value is set to null or undef
 
 if (!EmberDev.runningProdBuild) {
 
-  QUnit.skip('specifying `<div {{bind-attr style=userValue}}></div>` triggers a warning', function() {
+  QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` triggers a warning', function() {
     var template;
     ignoreDeprecation(function() {
       template = compile('<div {{bind-attr style=view.userValue}}></div>');
@@ -660,7 +660,7 @@ if (!EmberDev.runningProdBuild) {
 
     runAppend(view);
 
-    // TODO: Add test for warning once it is relocated from attrNode
+    deepEqual(warnings, [styleWarning]);
   });
 }
 

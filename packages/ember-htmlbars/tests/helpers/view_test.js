@@ -233,8 +233,10 @@ QUnit.test("mixing old and new styles of property binding fires a warning, treat
 
   var oldWarn = Ember.warn;
 
-  Ember.warn = function(msg) {
-    ok(msg.match(/You're attempting to render a view by passing borfBinding.+, but this syntax is ambiguous./));
+  Ember.warn = function(msg, disableWarning) {
+    if (!disableWarning) {
+      ok(msg.match(/You're attempting to render a view by passing borfBinding.+, but this syntax is ambiguous./));
+    }
   };
 
   let compiled;
