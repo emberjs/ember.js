@@ -23,7 +23,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
     }
   });
 
-  QUnit.skip("component is looked up from the container", function() {
+  QUnit.test("component is looked up from the container", function() {
     registry.register('template:components/foo-bar', compile('yippie!'));
 
     view = EmberView.create({
@@ -36,7 +36,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().text(), 'yippie!', 'component was looked up and rendered');
   });
 
-  QUnit.skip("asserts if component is not found", function() {
+  QUnit.test("asserts if component is not found", function() {
     view = EmberView.create({
       container: container,
       template: compile("<foo-bar />")
@@ -44,6 +44,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
 
     expectAssertion(function() {
       runAppend(view);
-    }, 'You specified `foo-bar` in your template, but a component for `foo-bar` could not be found.');
+    }, /Could not find component named "foo-bar" \(no component or template with that name was found\)/);
   });
 }
