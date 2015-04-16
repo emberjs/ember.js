@@ -1,6 +1,7 @@
 import run from "ember-metal/run_loop";
 import { Mixin as EmberMixin } from "ember-metal/mixin";
 import View from "ember-views/views/view";
+import compile from "ember-template-compiler/system/compile";
 
 var parentView, view;
 
@@ -16,12 +17,10 @@ QUnit.module("View#nearest*", {
 (function() {
   var Mixin = EmberMixin.create({});
   var Parent = View.extend(Mixin, {
-    render(buffer) {
-      this.appendChild(View.create());
-    }
+    template: compile(`{{view}}`)
   });
 
-  QUnit.skip("nearestOfType should find the closest view by view class", function() {
+  QUnit.test("nearestOfType should find the closest view by view class", function() {
     var child;
 
     run(function() {
@@ -33,7 +32,7 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Parent), parentView, "finds closest view in the hierarchy by class");
   });
 
-  QUnit.skip("nearestOfType should find the closest view by mixin", function() {
+  QUnit.test("nearestOfType should find the closest view by mixin", function() {
     var child;
 
     run(function() {
@@ -45,15 +44,12 @@ QUnit.module("View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-  QUnit.skip("nearestWithProperty should search immediate parent", function() {
+  QUnit.test("nearestWithProperty should search immediate parent", function() {
     var childView;
 
     view = View.create({
       myProp: true,
-
-      render(buffer) {
-        this.appendChild(View.create());
-      }
+      template: compile('{{view}}')
     });
 
     run(function() {
@@ -65,7 +61,7 @@ QUnit.module("View#nearest*", {
 
   });
 
-  QUnit.skip("nearestChildOf should be deprecated", function() {
+  QUnit.test("nearestChildOf should be deprecated", function() {
     var child;
 
     run(function() {
