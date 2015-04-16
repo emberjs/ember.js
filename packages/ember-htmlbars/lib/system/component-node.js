@@ -29,7 +29,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
   var componentInfo = { layout: found.layout };
 
   if (found.component) {
-    var options = { parentView: parentView, isOutlet: found.isOutlet };
+    var options = { parentView: parentView };
 
     if (found.createOptions) {
       merge(options, found.createOptions);

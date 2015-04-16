@@ -12,10 +12,6 @@ export default function subscribe(node, scope, stream) {
       component.renderNode.isDirty = true;
     }
 
-    if (component && component.isOutlet) {
-      component.ownerView.dirtyOutlets();
-    }
-
     if (node.state.componentNode) {
       node.shouldReceiveAttrs = true;
     }

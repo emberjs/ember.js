@@ -59,8 +59,7 @@ export default {
     var options = {
       component: ViewClass,
       layout: toRender.template,
-      self: toRender.controller,
-      isOutlet: true
+      self: toRender.controller
     };
 
     if (LOG_VIEW_LOOKUPS && ViewClass) {

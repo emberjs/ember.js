@@ -3462,7 +3462,7 @@ QUnit.test("Exception during load of initial route is not swallowed", function()
   }, /\bboom\b/);
 });
 
-QUnit.skip("{{outlet}} works when created after initial render", function() {
+QUnit.test("{{outlet}} works when created after initial render", function() {
   Ember.TEMPLATES.sample = compile("Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye");
   Ember.TEMPLATES['sample/inner'] = compile("Yay");
   Ember.TEMPLATES['sample/inner2'] = compile("Boo");
