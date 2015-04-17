@@ -40,12 +40,12 @@ export default {
       };
     }
 
-    var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
-    state.componentNode = componentNode;
-
     if (hash.itemView) {
       hash.itemViewClass = hash.itemView;
     }
+
+    var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
+    state.componentNode = componentNode;
 
     componentNode.render(env, hash, visitor);
   }
