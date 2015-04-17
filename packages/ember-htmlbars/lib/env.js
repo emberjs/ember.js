@@ -24,6 +24,7 @@ import component from "ember-htmlbars/hooks/component";
 import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
 import hasHelper from "ember-htmlbars/hooks/has-helper";
 import invokeHelper from "ember-htmlbars/hooks/invoke-helper";
+import element from "ember-htmlbars/hooks/element";
 
 import helpers from "ember-htmlbars/helpers";
 import keywords, { registerKeyword } from "ember-htmlbars/keywords";
@@ -54,7 +55,8 @@ merge(emberHooks, {
   component: component,
   lookupHelper: lookupHelper,
   hasHelper: hasHelper,
-  invokeHelper: invokeHelper
+  invokeHelper: invokeHelper,
+  element: element
 });
 
 import debuggerKeyword from "ember-htmlbars/keywords/debugger";
