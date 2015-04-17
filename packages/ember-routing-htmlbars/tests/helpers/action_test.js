@@ -15,6 +15,7 @@ import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
 import { ActionHelper } from "ember-routing-htmlbars/keywords/action";
+import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
 
 import {
   runAppend,
@@ -156,7 +157,7 @@ QUnit.skip("should target the current controller inside an {{each}} loop [DEPREC
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(registeredTarget, itemController, "the item controller is the target of action");
 });
@@ -192,7 +193,7 @@ QUnit.skip("should target the with-controller inside an {{#with controller='pers
 });
 
 QUnit.skip("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation(eachDeprecation);
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
   var eventsCalled = [];
@@ -896,7 +897,7 @@ QUnit.test("a quoteless parameter should allow dynamic lookup of the actionName"
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-QUnit.skip("a quoteless parameter should lookup actionName in context [DEPRECATED]", function() {
+QUnit.test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function() {
   expect(5);
   var lastAction;
   var actionOrder = [];
@@ -932,7 +933,7 @@ QUnit.skip("a quoteless parameter should lookup actionName in context [DEPRECATE
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   var testBoundAction = function(propertyValue) {
     run(function() {
