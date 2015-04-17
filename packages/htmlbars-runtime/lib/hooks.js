@@ -499,7 +499,7 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
   renderAndCleanup(morph, env, options, shadowOptions, callback);
 }
 
-function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
+export function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
   var redirect = env.hooks.classify(env, scope, path);
   if (redirect) {
     switch(redirect) {
@@ -518,7 +518,7 @@ function handleRedirect(morph, env, scope, path, params, hash, template, inverse
   return false;
 }
 
-function handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor) {
+export function handleKeyword(path, morph, env, scope, params, hash, template, inverse, visitor) {
   var keyword = env.hooks.keywords[path];
   if (!keyword) { return false; }
 
