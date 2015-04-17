@@ -44,6 +44,10 @@ export default {
       hash.itemViewClass = hash.itemView;
     }
 
+    if (hash.emptyView) {
+      hash.emptyViewClass = hash.emptyView;
+    }
+
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
     state.componentNode = componentNode;
 

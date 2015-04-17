@@ -474,6 +474,8 @@ CollectionView.CONTAINER_MAP = {
   select: 'option'
 };
 
+export let CONTAINER_MAP = CollectionView.CONTAINER_MAP;
+
 function buildItemViewProps(template, attrs) {
   var props = {};
 

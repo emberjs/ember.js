@@ -1,0 +1,1 @@
+{{#each view._arrangedContent as |item|}}{{#if attrs.itemViewClass}}{{#view attrs.itemViewClass controller=item tagName=view._itemTagName}}{{yield item self=item}}{{/view}}{{else}}{{yield item self=item}}{{/if}}{{else if attrs.emptyViewClass}}{{view attrs.emptyViewClass tagName=view._itemTagName}}{{/each}}

@@ -11,7 +11,11 @@ export default function bindLocal(env, scope, key, value) {
 
   if (isExisting) {
     var existing = scope.locals[key];
-    existing.setSource(value);
+
+    if (existing !== value) {
+      existing.setSource(value);
+    }
+
     existing.notify();
   } else {
     var newValue = Stream.wrap(value, SimpleStream, key);

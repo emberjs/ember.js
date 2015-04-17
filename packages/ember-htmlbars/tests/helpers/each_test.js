@@ -4,6 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
+import LegacyEachView from "ember-views/views/legacy_each_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
@@ -89,6 +90,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
 
     registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('view:-legacy-each', LegacyEachView);
 
     view = EmberView.create({
       container: container,
@@ -324,7 +326,7 @@ QUnit.test("it works inside a table element", function() {
   runDestroy(tableView);
 });
 
-QUnit.skip("it supports itemController", function() {
+QUnit.test("it supports itemController", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name');
@@ -370,10 +372,10 @@ QUnit.skip("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  strictEqual(view.childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
-QUnit.skip("itemController specified in template gets a parentController property", function() {
+QUnit.test("itemController specified in template gets a parentController property", function() {
   // using an ObjectController for this test to verify that parentController does accidentally get set
   // on the proxied model.
   var Controller = ObjectController.extend({
@@ -464,7 +466,7 @@ QUnit.test("itemController's parentController property, when the ArrayController
   equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
 });
 
-QUnit.skip("it supports itemController when using a custom keyword", function() {
+QUnit.test("it supports itemController when using a custom keyword", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name');
@@ -538,7 +540,8 @@ QUnit.test("it supports {{itemViewClass=}} with global (DEPRECATED)", function()
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView}}'),
-    people: people
+    people: people,
+    container: container
   });
 
   var deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
@@ -567,7 +570,8 @@ QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
-    people: people
+    people: people,
+    container: container
   });
 
   //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
@@ -616,7 +620,7 @@ QUnit.test("it supports {{emptyView=}}", function() {
   assertText(view, "emptyView:sad panda");
 });
 
-QUnit.skip("it defers all normalization of emptyView names to the resolver", function() {
+QUnit.test("it defers all normalization of emptyView names to the resolver", function() {
   var emptyView = EmberView.extend({
     template: templateFor('emptyView:sad panda')
   });
@@ -631,12 +635,9 @@ QUnit.skip("it defers all normalization of emptyView names to the resolver", fun
 
   registry.register('view:an-empty-view', emptyView);
 
-  registry.resolve = function(fullname) {
-    equal(fullname, "view:an-empty-view", "leaves fullname untouched");
-    return Registry.prototype.resolve.call(this, fullname);
-  };
-
   runAppend(view);
+
+  assertText(view, "emptyView:sad panda");
 });
 
 QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
@@ -644,7 +645,8 @@ QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function(
 
   view = EmberView.create({
     template: templateFor('{{each view.people emptyViewClass=MyEmptyView}}'),
-    people: A()
+    people: A(),
+    container: container
   });
 
   var deprecation = /Global lookup of MyEmptyView from a Handlebars template is deprecated/;
@@ -675,7 +677,8 @@ QUnit.test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function
 
   view = EmberView.create({
     template: templateFor('{{each view.people emptyViewClass=MyEmptyView tagName="b"}}'),
-    people: A()
+    people: A(),
+    container: container
   });
 
   //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
@@ -776,7 +779,8 @@ QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]
 
   view = EmberView.create({
     controller: A([{ name: "Adam" }, { name: "Steve" }]),
-    template: templateFor('{{#each}}{{name}}{{/each}}')
+    template: templateFor('{{#each}}{{name}}{{/each}}'),
+    container: container
   });
 
   expectDeprecation(function() {
@@ -877,7 +881,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
   }
 
-  QUnit.skip("controller is assignable inside an #each", function() {
+  QUnit.test("controller is assignable inside an #each", function() {
     var controller = ArrayController.create({
       model: A([{ name: "Adam" }, { name: "Steve" }])
     });
@@ -904,7 +908,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     ok(true, "No assertion from valid template");
   });
 
-  QUnit.skip("itemController specified in template with name binding does not change context", function() {
+  QUnit.test("itemController specified in template with name binding does not change context", function() {
     var Controller = EmberController.extend({
       controllerName: computed(function() {
         return "controller:"+this.get('model.name');
