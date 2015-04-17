@@ -3,6 +3,8 @@
 @submodule ember-htmlbars
 */
 
+import normalizeSelf from "ember-htmlbars/utils/normalize-self";
+
 /**
   Use the `{{with}}` helper when you want to aliases the to a new name. It's helpful
   for semantic clarity and to retain default scope or to reference from another
@@ -51,6 +53,6 @@ export default function withHelper(params, hash, options) {
   if (preserveContext) {
     this.yield([params[0]]);
   } else {
-    this.yield([], params[0]);
+    this.yield([], normalizeSelf(params[0]));
   }
 }

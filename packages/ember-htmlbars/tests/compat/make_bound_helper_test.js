@@ -471,7 +471,7 @@ QUnit.test("shouldn't treat quoted strings as bound paths", function() {
   equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
 });
 
-QUnit.skip("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
+QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
   expectDeprecationInHTMLBars();
 
   // The problem here is that `undefined` is treated as "use the parent scope" in yieldItem
