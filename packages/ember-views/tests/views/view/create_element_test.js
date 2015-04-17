@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-import { equalHTML } from "ember-metal-views/tests/test_helpers";
+import equalHTML from "ember-views/tests/test-helpers/equal-html";
 
 var view;
 
