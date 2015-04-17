@@ -474,7 +474,7 @@ QUnit.skip("{{render}} helper should be able to render a template again when it 
   equal(view.$().text(), 'HI2BYE');
 });
 
-QUnit.skip("{{render}} works with dot notation", function() {
+QUnit.test("{{render}} works with dot notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog.post"}}';
 
   var controller = EmberController.extend({ container: container });
@@ -495,7 +495,7 @@ QUnit.skip("{{render}} works with dot notation", function() {
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-QUnit.skip("{{render}} works with slash notation", function() {
+QUnit.test("{{render}} works with slash notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog/post"}}';
 
   var controller = EmberController.extend({ container: container });

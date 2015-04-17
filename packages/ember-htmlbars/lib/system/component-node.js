@@ -4,6 +4,7 @@ import buildComponentTemplate from "ember-views/system/build-component-template"
 import { readHash, read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import setProperties from "ember-metal/set_properties";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -40,7 +41,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     if (attrs && attrs._defaultTagName) { options._defaultTagName = read(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
 
-    component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode);
+    component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
 
     let layout = get(component, 'layout');
     if (layout) {
@@ -108,6 +109,7 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
 
     if (component.renderNode.shouldReceiveAttrs) {
       env.renderer.updateAttrs(component, snapshot);
+      setProperties(component, shadowedAttrs(component, snapshot));
       component.renderNode.shouldReceiveAttrs = false;
     }
 
@@ -133,9 +135,17 @@ function lookupComponent(env, tagName) {
   };
 }
 
-export function createOrUpdateComponent(component, options, renderNode) {
+export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
+  let snapshot = readHash(attrs);
+  let props = merge({}, options);
+
   if (component.create) {
-    component = component.create(options);
+    merge(props, shadowedAttrs(component.proto(), snapshot));
+    props.container = options.parentView ? options.parentView.container : env.container;
+    component = component.create(props);
+  } else {
+    merge(props, shadowedAttrs(component, snapshot));
+    setProperties(component, props);
   }
 
   if (options.parentView) {
@@ -152,4 +162,21 @@ export function createOrUpdateComponent(component, options, renderNode) {
   renderNode.emberComponent = component;
   renderNode.emberView = component;
   return component;
+}
+
+function shadowedAttrs(target, attrs) {
+  let shadowed = {};
+
+  // For backwards compatibility, set the component property
+  // if it has an attr with that name. Undefined attributes
+  // are handled on demand via the `unknownProperty` hook.
+  for (var attr in attrs) {
+    if (attr in target) {
+      // TODO: Should we issue a deprecation here?
+      //Ember.deprecate(deprecation(attr));
+      shadowed[attr] = attrs[attr];
+    }
+  }
+
+  return shadowed;
 }
