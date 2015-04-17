@@ -1,9 +1,9 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
 
 export function blockFor(render, template, blockOptions) {
-  return function(env, blockArguments, renderNode, parentScope, visitor) {
+  return function(env, blockArguments, self, renderNode, parentScope, visitor) {
     if (renderNode.lastResult) {
-      renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
+      renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     } else {
       var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
 
@@ -12,7 +12,9 @@ export function blockFor(render, template, blockOptions) {
 
       env.hooks.bindShadowScope(env, parentScope, shadowScope, blockOptions.options);
 
-      if (blockOptions.self !== undefined) {
+      if (self !== undefined) {
+        env.hooks.bindSelf(env, shadowScope, self);
+      } else if (blockOptions.self !== undefined) {
         env.hooks.bindSelf(env, shadowScope, blockOptions.self);
       }
 
