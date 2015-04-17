@@ -224,7 +224,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
     render(shadowTemplate.raw, env, shadowScope, { renderNode: morph, self: self, blockArguments: blockArguments });
   };
 
-  function blockToYield(env, blockArguments, renderNode, shadowParent, visitor) {
+  function blockToYield(env, blockArguments, self, renderNode, shadowParent, visitor) {
     if (renderNode.lastResult) {
       renderNode.lastResult.revalidateWith(env, undefined, undefined, blockArguments, visitor);
     } else {
@@ -236,7 +236,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
         scope = env.hooks.createChildScope(parentScope);
       }
 
-      render(template, env, scope, { renderNode: renderNode, blockArguments: blockArguments });
+      render(template, env, scope, { renderNode: renderNode, self: self, blockArguments: blockArguments });
     }
   }
 }
@@ -701,7 +701,7 @@ export var keywords = {
   yield: function(morph, env, scope, params, hash, template, inverse, visitor) {
     // the current scope is provided purely for the creation of shadow
     // scopes; it should not be provided to user code.
-    scope.block(env, params, morph, scope, visitor);
+    scope.block(env, params, hash.self, morph, scope, visitor);
     return true;
   }
 };
