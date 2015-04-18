@@ -164,10 +164,8 @@ export function createOrUpdateComponent(component, options, renderNode, env, att
   if (options.parentView) {
     options.parentView.appendChild(component);
 
-    // don't set the property on a virtual view, as they are invisible to
-    // consumers of the view API
     if (options.viewName) {
-      set(get(options.parentView, 'concreteView'), options.viewName, component);
+      set(options.parentView, options.viewName, component);
     }
   }
 

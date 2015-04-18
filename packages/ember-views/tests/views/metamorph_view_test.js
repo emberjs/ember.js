@@ -11,6 +11,57 @@ var view, childView, metamorphView;
 QUnit.module("Metamorph views", {
   setup() {
     view = EmberView.create({
+      template: compile('parent{{view view.metamorphView}}')
+    });
+  },
+
+  teardown() {
+    run(function() {
+      view.destroy();
+      if (childView && !childView.isDestroyed) {
+        childView.destroy();
+      }
+
+      if (metamorphView && !metamorphView.isDestroyed) {
+        metamorphView.destroy();
+      }
+    });
+  }
+});
+
+QUnit.test("a Metamorph view has not tag, is in the view tree", function() {
+  childView = EmberView.create({
+    template: compile('child')
+  });
+
+  metamorphView = _MetamorphView.create({
+    template: compile('metamorph{{view view.childView}}'),
+    childView
+  });
+
+  view.set('metamorphView', metamorphView);
+
+  run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  equal(get(childView, 'parentView'), metamorphView, "metamorph views are childViews");
+
+  var children = get(view, 'childViews');
+
+  equal(get(children, 'length'), 1, "precond - there is only one child of the main node");
+  equal(children.objectAt(0), metamorphView, "metamorph views are child views");
+
+  ok(view.$().html().match(/parentmetamorph<div[^>]*>child<\/div>/), 'metamorph views have not tag');
+});
+
+// FIXME: Many of the following tests presume isVirtual behavior where metamorphs are
+// not part of the view hierarchy. This has been changed post-glimmer, and they will
+// now be part of the view tree.
+
+QUnit.module("Metamorph views with render", {
+  setup() {
+    view = EmberView.create({
       render(buffer) {
         buffer.push("<h1>View</h1>");
         this.appendChild(metamorphView);

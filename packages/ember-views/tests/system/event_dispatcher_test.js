@@ -180,6 +180,7 @@ QUnit.skip('should not interfere with event propagation of virtualViews', functi
   var receivedEvent;
 
   var view = View.create({
+    // FIXME: isVirtual is no longer a thing
     isVirtual: true,
     render(buffer) {
       buffer.push('<div id="propagate-test-div"></div>');

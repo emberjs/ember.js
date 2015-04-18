@@ -4,8 +4,6 @@
 */
 
 import View from "ember-views/views/view";
-import { _Metamorph } from "ember-views/views/metamorph_view";
-
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
 topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
@@ -40,4 +38,4 @@ export var CoreOutletView = View.extend({
   }
 });
 
-export var OutletView = CoreOutletView.extend(_Metamorph);
+export var OutletView = CoreOutletView.extend({ tagName: '' });

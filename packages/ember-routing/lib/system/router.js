@@ -356,24 +356,20 @@ var EmberRouter = EmberObject.extend(Evented, {
     this.reset();
   },
 
-  _lookupActiveView(templateName) {
-    var active = this._activeViews[templateName];
-    return active && active[0];
+  _lookupActiveComponentNode(templateName) {
+    return this._activeViews[templateName];
   },
 
-  _connectActiveView(templateName, view) {
-    var existing = this._activeViews[templateName];
+  _connectActiveComponentNode(templateName, componentNode) {
+    Ember.assert('cannot connect an activeView that already exists', !this._activeViews[templateName]);
 
-    if (existing) {
-      existing[0].off('willDestroyElement', this, existing[1]);
-    }
-
+    var _activeViews = this._activeViews;
     function disconnectActiveView() {
-      delete this._activeViews[templateName];
+      delete _activeViews[templateName];
     }
 
-    this._activeViews[templateName] = [view, disconnectActiveView];
-    view.one('willDestroyElement', this, disconnectActiveView);
+    this._activeViews[templateName] = componentNode;
+    componentNode.renderNode.addDestruction({ destroy: disconnectActiveView });
   },
 
   _setupLocation() {

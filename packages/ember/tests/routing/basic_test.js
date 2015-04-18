@@ -3856,7 +3856,7 @@ QUnit.test("Can disconnect from the render helper's children", function() {
   equal(Ember.$('#qunit-fixture .foo .index').text(), '');
 });
 
-QUnit.skip("Can render({into:...}) nested render helpers", function() {
+QUnit.test("Can render({into:...}) nested render helpers", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{render "bar"}}</div>');
   Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');
@@ -3884,7 +3884,7 @@ QUnit.skip("Can render({into:...}) nested render helpers", function() {
   equal(Ember.$('#qunit-fixture .bar').text(), 'baz');
 });
 
-QUnit.skip("Can disconnect from nested render helpers", function() {
+QUnit.test("Can disconnect from nested render helpers", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{render "bar"}}</div>');
   Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');

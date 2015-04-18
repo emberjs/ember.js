@@ -95,10 +95,8 @@ var ViewChildViewsSupport = Mixin.create({
 
       view = maybeViewClass.create(attrs);
 
-      // don't set the property on a virtual view, as they are invisible to
-      // consumers of the view API
       if (view.viewName) {
-        set(get(this, 'concreteView'), view.viewName, view);
+        set(this, view.viewName, view);
       }
     } else if ('string' === typeof maybeViewClass) {
       var fullName = 'view:' + maybeViewClass;

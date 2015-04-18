@@ -10,7 +10,6 @@ import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 
-import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import EmberRouter from "ember-routing/system/router";
 import {
@@ -56,7 +55,6 @@ function buildRegistry(namespace) {
   registry.register("controller:object", ObjectController, { instantiate: false });
   registry.register("controller:array", ArrayController, { instantiate: false });
 
-  registry.register("view:default", _MetamorphView);
   registry.register("view:toplevel", EmberView.extend());
   registry.register("view:-outlet", OutletView);
   registry.register("view:core-outlet", CoreOutletView);

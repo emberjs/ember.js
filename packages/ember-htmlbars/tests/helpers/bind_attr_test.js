@@ -5,7 +5,6 @@ import Ember from "ember-metal/core"; // Ember.lookup
 import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
@@ -35,7 +34,6 @@ QUnit.module("ember-htmlbars: {{bind-attr}} [DEPRECATED]", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
 
     warnings = [];

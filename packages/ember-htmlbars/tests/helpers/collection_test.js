@@ -41,7 +41,6 @@ QUnit.module("collection helper", {
     container = registry.container();
 
     registry.optionsForType('template', { instantiate: false });
-    // registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
 

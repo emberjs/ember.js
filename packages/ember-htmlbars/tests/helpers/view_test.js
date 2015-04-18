@@ -7,7 +7,6 @@ import TextField from 'ember-views/views/text_field';
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import ContainerView from 'ember-views/views/container_view';
-import _MetamorphView from 'ember-views/views/metamorph_view';
 import SafeString from 'htmlbars-util/safe-string';
 import precompile from 'ember-template-compiler/compat/precompile';
 import compile from "ember-template-compiler/system/compile";
@@ -49,7 +48,6 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.optionsForType('helper', { instantiate: false });
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
 
