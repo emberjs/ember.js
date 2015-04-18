@@ -72,6 +72,7 @@ import input from "ember-htmlbars/keywords/input";
 import textarea from "ember-htmlbars/keywords/textarea";
 import collection from "ember-htmlbars/keywords/collection";
 import templateKeyword from "ember-htmlbars/keywords/template";
+import legacyYield from "ember-htmlbars/keywords/legacy-yield";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -86,6 +87,7 @@ registerKeyword('template', templateKeyword);
 registerKeyword('input', input);
 registerKeyword('textarea', textarea);
 registerKeyword('collection', collection);
+registerKeyword('legacy-yield', legacyYield);
 
 export default {
   hooks: emberHooks,

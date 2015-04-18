@@ -12,6 +12,11 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
   if (view && !(view instanceof Component)) {
     newStream(shadowScope.locals, 'view', view, null);
     newStream(shadowScope.locals, 'controller', shadowScope.locals.view.getKey('controller'));
+
+    debugger;
+    if (view.isView) {
+      newStream(shadowScope, 'self', shadowScope.locals.view.getKey('context'), null, true);
+    }
   }
 
   shadowScope.view = view;

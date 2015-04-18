@@ -6,7 +6,8 @@ import Component from "ember-views/views/component";
 function generateEnv(helpers, container) {
   return {
     container: container,
-    helpers: (helpers ? helpers : {})
+    helpers: (helpers ? helpers : {}),
+    hooks: { keywords: {} }
   };
 }
 

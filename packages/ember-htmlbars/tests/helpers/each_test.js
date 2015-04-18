@@ -916,6 +916,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
 
     registry = new Registry();
+    registry.register('view:-legacy-each', LegacyEachView);
     container = registry.container();
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
@@ -952,7 +953,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-    strictEqual(view.childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
+    strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
   });
 
   QUnit.test("itemController specified in ArrayController with name binding does not change context", function() {
@@ -970,6 +971,7 @@ function testEachWithItem(moduleName, useBlockParams) {
           controllerName: 'controller:people'
         });
     registry = new Registry();
+    registry.register('view:-legacy-each', LegacyEachView);
     container = registry.container();
 
     registry.register('controller:people', PeopleController);

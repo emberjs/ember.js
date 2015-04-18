@@ -39,6 +39,10 @@ export function findHelper(name, view, env) {
     return;
   }
 
+  if (name in env.hooks.keywords) {
+    return;
+  }
+
   var helperName = 'helper:' + name;
   helper = container.lookup(helperName);
   if (!helper) {
