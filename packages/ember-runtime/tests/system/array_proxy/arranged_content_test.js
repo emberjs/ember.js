@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import {computed} from 'ember-metal/computed';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var array;
 
@@ -69,7 +70,7 @@ QUnit.test('nextObject - returns object at index in arrangedContent', function()
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
-  equal(array.objectAt(1), 4, 'returns object at index');
+  equal(objectAt(array, 1), 4, 'returns object at index');
 });
 
 // Not sure if we need a specific test for it, since it's internal
@@ -217,7 +218,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
         }).property('content.[]'),
 
         objectAtContent(idx) {
-          var obj = this.get('arrangedContent').objectAt(idx);
+          var obj = objectAt(this.get('arrangedContent'), idx);
           return obj && obj.toString();
         }
       }).create({
@@ -246,7 +247,7 @@ QUnit.test('nextObject - returns object at index in arrangedContent', function()
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
-  equal(array.objectAt(1), '4', 'returns object at index');
+  equal(objectAt(array, 1), '4', 'returns object at index');
 });
 
 // Not sure if we need a specific test for it, since it's internal

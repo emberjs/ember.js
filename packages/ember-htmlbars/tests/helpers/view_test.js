@@ -23,16 +23,18 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 
+import { objectAt } from 'ember-runtime/mixins/array';
+
 var view, originalLookup, registry, container, lookup;
 
 var trim = jQuery.trim;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return objectAt(get(objectAt(get(view, 'childViews'), 0), 'childViews'), 0);
 }
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return objectAt(get(view, 'childViews'), nth || 0);
 }
 
 function viewClass(options) {

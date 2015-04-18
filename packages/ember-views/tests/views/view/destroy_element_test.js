@@ -2,6 +2,7 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import ContainerView from 'ember-views/views/container_view';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var view;
 
@@ -57,7 +58,7 @@ QUnit.test('if it has a element, calls willDestroyElement on receiver and child 
   equal(parentCount, 1, 'invoked destroy element on the parent');
   equal(childCount, 1, 'invoked destroy element on the child');
   ok(!get(view, 'element'), 'view no longer has element');
-  ok(!get(get(view, 'childViews').objectAt(0), 'element'), 'child no longer has an element');
+  ok(!get(objectAt(get(view, 'childViews'), 0), 'element'), 'child no longer has an element');
 });
 
 QUnit.test('returns receiver', function() {

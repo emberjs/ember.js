@@ -14,6 +14,7 @@ import { computed } from 'ember-metal/computed';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { observer } from 'ember-metal/mixin';
 import { defineProperty } from 'ember-metal/properties';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 import htmlbarsTemplate from 'ember-htmlbars/templates/select';
 import selectOptionDefaultTemplate from 'ember-htmlbars/templates/select-option';
@@ -566,7 +567,7 @@ var Select = View.extend({
     }
 
     if (prompt) { selectedIndex -= 1; }
-    set(this, 'selection', content.objectAt(selectedIndex));
+    set(this, 'selection', objectAt(content, selectedIndex));
   },
 
   _selectedIndex(value, defaultIndex = 0) {

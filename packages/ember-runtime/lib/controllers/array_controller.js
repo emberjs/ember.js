@@ -10,8 +10,10 @@ import SortableMixin from 'ember-runtime/mixins/sortable';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
-import EmberArray from 'ember-runtime/mixins/array';
 import replace from 'ember-metal/replace';
+import EmberArray, {
+  objectAt
+} from 'ember-runtime/mixins/array';
 
 export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
 
@@ -155,7 +157,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   objectAtContent(idx) {
     var length = get(this, 'length');
     var arrangedContent = get(this, 'arrangedContent');
-    var object = arrangedContent && arrangedContent.objectAt(idx);
+    var object = arrangedContent && objectAt(arrangedContent, idx);
     var controllerClass;
 
     if (idx >= 0 && idx < length) {

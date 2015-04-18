@@ -55,6 +55,11 @@ export function removeArrayObserver(array, target, opts) {
   return arrayObserversHelper(array, target, opts, removeListener, true);
 }
 
+export function objectAt(content, idx) {
+  if (content.objectAt) { return content.objectAt(idx); }
+  return content[idx];
+}
+
 
 // ..........................................................
 // ARRAY
@@ -157,16 +162,12 @@ export default Mixin.create(Enumerable, {
     @public
    */
   objectsAt(indexes) {
-    var self = this;
-
-    return indexes.map(function(idx) {
-      return self.objectAt(idx);
-    });
+    return indexes.map(idx => objectAt(this, idx));
   },
 
   // overrides Ember.Enumerable version
   nextObject(idx) {
-    return this.objectAt(idx);
+    return objectAt(this, idx);
   },
 
   /**

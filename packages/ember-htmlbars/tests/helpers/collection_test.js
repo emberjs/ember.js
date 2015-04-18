@@ -14,9 +14,9 @@ import CollectionView from 'ember-views/views/collection_view';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var trim = jQuery.trim;
-
 
 var view;
 
@@ -25,13 +25,13 @@ var TemplateTests, registry, container, lookup;
 
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return objectAt(get(view, 'childViews'), nth || 0);
 }
 
 var firstChild = nthChild;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return objectAt(get(objectAt(get(view, 'childViews'), 0), 'childViews'), 0);
 }
 
 QUnit.module('collection helper', {

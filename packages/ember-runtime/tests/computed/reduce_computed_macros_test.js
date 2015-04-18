@@ -26,6 +26,8 @@ import {
   intersect as computedIntersect
 } from 'ember-runtime/computed/reduce_computed_macros';
 
+import { objectAt } from 'ember-runtime/mixins/array';
+
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
 
 QUnit.module('computedMap', {
@@ -146,7 +148,7 @@ QUnit.test('it maps objects', function() {
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Eddard' }]);
 
   run(function() {
-    obj.get('arrayObjects').objectAt(0).set('v', { name: 'Stannis' });
+    objectAt(obj.get('arrayObjects'), 0).set('v', { name: 'Stannis' });
   });
 
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Stannis' }, { name: 'Eddard' }]);
@@ -413,11 +415,11 @@ QUnit.test('properties can be filtered by truthiness', function() {
   deepEqual(bs.mapBy('name'), ['three', 'four'], 'booleans can be filtered');
 
   run(function() {
-    set(array.objectAt(0), 'a', undefined);
-    set(array.objectAt(3), 'a', true);
+    set(objectAt(array, 0), 'a', undefined);
+    set(objectAt(array, 3), 'a', true);
 
-    set(array.objectAt(0), 'b', true);
-    set(array.objectAt(3), 'b', false);
+    set(objectAt(array, 0), 'b', true);
+    set(objectAt(array, 3), 'b', false);
   });
   deepEqual(as.mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to property changes');
   deepEqual(bs.mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to property changes');
@@ -458,8 +460,8 @@ QUnit.test('properties can be filtered by values', function() {
   deepEqual(a1s.mapBy('name'), ['one', 'three'], 'arrays computed by matching value respond to removed objects');
 
   run(function() {
-    set(array.objectAt(1), 'a', 1);
-    set(array.objectAt(2), 'a', 2);
+    set(objectAt(array, 1), 'a', 1);
+    set(objectAt(array, 2), 'a', 2);
   });
   deepEqual(a1s.mapBy('name'), ['one', 'two'], 'arrays computed by matching value respond to modified properties');
 });
@@ -932,7 +934,7 @@ QUnit.test('updating new sort properties in place updates the sorted array', fun
   run(function() {
     items = get(obj, 'items');
 
-    var cersei = items.objectAt(1);
+    var cersei = objectAt(items, 1);
     set(cersei, 'age', 29); // how vain
   });
 
@@ -961,7 +963,7 @@ QUnit.test('updating an item\'s sort properties updates the sorted array', funct
     items = get(obj, 'items');
   });
 
-  tyrionInDisguise = items.objectAt(1);
+  tyrionInDisguise = objectAt(items, 1);
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
@@ -980,7 +982,7 @@ QUnit.test('updating several of an item\'s sort properties updated the sorted ar
     items = get(obj, 'items');
   });
 
-  sansaInDisguise = items.objectAt(1);
+  sansaInDisguise = objectAt(items, 1);
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
@@ -1176,7 +1178,7 @@ QUnit.test('changing item properties specified via @each triggers a resort of th
     items = get(obj, 'items');
   });
 
-  tyrionInDisguise = items.objectAt(1);
+  tyrionInDisguise = objectAt(items, 1);
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
@@ -1195,7 +1197,7 @@ QUnit.test('changing item properties not specified via @each does not trigger a 
     items = get(obj, 'items');
   });
 
-  cersei = items.objectAt(1);
+  cersei = objectAt(items, 1);
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
@@ -1240,8 +1242,8 @@ QUnit.test('sorts correctly as only one property changes', function() {
   run(function() {
     sorted = obj.get('sortedItems');
   });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
-  obj.get('items').objectAt(3).set('count', 2);
+  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
+  objectAt(obj.get('items'), 3).set('count', 2);
   run(function() {
     sorted = obj.get('sortedItems');
   });
@@ -1284,8 +1286,8 @@ QUnit.test('sorts correctly when there are concurrent changes', function() {
   });
   deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
   Ember.changeProperties(function() {
-    obj.get('items').objectAt(1).set('count', 5);
-    obj.get('items').objectAt(2).set('count', 6);
+    objectAt(obj.get('items'), 1).set('count', 5);
+    objectAt(obj.get('items'), 2).set('count', 6);
   });
   run(function() {
     sorted = obj.get('sortedItems');
@@ -1302,8 +1304,8 @@ QUnit.test('sorts correctly with a user-provided comparator when there are concu
 
   run(function() {
     Ember.changeProperties(function() {
-      obj.get('items').objectAt(1).set('count', 5);
-      obj.get('items').objectAt(2).set('count', 6);
+      objectAt(obj.get('items'), 1).set('count', 5);
+      objectAt(obj.get('items'), 2).set('count', 6);
     });
     sorted = obj.get('customSortedItems');
     deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
@@ -1541,7 +1543,7 @@ QUnit.test('it can filter and sort when both depend on the same item property', 
     //    2. update filtered from item property change
     //
     // If 1.b happens before 2 it should invalidate 2
-    todos.objectAt(1).set('priority', 6);
+    objectAt(todos, 1).set('priority', 6);
     endPropertyChanges();
   });
 

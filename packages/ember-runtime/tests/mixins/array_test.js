@@ -8,7 +8,8 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
 import EmberArray, {
-  addArrayObserver
+  addArrayObserver,
+  objectAt
 } from 'ember-runtime/mixins/array';
 
 /*
@@ -415,7 +416,7 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   addObserver(each, 'isDone', function() { count++; });
 
   count = 0;
-  var item = ary.objectAt(2);
+  var item = objectAt(ary, 2);
   set(item, 'isDone', !get(item, 'isDone'));
   equal(count, 1, '@each.isDone should have notified');
 });
@@ -429,15 +430,15 @@ testBoth('should be clear caches for computed properties that have dependent key
     },
 
     common: computed('resources.@each.common', function() {
-      return get(get(this, 'resources').objectAt(0), 'common');
+      return get(objectAt(get(this, 'resources'), 0), 'common');
     })
   }).create();
 
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   equal('HI!', get(obj, 'common'));
 
-  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
-  equal('BYE!', get(obj, 'common'));
+  set(objectAt(get(obj, 'resources'), 0), 'common', "BYE!");
+  equal("BYE!", get(obj, 'common'));
 });
 
 testBoth('observers that contain @each in the path should fire only once the first time they are accessed', function(get, set) {
@@ -458,7 +459,7 @@ testBoth('observers that contain @each in the path should fire only once the fir
   // Observer fires second time when new object is added
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   // Observer fires third time when property on an object is changed
-  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
+  set(objectAt(get(obj, 'resources'), 0), 'common', "BYE!");
 
   equal(count, 2, 'observers should only be called once');
 });

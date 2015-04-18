@@ -19,7 +19,13 @@ import {
   beforeObserver,
   observer
 } from 'ember-metal/mixin'; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
+import {
+  objectAt
+} from 'ember-runtime/mixins/array';
 
+import {
+  indexOf
+} from 'ember-metal/enumerable_utils';
 /**
   `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
@@ -271,9 +277,9 @@ export default Mixin.create(MutableEnumerable, {
 
   contentItemSortPropertyDidChange(item) {
     var arrangedContent = get(this, 'arrangedContent');
-    var oldIndex = arrangedContent.indexOf(item);
-    var leftItem = arrangedContent.objectAt(oldIndex - 1);
-    var rightItem = arrangedContent.objectAt(oldIndex + 1);
+    var oldIndex = indexOf(arrangedContent, item);
+    var leftItem = objectAt(arrangedContent, oldIndex - 1);
+    var rightItem = objectAt(arrangedContent, oldIndex + 1);
     var leftResult = leftItem && this.orderBy(item, leftItem);
     var rightResult = rightItem && this.orderBy(item, rightItem);
 
@@ -293,7 +299,7 @@ export default Mixin.create(MutableEnumerable, {
     arrangedContent = get(this, 'arrangedContent');
 
     mid = low + Math.floor((high - low) / 2);
-    midItem = arrangedContent.objectAt(mid);
+    midItem = objectAt(arrangedContent, mid);
 
     res = this.orderBy(midItem, item);
 
