@@ -413,7 +413,7 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   var each = get(ary, '@each');
   var count = 0;
 
-  addObserver(each, 'isDone', function() { count++; });
+  addObserver(each, 'isDone', () => count++ );
 
   count = 0;
   var item = objectAt(ary, 2);
