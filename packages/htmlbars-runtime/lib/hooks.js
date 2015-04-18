@@ -216,6 +216,7 @@ export function hostYieldWithShadowTemplate(template, env, parentScope, morph, r
 
     var shadowScope = env.hooks.createFreshScope();
     env.hooks.bindShadowScope(env, parentScope, shadowScope, renderState.shadowOptions);
+    blockToYield.arity = template.arity;
     env.hooks.bindBlock(env, shadowScope, blockToYield);
 
     morph.lastYielded = { self: self, template: template, shadowTemplate: shadowTemplate };

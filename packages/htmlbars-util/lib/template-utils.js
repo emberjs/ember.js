@@ -1,7 +1,7 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
 
 export function blockFor(render, template, blockOptions) {
-  return function(env, blockArguments, self, renderNode, parentScope, visitor) {
+  var block = function(env, blockArguments, self, renderNode, parentScope, visitor) {
     if (renderNode.lastResult) {
       renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     } else {
@@ -28,6 +28,10 @@ export function blockFor(render, template, blockOptions) {
       });
     }
   };
+
+  block.arity = template.arity;
+
+  return block;
 }
 
 export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
