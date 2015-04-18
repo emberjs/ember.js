@@ -47,6 +47,15 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   return obj;
 }
 
+export function addArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, addListener, false);
+}
+
+export function removeArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, removeListener, true);
+}
+
+
 // ..........................................................
 // ARRAY
 //

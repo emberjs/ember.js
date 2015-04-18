@@ -18,6 +18,10 @@ import MutableArray from 'ember-runtime/mixins/mutable_array';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import { fmt } from 'ember-runtime/system/string';
 import alias from 'ember-metal/alias';
+import {
+  addArrayObserver,
+  removeArrayObserver
+} from 'ember-runtime/mixins/array';
 
 /**
 @module ember
@@ -140,7 +144,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var content = get(this, 'content');
 
     if (content) {
-      content.removeArrayObserver(this, {
+      removeArrayObserver(content, this, {
         willChange: 'contentArrayWillChange',
         didChange: 'contentArrayDidChange'
       });
@@ -195,7 +199,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
         'Ember.ArrayProxy, but you passed %@', [typeof content]),
         isArray(content) || content.isDestroyed);
 
-      content.addArrayObserver(this, {
+      addArrayObserver(content, this, {
         willChange: 'contentArrayWillChange',
         didChange: 'contentArrayDidChange'
       });
@@ -232,7 +236,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
         'Ember.ArrayProxy, but you passed %@', [typeof arrangedContent]),
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
-      arrangedContent.addArrayObserver(this, {
+      addArrayObserver(arrangedContent, this, {
         willChange: 'arrangedContentArrayWillChange',
         didChange: 'arrangedContentArrayDidChange'
       });
@@ -243,7 +247,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
-      arrangedContent.removeArrayObserver(this, {
+      removeArrayObserver(arrangedContent, this, {
         willChange: 'arrangedContentArrayWillChange',
         didChange: 'arrangedContentArrayDidChange'
       });

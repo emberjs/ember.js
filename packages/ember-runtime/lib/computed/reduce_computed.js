@@ -21,7 +21,9 @@ import {
   cacheFor
 } from 'ember-metal/computed';
 import TrackedArray from 'ember-runtime/system/tracked_array';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver
+} from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
 
 var cacheSet = cacheFor.set;
@@ -107,7 +109,7 @@ DependentArraysObserver.prototype = {
   setupObservers(dependentArray, dependentKey) {
     this.dependentKeysByGuid[guidFor(dependentArray)] = dependentKey;
 
-    dependentArray.addArrayObserver(this, {
+    addArrayObserver(dependentArray, this, {
       willChange: 'dependentArrayWillChange',
       didChange: 'dependentArrayDidChange'
     });

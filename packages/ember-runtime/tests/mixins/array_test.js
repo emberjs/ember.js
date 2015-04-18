@@ -7,7 +7,9 @@ import { computed } from 'ember-metal/computed';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver
+} from 'ember-runtime/mixins/array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -202,7 +204,7 @@ QUnit.module('notify array observers', {
       _after: null
     });
 
-    obj.addArrayObserver(observer);
+    addArrayObserver(obj, observer);
   },
 
   teardown() {
