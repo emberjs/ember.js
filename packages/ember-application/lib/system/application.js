@@ -24,7 +24,6 @@ import DOMHelper from "ember-htmlbars/system/dom-helper";
 import SelectView from "ember-views/views/select";
 import { OutletView } from "ember-routing-views/views/outlet";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
@@ -1014,7 +1013,6 @@ Application.reopenClass({
 
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
 
     registry.register('route:basic', Route, { instantiate: false });

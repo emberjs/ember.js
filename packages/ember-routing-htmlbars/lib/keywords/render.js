@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // assert
+import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import create from 'ember-metal/platform/create';
 import { isStream, read } from "ember-metal/streams/utils";
@@ -49,6 +50,12 @@ export default {
     var context = params[1];
 
     var container = env.container;
+
+    // The render keyword presumes it can work without a router. This is really
+    // only to satisfy the test:
+    //
+    //     {{view}} should not override class bindings defined on a child view"
+    //
     var router = container.lookup('router:main');
 
     Ember.assert(
@@ -61,7 +68,7 @@ export default {
       Ember.assert(
         "You can only use the {{render}} helper once without a model object as " +
         "its second argument, as in {{render \"post\" post}}.",
-        !router || !router._lookupActiveView(name)
+        !router || !router._lookupActiveComponentNode(name)
       );
     } else if (params.length !== 2) {
       throw new EmberError("You must pass a templateName to render");
@@ -81,9 +88,15 @@ export default {
     var view = container.lookup('view:' + name);
     if (!view) {
       view = container.lookup('view:default');
-      template = template || container.lookup(templateName);
     }
-    view.ownerView = env.view.ownerView;
+    var viewHasTemplateSpecified = view && !!get(view, 'template');
+    if (!template && !viewHasTemplateSpecified) {
+      template = container.lookup(templateName);
+    }
+
+    if (view) {
+      view.ownerView = env.view.ownerView;
+    }
 
     // provide controller override
     var controllerName;
@@ -129,15 +142,12 @@ export default {
       });
     }
 
-    view.set('controller', controller);
+    if (view) {
+      view.set('controller', controller);
+    }
     state.controller = controller;
 
     hash.viewName = camelize(name);
-
-    if (router && params.length === 1) {
-      router._connectActiveView(name, view);
-    }
-
 
     // var state = node.state;
     // var parentView = scope.view;
@@ -146,13 +156,21 @@ export default {
     }
 
     var options = {
-      component: view,
       layout: null,
       self: controller
     };
 
+    if (view) {
+      options.component = view;
+    }
+
     var componentNode = ComponentNode.create(node, env, hash, options, state.parentView, null, null, template);
     state.componentNode = componentNode;
+
+    if (router && params.length === 1) {
+      router._connectActiveComponentNode(name, componentNode);
+    }
+
     componentNode.render(env, hash, visitor);
   },
 

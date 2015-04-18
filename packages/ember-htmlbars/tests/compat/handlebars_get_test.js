@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.lookup
-import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 import { Registry } from "ember-runtime/system/container";
@@ -19,7 +18,6 @@ QUnit.module("ember-htmlbars: compat - Ember.Handlebars.get", {
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
     registry.optionsForType('helper', { instantiate: false });
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
 

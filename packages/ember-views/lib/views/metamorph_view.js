@@ -18,7 +18,6 @@ import { Mixin } from "ember-metal/mixin";
   @private
 */
 export var _Metamorph = Mixin.create({
-  isVirtual: true,
   tagName: '',
 
   instrumentName: 'metamorph',

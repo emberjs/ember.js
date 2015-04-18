@@ -9,7 +9,6 @@ import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
 import { get } from "ember-metal/property_get";
-import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
 import { internal } from "htmlbars-runtime";
@@ -40,7 +39,6 @@ var renderer;
 */
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
-  isVirtual: false,
 
   _states: cloneStates(states),
 
@@ -73,15 +71,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   parentView: null,
 
   _state: null,
-
-  // return the current view, not including virtual views
-  concreteView: computed('parentView', function() {
-    if (!this.isVirtual) {
-      return this;
-    } else {
-      return get(this, 'parentView.concreteView');
-    }
-  }),
 
   instrumentName: 'core_view',
 

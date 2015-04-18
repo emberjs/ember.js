@@ -1253,7 +1253,7 @@ var View = CoreView.extend(
     @private
   */
   init() {
-    if (!this.isVirtual && !this.elementId) {
+    if (this.tagName !== '' && !this.elementId) {
       this.elementId = guidFor(this);
     }
 

@@ -3,7 +3,6 @@ import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import LegacyEachView from "ember-views/views/legacy_each_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
@@ -88,7 +87,6 @@ QUnit.module("the #each helper [DEPRECATED]", {
     registry = new Registry();
     container = registry.container();
 
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
     registry.register('view:-legacy-each', LegacyEachView);
 
@@ -574,8 +572,6 @@ QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
     container: container
   });
 
-  //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
-
   runAppend(view);
   equal(view.$('ul').length, 1, 'rendered ul tag');
   equal(view.$('ul li').length, 2, 'rendered 2 li tags');
@@ -680,8 +676,6 @@ QUnit.test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function
     people: A(),
     container: container
   });
-
-  //expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   runAppend(view);
 
@@ -796,7 +790,6 @@ function testEachWithItem(moduleName, useBlockParams) {
       registry = new Registry();
       container = registry.container();
 
-      registry.register('view:default', _MetamorphView);
       registry.register('view:toplevel', EmberView.extend());
     },
     teardown() {

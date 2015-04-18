@@ -15,7 +15,7 @@ merge(inDOM, {
   enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
-    if (!view.isVirtual) {
+    if (view.tagName !== '') {
       view._register();
     }
 
