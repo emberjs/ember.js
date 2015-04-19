@@ -287,7 +287,7 @@ QUnit.test("should destroy DOM representation when destroy is called", function(
   ok(jQuery('#warning').length === 0, "destroys element when destroy() is called");
 });
 
-QUnit.skip("should throw an exception if trying to append an element that is already in DOM", function() {
+QUnit.test("should throw an exception if trying to append an element that is already in DOM", function() {
   run(function() {
     view = EmberView.create({
       template: compile('Broseidon, King of the Brocean')

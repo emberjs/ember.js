@@ -14,6 +14,9 @@ function Renderer(_helper) {
 
 Renderer.prototype.prerenderTopLevelView =
   function Renderer_prerenderTopLevelView(view, renderNode) {
+    if (view._state === 'inDOM') {
+      throw new Error("You cannot insert a View that has already been rendered");
+    }
     view.ownerView = renderNode.emberView = view;
     view.renderNode = renderNode;
 
