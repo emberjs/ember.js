@@ -791,6 +791,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       container = registry.container();
 
       registry.register('view:toplevel', EmberView.extend());
+      registry.register('view:-legacy-each', LegacyEachView);
     },
     teardown() {
       runDestroy(container);
