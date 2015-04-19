@@ -1317,14 +1317,14 @@ var View = CoreView.extend(
   */
   destroy() {
     // get parentView before calling super because it'll be destroyed
-    var nonVirtualParentView = get(this, 'parentView');
+    var parentView = this.parentView;
     var viewName = this.viewName;
 
     if (!this._super(...arguments)) { return; }
 
     // remove from non-virtual parent view if viewName was specified
-    if (viewName && nonVirtualParentView) {
-      nonVirtualParentView.set(viewName, null);
+    if (viewName && parentView) {
+      parentView.set(viewName, null);
     }
 
     // Destroy HTMLbars template
