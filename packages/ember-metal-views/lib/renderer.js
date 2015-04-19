@@ -12,8 +12,8 @@ function Renderer(_helper) {
   this._dom = _helper;
 }
 
-Renderer.prototype.renderTopLevelView =
-  function Renderer_renderTopLevelView(view, renderNode) {
+Renderer.prototype.prerenderTopLevelView =
+  function Renderer_prerenderTopLevelView(view, renderNode) {
     view.ownerView = renderNode.emberView = view;
     view.renderNode = renderNode;
 
@@ -29,7 +29,11 @@ Renderer.prototype.renderTopLevelView =
 
     view.renderBlock(block, renderNode);
     view.lastResult = renderNode.lastResult;
+  };
 
+Renderer.prototype.renderTopLevelView =
+  function Renderer_renderTopLevelView(view, renderNode) {
+    this.prerenderTopLevelView(view, renderNode);
     this.dispatchLifecycleHooks(view.env);
   };
 
@@ -38,7 +42,11 @@ Renderer.prototype.revalidateTopLevelView =
     // This guard prevents revalidation on an already-destroyed view.
     if (view.renderNode.lastResult) {
       view.renderNode.lastResult.revalidate(view.env);
-      this.dispatchLifecycleHooks(view.env);
+      // supports createElement, which operates without moving the view into
+      // the inDOM state.
+      if (view._state === 'inDOM') {
+        this.dispatchLifecycleHooks(view.env);
+      }
     }
   };
 
@@ -84,7 +92,7 @@ Renderer.prototype.createElement =
   function Renderer_createElement(view) {
     var morph = this._dom.createFragmentMorph();
     morph.ownerNode = morph;
-    this.renderTopLevelView(view, morph);
+    this.prerenderTopLevelView(view, morph);
   };
 
 Renderer.prototype.willCreateElement = function (view) {

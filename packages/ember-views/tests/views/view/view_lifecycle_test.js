@@ -166,21 +166,28 @@ QUnit.module("views/view/view_lifecycle_test - hasElement", {
   }
 });
 
-QUnit.skip("createElement puts the view into the hasElement state", function() {
+QUnit.test("createElement puts the view into the hasElement state", function() {
+  var hasCalledInsertElement = false;
   view = EmberView.create({
-    render(buffer) { buffer.push('hello'); }
+    didInsertElement() {
+      hasCalledInsertElement = true;
+    }
   });
 
   run(function() {
     view.createElement();
   });
 
-  equal(view.currentState, view._states.hasElement, "the view is in the hasElement state");
+  ok(!hasCalledInsertElement, 'didInsertElement is not called');
+  equal(view.element.tagName, 'DIV', 'content is rendered');
 });
 
-QUnit.skip("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
+QUnit.test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
+  var hasCalledInsertElement = false;
   view = EmberView.create({
-    render(buffer) { buffer.push('hello'); }
+    didInsertElement() {
+      hasCalledInsertElement = true;
+    }
   });
 
   run(function() {
@@ -188,7 +195,8 @@ QUnit.skip("trigger rerender on a view in the hasElement state doesn't change it
     view.rerender();
   });
 
-  equal(view.currentState, view._states.hasElement, "the view is still in the hasElement state");
+  ok(!hasCalledInsertElement, 'didInsertElement is not called');
+  equal(view.element.tagName, 'DIV', 'content is rendered');
 });
 
 
