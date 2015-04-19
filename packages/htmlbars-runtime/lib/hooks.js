@@ -702,7 +702,9 @@ export var keywords = {
   yield: function(morph, env, scope, params, hash, template, inverse, visitor) {
     // the current scope is provided purely for the creation of shadow
     // scopes; it should not be provided to user code.
-    scope.block(env, params, hash.self, morph, scope, visitor);
+    if (scope.block) {
+      scope.block(env, params, hash.self, morph, scope, visitor);
+    }
     return true;
   }
 };
