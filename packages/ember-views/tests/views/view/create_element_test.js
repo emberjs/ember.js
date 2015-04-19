@@ -3,6 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import equalHTML from "ember-views/tests/test-helpers/equal-html";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 
@@ -42,13 +43,10 @@ QUnit.skip('should assert if `tagName` is an empty string and `classNameBindings
   }, /You cannot use `classNameBindings` on a tag-less view/);
 });
 
-QUnit.skip("calls render and turns resultant string into element", function() {
+QUnit.test("calls render and turns resultant string into element", function() {
   view = EmberView.create({
     tagName: 'span',
-
-    render(buffer) {
-      buffer.push("foo");
-    }
+    template: compile("foo")
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');

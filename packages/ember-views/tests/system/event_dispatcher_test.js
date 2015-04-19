@@ -119,12 +119,10 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
   $element.remove();
 });
 
-QUnit.skip("should send change events up view hierarchy if view contains form elements", function() {
+QUnit.test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = View.create({
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+    template: compile('<input id="is-done" type="checkbox">'),
 
     change(evt) {
       receivedEvent = evt;
@@ -140,7 +138,7 @@ QUnit.skip("should send change events up view hierarchy if view contains form el
   equal(receivedEvent.target, jQuery('#is-done')[0], "target property is the element that was clicked");
 });
 
-QUnit.skip("events should stop propagating if the view is destroyed", function() {
+QUnit.test("events should stop propagating if the view is destroyed", function() {
   var parentViewReceived, receivedEvent;
 
   var parentView = ContainerView.create({
@@ -150,9 +148,7 @@ QUnit.skip("events should stop propagating if the view is destroyed", function()
   });
 
   view = parentView.createChildView(View, {
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+    template: compile('<input id="is-done" type="checkbox">'),
 
     change(evt) {
       receivedEvent = true;
@@ -176,37 +172,10 @@ QUnit.skip("events should stop propagating if the view is destroyed", function()
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
-QUnit.skip('should not interfere with event propagation of virtualViews', function() {
-  var receivedEvent;
-
-  var view = View.create({
-    // FIXME: isVirtual is no longer a thing
-    isVirtual: true,
-    render(buffer) {
-      buffer.push('<div id="propagate-test-div"></div>');
-    }
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  jQuery(window).bind('click', function(evt) {
-    receivedEvent = evt;
-  });
-
-  jQuery('#propagate-test-div').click();
-
-  ok(receivedEvent, 'allowed event to propagate');
-  deepEqual(receivedEvent && receivedEvent.target, jQuery('#propagate-test-div')[0], 'target property is the element that was clicked');
-});
-
-QUnit.skip("should dispatch events to nearest event manager", function() {
+QUnit.test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
-  view = ContainerView.create({
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+  view = View.create({
+    template: compile('<input id="is-done" type="checkbox">'),
 
     eventManager: EmberObject.create({
       mouseDown() {

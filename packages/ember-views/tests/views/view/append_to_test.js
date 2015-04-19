@@ -4,6 +4,7 @@ import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import compile from "ember-template-compiler/system/compile";
 
 var View, view, willDestroyCalled, childView;
 
@@ -34,11 +35,9 @@ QUnit.test("should be added to the specified element when calling appendTo()", f
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-QUnit.skip("should be added to the document body when calling append()", function() {
+QUnit.test("should be added to the document body when calling append()", function() {
   view = View.create({
-    render(buffer) {
-      buffer.push("foo bar baz");
-    }
+    template: compile("foo bar baz")
   });
 
   ok(!get(view, 'element'), "precond - should not have an element");
