@@ -41,6 +41,9 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
 }
 
 function renderLegacyTemplate(view, buffer, template) {
+  // FIXME: This should likely be removed. Adds support for bespoke kind-of-handlebars
+  // templates. They are used in tests, but nobody should be using them in the
+  // wild.
   var context = get(view, 'context');
   var options = {
     data: {
