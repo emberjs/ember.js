@@ -91,7 +91,9 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
     env.renderer.willRender(component);
   }
 
-  this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+  if (this.block) {
+    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+  }
 
   if (component) {
     env.renderer.didCreateElement(component, this.expectElement && this.renderNode.firstNode);
@@ -121,7 +123,9 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
     env.renderer.willRender(component);
   }
 
-  this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+  if (this.block) {
+    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+  }
 
   if (component) {
     env.lifecycleHooks.push({ type: 'didUpdate', view: component });

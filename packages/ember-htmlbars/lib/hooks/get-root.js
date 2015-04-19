@@ -10,6 +10,10 @@ import SimpleStream from "ember-metal/streams/simple-stream";
 export default function getRoot(scope, key) {
   if (key === 'this') {
     return [scope.self];
+  } else if (key === 'hasBlock') {
+    return [!!scope.block];
+  } else if (key === 'hasBlockParams') {
+    return [!!(scope.block && scope.block.arity)];
   } else if (isGlobal(key) && Ember.lookup[key]) {
     return [getGlobal(key)];
   } else if (scope.locals[key]) {

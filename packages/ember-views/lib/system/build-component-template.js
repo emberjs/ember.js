@@ -9,8 +9,6 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
 
   component = componentInfo.component;
 
-  blockToRender = function() {};
-
   if (content.template) {
     blockToRender = createContentBlock(content.template, content.scope, content.self, component || null);
   }
