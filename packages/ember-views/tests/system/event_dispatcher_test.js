@@ -28,16 +28,14 @@ QUnit.module("EventDispatcher", {
   }
 });
 
-QUnit.skip("should dispatch events to views", function() {
+QUnit.test("should dispatch events to views", function() {
   var receivedEvent;
   var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
   var childView = View.createWithMixins({
-    render(buffer) {
-      buffer.push('<span id="wot">ewot</span>');
-    },
+    template: compile('<span id="wot">ewot</span>'),
 
     keyDown(evt) {
       childKeyDownCalled++;
@@ -47,10 +45,8 @@ QUnit.skip("should dispatch events to views", function() {
   });
 
   view = View.createWithMixins({
-    render(buffer) {
-      buffer.push('some <span id="awesome">awesome</span> content');
-      this.appendChild(childView);
-    },
+    template: compile('some <span id="awesome">awesome</span> content {{view view.childView}}'),
+    childView: childView,
 
     mouseDown(evt) {
       parentMouseDownCalled++;
