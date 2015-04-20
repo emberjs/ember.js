@@ -6,7 +6,6 @@
         "Ember",
         "DS",
         "Handlebars",
-        "Metamorph",
         "RSVP",
         "require",
         "requireModule",
