@@ -1,20 +1,18 @@
 import run from "ember-metal/run_loop";
-
 import EmberView from "ember-views/views/view";
+import { compile } from "ember-template-compiler";
 
 var parentView, childView;
 
 QUnit.module('tests/views/view/child_views_tests.js', {
   setup() {
-    parentView = EmberView.create({
-      render(buffer) {
-        buffer.push('Em');
-        this.appendChild(childView);
-      }
+    childView = EmberView.create({
+      template: compile('ber')
     });
 
-    childView = EmberView.create({
-      template() { return 'ber'; }
+    parentView = EmberView.create({
+      template: compile('Em{{view view.childView}}'),
+      childView: childView
     });
   },
 
@@ -30,7 +28,7 @@ QUnit.module('tests/views/view/child_views_tests.js', {
 // parent element
 
 // no parent element, no buffer, no element
-QUnit.skip("should render an inserted child view when the child is inserted before a DOM element is created", function() {
+QUnit.test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
   run(function() {
     parentView.append();
   });
@@ -38,42 +36,35 @@ QUnit.skip("should render an inserted child view when the child is inserted befo
   equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
 });
 
-QUnit.skip("should not duplicate childViews when rerendering", function() {
+QUnit.test("should not duplicate childViews when rerendering", function() {
 
-  var Inner = EmberView.extend({
-    template() { return ''; }
+  var InnerView = EmberView.extend();
+  var InnerView2 = EmberView.extend();
+
+  var MiddleView = EmberView.extend({
+    innerViewClass: InnerView,
+    innerView2Class: InnerView2,
+    template: compile('{{view view.innerViewClass}}{{view view.innerView2Class}}')
   });
 
-  var Inner2 = EmberView.extend({
-    template() { return ''; }
-  });
-
-  var Middle = EmberView.extend({
-    render(buffer) {
-      this.appendChild(Inner);
-      this.appendChild(Inner2);
-    }
-  });
-
-  var outer = EmberView.create({
-    render(buffer) {
-      this.middle = this.appendChild(Middle);
-    }
+  var outerView = EmberView.create({
+    middleViewClass: MiddleView,
+    template: compile('{{view view.middleViewClass viewName="middle"}}')
   });
 
   run(function() {
-    outer.append();
+    outerView.append();
   });
 
-  equal(outer.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
+  equal(outerView.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
 
   run(function() {
-    outer.middle.rerender();
+    outerView.middle.rerender();
   });
 
-  equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
+  equal(outerView.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
 
   run(function() {
-    outer.destroy();
+    outerView.destroy();
   });
 });
