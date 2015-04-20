@@ -759,6 +759,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
   // This method must be moved to the application instance object
   willDestroy() {
+    this._super(...arguments);
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
