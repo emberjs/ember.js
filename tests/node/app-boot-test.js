@@ -84,7 +84,7 @@ function registerTemplates(app, templates) {
 
 function renderToElement(instance) {
   var element;
-  Ember.run(function() {
+  run(function() {
     element = instance.view.renderToElement();
   });
 
@@ -121,7 +121,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   QUnit.test("App is created without throwing an exception", function() {
     var app;
 
-    Ember.run(function() {
+    run(function() {
       app = createApplication();
       registerDOMHelper(app);
 
@@ -216,7 +216,6 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     QUnit.stop();
     QUnit.stop();
 
-    var run = Ember.run;
     var app;
 
     run(function() {
