@@ -52,7 +52,7 @@ if (Ember.FEATURES.isEnabled('ember-application-visit')) {
     });
   });
 
-  QUnit.skip("visit() returns a promise that resolves when the view has rendered", function(assert) {
+  QUnit.test("visit() returns a promise that resolves when the view has rendered", function(assert) {
     QUnit.expect(3);
     QUnit.stop();
 
