@@ -29,7 +29,7 @@ global.EmberENV = {
   FEATURES: features
 };
 
-var Ember, compile, domHelper, run;
+var Ember, compile, domHelper, run, DOMHelper, app;
 
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
@@ -84,17 +84,18 @@ function registerTemplates(app, templates) {
 
 function renderToElement(instance) {
   var element;
-  Ember.run(function() {
+  run(function() {
     element = instance.view.renderToElement();
   });
 
   return element;
 }
 
-function assertHTMLMatches(actualElement, expectedHTML) {
+function assertHTMLMatches(assert, actualElement, expectedHTML) {
   var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
   var serialized = serializer.serialize(actualElement);
-  ok(serialized.match(expectedHTML), serialized + " matches " + expectedHTML);
+
+  assert.ok(serialized.match(expectedHTML), serialized + " matches " + expectedHTML);
 }
 
 
@@ -118,20 +119,18 @@ QUnit.module("App boot", {
 });
 
 if (canUseInstanceInitializers && canUseApplicationVisit) {
-  QUnit.test("App is created without throwing an exception", function() {
-    var app;
-
-    Ember.run(function() {
+  QUnit.test("App is created without throwing an exception", function(assert) {
+    run(function() {
       app = createApplication();
       registerDOMHelper(app);
 
       app.visit('/');
     });
 
-    QUnit.ok(app);
+    assert.ok(app);
   });
 
-  QUnit.test("It is possible to render a view in Node", function() {
+  QUnit.test("It is possible to render a view in Node", function(assert) {
     var View = Ember.View.extend({
       renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
       template: compile("<h1>Hello</h1>")
@@ -144,10 +143,10 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     run(view, view.createElement);
 
     var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    ok(serializer.serialize(view.element).match(/<h1>Hello<\/h1>/));
+    assert.ok(serializer.serialize(view.element).match(/<h1>Hello<\/h1>/));
   });
 
-  QUnit.test("It is possible to render a view with curlies in Node", function() {
+  QUnit.test("It is possible to render a view with curlies in Node", function(assert) {
     var View = Ember.Component.extend({
       renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{location}}</h1>"),
@@ -161,10 +160,11 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     run(view, view.createElement);
 
     var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1>/));
+
+    assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function() {
+  QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function(assert) {
     var View = Ember.Component.extend({
       renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
@@ -182,14 +182,11 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     run(view, view.createElement);
 
     var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1> <div><div id="(.*)" class="ember-view"><p>The files are \*inside\* the computer\?\!<\/p><\/div><\/div>/));
+
+    assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1> <div><div id="(.*)" class="ember-view"><p>The files are \*inside\* the computer\?\!<\/p><\/div><\/div>/));
   });
 
-  QUnit.test("It is possible to render a view with {{link-to}} in Node", function() {
-    QUnit.stop();
-
-    var app;
-
+  QUnit.test("It is possible to render a view with {{link-to}} in Node", function(assert) {
     run(function() {
       app = createApplication();
 
@@ -203,22 +200,14 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       });
     });
 
-    app.visit('/').then(function(instance) {
-      QUnit.start();
-
+    return app.visit('/').then(function(instance) {
       var element = renderToElement(instance);
 
-      assertHTMLMatches(element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" class="ember-view" href="\/photos">Go to photos<\/a><\/h1><\/div>$/);
+      assertHTMLMatches(assert, element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" class="ember-view" href="\/photos">Go to photos<\/a><\/h1><\/div>$/);
     });
   });
 
-  QUnit.test("It is possible to render outlets in Node", function() {
-    QUnit.stop();
-    QUnit.stop();
-
-    var run = Ember.run;
-    var app;
-
+  QUnit.test("It is possible to render outlets in Node", function(assert) {
     run(function() {
       app = createApplication();
 
@@ -234,20 +223,19 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       });
     });
 
-    app.visit('/').then(function(instance) {
-      QUnit.start();
-
+    var visits = [];
+    visits.push(app.visit('/').then(function(instance) {
       var element = renderToElement(instance);
 
-      assertHTMLMatches(element.firstChild, /<div id="ember(.*)" class="ember-view"><p><span>index<\/span><\/p><\/div>/);
-    });
+      assertHTMLMatches(assert, element.firstChild, /<div id="ember(.*)" class="ember-view"><p><span>index<\/span><\/p><\/div>/);
+    }));
 
-    app.visit('/photos').then(function(instance) {
-      QUnit.start();
-
+    visits.push(app.visit('/photos').then(function(instance) {
       var element = renderToElement(instance);
 
-      assertHTMLMatches(element.firstChild, /<div id="ember(.*)" class="ember-view"><p><em>photos<\/em><\/p><\/div>/);
-    });
+      assertHTMLMatches(assert, element.firstChild, /<div id="ember(.*)" class="ember-view"><p><em>photos<\/em><\/p><\/div>/);
+    }));
+
+    return Ember.RSVP.Promise.all(visits);
   });
 }
