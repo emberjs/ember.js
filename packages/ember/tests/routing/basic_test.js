@@ -2310,7 +2310,7 @@ QUnit.test("Application template does not duplicate when re-rendered", function(
   equal(Ember.$('h3:contains(I Render Once)').size(), 1);
 });
 
-QUnit.skip("Child routes should render inside the application template if the application template causes a redirect", function() {
+QUnit.test("Child routes should render inside the application template if the application template causes a redirect", function() {
   Ember.TEMPLATES.application = compile("<h3>App</h3> {{outlet}}");
   Ember.TEMPLATES.posts = compile("posts");
 

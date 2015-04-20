@@ -67,7 +67,7 @@ function boot(callback) {
   });
 }
 
-QUnit.skip("The helper becomes the body of the component", function() {
+QUnit.test("The helper becomes the body of the component", function() {
   boot();
   equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), "hello world", "The component is composed correctly");
 });

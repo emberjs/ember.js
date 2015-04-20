@@ -31,11 +31,11 @@ export default {
       toRender.template = topLevelViewTemplate;
     }
 
-    return { outletState: selectedOutletState };
+    return { outletState: selectedOutletState, hasParentOutlet: env.hasParentOutlet };
   },
 
   childEnv(state) {
-    return { outletState: state.outletState && state.outletState.outlets };
+    return { outletState: state.outletState && state.outletState.outlets, hasParentOutlet: true };
   },
 
   isStable(lastState, nextState) {
@@ -55,6 +55,10 @@ export default {
     var LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
 
     var ViewClass = outletState.render.ViewClass;
+
+    if (!state.hasParentOutlet && !ViewClass) {
+      ViewClass = env.container.lookup('view:toplevel');
+    }
 
     var options = {
       component: ViewClass,
