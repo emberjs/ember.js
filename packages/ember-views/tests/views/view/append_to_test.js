@@ -60,7 +60,7 @@ QUnit.test("raises an assert when a target does not exist in the DOM", function(
   });
 });
 
-QUnit.skip("append calls willInsertElement and didInsertElement callbacks", function() {
+QUnit.test("append calls willInsertElement and didInsertElement callbacks", function() {
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
@@ -72,13 +72,12 @@ QUnit.skip("append calls willInsertElement and didInsertElement callbacks", func
     didInsertElement() {
       didInsertElementCalled = true;
     },
-    render(buffer) {
-      this.appendChild(EmberView.create({
-        willInsertElement() {
-          willInsertElementCalledInChild = true;
-        }
-      }));
-    }
+    childView: EmberView.create({
+      willInsertElement() {
+        willInsertElementCalledInChild = true;
+      }
+    }),
+    template: compile("{{view view.childView}}")
   });
 
   view = ViewWithCallback.create();

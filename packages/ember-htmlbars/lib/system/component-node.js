@@ -96,7 +96,9 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
   }
 
   if (component) {
-    env.renderer.didCreateElement(component, this.expectElement && this.renderNode.firstNode);
+    var element = this.expectElement && this.renderNode.firstNode;
+    env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
+    env.renderer.willInsertElement(component, element);
     env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
   }
 };
