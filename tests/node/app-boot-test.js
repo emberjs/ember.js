@@ -186,8 +186,6 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   });
 
   QUnit.test("It is possible to render a view with {{link-to}} in Node", function() {
-    QUnit.stop();
-
     var app;
 
     run(function() {
@@ -203,9 +201,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       });
     });
 
-    app.visit('/').then(function(instance) {
-      QUnit.start();
-
+    return app.visit('/').then(function(instance) {
       var element = renderToElement(instance);
 
       assertHTMLMatches(element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" class="ember-view" href="\/photos">Go to photos<\/a><\/h1><\/div>$/);
@@ -213,9 +209,6 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   });
 
   QUnit.test("It is possible to render outlets in Node", function() {
-    QUnit.stop();
-    QUnit.stop();
-
     var app;
 
     run(function() {
@@ -233,20 +226,19 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       });
     });
 
-    app.visit('/').then(function(instance) {
-      QUnit.start();
-
+    var visits = [];
+    visits.push(app.visit('/').then(function(instance) {
       var element = renderToElement(instance);
 
       assertHTMLMatches(element.firstChild, /<div id="ember(.*)" class="ember-view"><p><span>index<\/span><\/p><\/div>/);
-    });
+    }));
 
-    app.visit('/photos').then(function(instance) {
-      QUnit.start();
-
+    visits.push(app.visit('/photos').then(function(instance) {
       var element = renderToElement(instance);
 
       assertHTMLMatches(element.firstChild, /<div id="ember(.*)" class="ember-view"><p><em>photos<\/em><\/p><\/div>/);
-    });
+    }));
+
+    return Ember.RSVP.Promise.all(visits);
   });
 }
