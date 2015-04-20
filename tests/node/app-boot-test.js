@@ -109,6 +109,8 @@ QUnit.module("App boot", {
   },
 
   teardown: function() {
+    Ember.run(app, 'destroy');
+
     delete global.Ember;
 
     // clear the previously cached version of this module
