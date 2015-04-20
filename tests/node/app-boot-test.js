@@ -29,7 +29,7 @@ global.EmberENV = {
   FEATURES: features
 };
 
-var Ember, compile, domHelper, run;
+var Ember, compile, domHelper, run, DOMHelper;
 
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
