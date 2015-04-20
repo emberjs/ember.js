@@ -29,7 +29,7 @@ global.EmberENV = {
   FEATURES: features
 };
 
-var Ember, compile, domHelper, run, DOMHelper;
+var Ember, compile, domHelper, run, DOMHelper, app;
 
 var SimpleDOM = require('simple-dom');
 var URL = require('url');
@@ -119,8 +119,6 @@ QUnit.module("App boot", {
 
 if (canUseInstanceInitializers && canUseApplicationVisit) {
   QUnit.test("App is created without throwing an exception", function() {
-    var app;
-
     run(function() {
       app = createApplication();
       registerDOMHelper(app);
@@ -186,8 +184,6 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   });
 
   QUnit.test("It is possible to render a view with {{link-to}} in Node", function() {
-    var app;
-
     run(function() {
       app = createApplication();
 
@@ -209,8 +205,6 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   });
 
   QUnit.test("It is possible to render outlets in Node", function() {
-    var app;
-
     run(function() {
       app = createApplication();
 
