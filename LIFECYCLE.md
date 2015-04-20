@@ -72,7 +72,7 @@ JavaScript value. In Ember, references are identical (`===`) across
 renders, and are evaluated when Ember needs to invoke user code such as
 helpers.
 
-The references used in Ember are similar to [frp-property][Properties]
+The references used in Ember are similar to [Properties][frp-property]
 in functional reactive programming, but only notify downstream consumers
 that a new value is available, and do not push new values until they are
 requested. This facilitates reflection of changes onto the DOM
