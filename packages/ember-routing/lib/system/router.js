@@ -214,7 +214,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
     if (!this._toplevelView) {
       var OutletView = this.container.lookupFactory('view:-outlet');
-      this._toplevelView = OutletView.create({ _isTopLevel: true });
+      this._toplevelView = OutletView.create();
       var instance = this.container.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
     }
