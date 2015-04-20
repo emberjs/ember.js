@@ -99,7 +99,7 @@ QUnit.test("should by default target the view's controller", function() {
   equal(registeredTarget, controller, "The controller was registered as the target");
 });
 
-QUnit.skip("Inside a yield, the target points at the original target", function() {
+QUnit.test("Inside a yield, the target points at the original target", function() {
   var watted = false;
 
   var component = EmberComponent.extend({

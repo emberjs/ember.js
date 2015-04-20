@@ -367,7 +367,7 @@ QUnit.test("The {{link-to}} helper supports multiple current-when routes", funct
   equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, "The link is not active since current-when does not contain the active route");
 });
 
-QUnit.skip("The {{link-to}} helper defaults to bubbling", function() {
+QUnit.test("The {{link-to}} helper defaults to bubbling", function() {
   Ember.TEMPLATES.about = compile("<div {{action 'hide'}}>{{#link-to 'about.contact' id='about-contact'}}About{{/link-to}}</div>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = compile("<h1 id='contact'>Contact</h1>");
 

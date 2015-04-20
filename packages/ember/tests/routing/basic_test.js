@@ -1126,8 +1126,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
   });
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Events are triggered on the controller if a matching action name is implemented", function() {
+QUnit.asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1171,8 +1170,7 @@ QUnit.skip("Events are triggered on the controller if a matching action name is 
   action.handler(event);
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Events are triggered on the current state when defined in `actions` object", function() {
+QUnit.asyncTest("Events are triggered on the current state when defined in `actions` object", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1206,8 +1204,7 @@ QUnit.skip("Events are triggered on the current state when defined in `actions` 
   action.handler(event);
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
+QUnit.asyncTest("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -1245,8 +1242,7 @@ QUnit.skip("Events defined in `actions` object are triggered on the current stat
   action.handler(event);
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
+QUnit.asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1281,8 +1277,7 @@ QUnit.skip("Events are triggered on the current state when defined in `events` o
   action.handler(event);
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
+QUnit.asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -1360,8 +1355,7 @@ QUnit.test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
+QUnit.asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1404,8 +1398,7 @@ QUnit.skip("Actions are not triggered on the controller if a matching action nam
   action.handler(event);
 });
 
-// Revert QUnit.skip to QUnit.asyncTest
-QUnit.skip("actions can be triggered with multiple arguments", function() {
+QUnit.asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });

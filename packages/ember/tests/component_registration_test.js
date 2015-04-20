@@ -283,7 +283,7 @@ QUnit.skip("properties of a component  without a template should not collide wit
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-QUnit.skip("Components trigger actions in the parents context when called from within a block", function() {
+QUnit.test("Components trigger actions in the parents context when called from within a block", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
 
   boot(function() {
@@ -303,7 +303,7 @@ QUnit.skip("Components trigger actions in the parents context when called from w
   });
 });
 
-QUnit.skip("Components trigger actions in the components context when called from within its template", function() {
+QUnit.test("Components trigger actions in the components context when called from within its template", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
   Ember.TEMPLATES['components/my-component'] = compile("<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>");
 
