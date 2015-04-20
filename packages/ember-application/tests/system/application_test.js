@@ -86,7 +86,6 @@ QUnit.test("you cannot make two default applications without a rootElement error
 
 QUnit.test("acts like a namespace", function() {
   var lookup = Ember.lookup = {};
-  var app;
 
   run(function() {
     app = lookup.TestApp = Application.create({ rootElement: '#two', router: false });
