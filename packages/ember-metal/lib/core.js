@@ -94,11 +94,14 @@ if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
   @static
   @since 1.1.0
 */
+Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
 
-Ember.FEATURES = Ember.ENV.FEATURES;
-
-if (!Ember.FEATURES) {
-  Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
+if (Ember.ENV.FEATURES) {
+  for (var feature in Ember.ENV.FEATURES) {
+    if (Ember.ENV.FEATURES.hasOwnProperty(feature)) {
+      Ember.FEATURES[feature] = Ember.ENV.FEATURES[feature];
+    }
+  }
 }
 
 /**
