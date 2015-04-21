@@ -170,8 +170,25 @@ Renderer.prototype.willRender = function (view) {
 
 Renderer.prototype.remove = function (view, shouldDestroy) {
   this.willDestroyElement(view);
-  view._transitionTo('destroying', false);
+
+  view._willRemoveElement = true;
+  run.schedule('render', this, this.renderElementRemoval, view);
 };
+
+Renderer.prototype.renderElementRemoval =
+  function Renderer_renderElementRemoval(view) {
+    // Use the _willRemoveElement flag to avoid mulitple removal attempts in
+    // case many have been scheduled. This should be more performant than using
+    // `scheduleOnce`.
+    if (view._willRemoveElement) {
+      view._willRemoveElement = false;
+
+      if (view.lastResult) {
+        view.renderNode.clear();
+      }
+      this.didDestroyElement(view);
+    }
+  };
 
 Renderer.prototype.willRemoveElement = function (view) {};
 
@@ -183,12 +200,33 @@ Renderer.prototype.willDestroyElement = function (view) {
     view.trigger('willDestroyElement');
     view.trigger('willClearRender');
   }
+
+  view._transitionTo('destroying', false);
+
+  var childViews = view.childViews;
+  if (childViews) {
+    for (var i = 0; i < childViews.length; i++) {
+      this.willDestroyElement(childViews[i]);
+    }
+  }
 };
 
 Renderer.prototype.didDestroyElement = function (view) {
   view.element = null;
-  if (view._transitionTo) {
+
+  // Views that are being destroyed should never go back to the preRender state.
+  // However if we're just destroying an element on a view (as is the case when
+  // using View#remove) then the view should go to a preRender state so that
+  // it can be rendered again later.
+  if (view._state !== 'destroying') {
     view._transitionTo('preRender');
+  }
+
+  var childViews = view.childViews;
+  if (childViews) {
+    for (var i = 0; i < childViews.length; i++) {
+      this.didDestroyElement(childViews[i]);
+    }
   }
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 

@@ -134,7 +134,7 @@ QUnit.test("does nothing if not in parentView", function() {
 });
 
 
-QUnit.skip("the DOM element is gone after doing append and remove in two separate runloops", function() {
+QUnit.test("the DOM element is gone after doing append and remove in two separate runloops", function() {
   view = View.create();
   run(function() {
     view.append();
