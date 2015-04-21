@@ -53,6 +53,59 @@ QUnit.test("should call the function of the associated layout", function() {
   equal(layoutCalled, 1, "layout is called when layout is present");
 });
 
+QUnit.test("changing layoutName after setting layoutName continous to work", function() {
+  var layoutCalled = 0;
+  var otherLayoutCalled = 0;
+
+  registry.register('template:layout', function() { layoutCalled++; });
+  registry.register('template:other-layout', function() { otherLayoutCalled++; });
+
+  view = EmberView.create({
+    container: container,
+    layoutName: 'layout'
+  });
+
+  run(view, 'createElement');
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 0, "otherLayout is not yet called");
+
+  run(() => {
+    view.set('layoutName', 'other-layout');
+    view.rerender();
+  });
+
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 1, "otherLayoutis called when layoutName changes, and explicit rerender occurs");
+});
+
+QUnit.test("changing layoutName after setting layout CP continous to work", function() {
+  var layoutCalled = 0;
+  var otherLayoutCalled = 0;
+  function otherLayout() {
+    otherLayoutCalled++;
+  }
+
+  registry.register('template:other-layout', otherLayout);
+
+  view = EmberView.create({
+    container: container,
+    layout() {
+      layoutCalled++;
+    }
+  });
+
+  run(view, 'createElement');
+  run(() => {
+    view.set('layoutName', 'other-layout');
+    view.rerender();
+  });
+
+  equal(view.get('layout'), otherLayout);
+
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 1, "otherLayoutis called when layoutName changes, and explicit rerender occurs");
+});
+
 QUnit.test("should call the function of the associated template with itself as the context", function() {
   registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
