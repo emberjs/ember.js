@@ -559,7 +559,7 @@ QUnit.test("should have correct argument types", function() {
   expectDeprecationInHTMLBars();
 
   helper('getType', function(value) {
-    return typeof value;
+    return value === null ? 'null' : typeof value;
   });
 
   view = EmberView.create({
@@ -569,5 +569,5 @@ QUnit.test("should have correct argument types", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
+  equal(view.$().text(), 'null, undefined, string, number, object', "helper output is correct");
 });

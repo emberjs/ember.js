@@ -217,7 +217,9 @@ QUnit.test("shouldn't treat raw numbers as bound paths", function() {
 
 QUnit.test("should have correct argument types", function() {
   registry.register('helper:get-type', makeBoundHelper(function(params) {
-    return typeof params[0];
+    var value = params[0];
+
+    return value === null ? 'null' : typeof value;
   }));
 
   view = EmberView.create({
@@ -228,5 +230,5 @@ QUnit.test("should have correct argument types", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
+  equal(view.$().text(), 'null, undefined, string, number, object', "helper output is correct");
 });
