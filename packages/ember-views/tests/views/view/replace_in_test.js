@@ -45,18 +45,26 @@ QUnit.test("raises an assert when a target does not exist in the DOM", function(
 
 
 QUnit.test("should remove previous elements when calling replaceIn()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"><p>Foo</p></div>');
-  var viewElem = jQuery('#menu').children();
+  jQuery("#qunit-fixture").html(`
+    <div id="menu">
+      <p id="child"></p>
+    </div>
+  `);
 
   view = View.create();
 
-  ok(viewElem.length === 1, "should have one element");
+  var originalChild = jQuery('#child');
+  ok(originalChild.length === 1, "precond - target starts with child element");
 
   run(function() {
     view.replaceIn('#menu');
   });
 
-  ok(viewElem.length === 1, "should have one element");
+  originalChild = jQuery('#child');
+  ok(originalChild.length === 0, "target's original child was removed");
+
+  var newChild = jQuery('#menu').children();
+  ok(newChild.length === 1, "target has new child element");
 
 });
 
