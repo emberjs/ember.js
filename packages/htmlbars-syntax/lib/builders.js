@@ -133,6 +133,14 @@ export function buildNumber(value) {
   };
 }
 
+export function buildNull() {
+  return {
+    type: "NullLiteral",
+    value: null,
+    original: null
+  };
+}
+
 // Miscellaneous
 
 export function buildHash(pairs) {
@@ -173,6 +181,7 @@ export default {
   string: buildString,
   boolean: buildBoolean,
   number: buildNumber,
+  null: buildNull,
   concat: buildConcat,
   hash: buildHash,
   pair: buildPair,
