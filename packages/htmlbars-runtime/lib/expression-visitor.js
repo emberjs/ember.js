@@ -36,7 +36,7 @@ var base = {
 
     // Primitive literals are unambiguously non-array representations of
     // themselves.
-    if (typeof node !== 'object') {
+    if (typeof node !== 'object' || node === null) {
       ret.value = node;
       return ret;
     }

@@ -476,3 +476,11 @@ test("an HTML comment", function() {
     b.text(" after")
   ]));
 });
+
+test("allow {{null}} to be passed", function() {
+  var ast = preprocess(parse("{{null}}"));
+
+  astEqual(ast, b.program([
+    b.mustache(b.null())
+  ]));
+});
