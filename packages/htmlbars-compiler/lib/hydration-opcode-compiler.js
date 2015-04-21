@@ -272,6 +272,10 @@ HydrationOpcodeCompiler.prototype.NumberLiteral = function(node) {
   this.opcode('pushLiteral', node.value);
 };
 
+HydrationOpcodeCompiler.prototype.UndefinedLiteral = function(node) {
+  this.opcode('pushLiteral', node.value);
+};
+
 HydrationOpcodeCompiler.prototype.NullLiteral = function(node) {
   this.opcode('pushLiteral', node.value);
 };
