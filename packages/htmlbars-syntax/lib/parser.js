@@ -4,12 +4,7 @@ import EntityParser from "../simple-html-tokenizer/entity-parser";
 import fullCharRefs from "../simple-html-tokenizer/char-refs/full";
 import nodeHandlers from "./node-handlers";
 import tokenHandlers from "./token-handlers";
-
-// this should be:
-// `import * from "../htmlbars-syntax";
-//
-// But this version of the transpiler does not support it properly
-module syntax from "../htmlbars-syntax";
+import * as syntax from "../htmlbars-syntax";
 
 var splitLines;
 // IE8 throws away blank pieces when splitting strings with a regex

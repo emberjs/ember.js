@@ -4,7 +4,7 @@ var mergeTrees = require('broccoli-merge-trees');
 var moveFile = require('broccoli-file-mover');
 var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
-var transpileES6 = require('broccoli-es6-module-transpiler');
+var transpileES6 = require('./build-support/transpile-es6');
 var jsHint = require('broccoli-jshint');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
@@ -123,7 +123,9 @@ for (var packageName in packages.dependencies) {
   trees.push(pickedEs6Lib);
 
   // AMD lib
-  var transpiledAmdLib = transpileES6(libTree, { moduleName: true, type: 'amd' });
+  var transpiledAmdLib = transpileES6(libTree, 'transpiledAmdLib', {
+    format: 'amd',
+  });
   var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/' + packageName + '.amd.js'
@@ -131,7 +133,9 @@ for (var packageName in packages.dependencies) {
   trees.push(concatenatedAmdLib);
 
   // CJS lib
-  var transpiledCjsLib = transpileES6(libTree, { type: 'cjs' });
+  var transpiledCjsLib = transpileES6(libTree, 'transpiledCjsLib', {
+    format: 'cjs',
+  });
   var pickedCjsLib = new Funnel(transpiledCjsLib, {
     destDir: '/cjs/'
   });
@@ -150,14 +154,13 @@ for (var packageName in packages.dependencies) {
     exclude: [/htmlbars-(syntax|util)\/handlebars/],
     destDir: packageName+'-tests/'
   });
-  jsHintLibTree = removeFile(jsHintLibTree, {
-    srcFile: 'htmlbars-runtime.js' // Uses ES6 `module` syntax. Breaks jsHint
-  });
   testTrees.push(jsHint(jsHintLibTree, { destFile: '/' + packageName + '-tests/jshint-lib.js' }));
   testTrees.push(jsHint(testTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
 
   // AMD tests
-  var transpiledAmdTests = transpileES6(mergeTrees(testTrees), { moduleName: true, type: 'amd' });
+  var transpiledAmdTests = transpileES6(mergeTrees(testTrees), 'transpiledAmdTests', {
+    format: 'amd',
+  });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
     inputFiles: ['**/*.js'],
     outputFile: '/tests/' + packageName + '-tests.amd.js'
@@ -165,7 +168,9 @@ for (var packageName in packages.dependencies) {
   trees.push(concatenatedAmdTests);
 
   // CJS tests
-  var transpiledCjsTests = transpileES6(mergeTrees(testTrees), { type: 'cjs' });
+  var transpiledCjsTests = transpileES6(mergeTrees(testTrees), 'transpiledCjsTests', {
+    format: 'cjs',
+  });
   var movedCjsTests = new Funnel(transpiledCjsTests, {
     srcDir: packageName+'-tests/',
     destDir: '/cjs/'+packageName+"-tests/"
