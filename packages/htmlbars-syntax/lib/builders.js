@@ -141,6 +141,14 @@ export function buildNull() {
   };
 }
 
+export function buildUndefined() {
+  return {
+    type: "UndefinedLiteral",
+    value: undefined,
+    original: undefined
+  };
+}
+
 // Miscellaneous
 
 export function buildHash(pairs) {
@@ -181,6 +189,7 @@ export default {
   string: buildString,
   boolean: buildBoolean,
   number: buildNumber,
+  undefined: buildUndefined,
   null: buildNull,
   concat: buildConcat,
   hash: buildHash,

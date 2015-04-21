@@ -477,10 +477,34 @@ test("an HTML comment", function() {
   ]));
 });
 
-test("allow {{null}} to be passed", function() {
+test("allow {{null}} to be passed as helper name", function() {
   var ast = preprocess(parse("{{null}}"));
 
   astEqual(ast, b.program([
     b.mustache(b.null())
+  ]));
+});
+
+test("allow {{null}} to be passed as a param", function() {
+  var ast = preprocess(parse("{{foo null}}"));
+
+  astEqual(ast, b.program([
+    b.mustache(b.path('foo'), [b.null()])
+  ]));
+});
+
+test("allow {{undefined}} to be passed as helper name", function() {
+  var ast = preprocess(parse("{{undefined}}"));
+
+  astEqual(ast, b.program([
+    b.mustache(b.undefined())
+  ]));
+});
+
+test("allow {{undefined}} to be passed as a param", function() {
+  var ast = preprocess(parse("{{foo undefined}}"));
+
+  astEqual(ast, b.program([
+    b.mustache(b.path('foo'), [b.undefined()])
   ]));
 });
