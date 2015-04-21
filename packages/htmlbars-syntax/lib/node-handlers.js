@@ -108,7 +108,8 @@ var nodeHandlers = {
 
   StringLiteral: function() {},
   BooleanLiteral: function() {},
-  NumberLiteral: function() {}
+  NumberLiteral: function() {},
+  NullLiteral: function() {}
 };
 
 function switchToHandlebars(processor) {
