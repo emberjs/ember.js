@@ -109,6 +109,7 @@ var nodeHandlers = {
   StringLiteral: function() {},
   BooleanLiteral: function() {},
   NumberLiteral: function() {},
+  UndefinedLiteral: function() {},
   NullLiteral: function() {}
 };
 
