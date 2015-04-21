@@ -23,7 +23,7 @@ QUnit.module("views/view/view_lifecycle_test - pre-render", {
   }
 });
 
-QUnit.skip("should create and append a DOM element after bindings have synced", function() {
+QUnit.test("should create and append a DOM element after bindings have synced", function() {
   var ViewTest;
 
   lookup.ViewTest = ViewTest = {};
@@ -35,10 +35,7 @@ QUnit.skip("should create and append a DOM element after bindings have synced", 
 
     view = EmberView.createWithMixins({
       fooBinding: 'ViewTest.fakeController.fakeThing',
-
-      render(buffer) {
-        buffer.push(this.get('foo'));
-      }
+      template: compile("{{view.foo}}")
     });
 
     ok(!view.get('element'), "precond - does not have an element before appending");

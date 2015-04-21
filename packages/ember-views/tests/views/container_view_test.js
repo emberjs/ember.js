@@ -739,3 +739,61 @@ QUnit.test('ContainerView supports changing children with style attribute', func
     container.pushObject(view);
   });
 });
+
+QUnit.test("should render child views with a different tagName", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  container = ContainerView.create({
+    childViews: ["child"],
+
+    child: View.create({
+      tagName: 'aside'
+    })
+  });
+
+  run(function() {
+    container.createElement();
+  });
+
+  equal(container.$('aside').length, 1);
+});
+
+QUnit.test("should allow hX tags as tagName", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  container = ContainerView.create({
+    childViews: ["child"],
+
+    child: View.create({
+      tagName: 'h3'
+    })
+  });
+
+  run(function() {
+    container.createElement();
+  });
+
+  ok(container.$('h3').length, "does not render the h3 tag correctly");
+});
+
+QUnit.skip("renders contained view with omitted start tag and parent view context", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  view = ContainerView.createWithMixins({
+    tagName: 'table',
+    childViews: ["row"],
+    row: View.createWithMixins({
+      tagName: 'tr'
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+});

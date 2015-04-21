@@ -6,9 +6,6 @@ var svgNamespace = "http://www.w3.org/2000/svg";
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
 var trim = jQuery.trim;
 
-// .......................................................
-//  render()
-//
 QUnit.module("RenderBuffer");
 
 var domHelper = new DOMHelper();
