@@ -1,7 +1,5 @@
 import EmberError from "ember-metal/error";
 
-function K() { return this; }
-
 /**
 @module ember
 @submodule ember-views
@@ -33,6 +31,6 @@ export default {
     return view;
   },
 
-  rerender: K,
-  invokeObserver: K
+  rerender() {},
+  invokeObserver() { }
 };

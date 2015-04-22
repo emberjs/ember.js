@@ -5,6 +5,4 @@ import create from 'ember-metal/platform/create';
 @module ember
 @submodule ember-views
 */
-var preRender = create(_default);
-
-export default preRender;
+export default create(_default);
