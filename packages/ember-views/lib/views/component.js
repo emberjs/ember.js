@@ -145,19 +145,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @deprecated
   @property template
   */
-  template: computed({
-    get: function() {
+  template: computed('templateName', {
+    get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
 
       Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-
       return template || get(this, 'defaultTemplate');
     },
-    set: function(key, value) {
+    set(key, value) {
       return value;
     }
-  }).property('templateName'),
+  }),
 
   /**
   Specifying a components `templateName` is deprecated without also
@@ -199,10 +198,10 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @type Ember.Controller
     @default null
   */
-  targetObject: computed(function(key) {
+  targetObject: computed('_parentView', function(key) {
     var parentView = this._parentView;
     return parentView ? get(parentView, 'controller') : null;
-  }).property('_parentView'),
+  }),
 
   /**
     Triggers a named action on the controller context where the component is used if
