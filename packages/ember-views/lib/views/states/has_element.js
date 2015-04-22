@@ -31,16 +31,10 @@ merge(hasElement, {
   // deferred to allow bindings to synchronize.
   rerender(view) {
     if (view._root._morph && !view._elementInserted) {
-      throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+      throw new EmberError('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
     }
-    // TODO: should be scheduled with renderer
-    run.scheduleOnce('render', function () {
-      if (view.isDestroying) {
-        return;
-      }
 
-      view._renderer.renderTree(view, view._parentView);
-    });
+    run.scheduleOnce('render', view, '_rerender');
   },
 
   // once the view is already in the DOM, destroying it removes it
