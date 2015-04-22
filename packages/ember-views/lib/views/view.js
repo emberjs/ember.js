@@ -763,14 +763,20 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-  */
-  layout: computed('layoutName', function(key) {
-    var layoutName = get(this, 'layoutName');
-    var layout = this.templateForName(layoutName, 'layout');
+    */
+  layout: computed('layoutName', {
+    get(key) {
+      var layoutName = get(this, 'layoutName');
+      var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
+      Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
-    return layout || get(this, 'defaultLayout');
+      return layout || get(this, 'defaultLayout');
+    },
+
+    set(key, value) {
+      return value;
+    }
   }),
 
   _yield(context, options, morph) {
