@@ -86,7 +86,7 @@ QUnit.module("View#removeFromParent", {
   }
 });
 
-QUnit.skip("removes view from parent view", function() {
+QUnit.test("removes view from parent view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });

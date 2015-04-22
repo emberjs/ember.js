@@ -30,8 +30,6 @@ proto.cleanup = function() {
       view.ownerView.isDestroyingSubtree = true;
       if (view.parentView) { view.parentView.removeChild(view); }
     }
-
-    view.destroy();
   }
 
   var toDestroy = this.emberToDestroy;

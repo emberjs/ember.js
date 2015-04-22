@@ -1,6 +1,6 @@
-export default function willCleanupTree(env, morph) {
+export default function willCleanupTree(env, morph, destroySelf) {
   var view = morph.emberView;
-  if (view && view.parentView) {
+  if (destroySelf && view && view.parentView) {
     view.parentView.removeChild(view);
   }
 
