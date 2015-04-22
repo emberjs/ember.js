@@ -147,7 +147,7 @@ QUnit.test("the DOM element is gone after doing append and remove in two separat
   ok(viewElem.length === 0, "view's element doesn't exist in DOM");
 });
 
-QUnit.skip("the DOM element is gone after doing append and remove in a single runloop", function() {
+QUnit.test("the DOM element is gone after doing append and remove in a single runloop", function() {
   view = View.create();
   run(function() {
     view.append();

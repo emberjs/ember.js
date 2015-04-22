@@ -36,8 +36,12 @@ Renderer.prototype.prerenderTopLevelView =
 
 Renderer.prototype.renderTopLevelView =
   function Renderer_renderTopLevelView(view, renderNode) {
-    this.prerenderTopLevelView(view, renderNode);
-    this.dispatchLifecycleHooks(view.env);
+    // Check to see if insertion has been canceled
+    if (view._willInsert) {
+      view._willInsert = false;
+      this.prerenderTopLevelView(view, renderNode);
+      this.dispatchLifecycleHooks(view.env);
+    }
   };
 
 Renderer.prototype.revalidateTopLevelView =
@@ -81,6 +85,7 @@ Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
     var morph = this._dom.appendMorph(target);
     morph.ownerNode = morph;
+    view._willInsert = true;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
   };
 
@@ -88,6 +93,7 @@ Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
     var morph = this._dom.replaceContentWithMorph(target);
     morph.ownerNode = morph;
+    view._willInsert = true;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
   };
 
