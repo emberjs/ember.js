@@ -919,6 +919,19 @@ var View = CoreView.extend(
     return this.currentState.rerender(this);
   },
 
+  /*
+   * @private
+   *
+   * @method _rerender
+   */
+  _rerender() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    this._renderer.renderTree(this, this._parentView);
+  },
+
   /**
     Given a property name, returns a dasherized version of that
     property name if the property evaluates to a non-falsy value.
