@@ -1095,6 +1095,8 @@ function resolverFor(namespace) {
     }
   };
 
+  resolve.moduleBasedResolver = resolver.moduleBasedResolver;
+
   resolve.__resolver__ = resolver;
 
   return resolve;
