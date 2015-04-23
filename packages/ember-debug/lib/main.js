@@ -37,6 +37,7 @@ Ember Debug
   @param {Boolean|Function} test Must be truthy for the assertion to pass. If
     falsy, an exception will be thrown. If this is a function, it will be executed and
     its return value will be used as condition.
+  @return {Object} the result of the truthy value if the test condition succeeds.
 */
 Ember.assert = function(desc, test) {
   var throwAssertion;
@@ -50,6 +51,8 @@ Ember.assert = function(desc, test) {
   if (throwAssertion) {
     throw new EmberError("Assertion Failed: " + desc);
   }
+  
+  return throwAssertion;
 };
 
 
