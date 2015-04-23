@@ -1429,6 +1429,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     // integer passed in, model hook is called
     this.transitionTo('post', 1);
+
+    // model id passed in, model hook is called
+    // useful for forcing the hook to execute
+    thePost = store.find('post', 1);
+    this.transitionTo('post', thePost.id);
     ```
 
 
