@@ -186,7 +186,7 @@ QUnit.test("trigger rerender of parent and SimpleBoundView", function () {
   });
 });
 
-QUnit.skip("remove removes an element from the DOM", function() {
+QUnit.test("remove removes an element from the DOM", function() {
   willDestroyCalled = 0;
 
   view = View.create({
@@ -213,7 +213,7 @@ QUnit.skip("remove removes an element from the DOM", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-QUnit.skip("destroy more forcibly removes the view", function() {
+QUnit.test("destroy more forcibly removes the view", function() {
   willDestroyCalled = 0;
 
   view = View.create({
@@ -315,7 +315,7 @@ QUnit.module("EmberView - removing views in a view hierarchy", {
   }
 });
 
-QUnit.skip("remove removes child elements from the DOM", function() {
+QUnit.test("remove removes child elements from the DOM", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
   run(function() {
@@ -335,7 +335,7 @@ QUnit.skip("remove removes child elements from the DOM", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-QUnit.skip("destroy more forcibly removes child views", function() {
+QUnit.test("destroy more forcibly removes child views", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
   run(function() {

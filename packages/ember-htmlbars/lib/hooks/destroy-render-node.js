@@ -4,6 +4,10 @@
 */
 
 export default function destroyRenderNode(renderNode) {
+  if (renderNode.emberView) {
+    renderNode.emberView.destroy();
+  }
+
   var state = renderNode.state;
   if (!state) { return; }
 

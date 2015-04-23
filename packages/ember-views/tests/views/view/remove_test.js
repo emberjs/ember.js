@@ -86,7 +86,7 @@ QUnit.module("View#removeFromParent", {
   }
 });
 
-QUnit.skip("removes view from parent view", function() {
+QUnit.test("removes view from parent view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
@@ -134,7 +134,7 @@ QUnit.test("does nothing if not in parentView", function() {
 });
 
 
-QUnit.skip("the DOM element is gone after doing append and remove in two separate runloops", function() {
+QUnit.test("the DOM element is gone after doing append and remove in two separate runloops", function() {
   view = View.create();
   run(function() {
     view.append();
@@ -147,7 +147,7 @@ QUnit.skip("the DOM element is gone after doing append and remove in two separat
   ok(viewElem.length === 0, "view's element doesn't exist in DOM");
 });
 
-QUnit.skip("the DOM element is gone after doing append and remove in a single runloop", function() {
+QUnit.test("the DOM element is gone after doing append and remove in a single runloop", function() {
   view = View.create();
   run(function() {
     view.append();

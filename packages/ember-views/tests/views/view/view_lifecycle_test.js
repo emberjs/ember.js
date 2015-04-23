@@ -248,7 +248,7 @@ QUnit.skip("should replace DOM representation if rerender() is called after elem
   equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 
-QUnit.skip("should destroy DOM representation when destroyElement is called", function() {
+QUnit.test("should destroy DOM representation when destroyElement is called", function() {
   run(function() {
     view = EmberView.create({
       template: compile("Don't fear the reaper")
