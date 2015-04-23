@@ -168,10 +168,10 @@ export default Mixin.create(Enumerable, {
     @return this
   */
   '[]': computed({
-    get: function(key) {
+    get(key) {
       return this;
     },
-    set: function(key, value) {
+    set(key, value) {
       this.replace(0, get(this, 'length'), value);
       return this;
     }
