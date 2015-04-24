@@ -377,6 +377,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var App = Ember.Application.create();
 
     App.deferReadiness();
+    
     // Ember.$ is a reference to the jQuery object/function
     Ember.$.getJSON('/auth-token', function(token) {
       App.token = token;
@@ -457,9 +458,9 @@ var Application = Namespace.extend(DeferredMixin, {
     ```javascript
     var App = Ember.Application.create();
 
-    App.Person  = Ember.Object.extend();
-    App.Orange  = Ember.Object.extend();
-    App.Email   = Ember.Object.extend();
+    App.Person = Ember.Object.extend();
+    App.Orange = Ember.Object.extend();
+    App.Email = Ember.Object.extend();
     App.session = Ember.Object.create();
 
     App.register('model:user', App.Person, { singleton: false });
