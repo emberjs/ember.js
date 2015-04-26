@@ -193,7 +193,7 @@ QUnit.test("should update attribute bindings with micro syntax", function() {
   ok(!view.$().prop('disabled'), "updates disabled property when false");
 });
 
-QUnit.skip("should allow namespaced attributes in micro syntax", function () {
+QUnit.test("should allow namespaced attributes in micro syntax", function () {
   view = EmberView.create({
     attributeBindings: ['xlinkHref:xlink:href'],
     xlinkHref: '/foo.png'

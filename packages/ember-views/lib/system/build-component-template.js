@@ -102,10 +102,12 @@ function normalizeComponentAttributes(component, attrs) {
   if (attributeBindings) {
     for (i=0, l=attributeBindings.length; i<l; i++) {
       var attr = attributeBindings[i];
-      var microsyntax = attr.split(':');
+      var colonIndex = attr.indexOf(':');
 
-      if (microsyntax[1]) {
-        normalized[microsyntax[1]] = ['get', 'view.' + microsyntax[0]];
+      if (colonIndex !== -1) {
+        var attrProperty = attr.substring(0, colonIndex);
+        var attrName = attr.substring(colonIndex + 1);
+        normalized[attrName] = ['get', 'view.' + attrProperty];
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
