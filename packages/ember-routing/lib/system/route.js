@@ -2127,13 +2127,6 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   viewName = options && options.view || namePassed && name || route.viewName || name;
   ViewClass = route.container.lookupFactory(`view:${viewName}`);
   template = route.container.lookup(`template:${templateName}`);
-  if (!ViewClass && !template) {
-    Ember.assert(`Could not find "${name}" template or view.`, isDefaultRender);
-    if (LOG_VIEW_LOOKUPS) {
-      var fullName = `template:${name}`;
-      Ember.Logger.info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
-    }
-  }
 
   var parent;
   if (into && (parent = parentRoute(route)) && into === parentRoute(route).routeName) {
@@ -2148,6 +2141,27 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     ViewClass: ViewClass,
     template: template
   };
+
+  let Component;
+  if (isEnabled('ember-routing-routable-components')) {
+    let componentName = options && options.component || namePassed && name || route.componentName || name;
+    let componentLookup = route.container.lookup('component-lookup:main');
+    Component = componentLookup.lookupFactory(componentName);
+    let isGlimmerComponent = Component && Component.proto().isGlimmerComponent;
+    if (!template && !ViewClass && Component && isGlimmerComponent) {
+      renderOptions.Component = Component;
+      renderOptions.ViewClass = undefined;
+      renderOptions.attrs = { model: get(controller, 'model') };
+    }
+  }
+
+  if (!ViewClass && !template && !Component) {
+    Ember.assert(`Could not find "${name}" template, view, or component.`, isDefaultRender);
+    if (LOG_VIEW_LOOKUPS) {
+      var fullName = `template:${name}`;
+      Ember.Logger.info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
+    }
+  }
 
   return renderOptions;
 }

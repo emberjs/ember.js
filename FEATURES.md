@@ -337,3 +337,9 @@ for a detailed explanation.
 
   Likewise, `ApplicationInstance` initializers still receive a single argument
   to initialize: `applicationInstance`.
+
+* `ember-routing-routable-components`
+
+  Implemencts RFC https://github.com/emberjs/rfcs/pull/38, adding support for
+  routable components.
+
