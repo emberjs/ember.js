@@ -202,6 +202,8 @@ function normalizeClasses(classes, output) {
 
   for (i=0, l=classes.length; i<l; i++) {
     var className = classes[i];
+    Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", className.indexOf(' ') === -1);
+
     var [propName, activeClass, inactiveClass] = className.split(':');
 
     // Legacy :class microsyntax for static class names

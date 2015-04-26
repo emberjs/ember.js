@@ -33,6 +33,10 @@ export default {
       hash = swapKey(hash, 'tag', 'tagName');
     }
 
+    if (hash.classNameBindings) {
+      hash.classNameBindings = hash.classNameBindings.split(' ');
+    }
+
     var state = node.state;
     var parentView = state.parentView;
 
