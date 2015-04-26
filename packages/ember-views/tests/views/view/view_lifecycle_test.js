@@ -197,32 +197,34 @@ QUnit.test("should throw an exception when calling appendChild when DOM element 
   }, null, "throws an exception when calling appendChild after element is created");
 });
 
-QUnit.skip("should replace DOM representation if rerender() is called after element is created", function() {
+QUnit.test("should replace DOM representation if rerender() is called after element is created", function() {
   run(function() {
-    view = EmberView.create({
-      template(context, options) {
-        var buffer = options.data.buffer;
-        var value = context.get('shape');
-
-        buffer.push("Do not taunt happy fun "+value);
+    view = EmberView.createWithMixins({
+      template: compile("Do not taunt happy fun {{unbound view.shape}}"),
+      rerender() {
+        this._super.apply(this, arguments);
       },
-
-      context: EmberObject.create({
-        shape: 'sphere'
-      })
+      shape: 'sphere'
     });
 
+    view.volatileProp = view.get('context.shape');
     view.append();
   });
 
-  equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
+  equal(view.$().text(), "Do not taunt happy fun sphere",
+        "precond - creates DOM element");
 
-  view.set('context.shape', 'ball');
+  view.shape = 'ball';
+
+  equal(view.$().text(), "Do not taunt happy fun sphere",
+        "precond - keeps DOM element");
+
   run(function() {
     view.rerender();
   });
 
-  equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
+  equal(view.$().text(), "Do not taunt happy fun ball",
+        "rerenders DOM element when rerender() is called");
 });
 
 QUnit.test("should destroy DOM representation when destroyElement is called", function() {
