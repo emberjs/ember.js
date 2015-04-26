@@ -19,7 +19,7 @@ QUnit.module("ember-views/views/container_view_test", {
   },
   teardown() {
     run(function() {
-      container.destroy();
+      if (container) { container.destroy(); }
       if (view) { view.destroy(); }
       if (otherContainer) { otherContainer.destroy(); }
     });
@@ -776,7 +776,7 @@ QUnit.test("should allow hX tags as tagName", function() {
   ok(container.$('h3').length, "does not render the h3 tag correctly");
 });
 
-QUnit.skip("renders contained view with omitted start tag and parent view context", function() {
+QUnit.test("renders contained view with omitted start tag and parent view context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.createWithMixins({
@@ -790,10 +790,10 @@ QUnit.skip("renders contained view with omitted start tag and parent view contex
   run(view, view.append);
 
   equal(view.element.tagName, 'TABLE', 'container view is table');
-  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+  equal(view.element.childNodes[2].tagName, 'TR', 'inner view is tr');
 
   run(view, view.rerender);
 
   equal(view.element.tagName, 'TABLE', 'container view is table');
-  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+  equal(view.element.childNodes[2].tagName, 'TR', 'inner view is tr');
 });
