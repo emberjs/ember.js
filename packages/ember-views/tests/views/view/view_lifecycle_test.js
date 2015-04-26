@@ -98,29 +98,6 @@ QUnit.module("views/view/view_lifecycle_test - in render", {
   }
 });
 
-QUnit.skip("appendChild should work inside a template", function() {
-  run(function() {
-    view = EmberView.create({
-      template(context, options) {
-        var buffer = options.data.buffer;
-
-        buffer.push("<h1>Hi!</h1>");
-
-        options.data.view.appendChild(EmberView, {
-          template: compile("Inception reached")
-        });
-
-        buffer.push("<div class='footer'>Wait for the kick</div>");
-      }
-    });
-
-    view.appendTo("#qunit-fixture");
-  });
-
-  ok(view.$('h1').length === 1 && view.$('div').length === 2,
-     "The appended child is visible");
-});
-
 QUnit.skip("rerender should throw inside a template", function() {
   throws(function() {
     run(function() {
