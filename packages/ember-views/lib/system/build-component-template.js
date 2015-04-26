@@ -104,19 +104,26 @@ function normalizeComponentAttributes(component, attrs) {
       var attr = attributeBindings[i];
       var colonIndex = attr.indexOf(':');
 
+      var attrName, expression;
       if (colonIndex !== -1) {
         var attrProperty = attr.substring(0, colonIndex);
-        var attrName = attr.substring(colonIndex + 1);
-        normalized[attrName] = ['get', 'view.' + attrProperty];
+        attrName = attr.substring(colonIndex + 1);
+        expression = ['get', 'view.' + attrProperty];
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
         // probably want to suspend observers and allow the
         // willUpdateAttrs logic to trigger observers at the correct time.
-        normalized[attr] = ['value', attrs[attr]];
+        attrName = attr;
+        expression = ['value', attrs[attr]];
       } else {
-        normalized[attr] = ['get', 'view.' + attr];
+        attrName = attr;
+        expression = ['get', 'view.' + attr];
       }
+
+      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
+
+      normalized[attrName] = expression;
     }
   }
 

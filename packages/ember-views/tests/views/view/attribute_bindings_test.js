@@ -397,7 +397,7 @@ QUnit.test("attributeBindings should not fail if view has been destroyed", funct
   ok(!error, error);
 });
 
-QUnit.skip("asserts if an attributeBinding is setup on class", function() {
+QUnit.test("asserts if an attributeBinding is setup on class", function() {
   view = EmberView.create({
     attributeBindings: ['class']
   });
@@ -405,6 +405,10 @@ QUnit.skip("asserts if an attributeBinding is setup on class", function() {
   expectAssertion(function() {
     appendView();
   }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
+
+  // Remove render node to avoid "Render node exists without concomitant env"
+  // assertion on teardown.
+  view.renderNode = null;
 });
 
 QUnit.test("blacklists href bindings based on protocol", function() {
