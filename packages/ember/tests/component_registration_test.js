@@ -83,7 +83,7 @@ QUnit.test("If a component is registered, it is used", function() {
 });
 
 
-QUnit.skip("Late-registered components can be rendered with custom `template` property (DEPRECATED)", function() {
+QUnit.test("Late-registered components can be rendered with custom `template` property (DEPRECATED)", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>there goes {{my-hero}}</div>");
 
@@ -92,7 +92,7 @@ QUnit.skip("Late-registered components can be rendered with custom `template` pr
   boot(function() {
     registry.register('component:my-hero', Ember.Component.extend({
       classNames: 'testing123',
-      template() { return "watch him as he GOES"; }
+      template: compile("watch him as he GOES")
     }));
   });
 
@@ -264,7 +264,10 @@ QUnit.test("Components without a block should have the proper content", function
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-QUnit.skip("properties of a component  without a template should not collide with internal structures", function() {
+// The test following this one is the non-deprecated version
+QUnit.test("properties of a component without a template should not collide with internal structures [DEPRECATED]", function() {
+  expectDeprecation(/You tried to look up an attribute directly on the component/);
+
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
 
   boot(function() {
@@ -276,6 +279,26 @@ QUnit.skip("properties of a component  without a template should not collide wit
     registry.register('component:my-component', Ember.Component.extend({
       didInsertElement() {
         this.$().html(this.get('data'));
+      }
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
+
+QUnit.skip("attrs property of a component without a template should not collide with internal structures", function() {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component attrs=foo}}</div>");
+
+  boot(function() {
+    registry.register('controller:application', Ember.Controller.extend({
+      'text': 'outer',
+      'foo': 'Some text inserted by jQuery'
+    }));
+
+    registry.register('component:my-component', Ember.Component.extend({
+      didInsertElement() {
+        // FIXME: I'm unsure if this is even the right way to access attrs
+        this.$().html(this.get('attrs.attrs'));
       }
     }));
   });
