@@ -253,7 +253,7 @@ QUnit.test("should allow binding to String objects", function() {
   ok(!view.$().attr('foo'), "removes foo attribute when null");
 });
 
-QUnit.skip("should teardown observers on rerender", function() {
+QUnit.test("should teardown observers on rerender", function() {
   view = EmberView.create({
     attributeBindings: ['foo'],
     classNameBindings: ['foo'],
@@ -262,13 +262,13 @@ QUnit.skip("should teardown observers on rerender", function() {
 
   appendView();
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after render is two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after render is one');
 
   run(function() {
     view.rerender();
   });
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after rerender remains two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after rerender remains one');
 });
 
 QUnit.test("handles attribute bindings for properties", function() {
