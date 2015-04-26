@@ -264,7 +264,7 @@ QUnit.test("classNameBindings should not fail if view has been destroyed", funct
   ok(!error, error);
 });
 
-QUnit.skip("Providing a binding with a space in it asserts", function() {
+QUnit.test("Providing a binding with a space in it asserts", function() {
   view = EmberView.create({
     classNameBindings: 'i:think:i am:so:clever'
   });
@@ -272,5 +272,9 @@ QUnit.skip("Providing a binding with a space in it asserts", function() {
   expectAssertion(function() {
     view.createElement();
   }, /classNameBindings must not have spaces in them/i);
+
+  // Remove render node to avoid "Render node exists without concomitant env"
+  // assertion on teardown.
+  view.renderNode = null;
 });
 

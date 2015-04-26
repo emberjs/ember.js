@@ -193,7 +193,7 @@ QUnit.test("should update attribute bindings with micro syntax", function() {
   ok(!view.$().prop('disabled'), "updates disabled property when false");
 });
 
-QUnit.skip("should allow namespaced attributes in micro syntax", function () {
+QUnit.test("should allow namespaced attributes in micro syntax", function () {
   view = EmberView.create({
     attributeBindings: ['xlinkHref:xlink:href'],
     xlinkHref: '/foo.png'
@@ -253,7 +253,7 @@ QUnit.test("should allow binding to String objects", function() {
   ok(!view.$().attr('foo'), "removes foo attribute when null");
 });
 
-QUnit.skip("should teardown observers on rerender", function() {
+QUnit.test("should teardown observers on rerender", function() {
   view = EmberView.create({
     attributeBindings: ['foo'],
     classNameBindings: ['foo'],
@@ -262,13 +262,13 @@ QUnit.skip("should teardown observers on rerender", function() {
 
   appendView();
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after render is two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after render is one');
 
   run(function() {
     view.rerender();
   });
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after rerender remains two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after rerender remains one');
 });
 
 QUnit.test("handles attribute bindings for properties", function() {
@@ -397,7 +397,7 @@ QUnit.test("attributeBindings should not fail if view has been destroyed", funct
   ok(!error, error);
 });
 
-QUnit.skip("asserts if an attributeBinding is setup on class", function() {
+QUnit.test("asserts if an attributeBinding is setup on class", function() {
   view = EmberView.create({
     attributeBindings: ['class']
   });
@@ -405,6 +405,10 @@ QUnit.skip("asserts if an attributeBinding is setup on class", function() {
   expectAssertion(function() {
     appendView();
   }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
+
+  // Remove render node to avoid "Render node exists without concomitant env"
+  // assertion on teardown.
+  view.renderNode = null;
 });
 
 QUnit.test("blacklists href bindings based on protocol", function() {

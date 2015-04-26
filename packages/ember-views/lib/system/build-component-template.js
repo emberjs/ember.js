@@ -102,19 +102,28 @@ function normalizeComponentAttributes(component, attrs) {
   if (attributeBindings) {
     for (i=0, l=attributeBindings.length; i<l; i++) {
       var attr = attributeBindings[i];
-      var microsyntax = attr.split(':');
+      var colonIndex = attr.indexOf(':');
 
-      if (microsyntax[1]) {
-        normalized[microsyntax[1]] = ['get', 'view.' + microsyntax[0]];
+      var attrName, expression;
+      if (colonIndex !== -1) {
+        var attrProperty = attr.substring(0, colonIndex);
+        attrName = attr.substring(colonIndex + 1);
+        expression = ['get', 'view.' + attrProperty];
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
         // probably want to suspend observers and allow the
         // willUpdateAttrs logic to trigger observers at the correct time.
-        normalized[attr] = ['value', attrs[attr]];
+        attrName = attr;
+        expression = ['value', attrs[attr]];
       } else {
-        normalized[attr] = ['get', 'view.' + attr];
+        attrName = attr;
+        expression = ['get', 'view.' + attr];
       }
+
+      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
+
+      normalized[attrName] = expression;
     }
   }
 
@@ -193,6 +202,8 @@ function normalizeClasses(classes, output) {
 
   for (i=0, l=classes.length; i<l; i++) {
     var className = classes[i];
+    Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", className.indexOf(' ') === -1);
+
     var [propName, activeClass, inactiveClass] = className.split(':');
 
     // Legacy :class microsyntax for static class names
