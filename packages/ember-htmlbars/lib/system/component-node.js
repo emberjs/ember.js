@@ -89,6 +89,7 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
     var snapshot = readHash(attrs);
     env.renderer.setAttrs(this.component, snapshot);
     env.renderer.willRender(component);
+    env.renderedViews.push(component.elementId);
   }
 
   if (this.block) {
@@ -123,6 +124,8 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
     }
 
     env.renderer.willRender(component);
+
+    env.renderedViews.push(component.elementId);
   }
 
   if (this.block) {

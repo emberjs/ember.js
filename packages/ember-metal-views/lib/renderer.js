@@ -6,6 +6,7 @@ import {
   subscribers
 } from "ember-metal/instrumentation";
 import buildComponentTemplate from "ember-views/system/build-component-template";
+import { indexOf } from "ember-metal/array";
 //import { deprecation } from "ember-views/compat/attrs-proxy";
 
 function Renderer(_helper) {
@@ -32,6 +33,7 @@ Renderer.prototype.prerenderTopLevelView =
 
     view.renderBlock(block, renderNode);
     view.lastResult = renderNode.lastResult;
+    this.clearRenderedViews(view.env);
   };
 
 Renderer.prototype.renderTopLevelView =
@@ -54,6 +56,7 @@ Renderer.prototype.revalidateTopLevelView =
       if (view._state === 'inDOM') {
         this.dispatchLifecycleHooks(view.env);
       }
+      this.clearRenderedViews(view.env);
     }
   };
 
@@ -77,7 +80,20 @@ Renderer.prototype.dispatchLifecycleHooks =
     }
 
     ownerView._dispatching = null;
-    env.lifecycleHooks = [];
+    env.lifecycleHooks.length = 0;
+  };
+
+Renderer.prototype.ensureViewNotRendering =
+  function Renderer_ensureViewNotRendering(view) {
+    var env = view.ownerView.env;
+    if (env && indexOf(env.renderedViews, view.elementId) !== -1) {
+      throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
+    }
+  };
+
+Renderer.prototype.clearRenderedViews =
+  function Renderer_clearRenderedViews(env) {
+    env.renderedViews.length = 0;
   };
 
 // This entry point is called from top-level `view.appendTo`

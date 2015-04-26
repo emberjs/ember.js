@@ -23,6 +23,7 @@ export default function renderView(view, buffer, template) {
 export function renderHTMLBarsBlock(view, block, renderNode) {
   var env = {
     lifecycleHooks: [],
+    renderedViews: [],
     view: view,
     outletState: view.outletState,
     container: view.container,
