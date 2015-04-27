@@ -32,6 +32,8 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
       createdElementBlock = true;
 
       blockToRender = createElementBlock(elementTemplate, blockToRender, component);
+    } else {
+      validateTaglessComponent(component);
     }
 
     return { createdElement: tagName !== '', block: blockToRender };
@@ -225,4 +227,11 @@ function normalizeClasses(classes, output) {
       'inactiveClass', inactiveClass
     ]]);
   }
+}
+
+function validateTaglessComponent(component) {
+  Ember.assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), function() {
+    var classNameBindings = component.classNameBindings;
+    return !classNameBindings || classNameBindings.length === 0;
+  });
 }
