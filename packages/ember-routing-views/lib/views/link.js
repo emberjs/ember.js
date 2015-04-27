@@ -271,10 +271,10 @@ var LinkView = EmberComponent.extend({
     @property disabled
   */
   disabled: computed({
-    get: function(key, value) {
+    get(key, value) {
       return false;
     },
-    set: function(key, value) {
+    set(key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
 
       return value ? get(this, 'disabledClass') : false;

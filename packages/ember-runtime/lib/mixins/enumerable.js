@@ -957,7 +957,7 @@ export default Mixin.create({
     @return this
   */
   '[]': computed({
-    get: function(key) { return this; }
+    get(key) { return this; }
   }),
 
   // ..........................................................
