@@ -377,7 +377,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var App = Ember.Application.create();
 
     App.deferReadiness();
-    
+
     // Ember.$ is a reference to the jQuery object/function
     Ember.$.getJSON('/auth-token', function(token) {
       App.token = token;
