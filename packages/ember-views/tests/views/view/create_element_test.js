@@ -27,7 +27,7 @@ QUnit.test("returns the receiver", function() {
   equal(ret, view, 'returns receiver');
 });
 
-QUnit.skip('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
+QUnit.test('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
   expect(1);
 
   view = EmberView.create({
@@ -40,7 +40,10 @@ QUnit.skip('should assert if `tagName` is an empty string and `classNameBindings
     run(function() {
       view.createElement();
     });
-  }, /You cannot use `classNameBindings` on a tag-less view/);
+  }, /You cannot use `classNameBindings` on a tag-less component/);
+
+  // Prevent further assertions
+  view.renderNode = null;
 });
 
 QUnit.test("calls render and turns resultant string into element", function() {
