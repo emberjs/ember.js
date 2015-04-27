@@ -94,7 +94,9 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
   var fakeParams = [];
   var fakeHash = {};
   var fakeOptions = {
-    morph: { update() { } }
+    morph: { update() { } },
+    template: {},
+    inverse: {}
   };
   var fakeEnv = {
     data: {

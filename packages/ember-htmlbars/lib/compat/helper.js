@@ -23,6 +23,21 @@ function calculateCompatType(item) {
   }
 }
 
+function pathFor(param) {
+  if (isStream(param)) {
+    // param arguments to helpers may have their path prefixes with self. For
+    // example {{box-thing foo}} may have a param path of `self.foo` depending
+    // on scope.
+    if (param.source && param.source.dependee && param.source.dependee.label === 'self') {
+      return param.path.slice(5);
+    } else {
+      return param.path;
+    }
+  } else {
+    return param;
+  }
+}
+
 /**
   Wraps an Handlebars helper with an HTMLBars helper for backwards compatibility.
 
@@ -48,7 +63,7 @@ function HandlebarsCompatibleHelper(fn) {
         options.template.yield();
       };
 
-      if (options.inverse) {
+      if (options.inverse.yield) {
         handlebarsOptions.inverse = function() {
           options.inverse.yield();
         };
@@ -57,27 +72,15 @@ function HandlebarsCompatibleHelper(fn) {
 
     for (var prop in hash) {
       param = hash[prop];
-
       handlebarsOptions.hashTypes[prop] = calculateCompatType(param);
-
-      if (isStream(param)) {
-        handlebarsOptions.hash[prop] = param.path;
-      } else {
-        handlebarsOptions.hash[prop] = param;
-      }
+      handlebarsOptions.hash[prop] = pathFor(param);
     }
 
     var args = new Array(params.length);
     for (var i = 0, l = params.length; i < l; i++) {
       param = params[i];
-
       handlebarsOptions.types[i] = calculateCompatType(param);
-
-      if (isStream(param)) {
-        args[i] = param.path;
-      } else {
-        args[i] = param;
-      }
+      args[i] = pathFor(param);
     }
 
     handlebarsOptions.legacyGetPath = function(path) {
@@ -95,7 +98,7 @@ function HandlebarsCompatibleHelper(fn) {
     if (options.element) {
       Ember.deprecate("Returning a string of attributes from a helper inside an element is deprecated.");
       applyAttributes(env.dom, options.element, fnResult);
-    } else if (!options.template) {
+    } else if (!options.template.yield) {
       return fnResult;
     }
   };

@@ -54,7 +54,7 @@ var boot = function(callback) {
   });
 };
 
-QUnit.skip("Unbound dashed helpers registered on the container can be late-invoked", function() {
+QUnit.test("Unbound dashed helpers registered on the container can be late-invoked", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf YES}}</div>");
 
