@@ -900,6 +900,21 @@ QUnit.test('is chainable', function() {
   ok(cp instanceof ComputedProperty);
 });
 
+QUnit.test('throws assertion if called over a CP with a setter defined with the new syntax', function() {
+  expectAssertion(function() {
+    computed({
+      get: function() { },
+      set: function() { }
+    }).readOnly();
+  }, /Computed properties that define a setter using the new syntax cannot be read-only/);
+});
+
+QUnit.test('doesn\'t throws assertion if called over a CP with a setter defined with the old syntax', function() {
+  expectDeprecation(function() {
+    computed(function(key, value) {}).readOnly();
+  }, /same function as getter and setter/);
+});
+
 testBoth('protects against setting', function(get, set) {
   var obj = {  };
 
