@@ -153,6 +153,26 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     }, /HTMLBars error: Could not find component named "does-not-exist"./, "Expected missing component to generate an exception");
   });
 
+  QUnit.test("component with unquoted param resolving to a component, then non-existent component", function() {
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+    view = EmberView.create({
+      container: container,
+      dynamicComponent: 'foo-bar',
+      location: 'Caracas',
+      template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
+
+    Ember.run(function() {
+      set(view, "dynamicComponent", undefined);
+    });
+
+    equal(view.$().text(), '', 'component correctly deals with falsey values set post-render');
+  });
+
   QUnit.test("component with quoted param for non-existent component", function() {
     view = EmberView.create({
       container: container,

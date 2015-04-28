@@ -7,7 +7,7 @@ import dictionary from 'ember-metal/dictionary';
 var Registry;
 
 /**
- A lightweight container used to instantiate and cache objects.
+ A container used to instantiate and cache objects.
 
  Every `Container` must be associated with a `Registry`, which is referenced
  to determine the factory and options that should be used to instantiate

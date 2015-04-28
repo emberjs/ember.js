@@ -4,6 +4,7 @@ import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import { map } from "ember-metal/enumerable_utils";
 import EventDispatcher from "ember-views/system/event_dispatcher";
+import SafeString from 'htmlbars-util/safe-string';
 
 var trim = jQuery.trim;
 
@@ -130,6 +131,44 @@ QUnit.test("can specify the property path for an option's label and value", func
   equal(select.$('option').length, 2, "Should have two options");
   // IE 8 adds whitespace
   equal(trim(select.$().text()), "YehudaTom", "Options should have content");
+  deepEqual(map(select.$('option').toArray(), function(el) { return jQuery(el).attr('value'); }), ["1", "2"], "Options should have values");
+});
+
+QUnit.test("XSS: does not escape label value when it is a SafeString", function() {
+  select.set('content', Ember.A([
+    { id: 1, firstName: new SafeString('<p>Yehuda</p>') },
+    { id: 2, firstName: new SafeString('<p>Tom</p>') }
+  ]));
+
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('optionValuePath', 'content.id');
+
+  append();
+
+  equal(select.$('option').length, 2, "Should have two options");
+  equal(select.$('option[value=1] p').length, 1, "Should have child elements");
+
+  // IE 8 adds whitespace
+  equal(trim(select.$().text()), "YehudaTom", "Options should have content");
+  deepEqual(map(select.$('option').toArray(), function(el) { return jQuery(el).attr('value'); }), ["1", "2"], "Options should have values");
+});
+
+QUnit.test("XSS: escapes label value content", function() {
+  select.set('content', Ember.A([
+    { id: 1, firstName: '<p>Yehuda</p>' },
+    { id: 2, firstName: '<p>Tom</p>' }
+  ]));
+
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('optionValuePath', 'content.id');
+
+  append();
+
+  equal(select.$('option').length, 2, "Should have two options");
+  equal(select.$('option[value=1] b').length, 0, "Should have no child elements");
+
+  // IE 8 adds whitespace
+  equal(trim(select.$().text()), "<p>Yehuda</p><p>Tom</p>", "Options should have content");
   deepEqual(map(select.$('option').toArray(), function(el) { return jQuery(el).attr('value'); }), ["1", "2"], "Options should have values");
 });
 

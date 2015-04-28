@@ -10,7 +10,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 }
 
 /**
- A lightweight registry used to store factory and option information keyed
+ A registry used to store factory and option information keyed
  by type.
 
  A `Registry` stores the factory and option information needed by a

@@ -52,5 +52,5 @@ env:
     - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
-    - TEST_SUITE=node EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
+    - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=sauce

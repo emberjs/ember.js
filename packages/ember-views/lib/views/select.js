@@ -22,8 +22,8 @@ import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 
 import htmlbarsTemplate from "ember-htmlbars/templates/select";
-import selectOptionTemplate from "ember-htmlbars/templates/select-option";
-import selectOptgroupTemplate from "ember-htmlbars/templates/select-optgroup";
+import selectOptionDefaultTemplate from "ember-htmlbars/templates/select-option";
+import selectOptgroupDefaultTemplate from "ember-htmlbars/templates/select-optgroup";
 
 var defaultTemplate = htmlbarsTemplate;
 
@@ -33,7 +33,7 @@ var SelectOption = View.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
-  defaultTemplate: selectOptionTemplate,
+  defaultTemplate: selectOptionDefaultTemplate,
 
   content: null,
 
@@ -69,7 +69,7 @@ var SelectOptgroup = View.extend({
   instrumentDisplay: 'Ember.SelectOptgroup',
 
   tagName: 'optgroup',
-  defaultTemplate: selectOptgroupTemplate,
+  defaultTemplate: selectOptgroupDefaultTemplate,
   attributeBindings: ['label']
 });
 
@@ -92,7 +92,7 @@ var SelectOptgroup = View.extend({
   Example:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     names: ["Yehuda", "Tom"]
   });
   ```
@@ -114,7 +114,7 @@ var SelectOptgroup = View.extend({
   `value` property:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedName: 'Tom',
     names: ["Yehuda", "Tom"]
   });
@@ -151,7 +151,7 @@ var SelectOptgroup = View.extend({
   element's text. Both paths must reference each object itself as `content`:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -179,7 +179,7 @@ var SelectOptgroup = View.extend({
   can be bound to a property on another object:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -222,7 +222,7 @@ var SelectOptgroup = View.extend({
   var yehuda = {firstName: "Yehuda", id: 1, bff4eva: 'tom'}
   var tom = {firstName: "Tom", id: 2, bff4eva: 'yehuda'};
 
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedPerson: tom,
     programmers: [ yehuda, tom ]
   });
@@ -256,7 +256,7 @@ var SelectOptgroup = View.extend({
   results in there being no `<option>` with a `selected` attribute:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedProgrammer: null,
     programmers: ["Yehuda", "Tom"]
   });
@@ -285,7 +285,7 @@ var SelectOptgroup = View.extend({
   with the `prompt` option:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedProgrammer: null,
     programmers: [ "Yehuda", "Tom" ]
   });

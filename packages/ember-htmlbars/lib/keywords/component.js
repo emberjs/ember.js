@@ -1,9 +1,11 @@
 export default {
   setupState(lastState, env, scope, params, hash) {
-    return {
+    let state = {
       componentPath: env.hooks.getValue(params[0]),
       componentNode: lastState && lastState.componentNode
     };
+
+    return state;
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
@@ -12,6 +14,14 @@ export default {
     // but the `{{component}}` helper can.
     morph.state.componentNode = null;
 
-    env.hooks.component(morph, env, scope, morph.state.componentPath, hash, template, visitor);
+    let componentPath = morph.state.componentPath;
+
+    // If the value passed to the {{component}} helper is undefined or null,
+    // don't create a new ComponentNode.
+    if (componentPath === undefined || componentPath === null) {
+      return;
+    }
+
+    env.hooks.component(morph, env, scope, componentPath, hash, template, visitor);
   }
 };

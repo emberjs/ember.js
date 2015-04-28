@@ -730,13 +730,13 @@ var View = CoreView.extend(
   */
 
   template: computed('templateName', {
-    get: function() {
+    get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
       Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
       return template || get(this, 'defaultTemplate');
     },
-    set: function(key, value) {
+    set(key, value) {
       if (value !== undefined) { return value; }
       return get(this, key);
     }
@@ -755,15 +755,21 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-  */
-  layout: computed(function(key) {
-    var layoutName = get(this, 'layoutName');
-    var layout = this.templateForName(layoutName, 'layout');
+    */
+  layout: computed('layoutName', {
+    get(key) {
+      var layoutName = get(this, 'layoutName');
+      var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
+      Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
-    return layout || get(this, 'defaultLayout');
-  }).property('layoutName'),
+      return layout || get(this, 'defaultLayout');
+    },
+
+    set(key, value) {
+      return value;
+    }
+  }),
 
   _yield(context, options, morph) {
     var template = get(this, 'template');
@@ -858,6 +864,19 @@ var View = CoreView.extend(
   */
   rerender() {
     return this.currentState.rerender(this);
+  },
+
+  /*
+   * @private
+   *
+   * @method _rerender
+   */
+  _rerender() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    this._renderer.renderTree(this, this._parentView);
   },
 
   /**

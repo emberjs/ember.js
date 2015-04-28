@@ -126,12 +126,12 @@ run.join = function() {
 
   ```javascript
   App.RichTextEditorComponent = Ember.Component.extend({
-    initializeTinyMCE: function() {
+    initializeTinyMCE: Ember.on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
         setup: Ember.run.bind(this, this.setupEditor)
       });
-    }.on('didInsertElement'),
+    }),
 
     setupEditor: function(editor) {
       this.set('editor', editor);
