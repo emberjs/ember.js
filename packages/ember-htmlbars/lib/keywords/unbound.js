@@ -37,7 +37,9 @@ import { read } from "ember-metal/streams/utils";
 
 function VolatileStream(source) {
   this.init(`(volatile ${source.label})`);
-  this.source = this.addDependency(source);
+  this.source = source;
+
+  this.addDependency(source);
 }
 
 VolatileStream.prototype = create(Stream.prototype);

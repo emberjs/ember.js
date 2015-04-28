@@ -20,7 +20,6 @@ import {
 function Dependency(depender, dependee) {
   Ember.assert("Dependency error: Depender must be a stream", isStream(depender));
 
-  this.isStream = true; // TODO: Dependency should extend Stream
   this.next = null;
   this.prev = null;
   this.depender = depender;
@@ -53,7 +52,7 @@ merge(Dependency.prototype, {
     }
   },
 
-  value() {
+  getValue() {
     return read(this.dependee);
   },
 

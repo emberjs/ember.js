@@ -33,7 +33,7 @@ import SimpleStream from "ember-metal/streams/simple-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 function newStream(scope, key, newValue, renderNode, isSelf) {
-  var stream = new SimpleStream(newValue, isSelf ? null : key);
+  var stream = new SimpleStream(newValue, isSelf ? '' : key);
   if (renderNode) { subscribe(renderNode, scope, stream); }
   scope[key] = stream;
 }
