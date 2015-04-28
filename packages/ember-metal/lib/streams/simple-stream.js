@@ -4,7 +4,7 @@ import create from "ember-metal/platform/create";
 
 function SimpleStream(source, label) {
   this.init(label);
-  this.sourceDep = this.addDependency(source);
+  this.sourceDep = this.addMutableDependency(source);
 }
 
 SimpleStream.prototype = create(Stream.prototype);

@@ -54,7 +54,7 @@ merge(ShouldDisplayStream.prototype, {
   revalidate() {
     if (isArray(read(this.predicate))) {
       if (!this.lengthDep) {
-        this.lengthDep = this.addDependency(this.predicate.get('length'));
+        this.lengthDep = this.addMutableDependency(this.predicate.get('length'));
       }
     } else {
       if (this.lengthDep) {

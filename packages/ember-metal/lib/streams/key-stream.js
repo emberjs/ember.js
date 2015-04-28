@@ -21,7 +21,7 @@ function KeyStream(source, key) {
 
   this.init(label);
   this.path = label;
-  this.sourceDep = this.addDependency(source);
+  this.sourceDep = this.addMutableDependency(source);
   this.observedObject = null;
   this.key = key;
 }
