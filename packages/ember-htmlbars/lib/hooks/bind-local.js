@@ -4,7 +4,7 @@
 */
 
 import Stream from "ember-metal/streams/stream";
-import SimpleStream from "ember-metal/streams/simple-stream";
+import ProxyStream from "ember-metal/streams/proxy-stream";
 
 export default function bindLocal(env, scope, key, value) {
   var isExisting = scope.locals.hasOwnProperty(key);
@@ -18,7 +18,7 @@ export default function bindLocal(env, scope, key, value) {
 
     existing.notify();
   } else {
-    var newValue = Stream.wrap(value, SimpleStream, key);
+    var newValue = Stream.wrap(value, ProxyStream, key);
     scope.locals[key] = newValue;
   }
 }

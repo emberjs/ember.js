@@ -1,9 +1,9 @@
 import Stream from "ember-metal/streams/stream";
-import SimpleStream from "ember-metal/streams/simple-stream";
+import ProxyStream from "ember-metal/streams/proxy-stream";
 
 var source, value;
 
-QUnit.module('SimpleStream', {
+QUnit.module('ProxyStream', {
   setup() {
     value = "zlurp";
 
@@ -23,7 +23,7 @@ QUnit.module('SimpleStream', {
 });
 
 QUnit.test('supports a stream argument', function() {
-  var stream = new SimpleStream(source);
+  var stream = new ProxyStream(source);
   equal(stream.value(), "zlurp");
 
   stream.setValue("blorg");
@@ -31,7 +31,7 @@ QUnit.test('supports a stream argument', function() {
 });
 
 QUnit.test('supports a non-stream argument', function() {
-  var stream = new SimpleStream(value);
+  var stream = new ProxyStream(value);
   equal(stream.value(), "zlurp");
 
   stream.setValue("blorg");
