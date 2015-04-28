@@ -539,25 +539,3 @@ QUnit.test("{{with}} renders 'false' as string rather than empty space", functio
 
   equal(view.$().text(), "value:false", "should render 0 as string");
 });
-
-QUnit.test("{{with}} renders 'null' as string rather than empty space", function() {
-  run(function() {
-    view.set('template', compile("{{#with nil as |value|}}value:{{value}}{{/with}}"));
-    view.set('context', {
-      'nil': null
-    });
-  });
-
-  equal(view.$().text(), "value:null", "should render 0 as string");
-});
-
-QUnit.test("{{with}} renders 'undefined' as string rather than empty space", function() {
-  run(function() {
-    view.set('template', compile("{{#with undef as |value|}}value:{{value}}{{/with}}"));
-    view.set('context', {
-      'undef': undefined
-    });
-  });
-
-  equal(view.$().text(), "value:undefined", "should render 0 as string");
-});
