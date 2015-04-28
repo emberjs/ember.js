@@ -283,7 +283,7 @@ var LinkComponent = EmberComponent.extend({
       }
     }
 
-    if (this.bubbles === false) { event.stopPropagation(); }
+    if (this.attrs.bubbles === false) { event.stopPropagation(); }
 
     if (get(this, '_isDisabled')) { return false; }
 
@@ -297,7 +297,7 @@ var LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    get(this, '_routing').transitionTo(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams'), get(this, 'attrs.replace'));
+    get(this, '_routing').transitionTo(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams.values'), get(this, 'attrs.replace'));
   },
 
   queryParams: null,
@@ -311,7 +311,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property href
   **/
-  href: computed('models', 'targetRouteName', function computeLinkViewHref() {
+  href: computed('models', 'targetRouteName', '_routing.currentState', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
     var targetRouteName = get(this, 'targetRouteName');
@@ -320,7 +320,7 @@ var LinkComponent = EmberComponent.extend({
     if (get(this, 'loading')) { return get(this, 'loadingHref'); }
 
     var routing = get(this, '_routing');
-    return routing.generateURL(targetRouteName, models, get(this, 'queryParams'));
+    return routing.generateURL(targetRouteName, models, get(this, 'queryParams.values'));
   }),
 
   loading: computed('models', 'targetRouteName', function() {

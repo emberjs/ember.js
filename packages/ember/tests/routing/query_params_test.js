@@ -261,7 +261,7 @@ QUnit.test("model hooks receives query params", function() {
   equal(router.get('location.path'), "");
 });
 
-QUnit.skip("controllers won't be eagerly instantiated by internal query params logic", function() {
+QUnit.test("controllers won't be eagerly instantiated by internal query params logic", function() {
   expect(10);
   Router.map(function() {
     this.resource('cats', function() {
@@ -700,7 +700,7 @@ QUnit.test("An explicit replace:false on a changed QP always wins and causes a p
   Ember.run(appController, 'setProperties', { alex: 'sriracha' });
 });
 
-QUnit.skip("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
+QUnit.test("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
   Ember.TEMPLATES.parent = compile('{{outlet}}');
   Ember.TEMPLATES['parent/child'] = compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
 
@@ -843,7 +843,7 @@ QUnit.test("URL transitions that remove QPs still register as QP changes", funct
   equal(indexController.get('omg'), 'lol');
 });
 
-QUnit.skip("Subresource naming style is supported", function() {
+QUnit.test("Subresource naming style is supported", function() {
 
   Router.map(function() {
     this.resource('abc.def', { path: '/abcdef' }, function() {
@@ -1137,12 +1137,12 @@ QUnit.test("A child of a resource route still defaults to parent route's model e
   bootApplication();
 });
 
-QUnit.skip("opting into replace does not affect transitions between routes", function() {
+QUnit.test("opting into replace does not affect transitions between routes", function() {
   expect(5);
   Ember.TEMPLATES.application = compile(
     "{{link-to 'Foo' 'foo' id='foo-link'}}" +
     "{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}" +
-    "{{link-to 'Bar' 'bar' (query-params raytiley='isanerd') id='bar-link'}}" +
+    "{{link-to 'Bar' 'bar' (query-params raytiley='isthebest') id='bar-link'}}" +
     "{{outlet}}"
   );
   App.Router.map(function() {
@@ -1152,7 +1152,7 @@ QUnit.skip("opting into replace does not affect transitions between routes", fun
 
   App.BarController = Ember.Controller.extend({
     queryParams: ['raytiley'],
-    raytiley: 'isadork'
+    raytiley: 'israd'
   });
 
   App.BarRoute = Ember.Route.extend({
@@ -1172,13 +1172,13 @@ QUnit.skip("opting into replace does not affect transitions between routes", fun
   expectedPushURL = '/bar';
   Ember.run(Ember.$('#bar-no-qp-link'), 'click');
 
-  expectedReplaceURL = '/bar?raytiley=boo';
-  setAndFlush(controller, 'raytiley', 'boo');
+  expectedReplaceURL = '/bar?raytiley=woot';
+  setAndFlush(controller, 'raytiley', 'woot');
 
   expectedPushURL = '/foo';
   Ember.run(Ember.$('#foo-link'), 'click');
 
-  expectedPushURL = '/bar?raytiley=isanerd';
+  expectedPushURL = '/bar?raytiley=isthebest';
   Ember.run(Ember.$('#bar-link'), 'click');
 });
 
@@ -1312,7 +1312,7 @@ QUnit.module("Model Dep Query Params", {
   }
 });
 
-QUnit.skip("query params have 'model' stickiness by default", function() {
+QUnit.test("query params have 'model' stickiness by default", function() {
   this.boot();
 
   Ember.run(this.$link1, 'click');
@@ -1334,7 +1334,7 @@ QUnit.skip("query params have 'model' stickiness by default", function() {
   equal(this.$link3.attr('href'), '/a/a-3');
 });
 
-QUnit.skip("query params have 'model' stickiness by default (url changes)", function() {
+QUnit.test("query params have 'model' stickiness by default (url changes)", function() {
 
   this.boot();
 
@@ -1369,7 +1369,7 @@ QUnit.skip("query params have 'model' stickiness by default (url changes)", func
 });
 
 
-QUnit.skip("query params have 'model' stickiness by default (params-based transitions)", function() {
+QUnit.test("query params have 'model' stickiness by default (params-based transitions)", function() {
   Ember.TEMPLATES.application = compile("{{#each a in articles}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
 
   this.boot();
@@ -1415,7 +1415,7 @@ QUnit.skip("query params have 'model' stickiness by default (params-based transi
   equal(this.$link3.attr('href'), '/a/a-3?q=hay');
 });
 
-QUnit.skip("'controller' stickiness shares QP state between models", function() {
+QUnit.test("'controller' stickiness shares QP state between models", function() {
   App.ArticleController.reopen({
     queryParams: { q: { scope: 'controller' } }
   });
