@@ -43,3 +43,24 @@ QUnit.test("dasherize string that is the property name of Object.prototype", fun
     deepEqual('toString'.dasherize(), 'to-string');
   }
 });
+
+QUnit.test("dasherize namespaced classified string", function() {
+  deepEqual(dasherize('PrivateDocs/OwnerInvoice'), 'private-docs/owner-invoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('PrivateDocs/OwnerInvoice'.dasherize(), 'private-docs/owner-invoice');
+  }
+});
+
+QUnit.test("dasherize namespaced camelized string", function() {
+  deepEqual(dasherize('privateDocs/ownerInvoice'), 'private-docs/owner-invoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('privateDocs/ownerInvoice'.dasherize(), 'private-docs/owner-invoice');
+  }
+});
+
+QUnit.test("dasherize namespaced underscored string", function() {
+  deepEqual(dasherize('private_docs/owner_invoice'), 'private-docs/owner-invoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('private_docs/owner_invoice'.dasherize(), 'private-docs/owner-invoice');
+  }
+});
