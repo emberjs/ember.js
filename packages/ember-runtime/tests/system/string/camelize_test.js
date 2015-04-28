@@ -50,3 +50,24 @@ QUnit.test("does nothing with camelcased string", function() {
     deepEqual('innerHTML'.camelize(), 'innerHTML');
   }
 });
+
+QUnit.test("camelize namespaced classified string", function() {
+  deepEqual(camelize('PrivateDocs/OwnerInvoice'), 'privateDocs/ownerInvoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('PrivateDocs/OwnerInvoice'.camelize(), 'privateDocs/ownerInvoice');
+  }
+});
+
+QUnit.test("camelize namespaced underscored string", function() {
+  deepEqual(camelize('private_docs/owner_invoice'), 'privateDocs/ownerInvoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('private_docs/owner_invoice'.camelize(), 'privateDocs/ownerInvoice');
+  }
+});
+
+QUnit.test("camelize namespaced dasherized string", function() {
+  deepEqual(camelize('private-docs/owner-invoice'), 'privateDocs/ownerInvoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('private-docs/owner-invoice'.camelize(), 'privateDocs/ownerInvoice');
+  }
+});
