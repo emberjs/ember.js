@@ -1,4 +1,4 @@
-import SimpleStream from "ember-metal/streams/simple-stream";
+import ProxyStream from "ember-metal/streams/proxy-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function updateScope(scope, key, newValue, renderNode, isSelf) {
@@ -7,7 +7,7 @@ export default function updateScope(scope, key, newValue, renderNode, isSelf) {
   if (existing) {
     existing.setSource(newValue);
   } else {
-    var stream = new SimpleStream(newValue, isSelf ? null : key);
+    var stream = new ProxyStream(newValue, isSelf ? null : key);
     if (renderNode) { subscribe(renderNode, scope, stream); }
     scope[key] = stream;
   }

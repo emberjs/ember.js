@@ -402,7 +402,7 @@ QUnit.test("The {{link-to}} helper defaults to bubbling", function() {
   equal(hidden, 1, "The link bubbles");
 });
 
-QUnit.skip("The {{link-to}} helper supports bubbles=false", function() {
+QUnit.test("The {{link-to}} helper supports bubbles=false", function() {
   Ember.TEMPLATES.about = compile("<div {{action 'hide'}}>{{#link-to 'about.contact' id='about-contact' bubbles=false}}About{{/link-to}}</div>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = compile("<h1 id='contact'>Contact</h1>");
 

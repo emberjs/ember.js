@@ -3,7 +3,7 @@ import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
 import Stream from "ember-metal/streams/stream";
-import { isStream } from "ember-metal/streams/utils";
+import { read, isStream } from "ember-metal/streams/utils";
 
 export default function shouldDisplay(predicate) {
   if (isStream(predicate)) {
@@ -23,38 +23,43 @@ export default function shouldDisplay(predicate) {
 function ShouldDisplayStream(predicate) {
   Ember.assert("ShouldDisplayStream error: predicate must be a stream", isStream(predicate));
 
+  var isTruthy = predicate.get('isTruthy');
+
   this.init();
-  this.predicate = this.addDependency(predicate);
-  this.isTruthy = this.addDependency(predicate.get('isTruthy'));
-  this.length = null;
+  this.predicate = predicate;
+  this.isTruthy = isTruthy;
+  this.lengthDep = null;
+
+  this.addDependency(predicate);
+  this.addDependency(isTruthy);
 }
 
 ShouldDisplayStream.prototype = create(Stream.prototype);
 
 merge(ShouldDisplayStream.prototype, {
   compute() {
-    var truthy = this.isTruthy.value();
+    var truthy = read(this.isTruthy);
 
     if (typeof truthy === 'boolean') {
       return truthy;
     }
 
-    if (this.length) {
-      return this.length.value() !== 0;
+    if (this.lengthDep) {
+      return this.lengthDep.getValue() !== 0;
     } else {
-      return !!this.predicate.value();
+      return !!read(this.predicate);
     }
   },
 
   revalidate() {
-    if (isArray(this.predicate.value())) {
-      if (!this.length) {
-        this.length = this.addDependency(this.predicate.dependee.get('length'));
+    if (isArray(read(this.predicate))) {
+      if (!this.lengthDep) {
+        this.lengthDep = this.addMutableDependency(this.predicate.get('length'));
       }
     } else {
-      if (this.length) {
-        this.length.destroy();
-        this.length = null;
+      if (this.lengthDep) {
+        this.lengthDep.destroy();
+        this.lengthDep = null;
       }
     }
   }

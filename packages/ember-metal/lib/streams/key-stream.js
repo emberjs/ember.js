@@ -9,7 +9,7 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import Stream from "ember-metal/streams/stream";
-import { read, isStream  } from "ember-metal/streams/utils";
+import { isStream  } from "ember-metal/streams/utils";
 
 function KeyStream(source, key) {
   Ember.assert("KeyStream error: source must be a stream", isStream(source)); // TODO: This isn't necessary.
@@ -21,7 +21,7 @@ function KeyStream(source, key) {
 
   this.init(label);
   this.path = label;
-  this.source = this.addDependency(source);
+  this.sourceDep = this.addMutableDependency(source);
   this.observedObject = null;
   this.key = key;
 }
@@ -34,26 +34,26 @@ KeyStream.prototype = create(Stream.prototype);
 
 merge(KeyStream.prototype, {
   compute() {
-    var object = read(this.source);
+    var object = this.sourceDep.getValue();
     if (object) {
       return get(object, this.key);
     }
   },
 
   setValue(value) {
-    var object = read(this.source);
+    var object = this.sourceDep.getValue();
     if (object) {
       set(object, this.key, value);
     }
   },
 
   setSource(source) {
-    this.source.replace(source);
+    this.sourceDep.replace(source);
     this.notify();
   },
 
   revalidate() {
-    var object = this.source.value();
+    var object = this.sourceDep.getValue();
     if (object !== this.observedObject) {
       this.deactivate();
 

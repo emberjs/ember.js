@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import SimpleStream from "ember-metal/streams/simple-stream";
+import ProxyStream from "ember-metal/streams/proxy-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
 export default function bindSelf(env, scope, self) {
@@ -15,11 +15,11 @@ export default function bindSelf(env, scope, self) {
     return;
   }
 
-  newStream(scope, 'self', self, null);
+  newStream(scope, 'self', self, null, true);
 }
 
 function newStream(scope, key, newValue, renderNode, isSelf) {
-  var stream = new SimpleStream(newValue, isSelf ? null : key);
+  var stream = new ProxyStream(newValue, isSelf ? '' : key);
   if (renderNode) { subscribe(renderNode, scope, stream); }
   scope[key] = stream;
 }

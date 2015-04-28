@@ -117,8 +117,8 @@ Stream.prototype = {
     return this.cache;
   },
 
-  addDependency(stream) {
-    var dependency = new Dependency(this, stream);
+  addMutableDependency(object) {
+    var dependency = new Dependency(this, object);
 
     if (this.isActive) {
       dependency.subscribe();
@@ -134,6 +134,12 @@ Stream.prototype = {
     }
 
     return dependency;
+  },
+
+  addDependency(object) {
+    if (isStream(object)) {
+      this.addMutableDependency(object);
+    }
   },
 
   subscribeDependencies() {

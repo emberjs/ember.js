@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core";
 import { isGlobal } from "ember-metal/path_cache";
-import SimpleStream from "ember-metal/streams/simple-stream";
+import ProxyStream from "ember-metal/streams/proxy-stream";
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
@@ -43,5 +43,5 @@ function getGlobal(name) {
 
   // This stream should be memoized, but this path is deprecated and
   // will be removed soon so it's not worth the trouble.
-  return new SimpleStream(Ember.lookup[name], name);
+  return new ProxyStream(Ember.lookup[name], name);
 }

@@ -7,7 +7,12 @@ import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
 import create from "ember-metal/platform/create";
-import { subscribe, addDependency, read, labelsFor, labelFor } from "ember-metal/streams/utils";
+import {
+  readArray,
+  readHash,
+  labelsFor,
+  labelFor
+} from "ember-metal/streams/utils";
 
 export default function subexpr(env, scope, helperName, params, hash) {
   // TODO: Keywords and helper invocation should be integrated into
@@ -26,13 +31,6 @@ export default function subexpr(env, scope, helperName, params, hash) {
 
   var label = labelForSubexpr(params, hash, helperName);
   return new SubexprStream(params, hash, invoker, label);
-}
-
-function SubexprStream(params, hash, helper, label) {
-  this.init(label);
-  this.source = { params: params, hash: hash };
-  this.helper = helper;
-  this.subscribed = false;
 }
 
 function labelForSubexpr(params, hash, helperName) {
@@ -60,58 +58,25 @@ function labelsForHash(hash) {
   return out.join(" ");
 }
 
+function SubexprStream(params, hash, helper, label) {
+  this.init(label);
+  this.params = params;
+  this.hash = hash;
+  this.helper = helper;
+
+  for (var i = 0, l = params.length; i < l; i++) {
+    this.addDependency(params[i]);
+  }
+
+  for (var key in hash) {
+    this.addDependency(hash[key]);
+  }
+}
+
 SubexprStream.prototype = create(Stream.prototype);
 
 merge(SubexprStream.prototype, {
   compute() {
-    var sourceParams = this.source.params;
-    var sourceHash = this.source.hash;
-
-    var params = new Array(sourceParams.length);
-    var hash = {};
-
-    for (var i=0, l=sourceParams.length; i<l; i++) {
-      params[i] = read(sourceParams[i]);
-    }
-
-    for (var prop in sourceHash) {
-      hash[prop] = read(sourceHash[prop]);
-    }
-
-    return this.helper(params, hash);
-  },
-
-  _super$subscribe: Stream.prototype.subscribe,
-
-  subscribe() {
-    if (!this.subscribed) {
-      var sourceParams = this.source.params;
-      var sourceHash = this.source.hash;
-
-      for (var i=0, l=sourceParams.length; i<l; i++) {
-        addDependency(this, subscribe(sourceParams[i], this._didChange, this));
-      }
-
-      for (var prop in sourceHash) {
-        addDependency(subscribe(sourceHash[prop], this._didChange, this));
-      }
-
-      this.subscribed = true;
-    }
-
-    return this._super$subscribe.apply(this, arguments);
-  },
-
-  _didChange() {
-    this.notify();
-  },
-
-  _super$destroy: Stream.prototype.destroy,
-
-  destroy(prune) {
-    if (this._super$destroy(prune)) {
-      this.source = undefined;
-      return true;
-    }
+    return this.helper(readArray(this.params), readHash(this.hash));
   }
 });
