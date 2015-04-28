@@ -2,6 +2,7 @@ import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 
 QUnit.module("ember-htmlbars: makeViewHelper");
 
+// note: fixing this probably means breaking link-to component, which accepts params
 QUnit.skip("makes helpful assertion when called with invalid arguments", function() {
   var viewClass = { toString() { return 'Some Random Class'; } };
 

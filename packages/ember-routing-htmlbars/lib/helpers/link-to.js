@@ -287,6 +287,7 @@ import 'ember-htmlbars';
   @return {String} HTML string
   @see {Ember.LinkView}
 */
+// this has been replaced by link-to component
 function linkToHelper(params, hash) {
   // TODO: Implement more than just stub functionality here
   this.yieldIn(linkToTemplate, { href: "#", classes: hash.class });
