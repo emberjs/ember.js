@@ -162,7 +162,7 @@ export default Mixin.create(MutableEnumerable, {
     @property arrangedContent
   */
   arrangedContent: computed('content', 'sortProperties.@each', {
-    get: function(key) {
+    get(key) {
       var content = get(this, 'content');
       var isSorted = get(this, 'isSorted');
       var sortProperties = get(this, 'sortProperties');

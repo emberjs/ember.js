@@ -411,11 +411,11 @@ var Select = View.extend({
     @default null
   */
   value: computed({
-    get: function(key) {
+    get(key) {
       var valuePath = get(this, '_valuePath');
       return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
     },
-    set: function(key, value) {
+    set(key, value) {
       return value;
     }
   }).property('_valuePath', 'selection'),

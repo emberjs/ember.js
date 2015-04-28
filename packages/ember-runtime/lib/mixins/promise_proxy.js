@@ -157,10 +157,10 @@ export default Mixin.create({
     @property promise
   */
   promise: computed({
-    get: function() {
+    get() {
       throw new EmberError("PromiseProxy's promise must be set");
     },
-    set: function(key, promise) {
+    set(key, promise) {
       return tap(this, promise);
     }
   }),

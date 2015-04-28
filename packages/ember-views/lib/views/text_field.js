@@ -38,11 +38,11 @@ function canSetTypeOfInput(type) {
 function getTypeComputed() {
   if (Ember.FEATURES.isEnabled('new-computed-syntax')) {
     return computed({
-      get: function() {
+      get() {
         return 'text';
       },
 
-      set: function(key, value) {
+      set(key, value) {
         var type = 'text';
 
         if (canSetTypeOfInput(value)) {

@@ -23,10 +23,10 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
     @type Object
   */
   context: computed({
-    get: function() {
+    get() {
       return get(this, '_context');
     },
-    set: function(key, value) {
+    set(key, value) {
       set(this, '_context', value);
       return value;
     }
@@ -51,7 +51,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
     @private
   */
   _context: computed({
-    get: function() {
+    get() {
       var parentView, controller;
 
       if (controller = get(this, 'controller')) {
@@ -64,7 +64,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
       }
       return null;
     },
-    set: function(key, value) {
+    set(key, value) {
       return value;
     }
   }),
@@ -79,14 +79,14 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
     @type Object
   */
   controller: computed({
-    get: function() {
+    get() {
       if (this._controller) {
         return this._controller;
       }
 
       return this.parentView ? get(this.parentView, 'controller') : null;
     },
-    set: function(_, value) {
+    set(_, value) {
       this._controller = value;
       return value;
     }

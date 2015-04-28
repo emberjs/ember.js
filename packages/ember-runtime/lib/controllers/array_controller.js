@@ -205,10 +205,10 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   model: computed({
-    get: function(key) {
+    get(key) {
       return Ember.A();
     },
-    set: function(key, value) {
+    set(key, value) {
       Ember.assert(
         'ArrayController expects `model` to implement the Ember.Array mixin. ' +
         'This can often be fixed by wrapping your model with `Ember.A()`.',
