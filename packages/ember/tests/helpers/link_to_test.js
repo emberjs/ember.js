@@ -1224,7 +1224,7 @@ QUnit.test("{{link-to}} populates href with default query param values even with
   equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
 });
 
-QUnit.skip("{{link-to}} populates href with default query param values with empty query-params object", function() {
+QUnit.test("{{link-to}} populates href with default query param values with empty query-params object", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo'],
     foo: '123'
@@ -1235,7 +1235,7 @@ QUnit.skip("{{link-to}} populates href with default query param values with empt
   equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
 });
 
-QUnit.skip("{{link-to}} populates href with supplied query param values", function() {
+QUnit.test("{{link-to}} populates href with supplied query param values", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo'],
     foo: '123'
@@ -1246,7 +1246,7 @@ QUnit.skip("{{link-to}} populates href with supplied query param values", functi
   equal(Ember.$('#the-link').attr('href'), "/?foo=456", "link has right href");
 });
 
-QUnit.skip("{{link-to}} populates href with partially supplied query param values", function() {
+QUnit.test("{{link-to}} populates href with partially supplied query param values", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo', 'bar'],
     foo: '123',
@@ -1258,7 +1258,7 @@ QUnit.skip("{{link-to}} populates href with partially supplied query param value
   equal(Ember.$('#the-link').attr('href'), "/?foo=456", "link has right href");
 });
 
-QUnit.skip("{{link-to}} populates href with partially supplied query param values, but omits if value is default value", function() {
+QUnit.test("{{link-to}} populates href with partially supplied query param values, but omits if value is default value", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo', 'bar'],
     foo: '123',
@@ -1270,7 +1270,7 @@ QUnit.skip("{{link-to}} populates href with partially supplied query param value
   equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
 });
 
-QUnit.skip("{{link-to}} populates href with fully supplied query param values", function() {
+QUnit.test("{{link-to}} populates href with fully supplied query param values", function() {
   App.IndexController = Ember.Controller.extend({
     queryParams: ['foo', 'bar'],
     foo: '123',
@@ -1343,7 +1343,7 @@ QUnit.test("doesn't update controller QP properties on current route when invoke
   deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
 });
 
-QUnit.skip("updates controller QP properties on current route when invoked", function() {
+QUnit.test("updates controller QP properties on current route when invoked", function() {
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
   bootApplication();
 
@@ -1361,7 +1361,7 @@ QUnit.skip("updates controller QP properties on current route when invoked (infe
   deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, "controller QP properties updated");
 });
 
-QUnit.skip("updates controller QP properties on other route after transitioning to that route", function() {
+QUnit.test("updates controller QP properties on other route after transitioning to that route", function() {
   Router.map(function() {
     this.route('about');
   });
@@ -1583,7 +1583,7 @@ QUnit.test("The {{link-to}} helper applies active class to parent route", functi
   shouldNotBeActive('#parent-link-qp');
 });
 
-QUnit.skip("The {{link-to}} helper disregards query-params in activeness computation when current-when specified", function() {
+QUnit.test("The {{link-to}} helper disregards query-params in activeness computation when current-when specified", function() {
   App.Router.map(function() {
     this.route('parent');
   });
