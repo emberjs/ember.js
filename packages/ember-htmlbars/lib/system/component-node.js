@@ -88,6 +88,7 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
   if (component) {
     var snapshot = readHash(attrs);
     env.renderer.setAttrs(this.component, snapshot);
+    env.renderer.willCreateElement(component);
     env.renderer.willRender(component);
   }
 

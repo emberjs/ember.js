@@ -112,9 +112,6 @@ Renderer.prototype.willCreateElement = function (view) {
       return details;
     });
   }
-  if (view._transitionTo) {
-    view._transitionTo('inBuffer');
-  }
 }; // inBuffer
 
 Renderer.prototype.didCreateElement = function (view, element) {
