@@ -1,4 +1,4 @@
-import { merge, createObject } from "../htmlbars-util/object-utils";
+import { merge, createObject, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 
 /**
@@ -236,7 +236,7 @@ function dirtyCheck(env, morph, visitor, callback) {
     callback(visitor);
   } else {
     if (morph.lastEnv) {
-      env = merge(morph.lastEnv, env);
+      env = merge(shallowCopy(morph.lastEnv), env);
     }
     validateChildMorphs(env, morph, visitor);
   }
