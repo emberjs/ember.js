@@ -4,7 +4,12 @@
 */
 
 import { read } from "ember-metal/streams/utils";
+import { isMutableBinding } from "ember-htmlbars/keywords/mut";
 
 export default function getValue(ref) {
-  return read(ref);
+  if (ref && ref.isMutableBinding === isMutableBinding) {
+    return read(ref).value();
+  } else {
+    return read(ref);
+  }
 }

@@ -15,6 +15,7 @@ import updateSelf from "ember-htmlbars/hooks/update-self";
 import getRoot from "ember-htmlbars/hooks/get-root";
 import getChild from "ember-htmlbars/hooks/get-child";
 import getValue from "ember-htmlbars/hooks/get-value";
+import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
 import cleanupRenderNode from "ember-htmlbars/hooks/cleanup-render-node";
 import destroyRenderNode from "ember-htmlbars/hooks/destroy-render-node";
 import willCleanupTree from "ember-htmlbars/hooks/will-cleanup-tree";
@@ -45,6 +46,7 @@ merge(emberHooks, {
   getRoot: getRoot,
   getChild: getChild,
   getValue: getValue,
+  getCellOrValue: getCellOrValue,
   subexpr: subexpr,
   concat: concat,
   cleanupRenderNode: cleanupRenderNode,
@@ -73,6 +75,7 @@ import textarea from "ember-htmlbars/keywords/textarea";
 import collection from "ember-htmlbars/keywords/collection";
 import templateKeyword from "ember-htmlbars/keywords/template";
 import legacyYield from "ember-htmlbars/keywords/legacy-yield";
+import mut from "ember-htmlbars/keywords/mut";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -88,6 +91,7 @@ registerKeyword('input', input);
 registerKeyword('textarea', textarea);
 registerKeyword('collection', collection);
 registerKeyword('legacy-yield', legacyYield);
+registerKeyword('mut', mut);
 
 export default {
   hooks: emberHooks,
