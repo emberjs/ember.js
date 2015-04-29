@@ -462,6 +462,39 @@ export var or = generateComputedWithProperties(function(properties) {
 });
 
 /**
+  A computed property which performs a logical `nor` on the
+  original values for the provided dependent properties.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    readyForRain: Ember.computed.nor('hasJacket', 'hasUmbrella')
+  });
+
+  var hamster = Hamster.create();
+
+  hamster.get('readyForRain'); // true
+  hamster.set('hasUmbrella', true);
+  hamster.get('readyForRain'); // false
+  ```
+
+  @method or
+  @for Ember.computed
+  @param {String} dependentKey*
+  @return {Ember.ComputedProperty} computed property which performs
+  a logical `nor` on the values of all the original values for properties.
+*/
+export var nor = generateComputedWithProperties(function(properties) {
+  for (var key in properties) {
+    if (properties.hasOwnProperty(key) && properties[key]) {
+      return false;
+    }
+  }
+  return true;
+});
+
+/**
   A computed property that returns the first truthy value
   from a list of dependent properties.
 
