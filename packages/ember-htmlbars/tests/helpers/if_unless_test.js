@@ -8,7 +8,6 @@ import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from "ember-template-compiler/system/compile";
 
 import { set } from 'ember-metal/property_set';
-import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-metal/utils';
 import { forEach } from 'ember-metal/enumerable_utils';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -281,7 +280,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
       set(view, 'onDrugs', val);
     });
 
-    equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
+    equal(view.$('h1').text(), 'Eat your vegetables', `renders block when conditional is "${String(val)}"; ${typeOf(val)}`);
 
     run(function() {
       set(view, 'onDrugs', true);
@@ -336,7 +335,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), '', fmt('hides block when conditional is "%@"', [String(val)]));
+    equal(view.$('h1').text(), '', `hides block when conditional is "${String(val)}"`);
 
     run(function() {
       set(view, 'inception', true);
@@ -371,7 +370,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), 'BOONG?', fmt('renders alternate if %@', [String(val)]));
+    equal(view.$('h1').text(), 'BOONG?', `renders alternate if ${String(val)}`);
 
     run(function() {
       set(view, 'inception', true);
@@ -444,7 +443,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
       set(view, 'onDrugs', val);
     });
 
-    equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
+    equal(view.$('h1').text(), 'Eat your vegetables', `renders block when conditional is "${String(val)}"; ${typeOf(val)}`);
 
     run(function() {
       set(view, 'onDrugs', true);
@@ -499,7 +498,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), '', fmt('hides block when conditional is "%@"', [String(val)]));
+    equal(view.$('h1').text(), '', `hides block when conditional is "${String(val)}"`);
 
     run(function() {
       set(view, 'inception', true);
@@ -534,7 +533,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), 'BOONG?', fmt('renders alternate if %@', [String(val)]));
+    equal(view.$('h1').text(), 'BOONG?', `renders alternate if ${String(val)}`);
 
     run(function() {
       set(view, 'inception', true);

@@ -4,7 +4,6 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import { forEach } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
-import { fmt } from "ember-runtime/system/string";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
@@ -181,7 +180,7 @@ QUnit.test("should remove an item from DOM when an item is removed from the cont
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
+    equal(view.$(`:nth-child(${String(idx+1)})`).text(), item);
   });
 });
 
@@ -211,7 +210,7 @@ QUnit.test("it updates the view if an item is replaced", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(`:nth-child(${String(idx+1)})`).text()), item, "postcond - correct array update");
   });
 });
 
@@ -242,7 +241,7 @@ QUnit.test("can add and replace in the same runloop", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(`:nth-child(${String(idx+1)})`).text()), item, "postcond - correct array update");
   });
 
 });
@@ -274,7 +273,7 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
   });
 
   forEach(content, function(item, idx) {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(`:nth-child(${String(idx+1)})`).text()), item, "postcond - correct array update");
   });
 });
 
@@ -307,7 +306,7 @@ QUnit.test("can add and replace complicatedly", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(fmt(':nth-child(%@)', [String(idx+1)])).text());
+    equal(trim(view.$(`:nth-child(${String(idx+1)})`).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(`:nth-child(${String(idx+1)})`).text());
   });
 });
 
@@ -341,7 +340,7 @@ QUnit.test("can add and replace complicatedly harder", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(`:nth-child(${String(idx+1)})`).text()), item, "postcond - correct array update");
   });
 });
 

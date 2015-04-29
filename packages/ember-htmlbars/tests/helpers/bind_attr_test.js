@@ -672,5 +672,5 @@ QUnit.test('specifying `<div {{bind-attr style=userValue}}></div>` works properl
 
   runAppend(view);
 
-  deepEqual(warnings, [ ]);
+  deepEqual(warnings, []);
 });

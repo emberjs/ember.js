@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 import { IS_BINDING } from "ember-metal/mixin";
-import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
 import CollectionView from "ember-views/views/collection_view";
 import { readViewFactory } from "ember-views/streams/utils";
@@ -161,7 +160,7 @@ export function collectionHelper(params, hash, options, env) {
   var collectionClass;
   if (path) {
     collectionClass = readViewFactory(path, container);
-    Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
+    Ember.assert(`${data.view} #collection: Could not find collection class ${path}`, !!collectionClass);
   } else {
     collectionClass = CollectionView;
   }
@@ -185,7 +184,7 @@ export function collectionHelper(params, hash, options, env) {
     itemViewClass = container.lookupFactory('view:'+itemViewClass);
   }
 
-  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
+  Ember.assert(`${data.view} #collection: Could not find itemViewClass ${itemViewClass}`, !!itemViewClass);
 
   delete hash.itemViewClass;
   delete hash.itemView;

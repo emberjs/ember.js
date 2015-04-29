@@ -41,7 +41,7 @@ QUnit.test('accessing model properties via proxy behavior results in a deprecati
 
   expectDeprecation(function() {
     controller.get('bar');
-  }, /object proxying is deprecated\. Please use `model\.bar` instead\./);
+  }, /object proxying is deprecated\. Please use "model\.bar" instead\./);
 });
 
 QUnit.test('setting model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {
@@ -58,7 +58,7 @@ QUnit.test('setting model properties via proxy behavior results in a deprecation
 
   expectDeprecation(function() {
     controller.set('bar', 'derp');
-  }, /object proxying is deprecated\. Please use `model\.bar` instead\./);
+  }, /object proxying is deprecated\. Please use "model\.bar" instead\./);
 });
 
 QUnit.test('auto-generated controllers are not deprecated', function() {
