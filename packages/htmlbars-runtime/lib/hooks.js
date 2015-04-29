@@ -539,7 +539,7 @@ export function handleKeyword(path, morph, env, scope, params, hash, template, i
 
   if (keyword.childEnv) {
     morph.lastEnv = keyword.childEnv(morph.state);
-    env = merge(morph.lastEnv, env);
+    env = merge(shallowCopy(morph.lastEnv), env);
   }
 
   var firstTime = !morph.rendered;
