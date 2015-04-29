@@ -276,7 +276,7 @@ var LinkComponent = EmberComponent.extend({
   _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
 
-    if (this.preventDefault !== false) {
+    if (this.attrs.preventDefault !== false) {
       var targetAttribute = this.attrs.target;
       if (!targetAttribute || targetAttribute === '_self') {
         event.preventDefault();

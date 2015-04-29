@@ -1141,7 +1141,7 @@ QUnit.test("the {{link-to}} helper calls preventDefault", function() {
   equal(event.isDefaultPrevented(), true, "should preventDefault");
 });
 
-QUnit.skip("the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option", function() {
+QUnit.test("the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option", function() {
   Ember.TEMPLATES.index = compile("{{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}");
 
   Router.map(function() {
