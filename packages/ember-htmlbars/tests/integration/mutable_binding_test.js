@@ -188,3 +188,40 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
   assert.strictEqual(bottom.attrs.setMe.value(), 13, "precond - the set took effect");
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+
+QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
+  var middle;
+
+  registry.register('component:middle-mut', Component.extend({
+    // no longer mutable
+    layout: compile('<bottom-mut setMe={{attrs.value}} />'),
+
+    didInsertElement() {
+      middle = this;
+    }
+  }));
+
+  registry.register('component:bottom-mut', Component.extend({
+    layout: compile('<p class="bottom">{{attrs.setMe}}</p>')
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('<middle-mut value={{mut view.val}} />'),
+    val: 12
+  });
+
+  runAppend(view);
+
+  assert.strictEqual(view.$('p.bottom').text(), "12");
+
+  run(() => middle.attrs.value.update(13));
+
+  assert.strictEqual(middle.attrs.value.value(), 13, "precond - the set took effect");
+  assert.strictEqual(view.$('p.bottom').text(), "13");
+  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+});
+
+}
