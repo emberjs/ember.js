@@ -672,7 +672,7 @@ function normalizeArray(env, array) {
   var out = new Array(array.length);
 
   for (var i=0, l=array.length; i<l; i++) {
-    out[i] = env.hooks.getValue(array[i]);
+    out[i] = env.hooks.getCellOrValue(array[i]);
   }
 
   return out;
@@ -682,7 +682,7 @@ function normalizeObject(env, object) {
   var out = {};
 
   for (var prop in object)  {
-    out[prop] = env.hooks.getValue(object[prop]);
+    out[prop] = env.hooks.getCellOrValue(object[prop]);
   }
 
   return out;
@@ -900,8 +900,12 @@ export function getChild(value, key) {
   return value[key];
 }
 
-export function getValue(value) {
-  return value;
+export function getValue(reference) {
+  return reference;
+}
+
+export function getCellOrValue(reference) {
+  return reference;
 }
 
 export function component(morph, env, scope, tagName, attrs, template, visitor) {
@@ -959,6 +963,7 @@ export default {
   getChild: getChild,
   getRoot: getRoot,
   getValue: getValue,
+  getCellOrValue: getCellOrValue,
   keywords: keywords,
   linkRenderNode: linkRenderNode,
   partial: partial,
