@@ -4,6 +4,14 @@
   "timeout": 540,
   "parallel": 4,
   "launchers": {
+    "SL_iOS_82": {
+      "command": "./node_modules/.bin/ember-cli-sauce -b iphone -v 8.2 -p 'OS X 10.10' -dn 'iPhone Simulator' --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_android_51": {
+      "command": "./node_modules/.bin/ember-cli-sauce -b android -v 5.1 -p 'Linux' -dn 'Android Emulator' --no-ct -u <url>",
+      "protocol": "tap"
+    },
     "SL_Chrome_Current": {
       "command": "./node_modules/.bin/ember-cli-sauce -b chrome --no-ct -u <url>",
       "protocol": "tap"
@@ -43,6 +51,8 @@
     "SL_Safari_Current",
     "SL_IE_11",
     "SL_IE_10",
-    "SL_IE_9"
+    "SL_IE_9",
+    "SL_iOS_82",
+    "SL_android_51"
   ]
 }
