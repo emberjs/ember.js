@@ -48,7 +48,8 @@ test("hooks are present", function () {
     "cleanupRenderNode",
     "destroyRenderNode",
     "willCleanupTree",
-    "didCleanupTree"
+    "didCleanupTree",
+    "getCellOrValue"
   ];
 
   for (var i = 0; i < hookNames.length; i++) {
