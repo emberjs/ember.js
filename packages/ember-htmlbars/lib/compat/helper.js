@@ -113,6 +113,9 @@ HandlebarsCompatibleHelper.prototype = {
 export function registerHandlebarsCompatibleHelper(name, value) {
   if (value && value.isLegacyViewHelper) {
     registerKeyword(name, function(morph, env, scope, params, hash, template, inverse, visitor) {
+      Ember.assert("You can only pass attributes (such as name=value) not bare " +
+             "values to a helper for a View found in '" + value.viewClass + "'", params.length === 0);
+
       env.hooks.keyword('view', morph, env, scope, [value.viewClass], hash, template, inverse, visitor);
       return true;
     });
