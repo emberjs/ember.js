@@ -1352,7 +1352,7 @@ QUnit.test("updates controller QP properties on current route when invoked", fun
   deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, "controller QP properties updated");
 });
 
-QUnit.skip("updates controller QP properties on current route when invoked (inferred route)", function() {
+QUnit.test("updates controller QP properties on current route when invoked (inferred route)", function() {
   Ember.TEMPLATES.index = compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}");
   bootApplication();
 
@@ -1377,7 +1377,7 @@ QUnit.test("updates controller QP properties on other route after transitioning 
   equal(container.lookup('controller:application').get('currentPath'), "about");
 });
 
-QUnit.skip("supplied QP properties can be bound", function() {
+QUnit.test("supplied QP properties can be bound", function() {
   var indexController = container.lookup('controller:index');
   Ember.TEMPLATES.index = compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}");
 
@@ -1388,7 +1388,7 @@ QUnit.skip("supplied QP properties can be bound", function() {
   equal(Ember.$('#the-link').attr('href'), '/?foo=ASL');
 });
 
-QUnit.skip("supplied QP properties can be bound (booleans)", function() {
+QUnit.test("supplied QP properties can be bound (booleans)", function() {
   var indexController = container.lookup('controller:index');
   Ember.TEMPLATES.index = compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}");
 
@@ -1403,7 +1403,7 @@ QUnit.skip("supplied QP properties can be bound (booleans)", function() {
   deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
 });
 
-QUnit.skip("href updates when unsupplied controller QP props change", function() {
+QUnit.test("href updates when unsupplied controller QP props change", function() {
   var indexController = container.lookup('controller:index');
   Ember.TEMPLATES.index = compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}");
 
@@ -1416,7 +1416,7 @@ QUnit.skip("href updates when unsupplied controller QP props change", function()
   equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
 });
 
-QUnit.skip("The {{link-to}} applies activeClass when query params are not changed", function() {
+QUnit.test("The {{link-to}} applies activeClass when query params are not changed", function() {
   Ember.TEMPLATES.index = compile(
     "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
     "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
@@ -1506,7 +1506,7 @@ QUnit.skip("The {{link-to}} applies activeClass when query params are not change
   shouldNotBeActive('#change-search-same-sort-child-and-parent');
 });
 
-QUnit.skip("The {{link-to}} applies active class when query-param is number", function() {
+QUnit.test("The {{link-to}} applies active class when query-param is number", function() {
   Ember.TEMPLATES.index = compile(
     "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
 
@@ -1523,7 +1523,7 @@ QUnit.skip("The {{link-to}} applies active class when query-param is number", fu
   shouldBeActive('#page-link');
 });
 
-QUnit.skip("The {{link-to}} applies active class when query-param is array", function() {
+QUnit.test("The {{link-to}} applies active class when query-param is array", function() {
   Ember.TEMPLATES.index = compile(
     "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
     "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +

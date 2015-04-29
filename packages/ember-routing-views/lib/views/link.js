@@ -356,8 +356,9 @@ var LinkComponent = EmberComponent.extend({
 
     if (lastParam && lastParam.isQueryParams) {
       queryParams = params.pop();
+    } else {
+      queryParams = {};
     }
-    this.set('queryParams', queryParams || {});
 
     if (attrs.disabledClass) {
       this.set('disabledClass', attrs.disabledClass);
@@ -391,7 +392,7 @@ var LinkComponent = EmberComponent.extend({
       set(this, 'loadingClass', attrs.loadingClass);
     }
 
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       var value = params[i];
 
       while (ControllerMixin.detect(value)) {
@@ -402,11 +403,29 @@ var LinkComponent = EmberComponent.extend({
       params[i] = value;
     }
 
-    if (params.length !== 0) {
-      this.set('targetRouteName', params.shift());
+    let targetRouteName;
+    let models = [];
+    let onlyQueryParamsSupplied = (params.length === 0);
+
+    if (onlyQueryParamsSupplied) {
+      var appController = this.container.lookup('controller:application');
+      if (appController) {
+        targetRouteName = get(appController, 'currentRouteName');
+      }
+    } else {
+      targetRouteName = params[0];
+
+      for (let i = 1; i < params.length; i++) {
+        models.push(params[i]);
+      }
     }
 
-    this.set('models', params);
+    let resolvedQueryParams = getResolvedQueryParams(queryParams, targetRouteName);
+
+    this.set('targetRouteName', targetRouteName);
+    this.set('models', models);
+    this.set('queryParams', queryParams);
+    this.set('resolvedQueryParams', resolvedQueryParams);
   }
 });
 
@@ -438,7 +457,21 @@ function modelsAreLoaded(models) {
 
 function isActiveForRoute(view, routeName, isCurrentWhenSpecified, routerState) {
   var service = get(view, '_routing');
-  return service.isActiveForRoute(get(view, 'models'), get(view, 'queryParams'), routeName, routerState, isCurrentWhenSpecified);
+  return service.isActiveForRoute(get(view, 'models'), get(view, 'resolvedQueryParams'), routeName, routerState, isCurrentWhenSpecified);
+}
+
+function getResolvedQueryParams(queryParamsObject, targetRouteName) {
+  var resolvedQueryParams = {};
+
+  if (!queryParamsObject) { return resolvedQueryParams; }
+
+  var values = queryParamsObject.values;
+  for (var key in values) {
+    if (!values.hasOwnProperty(key)) { continue; }
+    resolvedQueryParams[key] = values[key];
+  }
+
+  return resolvedQueryParams;
 }
 
 export default LinkComponent;
