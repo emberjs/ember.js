@@ -257,6 +257,28 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   ]);
 });
 
+QUnit.test("changing a component's displayed properties inside didInsertElement() is deprecated", function(assert) {
+  let component = Component.extend({
+    layout: compile('{{handle}}'),
+    handle: "@wycats",
+    container: container,
+
+    didInsertElement() {
+      this.set('handle', "@tomdale");
+    }
+  }).create();
+
+  expectDeprecation(() => {
+    runAppend(component);
+  }, /modified inside the didInsertElement hook/);
+
+  assert.strictEqual(component.$().text(), "@tomdale");
+
+  run(() => {
+    component.destroy();
+  });
+});
+
 QUnit.test('manually re-rendering in `willReceiveAttrs` triggers lifecycle hooks on the child even if the nodes were not dirty', function() {
   var components = {};
 

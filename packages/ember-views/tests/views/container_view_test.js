@@ -630,7 +630,7 @@ QUnit.test("Child view can only be added to one container at a time", function (
   });
 });
 
-QUnit.test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
+QUnit.test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function (assert) {
 
   var counter = 0;
   var root = ContainerView.create({});
@@ -655,11 +655,13 @@ QUnit.test("if a containerView appends a child in its didInsertElement event, th
     root.appendTo('#qunit-fixture');
   });
 
-  expectAssertion(function() {
+  expectDeprecation(function() {
     run(function() {
       root.pushObject(container);
     });
-  }, "A component was modified during the didInsertElement hook. You should not change any properties on components, models or services during didInsertElement");
+  }, /was modified inside the didInsertElement hook/);
+
+  assert.strictEqual(counter, 1, "child didInsertElement was invoked");
 
   run(function() {
     root.destroy();

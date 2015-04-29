@@ -3902,3 +3902,45 @@ QUnit.test("Can disconnect from nested render helpers", function() {
   Ember.run(router, 'send', 'disconnect');
   equal(Ember.$('#qunit-fixture .bar').text(), '');
 });
+
+QUnit.test("Components inside an outlet have their didInsertElement hook invoked when the route is displayed", function(assert) {
+  Ember.TEMPLATES.index = compile('{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}');
+
+  var myComponentCounter = 0;
+  var otherComponentCounter = 0;
+  var indexController;
+
+  App.IndexController = Ember.Controller.extend({
+    showFirst: true
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    setupController(controller) {
+      indexController = controller;
+    }
+  });
+
+  App.MyComponentComponent = Ember.Component.extend({
+    didInsertElement() {
+      myComponentCounter++;
+    }
+  });
+
+  App.OtherComponentComponent = Ember.Component.extend({
+    didInsertElement() {
+      otherComponentCounter++;
+    }
+  });
+
+  bootApplication();
+
+  assert.strictEqual(myComponentCounter, 1, "didInsertElement invoked on displayed component");
+  assert.strictEqual(otherComponentCounter, 0, "didInsertElement not invoked on displayed component");
+
+  Ember.run(function() {
+    indexController.set('showFirst', false);
+  });
+
+  assert.strictEqual(myComponentCounter, 1, "didInsertElement not invoked on displayed component");
+  assert.strictEqual(otherComponentCounter, 1, "didInsertElement invoked on displayed component");
+});
