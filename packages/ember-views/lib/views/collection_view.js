@@ -361,16 +361,11 @@ var CollectionView = ContainerView.extend({
 
         view = this.createChildView(itemViewClass, itemViewProps);
 
-        if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
-          if (this.blockParams > 1) {
-            view._blockArguments = [item, view.getStream('_view.contentIndex')];
-          } else if (this.blockParams === 1) {
-            view._blockArguments = [item];
-          }
-        } else {
-          if (this.blockParams > 0) {
-            view._blockArguments = [item];
-          }
+        if (this.blockParams > 0) {
+          view._blockArguments = [item];
+        }
+        if (this.blockParams > 1) {
+          view._blockArguments.push(view.getStream('_view.contentIndex'));
         }
 
         addedViews.push(view);
@@ -378,13 +373,11 @@ var CollectionView = ContainerView.extend({
 
       this.replace(start, 0, addedViews);
 
-      if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
-        if (this.blockParams > 1) {
-          var childViews = this._childViews;
-          for (idx = start+added; idx < len; idx++) {
-            view = childViews[idx];
-            set(view, 'contentIndex', idx);
-          }
+      if (this.blockParams > 1) {
+        var childViews = this._childViews;
+        for (idx = start+added; idx < len; idx++) {
+          view = childViews[idx];
+          set(view, 'contentIndex', idx);
         }
       }
     } else {
