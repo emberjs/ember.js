@@ -226,7 +226,7 @@ QUnit.test("it should support #with this as qux", function() {
 
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
-QUnit.skip("it should wrap context with object controller [DEPRECATED]", function() {
+QUnit.test("it should wrap context with object controller [DEPRECATED]", function() {
   var childController;
 
   var Controller = ObjectController.extend({
@@ -259,9 +259,9 @@ QUnit.skip("it should wrap context with object controller [DEPRECATED]", functio
   registry.register('controller:person', Controller);
 
   expectDeprecation(objectControllerDeprecation);
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
+
+  runAppend(view);
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 

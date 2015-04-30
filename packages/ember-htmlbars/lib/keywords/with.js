@@ -5,19 +5,23 @@ export default {
   setupState(state, env, scope, params, hash) {
     var controller = hash.controller;
 
-    if (controller && !state.controller) {
-      var context = params[0];
-      var controllerFactory = env.container.lookupFactory('controller:' + controller);
-      var parentController = scope.view ? get(scope.view, 'context') : null;
+    if (controller) {
+      if (!state.controller) {
+        var context = params[0];
+        var controllerFactory = env.container.lookupFactory('controller:' + controller);
+        var parentController = scope.view ? get(scope.view, 'context') : null;
 
-      var controllerInstance = controllerFactory.create({
-        model: env.hooks.getValue(context),
-        parentController: parentController,
-        target: parentController
-      });
+        var controllerInstance = controllerFactory.create({
+          model: env.hooks.getValue(context),
+          parentController: parentController,
+          target: parentController
+        });
 
-      params[0] = controllerInstance;
-      return { controller: controllerInstance };
+        params[0] = controllerInstance;
+        return { controller: controllerInstance };
+      }
+
+      return state;
     }
 
     return { controller: null };
