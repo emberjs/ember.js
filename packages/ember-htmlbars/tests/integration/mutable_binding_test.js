@@ -189,6 +189,7 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
 
+// jscs:disable validateIndentation
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
 
 QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
@@ -225,3 +226,4 @@ QUnit.test('mutable bindings work as angle-bracket component attributes', functi
 });
 
 }
+// jscs:enable validateIndentation
