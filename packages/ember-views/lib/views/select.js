@@ -543,11 +543,18 @@ var Select = View.extend({
   _setDefaults() {
     var selection = get(this, 'selection');
     var value = get(this, 'value');
+    var prompt = get(this, 'prompt');
+    var multiple = get(this, 'multiple');
+    var content = get(this, 'content');
 
     if (!isNone(selection)) { this.selectionDidChange(); }
     if (!isNone(value)) { this.valueDidChange(); }
     if (isNone(selection)) {
-      this._change();
+      if (!prompt && !multiple) {
+        property_set.set(this, 'selection', content.objectAt(0));
+      } else {
+        this._change();
+      }
     }
   },
 
@@ -562,7 +569,7 @@ var Select = View.extend({
       return;
     }
 
-    if (prompt) {selectedIndex -= 1; } else { selectedIndex = 0; }
+    if (prompt) {selectedIndex -= 1; }
     set(this, 'selection', content.objectAt(selectedIndex));
   },
 
