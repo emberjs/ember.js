@@ -562,7 +562,7 @@ var Select = View.extend({
       return;
     }
 
-    if (prompt) { selectedIndex -= 1; }
+    if (prompt) {selectedIndex -= 1; } else { selectedIndex = 0; }
     set(this, 'selection', content.objectAt(selectedIndex));
   },
 
