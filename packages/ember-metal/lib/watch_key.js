@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {
   meta as metaFor,
-  typeOf
+  isArray
 } from "ember-metal/utils";
 import {
   defineProperty as o_defineProperty,
@@ -14,7 +14,7 @@ import {
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && typeOf(obj) === 'array') { return; }
+  if (keyName === 'length' && isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
   var watching = m.watching;

@@ -5,7 +5,6 @@
 
 import AttrNode from "./attr_node";
 import { fmt } from "ember-runtime/system/string";
-import { typeOf } from "ember-metal/utils";
 import { read } from "ember-metal/streams/utils";
 import o_create from "ember-metal/platform/create";
 
@@ -31,7 +30,7 @@ LegacyBindAttrNode.prototype.render = function render(buffer) {
   }
 
   Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]),
-               value === null || value === undefined || typeOf(value) === 'number' || typeOf(value) === 'string' || typeOf(value) === 'boolean' || !!(value && value.toHTML));
+               value === null || value === undefined || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' || !!(value && value.toHTML));
 
   if (this.lastValue !== null || value !== null) {
     this._deprecateEscapedStyle(value);

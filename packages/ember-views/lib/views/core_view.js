@@ -12,8 +12,6 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
 import { get } from "ember-metal/property_get";
 import { computed } from "ember-metal/computed";
 
-import { typeOf } from "ember-metal/utils";
-
 function K() { return this; }
 
 // Normally, the renderer is injected by the container when the view is looked
@@ -120,7 +118,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   has(name) {
-    return typeOf(this[name]) === 'function' || this._super(name);
+    return typeof this[name] === 'function' || this._super(name);
   },
 
   destroy() {
