@@ -7,7 +7,7 @@ import {
 } from "ember-metal/streams/utils";
 import create from 'ember-metal/platform/create';
 import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
+import { isArray } from "ember-runtime/utils";
 
 export default function shouldDisplay(predicate) {
   if (isStream(predicate)) {

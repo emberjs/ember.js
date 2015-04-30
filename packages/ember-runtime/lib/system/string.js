@@ -4,9 +4,9 @@
 */
 import Ember from "ember-metal/core"; // Ember.STRINGS, Ember.FEATURES
 import {
-  isArray,
   inspect as emberInspect
 } from "ember-metal/utils";
+import { isArray } from "ember-runtime/utils";
 
 import Cache from "ember-metal/cache";
 

@@ -1,4 +1,4 @@
-import { typeOf } from 'ember-metal/utils';
+import { typeOf } from 'ember-runtime/utils';
 import Comparable from 'ember-runtime/mixins/comparable';
 
 var TYPE_ORDER = {

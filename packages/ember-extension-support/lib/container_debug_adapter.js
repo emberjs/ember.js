@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import { A as emberA } from "ember-runtime/system/native_array";
-import { typeOf } from "ember-metal/utils";
+import { typeOf } from "ember-runtime/utils";
 import {
   dasherize,
   classify

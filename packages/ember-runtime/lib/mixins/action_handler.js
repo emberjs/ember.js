@@ -5,7 +5,6 @@
 import merge from "ember-metal/merge";
 import { Mixin } from 'ember-metal/mixin';
 import { get } from "ember-metal/property_get";
-import { typeOf } from "ember-metal/utils";
 
 /**
   The `Ember.ActionHandler` mixin implements support for moving an `actions`
@@ -159,9 +158,9 @@ var ActionHandler = Mixin.create({
     if (!props._actions) {
       Ember.assert("'actions' should not be a function", typeof(props.actions) !== 'function');
 
-      if (typeOf(props.actions) === 'object') {
+      if (!!props.actions && typeof props.actions === 'object') {
         hashName = 'actions';
-      } else if (typeOf(props.events) === 'object') {
+      } else if (!!props.events && typeof props.events === 'object') {
         Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor' +
                         ' of putting them in an `actions` object', false);
         hashName = 'events';

@@ -5,7 +5,6 @@
 import Ember from "ember-metal/core"; // Ember.lookup, Ember.assert
 
 import { get } from "ember-metal/property_get";
-import { typeOf } from "ember-metal/utils";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 
@@ -31,7 +30,7 @@ var TargetActionSupport = Mixin.create({
   targetObject: computed(function() {
     var target = get(this, 'target');
 
-    if (typeOf(target) === "string") {
+    if (typeof target === 'string') {
       var value = get(this, target);
       if (value === undefined) {
         value = get(Ember.lookup, target);
@@ -46,7 +45,7 @@ var TargetActionSupport = Mixin.create({
   actionContextObject: computed(function() {
     var actionContext = get(this, 'actionContext');
 
-    if (typeOf(actionContext) === "string") {
+    if (typeof actionContext === "string") {
       var value = get(this, actionContext);
       if (value === undefined) { value = get(Ember.lookup, actionContext); }
       return value;
