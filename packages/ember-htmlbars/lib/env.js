@@ -76,6 +76,7 @@ import collection from "ember-htmlbars/keywords/collection";
 import templateKeyword from "ember-htmlbars/keywords/template";
 import legacyYield from "ember-htmlbars/keywords/legacy-yield";
 import mut from "ember-htmlbars/keywords/mut";
+import each from "ember-htmlbars/keywords/each";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -92,6 +93,7 @@ registerKeyword('textarea', textarea);
 registerKeyword('collection', collection);
 registerKeyword('legacy-yield', legacyYield);
 registerKeyword('mut', mut);
+registerKeyword('each', each);
 
 export default {
   hooks: emberHooks,

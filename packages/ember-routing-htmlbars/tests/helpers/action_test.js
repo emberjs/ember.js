@@ -130,7 +130,7 @@ QUnit.test("Inside a yield, the target points at the original target", function(
   equal(watted, true, "The action was called on the right context");
 });
 
-QUnit.skip("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
+QUnit.test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function({ node }) {

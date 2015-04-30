@@ -15,6 +15,11 @@ export default function bindSelf(env, scope, self) {
     return;
   }
 
+  if (self && self.isLegacyEachWithControllerItem) {
+    self = self.self;
+    newStream(scope.locals, 'controller', self);
+  }
+
   newStream(scope, 'self', self, null, true);
 }
 
