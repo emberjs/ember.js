@@ -118,6 +118,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   init() {
     this._super.apply(this, arguments);
+    set(this, 'controller', this);
     set(this, 'context', this);
   },
 

@@ -29,7 +29,7 @@ QUnit.test("The context of an Ember.Component is itself", function() {
   strictEqual(component, component.get('context'), "A component's context is itself");
 });
 
-QUnit.skip("The controller (target of `action`) of an Ember.Component is itself", function() {
+QUnit.test("The controller (target of `action`) of an Ember.Component is itself", function() {
   strictEqual(component, component.get('controller'), "A component's controller is itself");
 });
 
@@ -108,7 +108,7 @@ QUnit.module("Ember.Component - Actions", {
     });
 
     component = Component.create({
-      _parentView: EmberView.create({
+      parentView: EmberView.create({
         controller: controller
       })
     });
@@ -127,7 +127,7 @@ QUnit.test("Calling sendAction on a component without an action defined does not
   equal(sendCount, 0, "addItem action was not invoked");
 });
 
-QUnit.skip("Calling sendAction on a component with an action defined calls send on the controller", function() {
+QUnit.test("Calling sendAction on a component with an action defined calls send on the controller", function() {
   set(component, 'action', "addItem");
 
   component.sendAction();
@@ -136,7 +136,7 @@ QUnit.skip("Calling sendAction on a component with an action defined calls send 
   equal(actionCounts['addItem'], 1, "addItem event was sent once");
 });
 
-QUnit.skip("Calling sendAction with a named action uses the component's property as the action name", function() {
+QUnit.test("Calling sendAction with a named action uses the component's property as the action name", function() {
   set(component, 'playing', "didStartPlaying");
   set(component, 'action', "didDoSomeBusiness");
 
@@ -169,7 +169,7 @@ QUnit.test("Calling sendAction when the action name is not a string raises an ex
   });
 });
 
-QUnit.skip("Calling sendAction on a component with a context", function() {
+QUnit.test("Calling sendAction on a component with a context", function() {
   set(component, 'playing', "didStartPlaying");
 
   var testContext = { song: 'She Broke My Ember' };
@@ -179,7 +179,7 @@ QUnit.skip("Calling sendAction on a component with a context", function() {
   deepEqual(actionArguments, [testContext], "context was sent with the action");
 });
 
-QUnit.skip("Calling sendAction on a component with multiple parameters", function() {
+QUnit.test("Calling sendAction on a component with multiple parameters", function() {
   set(component, 'playing', "didStartPlaying");
 
   var firstContext  = { song: 'She Broke My Ember' };

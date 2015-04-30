@@ -36,7 +36,7 @@ export default {
         target = read(hash.target);
       }
     } else {
-      target = get(env.view, 'controller') || read(scope.self);
+      target = read(scope.locals.controller) || read(scope.self);
     }
 
     return { actionName, actionArgs, target };
