@@ -36,7 +36,10 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    if (morph.state.controller) { morph.addDestruction(morph.state.controller); }
+    if (morph.state.controller) {
+      morph.addDestruction(morph.state.controller);
+      hash.controller = morph.state.controller;
+    }
 
     Ember.assert(
       "{{#with foo}} must be called with a single argument or the use the " +

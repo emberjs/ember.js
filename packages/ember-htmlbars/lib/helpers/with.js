@@ -53,6 +53,15 @@ export default function withHelper(params, hash, options) {
   if (preserveContext) {
     this.yield([params[0]]);
   } else {
-    this.yield([], normalizeSelf(params[0]));
+    let self = normalizeSelf(params[0]);
+    if (hash.controller) {
+      self = {
+        hasBoundController: true,
+        controller: hash.controller,
+        self: self
+      };
+    }
+
+    this.yield([], self);
   }
 }
