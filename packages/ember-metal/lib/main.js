@@ -25,7 +25,6 @@ import {
   getMeta,
   guidFor,
   inspect,
-  isArray,
   makeArray,
   meta,
   metaPath,
@@ -33,7 +32,6 @@ import {
   deprecatedTryCatchFinally,
   deprecatedTryFinally,
   tryInvoke,
-  typeOf,
   uuid,
   wrap
 } from "ember-metal/utils";
@@ -261,9 +259,7 @@ Ember.getMeta         = getMeta;
 Ember.setMeta         = setMeta;
 Ember.metaPath        = metaPath;
 Ember.inspect         = inspect;
-Ember.typeOf          = typeOf;
 Ember.tryCatchFinally = deprecatedTryCatchFinally;
-Ember.isArray         = isArray;
 Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
 Ember.tryInvoke       = tryInvoke;

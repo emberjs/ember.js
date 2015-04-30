@@ -11,10 +11,6 @@ import {
   canDefineNonEnumerableProperties
 } from 'ember-metal/platform/define_property';
 
-import {
-  forEach
-} from "ember-metal/array";
-
 /**
 @module ember-metal
 */
@@ -520,79 +516,6 @@ export function wrap(func, superFunc) {
   return superWrapper;
 }
 
-var EmberArray;
-
-/**
-  Returns true if the passed object is an array or Array-like.
-
-  Ember Array Protocol:
-
-    - the object has an objectAt property
-    - the object is a native Array
-    - the object is an Object, and has a length property
-
-  Unlike `Ember.typeOf` this method returns true even if the passed object is
-  not formally array but appears to be array-like (i.e. implements `Ember.Array`)
-
-  ```javascript
-  Ember.isArray();                                          // false
-  Ember.isArray([]);                                        // true
-  Ember.isArray(Ember.ArrayProxy.create({ content: [] }));  // true
-  ```
-
-  @method isArray
-  @for Ember
-  @param {Object} obj The object to test
-  @return {Boolean} true if the passed object is an array or Array-like
-*/
-// ES6TODO: Move up to runtime? This is only use in ember-metal by concatenatedProperties
-function isArray(obj) {
-  var modulePath, type;
-
-  if (typeof EmberArray === "undefined") {
-    modulePath = 'ember-runtime/mixins/array';
-    if (Ember.__loader.registry[modulePath]) {
-      EmberArray = Ember.__loader.require(modulePath)['default'];
-    }
-  }
-
-  if (!obj || obj.setInterval) { return false; }
-  if (Array.isArray && Array.isArray(obj)) { return true; }
-  if (EmberArray && EmberArray.detect(obj)) { return true; }
-
-  type = typeOf(obj);
-  if ('array' === type) { return true; }
-  if ((obj.length !== undefined) && 'object' === type) { return true; }
-  return false;
-}
-
-/**
-  Forces the passed object to be part of an array. If the object is already
-  an array or array-like, it will return the object. Otherwise, it will add the object to
-  an array. If obj is `null` or `undefined`, it will return an empty array.
-
-  ```javascript
-  Ember.makeArray();            // []
-  Ember.makeArray(null);        // []
-  Ember.makeArray(undefined);   // []
-  Ember.makeArray('lindsay');   // ['lindsay']
-  Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
-
-  var controller = Ember.ArrayProxy.create({ content: [] });
-
-  Ember.makeArray(controller) === controller;  // true
-  ```
-
-  @method makeArray
-  @for Ember
-  @param {Object} obj the object
-  @return {Array}
-*/
-export function makeArray(obj) {
-  if (obj === null || obj === undefined) { return []; }
-  return isArray(obj) ? obj : [obj];
-}
-
 /**
   Checks to see if the `methodName` exists on the `obj`.
 
@@ -815,96 +738,41 @@ var deprecatedTryCatchFinally = function() {
 // TYPING & ARRAY MESSAGING
 //
 
-var TYPE_MAP = {};
-var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
-forEach.call(t, (name) => {
-  TYPE_MAP["[object " + name + "]"] = name.toLowerCase();
-});
-
 var toString = Object.prototype.toString;
 
-var EmberObject;
+var isArray = Array.isArray || function(value) {
+  return value !== null &&
+         value !== undefined &&
+         typeof value === 'object' &&
+         typeof value.length === 'number' &&
+         toString.call(value) === '[object Array]';
+};
 
 /**
-  Returns a consistent type for the passed item.
-
-  Use this instead of the built-in `typeof` to get the type of an item.
-  It will return the same result across all browsers and includes a bit
-  more detail. Here is what will be returned:
-
-      | Return Value  | Meaning                                              |
-      |---------------|------------------------------------------------------|
-      | 'string'      | String primitive or String object.                   |
-      | 'number'      | Number primitive or Number object.                   |
-      | 'boolean'     | Boolean primitive or Boolean object.                 |
-      | 'null'        | Null value                                           |
-      | 'undefined'   | Undefined value                                      |
-      | 'function'    | A function                                           |
-      | 'array'       | An instance of Array                                 |
-      | 'regexp'      | An instance of RegExp                                |
-      | 'date'        | An instance of Date                                  |
-      | 'class'       | An Ember class (created using Ember.Object.extend()) |
-      | 'instance'    | An Ember object instance                             |
-      | 'error'       | An instance of the Error object                      |
-      | 'object'      | A JavaScript object not inheriting from Ember.Object |
-
-  Examples:
+  Forces the passed object to be part of an array. If the object is already
+  an array, it will return the object. Otherwise, it will add the object to
+  an array. If obj is `null` or `undefined`, it will return an empty array.
 
   ```javascript
-  Ember.typeOf();                       // 'undefined'
-  Ember.typeOf(null);                   // 'null'
-  Ember.typeOf(undefined);              // 'undefined'
-  Ember.typeOf('michael');              // 'string'
-  Ember.typeOf(new String('michael'));  // 'string'
-  Ember.typeOf(101);                    // 'number'
-  Ember.typeOf(new Number(101));        // 'number'
-  Ember.typeOf(true);                   // 'boolean'
-  Ember.typeOf(new Boolean(true));      // 'boolean'
-  Ember.typeOf(Ember.makeArray);        // 'function'
-  Ember.typeOf([1, 2, 90]);             // 'array'
-  Ember.typeOf(/abc/);                  // 'regexp'
-  Ember.typeOf(new Date());             // 'date'
-  Ember.typeOf(Ember.Object.extend());  // 'class'
-  Ember.typeOf(Ember.Object.create());  // 'instance'
-  Ember.typeOf(new Error('teamocil'));  // 'error'
+  Ember.makeArray();            // []
+  Ember.makeArray(null);        // []
+  Ember.makeArray(undefined);   // []
+  Ember.makeArray('lindsay');   // ['lindsay']
+  Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
 
-  // 'normal' JavaScript object
-  Ember.typeOf({ a: 'b' });             // 'object'
+  var controller = Ember.ArrayProxy.create({ content: [] });
+
+  Ember.makeArray(controller) === controller;  // true
   ```
 
-  @method typeOf
+  @method makeArray
   @for Ember
-  @param {Object} item the item to check
-  @return {String} the type
+  @param {Object} obj the object
+  @return {Array}
 */
-function typeOf(item) {
-  var ret, modulePath;
-
-  // ES6TODO: Depends on Ember.Object which is defined in runtime.
-  if (typeof EmberObject === "undefined") {
-    modulePath = 'ember-runtime/system/object';
-    if (Ember.__loader.registry[modulePath]) {
-      EmberObject = Ember.__loader.require(modulePath)['default'];
-    }
-  }
-
-  ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
-
-  if (ret === 'function') {
-    if (EmberObject && EmberObject.detect(item)) {
-      ret = 'class';
-    }
-  } else if (ret === 'object') {
-    if (item instanceof Error) {
-      ret = 'error';
-    } else if (EmberObject && item instanceof EmberObject) {
-      ret = 'instance';
-    } else if (item instanceof Date) {
-      ret = 'date';
-    }
-  }
-
-  return ret;
+export function makeArray(obj) {
+  if (obj === null || obj === undefined) { return []; }
+  return isArray(obj) ? obj : [obj];
 }
 
 /**
@@ -921,21 +789,32 @@ function typeOf(item) {
   @since 1.4.0
 */
 export function inspect(obj) {
-  var type = typeOf(obj);
-  if (type === 'array') {
+  if (obj === null) {
+    return 'null';
+  }
+  if (obj === undefined) {
+    return 'undefined';
+  }
+  if (isArray(obj)) {
     return '[' + obj + ']';
   }
-  if (type !== 'object') {
-    return obj + '';
+  // for non objects
+  if (typeof obj !== 'object') {
+    return ''+obj;
+  }
+  // overridden toString
+  if (typeof obj.toString === 'function' && obj.toString !== toString) {
+    return obj.toString();
   }
 
+  // Object.prototype.toString === {}.toString
   var v;
   var ret = [];
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (typeOf(v) === 'function') { v = "function() { ... }"; }
+      if (typeof v === 'function') { v = "function() { ... }"; }
 
       if (v && typeof v.toString !== 'function') {
         ret.push(key + ": " + toString.call(v));
@@ -990,10 +869,10 @@ export {
   META_DESC,
   EMPTY_META,
   meta,
-  typeOf,
+  isArray,
+  makeArray,
   tryCatchFinally,
   deprecatedTryCatchFinally,
-  isArray,
   canInvoke,
   tryFinally,
   deprecatedTryFinally

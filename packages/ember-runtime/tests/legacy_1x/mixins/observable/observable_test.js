@@ -2,7 +2,6 @@ import { get } from 'ember-metal/property_get';
 import { forEach } from 'ember-metal/enumerable_utils';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
-import { typeOf } from 'ember-metal/utils';
 import { observer } from 'ember-metal/mixin';
 import {
   fmt,
@@ -81,7 +80,7 @@ QUnit.test("should call computed properties and return their result", function()
 
 QUnit.test("should return the function for a non-computed property", function() {
   var value = object.get("method");
-  equal(typeOf(value), 'function');
+  equal(typeof value, 'function');
 });
 
 QUnit.test("should return null when property value is null", function() {
@@ -135,7 +134,7 @@ QUnit.test("should call computed properties on Ember.Observable and return their
 
 QUnit.test("should return the function for a non-computed property on Ember.Observable", function() {
   var value = get(objectA, "method");
-  equal(typeOf(value), 'function');
+  equal(typeof value, 'function');
 });
 
 QUnit.test("should return null when property value is null on Ember.Observable", function() {
@@ -296,7 +295,7 @@ QUnit.test("should change normal properties when passing undefined", function() 
 QUnit.test("should replace the function for a non-computed property and return this", function() {
   var ret = object.set("method", "changed");
   equal(object._method, "method"); // make sure this was NOT run
-  ok(typeOf(object.method) !== 'function');
+  ok(typeof object.method !== 'function');
   equal(ret, object);
 });
 

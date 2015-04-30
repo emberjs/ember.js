@@ -8,7 +8,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
-import { typeOf } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
@@ -219,7 +218,7 @@ export default EmberObject.extend({
     var result = true;
 
     var handler = object[eventName];
-    if (typeOf(handler) === 'function') {
+    if (typeof handler === 'function') {
       result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();

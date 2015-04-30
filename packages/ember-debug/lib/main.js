@@ -1,7 +1,6 @@
 /*global __fail__*/
 
 import Ember from "ember-metal/core";
-import { typeOf } from 'ember-metal/utils';
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
@@ -17,6 +16,10 @@ Ember Debug
 /**
 @class Ember
 */
+
+function isPlainFunction(test) {
+  return typeof test === 'function' && test.PrototypeMixin === undefined;
+}
 
 /**
   Define an assertion that will throw an exception if the condition is not
@@ -41,7 +44,7 @@ Ember Debug
 Ember.assert = function(desc, test) {
   var throwAssertion;
 
-  if (typeOf(test) === 'function') {
+  if (isPlainFunction(test)) {
     throwAssertion = !test();
   } else {
     throwAssertion = !test;
@@ -102,7 +105,7 @@ Ember.debug = function(message) {
 Ember.deprecate = function(message, test, options) {
   var noDeprecation;
 
-  if (typeof test === 'function') {
+  if (isPlainFunction(test)) {
     noDeprecation = test();
   } else {
     noDeprecation = test;

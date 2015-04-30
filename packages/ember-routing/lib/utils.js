@@ -1,8 +1,6 @@
-import { typeOf } from 'ember-metal/utils';
-
 export function routeArgs(targetRouteName, models, queryParams) {
   var args = [];
-  if (typeOf(targetRouteName) === 'string') {
+  if (typeof targetRouteName === 'string') {
     args.push('' + targetRouteName);
   }
   args.push.apply(args, models);

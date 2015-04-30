@@ -1,6 +1,6 @@
 import {
   meta as metaFor,
-  typeOf
+  isArray
 } from "ember-metal/utils";
 import { ChainNode } from "ember-metal/chains";
 
@@ -20,7 +20,7 @@ function chainsFor(obj, meta) {
 
 export function watchPath(obj, keyPath, meta) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
+  if (keyPath === 'length' && isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
   var watching = m.watching;

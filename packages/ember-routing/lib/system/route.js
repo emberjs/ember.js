@@ -10,7 +10,7 @@ import merge from "ember-metal/merge";
 import {
   isArray,
   typeOf
-} from "ember-metal/utils";
+} from "ember-runtime/utils";
 import run from "ember-metal/run_loop";
 import keys from "ember-metal/keys";
 import copy from "ember-runtime/copy";
