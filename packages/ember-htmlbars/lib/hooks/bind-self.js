@@ -6,7 +6,9 @@
 import ProxyStream from "ember-metal/streams/proxy-stream";
 import subscribe from "ember-htmlbars/utils/subscribe";
 
-export default function bindSelf(env, scope, self) {
+export default function bindSelf(env, scope, _self) {
+  let self = _self;
+
   if (self && self.isView) {
     scope.view = self;
     newStream(scope.locals, 'view', self, null);
@@ -15,8 +17,10 @@ export default function bindSelf(env, scope, self) {
     return;
   }
 
-  if (self && self.isLegacyEachWithControllerItem) {
-    self = self.self;
+  if (self && self.hasBoundController) {
+    let { controller } = self;
+    self = controller || self.self;
+
     newStream(scope.locals, 'controller', self);
   }
 

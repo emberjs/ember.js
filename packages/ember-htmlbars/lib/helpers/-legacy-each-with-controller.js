@@ -19,7 +19,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
       self = normalizeSelf(item);
       self = {
         self: self,
-        isLegacyEachWithControllerItem: true
+        hasBoundController: true
       };
     }
 
