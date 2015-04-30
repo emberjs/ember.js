@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import {
   isArray
-} from "ember-metal/utils";
+} from "ember-runtime/utils";
 import { computed } from "ember-metal/computed";
 import {
   beforeObserver,

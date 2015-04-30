@@ -8,7 +8,7 @@ import compile from "ember-template-compiler/system/compile";
 
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
-import { typeOf } from 'ember-metal/utils';
+import { typeOf } from 'ember-runtime/utils';
 import { forEach } from 'ember-metal/enumerable_utils';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 

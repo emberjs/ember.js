@@ -1,4 +1,5 @@
-import { typeOf } from 'ember-metal/utils';
+import { typeOf } from 'ember-runtime/utils';
+import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module("Ember Type Checking");
 
@@ -10,6 +11,10 @@ QUnit.test("Ember.typeOf", function() {
   var date        = new Date();
   var error       = new Error('boum');
   var object      = { a: 'b' };
+  var a = null;
+  var arr = [1,2,3];
+  var obj = {};
+  var instance = EmberObject.create({ method() {} });
 
   equal(typeOf(), 'undefined', "undefined");
   equal(typeOf(null), 'null', "null");
@@ -22,12 +27,12 @@ QUnit.test("Ember.typeOf", function() {
   equal(typeOf(mockedDate), 'date', "mocked date");
   equal(typeOf(error), 'error', "error");
   equal(typeOf(object), 'object', "object");
-
-  if (Ember.Object) {
-    var klass       = Ember.Object.extend();
-    var instance    = Ember.Object.create();
-
-    equal(typeOf(klass), 'class', "class");
-    equal(typeOf(instance), 'instance', "instance");
-  }
+  equal(typeOf(undefined), 'undefined', "item of type undefined");
+  equal(typeOf(a), 'null', "item of type null");
+  equal(typeOf(arr), 'array', "item of type array");
+  equal(typeOf(obj), 'object', "item of type object");
+  equal(typeOf(instance), 'instance', "item of type instance");
+  equal(typeOf(instance.method), 'function', "item of type function");
+  equal(typeOf(EmberObject.extend()), 'class', "item of type class");
+  equal(typeOf(new Error()), 'error', "item of type error");
 });

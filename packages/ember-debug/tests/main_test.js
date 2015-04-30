@@ -30,7 +30,6 @@ QUnit.test('Ember.deprecate does not throw deprecation if second argument is a f
 
 QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
   expect(1);
-
   throws(function() {
     Ember.deprecate('Deprecation is thrown', function() {
       return false;
@@ -76,7 +75,6 @@ QUnit.test('Ember.assert does not throw if second argument is a function and it 
 
 QUnit.test('Ember.assert throws if second argument is a function and it returns false', function() {
   expect(1);
-
   throws(function() {
     Ember.assert('Assertion is thrown', function() {
       return false;

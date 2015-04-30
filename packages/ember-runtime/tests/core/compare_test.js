@@ -1,4 +1,4 @@
-import {typeOf} from 'ember-metal/utils';
+import {typeOf} from 'ember-runtime/utils';
 import EmberObject from 'ember-runtime/system/object';
 import compare from 'ember-runtime/compare';
 import Comparable from 'ember-runtime/mixins/comparable';

@@ -1,7 +1,7 @@
 import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
+import { isArray } from "ember-runtime/utils";
 import Stream from "ember-metal/streams/stream";
 import { read, isStream } from "ember-metal/streams/utils";
 

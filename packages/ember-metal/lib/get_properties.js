@@ -1,5 +1,5 @@
 import { get } from "ember-metal/property_get";
-import { typeOf } from "ember-metal/utils";
+import { isArray } from "ember-metal/utils";
 
 /**
   To get multiple properties at once, call `Ember.getProperties`
@@ -28,7 +28,7 @@ export default function getProperties(obj) {
   var propertyNames = arguments;
   var i = 1;
 
-  if (arguments.length === 2 && typeOf(arguments[1]) === 'array') {
+  if (arguments.length === 2 && isArray(arguments[1])) {
     i = 0;
     propertyNames = arguments[1];
   }
