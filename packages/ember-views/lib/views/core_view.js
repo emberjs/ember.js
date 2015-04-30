@@ -10,7 +10,7 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
 
 import { get } from "ember-metal/property_get";
 
-import { typeOf } from "ember-metal/utils";
+import { typeOf } from "ember-runtime/utils";
 import { internal } from "htmlbars-runtime";
 
 function K() { return this; }
