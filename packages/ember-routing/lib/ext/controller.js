@@ -13,7 +13,7 @@ import ControllerMixin from "ember-runtime/mixins/controller";
 */
 
 ControllerMixin.reopen({
-  concatenatedProperties: ['queryParams', '_pCacheMeta'],
+  concatenatedProperties: ['queryParams'],
 
   init() {
     this._super(...arguments);
