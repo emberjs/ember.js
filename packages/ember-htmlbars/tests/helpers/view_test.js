@@ -304,6 +304,8 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
 });
 
 QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
+  expectDeprecation();
+
   var subview;
 
   var Subview = EmberView.extend({
@@ -327,23 +329,23 @@ QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
 
   run(function() {
     run.schedule('sync', function() {
-      equal(get(subview, 'attrs.color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
     });
 
     view.set('color', 'persian rose');
 
     run.schedule('sync', function() {
-      equal(get(subview, 'attrs.color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
     });
 
     run.schedule('afterRender', function() {
-      equal(get(subview, 'attrs.color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
+      equal(get(subview, 'color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
     });
 
-    equal(get(subview, 'attrs.color'), 'mauve', 'bound property does not update immediately');
+    equal(get(subview, 'color'), 'mauve', 'bound property does not update immediately');
   });
 
-  equal(get(subview, 'attrs.color'), 'persian rose', 'bound property is updated after runloop flush');
+  equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
 });
 
 QUnit.test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {

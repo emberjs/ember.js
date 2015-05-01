@@ -1,11 +1,18 @@
 import merge from "ember-metal/merge";
 import Ember from "ember-metal/core";
 import buildComponentTemplate from "ember-views/system/build-component-template";
-import { readHash, read } from "ember-metal/streams/utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import View from "ember-views/views/view";
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
+
+// In theory this should come through the env, but it should
+// be safe to import this until we make the hook system public
+// and it gets actively used in addons or other downstream
+// libraries.
+import getValue from "ember-htmlbars/hooks/get-value";
 
 function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -37,13 +44,13 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
       merge(options, found.createOptions);
     }
 
-    if (attrs && attrs.id) { options.elementId = read(attrs.id); }
-    if (attrs && attrs.tagName) { options.tagName = read(attrs.tagName); }
-    if (attrs && attrs._defaultTagName) { options._defaultTagName = read(attrs._defaultTagName); }
-    if (attrs && attrs.viewName) { options.viewName = read(attrs.viewName); }
+    if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
+    if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
+    if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
+    if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
 
     if (found.component.create && contentScope && contentScope.self) {
-      options._context = read(contentScope.self);
+      options._context = getValue(contentScope.self);
     }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
@@ -86,7 +93,7 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
   }
 
   if (component) {
-    var snapshot = readHash(attrs);
+    var snapshot = takeSnapshot(attrs);
     env.renderer.setAttrs(this.component, snapshot);
     env.renderer.willCreateElement(component);
     env.renderer.willRender(component);
@@ -112,14 +119,14 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
     newEnv = merge({}, env);
     newEnv.view = component;
 
-    var snapshot = readHash(attrs);
+    var snapshot = takeSnapshot(attrs);
 
     // Notify component that it has become dirty and is about to change.
     env.renderer.willUpdate(component, snapshot);
 
     if (component.renderNode.shouldReceiveAttrs) {
       env.renderer.updateAttrs(component, snapshot);
-      setProperties(component, shadowedAttrs(component, snapshot));
+      setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
       component.renderNode.shouldReceiveAttrs = false;
     }
 
@@ -148,14 +155,16 @@ function lookupComponent(env, tagName) {
 }
 
 export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
-  let snapshot = readHash(attrs);
+  let snapshot = takeSnapshot(attrs);
   let props = merge({}, options);
   let defaultController = View.proto().controller;
   let hasSuppliedController = 'controller' in attrs;
 
+  props.attrs = snapshot;
+
   if (component.create) {
     let proto = component.proto();
-    merge(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, shadowedAttrs(proto, snapshot));
     props.container = options.parentView ? options.parentView.container : env.container;
 
     if (proto.controller !== defaultController || hasSuppliedController) {
@@ -164,7 +173,7 @@ export function createOrUpdateComponent(component, options, renderNode, env, att
 
     component = component.create(props);
   } else {
-    merge(props, shadowedAttrs(component, snapshot));
+    mergeBindings(props, shadowedAttrs(component, snapshot));
     setProperties(component, props);
   }
 
@@ -197,4 +206,29 @@ function shadowedAttrs(target, attrs) {
   }
 
   return shadowed;
+}
+
+function takeSnapshot(attrs) {
+  let hash = {};
+
+  for (var prop in attrs) {
+    hash[prop] = getCellOrValue(attrs[prop]);
+  }
+
+  return hash;
+}
+
+function mergeBindings(target, attrs) {
+  for (var prop in attrs) {
+    if (!attrs.hasOwnProperty(prop)) { continue; }
+    let value = attrs[prop];
+
+    if (value && value[MUTABLE_CELL]) {
+      target[prop] = value.value();
+    } else {
+      target[prop] = value;
+    }
+  }
+
+  return target;
 }

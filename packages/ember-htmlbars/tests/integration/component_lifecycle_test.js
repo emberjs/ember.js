@@ -1,4 +1,3 @@
-import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-template-compiler/system/compile";
@@ -6,6 +5,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import run from "ember-metal/run_loop";
+import EmberView from "ember-views/views/view";
 
 var registry, container, view;
 var hooks;
@@ -79,7 +79,7 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
   registry.register('template:components/the-bottom', compile('Website: {{attrs.website}}'));
 
   view = EmberView.extend({
-    template: compile('{{the-top twitter=view.twitter}}'),
+    template: compile('{{the-top twitter=(readonly view.twitter)}}'),
     twitter: "@tomdale",
     container: container
   }).create();
@@ -205,12 +205,12 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   registry.register('component:the-middle', component('middle'));
   registry.register('component:the-bottom', component('bottom'));
 
-  registry.register('template:components/the-top', compile('Top: {{the-middle twitterTop=attrs.twitter}}'));
-  registry.register('template:components/the-middle', compile('Middle: {{the-bottom twitterMiddle=attrs.twitterTop}}'));
+  registry.register('template:components/the-top', compile('Top: {{the-middle twitterTop=(readonly attrs.twitter)}}'));
+  registry.register('template:components/the-middle', compile('Middle: {{the-bottom twitterMiddle=(readonly attrs.twitterTop)}}'));
   registry.register('template:components/the-bottom', compile('Bottom: {{attrs.twitterMiddle}}'));
 
   view = EmberView.extend({
-    template: compile('{{the-top twitter=view.twitter}}'),
+    template: compile('{{the-top twitter=(readonly view.twitter)}}'),
     twitter: "@tomdale",
     container: container
   }).create();
@@ -321,7 +321,7 @@ QUnit.test('manually re-rendering in `willReceiveAttrs` triggers lifecycle hooks
   registry.register('template:components/the-bottom', compile('Website: {{attrs.website}}'));
 
   view = EmberView.extend({
-    template: compile('{{the-top twitter=view.twitter}}'),
+    template: compile('{{the-top twitter=(readonly view.twitter)}}'),
     twitter: "@tomdale",
     container: container
   }).create();

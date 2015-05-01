@@ -13,34 +13,34 @@ export default View.extend({
   template: legacyEachTemplate,
 
   _arrayController: computed(function() {
-    var itemController = get(this, 'attrs.itemController');
+    var itemController = this.getAttr('itemController');
     var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
       _isVirtual: true,
       parentController: get(this, 'controller'),
       itemController: itemController,
       target: get(this, 'controller'),
       _eachView: this,
-      content: get(this, 'attrs.content')
+      content: this.getAttr('content')
     });
 
     return controller;
   }),
 
   willUpdate(attrs) {
-    let itemController = get(this, 'attrs.itemController');
+    let itemController = this.getAttrFor(attrs, 'itemController');
 
     if (itemController) {
       let arrayController = get(this, '_arrayController');
-      set(arrayController, 'content', attrs.content);
+      set(arrayController, 'content', this.getAttrFor(attrs, 'content'));
     }
   },
 
   _arrangedContent: computed('attrs.content', function() {
-    if (get(this, 'attrs.itemController')) {
+    if (this.getAttr('itemController')) {
       return get(this, '_arrayController');
     }
 
-    return get(this, 'attrs.content');
+    return this.getAttr('content');
   }),
 
   _itemTagName: computed(function() {

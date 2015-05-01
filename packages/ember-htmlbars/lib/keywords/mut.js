@@ -1,6 +1,10 @@
 import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
+import { symbol } from "ember-metal/utils";
 import ProxyStream from "ember-metal/streams/proxy-stream";
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+
+export let MUTABLE_REFERENCE = symbol("MUTABLE_REFERENCE");
 
 export default function mut(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.
@@ -12,10 +16,8 @@ export default function mut(morph, env, scope, originalParams, hash, template, i
   return true;
 }
 
-export let isMutableBinding = +new Date();
-
 function mutParam(read, stream) {
-  if (stream.isMutableBinding === isMutableBinding) {
+  if (stream[MUTABLE_REFERENCE]) {
     return stream;
   }
 
@@ -24,26 +26,30 @@ function mutParam(read, stream) {
   return new MutStream(stream);
 }
 
-function MutStream(stream, label) {
+function MutStream(stream) {
   this.init(`(mut ${stream.label})`);
-  this.source = this.addMutableDependency(stream);
-  this.isMutableBinding = isMutableBinding;
+  this.path = stream.path;
+  this.sourceDep = this.addMutableDependency(stream);
+  this[MUTABLE_REFERENCE] = true;
 }
 
 MutStream.prototype = create(ProxyStream.prototype);
 
 merge(MutStream.prototype, {
-  compute() {
-    var source = this.source;
+  cell() {
+    let source = this;
 
-    return {
+    let val = {
       value() {
-        return source.getValue();
+        return source.value();
       },
 
       update(val) {
-        source.setValue(val);
+        source.sourceDep.setValue(val);
       }
     };
+
+    val[MUTABLE_CELL] = true;
+    return val;
   }
 });

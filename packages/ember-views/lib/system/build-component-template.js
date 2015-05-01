@@ -1,5 +1,5 @@
 import { internal, render } from "htmlbars-runtime";
-import { read } from "ember-metal/streams/utils";
+import getValue from "ember-htmlbars/hooks/get-value";
 import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 
@@ -132,7 +132,7 @@ function normalizeComponentAttributes(component, attrs) {
 
   if (attrs.id) {
     // Do not allow binding to the `id`
-    normalized.id = read(attrs.id);
+    normalized.id = getValue(attrs.id);
     component.elementId = normalized.id;
   } else {
     normalized.id = component.elementId;

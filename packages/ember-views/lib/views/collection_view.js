@@ -332,7 +332,7 @@ var CollectionView = ContainerView.extend({
 
     if (len) {
       itemViewProps = this._itemViewProps || {};
-      itemViewClass = get(this, 'attrs.itemViewClass') || get(this, 'itemViewClass');
+      itemViewClass = this.getAttr('itemViewClass') || get(this, 'itemViewClass');
 
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
@@ -412,17 +412,17 @@ var CollectionView = ContainerView.extend({
     }
 
     if ('content' in attrs) {
-      set(this, 'content', attrs.content);
+      set(this, 'content', this.getAttr('content'));
     }
 
     if ('emptyView' in attrs) {
-      set(this, 'emptyView', attrs.emptyView);
+      set(this, 'emptyView', this.getAttr('emptyView'));
     }
   },
 
   _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {
     var emptyView = get(this, 'emptyView');
-    var attrsEmptyViewClass = get(this, 'attrs.emptyViewClass');
+    var attrsEmptyViewClass = this.getAttr('emptyViewClass');
     var emptyViewClass = get(this, 'emptyViewClass');
     var inverse = get(this, '_itemViewInverse');
     var actualEmpty = emptyView || attrsEmptyViewClass;

@@ -77,6 +77,7 @@ import templateKeyword from "ember-htmlbars/keywords/template";
 import legacyYield from "ember-htmlbars/keywords/legacy-yield";
 import mut from "ember-htmlbars/keywords/mut";
 import each from "ember-htmlbars/keywords/each";
+import readonly from "ember-htmlbars/keywords/readonly";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -94,6 +95,7 @@ registerKeyword('collection', collection);
 registerKeyword('legacy-yield', legacyYield);
 registerKeyword('mut', mut);
 registerKeyword('each', each);
+registerKeyword('readonly', readonly);
 
 export default {
   hooks: emberHooks,

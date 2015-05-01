@@ -4,12 +4,14 @@
 */
 
 import { read } from "ember-metal/streams/utils";
-import { isMutableBinding } from "ember-htmlbars/keywords/mut";
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 
 export default function getValue(ref) {
-  if (ref && ref.isMutableBinding === isMutableBinding) {
-    return read(ref).value();
-  } else {
-    return read(ref);
+  let value = read(ref);
+
+  if (value && value[MUTABLE_CELL]) {
+    return value.value();
   }
+
+  return value;
 }
