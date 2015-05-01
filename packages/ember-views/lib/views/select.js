@@ -545,10 +545,10 @@ var Select = View.extend({
       if (multiple) {
         this._changeMultiple();
       } else {
-        if (prompt) {
+        if (!isNone(prompt)) {
           this._changeSingle();
         } else {
-          if (!content || !get(content, 'length')) {
+          if (isNone(content) || isNone(get(content, 'length'))) {
             set(this, 'selection', null);
           } else {
             set(this, 'selection', content.objectAt(0));
