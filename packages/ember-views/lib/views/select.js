@@ -553,6 +553,14 @@ var Select = View.extend({
     }
   },
 
+  _change() {
+    if (get(this, 'multiple')) {
+      this._changeMultiple();
+    } else {
+      this._changeSingle();
+    }
+  },
+
   _changeSingle() {
     var selectedIndex = this.$()[0].selectedIndex;
     var content = get(this, 'content');
