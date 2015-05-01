@@ -6,6 +6,7 @@ var compile, helpers, makeBoundHelper;
 compile = EmberHandlebars.compile;
 helpers = EmberHandlebars.helpers;
 makeBoundHelper = EmberHandlebars.makeBoundHelper;
+var makeViewHelper = EmberHandlebars.makeViewHelper;
 
 var App, registry, container;
 
@@ -81,6 +82,22 @@ QUnit.test("Bound helpers registered on the container can be late-invoked", func
 
   equal(Ember.$('#wrapper').text(), "-- xela", "The bound helper was invoked from the container");
   ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
+});
+
+QUnit.skip("Bound `makeViewHelper` helpers registered on the container can be used", function() {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-foo}} {{x-foo name=foo}}</div>");
+
+  boot(function() {
+    registry.register('controller:application', Ember.Controller.extend({
+      foo: "alex"
+    }));
+
+    registry.register('helper:x-foo', makeViewHelper(Ember.Component.extend({
+      layout: compile('woot!!{{name}}')
+    })));
+  });
+
+  equal(Ember.$('#wrapper').text(), "woot!! woot!!alex", "The helper was invoked from the container");
 });
 
 // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
