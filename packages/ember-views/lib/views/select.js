@@ -503,14 +503,6 @@ var Select = View.extend({
   */
   optionView: SelectOption,
 
-  _change() {
-    if (get(this, 'multiple')) {
-      this._changeMultiple();
-    } else {
-      this._changeSingle();
-    }
-  },
-
   selectionDidChange: observer('selection.@each', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
@@ -550,10 +542,10 @@ var Select = View.extend({
     if (!isNone(selection)) { this.selectionDidChange(); }
     if (!isNone(value)) { this.valueDidChange(); }
     if (isNone(selection)) {
-      if (!prompt && !multiple) {
-        property_set.set(this, 'selection', content.objectAt(0));
-      } else {
-        this._change();
+      if (multiple) { this._changeMultiple(); }
+      else {
+        if (prompt) { this._changeSingle(); }
+        else { set(this, 'selection', content.firstObject); }
       }
     }
   },
