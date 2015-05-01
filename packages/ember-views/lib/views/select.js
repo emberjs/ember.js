@@ -545,7 +545,7 @@ var Select = View.extend({
       if (multiple) { this._changeMultiple(); }
       else {
         if (prompt) { this._changeSingle(); }
-        else { set(this, 'selection', content.firstObject); }
+        else { set(this, 'selection', content.objectAt(0)); }
       }
     }
   },
