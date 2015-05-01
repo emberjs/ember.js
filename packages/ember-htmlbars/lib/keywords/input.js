@@ -2,12 +2,13 @@ import Ember from "ember-metal/core";
 
 export default {
   setupState(lastState, env, scope, params, hash) {
-    var type = env.hooks.getValue(hash.type) || 'text';
+    var type = env.hooks.getValue(hash.type);
+    var componentName = componentNameMap[type] || defaultComponentName;
 
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
                  " you must use `checked=someBooleanValue` instead.", !(type === 'checkbox' && hash.hasOwnProperty('value')));
 
-    return { componentName: classification[type] };
+    return { componentName };
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
@@ -20,8 +21,8 @@ export default {
   }
 };
 
-var classification = {
-  'text': '-text-field',
-  'password': '-text-field',
+var defaultComponentName = "-text-field";
+
+var componentNameMap = {
   'checkbox': '-checkbox'
 };
