@@ -542,12 +542,17 @@ var Select = View.extend({
     if (!isNone(selection)) { this.selectionDidChange(); }
     if (!isNone(value)) { this.valueDidChange(); }
     if (isNone(selection)) {
-      if (multiple) { this._changeMultiple(); }
-      else {
-        if (prompt) { this._changeSingle(); }
-        else {
-          if (!content || !get(content, 'length')) { return; }
-          else { set(this, 'selection', content.objectAt(0)); }
+      if (multiple) {
+        this._changeMultiple();
+      } else {
+        if (prompt) {
+          this._changeSingle();
+        } else {
+          if (!content || !get(content, 'length')) {
+            set(this, 'selection', null);
+          } else {
+            set(this, 'selection', content.objectAt(0));
+          }
         }
       }
     }
