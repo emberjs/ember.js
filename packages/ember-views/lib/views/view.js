@@ -876,7 +876,7 @@ var View = CoreView.extend(
       return;
     }
 
-    this._renderer.renderTree(this, this._parentView);
+    this._renderer.renderTree(this, this.parentView);
   },
 
   /**

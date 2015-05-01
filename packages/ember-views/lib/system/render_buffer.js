@@ -272,7 +272,7 @@ RenderBuffer.prototype = {
       var ref = el.querySelector('#morph-'+i);
 
       Ember.assert('An error occurred while setting up template bindings. Please check ' +
-                   (((childView && childView._parentView && childView._parentView._debugTemplateName ? '"' + childView._parentView._debugTemplateName + '" template ' : ''))
+                   (((childView && childView.parentView && childView._parentView._debugTemplateName ? '"' + childView._parentView._debugTemplateName + '" template ' : ''))
                    )  + 'for invalid markup or bindings within HTML comments.',
                    ref);
 

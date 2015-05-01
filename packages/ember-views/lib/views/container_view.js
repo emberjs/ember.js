@@ -233,7 +233,7 @@ var ContainerView = View.extend(MutableArray, {
   _currentViewDidChange: observer('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
-      Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !currentView._parentView);
+      Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !currentView.parentView);
       this.pushObject(currentView);
     }
   }),
@@ -271,7 +271,7 @@ var ContainerView = View.extend(MutableArray, {
     this.notifyPropertyChange('childViews');
     this.arrayContentDidChange(idx, removedCount, addedCount);
 
-    //Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !item._parentView || item._parentView === self; }));
+    //Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !item.parentView || item.parentView === self; }));
 
     set(this, 'length', childViews.length);
 
