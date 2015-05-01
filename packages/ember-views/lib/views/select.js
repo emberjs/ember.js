@@ -546,7 +546,7 @@ var Select = View.extend({
       else {
         if (prompt) { this._changeSingle(); }
         else {
-          if (!content) { set(this, 'selection', null); }
+          if (!content || !get(content, 'length')) { return; }
           else { set(this, 'selection', content.objectAt(0)); }
         }
       }
