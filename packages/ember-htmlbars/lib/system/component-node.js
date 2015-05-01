@@ -224,7 +224,7 @@ function mergeBindings(target, attrs) {
     let value = attrs[prop];
 
     if (value && value[MUTABLE_CELL]) {
-      target[prop] = value.value();
+      target[prop] = value.value;
     } else {
       target[prop] = value;
     }

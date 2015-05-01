@@ -40,10 +40,7 @@ merge(MutStream.prototype, {
     let source = this;
 
     let val = {
-      value() {
-        return source.value();
-      },
-
+      value: source.value(),
       update(val) {
         source.sourceDep.setValue(val);
       }

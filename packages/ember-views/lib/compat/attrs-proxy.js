@@ -28,7 +28,7 @@ let AttrsProxyMixin = {
 
   getAttrFor(attrs, key) {
     let val = attrs[key];
-    return isCell(val) ? val.value() : val;
+    return isCell(val) ? val.value : val;
   },
 
   setAttr(key, value) {
@@ -62,7 +62,7 @@ let AttrsProxyMixin = {
       let possibleCell = get(attrs, key);
 
       if (possibleCell && possibleCell[MUTABLE_CELL]) {
-        return possibleCell.value();
+        return possibleCell.value;
       }
 
       return possibleCell;

@@ -291,7 +291,7 @@ function testSelectionBinding(templateString) {
   equal(select.$('option:eq(1)').prop('selected'), true, "Selected property is set to proper option");
 }
 
-QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
   expectDeprecation(`You're using legacy binding syntax: contentBinding="view.collection" @ 1:44 in (inline). Please replace with content=view.collection`);
 
   testSelectionBinding(
@@ -304,7 +304,7 @@ QUnit.skip("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -315,7 +315,7 @@ QUnit.skip("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
   var templateString = '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
     '    optionLabelPath="content.name"' +

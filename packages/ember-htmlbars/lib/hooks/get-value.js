@@ -10,7 +10,7 @@ export default function getValue(ref) {
   let value = read(ref);
 
   if (value && value[MUTABLE_CELL]) {
-    return value.value();
+    return value.value;
   }
 
   return value;
