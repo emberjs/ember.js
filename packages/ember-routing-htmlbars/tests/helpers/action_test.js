@@ -162,7 +162,7 @@ QUnit.test("should target the current controller inside an {{each}} loop [DEPREC
   equal(registeredTarget, itemController, "the item controller is the target of action");
 });
 
-QUnit.skip("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
+QUnit.test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function({ node }) {

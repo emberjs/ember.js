@@ -36,7 +36,7 @@ merge(inDOM, {
     if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
     childViews.push(attrNode);
 
-    attrNode._parentView = view;
+    attrNode.parentView = view;
     view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);
 
     view.propertyDidChange('childViews');
