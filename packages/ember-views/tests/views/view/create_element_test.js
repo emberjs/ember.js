@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-import equalHTML from "ember-views/tests/test-helpers/equal-html";
+import { equalHTML } from "ember-views/tests/test-helpers/equal-html";
 import compile from "ember-template-compiler/system/compile";
 
 var view;
@@ -92,7 +92,7 @@ QUnit.skip("calls render and parses the buffer string in the right context", fun
   equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
-QUnit.skip("does not wrap many tr children in tbody elements", function() {
+QUnit.test("does not wrap many tr children in tbody elements", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -100,16 +100,12 @@ QUnit.skip("does not wrap many tr children in tbody elements", function() {
     childViews: [
       EmberView.create({
         tagName: '',
-        render(buffer) {
-          // Emulate a metamorph
-          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-        } }),
+        template: compile('<tr><td>snorfblax</td></tr>')
+      }),
       EmberView.create({
         tagName: '',
-        render(buffer) {
-          // Emulate a metamorph
-          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-        } })
+        template: compile('<tr><td>snorfblax</td></tr>')
+      })
     ]
   });
 
@@ -121,7 +117,7 @@ QUnit.skip("does not wrap many tr children in tbody elements", function() {
 
   var elem = get(view, 'element');
   ok(elem, 'has element now');
-  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr><script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+  equalHTML(elem.childNodes, '<tr><td>snorfblax</td></tr><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
 });
 
@@ -138,4 +134,3 @@ QUnit.test("generated element include HTML from child views as well", function()
 
   ok(view.$('#foo').length, 'has element with child elementId');
 });
-
