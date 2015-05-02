@@ -7,8 +7,6 @@ import o_create from 'ember-metal/platform/create';
 import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
 
-var a_slice = [].slice;
-
 function ArrayComputedProperty() {
   var cp = this;
 
@@ -168,8 +166,11 @@ function arrayComputed(options) {
   var args;
 
   if (arguments.length > 1) {
-    args = a_slice.call(arguments, 0, -1);
-    options = a_slice.call(arguments, -1)[0];
+    args = new Array(arguments.length - 1);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    options = arguments[i];
   }
 
   if (typeof options !== 'object') {

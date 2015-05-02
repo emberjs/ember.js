@@ -56,11 +56,12 @@ var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
 function fmt(str, formats) {
   var cachedFormats = formats;
+  var len = arguments.length;
 
-  if (!isArray(cachedFormats) || arguments.length > 2) {
-    cachedFormats = new Array(arguments.length - 1);
+  if (!isArray(cachedFormats) || len > 2) {
+    cachedFormats = new Array(len - 1);
 
-    for (var i = 1, l = arguments.length; i < l; i++) {
+    for (var i = 1; i < len; i++) {
       cachedFormats[i - 1] = arguments[i];
     }
   }
@@ -75,8 +76,12 @@ function fmt(str, formats) {
 }
 
 function loc(str, formats) {
-  if (!isArray(formats) || arguments.length > 2) {
-    formats = Array.prototype.slice.call(arguments, 1);
+  var len = arguments.length;
+  if (!isArray(formats) || len > 2) {
+    formats = new Array(len - 1);
+    for (var i = 1; i < len; i++) {
+      formats[i - 1] = arguments[i];
+    }
   }
 
   str = Ember.STRINGS[str] || str;

@@ -250,13 +250,12 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
-  var args;
+  var args = [];
 
   var addArg = function(property) {
     args.push(property);
   };
 
-  args = [];
   for (var i = 0, l = arguments.length; i < l; i++) {
     expandProperties(arguments[i], addArg);
   }
@@ -578,8 +577,11 @@ function computed(func) {
   var args;
 
   if (arguments.length > 1) {
-    args = [].slice.call(arguments);
-    func = args.pop();
+    args = new Array(arguments.length - 1);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    func = arguments[i];
   }
 
   var cp = new ComputedProperty(func);

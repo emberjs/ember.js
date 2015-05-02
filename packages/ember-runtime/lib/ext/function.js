@@ -8,7 +8,6 @@ import expandProperties from 'ember-metal/expand_properties';
 import { computed } from 'ember-metal/computed';
 import { observer } from "ember-metal/mixin";
 
-var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
@@ -136,7 +135,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
   FunctionPrototype.observesImmediately = function () {
     Ember.assert('Immediate observers must observe internal properties only, ' +
                  'not properties on other objects.', function checkIsInternalProperty() {
-      for (var i = 0, l = arguments.length; i < l; i++) {
+      for (var i = 0; i < arguments.length; i++) {
         if (arguments[i].indexOf('.') !== -1) {
           return false;
         }
@@ -206,8 +205,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method on
     @for Function
   */
-  FunctionPrototype.on = function () {
-    var events = a_slice.call(arguments);
+  FunctionPrototype.on = function (...events) {
     this.__ember_listens__ = events;
 
     return this;

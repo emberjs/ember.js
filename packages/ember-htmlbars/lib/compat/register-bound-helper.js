@@ -6,8 +6,6 @@
 import helpers from "ember-htmlbars/helpers";
 import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
-var slice = [].slice;
-
 /**
   Register a bound handlebars helper. Bound helpers behave similarly to regular
   handlebars helpers, with the added ability to re-render when the underlying data
@@ -117,8 +115,7 @@ var slice = [].slice;
   @param {Function} function
   @param {String} dependentKeys*
 */
-export default function registerBoundHelper(name, fn) {
-  var boundHelperArgs = slice.call(arguments, 1);
+export default function registerBoundHelper(name, ...boundHelperArgs) {
   var boundFn = makeBoundHelper.apply(this, boundHelperArgs);
 
   helpers[name] = boundFn;
