@@ -517,3 +517,25 @@ QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", 
 
   equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
 });
+
+QUnit.test("{{with}} renders as 0 value rather than empty space", function() {
+  run(function() {
+    view.set('template', compile("{{#with zero as |value|}}value:{{value}}{{/with}}"));
+    view.set('context', {
+      zero: 0
+    });
+  });
+
+  equal(view.$().text(), "value:0", "should render 0 as string");
+});
+
+QUnit.test("{{with}} renders 'false' as string rather than empty space", function() {
+  run(function() {
+    view.set('template', compile("{{#with falc as |value|}}value:{{value}}{{/with}}"));
+    view.set('context', {
+      'falc': false
+    });
+  });
+
+  equal(view.$().text(), "value:false", "should render 0 as string");
+});

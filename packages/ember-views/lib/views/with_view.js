@@ -58,6 +58,13 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
       set(this, '_context', withValue);
     }
 
+    var valueIsObject = withValue instanceof Object;
+    if (!valueIsObject) {
+      var objectWithValue = { };
+      objectWithValue[withValue._label] = withValue;
+      withValue = objectWithValue;
+    }
+
     var template = withValue ? this.mainTemplate : this.inverseTemplate;
     renderView(this, buffer, template);
   },
