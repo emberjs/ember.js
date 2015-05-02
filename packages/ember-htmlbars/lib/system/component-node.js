@@ -25,7 +25,6 @@ function ComponentNode(component, scope, renderNode, block, expectElement) {
 export default ComponentNode;
 
 ComponentNode.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
-  found = found || lookupComponent(env, path);
   Ember.assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
       return found.component || found.layout;
@@ -146,16 +145,6 @@ ComponentNode.prototype.rerender = function(env, attrs, visitor) {
 
   return newEnv;
 };
-
-function lookupComponent(env, tagName) {
-  var container = env.container;
-  var componentLookup = container.lookup('component-lookup:main');
-
-  return {
-    component: componentLookup.componentFor(tagName, container),
-    layout: componentLookup.layoutFor(tagName, container)
-  };
-}
 
 export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);

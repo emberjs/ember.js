@@ -1,12 +1,13 @@
 import merge from "ember-metal/merge";
 import Ember from "ember-metal/core";
 import buildComponentTemplate from "ember-views/system/build-component-template";
+import lookupComponent from "ember-htmlbars/utils/lookup-component";
+import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import View from "ember-views/views/view";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
-import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -36,7 +37,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 
   // Try to find the Component class and/or template for this component name in
   // the container.
-  let { component, layout } = lookupComponent(env, tagName);
+  let { component, layout } = lookupComponent(env.container, tagName);
 
   Ember.assert('HTMLBars error: Could not find component named "' + tagName + '" (no component or template with that name was found)', function() {
     return component || layout;
@@ -158,15 +159,6 @@ ComponentNodeManager.prototype.rerender = function(env, attrs, visitor) {
   return newEnv;
 };
 
-function lookupComponent(env, tagName) {
-  var container = env.container;
-  var componentLookup = container.lookup('component-lookup:main');
-
-  return {
-    component: componentLookup.componentFor(tagName, container),
-    layout: componentLookup.layoutFor(tagName, container)
-  };
-}
 
 export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
