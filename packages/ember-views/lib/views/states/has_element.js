@@ -29,6 +29,8 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender(view) {
+    view.renderer.ensureViewNotRendering(view);
+
     var renderNode = view.renderNode;
 
     renderNode.isDirty = true;

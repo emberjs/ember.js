@@ -26,6 +26,8 @@ export default {
   cleanup() { } ,
   destroyElement() { },
 
-  rerender() { },
+  rerender(view) {
+    view.renderer.ensureViewNotRendering(view);
+  },
   invokeObserver() { }
 };

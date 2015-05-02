@@ -4,6 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import { compile } from "ember-template-compiler";
+import { registerHelper } from "ember-htmlbars/helpers";
 
 var originalLookup = Ember.lookup;
 var lookup, view;
@@ -98,33 +99,40 @@ QUnit.module("views/view/view_lifecycle_test - in render", {
   }
 });
 
-QUnit.skip("rerender should throw inside a template", function() {
-  throws(function() {
-    run(function() {
-      var renderCount = 0;
-      view = EmberView.create({
-        template(context, options) {
-          var view = options.data.view;
+QUnit.test("rerender of top level view during rendering should throw", function() {
+  registerHelper('throw', function() {
+    view.rerender();
+  });
+  view = EmberView.create({
+    template: compile("{{throw}}")
+  });
+  throws(
+    function() {
+      run(view, view.appendTo, '#qunit-fixture');
+    },
+    /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./,
+    'expected error was not raised'
+  );
+});
 
-          var child1 = view.appendChild(EmberView, {
-            template(context, options) {
-              renderCount++;
-              options.data.buffer.push(String(renderCount));
-            }
-          });
-
-          view.appendChild(EmberView, {
-            template(context, options) {
-              options.data.buffer.push("Inside child2");
-              child1.rerender();
-            }
-          });
-        }
-      });
-
-      view.appendTo("#qunit-fixture");
-    });
-  }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
+QUnit.test("rerender of non-top level view during rendering should throw", function() {
+  let innerView = EmberView.create({
+    template: compile("{{throw}}")
+  });
+  registerHelper('throw', function() {
+    innerView.rerender();
+  });
+  view = EmberView.create({
+    template: compile("{{view view.innerView}}"),
+    innerView
+  });
+  throws(
+    function() {
+      run(view, view.appendTo, '#qunit-fixture');
+    },
+    /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./,
+    'expected error was not raised'
+  );
 });
 
 QUnit.module("views/view/view_lifecycle_test - hasElement", {
