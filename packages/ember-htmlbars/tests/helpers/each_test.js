@@ -1,3 +1,4 @@
+/*globals EmberDev */
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
@@ -275,6 +276,35 @@ QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
 
   equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
 });
+
+if (EmberDev && !EmberDev.runningProdBuild) {
+  if (Ember.EXTEND_PROTOTYPES) {
+    QUnit.test("it should not give ye olde assertion error", function() {
+      var goodView = EmberView.create({
+        template: templateFor('<div>{{#each host in view.funnyHosts}}<span>{{host}}</span>{{/each}}</div>'),
+        funnyHosts: ["Conan O'Brien", "Jimmy Kimmel", "David Letterman"]
+      });
+
+      runAppend(goodView);
+
+      equal(goodView.$('span').length, 3, "renders two <span> elements");
+
+      runDestroy(goodView);
+    });
+  } else {
+    QUnit.test("it should give the proper assertion error - Issue #3734 from ember-cli", function() {
+      var badView = EmberView.create({
+        template: templateFor('<div>{{#each host in view.unfunnyHosts}}<span>{{host}}</span>{{/each}}</div>'),
+        unfunnyHosts: ["Jimmy Fallon"]
+      });
+
+      expectAssertion(function() {
+        runAppend(badView);
+      }, /and you forgot to wrap your array in Ember\.A/);
+      runDestroy(badView);
+    });
+  }
+}
 
 QUnit.test("it works inside a ul element", function() {
   var ulView = EmberView.create({
