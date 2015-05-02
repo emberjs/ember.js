@@ -15,7 +15,7 @@ export default {
     // Force the component hook to treat this as a first-time render,
     // because normal components (`<foo-bar>`) cannot change at runtime,
     // but the `{{component}}` helper can.
-    morph.state.componentNode = null;
+    morph.state.manager = null;
 
     env.hooks.component(morph, env, scope, morph.state.componentName, hash, template, visitor);
   }

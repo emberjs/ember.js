@@ -13,7 +13,7 @@ export default {
     var read = env.hooks.getValue;
 
     return {
-      componentNode: state.componentNode,
+      manager: state.manager,
       parentView: scope.view,
       viewClassOrInstance: getView(read(params[0]), env.container)
     };
@@ -24,7 +24,7 @@ export default {
     // of a mutable param and used it in its layout, because there are
     // no params at all.
     if (objectKeys(hash).length) {
-      return morph.state.componentNode.rerender(env, hash, visitor, true);
+      return morph.state.manager.rerender(env, hash, visitor, true);
     }
   },
 
@@ -42,7 +42,7 @@ export default {
 
     var options = { component: node.state.viewClassOrInstance, layout: null };
     var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
-    state.componentNode = componentNode;
+    state.manager = componentNode;
 
     componentNode.render(env, hash, visitor);
   }

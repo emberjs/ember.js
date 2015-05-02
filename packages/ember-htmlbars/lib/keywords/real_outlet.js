@@ -71,7 +71,7 @@ export default {
     }
 
     var componentNode = ComponentNode.create(renderNode, env, {}, options, parentView, null, null, template);
-    state.componentNode = componentNode;
+    state.manager = componentNode;
 
     componentNode.render(env, hash, visitor);
   }

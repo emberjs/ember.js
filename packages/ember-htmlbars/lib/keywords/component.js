@@ -2,7 +2,7 @@ export default {
   setupState(lastState, env, scope, params, hash) {
     let state = {
       componentPath: env.hooks.getValue(params[0]),
-      componentNode: lastState && lastState.componentNode
+      manager: lastState && lastState.manager
     };
 
     return state;
@@ -12,7 +12,7 @@ export default {
     // Force the component hook to treat this as a first-time render,
     // because normal components (`<foo-bar>`) cannot change at runtime,
     // but the `{{component}}` helper can.
-    morph.state.componentNode = null;
+    morph.state.manager = null;
 
     let componentPath = morph.state.componentPath;
 

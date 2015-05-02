@@ -26,7 +26,7 @@ export default {
       component: state.viewClass
     };
     var componentNode = ComponentNode.create(renderNode, env, hash, options, parentView, null, null, null);
-    state.componentNode = componentNode;
+    state.manager = componentNode;
     componentNode.render(env, hash, visitor);
   }
 };

@@ -1,20 +1,20 @@
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ComponentNode from "ember-htmlbars/node-managers/component-node-manager";
 
 export default function componentHook(renderNode, env, scope, tagName, attrs, template, visitor) {
   var state = renderNode.state;
+
   // Determine if this is an initial render or a re-render
-  if (state.componentNode) {
-    state.componentNode.rerender(env, attrs, visitor);
+  if (state.manager) {
+    state.manager.rerender(env, attrs, visitor);
     return;
   }
 
   var read = env.hooks.getValue;
   var parentView = read(env.view);
 
-  var componentNode = state.componentNode =
+  var manager = state.manager =
     ComponentNode.create(renderNode, env, attrs, undefined, parentView, tagName,
                          scope, template, visitor);
 
-  componentNode.render(env, attrs, visitor);
+  manager.render(env, attrs, visitor);
 }
-

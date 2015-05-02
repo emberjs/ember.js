@@ -26,7 +26,7 @@ export default {
 
     return {
       parentView: scope.view,
-      componentNode: prevState.componentNode,
+      manager: prevState.manager,
       controller: prevState.controller,
       childOutletState: childOutletState(name, env)
     };
@@ -165,7 +165,7 @@ export default {
     }
 
     var componentNode = ComponentNode.create(node, env, hash, options, state.parentView, null, null, template);
-    state.componentNode = componentNode;
+    state.manager = componentNode;
 
     if (router && params.length === 1) {
       router._connectActiveComponentNode(name, componentNode);
