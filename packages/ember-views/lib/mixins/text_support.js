@@ -318,7 +318,7 @@ TextSupport.KEY_EVENTS = {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  var action = get(view, eventName);
+  var action = get(view, 'attrs.' + eventName) || get(view, eventName);
   var on = get(view, 'onEvent');
   var value = get(view, 'value');
 
