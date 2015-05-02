@@ -147,9 +147,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         },
         allowOverrides: (controller, prop) => {
           return this._updatingQPChanged(controller, map[prop]);
-        },
-        changingKeys: (controller, prop) => {
-          return this._updateSerializedQPValue(controller, map[prop]);
         }
       }
     };
@@ -1096,7 +1093,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       if (transition) {
         // Update the model dep values used to calculate cache keys.
         stashParamNames(this.router, transition.state.handlerInfos);
-        controller._qpDelegate = states.changingKeys;
         controller._updateCacheParams(transition.params);
       }
       controller._qpDelegate = states.allowOverrides;
