@@ -14,77 +14,88 @@ import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
 // libraries.
 import getValue from "ember-htmlbars/hooks/get-value";
 
-function ComponentNodeManager(component, scope, renderNode, block, expectElement) {
+function ComponentNodeManager(component, scope, renderNode, attrs, block, expectElement) {
   this.component = component;
   this.scope = scope;
   this.renderNode = renderNode;
+  this.attrs = attrs;
   this.block = block;
   this.expectElement = expectElement;
 }
 
 export default ComponentNodeManager;
 
-ComponentNodeManager.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
-  found = found || lookupComponent(env, path);
-  Ember.assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
-    if (path) {
-      return found.component || found.layout;
-    } else {
-      return found.component || found.layout || contentTemplate;
-    }
+ComponentNodeManager.create = function(renderNode, env, options) {
+  let { tagName,
+        attrs,
+        parentView,
+        parentScope,
+        template } = options;
+
+  attrs = attrs || {};
+
+  // Try to find the Component class and/or template for this component name in
+  // the container.
+  let { component, layout } = lookupComponent(env, tagName);
+
+  Ember.assert('HTMLBars error: Could not find component named "' + tagName + '" (no component or template with that name was found)', function() {
+    return component || layout;
   });
 
-  var component;
-  var componentInfo = { layout: found.layout };
+  //var componentInfo = { layout: found.layout };
 
-  if (found.component) {
-    var options = { parentView: parentView };
+  if (component) {
+    let createOptions = { parentView };
 
-    if (found.createOptions) {
-      merge(options, found.createOptions);
+    // Some attrs are special and need to be set as properties on the component
+    // instance. Make sure we use getValue() to get them from `attrs` since
+    // they are still streams.
+    if (attrs.id) { createOptions.elementId = getValue(attrs.id); }
+    if (attrs.tagName) { createOptions.tagName = getValue(attrs.tagName); }
+    if (attrs._defaultTagName) { createOptions._defaultTagName = getValue(attrs._defaultTagName); }
+    if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
+
+    if (component.create && parentScope && parentScope.self) {
+      options._context = getValue(parentScope.self);
     }
 
-    if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
-    if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
-    if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
-    if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
+    component = createOrUpdateComponent(component, createOptions, renderNode, env, attrs);
 
-    if (found.component.create && contentScope && contentScope.self) {
-      options._context = getValue(contentScope.self);
-    }
+    // Even though we looked up a layout from the container earlier, the
+    // component may specify a `layout` property that overrides that.
+    // The component may also provide a `template` property we should
+    // respect (though this behavior is deprecated).
+    let componentLayout = get(component, 'layout');
+    let componentTemplate = get(component, 'template');
 
-    component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
+    if (componentLayout) {
+      layout = componentLayout;
 
-    let layout = get(component, 'layout');
-    if (layout) {
-      componentInfo.layout = layout;
-      if (!contentTemplate) {
-        let template = get(component, 'template');
-        if (template) {
-          Ember.deprecate("Using deprecated `template` property on a Component.");
-          contentTemplate = template.raw;
-        }
+      // There is no block template provided but the component has a
+      // `template` property.
+      if (!template && componentTemplate) {
+        Ember.deprecate("Using deprecated `template` property on a Component.");
+        template = componentTemplate.raw;
       }
-    } else {
-      componentInfo.layout = get(component, 'template') || componentInfo.layout;
+    } else if (componentTemplate){
+      // If the component has a `template` but no `layout`, use the template
+      // as the layout.
+      layout = componentTemplate;
     }
 
     renderNode.emberView = component;
   }
 
-  Ember.assert("BUG: ComponentNodeManager.create can take a scope or a self, but not both", !(contentScope && found.self));
-
-  var results = buildComponentTemplate(componentInfo, attrs, {
-    template: contentTemplate,
-    scope: contentScope,
-    self: found.self
+  var results = buildComponentTemplate({ layout: layout, component: component }, attrs, {
+    template: template,
+    scope: parentScope
   });
 
-  return new ComponentNodeManager(component, contentScope, renderNode, results.block, results.createdElement);
+  return new ComponentNodeManager(component, parentScope, renderNode, attrs, results.block, results.createdElement);
 };
 
-ComponentNodeManager.prototype.render = function(env, attrs, visitor) {
-  var component = this.component;
+ComponentNodeManager.prototype.render = function(env, visitor) {
+  var { component, attrs } = this;
 
   var newEnv = env;
   if (component) {

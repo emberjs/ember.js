@@ -1,4 +1,4 @@
-import ComponentNode from "ember-htmlbars/node-managers/component-node-manager";
+import ComponentNodeManager from "ember-htmlbars/node-managers/component-node-manager";
 
 export default function componentHook(renderNode, env, scope, tagName, attrs, template, visitor) {
   var state = renderNode.state;
@@ -12,9 +12,15 @@ export default function componentHook(renderNode, env, scope, tagName, attrs, te
   var read = env.hooks.getValue;
   var parentView = read(env.view);
 
-  var manager = state.manager =
-    ComponentNode.create(renderNode, env, attrs, undefined, parentView, tagName,
-                         scope, template, visitor);
+  var manager = ComponentNodeManager.create(renderNode, env, {
+    tagName,
+    attrs,
+    parentView,
+    template,
+    parentScope: scope
+  });
 
-  manager.render(env, attrs, visitor);
+  state.manager = manager;
+
+  manager.render(env, visitor);
 }
