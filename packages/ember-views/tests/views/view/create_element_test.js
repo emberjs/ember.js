@@ -64,18 +64,17 @@ QUnit.test("calls render and turns resultant string into element", function() {
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
-QUnit.skip("calls render and parses the buffer string in the right context", function() {
+QUnit.test("renders the child view templates in the right context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
     tagName: 'table',
-    childViews: [EmberView.create({
-      tagName: '',
-      render(buffer) {
-        // Emulate a metamorph
-        buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-      }
-    })]
+    childViews: [
+      EmberView.create({
+        tagName: '',
+        template: compile('<tr><td>snorfblax</td></tr>')
+      })
+    ]
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
@@ -87,9 +86,7 @@ QUnit.skip("calls render and parses the buffer string in the right context", fun
   var elem = get(view, 'element');
   ok(elem, 'has element now');
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
-  equal(elem.childNodes[0].tagName, 'SCRIPT', 'script tag first');
-  equal(elem.childNodes[1].tagName, 'TR', 'tr tag second');
-  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+  equalHTML(elem.childNodes, '<tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
 QUnit.test("does not wrap many tr children in tbody elements", function() {
