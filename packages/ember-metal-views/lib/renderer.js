@@ -6,7 +6,7 @@ import {
   subscribers
 } from "ember-metal/instrumentation";
 import buildComponentTemplate from "ember-views/system/build-component-template";
-import { indexOf } from "ember-metal/array";
+import { indexOf } from "ember-metal/enumerable_utils";
 //import { deprecation } from "ember-views/compat/attrs-proxy";
 
 function Renderer(_helper) {
