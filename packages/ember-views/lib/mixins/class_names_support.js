@@ -135,7 +135,7 @@ var ClassNamesSupport = Mixin.create({
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
-          elem.removeClass(oldClass);
+          removeClass(elem, oldClass);
           // Also remove from classNames so that if the view gets rerendered,
           // the class doesn't get added back to the DOM.
           classNames.removeObject(oldClass);
@@ -144,7 +144,7 @@ var ClassNamesSupport = Mixin.create({
         // If necessary, add a new class. Make sure we keep track of it so
         // it can be removed in the future.
         if (newClass) {
-          elem.addClass(newClass);
+          addClass(elem, newClass);
           oldClass = newClass;
         } else {
           oldClass = null;
@@ -179,4 +179,48 @@ var ClassNamesSupport = Mixin.create({
   }
 });
 
+function identity(x) {
+  return x;
+}
+
+function getCurrentClasses(el) {
+  var classAttr = el.getAttribute('class');
+  return classAttr ? classAttr.split(' ').filter(identity) : [];
+}
+
+function addClass(elem, newClass) {
+  if(!newClass) {
+    return;
+  }
+  var toAdd = newClass.split(' ').filter(identity);
+  Ember.$(elem).each(function(el) {
+    if(el.classList) {
+      toAdd.forEach(function(cls) {
+        el.classList.add(cls);
+      });
+    } else {
+      var classes = getCurrentClasses(el);
+      classes.addObjects(toAdd);
+      el.setAttribute('class', classes.join(' '));
+    }
+  });
+}
+
+function removeClass(elem, oldClass) {
+  if(!oldClass) {
+    return;
+  }
+  var toRemove = oldClass.split(' ').filter(identity);
+  Ember.$(elem).each(function(el) {
+    if(el.classList) {
+      toRemove.forEach(function(cls) {
+        el.classList.remove(cls);
+      });
+    } else {
+      var classes = getCurrentClasses(el);
+      classes.removeObjects(toRemove);
+      el.setAttribute('class', classes.join(' '));
+    }
+  });
+}
 export default ClassNamesSupport;
