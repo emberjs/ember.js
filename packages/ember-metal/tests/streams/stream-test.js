@@ -1,4 +1,3 @@
-import { isWatching } from "ember-metal/watching";
 import Stream from "ember-metal/streams/stream";
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from "ember-metal/property_get";
@@ -39,7 +38,7 @@ QUnit.test('is notified when a proxy\'s content changes', function() {
   equal(count, 1);
   equal(get(stream.value(), 'message'), "foo");
 
-  value.set('content', { message: "bar" })
+  value.set('content', { message: "bar" });
 
   equal(count, 2);
   equal(get(stream.value(), 'message'), "bar");

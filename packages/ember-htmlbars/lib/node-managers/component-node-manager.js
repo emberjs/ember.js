@@ -78,7 +78,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
         Ember.deprecate("Using deprecated `template` property on a Component.");
         template = componentTemplate.raw;
       }
-    } else if (componentTemplate){
+    } else if (componentTemplate) {
       // If the component has a `template` but no `layout`, use the template
       // as the layout.
       layout = componentTemplate;
