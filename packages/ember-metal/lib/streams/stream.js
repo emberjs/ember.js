@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 import create from "ember-metal/platform/create";
 import { getFirstKey, getTailPath } from "ember-metal/path_cache";
+import { addObserver, removeObserver } from "ember-metal/observer";
 import { isStream } from 'ember-metal/streams/utils';
 import Subscriber from "ember-metal/streams/subscriber";
 import Dependency from "ember-metal/streams/dependency";
@@ -21,6 +22,7 @@ function Stream(fn, label) {
 }
 
 var KeyStream;
+var ProxyMixin;
 
 Stream.prototype = {
   isStream: true,
@@ -36,6 +38,7 @@ Stream.prototype = {
     this.subscriberTail = null;
     this.dependencyHead = null;
     this.dependencyTail = null;
+    this.observedProxy = null;
   },
 
   _makeChildStream(key) {
@@ -96,22 +99,24 @@ Stream.prototype = {
       this.isDirty = true;
     }
 
+    var willRevalidate = false;
+
     if (!this.isActive && this.subscriberHead) {
       this.activate();
-
-
-      if (!this.isDirty) {
-        this.revalidate();
-      }
+      willRevalidate = true;
     }
 
     if (this.isDirty) {
       if (this.isActive) {
-        this.revalidate();
+        willRevalidate = true;
       }
 
       this.cache = this.compute();
       this.isDirty = false;
+    }
+
+    if (willRevalidate) {
+      this.revalidate(this.cache);
     }
 
     return this.cache;
@@ -173,9 +178,25 @@ Stream.prototype = {
     this.subscribeDependencies();
   },
 
-  deactivate() {},
+  revalidate(value) {
+    if (value !== this.observedProxy) {
+      this.deactivate();
 
-  revalidate() {},
+      ProxyMixin = ProxyMixin || Ember.__loader.require('ember-runtime/mixins/-proxy').default;
+
+      if (ProxyMixin.detect(value)) {
+        addObserver(value, 'content', this, this.notify);
+        this.observedProxy = value;
+      }
+    }
+  },
+
+  deactivate() {
+    if (this.observedProxy) {
+      removeObserver(this.observedProxy, 'content', this, this.notify);
+      this.observedProxy = null;
+    }
+  },
 
   compute() {
     throw new Error("Stream error: compute not implemented");

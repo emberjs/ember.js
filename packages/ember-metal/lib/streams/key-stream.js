@@ -52,7 +52,11 @@ merge(KeyStream.prototype, {
     this.notify();
   },
 
-  revalidate() {
+  _super$revalidate: Stream.prototype.revalidate,
+
+  revalidate(value) {
+    this._super$revalidate(value);
+
     var object = this.sourceDep.getValue();
     if (object !== this.observedObject) {
       this.deactivate();
