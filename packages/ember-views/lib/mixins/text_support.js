@@ -42,6 +42,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   The following chart is a visual representation of what takes place when the
   escape key is pressed in this scenario:
 
+  ```
   The Template
   +---------------------------+
   |                           |
@@ -66,6 +67,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |  }                                        |
   |                                           |
   +-------------------------------------------+
+  ```
 
   Here are the events that we currently support along with the name of the
   attribute you would need to use on your field. To reiterate, you would use the
@@ -75,6 +77,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
     {{input attribute-name='controllerAction'}}
   ```
 
+  ```
   +--------------------+----------------+
   |                    |                |
   | event              | attribute name |
@@ -95,6 +98,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |                    |                |
   | keydown            | key-down       |
   +--------------------+----------------+
+  ```
 
   @class TextSupport
   @namespace Ember
