@@ -503,14 +503,6 @@ var Select = View.extend({
   */
   optionView: SelectOption,
 
-  _change() {
-    if (get(this, 'multiple')) {
-      this._changeMultiple();
-    } else {
-      this._changeSingle();
-    }
-  },
-
   selectionDidChange: observer('selection.@each', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
@@ -543,11 +535,34 @@ var Select = View.extend({
   _setDefaults() {
     var selection = get(this, 'selection');
     var value = get(this, 'value');
+    var prompt = get(this, 'prompt');
+    var multiple = get(this, 'multiple');
+    var content = get(this, 'content');
 
     if (!isNone(selection)) { this.selectionDidChange(); }
     if (!isNone(value)) { this.valueDidChange(); }
     if (isNone(selection)) {
-      this._change();
+      if (multiple) {
+        this._changeMultiple();
+      } else {
+        if (!isNone(prompt)) {
+          this._changeSingle();
+        } else {
+          if (isNone(content) || isNone(get(content, 'length'))) {
+            set(this, 'selection', null);
+          } else {
+            set(this, 'selection', content.objectAt(0));
+          }
+        }
+      }
+    }
+  },
+
+  _change() {
+    if (get(this, 'multiple')) {
+      this._changeMultiple();
+    } else {
+      this._changeSingle();
     }
   },
 
@@ -562,7 +577,7 @@ var Select = View.extend({
       return;
     }
 
-    if (prompt) { selectedIndex -= 1; }
+    if (prompt) {selectedIndex -= 1; }
     set(this, 'selection', content.objectAt(selectedIndex));
   },
 
