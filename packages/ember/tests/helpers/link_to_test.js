@@ -837,7 +837,7 @@ QUnit.test("The {{link-to}} helper refreshes href element when one of params cha
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });
 
-QUnit.skip("The {{link-to}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
+QUnit.test("The {{link-to}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
   expectDeprecation(objectControllerDeprecation);
 
   Router.map(function() {

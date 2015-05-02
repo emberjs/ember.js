@@ -12,6 +12,7 @@ import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import inject from "ember-runtime/inject";
 import ControllerMixin from "ember-runtime/mixins/controller";
+import { defineProperty } from "ember-metal/properties";
 
 import linkToTemplate from "ember-htmlbars/templates/link-to";
 linkToTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -392,17 +393,6 @@ var LinkComponent = EmberComponent.extend({
       set(this, 'loadingClass', attrs.loadingClass);
     }
 
-    for (let i = 0; i < params.length; i++) {
-      var value = params[i];
-
-      while (ControllerMixin.detect(value)) {
-        Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + attrs.view + '` to use `{{link-to "post" someController.model}}` instead.');
-        value = value.get('model');
-      }
-
-      params[i] = value;
-    }
-
     let targetRouteName;
     let models = [];
     let onlyQueryParamsSupplied = (params.length === 0);
@@ -419,6 +409,9 @@ var LinkComponent = EmberComponent.extend({
         models.push(params[i]);
       }
     }
+
+    // Remove for 2.0
+    handleDeprecatedObjectControllers(this, models, attrs.view);
 
     let resolvedQueryParams = getResolvedQueryParams(queryParams, targetRouteName);
 
@@ -472,6 +465,57 @@ function getResolvedQueryParams(queryParamsObject, targetRouteName) {
   }
 
   return resolvedQueryParams;
+}
+
+// Remove for 2.0
+
+function handleDeprecatedObjectControllers(component, models, view) {
+  let usingDeprecatedObjectControllers;
+
+  // Detect ObjectControllers
+  for (let i = 0; i < models.length; i++) {
+    let value = models[i];
+
+    if (ControllerMixin.detect(value)) {
+      usingDeprecatedObjectControllers = true;
+      Ember.deprecate('Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. Please update `' + view + '` to use `{{link-to "post" someController.model}}` instead.');
+      break;
+    }
+  }
+
+  if (usingDeprecatedObjectControllers) {
+    setupDeprectatedModelsProperty(component, models);
+  }
+}
+
+function setupDeprectatedModelsProperty(component, controllers) {
+  let unwrapModels = function(controllers) {
+    let values = [];
+
+    for (let i = 0; i < controllers.length; i++) {
+      let value = controllers[i];
+      while (ControllerMixin.detect(value)) {
+        value = value.get('model');
+      }
+
+      values.push(value);
+    }
+
+    return values;
+  };
+
+  let property = computed('_deprecatedObjectControllerModels.@each.model', {
+    get: function() {
+      return unwrapModels(this._deprecatedObjectControllerModels);
+    },
+
+    set: function(key, controllers) {
+      this._deprecatedObjectControllerModels = Ember.A(controllers);
+      return unwrapModels(controllers);
+    }
+  });
+
+  defineProperty(component, 'models', property);
 }
 
 export default LinkComponent;
