@@ -33,7 +33,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.PeopleView = EmberView.extend({
-        defaultTemplate: compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
+        defaultTemplate: compile("{{#each model as |person|}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
       });
 
       App.PeopleController = ArrayController.extend({});
@@ -85,7 +85,7 @@ QUnit.test("template is bound to empty array of people", function() {
   });
 });
 
-QUnit.skip("template is bound to array of 2 people", function() {
+QUnit.test("template is bound to array of 2 people", function() {
   App.Person.find = function() {
     var people = Ember.A();
     var first = App.Person.create({ firstName: "x" });
