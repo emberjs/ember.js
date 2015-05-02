@@ -221,6 +221,14 @@ function takeSnapshot(attrs) {
 function mergeBindings(target, attrs) {
   for (var prop in attrs) {
     if (!attrs.hasOwnProperty(prop)) { continue; }
+    // when `attrs` is an actual value being set in the
+    // attrs hash (`{{foo-bar attrs="blah"}}`) we cannot
+    // set `"blah"` to the root of the target because
+    // that would replace all attrs with `attrs.attrs`
+    if (prop === 'attrs') {
+      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`);
+      continue;
+    }
     let value = attrs[prop];
 
     if (value && value[MUTABLE_CELL]) {

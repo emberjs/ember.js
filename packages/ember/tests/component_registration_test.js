@@ -286,7 +286,7 @@ QUnit.test("properties of a component without a template should not collide with
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-QUnit.skip("attrs property of a component without a template should not collide with internal structures", function() {
+QUnit.test("attrs property of a component without a template should not collide with internal structures", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component attrs=foo}}</div>");
 
   boot(function() {
@@ -298,7 +298,7 @@ QUnit.skip("attrs property of a component without a template should not collide 
     registry.register('component:my-component', Ember.Component.extend({
       didInsertElement() {
         // FIXME: I'm unsure if this is even the right way to access attrs
-        this.$().html(this.get('attrs.attrs'));
+        this.$().html(this.get('attrs.attrs.value'));
       }
     }));
   });
