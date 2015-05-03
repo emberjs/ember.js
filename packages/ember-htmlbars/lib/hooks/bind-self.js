@@ -25,6 +25,10 @@ export default function bindSelf(env, scope, _self) {
   }
 
   newStream(scope, 'self', self, null, true);
+
+  if (!scope.locals.controller) {
+    scope.locals.controller = scope.self;
+  }
 }
 
 function newStream(scope, key, newValue, renderNode, isSelf) {

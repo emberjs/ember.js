@@ -35,7 +35,7 @@ QUnit.module("Template scoping examples", {
   }
 });
 
-QUnit.skip("Actions inside an outlet go to the associated controller", function() {
+QUnit.test("Actions inside an outlet go to the associated controller", function() {
   expect(1);
 
   templates.index = compile("{{component-with-action action='componentAction'}}");

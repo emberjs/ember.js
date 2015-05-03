@@ -57,7 +57,11 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 
     if (component.create && parentScope && parentScope.self) {
-      options._context = getValue(parentScope.self);
+      createOptions._context = getValue(parentScope.self);
+    }
+
+    if (parentScope.locals.controller) {
+      createOptions._controller = getValue(parentScope.locals.controller);
     }
 
     component = createOrUpdateComponent(component, createOptions, renderNode, env, attrs);

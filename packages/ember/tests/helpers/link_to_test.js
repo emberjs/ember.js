@@ -1024,7 +1024,7 @@ QUnit.test("The non-block form {{link-to}} helper updates the link text when it 
   equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, "The link title is correctly updated when the route changes");
 });
 
-QUnit.skip("The non-block form {{link-to}} helper moves into the named route with context", function() {
+QUnit.test("The non-block form {{link-to}} helper moves into the named route with context", function() {
   expect(5);
   Router.map(function(match) {
     this.route("item", { path: "/item/:id" });
