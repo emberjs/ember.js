@@ -5,6 +5,7 @@ import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import compile from "ember-template-compiler/system/compile";
+import { runDestroy } from "ember-runtime/tests/utils";
 
 var View, view, willDestroyCalled, childView;
 
@@ -14,9 +15,7 @@ QUnit.module("EmberView - append() and appendTo()", {
   },
 
   teardown() {
-    run(function() {
-      if (!view.isDestroyed) { view.destroy(); }
-    });
+    runDestroy(view);
   }
 });
 
@@ -372,4 +371,3 @@ QUnit.test("destroy removes a child view from its parent", function() {
 
   ok(get(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
-
