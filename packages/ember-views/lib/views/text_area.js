@@ -2,10 +2,8 @@
 @module ember
 @submodule ember-views
 */
-import { get } from "ember-metal/property_get";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-views/mixins/text_support";
-import { observer } from "ember-metal/mixin";
 
 /**
   The internal class used to create textarea element when the `{{textarea}}`
