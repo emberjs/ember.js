@@ -53,7 +53,6 @@ QUnit.test("can properly yield", function() {
   });
 
   runAppend(view);
-  debugger
 
   equal(view.$().text(), 'Some Random Class - Template');
 });
