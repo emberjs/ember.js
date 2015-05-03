@@ -1260,6 +1260,43 @@ var View = CoreView.extend(
   */
   ariaRole: null,
 
+  /**
+    Normally, Ember's component model is "write-only". The component takes a
+    bunch of attributes that it got passed in, and uses them to render its
+    template.
+
+    One nice thing about this model is that if you try to set a value to the
+    same thing as last time, Ember (through HTMLBars) will avoid doing any
+    work on the DOM.
+
+    This is not just a performance optimization. If an attribute has not
+    changed, it is important not to clobber the element's "hidden state".
+    For example, if you set an input's `value` to the same value as before,
+    it will clobber selection state and cursor position. In other words,
+    setting an attribute is not **always** idempotent.
+
+    This method provides a way to read an element's attribute and also
+    update the last value Ember knows about at the same time. This makes
+    setting an attribute idempotent.
+
+    In particular, what this means is that if you get an `<input>` element's
+    `value` attribute and then re-render the template with the same value,
+    it will avoid clobbering the cursor and selection position.
+
+    Since most attribute sets are idempotent in the browser, you typically
+    can get away with reading attributes using jQuery, but the most reliable
+    way to do so is through this method.
+
+    @method readDOMAttr
+    @param {String} name the name of the attribute
+    @return String
+  */
+  readDOMAttr(name) {
+    let attr = this.renderNode.childNodes.filter(node => node.attrName === name)[0];
+    if (!attr) { return null; }
+    return attr.getContent();
+  },
+
   // .......................................................
   // CORE DISPLAY METHODS
   //

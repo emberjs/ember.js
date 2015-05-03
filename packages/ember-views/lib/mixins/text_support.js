@@ -188,7 +188,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   _elementValueDidChange() {
-    set(this, 'value', this.$().val());
+    // Using readDOMAttr will ensure that HTMLBars knows the last
+    // value.
+    set(this, 'value', this.readDOMAttr('value'));
   },
 
   change(event) {
