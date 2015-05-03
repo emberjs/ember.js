@@ -28,6 +28,8 @@ function updateAttributeNS(value) {
   }
 }
 
+var UNSET = { unset: true };
+
 function AttrMorph(element, attrName, domHelper, namespace) {
   this.element = element;
   this.domHelper = domHelper;
@@ -35,7 +37,7 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.state = {};
   this.isDirty = false;
   this.escaped = true;
-  this.lastValue = null;
+  this.lastValue = UNSET;
   this.linkedParams = null;
   this.rendered = false;
   this._renderedInitially = false;
@@ -56,6 +58,9 @@ function AttrMorph(element, attrName, domHelper, namespace) {
 }
 
 AttrMorph.prototype.setContent = function (value) {
+  if (this.lastValue === value) { return; }
+  this.lastValue = value;
+
   if (this.escaped) {
     var sanitized = sanitizeAttributeValue(this.domHelper, this.element, this.attrName, value);
     this._update(sanitized, this.namespace);
