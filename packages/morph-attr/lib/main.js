@@ -9,10 +9,6 @@ function getProperty() {
 
 function updateProperty(value) {
   if (this._renderedInitially === true || !isAttrRemovalValue(value)) {
-    if (this.attrName === 'value' && this.element.value === value) {
-      return;
-    }
-
     // do not render if initial value is undefined or null
     this.domHelper.setPropertyStrict(this.element, this.attrName, value);
   }
