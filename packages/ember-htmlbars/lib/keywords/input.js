@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import { assign } from "ember-metal/merge";
 
 export default {
   setupState(lastState, env, scope, params, hash) {
@@ -8,7 +9,7 @@ export default {
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
                  " you must use `checked=someBooleanValue` instead.", !(type === 'checkbox' && hash.hasOwnProperty('value')));
 
-    return { componentName };
+    return assign({}, lastState, { componentName });
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {

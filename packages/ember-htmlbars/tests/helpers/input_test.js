@@ -62,8 +62,13 @@ QUnit.test("should become disabled if the disabled attribute is true", function(
 
 QUnit.test("input value is updated when setting value property of view", function() {
   equal(view.$('input').val(), "hello", "renders text field with value");
+
+  let id = view.$('input').prop('id');
+
   run(null, set, controller, 'val', 'bye!');
   equal(view.$('input').val(), "bye!", "updates text field after value changes");
+
+  equal(view.$('input').prop('id'), id, "the component hasn't changed");
 });
 
 QUnit.test("input placeholder is updated when setting placeholder property of view", function() {
