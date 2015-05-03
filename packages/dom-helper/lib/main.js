@@ -223,8 +223,16 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, String(value));
 };
 
+prototype.getAttribute = function(element, name) {
+  return element.getAttribute(name);
+};
+
 prototype.setAttributeNS = function(element, namespace, name, value) {
   element.setAttributeNS(namespace, name, String(value));
+};
+
+prototype.getAttributeNS = function(element, namespace, name) {
+  return element.getAttributeNS(namespace, name);
 };
 
 if (canRemoveSvgViewBoxAttribute){
@@ -251,6 +259,10 @@ prototype.setPropertyStrict = function(element, name, value) {
   }
 
   element[name] = value;
+};
+
+prototype.getPropertyStrict = function(element, name) {
+  return element[name];
 };
 
 prototype.setProperty = function(element, name, value, namespace) {
