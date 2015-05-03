@@ -24,9 +24,6 @@ var TemplateRenderingSupport = Mixin.create({
     @method render
     @param {Ember.RenderBuffer} buffer The render buffer
   */
-  render(buffer) {
-    // TODO: Legacy string render function support
-  },
 
   renderBlock(block, renderNode) {
     if (_renderView === undefined) {

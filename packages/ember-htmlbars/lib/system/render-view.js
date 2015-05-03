@@ -1,22 +1,5 @@
-import Ember from "ember-metal/core";
 import defaultEnv from "ember-htmlbars/env";
-import { get } from "ember-metal/property_get";
 import ComponentNode, { createOrUpdateComponent } from "ember-htmlbars/system/component-node";
-
-export default function renderView(view, buffer, template) {
-  if (!template) {
-    return;
-  }
-
-  var output;
-
-  Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
-  output = renderLegacyTemplate(view, buffer, template);
-
-  if (output !== undefined) {
-    buffer.push(output);
-  }
-}
 
 // This function only gets called once per render of a "root view" (`appendTo`). Otherwise,
 // HTMLBars propagates the existing env and renders templates for a given render node.
@@ -36,22 +19,7 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
 
   view.env = env;
   createOrUpdateComponent(view, {}, renderNode, env);
-  var componentNode = new ComponentNode(view, null, renderNode, block, true);
+  var componentNode = new ComponentNode(view, null, renderNode, block, view.tagName !== '');
 
   componentNode.render(env, {});
-}
-
-function renderLegacyTemplate(view, buffer, template) {
-  // FIXME: This should likely be removed. Adds support for bespoke kind-of-handlebars
-  // templates. They are used in tests, but nobody should be using them in the
-  // wild.
-  var context = get(view, 'context');
-  var options = {
-    data: {
-      view: view,
-      buffer: buffer
-    }
-  };
-
-  return template(context, options);
 }
