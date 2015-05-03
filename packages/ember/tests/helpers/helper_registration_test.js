@@ -84,7 +84,7 @@ QUnit.test("Bound helpers registered on the container can be late-invoked", func
   ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
-QUnit.skip("Bound `makeViewHelper` helpers registered on the container can be used", function() {
+QUnit.test("Bound `makeViewHelper` helpers registered on the container can be used", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-foo}} {{x-foo name=foo}}</div>");
 
   boot(function() {
@@ -93,7 +93,7 @@ QUnit.skip("Bound `makeViewHelper` helpers registered on the container can be us
     }));
 
     registry.register('helper:x-foo', makeViewHelper(Ember.Component.extend({
-      layout: compile('woot!!{{name}}')
+      layout: compile('woot!!{{attrs.name}}')
     })));
   });
 

@@ -17,10 +17,14 @@ QUnit.module("ember-htmlbars: makeViewHelper", {
   }
 });
 
-QUnit.skip("makes helpful assertion when called with invalid arguments", function() {
+QUnit.test("makes helpful assertion when called with invalid arguments", function() {
   var SomeRandom = EmberView.extend({
     template: compile("Some Random Class")
   });
+
+  SomeRandom.toString = function() {
+    return 'Some Random Class';
+  };
 
   var helper = makeViewHelper(SomeRandom);
   registry.register('helper:some-random', helper);
@@ -33,4 +37,23 @@ QUnit.skip("makes helpful assertion when called with invalid arguments", functio
   expectAssertion(function() {
     runAppend(view);
   }, "You can only pass attributes (such as name=value) not bare values to a helper for a View found in 'Some Random Class'");
+});
+
+QUnit.test("can properly yield", function() {
+  var SomeRandom = EmberView.extend({
+    layout: compile("Some Random Class - {{yield}}")
+  });
+
+  var helper = makeViewHelper(SomeRandom);
+  registry.register('helper:some-random', helper);
+
+  view = EmberView.create({
+    template: compile("{{#some-random}}Template{{/some-random}}"),
+    container
+  });
+
+  runAppend(view);
+  debugger
+
+  equal(view.$().text(), 'Some Random Class - Template');
 });
