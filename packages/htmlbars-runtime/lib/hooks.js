@@ -112,6 +112,7 @@ export function wrapForHelper(template, env, scope, morph, renderState, visitor)
     yield: yieldArgs,
     yieldItem: yieldItem(template, env, scope, morph, renderState, visitor),
     yieldIn: yieldInShadowTemplate(template, env, scope, morph, renderState, visitor),
+    raw: template,
 
     render: function(self, blockArguments) {
       yieldArgs(blockArguments, self);
@@ -491,7 +492,7 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
 export function continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor) {
   hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
     var helper = env.hooks.lookupHelper(env, scope, path);
-    env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
+    return env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
   });
 }
 

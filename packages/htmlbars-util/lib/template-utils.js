@@ -36,7 +36,11 @@ export function blockFor(render, template, blockOptions) {
 
 export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
   options.renderState.shadowOptions = shadowOptions;
-  callback(options);
+  var result = callback(options);
+
+  if (result && result.handled) {
+    return;
+  }
 
   var item = options.renderState.morphListStart;
   var toClear = options.renderState.clearMorph;
@@ -86,4 +90,3 @@ export function clearMorph(morph, env, destroySelf) {
   morph.lastYielded = null;
   morph.childNodes = null;
 }
-
