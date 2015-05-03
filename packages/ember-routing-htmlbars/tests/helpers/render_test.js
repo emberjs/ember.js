@@ -471,13 +471,12 @@ QUnit.test("{{render}} helper should link child controllers to the parent contro
   equal(parentTriggered, 1, "The event bubbled to the parent");
 });
 
-QUnit.skip("{{render}} helper should be able to render a template again when it was removed", function() {
+QUnit.test("{{render}} helper should be able to render a template again when it was removed", function() {
   var controller = EmberController.extend({ container: container });
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   view = CoreOutlet.create({
     container: container
   });
-  runAppend(view);
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
@@ -497,6 +496,7 @@ QUnit.skip("{{render}} helper should be able to render a template again when it 
     };
     view.setOutletState(liveRoutes);
   });
+  runAppend(view);
 
   equal(view.$().text(), 'HI1BYE');
 
