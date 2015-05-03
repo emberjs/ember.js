@@ -1,4 +1,3 @@
-
 /**
 @module ember
 @submodule ember-views
@@ -39,22 +38,9 @@ export default Component.extend(TextSupport, {
     'selectionStart',
     'wrap',
     'lang',
-    'dir'
+    'dir',
+    'value'
   ],
   rows: null,
-  cols: null,
-
-  _updateElementValue: observer('value', function() {
-    // We do this check so cursor position doesn't get affected in IE
-    var value = get(this, 'value');
-    var $el = this.$();
-    if ($el && value !== $el.val()) {
-      $el.val(value);
-    }
-  }),
-
-  init() {
-    this._super(...arguments);
-    this.on("didInsertElement", this, this._updateElementValue);
-  }
+  cols: null
 });
