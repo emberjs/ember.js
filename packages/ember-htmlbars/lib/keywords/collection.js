@@ -7,16 +7,16 @@ import { readViewFactory } from "ember-views/streams/utils";
 import CollectionView from "ember-views/views/collection_view";
 import ComponentNode from "ember-htmlbars/system/component-node";
 import objectKeys from "ember-metal/keys";
+import { assign } from "ember-metal/merge";
 
 export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
 
-    return {
-      manager: state.manager,
+    return assign({}, state, {
       parentView: read(scope.locals.view),
       viewClassOrInstance: getView(read(params[0]), env.container)
-    };
+    });
   },
 
   rerender(morph, env, scope, params, hash, template, inverse, visitor) {

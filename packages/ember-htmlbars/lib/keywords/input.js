@@ -13,12 +13,11 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    // Force the component hook to treat this as a first-time render,
-    // because normal components (`<foo-bar>`) cannot change at runtime,
-    // but the `{{component}}` helper can.
-    morph.state.manager = null;
-
     env.hooks.component(morph, env, scope, morph.state.componentName, hash, template, visitor);
+  },
+
+  rerender(...args) {
+    this.render(...args);
   }
 };
 
