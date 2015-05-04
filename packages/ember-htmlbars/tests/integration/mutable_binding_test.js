@@ -87,7 +87,7 @@ QUnit.test('a simple mutable binding using `mut` propagates properly', function(
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
 
-QUnit.skip('using a string value through middle tier does not trigger assertion', function(assert) {
+QUnit.test('using a string value through middle tier does not trigger assertion', function(assert) {
   var bottom;
 
   registry.register('component:middle-mut', Component.extend({
