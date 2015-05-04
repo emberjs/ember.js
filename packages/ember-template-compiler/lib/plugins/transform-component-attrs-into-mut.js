@@ -19,7 +19,7 @@ TransformComponentAttrsIntoMut.prototype.transform = function TransformBindAttrT
       let { value } = pair;
 
       if (value.type === 'PathExpression') {
-        pair.value = b.sexpr(b.path('mut'), [pair.value]);
+        pair.value = b.sexpr(b.path('@mut'), [pair.value]);
       }
     });
   });

@@ -16,12 +16,22 @@ export default function mut(morph, env, scope, originalParams, hash, template, i
   return true;
 }
 
-function mutParam(read, stream) {
+export function privateMut(morph, env, scope, originalParams, hash, template, inverse) {
+  // If `morph` is `null` the keyword is being invoked as a subexpression.
+  if (morph === null) {
+    var valueStream = originalParams[0];
+    return mutParam(env.hooks.getValue, valueStream, true);
+  }
+
+  return true;
+}
+
+function mutParam(read, stream, internal) {
   if (stream[MUTABLE_REFERENCE]) {
     return stream;
   }
 
-  Ember.assert("You can only pass a path to mut", typeof stream.setValue === 'function');
+  Ember.assert("You can only pass a path to mut", internal || typeof stream.setValue === 'function');
 
   return new MutStream(stream);
 }

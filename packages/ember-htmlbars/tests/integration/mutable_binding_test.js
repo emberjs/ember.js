@@ -95,6 +95,7 @@ QUnit.skip('using a string value through middle tier does not trigger assertion'
   }));
 
   registry.register('component:bottom-mut', Component.extend({
+    layout: compile('<p class="bottom">{{attrs.stuff}}</p>'),
     didInsertElement() {
       bottom = this;
     }
@@ -109,6 +110,7 @@ QUnit.skip('using a string value through middle tier does not trigger assertion'
   runAppend(view);
 
   assert.strictEqual(bottom.attrs.stuff.value, 'foo', "precond - the data propagated");
+  assert.strictEqual(view.$('p.bottom').text(), "foo");
 });
 
 QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function(assert) {

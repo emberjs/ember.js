@@ -75,7 +75,7 @@ import textarea from "ember-htmlbars/keywords/textarea";
 import collection from "ember-htmlbars/keywords/collection";
 import templateKeyword from "ember-htmlbars/keywords/template";
 import legacyYield from "ember-htmlbars/keywords/legacy-yield";
-import mut from "ember-htmlbars/keywords/mut";
+import mut, { privateMut } from "ember-htmlbars/keywords/mut";
 import each from "ember-htmlbars/keywords/each";
 import readonly from "ember-htmlbars/keywords/readonly";
 
@@ -94,6 +94,7 @@ registerKeyword('textarea', textarea);
 registerKeyword('collection', collection);
 registerKeyword('legacy-yield', legacyYield);
 registerKeyword('mut', mut);
+registerKeyword('@mut', privateMut);
 registerKeyword('each', each);
 registerKeyword('readonly', readonly);
 
