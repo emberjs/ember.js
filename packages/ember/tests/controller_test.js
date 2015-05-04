@@ -100,9 +100,9 @@ QUnit.test("", function(assert) {
   App.IndexRoute = Ember.Route.extend({
     model: function() {
       return Ember.A([
-        {name: 'red'},
-        {name: 'yellow'},
-        {name: 'blue'}
+        { name: 'red' },
+        { name: 'yellow' },
+        { name: 'blue' }
       ]);
     }
   });
