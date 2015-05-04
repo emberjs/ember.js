@@ -14,7 +14,7 @@ export default View.extend({
 
   _arrayController: computed(function() {
     var itemController = this.getAttr('itemController');
-    var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
+    var controller = get(this, 'container').lookupFactory('controller:array').create({
       _isVirtual: true,
       parentController: get(this, 'controller'),
       itemController: itemController,
