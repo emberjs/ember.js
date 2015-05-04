@@ -116,8 +116,11 @@ QUnit.test("propagates dependent-key invalidated sets upstream", function() {
 
   equal(view.get('parentProp'), 'parent-value', 'precond - parent value is there');
   var childView = view.get('childView');
-  debugger;
-  childView.set('childProp', 'new-value');
+
+  run(function() {
+    childView.set('childProp', 'new-value');
+  });
+
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
 });
 
