@@ -101,3 +101,30 @@ QUnit.test("renders a contained view with omitted start tag and tagless parent v
   equal(view.element.tagName, 'TABLE', 'container view is table');
   ok(view.$('tr').length, 'inner view is tr');
 });
+
+QUnit.skip("propagates dependent-key invalidated bindings upstream", function() {
+  view = EmberView.create({
+    parentProp: 'parent-value',
+    template: compile("{{view view.childView childProp=view.parentProp}}"),
+    childView: EmberView.createWithMixins({
+      template: compile("child template"),
+      childProp: Ember.computed('dependencyProp', {
+        get(key) {
+          return this.get('dependencyProp');
+        },
+        set(key, value) {
+          return this.get('dependencyProp');
+        }
+      }),
+      dependencyProp: 'old-value'
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.get('parentProp'), 'parent-value', 'precond - parent value is there');
+  var childView = view.get('childView');
+  childView.set('dependencyProp', 'new-value');
+  equal(childView.get('childProp'), 'new-value', 'pre-cond - new value is propagated to CP');
+  equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
+});
