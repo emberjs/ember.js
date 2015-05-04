@@ -178,6 +178,50 @@ function fillIn(app, selector, contextOrText, text) {
   return app.testHelpers.wait();
 }
 
+function fillInWithInputEvents(app, selector, contextOrText, textOrEvents, events) {
+  var $el, context, text;
+
+  if (typeof events === 'undefined') {
+    context = null;
+    text = contextOrText;
+    events = textOrEvents;
+  } else {
+    context = contextOrText;
+    text = textOrEvents;
+  }
+
+  if (typeof events === 'string') {
+    events = [events];
+  }
+
+  $el = app.testHelpers.findWithAssert(selector, context);
+
+  $el.val('');
+
+  focus($el);
+
+  function fillInWithInputEvent(character) {
+    var val = $el.val();
+    var charCode = character.charCodeAt(0);
+
+    val += character;
+
+    run(function() {
+      $el.val(val).change();
+    });
+
+    for (var i = 0, l = events.length; i < l; i++) {
+      run($el, "trigger", events[i], { keyCode: charCode, which: charCode });
+    }
+  }
+
+  for (var i = 0, l = text.length; i < l; i++) {
+    fillInWithInputEvent(text[i]);
+  }
+
+  return app.testHelpers.wait();
+}
+
 function findWithAssert(app, selector, context) {
   var $el = app.testHelpers.find(selector, context);
   if ($el.length === 0) {
@@ -343,6 +387,28 @@ asyncHelper('keyEvent', keyEvent);
 * @return {RSVP.Promise}
 */
 asyncHelper('fillIn', fillIn);
+
+/**
+* Fills in an input element with some text one character at a time and will
+* trigger any associated keyboard events such as keydown or keypress for each
+* character in the input.
+*
+* Example:
+*
+* ```javascript
+* fillInWithInputEvents('#email', 'you@example.com', ['keyDown', 'input']).then(function() {
+*   // assert something
+* });
+* ```
+*
+* @method fillIn
+* @param {String} selector jQuery selector finding an input element on the DOM
+* to fill text with
+* @param {String} text to place inside the input element
+* @param {Array} either a string literal e.g. 'keydown' or array of keyboard events e.g. ['keydown', 'input']
+* @return {RSVP.Promise}
+*/
+asyncHelper('fillInWithInputEvents', fillInWithInputEvents);
 
 /**
 * Finds an element in the context of the app's container element. A simple alias
