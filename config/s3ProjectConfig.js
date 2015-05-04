@@ -18,6 +18,10 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
   var obj =  {
     contentType: contentType,
       destinations: {
+        glimmer: [
+          "glimmer" + fullName,
+          "canary/shas/" + currentRevision + fullName
+        ],
         canary: [
           "latest" + fullName,
           "canary" + fullName,
