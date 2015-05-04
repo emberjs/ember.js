@@ -4,7 +4,7 @@ import { Mixin } from "ember-metal/mixin";
 import { on } from "ember-metal/events";
 import { symbol } from "ember-metal/utils";
 import objectKeys from "ember-metal/keys";
-import { INTERCEPT_SET, UNHANDLED_SET } from 'ember-metal/property_set';
+import { PROPERTY_DID_CHANGE } from "ember-metal/property_events";
 //import run from "ember-metal/run_loop";
 
 export function deprecation(key) {
@@ -76,31 +76,16 @@ let AttrsProxyMixin = {
   //}
 };
 
-AttrsProxyMixin[INTERCEPT_SET] = function(obj, key, value) {
-  let attrs = obj.attrs;
+AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
+  let attrs = this.attrs;
 
-  if (key === 'attrs') { return UNHANDLED_SET; }
-  if (!attrs || !(key in attrs)) {
-    return UNHANDLED_SET;
+  if (attrs && key in attrs) {
+    let possibleCell = attrs[key];
+
+    if (possibleCell[MUTABLE_CELL]) {
+      possibleCell.update(get(this, key));
+    }
   }
-
-  let possibleCell = attrs[key];
-
-  if (!possibleCell[MUTABLE_CELL]) {
-    return UNHANDLED_SET;
-    // This would ideally be an error, but there are cases where immutable
-    // data from attrs is copied into local state, setting that
-    // state is legitimate.
-    //throw new Error(`You cannot set ${key} because attrs.${key} is not mutable`);
-  }
-
-  possibleCell.update(value);
-
-  if (key in obj) {
-    return UNHANDLED_SET;
-  }
-
-  return value;
 };
 
 export default Mixin.create(AttrsProxyMixin);

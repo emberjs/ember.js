@@ -239,7 +239,7 @@ function testValueBinding(templateString) {
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
 }
 
-QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
   expectDeprecation(`You're using legacy binding syntax: valueBinding="view.val" @ 1:176 in (inline). Please replace with value=view.val`);
 
   testValueBinding(
@@ -252,7 +252,7 @@ QUnit.skip("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.skip("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +

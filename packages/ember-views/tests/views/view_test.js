@@ -124,7 +124,7 @@ QUnit.test("propagates dependent-key invalidated sets upstream", function() {
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
 });
 
-QUnit.skip("propagates dependent-key invalidated bindings upstream", function() {
+QUnit.test("propagates dependent-key invalidated bindings upstream", function() {
   view = EmberView.create({
     parentProp: 'parent-value',
     template: compile("{{view view.childView childProp=view.parentProp}}"),
@@ -147,7 +147,7 @@ QUnit.skip("propagates dependent-key invalidated bindings upstream", function() 
 
   equal(view.get('parentProp'), 'parent-value', 'precond - parent value is there');
   var childView = view.get('childView');
-  childView.set('dependencyProp', 'new-value');
+  run(() => childView.set('dependencyProp', 'new-value'));
   equal(childView.get('childProp'), 'new-value', 'pre-cond - new value is propagated to CP');
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
 });

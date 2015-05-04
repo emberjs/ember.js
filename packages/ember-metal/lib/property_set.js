@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 import { _getPath as getPath } from "ember-metal/property_get";
 import {
+  PROPERTY_DID_CHANGE,
   propertyWillChange,
   propertyDidChange
 } from "ember-metal/property_events";
@@ -116,6 +117,9 @@ export function set(obj, keyName, value, tolerant) {
       }
     } else {
       obj[keyName] = value;
+      if (obj[PROPERTY_DID_CHANGE]) {
+        obj[PROPERTY_DID_CHANGE](keyName);
+      }
     }
   }
   return value;
