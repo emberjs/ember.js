@@ -58,7 +58,9 @@ let AttrsProxyMixin = {
     var attrs = get(this, 'attrs');
 
     if (attrs && key in attrs) {
-      Ember.deprecate(deprecation(key));
+      // do not deprecate accessing `this[key]` at this time.
+      // add this back when we have a proper migration path
+      // Ember.deprecate(deprecation(key));
       let possibleCell = get(attrs, key);
 
       if (possibleCell && possibleCell[MUTABLE_CELL]) {
@@ -102,4 +104,3 @@ AttrsProxyMixin[INTERCEPT_SET] = function(obj, key, value) {
 };
 
 export default Mixin.create(AttrsProxyMixin);
-

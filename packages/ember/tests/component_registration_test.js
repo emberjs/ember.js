@@ -266,8 +266,6 @@ QUnit.test("Components without a block should have the proper content", function
 
 // The test following this one is the non-deprecated version
 QUnit.test("properties of a component without a template should not collide with internal structures [DEPRECATED]", function() {
-  expectDeprecation(/You tried to look up an attribute directly on the component/);
-
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
 
   boot(function() {

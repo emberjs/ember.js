@@ -304,8 +304,6 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
 });
 
 QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
-  expectDeprecation();
-
   var subview;
 
   var Subview = EmberView.extend({
@@ -1346,8 +1344,6 @@ QUnit.test("{{view}} asserts that a view subclass instance is present off contro
 });
 
 QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
-  expectDeprecation(/You tried to look up an attribute directly on the component/);
-
   registry.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));
@@ -1366,8 +1362,6 @@ QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
 });
 
 QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', function() {
-  expectDeprecation(/You tried to look up an attribute directly on the component/);
-
   registry.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));
