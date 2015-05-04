@@ -15,7 +15,7 @@ import {
   getViewClientRects,
   getViewBoundingClientRect
 } from "ember-views/system/utils";
-import RenderBuffer from "ember-views/system/render_buffer";
+import RenderBuffer from "ember-views/compat/render_buffer";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
