@@ -71,7 +71,7 @@ QUnit.test("Actions inside an outlet go to the associated controller", function(
 // This test caught a regression where {{#each}}s used directly in a template
 // (i.e., not inside a view or component) did not have access to a container and
 // would raise an exception.
-QUnit.test("{{#each}} inside outlet can have an itemController", function() {
+QUnit.test("{{#each}} inside outlet can have an itemController", function(assert) {
   templates.index = compile(`
     {{#each model itemController='thing'}}
       <p>hi</p>
@@ -86,7 +86,38 @@ QUnit.test("{{#each}} inside outlet can have an itemController", function() {
 
   bootApp();
 
-  equal($fixture.find('p').length, 3, "the {{#each}} rendered without raising an exception");
+  assert.equal($fixture.find('p').length, 3, "the {{#each}} rendered without raising an exception");
+});
+
+QUnit.test("", function(assert) {
+  templates.index = compile(`
+    {{#each model itemController='thing'}}
+      {{controller}}
+      <p><a {{action 'checkController' controller}}>Click me</a></p>
+    {{/each}}
+  `);
+
+  App.IndexRoute = Ember.Route.extend({
+    model: function() {
+      return Ember.A([
+        {name: 'red'},
+        {name: 'yellow'},
+        {name: 'blue'}
+      ]);
+    }
+  });
+
+  App.ThingController = Ember.Controller.extend({
+    actions: {
+      checkController: function(controller) {
+        assert.ok(controller === this, "correct controller was passed as action context");
+      }
+    }
+  });
+
+  bootApp();
+
+  $fixture.find('a').first().click();
 });
 
 function bootApp() {
