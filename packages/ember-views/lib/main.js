@@ -43,6 +43,8 @@ import {
   SelectOptgroup
 } from "ember-views/views/select";
 import "ember-views/initializers/components";
+import _MetamorphView, { _Metamorph } from "ember-views/compat/metamorph_view";
+
 // END IMPORTS
 
 /**
@@ -82,6 +84,11 @@ Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
+
+// Deprecated:
+Ember._Metamorph = _Metamorph;
+Ember._MetamorphView = _MetamorphView;
+
 // END EXPORTS
 
 export default Ember;
