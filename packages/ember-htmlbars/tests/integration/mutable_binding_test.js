@@ -87,6 +87,30 @@ QUnit.test('a simple mutable binding using `mut` propagates properly', function(
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
 
+QUnit.skip('using a string value through middle tier does not trigger assertion', function(assert) {
+  var bottom;
+
+  registry.register('component:middle-mut', Component.extend({
+    layout: compile('{{bottom-mut stuff=attrs.value}}')
+  }));
+
+  registry.register('component:bottom-mut', Component.extend({
+    didInsertElement() {
+      bottom = this;
+    }
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{middle-mut value="foo"}}'),
+    val: 12
+  });
+
+  runAppend(view);
+
+  assert.strictEqual(bottom.attrs.stuff.value, 'foo', "precond - the data propagated");
+});
+
 QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function(assert) {
   var bottom;
 
