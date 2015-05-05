@@ -114,6 +114,19 @@ function ElementMorph(element, dom, namespace) {
   this.isDirty = true;
 }
 
+// renderAndCleanup calls `clear` on all items in the morph map
+// just before calling `destroy` on the morph.
+//
+// As a future refactor this could be changed to set the property
+// back to its original/default value.
+ElementMorph.prototype.clear = function() { };
+
+ElementMorph.prototype.destroy = function() {
+  this.element = null;
+  this.dom = null;
+};
+
+
 /*
  * A class wrapping DOM functions to address environment compatibility,
  * namespaces, contextual elements for morph un-escaped content
