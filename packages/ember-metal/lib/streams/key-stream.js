@@ -68,7 +68,11 @@ merge(KeyStream.prototype, {
     }
   },
 
+  _super$deactivate: Stream.prototype.deactivate,
+
   deactivate() {
+    this._super$deactivate();
+
     if (this.observedObject) {
       removeObserver(this.observedObject, this.key, this, this.notify);
       this.observedObject = null;
