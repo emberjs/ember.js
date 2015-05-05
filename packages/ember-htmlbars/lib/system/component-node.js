@@ -53,6 +53,10 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
       options._context = getValue(contentScope.self);
     }
 
+    if (found.self) {
+      options._context = getValue(found.self);
+    }
+
     component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
 
     let layout = get(component, 'layout');

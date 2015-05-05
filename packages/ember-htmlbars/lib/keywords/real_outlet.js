@@ -62,7 +62,10 @@ export default {
 
     var options = {
       component: ViewClass,
-      self: toRender.controller
+      self: toRender.controller,
+      createOptions: {
+        controller: toRender.controller
+      }
     };
 
     template = template || toRender.template && toRender.template.raw;

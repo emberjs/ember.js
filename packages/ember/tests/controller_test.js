@@ -68,7 +68,7 @@ QUnit.test("Actions inside an outlet go to the associated controller", function(
   $fixture.find('.component-with-action').click();
 });
 
-QUnit.skip('the controller property is provided to route driven views', function() {
+QUnit.test('the controller property is provided to route driven views', function() {
   var applicationController, applicationViewController;
 
   App.ApplicationController = Ember.Controller.extend({
