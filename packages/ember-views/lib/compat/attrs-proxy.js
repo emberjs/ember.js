@@ -82,7 +82,7 @@ AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
   if (attrs && key in attrs) {
     let possibleCell = attrs[key];
 
-    if (possibleCell[MUTABLE_CELL]) {
+    if (possibleCell && possibleCell[MUTABLE_CELL]) {
       possibleCell.update(get(this, key));
     }
   }
