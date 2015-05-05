@@ -89,6 +89,18 @@ AttrMorph.prototype.getContent = function () {
   return value;
 };
 
+// renderAndCleanup calls `clear` on all items in the morph map
+// just before calling `destroy` on the morph.
+//
+// As a future refactor this could be changed to set the property
+// back to its original/default value.
+AttrMorph.prototype.clear = function() { };
+
+AttrMorph.prototype.destroy = function() {
+  this.element = null;
+  this.domHelper = null;
+};
+
 export default AttrMorph;
 
 export { sanitizeAttributeValue };
