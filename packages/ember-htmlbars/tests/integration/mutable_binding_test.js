@@ -145,11 +145,11 @@ QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function
 });
 
 QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding', function(assert) {
-  var middle;
+  var middle, bottom;
 
   registry.register('component:middle-mut', Component.extend({
     // no longer mutable
-    layout: compile('{{bottom-mut setMe=attrs.value}}'),
+    layout: compile('{{bottom-mut setMe=(readonly attrs.value)}}'),
 
     didInsertElement() {
       middle = this;
@@ -157,7 +157,11 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
   }));
 
   registry.register('component:bottom-mut', Component.extend({
-    layout: compile('<p class="bottom">{{attrs.setMe}}</p>')
+    layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
+
+    didInsertElement() {
+      bottom = this;
+    }
   }));
 
   view = EmberView.create({
@@ -173,6 +177,7 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
   run(() => middle.attrs.value.update(13));
 
   assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
+  assert.strictEqual(bottom.attrs.setMe, 13, "the mutable binding has been converted to an immutable cell");
   assert.strictEqual(view.$('p.bottom').text(), "13");
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
@@ -247,6 +252,44 @@ QUnit.test('mutable bindings work as angle-bracket component attributes', functi
   run(() => middle.attrs.value.update(13));
 
   assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
+  assert.strictEqual(view.$('p.bottom').text(), "13");
+  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+});
+
+QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
+  var middle, bottom;
+
+  registry.register('component:middle-mut', Component.extend({
+    // no longer mutable
+    layout: compile('<bottom-mut setMe={{attrs.value}} />'),
+
+    didInsertElement() {
+      middle = this;
+    }
+  }));
+
+  registry.register('component:bottom-mut', Component.extend({
+    layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
+
+    didInsertElement() {
+      bottom = this;
+    }
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('<middle-mut value={{mut view.val}} />'),
+    val: 12
+  });
+
+  runAppend(view);
+
+  assert.strictEqual(view.$('p.bottom').text(), "12");
+
+  run(() => middle.attrs.value.update(13));
+
+  assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
+  assert.strictEqual(bottom.attrs.setMe, 13, "the mutable binding has been converted to an immutable cell");
   assert.strictEqual(view.$('p.bottom').text(), "13");
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });

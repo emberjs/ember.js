@@ -13,6 +13,7 @@ import TransformOldBindingSyntax from "ember-template-compiler/plugins/transform
 import TransformOldClassBindingSyntax from "ember-template-compiler/plugins/transform-old-class-binding-syntax";
 import TransformItemClass from "ember-template-compiler/plugins/transform-item-class";
 import TransformComponentAttrsIntoMut from "ember-template-compiler/plugins/transform-component-attrs-into-mut";
+import TransformComponentCurlyToReadonly from "ember-template-compiler/plugins/transform-component-curly-to-readonly";
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import "ember-template-compiler/compat";
@@ -26,6 +27,7 @@ registerPlugin('ast', TransformOldBindingSyntax);
 registerPlugin('ast', TransformOldClassBindingSyntax);
 registerPlugin('ast', TransformItemClass);
 registerPlugin('ast', TransformComponentAttrsIntoMut);
+registerPlugin('ast', TransformComponentCurlyToReadonly);
 
 export {
   _Ember,
