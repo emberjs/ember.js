@@ -14,21 +14,14 @@ import { guidFor } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import {
   Mixin,
-  observer,
-  beforeObserver
+  observer
 } from "ember-metal/mixin";
 import { deprecateProperty } from "ember-metal/deprecate_property";
-import {
-  propertyWillChange,
-  propertyDidChange
-} from "ember-metal/property_events";
 
 import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
-import ViewStreamSupport from "ember-views/mixins/view_stream_support";
-import ViewKeywordSupport from "ember-views/mixins/view_keyword_support";
 import ViewContextSupport from "ember-views/mixins/view_context_support";
 import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
 import {
@@ -37,10 +30,10 @@ import {
 import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
-import AttributeBindingsSupport from "ember-views/mixins/attribute_bindings_support";
 import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
 import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
 import VisibilitySupport from "ember-views/mixins/visibility_support";
+import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
 
 function K() { return this; }
 
@@ -677,17 +670,16 @@ var EMPTY_ARRAY = [];
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
-  ViewStreamSupport,
-  ViewKeywordSupport,
   ViewContextSupport,
   ViewChildViewsSupport,
   ViewStateSupport,
   TemplateRenderingSupport,
   ClassNamesSupport,
-  AttributeBindingsSupport,
   LegacyViewSupport,
   InstrumentationSupport,
-  VisibilitySupport, {
+  VisibilitySupport,
+  CompatAttrsProxy, {
+  concatenatedProperties: ['attributeBindings'],
 
   /**
     @property isView
@@ -784,7 +776,7 @@ var View = CoreView.extend(
 
     if (template) {
       if (template.isHTMLBars) {
-        return template.render(context, options, morph.contextualElement);
+        return template.render(context, options, { contextualElement: morph.contextualElement }).fragment;
       } else {
         return template(context, options);
       }
@@ -815,24 +807,6 @@ var View = CoreView.extend(
   */
   _contextDidChange: observer('context', function() {
     this.rerender();
-  }),
-
-  // When it's a virtual view, we need to notify the parent that their
-  // childViews will change.
-  _childViewsWillChange: beforeObserver('childViews', function() {
-    if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
-      if (parentView) { propertyWillChange(parentView, 'childViews'); }
-    }
-  }),
-
-  // When it's a virtual view, we need to notify the parent that their
-  // childViews did change.
-  _childViewsDidChange: observer('childViews', function() {
-    if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
-      if (parentView) { propertyDidChange(parentView, 'childViews'); }
-    }
   }),
 
   /**
@@ -873,33 +847,6 @@ var View = CoreView.extend(
   },
 
   /**
-    When the parent view changes, recursively invalidate `controller`
-
-    @method _parentViewDidChange
-    @private
-  */
-  _parentViewDidChange: observer('_parentView', function() {
-    if (this.isDestroying) { return; }
-
-    this._setupKeywords();
-    this.trigger('parentViewDidChange');
-
-    if (get(this, 'parentView.controller') && !get(this, 'controller')) {
-      this.notifyPropertyChange('controller');
-    }
-  }),
-
-  _controllerDidChange: observer('controller', function() {
-    if (this.isDestroying) { return; }
-
-    this.rerender();
-
-    this.forEachChildView(function(view) {
-      view.propertyDidChange('controller');
-    });
-  }),
-
-  /**
     Renders the view again. This will work regardless of whether the
     view is already in the DOM or not. If the view is in the DOM, the
     rendering process will be deferred to give bindings a chance
@@ -929,7 +876,7 @@ var View = CoreView.extend(
       return;
     }
 
-    this._renderer.renderTree(this, this._parentView);
+    this._renderer.renderTree(this, this.parentView);
   },
 
   /**
@@ -977,7 +924,7 @@ var View = CoreView.extend(
   },
 
   forEachChildView(callback) {
-    var childViews = this._childViews;
+    var childViews = this.childViews;
 
     if (!childViews) { return this; }
 
@@ -1132,6 +1079,9 @@ var View = CoreView.extend(
     // In the interim, we will just re-render if that happens. It is more
     // important than elements get garbage collected.
     if (!this.removedFromDOM) { this.destroyElement(); }
+
+    // Set flag to avoid future renders
+    this._willInsert = false;
   },
 
   /**
@@ -1193,8 +1143,7 @@ var View = CoreView.extend(
   createElement() {
     if (this.element) { return this; }
 
-    this._didCreateElementWithoutMorph = true;
-    this.renderer.renderTree(this);
+    this.renderer.createElement(this);
 
     return this;
   },
@@ -1268,30 +1217,6 @@ var View = CoreView.extend(
   */
   parentViewDidChange: K,
 
-  applyAttributesToBuffer(buffer) {
-    // Creates observers for all registered class name and attribute bindings,
-    // then adds them to the element.
-
-    this._applyClassNameBindings();
-
-    // Pass the render buffer so the method can apply attributes directly.
-    // This isn't needed for class name bindings because they use the
-    // existing classNames infrastructure.
-    this._applyAttributeBindings(buffer);
-
-    buffer.setClasses(this.classNames);
-    buffer.id(this.elementId);
-
-    var role = get(this, 'ariaRole');
-    if (role) {
-      buffer.attr('role', role);
-    }
-
-    if (get(this, 'isVisible') === false) {
-      buffer.style('display', 'none');
-    }
-  },
-
   // ..........................................................
   // STANDARD RENDER PROPERTIES
   //
@@ -1312,6 +1237,14 @@ var View = CoreView.extend(
   // the default case and a user-specified tag.
   tagName: null,
 
+  /*
+    Used to specify a default tagName that can be overridden when extending
+    or invoking from a template.
+
+    @property _defaultTagName
+    @private
+  */
+
   /**
     The WAI-ARIA role of the control represented by this view. For example, a
     button may have a role of type 'button', or a pane may have a role of
@@ -1326,6 +1259,43 @@ var View = CoreView.extend(
     @default null
   */
   ariaRole: null,
+
+  /**
+    Normally, Ember's component model is "write-only". The component takes a
+    bunch of attributes that it got passed in, and uses them to render its
+    template.
+
+    One nice thing about this model is that if you try to set a value to the
+    same thing as last time, Ember (through HTMLBars) will avoid doing any
+    work on the DOM.
+
+    This is not just a performance optimization. If an attribute has not
+    changed, it is important not to clobber the element's "hidden state".
+    For example, if you set an input's `value` to the same value as before,
+    it will clobber selection state and cursor position. In other words,
+    setting an attribute is not **always** idempotent.
+
+    This method provides a way to read an element's attribute and also
+    update the last value Ember knows about at the same time. This makes
+    setting an attribute idempotent.
+
+    In particular, what this means is that if you get an `<input>` element's
+    `value` attribute and then re-render the template with the same value,
+    it will avoid clobbering the cursor and selection position.
+
+    Since most attribute sets are idempotent in the browser, you typically
+    can get away with reading attributes using jQuery, but the most reliable
+    way to do so is through this method.
+
+    @method readDOMAttr
+    @param {String} name the name of the attribute
+    @return String
+  */
+  readDOMAttr(name) {
+    let attr = this.renderNode.childNodes.filter(node => node.attrName === name)[0];
+    if (!attr) { return null; }
+    return attr.getContent();
+  },
 
   // .......................................................
   // CORE DISPLAY METHODS
@@ -1342,9 +1312,11 @@ var View = CoreView.extend(
     @private
   */
   init() {
-    if (!this.isVirtual && !this.elementId) {
+    if (!this.elementId) {
       this.elementId = guidFor(this);
     }
+
+    this.scheduledRevalidation = false;
 
     this._super(...arguments);
 
@@ -1357,9 +1329,25 @@ var View = CoreView.extend(
     this[property.name] = property.descriptor.value;
   },
 
-  appendAttr(node) {
-    return this.currentState.appendAttr(this, node);
+  revalidate() {
+    this.renderer.revalidateTopLevelView(this);
+    this.scheduledRevalidation = false;
   },
+
+  scheduleRevalidate() {
+    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`, !this._dispatching);
+
+    if (!this.scheduledRevalidation || this._dispatching) {
+      this.scheduledRevalidation = true;
+      run.scheduleOnce('render', this, this.revalidate);
+    }
+  },
+
+  appendAttr(node, buffer) {
+    return this.currentState.appendAttr(this, node, buffer);
+  },
+
+  templateRenderer: null,
 
   /**
     Removes the view from its `parentView`, if one is found. Otherwise
@@ -1369,7 +1357,7 @@ var View = CoreView.extend(
     @return {Ember.View} receiver
   */
   removeFromParent() {
-    var parent = this._parentView;
+    var parent = this.parentView;
 
     // Remove DOM element from parent
     this.remove();
@@ -1388,14 +1376,19 @@ var View = CoreView.extend(
   */
   destroy() {
     // get parentView before calling super because it'll be destroyed
-    var nonVirtualParentView = get(this, 'parentView');
+    var parentView = this.parentView;
     var viewName = this.viewName;
 
     if (!this._super(...arguments)) { return; }
 
     // remove from non-virtual parent view if viewName was specified
-    if (viewName && nonVirtualParentView) {
-      nonVirtualParentView.set(viewName, null);
+    if (viewName && parentView) {
+      parentView.set(viewName, null);
+    }
+
+    // Destroy HTMLbars template
+    if (this.lastResult) {
+      this.lastResult.destroy();
     }
 
     return this;
@@ -1536,6 +1529,7 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+
 export default View;
 
-export { ViewKeywordSupport, ViewStreamSupport, ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, AttributeBindingsSupport };
+export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };

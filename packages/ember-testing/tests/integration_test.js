@@ -33,7 +33,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.PeopleView = EmberView.extend({
-        defaultTemplate: compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
+        defaultTemplate: compile("{{#each model as |person|}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
       });
 
       App.PeopleController = ArrayController.extend({});

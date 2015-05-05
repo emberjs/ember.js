@@ -1,3 +1,5 @@
+import { wrap } from "htmlbars-runtime/hooks";
+
 /**
 @module ember
 @submodule ember-template-compiler
@@ -13,6 +15,10 @@
 */
 
 export default function(templateSpec) {
+  if (!templateSpec.render) {
+    templateSpec = wrap(templateSpec);
+  }
+
   templateSpec.isTop = true;
   templateSpec.isMethod = false;
 

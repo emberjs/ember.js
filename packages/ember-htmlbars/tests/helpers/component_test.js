@@ -26,8 +26,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("component helper with unquoted string is bound", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
-    registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+    registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -104,9 +104,9 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("nested component helpers", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
-    registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
-    registry.register('template:components/corge-grault', compile('delicious {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+    registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
+    registry.register('template:components/corge-grault', compile('delicious {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -127,7 +127,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("component helper can be used with a quoted string (though you probably would not do this)", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -148,13 +148,13 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
-    }, /HTMLBars error: Could not find component named "does-not-exist"./);
+    }, /HTMLBars error: Could not find component named "does-not-exist"./, "Expected missing component to generate an exception");
   });
 
   QUnit.test("component with unquoted param resolving to a component, then non-existent component", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
     view = EmberView.create({
       container: container,
       dynamicComponent: 'foo-bar',
@@ -180,7 +180,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component "does-not-exist" location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
   });

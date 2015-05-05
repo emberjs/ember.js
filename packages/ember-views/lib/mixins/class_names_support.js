@@ -6,16 +6,6 @@ import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 import { A as emberA } from "ember-runtime/system/native_array";
 import {
-  forEach,
-  addObject
-} from "ember-metal/enumerable_utils";
-import {
-  subscribe,
-  read,
-  isStream
-} from "ember-metal/streams/utils";
-import { streamifyClassNameBinding } from "ember-views/streams/class_name_binding";
-import {
   isArray
 } from "ember-metal/utils";
 
@@ -90,93 +80,7 @@ var ClassNamesSupport = Mixin.create({
     @type Array
     @default []
   */
-  classNameBindings: EMPTY_ARRAY,
-
-  /**
-    Iterates over the view's `classNameBindings` array, inserts the value
-    of the specified property into the `classNames` array, then creates an
-    observer to update the view's element if the bound property ever changes
-    in the future.
-
-    @method _applyClassNameBindings
-    @private
-  */
-  _applyClassNameBindings() {
-    var classBindings = this.classNameBindings;
-
-    if (!classBindings || !classBindings.length) { return; }
-
-    var classNames = this.classNames;
-    var elem, newClass, dasherizedClass;
-
-    // Loop through all of the configured bindings. These will be either
-    // property names ('isUrgent') or property paths relative to the view
-    // ('content.isUrgent')
-    forEach(classBindings, function(binding) {
-
-      var boundBinding;
-      if (isStream(binding)) {
-        boundBinding = binding;
-      } else {
-        boundBinding = streamifyClassNameBinding(this, binding, '_view.');
-      }
-
-      // Variable in which the old class value is saved. The observer function
-      // closes over this variable, so it knows which string to remove when
-      // the property changes.
-      var oldClass;
-
-      // Set up an observer on the context. If the property changes, toggle the
-      // class name.
-      var observer = this._wrapAsScheduled(function() {
-        // Get the current value of the property
-        elem = this.$();
-        newClass = read(boundBinding);
-
-        // If we had previously added a class to the element, remove it.
-        if (oldClass) {
-          elem.removeClass(oldClass);
-          // Also remove from classNames so that if the view gets rerendered,
-          // the class doesn't get added back to the DOM.
-          classNames.removeObject(oldClass);
-        }
-
-        // If necessary, add a new class. Make sure we keep track of it so
-        // it can be removed in the future.
-        if (newClass) {
-          elem.addClass(newClass);
-          oldClass = newClass;
-        } else {
-          oldClass = null;
-        }
-      });
-
-      // Get the class name for the property at its current value
-      dasherizedClass = read(boundBinding);
-
-      if (dasherizedClass) {
-        // Ensure that it gets into the classNames array
-        // so it is displayed when we render.
-        addObject(classNames, dasherizedClass);
-
-        // Save a reference to the class name so we can remove it
-        // if the observer fires. Remember that this variable has
-        // been closed over by the observer.
-        oldClass = dasherizedClass;
-      }
-
-      subscribe(boundBinding, observer, this);
-      // Remove className so when the view is rerendered,
-      // the className is added based on binding reevaluation
-      this.one('willClearRender', function() {
-        if (oldClass) {
-          classNames.removeObject(oldClass);
-          oldClass = null;
-        }
-      });
-
-    }, this);
-  }
+  classNameBindings: EMPTY_ARRAY
 });
 
 export default ClassNamesSupport;

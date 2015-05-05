@@ -12,7 +12,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
-QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
+QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
   teardown() {
     runDestroy(view);
 
@@ -162,6 +162,27 @@ QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` 
   runAppend(view);
 
   equal(view.$().text(), 'woot!');
+});
+
+QUnit.test("makes helpful assertion when called with invalid arguments", function() {
+  expect(1);
+
+  var ViewHelperComponent = Component.extend({
+    layout: compile('woot!')
+  });
+
+  ViewHelperComponent.toString = function() { return "Some Random Class"; };
+
+  var helper = makeViewHelper(ViewHelperComponent);
+  registerHandlebarsCompatibleHelper('view-helper', helper);
+
+  view = EmberView.extend({
+    template: compile('{{view-helper "hello"}}')
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, "You can only pass attributes (such as name=value) not bare values to a helper for a View found in 'Some Random Class'");
 });
 
 QUnit.test('does not add `options.fn` if no block was specified', function() {

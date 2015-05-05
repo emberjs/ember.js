@@ -18,5 +18,5 @@
 export default function handlebarsGet(root, path, options) {
   Ember.deprecate('Usage of Ember.Handlebars.get is deprecated, use a Component or Ember.Handlebars.makeBoundHelper instead.');
 
-  return options.data.view.getStream(path).value();
+  return options.legacyGetPath(path);
 }

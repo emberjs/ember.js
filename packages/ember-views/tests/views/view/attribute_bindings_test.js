@@ -262,13 +262,13 @@ QUnit.test("should teardown observers on rerender", function() {
 
   appendView();
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after render is two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after render is one');
 
   run(function() {
     view.rerender();
   });
 
-  equal(observersFor(view, 'foo').length, 2, 'observer count after rerender remains two');
+  equal(observersFor(view, 'foo').length, 1, 'observer count after rerender remains one');
 });
 
 QUnit.test("handles attribute bindings for properties", function() {
@@ -405,6 +405,10 @@ QUnit.test("asserts if an attributeBinding is setup on class", function() {
   expectAssertion(function() {
     appendView();
   }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
+
+  // Remove render node to avoid "Render node exists without concomitant env"
+  // assertion on teardown.
+  view.renderNode = null;
 });
 
 QUnit.test("blacklists href bindings based on protocol", function() {

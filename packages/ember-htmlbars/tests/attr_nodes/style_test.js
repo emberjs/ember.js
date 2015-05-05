@@ -5,7 +5,7 @@ import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import { styleWarning } from "ember-views/attr_nodes/attr_node";
+import { styleWarning } from "ember-htmlbars/morphs/attr-morph";
 
 var view, originalWarn, warnings;
 

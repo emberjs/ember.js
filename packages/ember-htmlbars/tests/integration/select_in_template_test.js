@@ -58,17 +58,15 @@ QUnit.test("works from a template with bindings [DEPRECATED]", function() {
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    contentBinding="view.app.peopleController"' +
+      '    content=view.app.peopleController' +
       '    optionLabelPath="content.fullName"' +
       '    optionValuePath="content.id"' +
       '    prompt="Pick a person:"' +
-      '    selectionBinding="view.app.selectedPersonController.person"}}'
+      '    selection=view.app.selectedPersonController.person}}'
     )
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated/);
+  runAppend(view);
 
   var select = view.get('select');
   ok(select.$().length, "Select was rendered");
@@ -242,7 +240,7 @@ function testValueBinding(templateString) {
 }
 
 QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
-  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+  expectDeprecation(`You're using legacy binding syntax: valueBinding="view.val" @ 1:176 in (inline). Please replace with value=view.val`);
 
   testValueBinding(
     '{{view view.selectView viewName="select"' +
@@ -254,7 +252,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound value", function() {
+QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -294,7 +292,7 @@ function testSelectionBinding(templateString) {
 }
 
 QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
-  expectDeprecation(/You're attempting to render a view by passing .+Binding to a view helper, but this syntax is deprecated./);
+  expectDeprecation(`You're using legacy binding syntax: contentBinding="view.collection" @ 1:44 in (inline). Please replace with content=view.collection`);
 
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +

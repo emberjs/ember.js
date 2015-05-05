@@ -3,7 +3,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-import compile from "ember-template-compiler/system/compile";
+//import compile from "ember-template-compiler/system/compile";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
@@ -69,6 +69,20 @@ QUnit.test("should hide element if isVisible is false before element is created"
   run(function() {
     view.remove();
   });
+});
+
+QUnit.test("doesn't overwrite existing style attribute bindings", function() {
+  view = EmberView.create({
+    isVisible: false,
+    attributeBindings: ['style'],
+    style: 'color: blue;'
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  equal(view.$().attr('style'), 'color: blue; display: none;', "has concatenated style attribute");
 });
 
 QUnit.module("EmberView#isVisible with Container", {
@@ -144,11 +158,9 @@ QUnit.test("view should be notified after isVisible is set to false and the elem
   equal(grandchildBecameVisible, 1);
 });
 
-QUnit.test("view should change visibility with a virtual childView", function() {
-  view = View.create({
-    isVisible: true,
-    template: compile('<div {{bind-attr bing="tweep"}}></div>')
-  });
+QUnit.test("view should be notified after isVisible is set to false and the element has been hidden", function() {
+  view = View.create({ isVisible: true });
+  //var childView = view.get('childViews').objectAt(0);
 
   run(function() {
     view.append();

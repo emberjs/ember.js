@@ -3,7 +3,9 @@ import Registry from "container/registry";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-template-compiler/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
+import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import run from "ember-metal/run_loop";
 
 var registry, container, view;
 
@@ -55,8 +57,78 @@ QUnit.test('block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - In template');
 });
 
-QUnit.test('non-block with properties', function() {
+QUnit.test('non-block with properties on attrs', function() {
   expect(1);
+
+  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+
+  view = EmberView.extend({
+    template: compile('{{non-block someProp="something here"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
+});
+
+QUnit.test('non-block with properties on attrs and component class', function() {
+  registry.register('component:non-block', Component.extend());
+  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+
+  view = EmberView.extend({
+    template: compile('{{non-block someProp="something here"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
+});
+
+QUnit.test('rerendering component with attrs from parent', function() {
+  var willUpdate = 0;
+  var willReceiveAttrs = 0;
+
+  registry.register('component:non-block', Component.extend({
+    willReceiveAttrs() {
+      willReceiveAttrs++;
+    },
+
+    willUpdate() {
+      willUpdate++;
+    }
+  }));
+  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+
+  view = EmberView.extend({
+    template: compile('{{non-block someProp=view.someProp}}'),
+    container: container,
+    someProp: "wycats"
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
+
+  run(function() {
+    view.set('someProp', 'tomdale');
+  });
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+  equal(willReceiveAttrs, 1, "The willReceiveAttrs hook fired");
+  equal(willUpdate, 1, "The willUpdate hook fired once");
+
+  Ember.run(view, 'rerender');
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+  equal(willReceiveAttrs, 2, "The willReceiveAttrs hook fired again");
+  equal(willUpdate, 2, "The willUpdate hook fired again");
+});
+
+
+QUnit.test('[DEPRECATED] non-block with properties on self', function() {
+  expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
   registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
 
@@ -70,8 +142,23 @@ QUnit.test('non-block with properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
-QUnit.test('block with properties', function() {
+QUnit.test('block with properties on attrs', function() {
   expect(1);
+
+  registry.register('template:components/with-block', compile('In layout - someProp: {{attrs.someProp}} - {{yield}}'));
+
+  view = EmberView.extend({
+    template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
+});
+
+QUnit.test('[DEPRECATED] block with properties on self', function() {
+  expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
   registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
 
@@ -86,7 +173,7 @@ QUnit.test('block with properties', function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
-  QUnit.test('`Component.prototype.hasBlock` when block supplied', function() {
+  QUnit.test('hasBlock is true when block supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
@@ -101,7 +188,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
     equal(jQuery('#qunit-fixture').text(), 'In template');
   });
 
-  QUnit.test('`Component.prototype.hasBlock` when no block supplied', function() {
+  QUnit.test('hasBlock is false when no block supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
@@ -116,7 +203,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
     equal(jQuery('#qunit-fixture').text(), 'No Block!');
   });
 
-  QUnit.test('`Component.prototype.hasBlockParams` when block param supplied', function() {
+  QUnit.test('hasBlockParams is true when block param supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
@@ -131,7 +218,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
     equal(jQuery('#qunit-fixture').text(), 'In template - In Component');
   });
 
-  QUnit.test('`Component.prototype.hasBlockParams` when no block param supplied', function() {
+  QUnit.test('hasBlockParams is false when no block param supplied', function() {
     expect(1);
 
     registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}}{{else}}{{yield}} No Block Param!{{/if}}'));

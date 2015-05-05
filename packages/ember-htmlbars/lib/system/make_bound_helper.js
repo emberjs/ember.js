@@ -3,17 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 import Helper from "ember-htmlbars/system/helper";
-
-import Stream from "ember-metal/streams/stream";
-import {
-  readArray,
-  readHash,
-  subscribe,
-  scanHash,
-  scanArray
-} from "ember-metal/streams/utils";
+import { readHash, readArray } from "ember-metal/streams/utils";
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
@@ -59,38 +50,8 @@ import {
   @since 1.10.0
 */
 export default function makeBoundHelper(fn) {
-  function helperFunc(params, hash, options, env) {
-    var view = env.data.view;
-    var numParams = params.length;
-    var param, prop;
-
-    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !options.template);
-
-    function valueFn() {
-      return fn.call(view, readArray(params), readHash(hash), options, env);
-    }
-
-    // If none of the hash parameters are bound, act as an unbound helper.
-    // This prevents views from being unnecessarily created
-    var hasStream = scanArray(params) || scanHash(hash);
-    if (hasStream) {
-      var lazyValue = new Stream(valueFn);
-
-      for (var i = 0; i < numParams; i++) {
-        param = params[i];
-        subscribe(param, lazyValue.notify, lazyValue);
-      }
-
-      for (prop in hash) {
-        param = hash[prop];
-        subscribe(param, lazyValue.notify, lazyValue);
-      }
-
-      return lazyValue;
-    } else {
-      return valueFn();
-    }
-  }
-
-  return new Helper(helperFunc);
+  return new Helper(function(params, hash, templates) {
+    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !templates.template.revision);
+    return fn(readArray(params), readHash(hash));
+  });
 }

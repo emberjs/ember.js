@@ -3,7 +3,6 @@ import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
-import SimpleBoundView from "ember-views/views/simple_bound_view";
 
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
 
@@ -15,6 +14,7 @@ import {
 } from 'ember-runtime/system/string';
 
 import EmberHandlebars from "ember-htmlbars/compat";
+import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
 
 var compile, helpers, helper;
 compile = EmberHandlebars.compile;
@@ -43,7 +43,7 @@ function expectDeprecationInHTMLBars() {
   // enable a deprecation notice
 }
 
-QUnit.module("ember-htmlbars: makeBoundHelper", {
+QUnit.module("ember-htmlbars: compat - makeBoundHelper", {
   setup() {
   },
   teardown() {
@@ -53,8 +53,8 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
 });
 
 QUnit.test("primitives should work correctly [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
-  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
+  expectDeprecation(eachDeprecation);
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
 
   view = EmberView.create({
     prims: Ember.A(["string", 12]),
@@ -97,9 +97,11 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
     return dasherize(value);
   });
 
-  view = EmberView.create({
-    controller: { prop: "isThing" },
-    template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
+  ignoreDeprecation(function() {
+    view = EmberView.create({
+      controller: { prop: "isThing" },
+      template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
+    });
   });
 
   runAppend(view);
@@ -205,12 +207,44 @@ QUnit.test("bound helper should support this keyword", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-QUnit.test("bound helpers should support bound options", function() {
+QUnit.test("bound helpers should support bound options via `fooBinding` [DEPRECATED]", function() {
+  registerRepeatHelper();
+
+  var template;
+
+  expectDeprecation(function() {
+    template = compile('{{repeat text countBinding="numRepeats"}}');
+  }, /You're using legacy binding syntax: countBinding="numRepeats"/);
+
+  view = EmberView.create({
+    controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
+    template: template
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'ababab', "helper output is correct");
+
+  run(function() {
+    view.set('controller.numRepeats', 4);
+  });
+
+  equal(view.$().text(), 'abababab', "helper correctly re-rendered after bound option was changed");
+
+  run(function() {
+    view.set('controller.numRepeats', 2);
+    view.set('controller.text', "YES");
+  });
+
+  equal(view.$().text(), 'YESYES', "helper correctly re-rendered after both bound option and property changed");
+});
+
+QUnit.test("bound helpers should support bound hash options", function() {
   registerRepeatHelper();
 
   view = EmberView.create({
     controller: EmberObject.create({ text: 'ab', numRepeats: 3 }),
-    template: compile('{{repeat text countBinding="numRepeats"}}')
+    template: compile('{{repeat text count=numRepeats}}')
   });
 
   runAppend(view);
@@ -440,6 +474,8 @@ QUnit.test("shouldn't treat quoted strings as bound paths", function() {
 QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
   expectDeprecationInHTMLBars();
 
+  // The problem here is that `undefined` is treated as "use the parent scope" in yieldItem
+
   helper('reverse', function(val) {
     return val ? val.split('').reverse().join('') : "NOPE";
   });
@@ -453,7 +489,7 @@ QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATE
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
@@ -481,7 +517,7 @@ QUnit.test("bound helpers can handle nulls in array (with objects)", function() 
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 
@@ -504,26 +540,26 @@ QUnit.test("bound helpers can handle `this` keyword when it's a non-object", fun
 
   runAppend(view);
 
-  equal(view.$().text(), 'alex!', "helper output is correct");
+  equal(view.$().text(), 'alex!', "helper output is correct first");
 
   run(function() {
     set(view, 'context', '');
   });
 
-  equal(view.$().text(), '!', "helper output is correct");
+  equal(view.$().text(), '!', "helper output is correct after updating to empty");
 
   run(function() {
     set(view, 'context', 'wallace');
   });
 
-  equal(view.$().text(), 'wallace!', "helper output is correct");
+  equal(view.$().text(), 'wallace!', "helper output is correct after updating to wallace");
 });
 
 QUnit.test("should have correct argument types", function() {
   expectDeprecationInHTMLBars();
 
   helper('getType', function(value) {
-    return typeof value;
+    return value === null ? 'null' : typeof value;
   });
 
   view = EmberView.create({
@@ -533,52 +569,5 @@ QUnit.test("should have correct argument types", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
-});
-
-QUnit.test("when no parameters are bound, no new views are created", function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{repeat "a"}}'),
-      controller: EmberObject.create()
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'a');
-});
-
-
-QUnit.test('when no hash parameters are bound, no new views are created', function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{repeat "a" count=3}}'),
-      controller: EmberObject.create()
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'aaa');
+  equal(view.$().text(), 'null, undefined, string, number, object', "helper output is correct");
 });

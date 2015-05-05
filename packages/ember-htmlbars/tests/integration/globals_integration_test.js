@@ -41,7 +41,7 @@ QUnit.test('should read from globals with a path (DEPRECATED)', function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
+  }, 'Global lookup of Global from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);
 });
 
@@ -67,6 +67,6 @@ QUnit.test('with context, should read from globals with a path (DEPRECATED)', fu
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Global lookup of Global.Space from a Handlebars template is deprecated.');
+  }, 'Global lookup of Global from a Handlebars template is deprecated.');
   equal(view.$().text(), Ember.lookup.Global.Space);
 });

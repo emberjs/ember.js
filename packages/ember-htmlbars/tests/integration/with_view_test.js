@@ -3,7 +3,6 @@ import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { Registry } from "ember-runtime/system/container";
 import EmberObject from 'ember-runtime/system/object';
-import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
@@ -17,7 +16,6 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
 

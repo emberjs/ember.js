@@ -23,14 +23,11 @@ export default {
     return true; // continue event propagation
   },
 
-  destroyElement(view) {
-    if (view._renderer) {
-      view._renderer.remove(view, false);
-    }
+  cleanup() { } ,
+  destroyElement() { },
 
-    return view;
+  rerender(view) {
+    view.renderer.ensureViewNotRendering(view);
   },
-
-  rerender() {},
   invokeObserver() { }
 };

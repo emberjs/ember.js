@@ -3,7 +3,7 @@ import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
+import LegacyEachView from "ember-views/views/legacy_each_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
@@ -16,6 +16,8 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-template-compiler/system/compile";
+import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
+
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
@@ -85,8 +87,8 @@ QUnit.module("the #each helper [DEPRECATED]", {
     registry = new Registry();
     container = registry.container();
 
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('view:-legacy-each', LegacyEachView);
 
     view = EmberView.create({
       container: container,
@@ -98,15 +100,17 @@ QUnit.module("the #each helper [DEPRECATED]", {
     lookup.MyView = MyView = EmberView.extend({
       template: templateMyView
     });
+    registry.register('view:my-view', MyView);
 
     templateMyEmptyView = templateFor("I'm empty");
     lookup.MyEmptyView = MyEmptyView = EmberView.extend({
       template: templateMyEmptyView
     });
+    registry.register('view:my-empty-view', MyEmptyView);
 
     expectDeprecation(function() {
       runAppend(view);
-    }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+    }, eachDeprecation);
   },
 
   teardown() {
@@ -262,7 +266,7 @@ QUnit.test("View should not use keyword incorrectly - Issue #1315", function() {
 
   view = EmberView.create({
     container: container,
-    template: templateFor('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
+    template: templateFor('{{#each view.content as |value|}}{{value}}-{{#each view.options as |option|}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
 
     content: A(['X', 'Y']),
     options: A([
@@ -366,7 +370,7 @@ QUnit.test("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  strictEqual(view._childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
 QUnit.test("itemController specified in template gets a parentController property", function() {
@@ -525,19 +529,17 @@ QUnit.test("it defers all normalization of itemView names to the resolver", func
   });
 
   registry.register('view:an-item-view', itemView);
-  registry.resolve = function(fullname) {
-    equal(fullname, "view:an-item-view", "leaves fullname untouched");
-    return Registry.prototype.resolve.call(this, fullname);
-  };
   runAppend(view);
 
+  assertText(view, 'itemView:Steve HoltitemView:Annabelle');
 });
 
 QUnit.test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView}}'),
-    people: people
+    people: people,
+    container: container
   });
 
   var deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
@@ -552,12 +554,7 @@ QUnit.test("it supports {{itemViewClass=}} with global (DEPRECATED)", function()
 QUnit.test("it supports {{itemViewClass=}} via container", function() {
   runDestroy(view);
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        equal(name, 'view:my-view');
-        return MyView;
-      }
-    },
+    container: container,
     template: templateFor('{{each view.people itemViewClass="my-view"}}'),
     people: people
   });
@@ -571,10 +568,9 @@ QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
-    people: people
+    people: people,
+    container: container
   });
-
-  expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   runAppend(view);
   equal(view.$('ul').length, 1, 'rendered ul tag');
@@ -583,19 +579,14 @@ QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
 });
 
 QUnit.test("it supports {{itemViewClass=}} with in format", function() {
-
   MyView = EmberView.extend({
     template: templateFor("{{person.name}}")
   });
 
   runDestroy(view);
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        return MyView;
-      }
-    },
-    template: templateFor('{{each person in view.people itemViewClass="myView"}}'),
+    container: registry.container(),
+    template: templateFor('{{each person in view.people itemViewClass="my-view"}}'),
     people: people
   });
 
@@ -640,12 +631,9 @@ QUnit.test("it defers all normalization of emptyView names to the resolver", fun
 
   registry.register('view:an-empty-view', emptyView);
 
-  registry.resolve = function(fullname) {
-    equal(fullname, "view:an-empty-view", "leaves fullname untouched");
-    return Registry.prototype.resolve.call(this, fullname);
-  };
-
   runAppend(view);
+
+  assertText(view, "emptyView:sad panda");
 });
 
 QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function() {
@@ -653,7 +641,8 @@ QUnit.test("it supports {{emptyViewClass=}} with global (DEPRECATED)", function(
 
   view = EmberView.create({
     template: templateFor('{{each view.people emptyViewClass=MyEmptyView}}'),
-    people: A()
+    people: A(),
+    container: container
   });
 
   var deprecation = /Global lookup of MyEmptyView from a Handlebars template is deprecated/;
@@ -669,12 +658,7 @@ QUnit.test("it supports {{emptyViewClass=}} via container", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        equal(name, 'view:my-empty-view');
-        return MyEmptyView;
-      }
-    },
+    container: container,
     template: templateFor('{{each view.people emptyViewClass="my-empty-view"}}'),
     people: A()
   });
@@ -689,10 +673,9 @@ QUnit.test("it supports {{emptyViewClass=}} with tagName (DEPRECATED)", function
 
   view = EmberView.create({
     template: templateFor('{{each view.people emptyViewClass=MyEmptyView tagName="b"}}'),
-    people: A()
+    people: A(),
+    container: container
   });
-
-  expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   runAppend(view);
 
@@ -704,12 +687,8 @@ QUnit.test("it supports {{emptyViewClass=}} with in format", function() {
   runDestroy(view);
 
   view = EmberView.create({
-    container: {
-      lookupFactory(name) {
-        return MyEmptyView;
-      }
-    },
-    template: templateFor('{{each person in view.people emptyViewClass="myEmptyView"}}'),
+    container: container,
+    template: templateFor('{{each person in view.people emptyViewClass="my-empty-view"}}'),
     people: A()
   });
 
@@ -769,7 +748,7 @@ QUnit.test("views inside #each preserve the new context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -784,7 +763,7 @@ QUnit.test("single-arg each defaults to current context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -794,12 +773,13 @@ QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]
 
   view = EmberView.create({
     controller: A([{ name: "Adam" }, { name: "Steve" }]),
-    template: templateFor('{{#each}}{{name}}{{/each}}')
+    template: templateFor('{{#each}}{{name}}{{/each}}'),
+    container: container
   });
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  }, eachDeprecation);
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -810,8 +790,8 @@ function testEachWithItem(moduleName, useBlockParams) {
       registry = new Registry();
       container = registry.container();
 
-      registry.register('view:default', _MetamorphView);
       registry.register('view:toplevel', EmberView.extend());
+      registry.register('view:-legacy-each', LegacyEachView);
     },
     teardown() {
       runDestroy(container);
@@ -889,7 +869,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -930,6 +910,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
 
     registry = new Registry();
+    registry.register('view:-legacy-each', LegacyEachView);
     container = registry.container();
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
@@ -966,7 +947,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-    strictEqual(view._childViews[0]._arrayController.get('target'), parentController, "the target property of the child controllers are set correctly");
+    strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
   });
 
   QUnit.test("itemController specified in ArrayController with name binding does not change context", function() {
@@ -984,6 +965,7 @@ function testEachWithItem(moduleName, useBlockParams) {
           controllerName: 'controller:people'
         });
     registry = new Registry();
+    registry.register('view:-legacy-each', LegacyEachView);
     container = registry.container();
 
     registry.register('controller:people', PeopleController);
@@ -1001,6 +983,34 @@ function testEachWithItem(moduleName, useBlockParams) {
     equal(view.$().text(), "controller:people - controller:Steve Holt of Yapp - controller:people - controller:Annabelle of Yapp - ");
   });
 
+
+  QUnit.test("locals in stable loops update when the list is updated", function() {
+    expect(3);
+
+    var list = [{ key: "adam", name: "Adam" }, { key: "steve", name: "Steve" }];
+    view = EmberView.create({
+      queries: list,
+      template: templateFor('{{#each view.queries key="key" as |query|}}{{query.name}}{{/each}}', true)
+    });
+    runAppend(view);
+    equal(view.$().text(), "AdamSteve");
+
+    run(function() {
+      list.unshift({ key: "bob", name: "Bob" });
+      view.set('queries', list);
+      view.notifyPropertyChange('queries');
+    });
+
+    equal(view.$().text(), "BobAdamSteve");
+
+    run(function() {
+      view.set('queries', [{ key: 'bob', name: "Bob" }, { key: 'steve', name: "Steve" }]);
+      view.notifyPropertyChange('queries');
+    });
+
+    equal(view.$().text(), "BobSteve");
+  });
+
   if (!useBlockParams) {
     QUnit.test("{{each}} without arguments [DEPRECATED]", function() {
       expect(2);
@@ -1012,7 +1022,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1027,7 +1037,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+      }, eachDeprecation);
 
       equal(view.$().text(), "AdamSteve");
     });

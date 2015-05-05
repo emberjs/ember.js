@@ -32,3 +32,16 @@ export default function merge(original, updates) {
 
   return original;
 }
+
+export function assign(original, ...args) {
+  for (let i=0, l=args.length; i<l; i++) {
+    let arg = args[i];
+    if (!arg) { continue; }
+
+    for (let prop in arg) {
+      if (arg.hasOwnProperty(prop)) { original[prop] = arg[prop]; }
+    }
+  }
+
+  return original;
+}

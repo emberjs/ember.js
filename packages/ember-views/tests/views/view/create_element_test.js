@@ -2,7 +2,8 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-import { equalHTML } from "ember-metal-views/tests/test_helpers";
+import { equalHTML } from "ember-views/tests/test-helpers/equal-html";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 
@@ -39,16 +40,16 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
     run(function() {
       view.createElement();
     });
-  }, /You cannot use `classNameBindings` on a tag-less view/);
+  }, /You cannot use `classNameBindings` on a tag-less component/);
+
+  // Prevent further assertions
+  view.renderNode = null;
 });
 
 QUnit.test("calls render and turns resultant string into element", function() {
   view = EmberView.create({
     tagName: 'span',
-
-    render(buffer) {
-      buffer.push("foo");
-    }
+    template: compile("foo")
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
@@ -63,35 +64,7 @@ QUnit.test("calls render and turns resultant string into element", function() {
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
-QUnit.test("calls render and parses the buffer string in the right context", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
-
-  view = ContainerView.create({
-    tagName: 'table',
-    childViews: [EmberView.create({
-      tagName: '',
-      render(buffer) {
-        // Emulate a metamorph
-        buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-      }
-    })]
-  });
-
-  equal(get(view, 'element'), null, 'precondition - has no element');
-  run(function() {
-    view.createElement();
-  });
-
-
-  var elem = get(view, 'element');
-  ok(elem, 'has element now');
-  equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
-  equal(elem.childNodes[0].tagName, 'SCRIPT', 'script tag first');
-  equal(elem.childNodes[1].tagName, 'TR', 'tr tag second');
-  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
-});
-
-QUnit.test("does not wrap many tr children in tbody elements", function() {
+QUnit.test("renders the child view templates in the right context", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
@@ -99,16 +72,8 @@ QUnit.test("does not wrap many tr children in tbody elements", function() {
     childViews: [
       EmberView.create({
         tagName: '',
-        render(buffer) {
-          // Emulate a metamorph
-          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-        } }),
-      EmberView.create({
-        tagName: '',
-        render(buffer) {
-          // Emulate a metamorph
-          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
-        } })
+        template: compile('<tr><td>snorfblax</td></tr>')
+      })
     ]
   });
 
@@ -120,7 +85,36 @@ QUnit.test("does not wrap many tr children in tbody elements", function() {
 
   var elem = get(view, 'element');
   ok(elem, 'has element now');
-  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr><script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+  equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
+  equalHTML(elem.childNodes, '<tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+});
+
+QUnit.test("does not wrap many tr children in tbody elements", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  view = ContainerView.create({
+    tagName: 'table',
+    childViews: [
+      EmberView.create({
+        tagName: '',
+        template: compile('<tr><td>snorfblax</td></tr>')
+      }),
+      EmberView.create({
+        tagName: '',
+        template: compile('<tr><td>snorfblax</td></tr>')
+      })
+    ]
+  });
+
+  equal(get(view, 'element'), null, 'precondition - has no element');
+  run(function() {
+    view.createElement();
+  });
+
+
+  var elem = get(view, 'element');
+  ok(elem, 'has element now');
+  equalHTML(elem.childNodes, '<tr><td>snorfblax</td></tr><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
 });
 
@@ -137,4 +131,3 @@ QUnit.test("generated element include HTML from child views as well", function()
 
   ok(view.$('#foo').length, 'has element with child elementId');
 });
-

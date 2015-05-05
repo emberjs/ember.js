@@ -1,12 +1,9 @@
-
 /**
 @module ember
 @submodule ember-views
 */
-import { get } from "ember-metal/property_get";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-views/mixins/text_support";
-import { observer } from "ember-metal/mixin";
 
 /**
   The internal class used to create textarea element when the `{{textarea}}`
@@ -39,22 +36,9 @@ export default Component.extend(TextSupport, {
     'selectionStart',
     'wrap',
     'lang',
-    'dir'
+    'dir',
+    'value'
   ],
   rows: null,
-  cols: null,
-
-  _updateElementValue: observer('value', function() {
-    // We do this check so cursor position doesn't get affected in IE
-    var value = get(this, 'value');
-    var $el = this.$();
-    if ($el && value !== $el.val()) {
-      $el.val(value);
-    }
-  }),
-
-  init() {
-    this._super(...arguments);
-    this.on("didInsertElement", this, this._updateElementValue);
-  }
+  cols: null
 });

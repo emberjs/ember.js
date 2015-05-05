@@ -24,5 +24,15 @@ export default EmberObject.extend({
       }
       return Component;
     }
+  },
+
+  componentFor(name, container) {
+    var fullName = 'component:' + name;
+    return container.lookupFactory(fullName);
+  },
+
+  layoutFor(name, container) {
+    var templateFullName = 'template:components/' + name;
+    return container.lookup(templateFullName);
   }
 });

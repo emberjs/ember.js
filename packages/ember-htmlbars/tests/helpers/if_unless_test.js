@@ -4,7 +4,6 @@ import { Registry } from "ember-runtime/system/container";
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
-import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from "ember-template-compiler/system/compile";
 
 import { set } from 'ember-metal/property_set';
@@ -24,7 +23,6 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
   },
 
@@ -209,53 +207,26 @@ QUnit.test("The `unbound if` helper should work when its inverse is not present"
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `if` helper ignores a controller option", function() {
-  var lookupCalled = false;
-
-  view = EmberView.create({
-    container: {
-      lookup() {
-        lookupCalled = true;
-      }
-    },
-    truthy: true,
-
-    template: compile('{{#if view.truthy controller="foo"}}Yep{{/if}}')
-  });
-
-  runAppend(view);
-
-  equal(lookupCalled, false, 'controller option should NOT be used');
-});
-
 QUnit.test('should not rerender if truthiness does not change', function() {
-  var renderCount = 0;
-
   view = EmberView.create({
     template: compile('<h1 id="first">{{#if view.shouldDisplay}}{{view view.InnerViewClass}}{{/if}}</h1>'),
 
     shouldDisplay: true,
 
     InnerViewClass: EmberView.extend({
-      template: compile('bam'),
-
-      render() {
-        renderCount++;
-        return this._super.apply(this, arguments);
-      }
+      template: compile('bam')
     })
   });
 
   runAppend(view);
 
-  equal(renderCount, 1, 'precond - should have rendered once');
   equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
+  equal(view.$('#first div').text(), 'bam', 'inserts a div into the DOM');
 
   run(function() {
     set(view, 'shouldDisplay', 1);
   });
 
-  equal(renderCount, 1, 'should not have rerendered');
   equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
 });
 
@@ -282,7 +253,6 @@ QUnit.test('should update the block when object passed to #unless helper changes
     });
 
     equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
-
     run(function() {
       set(view, 'onDrugs', true);
     });
@@ -383,7 +353,10 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
-    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
+    MyView: Ember.View.extend({
+      tagName: 'input'
+    }),
     display: false
   });
 
@@ -590,8 +563,8 @@ QUnit.test('edge case: child conditional should not render children if parent co
   });
 
   // TODO: Priority Queue, for now ensure correct result.
-  //ok(!childCreated, 'child should not be created');
-  ok(child.isDestroyed, 'child should be gone');
+  ok(!childCreated, 'child should not be created');
+  //ok(child.isDestroyed, 'child should be gone');
   equal(view.$().text(), '');
 });
 

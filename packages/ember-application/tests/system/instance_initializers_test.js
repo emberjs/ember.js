@@ -241,6 +241,8 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var firstInitializerRunCount = 0;
     var secondInitializerRunCount = 0;
     var FirstApp = Application.extend();
+    var firstApp, secondApp;
+
     FirstApp.instanceInitializer({
       name: 'first',
       initialize(registry) {
@@ -256,7 +258,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     });
     jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
     run(function() {
-      FirstApp.create({
+      firstApp = FirstApp.create({
         router: false,
         rootElement: '#qunit-fixture #first'
       });
@@ -264,19 +266,26 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     equal(firstInitializerRunCount, 1, 'first initializer only was run');
     equal(secondInitializerRunCount, 0, 'first initializer only was run');
     run(function() {
-      SecondApp.create({
+      secondApp = SecondApp.create({
         router: false,
         rootElement: '#qunit-fixture #second'
       });
     });
     equal(firstInitializerRunCount, 1, 'second initializer only was run');
     equal(secondInitializerRunCount, 1, 'second initializer only was run');
+    run(function() {
+    firstApp.destroy();
+    secondApp.destroy();
+  });
+
   });
 
   QUnit.test("initializers are concatenated", function() {
     var firstInitializerRunCount = 0;
     var secondInitializerRunCount = 0;
     var FirstApp = Application.extend();
+    var firstApp, secondApp;
+
     FirstApp.instanceInitializer({
       name: 'first',
       initialize(registry) {
@@ -294,7 +303,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
     jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
     run(function() {
-      FirstApp.create({
+      firstApp = FirstApp.create({
         router: false,
         rootElement: '#qunit-fixture #first'
       });
@@ -303,13 +312,17 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
     firstInitializerRunCount = 0;
     run(function() {
-      SecondApp.create({
+      secondApp = SecondApp.create({
         router: false,
         rootElement: '#qunit-fixture #second'
       });
     });
     equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
     equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+    run(function() {
+      firstApp.destroy();
+      secondApp.destroy();
+    });
   });
 
   QUnit.test("initializers are per-app", function() {

@@ -1125,7 +1125,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
   });
 });
 
-asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
+QUnit.asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1169,7 +1169,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state when defined in `actions` object", function() {
+QUnit.asyncTest("Events are triggered on the current state when defined in `actions` object", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1203,7 +1203,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   action.handler(event);
 });
 
-asyncTest("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
+QUnit.asyncTest("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -1241,7 +1241,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
+QUnit.asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1276,7 +1276,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   action.handler(event);
 });
 
-asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
+QUnit.asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -1354,7 +1354,7 @@ QUnit.test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
+QUnit.asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1397,7 +1397,7 @@ asyncTest("Actions are not triggered on the controller if a matching action name
   action.handler(event);
 });
 
-asyncTest("actions can be triggered with multiple arguments", function() {
+QUnit.asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -3604,8 +3604,6 @@ QUnit.test("Can render into a named outlet at the top level, later", function() 
 
   Ember.run(router, 'send', 'launch');
 
-  //debugger;
-  //router._setOutlets();
   equal(Ember.$('#qunit-fixture').text(), "A-The index-B-Hello world-C", "second render");
 });
 
@@ -3740,7 +3738,7 @@ QUnit.test("Allows any route to disconnectOutlet another route's templates", fun
   equal(trim(Ember.$('#qunit-fixture').text()), 'hi');
 });
 
-QUnit.test("Can render({into:...}) the render helper", function() {
+QUnit.test("Can this.render({into:...}) the render helper", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('other');
@@ -3793,7 +3791,7 @@ QUnit.test("Can disconnect from the render helper", function() {
 });
 
 
-QUnit.test("Can render({into:...}) the render helper's children", function() {
+QUnit.test("Can this.render({into:...}) the render helper's children", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('<div class="index">{{outlet}}</div>');
@@ -3850,7 +3848,7 @@ QUnit.test("Can disconnect from the render helper's children", function() {
   equal(Ember.$('#qunit-fixture .foo .index').text(), '');
 });
 
-QUnit.test("Can render({into:...}) nested render helpers", function() {
+QUnit.test("Can this.render({into:...}) nested render helpers", function() {
   Ember.TEMPLATES.application = compile('{{render "foo"}}');
   Ember.TEMPLATES.foo = compile('<div class="foo">{{render "bar"}}</div>');
   Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');
@@ -3902,4 +3900,59 @@ QUnit.test("Can disconnect from nested render helpers", function() {
   equal(Ember.$('#qunit-fixture .bar').text(), 'other');
   Ember.run(router, 'send', 'disconnect');
   equal(Ember.$('#qunit-fixture .bar').text(), '');
+});
+
+QUnit.test("Can render with layout", function() {
+  Ember.TEMPLATES.application = compile('{{outlet}}');
+  Ember.TEMPLATES.index = compile('index-template');
+  Ember.TEMPLATES['my-layout'] = compile('my-layout [{{yield}}]');
+
+  App.IndexView = Ember.View.extend({
+    layoutName: 'my-layout'
+  });
+
+  bootApplication();
+  equal(Ember.$('#qunit-fixture').text(), 'my-layout [index-template]');
+});
+
+QUnit.test("Components inside an outlet have their didInsertElement hook invoked when the route is displayed", function(assert) {
+  Ember.TEMPLATES.index = compile('{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}');
+
+  var myComponentCounter = 0;
+  var otherComponentCounter = 0;
+  var indexController;
+
+  App.IndexController = Ember.Controller.extend({
+    showFirst: true
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    setupController(controller) {
+      indexController = controller;
+    }
+  });
+
+  App.MyComponentComponent = Ember.Component.extend({
+    didInsertElement() {
+      myComponentCounter++;
+    }
+  });
+
+  App.OtherComponentComponent = Ember.Component.extend({
+    didInsertElement() {
+      otherComponentCounter++;
+    }
+  });
+
+  bootApplication();
+
+  assert.strictEqual(myComponentCounter, 1, "didInsertElement invoked on displayed component");
+  assert.strictEqual(otherComponentCounter, 0, "didInsertElement not invoked on displayed component");
+
+  Ember.run(function() {
+    indexController.set('showFirst', false);
+  });
+
+  assert.strictEqual(myComponentCounter, 1, "didInsertElement not invoked on displayed component");
+  assert.strictEqual(otherComponentCounter, 1, "didInsertElement invoked on displayed component");
 });

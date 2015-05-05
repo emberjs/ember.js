@@ -4,6 +4,8 @@ import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import compile from "ember-template-compiler/system/compile";
+import { runDestroy } from "ember-runtime/tests/utils";
 
 var View, view, willDestroyCalled, childView;
 
@@ -13,9 +15,7 @@ QUnit.module("EmberView - append() and appendTo()", {
   },
 
   teardown() {
-    run(function() {
-      if (!view.isDestroyed) { view.destroy(); }
-    });
+    runDestroy(view);
   }
 });
 
@@ -36,9 +36,7 @@ QUnit.test("should be added to the specified element when calling appendTo()", f
 
 QUnit.test("should be added to the document body when calling append()", function() {
   view = View.create({
-    render(buffer) {
-      buffer.push("foo bar baz");
-    }
+    template: compile("foo bar baz")
   });
 
   ok(!get(view, 'element'), "precond - should not have an element");
@@ -73,13 +71,12 @@ QUnit.test("append calls willInsertElement and didInsertElement callbacks", func
     didInsertElement() {
       didInsertElementCalled = true;
     },
-    render(buffer) {
-      this.appendChild(EmberView.create({
-        willInsertElement() {
-          willInsertElementCalledInChild = true;
-        }
-      }));
-    }
+    childView: EmberView.create({
+      willInsertElement() {
+        willInsertElementCalledInChild = true;
+      }
+    }),
+    template: compile("{{view view.childView}}")
   });
 
   view = ViewWithCallback.create();
@@ -91,6 +88,101 @@ QUnit.test("append calls willInsertElement and didInsertElement callbacks", func
   ok(willInsertElementCalled, "willInsertElement called");
   ok(willInsertElementCalledInChild, "willInsertElement called in child");
   ok(didInsertElementCalled, "didInsertElement called");
+});
+
+QUnit.test("a view calls its children's willInsertElement and didInsertElement", function() {
+  var parentView;
+  var willInsertElementCalled = false;
+  var didInsertElementCalled = false;
+  var didInsertElementSawElement = false;
+
+  parentView = EmberView.create({
+    ViewWithCallback: EmberView.extend({
+      template: compile('<div id="do-i-exist"></div>'),
+
+      willInsertElement() {
+        willInsertElementCalled = true;
+      },
+      didInsertElement() {
+        didInsertElementCalled = true;
+        didInsertElementSawElement = (this.$('div').length === 1);
+      }
+    }),
+
+    template: compile('{{#if view.condition}}{{view view.ViewWithCallback}}{{/if}}'),
+    condition: false
+  });
+
+  run(function() {
+    parentView.append();
+  });
+  run(function() {
+    parentView.set('condition', true);
+  });
+
+  ok(willInsertElementCalled, "willInsertElement called");
+  ok(didInsertElementCalled, "didInsertElement called");
+  ok(didInsertElementSawElement, "didInsertElement saw element");
+
+  run(function() {
+    parentView.destroy();
+  });
+
+});
+
+QUnit.test("replacing a view should invalidate childView elements", function() {
+  var elementOnDidInsert;
+
+  view = EmberView.create({
+    show: false,
+
+    CustomView: EmberView.extend({
+      init() {
+        this._super.apply(this, arguments);
+        // This will be called in preRender
+        // We want it to cache a null value
+        // Hopefully it will be invalidated when `show` is toggled
+        this.get('element');
+      },
+
+      didInsertElement() {
+        elementOnDidInsert = this.get('element');
+      }
+    }),
+
+    template: compile("{{#if view.show}}{{view view.CustomView}}{{/if}}")
+  });
+
+  run(function() { view.append(); });
+
+  run(function() { view.set('show', true); });
+
+  ok(elementOnDidInsert, "should have an element on insert");
+
+  run(function() { view.destroy(); });
+});
+
+QUnit.test("trigger rerender of parent and SimpleBoundView", function () {
+  var view = EmberView.create({
+    show: true,
+    foo: 'bar',
+    template: compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
+  });
+
+  run(function() { view.append(); });
+
+  equal(view.$().text(), 'bar');
+
+  run(function() {
+    view.set('foo', 'baz'); // schedule render of simple bound
+    view.set('show', false); // destroy tree
+  });
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.destroy();
+  });
 });
 
 QUnit.test("remove removes an element from the DOM", function() {
@@ -279,4 +371,3 @@ QUnit.test("destroy removes a child view from its parent", function() {
 
   ok(get(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
-

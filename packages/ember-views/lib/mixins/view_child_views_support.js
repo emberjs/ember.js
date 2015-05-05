@@ -4,39 +4,10 @@
 */
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
-import { computed } from "ember-metal/computed";
+import { removeObject } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
-import EmberError from "ember-metal/error";
-import { forEach, removeObject } from "ember-metal/enumerable_utils";
-import { A as emberA } from "ember-runtime/system/native_array";
-
-/**
-  @class ViewChildViewsSupport
-  @namespace Ember
-*/
-var childViewsProperty = computed(function() {
-  var childViews = this._childViews;
-  var ret = emberA();
-
-  forEach(childViews, function(view) {
-    var currentChildViews;
-    if (view.isVirtual) {
-      if (currentChildViews = get(view, 'childViews')) {
-        ret.pushObjects(currentChildViews);
-      }
-    } else {
-      ret.push(view);
-    }
-  });
-
-  ret.replace = function (idx, removedCount, addedViews) {
-    throw new EmberError("childViews is immutable");
-  };
-
-  return ret;
-});
 
 var EMPTY_ARRAY = [];
 
@@ -50,19 +21,24 @@ var ViewChildViewsSupport = Mixin.create({
     @default []
     @private
   */
-  childViews: childViewsProperty,
-
-  _childViews: EMPTY_ARRAY,
+  childViews: EMPTY_ARRAY,
 
   init() {
-    // setup child views. be sure to clone the child views array first
-    this._childViews = this._childViews.slice();
-
     this._super(...arguments);
+
+    // setup child views. be sure to clone the child views array first
+    // 2.0TODO: Remove Ember.A() here
+    this.childViews = Ember.A(this.childViews.slice());
+    this.ownerView = this;
   },
 
-  appendChild(view, options) {
-    return this.currentState.appendChild(this, view, options);
+  appendChild(view) {
+    this.linkChild(view);
+    this.childViews.push(view);
+  },
+
+  destroyChild(view) {
+    view.destroy();
   },
 
   /**
@@ -79,14 +55,12 @@ var ViewChildViewsSupport = Mixin.create({
     if (this.isDestroying) { return; }
 
     // update parent node
-    set(view, '_parentView', null);
+    this.unlinkChild(view);
 
     // remove view from childViews array.
-    var childViews = this._childViews;
+    var childViews = get(this, 'childViews');
 
     removeObject(childViews, view);
-
-    this.propertyDidChange('childViews'); // HUH?! what happened to will change?
 
     return this;
   },
@@ -108,13 +82,12 @@ var ViewChildViewsSupport = Mixin.create({
       throw new TypeError("createChildViews first argument must exist");
     }
 
-    if (maybeViewClass.isView && maybeViewClass._parentView === this && maybeViewClass.container === this.container) {
+    if (maybeViewClass.isView && maybeViewClass.parentView === this && maybeViewClass.container === this.container) {
       return maybeViewClass;
     }
 
     var attrs = _attrs || {};
     var view;
-    attrs._parentView = this;
     attrs.renderer = this.renderer;
 
     if (maybeViewClass.isViewClass) {
@@ -122,10 +95,8 @@ var ViewChildViewsSupport = Mixin.create({
 
       view = maybeViewClass.create(attrs);
 
-      // don't set the property on a virtual view, as they are invisible to
-      // consumers of the view API
       if (view.viewName) {
-        set(get(this, 'concreteView'), view.viewName, view);
+        set(this, view.viewName, view);
       }
     } else if ('string' === typeof maybeViewClass) {
       var fullName = 'view:' + maybeViewClass;
@@ -142,10 +113,22 @@ var ViewChildViewsSupport = Mixin.create({
       setProperties(view, attrs);
     }
 
+    this.linkChild(view);
+
     return view;
+  },
+
+  linkChild(instance) {
+    instance.container = this.container;
+    set(instance, 'parentView', this);
+    instance.trigger('parentViewDidChange');
+    instance.ownerView = this.ownerView;
+  },
+
+  unlinkChild(instance) {
+    set(instance, 'parentView', null);
+    instance.trigger('parentViewDidChange');
   }
 });
 
 export default ViewChildViewsSupport;
-
-export { childViewsProperty };

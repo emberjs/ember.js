@@ -108,7 +108,7 @@ QUnit.module("Ember.Component - Actions", {
     });
 
     component = Component.create({
-      _parentView: EmberView.create({
+      parentView: EmberView.create({
         controller: controller
       })
     });

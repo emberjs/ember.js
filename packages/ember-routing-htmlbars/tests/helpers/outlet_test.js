@@ -5,23 +5,16 @@ import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
-import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
-
 import compile from "ember-template-compiler/system/compile";
-import { registerHelper } from "ember-htmlbars/helpers";
-import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
 
 var trim = jQuery.trim;
 
-var registry, container, originalOutletHelper, top;
+var registry, container, top;
 
 QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
   setup() {
-    originalOutletHelper = helpers['outlet'];
-    registerHelper('outlet', outletHelper);
-
     var namespace = Namespace.create();
     registry = buildRegistry(namespace);
     container = registry.container();
@@ -31,9 +24,6 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
   },
 
   teardown() {
-    delete helpers['outlet'];
-    helpers['outlet'] = originalOutletHelper;
-
     runDestroy(container);
     runDestroy(top);
     registry = container = top = null;
@@ -86,7 +76,8 @@ QUnit.test("outlet should support an optional name", function() {
 });
 
 
-QUnit.test("outlet should correctly lookup a view", function() {
+QUnit.test("outlet should correctly lookup a view [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['special']
@@ -110,7 +101,8 @@ QUnit.test("outlet should correctly lookup a view", function() {
   equal(top.$().find('.special').length, 1, "expected to find .special element");
 });
 
-QUnit.test("outlet should assert view is specified as a string", function() {
+QUnit.test("outlet should assert view is specified as a string [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view=containerView}}"));
 
   expectAssertion(function () {
@@ -119,16 +111,18 @@ QUnit.test("outlet should assert view is specified as a string", function() {
 
 });
 
-QUnit.test("outlet should assert view path is successfully resolved", function() {
+QUnit.test("outlet should assert view path is successfully resolved [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   top.setOutletState(withTemplate("<h1>HI</h1>{{outlet view='someViewNameHere'}}"));
 
   expectAssertion(function () {
     runAppend(top);
-  }, "The view name you supplied 'someViewNameHere' did not resolve to a view.");
+  }, /someViewNameHere must be a subclass or an instance of Ember.View/);
 
 });
 
-QUnit.test("outlet should support an optional view class", function() {
+QUnit.test("outlet should support an optional view class [DEPRECATED]", function() {
+  expectDeprecation(/Passing `view` or `viewClass` to {{outlet}} is deprecated/);
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   var SpecialOutlet = CoreOutlet.extend({
     classNames: ['very-special']
@@ -205,7 +199,8 @@ QUnit.test("Outlets bind to the current template's view, not inner contexts [DEP
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
-QUnit.test("should support layouts", function() {
+QUnit.test("should support layouts [DEPRECATED]", function() {
+  expectDeprecation(/Using deprecated `template` property on a View/);
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
   var routerState = {

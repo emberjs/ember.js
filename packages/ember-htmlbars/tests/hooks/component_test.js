@@ -44,6 +44,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
 
     expectAssertion(function() {
       runAppend(view);
-    }, 'You specified `foo-bar` in your template, but a component for `foo-bar` could not be found.');
+    }, /Could not find component named "foo-bar" \(no component or template with that name was found\)/);
   });
 }

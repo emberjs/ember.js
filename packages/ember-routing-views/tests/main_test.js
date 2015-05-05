@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-routing-views';
 
 QUnit.module("ember-routing-views");
 

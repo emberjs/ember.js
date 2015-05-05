@@ -2,7 +2,7 @@ import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-template-compiler/system/compile";
-import Renderer from "ember-views/system/renderer";
+import Renderer from "ember-metal-views/renderer";
 import { equalInnerHTML } from "htmlbars-test-helpers";
 import { domHelper as dom } from "ember-htmlbars/env";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
@@ -181,7 +181,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   });
 
   QUnit.test("updates fail silently after an element is destroyed", function() {
-
     var context = EmberObject.create({ name: 'erik' });
     view = EmberView.create({
       context: context,
