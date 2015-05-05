@@ -442,8 +442,7 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
 
 });
 
-QUnit.test('Specifying a name to render should have precedence over everything else [DEPRECATED]', function() {
-  expectDeprecation(/Using deprecated `template` property on a Component/);
+QUnit.test('Specifying a name to render should have precedence over everything else', function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -3901,6 +3900,19 @@ QUnit.test("Can disconnect from nested render helpers", function() {
   equal(Ember.$('#qunit-fixture .bar').text(), 'other');
   Ember.run(router, 'send', 'disconnect');
   equal(Ember.$('#qunit-fixture .bar').text(), '');
+});
+
+QUnit.test("Can render with layout", function() {
+  Ember.TEMPLATES.application = compile('{{outlet}}');
+  Ember.TEMPLATES.index = compile('index-template');
+  Ember.TEMPLATES['my-layout'] = compile('my-layout [{{yield}}]');
+
+  App.IndexView = Ember.View.extend({
+    layoutName: 'my-layout'
+  });
+
+  bootApplication();
+  equal(Ember.$('#qunit-fixture').text(), 'my-layout [index-template]');
 });
 
 QUnit.test("Components inside an outlet have their didInsertElement hook invoked when the route is displayed", function(assert) {

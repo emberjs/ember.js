@@ -62,9 +62,10 @@ export default {
 
     var options = {
       component: ViewClass,
-      layout: toRender.template,
       self: toRender.controller
     };
+
+    template = template || toRender.template && toRender.template.raw;
 
     if (LOG_VIEW_LOOKUPS && ViewClass) {
       Ember.Logger.info("Rendering " + toRender.name + " with " + ViewClass, { fullName: 'view:' + toRender.name });
