@@ -172,10 +172,10 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   // [ 'component', path, attrs, templateId ]
   component: function(node, morph, env, scope, template, visitor) {
     var path = node[1], attrs = node[2], templateId = node[3];
-    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, null, attrs);
+    var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, [], attrs);
 
     morph.isDirty = morph.isSubtreeDirty = false;
-    env.hooks.component(morph, env, scope, path, paramsAndHash[1],
+    env.hooks.component(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1],
                         template.templates[templateId], visitor);
   }
 });
