@@ -1129,6 +1129,30 @@ QUnit.test('should expose a controller keyword that can be used in conditionals'
   equal(view.$().text(), '', 'updates the DOM when the controller is changed');
 });
 
+QUnit.test('should expose a controller that can be used in the view instance', function() {
+  var templateString = '{{#view view.childThing tagName="div"}}Stuff{{/view}}';
+  var controller = {
+    foo: 'bar'
+  };
+  var childThingController;
+  view = EmberView.create({
+    container,
+    controller,
+
+    childThing: EmberView.extend({
+      didInsertElement() {
+        childThingController = get(this, 'controller');
+      }
+    }),
+
+    template: compile(templateString)
+  });
+
+  runAppend(view);
+
+  equal(controller, childThingController, 'childThing should get the same controller as the outer scope');
+});
+
 QUnit.test('should expose a controller keyword that persists through Ember.ContainerView', function() {
   var templateString = '{{view view.containerView}}';
   view = EmberView.create({

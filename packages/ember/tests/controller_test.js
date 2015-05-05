@@ -68,6 +68,28 @@ QUnit.test("Actions inside an outlet go to the associated controller", function(
   $fixture.find('.component-with-action').click();
 });
 
+QUnit.skip('the controller property is provided to route driven views', function() {
+  var applicationController, applicationViewController;
+
+  App.ApplicationController = Ember.Controller.extend({
+    init: function() {
+      this._super(...arguments);
+      applicationController = this;
+    }
+  });
+
+  App.ApplicationView = Ember.View.extend({
+    init: function() {
+      this._super(...arguments);
+      applicationViewController = this.get('controller');
+    }
+  });
+
+  bootApp();
+
+  equal(applicationViewController, applicationController, 'application view should get its controller set properly');
+});
+
 // This test caught a regression where {{#each}}s used directly in a template
 // (i.e., not inside a view or component) did not have access to a container and
 // would raise an exception.
