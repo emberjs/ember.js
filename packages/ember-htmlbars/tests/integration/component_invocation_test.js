@@ -233,3 +233,43 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
     equal(jQuery('#qunit-fixture').text(), 'In block No Block Param!');
   });
 }
+
+QUnit.test('static positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: ['name', 'age']
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component "Quint" 4}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'Quint4');
+});
+
+QUnit.test('dynamic positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: ['name', 'age']
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component myName myAge}}'),
+    container: container,
+    context: {
+      myName: 'Quint',
+      myAge: 4
+    }
+  }).create();
+
+  runAppend(view);
+  equal(jQuery('#qunit-fixture').text(), 'Quint4');
+  run(function() {
+    Ember.set(view.context, 'myName', 'Edward');
+    Ember.set(view.context, 'myAe', '5');
+  });
+
+});

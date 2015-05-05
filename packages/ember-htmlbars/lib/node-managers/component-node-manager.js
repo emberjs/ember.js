@@ -28,6 +28,7 @@ export default ComponentNodeManager;
 
 ComponentNodeManager.create = function(renderNode, env, options) {
   let { tagName,
+        params,
         attrs,
         parentView,
         parentScope,
@@ -89,6 +90,13 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     }
 
     renderNode.emberView = component;
+
+    if (component.positionalParams) {
+      let pp = component.positionalParams;
+      for (let i=0; i<pp.length; i++) {
+        attrs[pp[i]] = params[i];
+      }
+    }
   }
 
   var results = buildComponentTemplate({ layout: layout, component: component }, attrs, {

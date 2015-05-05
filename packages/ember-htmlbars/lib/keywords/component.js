@@ -22,6 +22,6 @@ export default {
       return;
     }
 
-    env.hooks.component(morph, env, scope, componentPath, hash, template, visitor);
+    env.hooks.component(morph, env, scope, componentPath, params, hash, template, visitor);
   }
 };
