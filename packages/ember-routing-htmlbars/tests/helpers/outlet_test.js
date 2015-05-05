@@ -239,12 +239,48 @@ QUnit.test("should not throw deprecations if {{outlet}} is used with a quoted na
   runAppend(top);
 });
 
-QUnit.test("should throw an assertion if {{outlet}} used with unquoted name", function() {
-  top.setOutletState(withTemplate("{{outlet foo}}"));
-  expectAssertion(function() {
-    runAppend(top);
-  }, "Using {{outlet}} with an unquoted name is not supported.");
+QUnit.test("{{outlet}} should work with an unquoted name", function() {
+  var routerState = {
+    render: {
+      controller: Ember.Controller.create({
+        outletName: 'magical'
+      }),
+      template: compile('{{outlet outletName}}')
+    },
+    outlets: {
+      magical: withTemplate("It's magic")
+    }
+  };
+
+  top.setOutletState(routerState);
+  runAppend(top);
+
+  equal(top.$().text().trim(), "It's magic");
 });
+
+QUnit.test("{{outlet}} should rerender when bound name changes", function() {
+  var routerState = {
+    render: {
+      controller: Ember.Controller.create({
+        outletName: 'magical'
+      }),
+      template: compile('{{outlet outletName}}')
+    },
+    outlets: {
+      magical: withTemplate("It's magic"),
+      second: withTemplate("second")
+    }
+  };
+
+  top.setOutletState(routerState);
+  runAppend(top);
+  equal(top.$().text().trim(), "It's magic");
+  run(function() {
+    routerState.render.controller.set('outletName', 'second');
+  });
+  equal(top.$().text().trim(), "second");
+});
+
 
 function withTemplate(string) {
   return {
