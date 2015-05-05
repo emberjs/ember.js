@@ -61,7 +61,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
       if (!contentTemplate) {
         let template = get(component, 'template');
         if (template) {
-          Ember.deprecate("Using deprecated `template` property on a Component.");
+          Ember.deprecate("Using deprecated `template` property on a " + (component.isView ? 'View' : 'Component') + ".");
           contentTemplate = template.raw;
         }
       }
