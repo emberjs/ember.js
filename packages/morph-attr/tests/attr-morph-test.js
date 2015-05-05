@@ -17,6 +17,23 @@ test("can update a dom node", function(){
   equal(element.getAttribute('id'), 'twang', 'id attribute is set');
 });
 
+test("can clear", function(){
+  expect(0);
+  var element = domHelper.createElement('div');
+  var morph = domHelper.createAttrMorph(element, 'id');
+  morph.clear();
+});
+
+test("calling destroy does not throw", function(){
+  expect(1);
+  var element = domHelper.createElement('div');
+  var morph = domHelper.createAttrMorph(element, 'id');
+
+  morph.destroy();
+
+  equal(morph.element, null, 'clears element from morph');
+});
+
 test("can update property", function(){
   var element = domHelper.createElement('input');
   var morph = domHelper.createAttrMorph(element, 'disabled');
