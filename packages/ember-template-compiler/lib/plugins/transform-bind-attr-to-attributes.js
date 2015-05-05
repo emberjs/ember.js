@@ -123,8 +123,8 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
   switch (parts.length) {
     case 1:
       // Before: {{bind-attr class="view.fooBar ..."}}
-      // After: class="{{bind-attr-class view.fooBar "foo-bar"}} ..."
-      return b.sexpr(b.path('bind-attr-class'), [
+      // After: class="{{-bind-attr-class view.fooBar "foo-bar"}} ..."
+      return b.sexpr(b.path('-bind-attr-class'), [
         b.path(parts[0]),
         b.string(dasherizeLastKey(parts[0]))
       ]);
