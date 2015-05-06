@@ -273,3 +273,30 @@ QUnit.test('dynamic positional parameters', function() {
   });
 
 });
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+  QUnit.test('{{component}} helper works with positional params', function() {
+    registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+    registry.register('component:sample-component', Component.extend({
+      positionalParams: ['name', 'age']
+    }));
+
+    view = EmberView.extend({
+      layout: compile('{{component "sample-component" myName myAge}}'),
+      container: container,
+      context: {
+        myName: 'Quint',
+        myAge: 4
+      }
+    }).create();
+
+    runAppend(view);
+    equal(jQuery('#qunit-fixture').text(), 'Quint4');
+    run(function() {
+      Ember.set(view.context, 'myName', 'Edward');
+      Ember.set(view.context, 'myAge', '5');
+    });
+
+    equal(jQuery('#qunit-fixture').text(), 'Edward5');
+  });
+}

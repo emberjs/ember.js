@@ -2,7 +2,8 @@ export default {
   setupState(lastState, env, scope, params, hash) {
     let state = {
       componentPath: env.hooks.getValue(params[0]),
-      manager: lastState && lastState.manager
+      manager: lastState && lastState.manager,
+      isComponentHelper: true
     };
 
     return state;

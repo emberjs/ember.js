@@ -92,9 +92,13 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     renderNode.emberView = component;
 
     if (component.positionalParams) {
+      // if the component is rendered via {{component}} helper, the first
+      // element of `params` is the name of the component, so we need to
+      // skip that when the positional parameters are constructed
+      let paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
       let pp = component.positionalParams;
       for (let i=0; i<pp.length; i++) {
-        attrs[pp[i]] = params[i];
+        attrs[pp[i]] = params[paramsStartIndex + i];
       }
     }
   }
