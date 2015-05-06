@@ -4,6 +4,7 @@
 */
 
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
+import shouldDisplay from "ember-views/streams/should_display";
 
 /**
   Use the `{{with}}` helper when you want to aliases the to a new name. It's helpful
@@ -44,24 +45,26 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 */
 
 export default function withHelper(params, hash, options) {
-  var preserveContext = false;
+  if (shouldDisplay(params[0])) {
+    var preserveContext = false;
 
-  if (options.template.arity !== 0) {
-    preserveContext = true;
-  }
-
-  if (preserveContext) {
-    this.yield([params[0]]);
-  } else {
-    let self = normalizeSelf(params[0]);
-    if (hash.controller) {
-      self = {
-        hasBoundController: true,
-        controller: hash.controller,
-        self: self
-      };
+    if (options.template.arity !== 0) {
+      preserveContext = true;
     }
 
-    this.yield([], self);
+    if (preserveContext) {
+      this.yield([params[0]]);
+    } else {
+      let self = normalizeSelf(params[0]);
+      if (hash.controller) {
+        self = {
+          hasBoundController: true,
+          controller: hash.controller,
+          self: self
+        };
+      }
+
+      this.yield([], self);
+    }
   }
 }
