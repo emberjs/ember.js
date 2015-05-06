@@ -13,7 +13,7 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    env.hooks.component(morph, env, scope, morph.state.componentName, hash, template, visitor);
+    env.hooks.component(morph, env, scope, morph.state.componentName, params, hash, template, visitor);
   },
 
   rerender(...args) {

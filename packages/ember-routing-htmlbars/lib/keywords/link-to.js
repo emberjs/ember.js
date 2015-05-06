@@ -297,7 +297,7 @@ export default {
 
     attrs.escaped = !morph.parseTextAsHTML;
 
-    env.hooks.component(morph, env, scope, '-link-to', attrs, template, visitor);
+    env.hooks.component(morph, env, scope, '-link-to', params, attrs, template, visitor);
   },
 
   rerender(morph, env, scope, params, hash, template, inverse, visitor) {
