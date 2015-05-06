@@ -5,6 +5,8 @@ import Registry from "container/registry";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
+import { observer } from "ember-metal/mixin";
+import { on } from "ember-metal/events";
 
 var view, registry, container;
 
@@ -65,4 +67,36 @@ QUnit.test('works with undefined attributes', function() {
   });
 
   equal(get(view, 'bar'), undefined, 'value is updated upstream');
+});
+
+QUnit.test('an observer on an attribute in the root of the component is fired when attrs are set', function() {
+  expect(2);
+
+  registry.register('view:foo', View.extend({
+    observerFiredCount: 0,
+
+    barObserver: on('init', observer('bar', function() {
+      var count = get(this, 'observerFiredCount');
+
+      set(this, 'observerFiredCount', count + 1);
+    })),
+
+    template: compile('{{view.bar}} - {{view.observerFiredCount}}')
+  }));
+
+  view = View.extend({
+    container: registry.container(),
+    baz: 'baz',
+    template: compile('{{view "foo" bar=view.baz}}')
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'baz - 1', 'observer is fired on initial set');
+
+  run(function() {
+    set(view, 'baz', 'qux');
+  });
+
+  equal(view.$().text(), 'baz - 2', 'observer is fired on update');
 });
