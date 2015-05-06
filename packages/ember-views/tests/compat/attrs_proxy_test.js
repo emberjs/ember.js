@@ -98,5 +98,5 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
     set(view, 'baz', 'qux');
   });
 
-  equal(view.$().text(), 'baz - 2', 'observer is fired on update');
+  equal(view.$().text(), 'qux - 2', 'observer is fired on update');
 });
