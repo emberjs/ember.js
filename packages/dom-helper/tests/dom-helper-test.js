@@ -87,7 +87,7 @@ test('#setAttributeNS', function(){
   // phantomjs omits the prefix, thus we can't find xlink:
   ok(el.innerHTML.indexOf('href="super-fun"') > 0);
   dom.setAttributeNS(node, xlinkNamespace, 'href', null);
-  
+
   ok(el.innerHTML.indexOf('href="null"') > 0);
 
 });
@@ -559,7 +559,7 @@ test('#setProperty with namespaced attributes', function() {
 
 test("#setProperty removes namespaced attr with undefined", function() {
   var node;
-  
+
   node = dom.createElement('svg');
   dom.setProperty(node, 'xlink:title', 'Great Title', xlinkNamespace);
   dom.setProperty(node, 'xlink:title', undefined, xlinkNamespace);
