@@ -143,7 +143,7 @@ run.join = function() {
   });
   ```
 
-  In this example, we use Ember.run.bind to bind the setupEditor message to the
+  In this example, we use Ember.run.bind to bind the setupEditor method to the
   context of the App.RichTextEditorComponent and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
