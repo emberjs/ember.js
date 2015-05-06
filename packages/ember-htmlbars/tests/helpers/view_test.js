@@ -1398,9 +1398,9 @@ QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', funct
 
   runAppend(view);
 
-  equal(view.$('#view-id').text(), 'bar', 'the views id property is set');
+  equal(view.$('#bar #view-id').text(), 'bar', 'the views id property is set');
 
   run(view, set, view, 'foo', 'baz');
 
-  equal(view.$('#view-id').text(), 'bar', 'the views id property is not changed');
+  equal(view.$('#bar #view-id').text(), 'baz', 'the views id property is not changed');
 });

@@ -1,5 +1,10 @@
 import EmberError from "ember-metal/error";
 
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+
 /**
 @module ember
 @submodule ember-views
@@ -16,6 +21,18 @@ export default {
 
   getElement() {
     return null;
+  },
+
+  legacyAttrWillChange(view, key) {
+    if (key in view.attrs && !(key in view)) {
+      propertyWillChange(view, key);
+    }
+  },
+
+  legacyAttrDidChange(view, key) {
+    if (key in view.attrs && !(key in view)) {
+      propertyDidChange(view, key);
+    }
   },
 
   // Handle events from `Ember.EventDispatcher`

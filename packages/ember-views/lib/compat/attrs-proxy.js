@@ -7,6 +7,13 @@ import objectKeys from "ember-metal/keys";
 import { PROPERTY_DID_CHANGE } from "ember-metal/property_events";
 //import run from "ember-metal/run_loop";
 
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+
 export function deprecation(key) {
   return `You tried to look up an attribute directly on the component. This is deprecated. Use attrs.${key} instead.`;
 }
@@ -15,6 +22,16 @@ export let MUTABLE_CELL = symbol("MUTABLE_CELL");
 
 function isCell(val) {
   return val && val[MUTABLE_CELL];
+}
+
+function attrsWillChange(view, attrsKey) {
+  let key = attrsKey.slice(6);
+  view.currentState.legacyAttrWillChange(view, key);
+}
+
+function attrsDidChange(view, attrsKey) {
+  let key = attrsKey.slice(6);
+  view.currentState.legacyAttrDidChange(view, key);
 }
 
 let AttrsProxyMixin = {
@@ -40,6 +57,22 @@ let AttrsProxyMixin = {
     }
 
     val.update(value);
+  },
+
+  willWatchProperty(key) {
+    if (key === 'attrs') { return; }
+
+    let attrsKey = `attrs.${key}`;
+    addBeforeObserver(this, attrsKey, null, attrsWillChange);
+    addObserver(this, attrsKey, null, attrsDidChange);
+  },
+
+  didUnwatchProperty(key) {
+    if (key === 'attrs') { return; }
+
+    let attrsKey = `attrs.${key}`;
+    removeBeforeObserver(this, attrsKey, null, attrsWillChange);
+    removeObserver(this, attrsKey, null, attrsDidChange);
   },
 
   legacyDidReceiveAttrs: on('didReceiveAttrs', function() {
