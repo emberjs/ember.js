@@ -307,7 +307,7 @@ export function createFreshScope() {
 }
 
 /**
-  Host Hook: createShadowScope
+  Host Hook: bindShadowScope
 
   @param {Scope?} parentScope
   @return Scope
