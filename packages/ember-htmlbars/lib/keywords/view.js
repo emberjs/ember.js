@@ -11,11 +11,15 @@ import objectKeys from "ember-metal/keys";
 export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
+    var viewClassOrInstance = state.viewClassOrInstance;
+    if (!viewClassOrInstance) {
+      viewClassOrInstance = getView(read(params[0]), env.container);
+    }
 
     return {
       manager: state.manager,
       parentView: scope.view,
-      viewClassOrInstance: getView(read(params[0]), env.container)
+      viewClassOrInstance
     };
   },
 

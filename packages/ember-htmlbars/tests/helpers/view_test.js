@@ -1404,3 +1404,31 @@ QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', funct
 
   equal(view.$('#bar #view-id').text(), 'baz', 'the views id property is not changed');
 });
+
+QUnit.test("using a bound view name does not change on view name property changes", function() {
+  registry.register('view:foo', viewClass({
+    elementId: 'foo'
+  }));
+
+  registry.register('view:bar', viewClass({
+    elementId: 'bar'
+  }));
+
+  view = EmberView.extend({
+    container,
+    elementId: 'parent',
+    viewName: 'foo',
+    template: compile("{{view view.viewName}}")
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#foo').length, 1, 'moving from falsey to truthy causes the viewName to be looked up and rendered');
+
+  run(function() {
+    set(view, 'viewName', 'bar');
+  });
+
+  equal(view.$('#bar').length, 0, 'changing the viewName string after it was initially rendered does not render the new viewName');
+  equal(view.$('#foo').length, 1, 'the originally rendered view is still present');
+});
