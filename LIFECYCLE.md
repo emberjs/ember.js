@@ -435,13 +435,13 @@ reflecting their results onto a stateful DOM.
   implementation of this hook creates a new scope with a `self` slot
   for the dynamic context and `locals`, a dictionary of local
   variables.
-* `createShadowScope`: create a new scope for a template that is
-  being rendered in the middle of the render tree with a new,
-  top-level scope (a "shadow root").
 * `createChildScope`: create a new scope that inherits from the parent
   scope. The child scope must reflect updates to `self` or `locals` on
   the parent scope automatically, so the default implementation of this
   hook uses `Object.create` on both the scope object and the locals.
+* `bindShadowScope`: create a new scope for a template that is
+  being rendered in the middle of the render tree with a new,
+  top-level scope (a "shadow root").
 * `bindBlock`: binds the block passed to a block helper into the lexical
   environment so that it can be invoked via `{{yield}}`.
 * `bindScope`: gives the host environment an opportunity to setup a
