@@ -1292,7 +1292,7 @@ var View = CoreView.extend(
     @return String
   */
   readDOMAttr(name) {
-    let attr = this.renderNode.childNodes.filter(node => node.attrName === name)[0];
+    let attr = this._renderNode.childNodes.filter(node => node.attrName === name)[0];
     if (!attr) { return null; }
     return attr.getContent();
   },

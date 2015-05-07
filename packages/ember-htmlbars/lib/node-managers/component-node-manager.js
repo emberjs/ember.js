@@ -153,10 +153,10 @@ ComponentNodeManager.prototype.rerender = function(env, attrs, visitor) {
     // Notify component that it has become dirty and is about to change.
     env.renderer.willUpdate(component, snapshot);
 
-    if (component.renderNode.shouldReceiveAttrs) {
+    if (component._renderNode.shouldReceiveAttrs) {
       env.renderer.updateAttrs(component, snapshot);
       setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
-      component.renderNode.shouldReceiveAttrs = false;
+      component._renderNode.shouldReceiveAttrs = false;
     }
 
     env.renderer.willRender(component);
@@ -207,7 +207,7 @@ export function createOrUpdateComponent(component, options, renderNode, env, att
     }
   }
 
-  component.renderNode = renderNode;
+  component._renderNode = renderNode;
   renderNode.emberComponent = component;
   renderNode.emberView = component;
   return component;
@@ -262,4 +262,3 @@ function mergeBindings(target, attrs) {
 
   return target;
 }
-

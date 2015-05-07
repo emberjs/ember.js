@@ -275,6 +275,5 @@ QUnit.test("Providing a binding with a space in it asserts", function() {
 
   // Remove render node to avoid "Render node exists without concomitant env"
   // assertion on teardown.
-  view.renderNode = null;
+  view._renderNode = null;
 });
-

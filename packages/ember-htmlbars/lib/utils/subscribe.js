@@ -8,8 +8,8 @@ export default function subscribe(node, scope, stream) {
   unsubscribers.push(stream.subscribe(function() {
     node.isDirty = true;
 
-    if (component && component.renderNode) {
-      component.renderNode.isDirty = true;
+    if (component && component._renderNode) {
+      component._renderNode.isDirty = true;
     }
 
     if (node.state.manager) {

@@ -43,7 +43,7 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
   }, /You cannot use `classNameBindings` on a tag-less component/);
 
   // Prevent further assertions
-  view.renderNode = null;
+  view._renderNode = null;
 });
 
 QUnit.test("calls render and turns resultant string into element", function() {
