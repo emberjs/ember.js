@@ -14,7 +14,11 @@ QUnit.module("Ember.Application Dependency Injection – customResolver", {
       resolveTemplate(resolvable) {
         var resolvedTemplate = this._super(resolvable);
         if (resolvedTemplate) { return resolvedTemplate; }
-        return fallbackTemplate;
+        if (resolvable.fullNameWithoutType === 'application') {
+          return fallbackTemplate;
+        } else {
+          return;
+        }
       }
     });
 
@@ -34,4 +38,3 @@ QUnit.module("Ember.Application Dependency Injection – customResolver", {
 QUnit.test("a resolver can be supplied to application", function() {
   equal(jQuery("h1", application.rootElement).text(), "Fallback");
 });
-
