@@ -3,9 +3,11 @@ import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import run from "ember-metal/run_loop";
+import { set } from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import Component from "ember-views/views/component";
 
-var set = Ember.set;
-var get = Ember.get;
 var view, registry, container;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
@@ -183,5 +185,36 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     expectAssertion(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
+  });
+
+  QUnit.test("component helper properly invalidates hash params inside an {{each}} invocation #11044", function() {
+    registry.register('component:foo-bar', Component.extend({
+      willRender() {
+        // store internally available name to ensure that the name available in `this.attrs.name`
+        // matches the template lookup name
+        set(this, 'internalName', this.attrs.name);
+      }
+    }));
+    registry.register('template:components/foo-bar', compile('{{internalName}} - {{attrs.name}}|'));
+
+    view = EmberView.create({
+      container: container,
+      items: [
+        { name: 'Robert' },
+        { name: 'Jacquie' }
+      ],
+      template: compile('{{#each view.items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}')
+    });
+
+    runAppend(view);
+    equal(view.$().text(), 'Robert - Robert|Jacquie - Jacquie|', 'component was rendered');
+
+    run(function() {
+      set(view, 'items', [
+        { name: 'Max' },
+        { name: 'James' }
+      ]);
+    });
+    equal(view.$().text(), 'Max - Max|James - James|', 'component was updated and re-rendered');
   });
 }
