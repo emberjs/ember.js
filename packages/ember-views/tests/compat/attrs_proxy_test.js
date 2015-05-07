@@ -39,7 +39,8 @@ QUnit.test('works with properties setup in root of view', function() {
 });
 
 QUnit.test('works with undefined attributes', function() {
-  expectDeprecation();
+  // TODO: attrs
+  // expectDeprecation();
 
   var childView;
   registry.register('view:foo', View.extend({

@@ -28,7 +28,8 @@ QUnit.module('component - mutable bindings', {
 });
 
 QUnit.test('a simple mutable binding propagates properly [DEPRECATED]', function(assert) {
-  expectDeprecation();
+  // TODO: attrs
+  // expectDeprecation();
 
   var bottom;
 
