@@ -373,6 +373,31 @@ QUnit.test("it supports itemController", function() {
   strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
+QUnit.test("itemController should not affect the DOM structure", function() {
+  var Controller = EmberController.extend({
+    name: computed.alias('model.name')
+  });
+
+  runDestroy(view);
+
+  registry.register('controller:array', ArrayController.extend());
+
+  view = EmberView.create({
+    container: container,
+    template: templateFor(
+      '<div id="a">{{#each view.people itemController="person" as |person|}}{{person.name}}{{/each}}</div>' +
+      '<div id="b">{{#each view.people as |person|}}{{person.name}}{{/each}}</div>'
+    ),
+    people: people
+  });
+
+  registry.register('controller:person', Controller);
+
+  runAppend(view);
+
+  equal(view.$('#a').html(), view.$('#b').html());
+});
+
 QUnit.test("itemController specified in template gets a parentController property", function() {
   // using an ObjectController for this test to verify that parentController does accidentally get set
   // on the proxied model.
