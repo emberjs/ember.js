@@ -2,7 +2,6 @@ import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 import compile from "ember-template-compiler/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
-//import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var registry, container, view;
