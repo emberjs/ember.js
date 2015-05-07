@@ -514,6 +514,17 @@ QUnit.test("tagName works in the #collection helper", function() {
   equal(trim(view.$('li:eq(0)').text()), "bing");
 });
 
+QUnit.test("itemClassNames adds classes to items", function() {
+  view = EmberView.create({
+    context: { list: A(['one', 'two']) },
+    template: compile('{{#collection content=list itemClassNames="some-class"}}{{/collection}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$('div > .some-class').length, 2, "should have two items with the class");
+});
+
 QUnit.test("should render nested collections", function() {
   var registry = new Registry();
   var container = registry.container();

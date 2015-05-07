@@ -490,7 +490,7 @@ function buildItemViewProps(template, attrs) {
       if (match) {
         var childProp = match[1].toLowerCase() + match[2];
 
-        if (childProp === 'class') {
+        if (childProp === 'class' || childProp === 'classNames') {
           props.classNames = [attrs[prop]];
         } else {
           props[childProp] = attrs[prop];
