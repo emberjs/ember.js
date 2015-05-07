@@ -183,6 +183,26 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
 });
 
+QUnit.test('mutable bindings work inside of yielded content', function(assert) {
+  registry.register('component:middle-mut', Component.extend({
+    layout: compile('{{#bottom-mut}}{{attrs.model.name}}{{/bottom-mut}}')
+  }));
+
+  registry.register('component:bottom-mut', Component.extend({
+    layout: compile('<p class="bottom">{{yield}}</p>')
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{middle-mut model=(mut view.model)}}'),
+    model: { name: "Matthew Beale" }
+  });
+
+  runAppend(view);
+
+  assert.strictEqual(view.$('p.bottom').text(), "Matthew Beale");
+});
+
 QUnit.test('a simple mutable binding using `mut` is available in hooks', function(assert) {
   var bottom;
   var willRender = [];

@@ -34,7 +34,9 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
     shadowScope.component = view;
   }
 
-  shadowScope.attrs = options.attrs;
+  if ('attrs' in options) {
+    shadowScope.attrs = options.attrs;
+  }
 
   return shadowScope;
 }
