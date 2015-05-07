@@ -3,24 +3,23 @@ import getValue from "ember-htmlbars/hooks/get-value";
 import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 
-export default function buildComponentTemplate(componentInfo, attrs, content) {
-  var component, layoutTemplate, blockToRender;
-  var createdElementBlock = false;
+export default function buildComponentTemplate({ component, layout }, attrs, content) {
+  var blockToRender, tagName;
 
-  component = componentInfo.component;
-
-  if (content.template) {
-    blockToRender = createContentBlock(content.template, content.scope, content.self, component || null);
+  if (component === undefined) {
+    component = null;
   }
 
-  layoutTemplate = componentInfo.layout;
+  if (content.template) {
+    blockToRender = createContentBlock(content.template, content.scope, content.self, component);
+  }
 
-  if (layoutTemplate && layoutTemplate.raw) {
-    blockToRender = createLayoutBlock(layoutTemplate.raw, blockToRender, content.self, component || null, attrs);
+  if (layout && layout.raw) {
+    blockToRender = createLayoutBlock(layout.raw, blockToRender, content.self, component, attrs);
   }
 
   if (component) {
-    var tagName = tagNameFor(component);
+    tagName = tagNameFor(component);
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents
@@ -29,17 +28,17 @@ export default function buildComponentTemplate(componentInfo, attrs, content) {
       var attributes = normalizeComponentAttributes(component, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
 
-      createdElementBlock = true;
-
       blockToRender = createElementBlock(elementTemplate, blockToRender, component);
     } else {
       validateTaglessComponent(component);
     }
-
-    return { createdElement: tagName !== '', block: blockToRender };
   }
 
-  return { createdElement: false, block: blockToRender };
+  // tagName is one of:
+  //   * `undefined` if no component is present
+  //   * the falsy value "" if set explicitly on the component
+  //   * an actual tagName set explicitly on the component
+  return { createdElement: !!tagName, block: blockToRender };
 }
 
 function blockFor(template, options) {
