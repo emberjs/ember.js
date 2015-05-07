@@ -31,7 +31,8 @@ function getKey(scope, key) {
   var self = scope.self || scope.locals.view;
 
   if (scope.attrs && key in scope.attrs) {
-    Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
+    // TODO: attrs
+    // Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
     return scope.attrs[key];
   } else if (self) {
     return self.getKey(key);

@@ -128,7 +128,8 @@ QUnit.test('rerendering component with attrs from parent', function() {
 
 
 QUnit.test('[DEPRECATED] non-block with properties on self', function() {
-  expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
+  // TODO: attrs
+  // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
   registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
 
@@ -158,7 +159,8 @@ QUnit.test('block with properties on attrs', function() {
 });
 
 QUnit.test('[DEPRECATED] block with properties on self', function() {
-  expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
+  // TODO: attrs
+  // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
   registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
 
