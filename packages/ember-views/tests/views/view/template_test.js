@@ -153,5 +153,5 @@ QUnit.test("should throw an assertion if no container has been set", function() 
     });
   }, /Container was not found when looking up a views template./);
 
-  view.renderNode = null;
+  view._renderNode = null;
 });

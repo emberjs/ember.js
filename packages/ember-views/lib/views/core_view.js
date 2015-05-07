@@ -116,9 +116,9 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     if (!this.ownerView.isDestroyingSubtree) {
       this.ownerView.isDestroyingSubtree = true;
       if (parent) { parent.removeChild(this); }
-      if (this.renderNode) {
+      if (this._renderNode) {
         Ember.assert("BUG: Render node exists without concomitant env.", this.ownerView.env);
-        internal.clearMorph(this.renderNode, this.ownerView.env, true);
+        internal.clearMorph(this._renderNode, this.ownerView.env, true);
       }
       this.ownerView.isDestroyingSubtree = false;
     }

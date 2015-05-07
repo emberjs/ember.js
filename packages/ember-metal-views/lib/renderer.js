@@ -19,7 +19,7 @@ Renderer.prototype.prerenderTopLevelView =
       throw new Error("You cannot insert a View that has already been rendered");
     }
     view.ownerView = renderNode.emberView = view;
-    view.renderNode = renderNode;
+    view._renderNode = renderNode;
 
     var layout = get(view, 'layout');
     var template = get(view, 'template');
@@ -49,8 +49,8 @@ Renderer.prototype.renderTopLevelView =
 Renderer.prototype.revalidateTopLevelView =
   function Renderer_revalidateTopLevelView(view) {
     // This guard prevents revalidation on an already-destroyed view.
-    if (view.renderNode.lastResult) {
-      view.renderNode.lastResult.revalidate(view.env);
+    if (view._renderNode.lastResult) {
+      view._renderNode.lastResult.revalidate(view.env);
       // supports createElement, which operates without moving the view into
       // the inDOM state.
       if (view._state === 'inDOM') {
@@ -202,8 +202,8 @@ Renderer.prototype.renderElementRemoval =
     if (view._willRemoveElement) {
       view._willRemoveElement = false;
 
-      if (view.renderNode) {
-        view.renderNode.clear();
+      if (view._renderNode) {
+        view._renderNode.clear();
       }
       this.didDestroyElement(view);
     }

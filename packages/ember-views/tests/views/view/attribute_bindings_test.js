@@ -408,7 +408,7 @@ QUnit.test("asserts if an attributeBinding is setup on class", function() {
 
   // Remove render node to avoid "Render node exists without concomitant env"
   // assertion on teardown.
-  view.renderNode = null;
+  view._renderNode = null;
 });
 
 QUnit.test("blacklists href bindings based on protocol", function() {

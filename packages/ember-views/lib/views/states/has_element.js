@@ -31,7 +31,7 @@ merge(hasElement, {
   rerender(view) {
     view.renderer.ensureViewNotRendering(view);
 
-    var renderNode = view.renderNode;
+    var renderNode = view._renderNode;
 
     renderNode.isDirty = true;
     internal.visitChildren(renderNode.childNodes, function(node) {
