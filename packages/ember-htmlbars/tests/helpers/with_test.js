@@ -527,3 +527,14 @@ QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", 
   runAppend(view);
   equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
 });
+
+QUnit.test("{{with}} block should not render if passed variable is falsey", function () {
+  view = EmberView.create({
+    template: compile("{{#with foo as |bar|}}Don't render me{{/with}}"),
+    context: {
+      foo: null
+    }
+  });
+  runAppend(view);
+  equal(view.$().text(), "", "should not render the inner template");
+});
