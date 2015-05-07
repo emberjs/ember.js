@@ -8,8 +8,6 @@ import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
 import create from "ember-metal/platform/create";
 import {
-  readArray,
-  readHash,
   labelsFor,
   labelFor
 } from "ember-metal/streams/utils";
@@ -77,6 +75,6 @@ SubexprStream.prototype = create(Stream.prototype);
 
 merge(SubexprStream.prototype, {
   compute() {
-    return this.helper(readArray(this.params), readHash(this.hash));
+    return this.helper(this.params, this.hash);
   }
 });
