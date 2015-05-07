@@ -49,6 +49,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     The following location types are currently available:
 
+    * `auto`
     * `hash`
     * `history`
     * `none`
