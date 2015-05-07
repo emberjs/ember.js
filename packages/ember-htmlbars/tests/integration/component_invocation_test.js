@@ -271,9 +271,10 @@ QUnit.test('dynamic positional parameters', function() {
   equal(jQuery('#qunit-fixture').text(), 'Quint4');
   run(function() {
     Ember.set(view.context, 'myName', 'Edward');
-    Ember.set(view.context, 'myAe', '5');
+    Ember.set(view.context, 'myAge', '5');
   });
 
+  equal(jQuery('#qunit-fixture').text(), 'Edward5');
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
