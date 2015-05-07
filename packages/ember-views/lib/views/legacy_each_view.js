@@ -11,6 +11,7 @@ import { CONTAINER_MAP } from "ember-views/views/collection_view";
 
 export default View.extend({
   template: legacyEachTemplate,
+  tagName: '',
 
   _arrayController: computed(function() {
     var itemController = this.getAttr('itemController');
