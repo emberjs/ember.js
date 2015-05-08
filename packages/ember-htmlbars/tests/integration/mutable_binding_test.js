@@ -6,6 +6,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import run from "ember-metal/run_loop";
+import { computed } from "ember-metal/computed";
 
 var registry, container, view;
 
@@ -239,6 +240,37 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
 
   assert.strictEqual(bottom.attrs.setMe.value, 13, "precond - the set took effect");
   assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+});
+
+QUnit.test('a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023', function(assert) {
+  var bottom;
+
+  registry.register('component:bottom-mut', Component.extend({
+    thingy: null,
+
+    didInsertElement() {
+      bottom = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    container: container,
+    template: compile('{{bottom-mut thingy=(mut view.val)}}'),
+    baseValue: 12,
+    val: computed('baseValue', function() {
+      return this.get('baseValue');
+    })
+  }).create();
+
+  runAppend(view);
+
+  assert.strictEqual(bottom.attrs.thingy.value, 12, "data propagated");
+
+  run(() => view.set('baseValue', 13));
+  assert.strictEqual(bottom.attrs.thingy.value, 13, "the set took effect");
+
+  run(() => view.set('baseValue', 14));
+  assert.strictEqual(bottom.attrs.thingy.value, 14, "the set took effect");
 });
 
 // jscs:disable validateIndentation
