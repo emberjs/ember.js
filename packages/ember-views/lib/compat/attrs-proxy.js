@@ -110,14 +110,8 @@ let AttrsProxyMixin = {
 };
 
 AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
-  let attrs = this.attrs;
-
-  if (attrs && key in attrs) {
-    let possibleCell = attrs[key];
-
-    if (possibleCell && possibleCell[MUTABLE_CELL]) {
-      possibleCell.update(get(this, key));
-    }
+  if (this.currentState) {
+    this.currentState.legacyPropertyDidChange(this, key);
   }
 };
 
