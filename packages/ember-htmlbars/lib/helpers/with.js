@@ -7,11 +7,13 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
 
 /**
-  Use the `{{with}}` helper when you want to aliases the to a new name. It's helpful
-  for semantic clarity and to retain default scope or to reference from another
+  Use the `{{with}}` helper when you want to alias a property to a new name. This is helpful
+  for semantic clarity as it allows you to retain default scope or to reference a property from another
   `{{with}}` block.
+  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0` or
+  an empty array, the block will not be rendered.
   ```handlebars
-  // posts might not be
+  // will only render if user.posts contains items
   {{#with user.posts as |blogPosts|}}
     <div class="notice">
       There are {{blogPosts.length}} blog posts written by {{user.name}}.
