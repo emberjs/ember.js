@@ -128,7 +128,7 @@ function normalizeComponentAttributes(component, attrs) {
     }
   }
 
-  if (attrs.id) {
+  if (attrs.id && getValue(attrs.id)) {
     // Do not allow binding to the `id`
     normalized.id = getValue(attrs.id);
     component.elementId = normalized.id;
