@@ -26,12 +26,16 @@ import { isArray } from "ember-runtime/utils";
 export function generateControllerFactory(container, controllerName, context) {
   var Factory, fullName, factoryName, controllerType;
 
-  if (context && isArray(context)) {
-    controllerType = 'array';
-  } else if (context) {
-    controllerType = 'object';
-  } else {
+  if (Ember.FEATURES.isEnabled('ember-force-basic-controller')) {
     controllerType = 'basic';
+  } else {
+    if (context && isArray(context)) {
+      controllerType = 'array';
+    } else if (context) {
+      controllerType = 'object';
+    } else {
+      controllerType = 'basic';
+    }
   }
 
   factoryName = `controller:${controllerType}`;
