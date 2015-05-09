@@ -33,7 +33,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
         attrs,
         parentView,
         parentScope,
-        template } = options;
+        templates } = options;
 
   attrs = attrs || {};
 
@@ -80,9 +80,9 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 
       // There is no block template provided but the component has a
       // `template` property.
-      if (!template && componentTemplate) {
+      if ((!templates || !templates.default) && componentTemplate) {
         Ember.deprecate("Using deprecated `template` property on a Component.");
-        template = componentTemplate.raw;
+        templates = { default: componentTemplate.raw };
       }
     } else if (componentTemplate) {
       // If the component has a `template` but no `layout`, use the template
@@ -105,7 +105,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   }
 
   var results = buildComponentTemplate({ layout: layout, component: component }, attrs, {
-    template: template,
+    templates,
     scope: parentScope
   });
 

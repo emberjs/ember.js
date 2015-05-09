@@ -10,14 +10,13 @@ export default function buildComponentTemplate({ component, layout }, attrs, con
     component = null;
   }
 
-  if (content.template) {
-    meta = content.template.meta;
-    blockToRender = createContentBlock(content.template, content.scope, content.self, component);
-  }
-
   if (layout && layout.raw) {
+    let yieldTo = createContentBlocks(content.templates, content.scope, content.self, component);
+    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs);
     meta = layout.raw.meta;
-    blockToRender = createLayoutBlock(layout.raw, blockToRender, content.self, component, attrs);
+  } else if (content.templates && content.templates.default) {
+    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component);
+    meta = content.templates.default.meta;
   }
 
   if (component) {
@@ -59,9 +58,25 @@ function createContentBlock(template, scope, self, component) {
   });
 }
 
+function createContentBlocks(templates, scope, self, component) {
+  if (!templates) {
+    return;
+  }
+  var output = {};
+  for (var name in templates) {
+    if (templates.hasOwnProperty(name)) {
+      var template = templates[name];
+      if (template) {
+        output[name] = createContentBlock(templates[name], scope, self, component);
+      }
+    }
+  }
+  return output;
+}
+
 function createLayoutBlock(template, yieldTo, self, component, attrs) {
   return blockFor(template, {
-    yieldTo: yieldTo,
+    yieldTo,
 
     // If we have an old-style Controller with a template it will be
     // passed as our `self` argument, and it should be the context for

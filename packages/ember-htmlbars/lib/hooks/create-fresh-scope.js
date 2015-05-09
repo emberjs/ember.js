@@ -1,7 +1,7 @@
 export default function createFreshScope() {
   return {
     self: null,
-    block: null,
+    blocks: {},
     component: null,
     view: null,
     attrs: null,

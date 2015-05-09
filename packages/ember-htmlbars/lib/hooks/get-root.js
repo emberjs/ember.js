@@ -11,9 +11,9 @@ export default function getRoot(scope, key) {
   if (key === 'this') {
     return [scope.self];
   } else if (key === 'hasBlock') {
-    return [!!scope.block];
+    return [!!scope.blocks.default];
   } else if (key === 'hasBlockParams') {
-    return [!!(scope.block && scope.block.arity)];
+    return [!!(scope.blocks.default && scope.blocks.default.arity)];
   } else if (isGlobal(key) && Ember.lookup[key]) {
     return [getGlobal(key)];
   } else if (scope.locals[key]) {
