@@ -6,6 +6,9 @@
  * @version   VERSION_STRING_PLACEHOLDER
  */
 
+// Break cycles in the module loader.
+import "./htmlbars-syntax";
+
 import {
   compile,
   compileSpec
