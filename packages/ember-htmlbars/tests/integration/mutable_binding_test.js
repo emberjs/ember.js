@@ -273,6 +273,73 @@ QUnit.test('a mutable binding with a backing computed property and attribute pre
   assert.strictEqual(bottom.attrs.thingy.value, 14, "the set took effect");
 });
 
+QUnit.test('automatic mutable bindings tolerate undefined non-stream inputs', function(assert) {
+  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
+  registry.register('template:components/x-inner', compile('hello'));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{x-outer}}')
+  });
+
+  runAppend(view);
+  assert.strictEqual(view.$().text(), "hello");
+});
+
+QUnit.test('automatic mutable bindings tolerate constant non-stream inputs', function(assert) {
+  registry.register('template:components/x-outer', compile('{{x-inner model="foo"}}'));
+  registry.register('template:components/x-inner', compile('hello{{attrs.model}}'));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{x-outer}}')
+  });
+
+  runAppend(view);
+  assert.strictEqual(view.$().text(), "hellofoo");
+});
+
+QUnit.test('automatic mutable bindings to undefined non-streams tolerate attempts to set them', function(assert) {
+  var inner;
+
+  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
+  registry.register('component:x-inner', Component.extend({
+    didInsertElement() {
+      inner = this;
+    }
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{x-outer}}')
+  });
+
+  runAppend(view);
+  run(() => inner.attrs.model.update(42));
+  assert.equal(inner.attrs.model.value, 42);
+});
+
+QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts to set them', function(assert) {
+  var inner;
+
+  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.x}}'));
+  registry.register('component:x-inner', Component.extend({
+    didInsertElement() {
+      inner = this;
+    }
+  }));
+
+  view = EmberView.create({
+    container: container,
+    template: compile('{{x-outer x="foo"}}')
+  });
+
+  runAppend(view);
+  run(() => inner.attrs.model.update(42));
+  assert.equal(inner.attrs.model.value, 42);
+});
+
+
 // jscs:disable validateIndentation
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
 
