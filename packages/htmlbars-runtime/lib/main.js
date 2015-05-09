@@ -1,9 +1,9 @@
-import hooks from 'htmlbars-runtime/hooks';
-import render from 'htmlbars-runtime/render';
-import { manualElement } from 'htmlbars-runtime/render';
+import hooks from './htmlbars-runtime/hooks';
+import render from './htmlbars-runtime/render';
+import { manualElement } from './htmlbars-runtime/render';
 import { visitChildren } from "../htmlbars-util/morph-utils";
 import { blockFor, clearMorph } from "../htmlbars-util/template-utils";
-import { validateChildMorphs } from "htmlbars-runtime/expression-visitor";
+import { validateChildMorphs } from "./htmlbars-runtime/expression-visitor";
 import {
   hostBlock,
   continueBlock,

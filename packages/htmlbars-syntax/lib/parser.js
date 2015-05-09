@@ -37,6 +37,8 @@ export function preprocess(html, options) {
   return combined;
 }
 
+export default preprocess;
+
 function HTMLProcessor(source, options) {
   this.options = options || {};
   this.elementStack = [];
