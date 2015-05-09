@@ -144,8 +144,12 @@ function ComputedProperty(config, opts) {
   Ember.deprecate("Passing opts.cacheable to the CP constructor is deprecated. Invoke `volatile()` on the CP instead.", !opts || !opts.hasOwnProperty('cacheable'));
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;   // TODO: Set always to `true` once this deprecation is gone.
   this._dependentKeys = opts && opts.dependentKeys;
-  Ember.deprecate("Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. You can invoke `readOnly()` on the CP to change this.", !opts || !opts.hasOwnProperty('readOnly'));
-  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false; // TODO: Set always to `false` once this deprecation is gone.
+  if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+    this._readOnly = !this._setter;
+  } else {
+    Ember.deprecate("Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. You can invoke `readOnly()` on the CP to change this.", !opts || !opts.hasOwnProperty('readOnly'));
+    this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false; // TODO: Set always to `false` once this deprecation is gone.
+  }
 }
 
 ComputedProperty.prototype = new Descriptor();
@@ -221,6 +225,37 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   Ember.assert("Computed properties that define a setter using the new syntax cannot be read-only", !(this._readOnly && this._setter && this._setter !== this._getter));
   return this;
 };
+
+if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+  /**
+    Call on a computed property to set it into overridable mode. When in this
+    mode the computed property will allow to be replaced by a different value.
+    Note that when overriden the computed property will no longer track changes
+    in its dependent keys.
+
+    ```javascript
+    var Person = Ember.Object.extend({
+      guid: function() {
+        return 'guid-guid-guid';
+      }.property().overridable()
+    });
+
+    var person = Person.create();
+
+    person.set('guid', 'new-guid');
+    person.get('guid') // 'new-guid'
+    ```
+
+    @method overridable
+    @return {Ember.ComputedProperty} this
+    @chainable
+  */
+  ComputedPropertyPrototype.overridable = function() {
+    Ember.assert('Overridable cannot be used on computed properties that define a setter', !this._setter);
+    this._readOnly = false;
+    return this;
+  };
+}
 
 /**
   Sets the dependent keys on this computed property. Pass any number of

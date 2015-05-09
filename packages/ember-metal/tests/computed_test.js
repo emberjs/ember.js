@@ -700,10 +700,10 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       })
     }).create();
 
-    ok(testObj.get('aInt') === 1, 'getter works');
-    ok(testObj.get('a') === '1');
-    testObj.set('aInt', '123');
-    ok(testObj.get('aInt') === '123', 'cp has been updated too');
+    equal(testObj.get('aInt'), 1, 'getter works');
+    equal(testObj.get('a'), '1');
+    testObj.set('a', '999');
+    equal(testObj.get('aInt'), '999', 'cp has been updated too');
   });
 
   QUnit.test('the return value of the setter gets cached', function() {
@@ -732,6 +732,84 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       });
     }, regex);
   });
+}
+
+// ..........................................................
+// RFC #12: Getter CPs readonly by default
+//
+
+if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
+  if (Ember.FEATURES.isEnabled("getter-cp-readonly")) {
+    QUnit.module('computed - getter CPs readonly by default');
+
+    QUnit.test('computed properties with only a getter cannot be set', function() {
+      var testObject = Ember.Object.extend({
+        age: 25,
+        isOld: computed('age', {
+          get: function() { return this.get('age') >= 30; }
+        })
+      }).create();
+
+      throws(function() {
+        set(testObject, 'isOld', true);
+      }, /Cannot set read-only property "isOld" on object:/);
+    });
+
+    QUnit.test('computed properties with a getter can be set', function() {
+      var testObject = Ember.Object.extend({
+        age: 25,
+        isOld: computed('age', {
+          get: function() { return this.get('age') >= 30; },
+          set: function(key, value) {
+            this.set('age', value ? 40 : 20);
+            return value;
+          }
+        })
+      }).create();
+
+      set(testObject, 'isOld', true);
+      ok(true, 'No errors were thrown');
+    });
+
+    QUnit.test('computed properties with a getter marked as overridable can be set', function() {
+      var testObject = Ember.Object.extend({
+        isOld: computed('age', function() { return false; }).overridable()
+      }).create();
+
+      set(testObject, 'isOld', true);
+      ok(true, 'No errors were thrown');
+      ok(get(testObject, 'isOld'), 'The property has been overrided');
+    });
+
+    QUnit.test('overridable called on a CP with a setter throws an error', function() {
+      expectAssertion(function() {
+        Ember.Object.extend({
+          isOld: computed('age', {
+            get: function() { },
+            set: function() { }
+          }).overridable()
+        });
+      }, /Overridable cannot be used on computed properties that define a setter/);
+    });
+
+    QUnit.test("readOnly called on a CP with no setter don't raise an error, although is redundant", function() {
+      Ember.Object.extend({
+        isOld: computed('age', function() { return true; }).readOnly()
+      });
+      ok(true, "No errors were thrown");
+    });
+
+    QUnit.test('readOnly called on a CP with a setter throws an error', function() {
+      expectAssertion(function() {
+        Ember.Object.extend({
+          isOld: computed('age', {
+            get: function() { },
+            set: function() { }
+          }).readOnly()
+        });
+      }, /Computed properties that define a setter cannot be read-only/);
+    });
+  }
 }
 
 // ..........................................................
