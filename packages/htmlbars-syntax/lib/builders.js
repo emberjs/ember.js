@@ -166,12 +166,32 @@ export function buildPair(key, value) {
   };
 }
 
-export function buildProgram(body, blockParams) {
+export function buildProgram(body, blockParams, loc) {
   return {
     type: "Program",
     body: body || [],
-    blockParams: blockParams || []
+    blockParams: blockParams || [],
+    loc: buildLoc(loc)
   };
+}
+
+function buildPosition(line, column) {
+  return {
+    line: line,
+    column: column
+  };
+}
+
+function buildLoc(loc) {
+  if (loc) {
+    return {
+      source: loc.source || null,
+      start: buildPosition(loc.start.line, loc.start.column),
+      end: buildPosition(loc.end.line, loc.end.column)
+    };
+  } else {
+    return null;
+  }
 }
 
 export default {
@@ -194,5 +214,7 @@ export default {
   concat: buildConcat,
   hash: buildHash,
   pair: buildPair,
-  program: buildProgram
+  program: buildProgram,
+  loc: buildLoc,
+  pos: buildPosition
 };

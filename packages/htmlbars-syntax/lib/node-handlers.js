@@ -6,7 +6,7 @@ var nodeHandlers = {
 
   Program: function(program) {
     var body = [];
-    var node = buildProgram(body, program.blockParams);
+    var node = buildProgram(body, program.blockParams, program.loc);
     var i, l = program.body.length;
 
     this.elementStack.push(node);

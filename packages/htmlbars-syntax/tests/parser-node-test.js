@@ -28,9 +28,7 @@ function normalizeNode(obj) {
         delete newObj.type;
       }
 
-      if (newObj.loc) {
-        delete newObj.loc;
-      }
+      newObj.loc = null;
     }
     return newObj;
   } else {
