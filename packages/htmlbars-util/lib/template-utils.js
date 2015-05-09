@@ -18,9 +18,7 @@ export function blockFor(render, template, blockOptions) {
         env.hooks.bindSelf(env, shadowScope, blockOptions.self);
       }
 
-      if (blockOptions.yieldTo !== undefined) {
-        env.hooks.bindBlock(env, shadowScope, blockOptions.yieldTo);
-      }
+      bindBlocks(env, shadowScope, blockOptions.yieldTo);
 
       renderAndCleanup(renderNode, env, options, null, function() {
         options.renderState.clearMorph = null;
@@ -32,6 +30,21 @@ export function blockFor(render, template, blockOptions) {
   block.arity = template.arity;
 
   return block;
+}
+
+function bindBlocks(env, shadowScope, blocks) {
+  if (!blocks) {
+    return;
+  }
+  if (typeof blocks === 'function') {
+    env.hooks.bindBlock(env, shadowScope, blocks);
+  } else {
+    for (var name in blocks) {
+      if (blocks.hasOwnProperty(name)) {
+        env.hooks.bindBlock(env, shadowScope, blocks[name], name);
+      }
+    }
+  }
 }
 
 export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
