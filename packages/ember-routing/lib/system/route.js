@@ -368,7 +368,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   _reset(isExiting, transition) {
     var controller = this.controller;
 
-    controller._qpDelegate = get(this, '_qp.states.inactive');
+    controller._qpDelegate = null;
 
     this.resetController(controller, isExiting, transition);
   },
@@ -712,7 +712,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
           }
         }
 
-        controller._qpDelegate = get(this, '_qp.states.inactive');
+        controller._qpDelegate = null;
 
         var thisQueryParamChanged = (svalue !== qp.svalue);
         if (thisQueryParamChanged) {
