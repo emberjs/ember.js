@@ -51,7 +51,7 @@ import { readHash, readArray } from "ember-metal/streams/utils";
 */
 export default function makeBoundHelper(fn) {
   return new Helper(function(params, hash, templates) {
-    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !templates.template.revision);
+    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !templates.template.meta);
     return fn(readArray(params), readHash(hash));
   });
 }

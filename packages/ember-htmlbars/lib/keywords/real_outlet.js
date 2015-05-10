@@ -6,7 +6,7 @@
 import { get } from "ember-metal/property_get";
 import ComponentNode from "ember-htmlbars/system/component-node";
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
-topLevelViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 export default {
   willRender(renderNode, env) {
