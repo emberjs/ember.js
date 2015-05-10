@@ -42,14 +42,20 @@ function bootstrap(ctx) {
     // Get a reference to the script tag
     var script = jQuery(this);
 
-    var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
-                  jQuery.proxy(Handlebars.compile, Handlebars) :
-                  htmlbarsCompile;
     // Get the name of the script, used by Ember.View's templateName property.
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.
     var templateName = script.attr('data-template-name') || script.attr('id') || 'application';
-    var template = compile(script.html());
+    var template, compile;
+
+    if (script.attr('type') === 'text/x-raw-handlebars') {
+      compile = jQuery.proxy(Handlebars.compile, Handlebars);
+      template = compile(script.html());
+    } else {
+      template = htmlbarsCompile(script.html(), {
+        moduleName: templateName
+      });
+    }
 
     // Check if template of same name already exists
     if (Ember.TEMPLATES[templateName] !== undefined) {
