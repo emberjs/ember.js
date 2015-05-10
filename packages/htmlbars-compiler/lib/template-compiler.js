@@ -9,7 +9,7 @@ import { map } from "../htmlbars-util/array-utils";
 
 function TemplateCompiler(options) {
   this.options = options || {};
-  this.revision = this.options.revision || "HTMLBars@VERSION_STRING_PLACEHOLDER";
+  this.consumerBuildMeta = this.options.buildMeta || function() {};
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
   this.fragmentCompiler = new FragmentJavaScriptCompiler();
   this.hydrationOpcodeCompiler = new HydrationOpcodeCompiler();
@@ -134,8 +134,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     '(function() {\n' +
     this.getChildTemplateVars(indent + '  ') +
     indent+'  return {\n' +
-    indent+'    isHTMLBars: true,\n' +
-    indent+'    revision: "' + this.revision + '",\n' +
+    this.buildMeta(indent+'    ', program) +
     indent+'    arity: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
@@ -149,6 +148,16 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'}())';
 
   this.templates.push(template);
+};
+
+TemplateCompiler.prototype.buildMeta = function(indent, program) {
+  var meta = this.consumerBuildMeta(program) || {};
+
+  var head = indent+'meta: ';
+  var stringMeta = JSON.stringify(meta, null, 2).replace(/\n/g, '\n' + indent);
+  var tail = ',\n';
+
+  return head + stringMeta + tail;
 };
 
 TemplateCompiler.prototype.openElement = function(element, i, l, r, c, b) {
