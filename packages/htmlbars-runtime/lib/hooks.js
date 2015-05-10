@@ -81,9 +81,8 @@ export function wrap(template) {
   if (template === null) { return null;  }
 
   return {
-    isHTMLBars: true,
+    meta: template.meta,
     arity: template.arity,
-    revision: template.revision,
     raw: template,
     render: function(self, env, options, blockArguments) {
       var scope = env.hooks.createFreshScope();
@@ -107,8 +106,8 @@ export function wrapForHelper(template, env, scope, morph, renderState, visitor)
   var yieldArgs = yieldTemplate(template, env, scope, morph, renderState, visitor);
 
   return {
+    meta: template.meta,
     arity: template.arity,
-    revision: template.revision,
     yield: yieldArgs,
     yieldItem: yieldItem(template, env, scope, morph, renderState, visitor),
     yieldIn: yieldInShadowTemplate(template, env, scope, morph, renderState, visitor),
