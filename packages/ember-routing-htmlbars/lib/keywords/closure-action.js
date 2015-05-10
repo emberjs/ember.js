@@ -20,6 +20,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
     var actionArguments = readArray(params.slice(1, params.length));
 
     var target, action, valuePath;
+    var firstArgumentOffset = 0;
     if (rawAction[INVOKE]) {
       // on-change={{action (mut name)}}
       target = rawAction;
@@ -33,6 +34,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
       if (typeof action === 'string') {
         // on-change={{action 'setName'}}
         actionArguments.unshift(action);
+        firstArgumentOffset++;
         if (hash.target) {
           // on-change={{action 'setName' target=alternativeComponent}}
           target = read(hash.target);
@@ -47,28 +49,28 @@ export default function closureAction(morph, env, scope, params, hash, template,
       valuePath = read(hash.value);
     }
 
-    return createClosureAction(target, action, valuePath, actionArguments);
+    return createClosureAction(target, action, valuePath, firstArgumentOffset, actionArguments);
   });
 }
 
-function createClosureAction(target, action, valuePath, actionArguments) {
+function createClosureAction(target, action, valuePath, firstArgumentOffset, actionArguments) {
   if (actionArguments.length > 0) {
     return function() {
       var args = actionArguments;
       if (arguments.length > 0) {
         args = actionArguments.concat(Array.prototype.slice.apply(arguments));
       }
-      if (valuePath && args.length > 0) {
-        args[0] = Ember.get(args[0], valuePath);
+      if (valuePath && args[firstArgumentOffset]) {
+        args[firstArgumentOffset] = Ember.get(args[firstArgumentOffset], valuePath);
       }
       return action.apply(target, args);
     };
   } else {
     return function() {
       var args = arguments;
-      if (valuePath && args.length > 0) {
+      if (valuePath && args[firstArgumentOffset]) {
         args = Array.prototype.slice.apply(args);
-        args[0] = Ember.get(args[0], valuePath);
+        args[firstArgumentOffset] = Ember.get(args[firstArgumentOffset], valuePath);
       }
       return action.apply(target, args);
     };
