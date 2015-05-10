@@ -164,14 +164,14 @@ export default {
       options.component = view;
     }
 
-    var componentNode = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
-    state.manager = componentNode;
+    var nodeManager = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
+    state.manager = nodeManager;
 
     if (router && params.length === 1) {
-      router._connectActiveComponentNode(name, componentNode);
+      router._connectActiveComponentNode(name, nodeManager);
     }
 
-    componentNode.render(env, hash, visitor);
+    nodeManager.render(env, hash, visitor);
   },
 
   rerender(node, env, scope, params, hash, template, inverse, visitor) {

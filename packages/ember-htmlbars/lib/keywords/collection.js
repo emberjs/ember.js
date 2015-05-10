@@ -48,10 +48,10 @@ export default {
       hash.emptyViewClass = hash.emptyView;
     }
 
-    var componentNode = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
-    state.manager = componentNode;
+    var nodeManager = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
+    state.manager = nodeManager;
 
-    componentNode.render(env, hash, visitor);
+    nodeManager.render(env, hash, visitor);
   }
 };
 

@@ -67,10 +67,10 @@ export default {
       Ember.Logger.info("Rendering " + toRender.name + " with " + ViewClass, { fullName: 'view:' + toRender.name });
     }
 
-    var componentNode = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
-    state.manager = componentNode;
+    var nodeManager = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
+    state.manager = nodeManager;
 
-    componentNode.render(env, hash, visitor);
+    nodeManager.render(env, hash, visitor);
   }
 };
 

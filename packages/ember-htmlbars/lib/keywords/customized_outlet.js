@@ -25,8 +25,8 @@ export default {
     var options = {
       component: state.viewClass
     };
-    var componentNode = ViewNodeManager.create(renderNode, env, hash, options, parentView, null, null, null);
-    state.manager = componentNode;
-    componentNode.render(env, hash, visitor);
+    var nodeManager = ViewNodeManager.create(renderNode, env, hash, options, parentView, null, null, null);
+    state.manager = nodeManager;
+    nodeManager.render(env, hash, visitor);
   }
 };

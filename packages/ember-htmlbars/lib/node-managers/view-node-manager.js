@@ -16,7 +16,7 @@ import { instrument } from "ember-htmlbars/system/instrumentation-support";
 // libraries.
 import getValue from "ember-htmlbars/hooks/get-value";
 
-function ComponentNode(component, scope, renderNode, block, expectElement) {
+function ViewNodeManager(component, scope, renderNode, block, expectElement) {
   this.component = component;
   this.scope = scope;
   this.renderNode = renderNode;
@@ -24,9 +24,9 @@ function ComponentNode(component, scope, renderNode, block, expectElement) {
   this.expectElement = expectElement;
 }
 
-export default ComponentNode;
+export default ViewNodeManager;
 
-ComponentNode.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
+ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
   Ember.assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
       return found.component || found.layout;
@@ -77,7 +77,7 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     renderNode.emberView = component;
   }
 
-  Ember.assert("BUG: ComponentNode.create can take a scope or a self, but not both", !(contentScope && found.self));
+  Ember.assert("BUG: ViewNodeManager.create can take a scope or a self, but not both", !(contentScope && found.self));
 
   var results = buildComponentTemplate(componentInfo, attrs, {
     template: contentTemplate,
@@ -85,10 +85,10 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
     self: found.self
   });
 
-  return new ComponentNode(component, contentScope, renderNode, results.block, results.createdElement);
+  return new ViewNodeManager(component, contentScope, renderNode, results.block, results.createdElement);
 };
 
-ComponentNode.prototype.render = function(env, attrs, visitor) {
+ViewNodeManager.prototype.render = function(env, attrs, visitor) {
   var component = this.component;
 
   return instrument(component, function() {
@@ -135,7 +135,7 @@ ComponentNode.prototype.render = function(env, attrs, visitor) {
 
 };
 
-ComponentNode.prototype.rerender = function(env, attrs, visitor) {
+ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
   var component = this.component;
 
   return instrument(component, function() {
