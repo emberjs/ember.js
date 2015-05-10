@@ -2,6 +2,8 @@ import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 import { symbol } from "ember-metal/utils";
 import ProxyStream from "ember-metal/streams/proxy-stream";
+import { isStream } from "ember-metal/streams/utils";
+import Stream from "ember-metal/streams/stream";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import { INVOKE } from "ember-routing-htmlbars/keywords/closure-action";
 
@@ -28,11 +30,22 @@ export function privateMut(morph, env, scope, originalParams, hash, template, in
 }
 
 function mutParam(read, stream, internal) {
+  if (internal) {
+    if (!isStream(stream)) {
+      let literal = stream;
+      stream = new Stream(function() { return literal; }, `(literal ${literal})`);
+      stream.setValue = function(newValue) {
+        literal = newValue;
+        stream.notify();
+      };
+    }
+  } else {
+    Ember.assert("You can only pass a path to mut", isStream(stream));
+  }
+
   if (stream[MUTABLE_REFERENCE]) {
     return stream;
   }
-
-  Ember.assert("You can only pass a path to mut", internal || typeof stream.setValue === 'function');
 
   return new MutStream(stream);
 }
