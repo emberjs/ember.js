@@ -85,8 +85,6 @@ export function manualElement(tagName, attributes) {
   statements.push(['content', 'yield']);
 
   var template = {
-    isHTMLBars: true,
-    revision: "HTMLBars@VERSION_STRING_PLACEHOLDER",
     arity: 0,
     cachedFragment: null,
     hasRendered: false,
@@ -247,4 +245,3 @@ export function getCachedFragment(template, env) {
 
   return fragment;
 }
-
