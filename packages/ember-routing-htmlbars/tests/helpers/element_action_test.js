@@ -14,7 +14,7 @@ import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
-import { ActionHelper } from "ember-routing-htmlbars/keywords/action";
+import { ActionHelper } from "ember-routing-htmlbars/keywords/element-action";
 import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
 
 import {
@@ -623,7 +623,7 @@ QUnit.test("should allow 'send' as action name (#594)", function() {
 
   view = EmberView.create({
     controller: controller,
-    template: compile('<a href="#" {{action "send" }}>send</a>')
+    template: compile('<a href="#" {{action "send"}}>send</a>')
   });
 
   runAppend(view);
@@ -950,7 +950,7 @@ QUnit.test("a quoteless parameter should lookup actionName in context [DEPRECATE
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-QUnit.test("a quoteless parameter should resolve actionName, including path", function() {
+QUnit.test("a quoteless string parameter should resolve actionName, including path", function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -1000,6 +1000,36 @@ QUnit.test("a quoteless parameter should resolve actionName, including path", fu
 
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
+
+if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+
+  QUnit.test("a quoteless function parameter should be called, including arguments", function() {
+    expect(2);
+
+    var arg = 'rough ray';
+
+    view = EmberView.create({
+      template: compile(`<a {{action submit '${arg}'}}></a>`)
+    });
+
+    var controller = EmberController.extend({
+      submit(actualArg) {
+        ok(true, 'submit function called');
+        equal(actualArg, arg, 'argument passed');
+      }
+    }).create();
+
+    run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    run(function() {
+      view.$("a").click();
+    });
+  });
+
+}
 
 QUnit.test("a quoteless parameter that does not resolve to a value asserts", function() {
 

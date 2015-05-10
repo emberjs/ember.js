@@ -3,6 +3,7 @@ import merge from "ember-metal/merge";
 import { symbol } from "ember-metal/utils";
 import ProxyStream from "ember-metal/streams/proxy-stream";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import { INVOKE } from "ember-routing-htmlbars/keywords/closure-action";
 
 export let MUTABLE_REFERENCE = symbol("MUTABLE_REFERENCE");
 
@@ -52,11 +53,14 @@ merge(MutStream.prototype, {
     let val = {
       value: source.value(),
       update(val) {
-        source.sourceDep.setValue(val);
+        source.setValue(val);
       }
     };
 
     val[MUTABLE_CELL] = true;
     return val;
+  },
+  [INVOKE](val) {
+    this.setValue(val);
   }
 });
