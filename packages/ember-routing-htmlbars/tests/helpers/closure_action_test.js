@@ -1,6 +1,7 @@
 import run from "ember-metal/run_loop";
 import compile from "ember-template-compiler/system/compile";
 import EmberComponent from "ember-views/views/component";
+import { computed } from "ember-metal/computed";
 
 import {
   runAppend,
@@ -217,15 +218,17 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action can create closures over sendAction", function(assert) {
-    assert.expect(2);
+  QUnit.test("action can create closures over actions", function(assert) {
+    assert.expect(3);
 
     var first = 'raging robert';
     var second = 'mild machty';
+    var returnValue = 'butch brian';
 
     innerComponent = EmberComponent.extend({
       fireAction() {
-        this.attrs.submit(second);
+        var actualReturnedValue = this.attrs.submit(second);
+        assert.equal(actualReturnedValue, returnValue, 'return value is present');
       }
     }).create();
 
@@ -238,6 +241,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
         outerAction(actualFirst, actualSecond) {
           assert.equal(actualFirst, first, 'first argument is correct');
           assert.equal(actualSecond, second, 'second argument is correct');
+          return returnValue;
         }
       }
     }).create();
@@ -249,7 +253,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action can create closures over sendAction with target", function(assert) {
+  QUnit.test("action can create closures over actions with target", function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.extend({
@@ -263,13 +267,15 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
         {{view innerComponent submit=(action 'outerAction' target=otherComponent)}}
       `),
       innerComponent,
-      otherComponent: EmberComponent.extend({
-        actions: {
-          outerAction(actualFirst, actualSecond) {
-            assert.ok(true, 'action called on otherComponent');
+      otherComponent: computed(function() {
+        return {
+          actions: {
+            outerAction(actualFirst, actualSecond) {
+              assert.ok(true, 'action called on otherComponent');
+            }
           }
-        }
-      }).create()
+        };
+      })
     }).create();
 
     runAppend(outerComponent);
@@ -279,7 +285,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("value can be used with action over sendAction", function(assert) {
+  QUnit.test("value can be used with action over actions", function(assert) {
     assert.expect(1);
 
     const newValue = 'yelping yehuda';
