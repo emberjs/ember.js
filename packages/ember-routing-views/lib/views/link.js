@@ -14,7 +14,7 @@ import inject from "ember-runtime/inject";
 import ControllerMixin from "ember-runtime/mixins/controller";
 
 import linkToTemplate from "ember-htmlbars/templates/link-to";
-linkToTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 var linkViewClassNameBindings = ['active', 'loading', 'disabled'];
 if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {

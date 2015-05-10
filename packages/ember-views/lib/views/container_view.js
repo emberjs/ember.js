@@ -11,7 +11,7 @@ import {
 } from "ember-metal/mixin";
 
 import containerViewTemplate from "ember-htmlbars/templates/container-view";
-containerViewTemplate.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 /**
 @module ember

@@ -28,7 +28,7 @@ QUnit.test('includes the current revision in the compiled template', function() 
 
   var actual = compile(templateString);
 
-  equal(actual.revision, 'Ember@VERSION_STRING_PLACEHOLDER', 'revision is included in generated template');
+  equal(actual.meta.revision, 'Ember@VERSION_STRING_PLACEHOLDER', 'revision is included in generated template');
 });
 
 QUnit.test('the template revision is different than the HTMLBars default revision', function() {
@@ -37,7 +37,7 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
   var actual = compile(templateString);
   var expected = htmlbarsCompile(templateString);
 
-  ok(actual.revision !== expected.revision, 'revision differs from default');
+  ok(actual.meta.revision !== expected.meta.revision, 'revision differs from default');
 });
 
 QUnit.test('{{with}} template deprecation includes moduleName if provided', function() {
