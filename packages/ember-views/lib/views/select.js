@@ -50,7 +50,7 @@ var SelectOption = View.extend({
     } else {
       // Primitives get passed through bindings as objects... since
       // `new Number(4) !== 4`, we use `==` below
-      return value === get(this, 'attrs.parentValue');
+      return value == get(this, 'attrs.parentValue'); // jshint ignore:line
     }
   }).property('attrs.content', 'attrs.selection'),
 
