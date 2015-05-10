@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
 import { readViewFactory } from "ember-views/streams/utils";
 import { isStream } from "ember-metal/streams/utils";
 
@@ -25,7 +25,7 @@ export default {
     var options = {
       component: state.viewClass
     };
-    var componentNode = ComponentNode.create(renderNode, env, hash, options, parentView, null, null, null);
+    var componentNode = ViewNodeManager.create(renderNode, env, hash, options, parentView, null, null, null);
     state.manager = componentNode;
     componentNode.render(env, hash, visitor);
   }

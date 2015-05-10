@@ -6,7 +6,7 @@ import { isStream, read } from "ember-metal/streams/utils";
 import { camelize } from "ember-runtime/system/string";
 import generateController from "ember-routing/system/generate_controller";
 import { generateControllerFactory } from "ember-routing/system/generate_controller";
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
 
 export default {
   willRender(renderNode, env) {
@@ -164,7 +164,7 @@ export default {
       options.component = view;
     }
 
-    var componentNode = ComponentNode.create(node, env, hash, options, state.parentView, null, null, template);
+    var componentNode = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
     state.manager = componentNode;
 
     if (router && params.length === 1) {

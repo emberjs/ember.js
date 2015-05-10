@@ -5,7 +5,7 @@
 
 import { readViewFactory } from "ember-views/streams/utils";
 import CollectionView from "ember-views/views/collection_view";
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
 import objectKeys from "ember-metal/keys";
 import { assign } from "ember-metal/merge";
 
@@ -48,7 +48,7 @@ export default {
       hash.emptyViewClass = hash.emptyView;
     }
 
-    var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
+    var componentNode = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
     state.manager = componentNode;
 
     componentNode.render(env, hash, visitor);
