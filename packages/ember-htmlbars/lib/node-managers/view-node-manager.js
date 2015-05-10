@@ -8,6 +8,7 @@ import View from "ember-views/views/view";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
 import SafeString from "htmlbars-util/safe-string";
+import { instrument } from "ember-htmlbars/system/instrumentation-support";
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -90,79 +91,84 @@ ComponentNode.create = function(renderNode, env, attrs, found, parentView, path,
 ComponentNode.prototype.render = function(env, attrs, visitor) {
   var component = this.component;
 
-  var newEnv = env;
-  if (component) {
-    newEnv = merge({}, env);
-    newEnv.view = component;
-  }
+  return instrument(component, function() {
 
-  if (component) {
-    var snapshot = takeSnapshot(attrs);
-    env.renderer.setAttrs(this.component, snapshot);
-    env.renderer.willCreateElement(component);
-    env.renderer.willRender(component);
-    env.renderedViews.push(component.elementId);
-  }
-
-  if (this.block) {
-    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
-  }
-
-  if (component) {
-    var element = this.expectElement && this.renderNode.firstNode;
-    if (component.render) {
-      var content, node, lastChildIndex;
-      var buffer = [];
-      component.render(buffer);
-      content = buffer.join('');
-      if (element) {
-        lastChildIndex = this.renderNode.childNodes.length - 1;
-        node = this.renderNode.childNodes[lastChildIndex];
-      } else {
-        node = this.renderNode;
-      }
-      node.setContent(new SafeString(content));
+    var newEnv = env;
+    if (component) {
+      newEnv = merge({}, env);
+      newEnv.view = component;
     }
 
-    env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
-    env.renderer.willInsertElement(component, element);
-    env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
-  }
+    if (component) {
+      var snapshot = takeSnapshot(attrs);
+      env.renderer.setAttrs(this.component, snapshot);
+      env.renderer.willCreateElement(component);
+      env.renderer.willRender(component);
+      env.renderedViews.push(component.elementId);
+    }
+
+    if (this.block) {
+      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+    }
+
+    if (component) {
+      var element = this.expectElement && this.renderNode.firstNode;
+      if (component.render) {
+        var content, node, lastChildIndex;
+        var buffer = [];
+        component.render(buffer);
+        content = buffer.join('');
+        if (element) {
+          lastChildIndex = this.renderNode.childNodes.length - 1;
+          node = this.renderNode.childNodes[lastChildIndex];
+        } else {
+          node = this.renderNode;
+        }
+        node.setContent(new SafeString(content));
+      }
+
+      env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
+      env.renderer.willInsertElement(component, element);
+      env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+    }
+  }, this);
+
 };
 
 ComponentNode.prototype.rerender = function(env, attrs, visitor) {
   var component = this.component;
 
-  var newEnv = env;
-  if (component) {
-    newEnv = merge({}, env);
-    newEnv.view = component;
+  return instrument(component, function() {
+    var newEnv = env;
+    if (component) {
+      newEnv = merge({}, env);
+      newEnv.view = component;
 
-    var snapshot = takeSnapshot(attrs);
+      var snapshot = takeSnapshot(attrs);
 
-    // Notify component that it has become dirty and is about to change.
-    env.renderer.willUpdate(component, snapshot);
+      // Notify component that it has become dirty and is about to change.
+      env.renderer.willUpdate(component, snapshot);
 
-    if (component._renderNode.shouldReceiveAttrs) {
-      env.renderer.updateAttrs(component, snapshot);
-      setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
-      component._renderNode.shouldReceiveAttrs = false;
+      if (component._renderNode.shouldReceiveAttrs) {
+        env.renderer.updateAttrs(component, snapshot);
+        setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
+        component._renderNode.shouldReceiveAttrs = false;
+      }
+
+      env.renderer.willRender(component);
+
+      env.renderedViews.push(component.elementId);
+    }
+    if (this.block) {
+      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
-    env.renderer.willRender(component);
+    if (component) {
+      env.lifecycleHooks.push({ type: 'didUpdate', view: component });
+    }
 
-    env.renderedViews.push(component.elementId);
-  }
-
-  if (this.block) {
-    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
-  }
-
-  if (component) {
-    env.lifecycleHooks.push({ type: 'didUpdate', view: component });
-  }
-
-  return newEnv;
+    return newEnv;
+  }, this);
 };
 
 export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {

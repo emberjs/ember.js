@@ -1,10 +1,6 @@
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import {
-  _instrumentStart,
-  subscribers
-} from "ember-metal/instrumentation";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 import { indexOf } from "ember-metal/enumerable_utils";
 //import { deprecation } from "ember-views/compat/attrs-proxy";
@@ -120,15 +116,8 @@ Renderer.prototype.createElement =
     this.prerenderTopLevelView(view, morph);
   };
 
-Renderer.prototype.willCreateElement = function (view) {
-  if (subscribers.length && view.instrumentDetails) {
-    view._instrumentEnd = _instrumentStart('render.'+view.instrumentName, function viewInstrumentDetails() {
-      var details = {};
-      view.instrumentDetails(details);
-      return details;
-    });
-  }
-}; // inBuffer
+// inBuffer
+Renderer.prototype.willCreateElement = function (/*view*/) {};
 
 Renderer.prototype.didCreateElement = function (view, element) {
   if (element) {
@@ -137,9 +126,6 @@ Renderer.prototype.didCreateElement = function (view, element) {
 
   if (view._transitionTo) {
     view._transitionTo('hasElement');
-  }
-  if (view._instrumentEnd) {
-    view._instrumentEnd();
   }
 }; // hasElement
 
@@ -209,7 +195,7 @@ Renderer.prototype.renderElementRemoval =
     }
   };
 
-Renderer.prototype.willRemoveElement = function (view) {};
+Renderer.prototype.willRemoveElement = function (/*view*/) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
   if (view._willDestroyElement) {

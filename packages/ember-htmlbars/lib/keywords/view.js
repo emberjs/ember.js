@@ -5,7 +5,7 @@
 
 import { readViewFactory } from "ember-views/streams/utils";
 import EmberView from "ember-views/views/view";
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
 import objectKeys from "ember-metal/keys";
 
 export default {
@@ -45,7 +45,7 @@ export default {
     var parentView = state.parentView;
 
     var options = { component: node.state.viewClassOrInstance, layout: null };
-    var componentNode = ComponentNode.create(node, env, hash, options, parentView, null, scope, template);
+    var componentNode = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
     state.manager = componentNode;
 
     componentNode.render(env, hash, visitor);

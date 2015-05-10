@@ -4,7 +4,7 @@
 */
 
 import { get } from "ember-metal/property_get";
-import ComponentNode from "ember-htmlbars/system/component-node";
+import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
 import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
 topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
@@ -67,7 +67,7 @@ export default {
       Ember.Logger.info("Rendering " + toRender.name + " with " + ViewClass, { fullName: 'view:' + toRender.name });
     }
 
-    var componentNode = ComponentNode.create(renderNode, env, {}, options, parentView, null, null, template);
+    var componentNode = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
     state.manager = componentNode;
 
     componentNode.render(env, hash, visitor);

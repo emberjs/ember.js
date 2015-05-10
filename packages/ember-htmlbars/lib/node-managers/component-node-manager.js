@@ -8,6 +8,7 @@ import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import View from "ember-views/views/view";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import { instrument } from "ember-htmlbars/system/instrumentation-support";
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -114,65 +115,70 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 ComponentNodeManager.prototype.render = function(env, visitor) {
   var { component, attrs } = this;
 
-  var newEnv = env;
-  if (component) {
-    newEnv = merge({}, env);
-    newEnv.view = component;
-  }
+  return instrument(component, function() {
 
-  if (component) {
-    var snapshot = takeSnapshot(attrs);
-    env.renderer.setAttrs(this.component, snapshot);
-    env.renderer.willCreateElement(component);
-    env.renderer.willRender(component);
-    env.renderedViews.push(component.elementId);
-  }
+    var newEnv = env;
+    if (component) {
+      newEnv = merge({}, env);
+      newEnv.view = component;
+    }
 
-  if (this.block) {
-    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
-  }
+    if (component) {
+      var snapshot = takeSnapshot(attrs);
+      env.renderer.setAttrs(this.component, snapshot);
+      env.renderer.willCreateElement(component);
+      env.renderer.willRender(component);
+      env.renderedViews.push(component.elementId);
+    }
 
-  if (component) {
-    var element = this.expectElement && this.renderNode.firstNode;
-    env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
-    env.renderer.willInsertElement(component, element);
-    env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
-  }
+    if (this.block) {
+      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+    }
+
+    if (component) {
+      var element = this.expectElement && this.renderNode.firstNode;
+      env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
+      env.renderer.willInsertElement(component, element);
+      env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+    }
+  }, this);
 };
 
 ComponentNodeManager.prototype.rerender = function(env, attrs, visitor) {
   var component = this.component;
+  return instrument(component, function() {
 
-  var newEnv = env;
-  if (component) {
-    newEnv = merge({}, env);
-    newEnv.view = component;
+    var newEnv = env;
+    if (component) {
+      newEnv = merge({}, env);
+      newEnv.view = component;
 
-    var snapshot = takeSnapshot(attrs);
+      var snapshot = takeSnapshot(attrs);
 
-    // Notify component that it has become dirty and is about to change.
-    env.renderer.willUpdate(component, snapshot);
+      // Notify component that it has become dirty and is about to change.
+      env.renderer.willUpdate(component, snapshot);
 
-    if (component._renderNode.shouldReceiveAttrs) {
-      env.renderer.updateAttrs(component, snapshot);
-      setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
-      component._renderNode.shouldReceiveAttrs = false;
+      if (component._renderNode.shouldReceiveAttrs) {
+        env.renderer.updateAttrs(component, snapshot);
+        setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
+        component._renderNode.shouldReceiveAttrs = false;
+      }
+
+      env.renderer.willRender(component);
+
+      env.renderedViews.push(component.elementId);
     }
 
-    env.renderer.willRender(component);
+    if (this.block) {
+      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+    }
 
-    env.renderedViews.push(component.elementId);
-  }
+    if (component) {
+      env.lifecycleHooks.push({ type: 'didUpdate', view: component });
+    }
 
-  if (this.block) {
-    this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
-  }
-
-  if (component) {
-    env.lifecycleHooks.push({ type: 'didUpdate', view: component });
-  }
-
-  return newEnv;
+    return newEnv;
+  }, this);
 };
 
 
