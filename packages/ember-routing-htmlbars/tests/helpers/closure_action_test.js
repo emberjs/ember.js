@@ -279,6 +279,41 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
+  QUnit.test("value can be used with action over sendAction", function(assert) {
+    assert.expect(1);
+
+    const newValue = 'yelping yehuda';
+
+    innerComponent = EmberComponent.extend({
+      fireAction() {
+        this.attrs.submit({
+          readProp: newValue
+        });
+      }
+    }).create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action 'outerAction' value="readProp")}}
+      `),
+      innerComponent,
+      outerContent: {
+        readProp: newValue
+      },
+      actions: {
+        outerAction(actualValue) {
+          assert.equal(actualValue, newValue, 'value is read');
+        }
+      }
+    }).create();
+
+    runAppend(outerComponent);
+
+    run(function() {
+      innerComponent.fireAction();
+    });
+  });
+
   QUnit.test("action will read the value of a first property", function(assert) {
     assert.expect(1);
 
