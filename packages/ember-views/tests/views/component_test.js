@@ -136,6 +136,25 @@ QUnit.test("Calling sendAction on a component with an action defined calls send 
   equal(actionCounts['addItem'], 1, "addItem event was sent once");
 });
 
+QUnit.test("Calling sendAction on a component with a function calls the function", function() {
+  expect(1);
+  set(component, 'action', function() {
+    ok(true, 'function is called');
+  });
+
+  component.sendAction();
+});
+
+QUnit.test("Calling sendAction on a component with a function calls the function with arguments", function() {
+  expect(1);
+  var argument = {};
+  set(component, 'action', function(actualArgument) {
+    equal(actualArgument, argument, 'argument is passed');
+  });
+
+  component.sendAction('action', argument);
+});
+
 QUnit.test("Calling sendAction with a named action uses the component's property as the action name", function() {
   set(component, 'playing', "didStartPlaying");
   set(component, 'action', "didDoSomeBusiness");
