@@ -18,7 +18,7 @@
     "ember-views-component-block-info": null,
     "ember-routing-core-outlet": null,
     "ember-libraries-isregistered": null,
-    "ember-routing-htmlbars-improved-actions": null
+    "ember-routing-htmlbars-improved-actions": true
   },
   "debugStatements": [
     "Ember.warn",

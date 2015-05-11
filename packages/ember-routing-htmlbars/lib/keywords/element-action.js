@@ -5,6 +5,12 @@ import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
 
+function assert(message, test) {
+  // This only exists to prevent defeatureify from error when attempting
+  // to transform the same source twice (tldr; you can't nest stripped statements)
+  Ember.assert(message, test);
+}
+
 export default {
   setupState: function(state, env, scope, params, hash) {
     var getStream = env.hooks.get;
@@ -13,15 +19,15 @@ export default {
     var actionName = read(params[0]);
 
     if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
-      Ember.assert("You specified a quoteless path to the {{action}} helper " +
-                   "which did not resolve to an action name (a string). " +
-                   "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
-                   typeof actionName === 'string' || typeof actionName === 'function');
+      assert("You specified a quoteless path to the {{action}} helper " +
+             "which did not resolve to an action name (a string). " +
+             "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
+             typeof actionName === 'string' || typeof actionName === 'function');
     } else {
-      Ember.assert("You specified a quoteless path to the {{action}} helper " +
-                   "which did not resolve to an action name (a string). " +
-                   "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
-                   typeof actionName === 'string');
+      assert("You specified a quoteless path to the {{action}} helper " +
+             "which did not resolve to an action name (a string). " +
+             "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
+             typeof actionName === 'string');
     }
 
     var actionArgs = [];
