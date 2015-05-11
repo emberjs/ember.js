@@ -97,7 +97,7 @@ export function wrap(template) {
 }
 
 export function wrapForHelper(template, env, scope, morph, renderState, visitor) {
-  if (template === null) {
+  if (!template) {
     return {
       yieldIn: yieldInShadowTemplate(null, env, scope, morph, renderState, visitor)
     };
@@ -302,7 +302,7 @@ export function createFreshScope() {
   // because `in` checks have unpredictable performance, keep a
   // separate dictionary to track whether a local was bound.
   // See `bindLocal` for more information.
-  return { self: null, block: null, locals: {}, localPresent: {} };
+  return { self: null, blocks: {}, locals: {}, localPresent: {} };
 }
 
 /**
@@ -425,11 +425,13 @@ export function updateLocal(env, scope, name, value) {
   Corresponds to entering a shadow template that was invoked by a block helper with
   `yieldIn`.
 
-  This hook is invoked with an opaque block that will be passed along to the
-  shadow template, and inserted into the shadow template when `{{yield}}` is used.
+  This hook is invoked with an opaque block that will be passed along
+  to the shadow template, and inserted into the shadow template when
+  `{{yield}}` is used. Optionally provide a non-default block name
+  that can be targeted by `{{yield to=blockName}}`.
 */
-export function bindBlock(env, scope, block) {
-  scope.block = block;
+export function bindBlock(env, scope, block, name='default') {
+  scope.blocks[name] = block;
 }
 
 /**
@@ -504,7 +506,7 @@ export function handleRedirect(morph, env, scope, path, params, hash, template, 
   var redirect = env.hooks.classify(env, scope, path);
   if (redirect) {
     switch(redirect) {
-      case 'component': env.hooks.component(morph, env, scope, path, params, hash, template, visitor); break;
+      case 'component': env.hooks.component(morph, env, scope, path, params, hash, {default: template, inverse}, visitor); break;
       case 'inline': env.hooks.inline(morph, env, scope, path, params, hash, visitor); break;
       case 'block': env.hooks.block(morph, env, scope, path, params, hash, template, inverse, visitor); break;
       default: throw new Error("Internal HTMLBars redirection to " + redirect + " not supported");
@@ -702,11 +704,24 @@ export var keywords = {
   yield: function(morph, env, scope, params, hash, template, inverse, visitor) {
     // the current scope is provided purely for the creation of shadow
     // scopes; it should not be provided to user code.
-    if (scope.block) {
-      scope.block(env, params, hash.self, morph, scope, visitor);
+
+    var to = env.hooks.getValue(hash.to) || 'default';
+    if (scope.blocks[to]) {
+      scope.blocks[to](env, params, hash.self, morph, scope, visitor);
     }
     return true;
+  },
+
+  hasBlock: function(morph, env, scope, params) {
+    var name = env.hooks.getValue(params[0]) || 'default';
+    return !!scope.blocks[name];
+  },
+
+  hasBlockParams: function(morph, env, scope, params) {
+    var name = env.hooks.getValue(params[0]) || 'default';
+    return !!(scope.blocks[name] && scope.blocks[name].arity);
   }
+
 };
 
 /**
@@ -908,12 +923,12 @@ export function getCellOrValue(reference) {
   return reference;
 }
 
-export function component(morph, env, scope, tagName, params, attrs, template, visitor) {
+export function component(morph, env, scope, tagName, params, attrs, templates, visitor) {
   if (env.hooks.hasHelper(env, scope, tagName)) {
-    return env.hooks.block(morph, env, scope, tagName, params, attrs, template, null, visitor);
+    return env.hooks.block(morph, env, scope, tagName, params, attrs, templates.default, templates.inverse, visitor);
   }
 
-  componentFallback(morph, env, scope, tagName, attrs, template);
+  componentFallback(morph, env, scope, tagName, attrs, templates.default);
 }
 
 export function concat(env, params) {
