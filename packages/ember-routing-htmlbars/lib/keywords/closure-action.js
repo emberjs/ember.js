@@ -9,6 +9,7 @@ import { symbol } from "ember-metal/utils";
 import { get } from "ember-metal/property_get";
 
 export const INVOKE = symbol("INVOKE");
+export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
   return new Stream(function() {
@@ -56,8 +57,10 @@ export default function closureAction(morph, env, scope, params, hash, template,
 }
 
 function createClosureAction(target, action, valuePath, actionArguments) {
+  var closureAction;
+
   if (actionArguments.length > 0) {
-    return function() {
+    closureAction = function() {
       var args = actionArguments;
       if (arguments.length > 0) {
         args = actionArguments.concat(...arguments);
@@ -68,7 +71,7 @@ function createClosureAction(target, action, valuePath, actionArguments) {
       return action.apply(target, args);
     };
   } else {
-    return function() {
+    closureAction = function() {
       var args = arguments;
       if (valuePath && args.length > 0) {
         args = Array.prototype.slice.apply(args);
@@ -77,4 +80,8 @@ function createClosureAction(target, action, valuePath, actionArguments) {
       return action.apply(target, args);
     };
   }
+
+  closureAction[ACTION] = true;
+
+  return closureAction;
 }

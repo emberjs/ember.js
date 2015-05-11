@@ -381,4 +381,52 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
+  QUnit.test("action closure does not get auto-mut wrapped", function(assert) {
+    assert.expect(3);
+
+    var first = 'raging robert';
+    var second = 'mild machty';
+    var returnValue = 'butch brian';
+
+    innerComponent = Ember.Component.extend({
+      middleComponent,
+
+      fireAction() {
+        var actualReturnedValue = this.attrs.submit(second);
+        assert.equal(actualReturnedValue, returnValue, 'return value is present');
+      }
+    }).create();
+
+    var middleComponent = EmberComponent.extend({
+      innerComponent,
+
+      layout: compile(`
+        {{view innerComponent submit=attrs.submit}}
+      `)
+    }).create();
+
+    outerComponent = EmberComponent.extend({
+      middleComponent,
+
+      layout: compile(`
+        {{view middleComponent submit=(action 'outerAction' '${first}')}}
+      `),
+
+      actions: {
+        outerAction(actualFirst, actualSecond) {
+          assert.equal(actualFirst, first, 'first argument is correct');
+          assert.equal(actualSecond, second, 'second argument is correct');
+
+          return returnValue;
+        }
+      }
+    }).create();
+
+    runAppend(outerComponent);
+
+    run(function() {
+      innerComponent.fireAction();
+    });
+  });
+
 }
