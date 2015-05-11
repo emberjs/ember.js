@@ -274,16 +274,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
                    isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
     }
 
-    // If no action name for that action could be found, just abort.
-    if (typeof actionName === 'undefined') {
-      Ember.warn("No action name could be found for the (" + action ? action : "action" +
-                 ") action on the component " + this.toString() + ".");
-      return;
-    }
-
     if (typeof actionName === 'function') {
       actionName.apply(null, contexts);
-    } else {
+    } else if (typeof actionName === 'undefined' && typeof action === 'string') {
+      try {
+        this.triggerAction({
+          action: action,
+          actionContext: contexts
+        });
+      } catch (exception) {
+        // Some sort of messaging needed here?
+      }
+    } else if (typeof actionName === 'string') {
       this.triggerAction({
         action: actionName,
         actionContext: contexts
