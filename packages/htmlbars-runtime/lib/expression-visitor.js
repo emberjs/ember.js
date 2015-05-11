@@ -169,14 +169,18 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     env.hooks.attribute(morph, env, scope, name, paramsAndHash[0][0]);
   },
 
-  // [ 'component', path, attrs, templateId ]
+  // [ 'component', path, attrs, templateId, inverseId ]
   component: function(node, morph, env, scope, template, visitor) {
-    var path = node[1], attrs = node[2], templateId = node[3];
+    var path = node[1], attrs = node[2], templateId = node[3], inverseId = node[4];
     var paramsAndHash = this.acceptParamsAndHash(env, scope, morph, path, [], attrs);
+    var templates = {
+      default: template.templates[templateId],
+      inverse: template.templates[inverseId]
+    };
 
     morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.component(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1],
-                        template.templates[templateId], visitor);
+                        templates, visitor);
   }
 });
 
