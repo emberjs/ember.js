@@ -18,7 +18,7 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
   };
 
   view.env = env;
-  createOrUpdateComponent(view, {}, renderNode, env);
+  createOrUpdateComponent(view, {}, null, renderNode, env);
   var nodeManager = new ViewNodeManager(view, null, renderNode, block, view.tagName !== '');
 
   nodeManager.render(env, {});

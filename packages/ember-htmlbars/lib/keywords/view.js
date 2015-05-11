@@ -12,6 +12,10 @@ export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
     var viewClassOrInstance = state.viewClassOrInstance;
+
+    // if parentView exists, use its controller (the default
+    // behavior), otherwise use `scope.self` as the controller
+    var controller = scope.view ? null : read(scope.self);
     if (!viewClassOrInstance) {
       viewClassOrInstance = getView(read(params[0]), env.container);
     }
@@ -19,6 +23,7 @@ export default {
     return {
       manager: state.manager,
       parentView: scope.view,
+      controller,
       viewClassOrInstance
     };
   },
@@ -44,7 +49,15 @@ export default {
     var state = node.state;
     var parentView = state.parentView;
 
-    var options = { component: node.state.viewClassOrInstance, layout: null };
+    var options = {
+      component: node.state.viewClassOrInstance,
+      layout: null
+    };
+
+    if (node.state.controller) {
+      options.createOptions = { _controller: node.state.controller };
+    }
+
     var nodeManager = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
     state.manager = nodeManager;
 
