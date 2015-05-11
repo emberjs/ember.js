@@ -200,6 +200,7 @@ import {
 import run from "ember-metal/run_loop";
 import Libraries from "ember-metal/libraries";
 import isNone from 'ember-metal/is_none';
+import isSome from 'ember-metal/is_some';
 import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
@@ -371,6 +372,7 @@ Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;
+Ember.isSome = isSome;
 Ember.isEmpty = isEmpty;
 Ember.isBlank = isBlank;
 Ember.isPresent = isPresent;
