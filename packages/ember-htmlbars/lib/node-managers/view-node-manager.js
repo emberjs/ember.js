@@ -41,10 +41,6 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
   if (found.component) {
     var options = { parentView: parentView };
 
-    if (found.createOptions) {
-      merge(options, found.createOptions);
-    }
-
     if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
@@ -58,7 +54,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
       options._context = getValue(found.self);
     }
 
-    component = componentInfo.component = createOrUpdateComponent(found.component, options, renderNode, env, attrs);
+    component = componentInfo.component = createOrUpdateComponent(found.component, options, found.createOptions, renderNode, env, attrs);
 
     let layout = get(component, 'layout');
     if (layout) {
@@ -171,16 +167,20 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
   }, this);
 };
 
-export function createOrUpdateComponent(component, options, renderNode, env, attrs = {}) {
+export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
   let props = merge({}, options);
   let defaultController = View.proto().controller;
-  let hasSuppliedController = 'controller' in attrs;
+  let hasSuppliedController = 'controller' in attrs || 'controller' in props;
 
   props.attrs = snapshot;
-
   if (component.create) {
     let proto = component.proto();
+
+    if (createOptions) {
+      merge(props, createOptions);
+    }
+
     mergeBindings(props, shadowedAttrs(proto, snapshot));
     props.container = options.parentView ? options.parentView.container : env.container;
 

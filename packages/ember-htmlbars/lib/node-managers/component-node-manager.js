@@ -189,7 +189,6 @@ export function createOrUpdateComponent(component, options, renderNode, env, att
   let hasSuppliedController = 'controller' in attrs;
 
   props.attrs = snapshot;
-
   if (component.create) {
     let proto = component.proto();
     mergeBindings(props, shadowedAttrs(proto, snapshot));
