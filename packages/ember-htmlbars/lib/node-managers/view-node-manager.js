@@ -76,7 +76,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
   Ember.assert("BUG: ViewNodeManager.create can take a scope or a self, but not both", !(contentScope && found.self));
 
   var results = buildComponentTemplate(componentInfo, attrs, {
-    template: contentTemplate,
+    templates: { default: contentTemplate },
     scope: contentScope,
     self: found.self
   });

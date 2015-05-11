@@ -1,6 +1,6 @@
 import ComponentNodeManager from "ember-htmlbars/node-managers/component-node-manager";
 
-export default function componentHook(renderNode, env, scope, tagName, params, attrs, template, visitor) {
+export default function componentHook(renderNode, env, scope, tagName, params, attrs, templates, visitor) {
   var state = renderNode.state;
 
   // Determine if this is an initial render or a re-render
@@ -17,7 +17,7 @@ export default function componentHook(renderNode, env, scope, tagName, params, a
     params,
     attrs,
     parentView,
-    template,
+    templates,
     parentScope: scope
   });
 

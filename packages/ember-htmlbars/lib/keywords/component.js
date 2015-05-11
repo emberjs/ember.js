@@ -27,5 +27,5 @@ function render(morph, env, scope, params, hash, template, inverse, visitor) {
     return;
   }
 
-  env.hooks.component(morph, env, scope, componentPath, params, hash, template, visitor);
+  env.hooks.component(morph, env, scope, componentPath, params, hash, { default: template, inverse }, visitor);
 }

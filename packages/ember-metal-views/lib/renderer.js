@@ -24,7 +24,7 @@ Renderer.prototype.prerenderTopLevelView =
 
     var block = buildComponentTemplate(componentInfo, {}, {
       self: view,
-      template: template && template.raw
+      templates: template ? { default: template.raw } : undefined
     }).block;
 
     view.renderBlock(block, renderNode);
