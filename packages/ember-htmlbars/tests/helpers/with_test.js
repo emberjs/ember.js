@@ -538,3 +538,14 @@ QUnit.test("{{with}} block should not render if passed variable is falsey", func
   runAppend(view);
   equal(view.$().text(), "", "should not render the inner template");
 });
+
+QUnit.test("{{with}} block should render else block if passed variable is falsey #11118", function () {
+  view = EmberView.create({
+    template: compile("{{#with foo as |bar|}}Don't render me{{else}}Please render!{{/with}}"),
+    context: {
+      foo: null
+    }
+  });
+  runAppend(view);
+  equal(view.$().text(), "Please render!", "should not render the inner template");
+});

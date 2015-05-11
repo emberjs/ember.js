@@ -68,5 +68,9 @@ export default function withHelper(params, hash, options) {
 
       this.yield([], self);
     }
+  } else {
+    if (options.inverse.yield) {
+      options.inverse.yield();
+    }
   }
 }
