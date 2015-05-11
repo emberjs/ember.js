@@ -4,17 +4,19 @@ import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 
 export default function buildComponentTemplate({ component, layout }, attrs, content) {
-  var blockToRender, tagName;
+  var blockToRender, tagName, meta;
 
   if (component === undefined) {
     component = null;
   }
 
   if (content.template) {
+    meta = content.template.meta;
     blockToRender = createContentBlock(content.template, content.scope, content.self, component);
   }
 
   if (layout && layout.raw) {
+    meta = layout.raw.meta;
     blockToRender = createLayoutBlock(layout.raw, blockToRender, content.self, component, attrs);
   }
 
@@ -27,6 +29,7 @@ export default function buildComponentTemplate({ component, layout }, attrs, con
     if (tagName !== '') {
       var attributes = normalizeComponentAttributes(component, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
+      elementTemplate.meta = meta;
 
       blockToRender = createElementBlock(elementTemplate, blockToRender, component);
     } else {

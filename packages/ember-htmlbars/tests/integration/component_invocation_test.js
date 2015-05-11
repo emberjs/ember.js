@@ -277,6 +277,48 @@ QUnit.test('dynamic positional parameters', function() {
   equal(jQuery('#qunit-fixture').text(), 'Edward5');
 });
 
+QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
+  expect(1);
+
+  var layoutModuleName = 'my-app-name/templates/components/sample-component';
+  var sampleComponentLayout = compile('Sample Component - {{yield}}', {
+    moduleName: layoutModuleName
+  });
+  registry.register('template:components/sample-component', sampleComponentLayout);
+  registry.register('component:sample-component', Component.extend({
+    didInsertElement: function() {
+      equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
+    }
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component}}'),
+    container
+  }).create();
+
+  runAppend(view);
+});
+
+QUnit.test('moduleName is available on _renderNode when no layout is present', function() {
+  expect(1);
+
+  var templateModuleName = 'my-app-name/templates/application';
+  registry.register('component:sample-component', Component.extend({
+    didInsertElement: function() {
+      equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
+    }
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
+      moduleName: templateModuleName
+    }),
+    container
+  }).create();
+
+  runAppend(view);
+});
+
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   QUnit.test('{{component}} helper works with positional params', function() {
     registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
