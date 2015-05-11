@@ -5,7 +5,7 @@ import ProxyStream from "ember-metal/streams/proxy-stream";
 import { isStream } from "ember-metal/streams/utils";
 import Stream from "ember-metal/streams/stream";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
-import { INVOKE } from "ember-routing-htmlbars/keywords/closure-action";
+import { INVOKE, ACTION } from "ember-routing-htmlbars/keywords/closure-action";
 
 export let MUTABLE_REFERENCE = symbol("MUTABLE_REFERENCE");
 
@@ -62,9 +62,14 @@ MutStream.prototype = create(ProxyStream.prototype);
 merge(MutStream.prototype, {
   cell() {
     let source = this;
+    let value = source.value();
+
+    if (value && value[ACTION]) {
+      return value;
+    }
 
     let val = {
-      value: source.value(),
+      value,
       update(val) {
         source.setValue(val);
       }
