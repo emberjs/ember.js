@@ -98,7 +98,7 @@ Renderer.prototype.appendTo =
     var morph = this._dom.appendMorph(target);
     morph.ownerNode = morph;
     view._willInsert = true;
-    run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
+    run.schedule('render', this, this.renderTopLevelView, view, morph);
   };
 
 Renderer.prototype.replaceIn =
