@@ -7,7 +7,7 @@ import ContainerView from "ember-views/views/container_view";
 import compile from "ember-template-compiler/system/compile";
 import { runDestroy } from "ember-runtime/tests/utils";
 
-var View, view, willDestroyCalled, childView;
+var View, view, otherView, willDestroyCalled, childView;
 
 QUnit.module("EmberView - append() and appendTo()", {
   setup() {
@@ -16,7 +16,30 @@ QUnit.module("EmberView - append() and appendTo()", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(otherView);
   }
+});
+
+QUnit.test("can call `appendTo` for multiple views #11109", function() {
+  var elem;
+  jQuery("#qunit-fixture").html('<div id="menu"></div><div id="other-menu"></div>');
+
+  view = View.create();
+  otherView = View.create();
+
+  ok(!get(view, 'element'), "precond - should not have an element");
+  ok(!get(otherView, 'element'), "precond - should not have an element");
+
+  run(function() {
+    view.appendTo('#menu');
+    otherView.appendTo('#other-menu');
+  });
+
+  elem = jQuery('#menu').children();
+  ok(elem.length > 0, "creates and appends the first view's element");
+
+  elem = jQuery('#other-menu').children();
+  ok(elem.length > 0, "creates and appends the second view's element");
 });
 
 QUnit.test("should be added to the specified element when calling appendTo()", function() {
