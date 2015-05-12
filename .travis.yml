@@ -27,6 +27,12 @@ script:
 after_script:
     - ember stop-sauce-connect
 
+branches:
+  only:
+    - master
+    - beta
+    - stable
+
 env:
   global:
     - SAUCE_USERNAME=ember-ci
