@@ -171,7 +171,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @type Ember.Controller
     @default null
   */
-  targetObject: computed('parentView', function(key) {
+  targetObject: computed('controller', function(key) {
+    if (this._targetObject) { return this._targetObject; }
     if (this._controller) { return this._controller; }
     var parentView = get(this, 'parentView');
     return parentView ? get(parentView, 'controller') : null;

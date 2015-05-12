@@ -1,6 +1,8 @@
 /*globals EmberDev */
 import EmberView from "ember-views/views/view";
+import EmberComponent from "ember-views/views/component";
 import Registry from "container/registry";
+import ComponentLookup from "ember-views/component_lookup";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import TextField from 'ember-views/views/text_field';
@@ -49,6 +51,7 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     registry.optionsForType('template', { instantiate: false });
     registry.optionsForType('helper', { instantiate: false });
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
@@ -1431,4 +1434,41 @@ QUnit.test("using a bound view name does not change on view name property change
 
   equal(view.$('#bar').length, 0, 'changing the viewName string after it was initially rendered does not render the new viewName');
   equal(view.$('#foo').length, 1, 'the originally rendered view is still present');
+});
+
+QUnit.test("should have the correct action target", function() {
+  registry.register('component:x-outer', EmberComponent.extend({
+    container,
+    layout: compile('{{#x-middle}}{{view innerView dismiss="dismiss"}}{{/x-middle}}'),
+    actions: {
+      dismiss: function() {
+        ok(true, "We handled the action in the right place");
+      }
+    },
+    innerView: EmberComponent.extend({
+      container,
+      elementId: 'x-inner'
+    })
+  }));
+
+  registry.register('component:x-middle', EmberComponent.extend({
+    container,
+    actions: {
+      dismiss: function() {
+        throw new Error("action was not supposed to go here");
+      }
+    }
+  }));
+
+  view = EmberView.extend({
+    container,
+    template: compile("{{x-outer}}")
+  }).create();
+
+  runAppend(view);
+
+  run(function() {
+    EmberView.views['x-inner'].sendAction('dismiss');
+  });
+
 });
