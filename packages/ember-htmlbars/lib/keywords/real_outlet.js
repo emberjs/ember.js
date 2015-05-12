@@ -50,7 +50,7 @@ export default {
     var ViewClass = outletState.render.ViewClass;
 
     if (!state.hasParentOutlet && !ViewClass) {
-      ViewClass = env.container.lookup('view:toplevel');
+      ViewClass = env.container.lookupFactory('view:toplevel');
     }
 
     var options = {
