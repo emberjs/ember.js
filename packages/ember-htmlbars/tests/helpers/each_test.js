@@ -927,7 +927,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     ok(true, "No assertion from valid template");
   });
 
-  QUnit.test("itemController specified in template with name binding does not change context", function() {
+  QUnit.test("itemController specified in template with name binding does not change context [DEPRECATED]", function() {
     var Controller = EmberController.extend({
       controllerName: computed(function() {
         return "controller:"+this.get('model.name');
@@ -948,9 +948,14 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     registry.register('controller:array', ArrayController.extend());
 
+    var template;
+    expectDeprecation(function() {
+      template = templateFor('{{#EACH|people|person|itemController="person"}}{{controllerName}} - {{person.controllerName}} - {{/each}}', useBlockParams);
+    }, /Using 'itemController' with '{{each}}' @L1/);
+
     view = EmberView.create({
+      template,
       container: container,
-      template: templateFor('{{#EACH|people|person|itemController="person"}}{{controllerName}} - {{person.controllerName}} - {{/each}}', useBlockParams),
       controller: parentController
     });
 

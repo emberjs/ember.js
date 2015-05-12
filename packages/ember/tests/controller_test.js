@@ -94,11 +94,13 @@ QUnit.test('the controller property is provided to route driven views', function
 // (i.e., not inside a view or component) did not have access to a container and
 // would raise an exception.
 QUnit.test("{{#each}} inside outlet can have an itemController", function(assert) {
-  templates.index = compile(`
-    {{#each model itemController='thing'}}
-      <p>hi</p>
-    {{/each}}
-  `);
+  expectDeprecation(function() {
+    templates.index = compile(`
+      {{#each model itemController='thing'}}
+        <p>hi</p>
+      {{/each}}
+    `);
+  }, `Using 'itemController' with '{{each}}' @L2:C20 is deprecated.  Please refactor to a component.`);
 
   App.IndexController = Ember.Controller.extend({
     model: Ember.A([1, 2, 3])
@@ -111,13 +113,15 @@ QUnit.test("{{#each}} inside outlet can have an itemController", function(assert
   assert.equal($fixture.find('p').length, 3, "the {{#each}} rendered without raising an exception");
 });
 
-QUnit.test("", function(assert) {
-  templates.index = compile(`
-    {{#each model itemController='thing'}}
-      {{controller}}
-      <p><a {{action 'checkController' controller}}>Click me</a></p>
-    {{/each}}
-  `);
+QUnit.test("actions within a context shifting {{each}} with `itemController` [DEPRECATED]", function(assert) {
+  expectDeprecation(function() {
+    templates.index = compile(`
+      {{#each model itemController='thing'}}
+        {{controller}}
+        <p><a {{action 'checkController' controller}}>Click me</a></p>
+      {{/each}}
+    `);
+  });
 
   App.IndexRoute = Ember.Route.extend({
     model: function() {
