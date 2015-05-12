@@ -24,9 +24,10 @@ import { dasherize } from "ember-template-compiler/system/string";
   @class TransformBindAttrToAttributes
   @private
 */
-function TransformBindAttrToAttributes() {
+function TransformBindAttrToAttributes(options) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
+  this.options = options || {};
 }
 
 /**
@@ -36,6 +37,7 @@ function TransformBindAttrToAttributes() {
 */
 TransformBindAttrToAttributes.prototype.transform = function TransformBindAttrToAttributes_transform(ast) {
   var plugin = this;
+  var moduleName = this.options.moduleName;
   var walker = new this.syntax.Walker();
 
   walker.visit(ast, function(node) {
@@ -43,7 +45,7 @@ TransformBindAttrToAttributes.prototype.transform = function TransformBindAttrTo
       for (var i = 0; i < node.modifiers.length; i++) {
         var modifier = node.modifiers[i];
 
-        if (isBindAttrModifier(modifier)) {
+        if (isBindAttrModifier(modifier, moduleName)) {
           node.modifiers.splice(i--, 1);
           plugin.assignAttrs(node, modifier.hash);
         }
@@ -156,13 +158,28 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
   }
 };
 
-function isBindAttrModifier(modifier) {
+function isBindAttrModifier(modifier, moduleName) {
   var name = modifier.path.original;
+
+  let { column, line } = modifier.path.loc.start || {};
+  let moduleInfo = '';
+
+  if (moduleName) {
+    moduleInfo +=  `'${moduleName}' @ `;
+  }
+
+  if (line && column) {
+    moduleInfo += `L${line}:C${column}`;
+  }
+
+  if (moduleInfo) {
+    moduleInfo = `(${moduleInfo}) `;
+  }
 
   if (name === 'bind-attr' || name === 'bindAttr') {
     Ember.deprecate(
-      'The `' + name + '` helper is deprecated in favor of ' +
-      'HTMLBars-style bound attributes'
+      'The `' + name + '` helper ' + moduleInfo + 'is deprecated in favor of ' +
+      'HTMLBars-style bound attributes.'
     );
     return true;
   } else {
