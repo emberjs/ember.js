@@ -5,6 +5,7 @@ import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-template-compiler/system/compile";
+import ArrayProxy from "ember-runtime/system/array_proxy";
 
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
@@ -122,9 +123,9 @@ QUnit.test("The `if` helper updates if an object proxy gains or loses context", 
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `if` helper updates if an array is empty or not", function() {
+function testIfArray(array) {
   view = EmberView.create({
-    array: Ember.A(),
+    array: array,
 
     template: compile('{{#if view.array}}Yep{{/if}}')
   });
@@ -144,6 +145,15 @@ QUnit.test("The `if` helper updates if an array is empty or not", function() {
   });
 
   equal(view.$().text(), '');
+
+}
+
+QUnit.test("The `if` helper updates if an array is empty or not", function() {
+  testIfArray(Ember.A());
+});
+
+QUnit.test("The `if` helper updates if an array-like object is empty or not", function() {
+  testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
 });
 
 QUnit.test("The `if` helper updates when the value changes", function() {
