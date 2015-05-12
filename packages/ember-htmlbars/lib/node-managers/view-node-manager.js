@@ -7,8 +7,8 @@ import setProperties from "ember-metal/set_properties";
 import View from "ember-views/views/view";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
-import SafeString from "htmlbars-util/safe-string";
 import { instrument } from "ember-htmlbars/system/instrumentation-support";
+import { handleLegacyRender } from "ember-htmlbars/node-managers/component-node-manager";
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -109,19 +109,7 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
 
     if (component) {
       var element = this.expectElement && this.renderNode.firstNode;
-      if (component.render) {
-        var content, node, lastChildIndex;
-        var buffer = [];
-        component.render(buffer);
-        content = buffer.join('');
-        if (element) {
-          lastChildIndex = this.renderNode.childNodes.length - 1;
-          node = this.renderNode.childNodes[lastChildIndex];
-        } else {
-          node = this.renderNode;
-        }
-        node.setContent(new SafeString(content));
-      }
+      handleLegacyRender(component, element);
 
       env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
       env.renderer.willInsertElement(component, element);
