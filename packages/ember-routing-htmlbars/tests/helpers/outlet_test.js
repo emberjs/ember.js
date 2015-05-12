@@ -1,7 +1,7 @@
 import run from "ember-metal/run_loop";
 
 import Namespace from "ember-runtime/system/namespace";
-
+import Controller from "ember-runtime/controllers/controller";
 import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
@@ -42,6 +42,46 @@ QUnit.test("view should render the outlet when set after dom insertion", functio
   run(function() {
     top.setOutletState(routerState);
   });
+
+  // Replace whitespace for older IE
+  equal(trim(top.$().text()), 'HIBYE');
+});
+
+QUnit.test("a top-level outlet should always be a view", function() {
+  registry.register('view:toplevel', EmberView.extend({
+    elementId: 'top-level'
+  }));
+  var routerState = withTemplate("<h1>HI</h1>{{outlet}}");
+  top.setOutletState(routerState);
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
+  runAppend(top);
+
+  // Replace whitespace for older IE
+  equal(trim(top.$('#top-level').text()), 'HIBYE');
+});
+
+QUnit.test("a top-level outlet should have access to `{{controller}}`", function() {
+  var routerState = withTemplate("<h1>{{controller.salutation}}</h1>{{outlet}}");
+  routerState.render.controller = Controller.create({
+    salutation: 'HI'
+  });
+  top.setOutletState(routerState);
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
+  runAppend(top);
+
+  // Replace whitespace for older IE
+  equal(trim(top.$().text()), 'HIBYE');
+});
+
+QUnit.test("a non top-level outlet should have access to `{{controller}}`", function() {
+  var routerState = withTemplate("<h1>HI</h1>{{outlet}}");
+  top.setOutletState(routerState);
+  routerState.outlets.main = withTemplate("<p>BYE</p>");
+  routerState.outlets.main.render.controller = Controller.create({
+    salutation: 'BYE'
+  });
+
+  runAppend(top);
 
   // Replace whitespace for older IE
   equal(trim(top.$().text()), 'HIBYE');
