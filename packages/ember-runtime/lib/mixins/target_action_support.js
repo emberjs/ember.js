@@ -27,7 +27,11 @@ var TargetActionSupport = Mixin.create({
   action: null,
   actionContext: null,
 
-  targetObject: computed(function() {
+  targetObject: computed('target', function() {
+    if (this._targetObject) {
+      return this._targetObject;
+    }
+
     var target = get(this, 'target');
 
     if (typeof target === 'string') {
@@ -40,7 +44,7 @@ var TargetActionSupport = Mixin.create({
     } else {
       return target;
     }
-  }).property('target'),
+  }),
 
   actionContextObject: computed(function() {
     var actionContext = get(this, 'actionContext');

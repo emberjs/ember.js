@@ -11,19 +11,21 @@ import objectKeys from "ember-metal/keys";
 export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
+    var targetObject = read(scope.self);
     var viewClassOrInstance = state.viewClassOrInstance;
+    if (!viewClassOrInstance) {
+      viewClassOrInstance = getView(read(params[0]), env.container);
+    }
 
     // if parentView exists, use its controller (the default
     // behavior), otherwise use `scope.self` as the controller
     var controller = scope.view ? null : read(scope.self);
-    if (!viewClassOrInstance) {
-      viewClassOrInstance = getView(read(params[0]), env.container);
-    }
 
     return {
       manager: state.manager,
       parentView: scope.view,
       controller,
+      targetObject,
       viewClassOrInstance
     };
   },
@@ -54,8 +56,17 @@ export default {
       layout: null
     };
 
+    options.createOptions = {};
     if (node.state.controller) {
-      options.createOptions = { _controller: node.state.controller };
+      // Use `_controller` to avoid stomping on a CP
+      // that exists in the target view/component
+      options.createOptions._controller = node.state.controller;
+    }
+
+    if (node.state.targetObject) {
+      // Use `_targetObject` to avoid stomping on a CP
+      // that exists in the target view/component
+      options.createOptions._targetObject = node.state.targetObject;
     }
 
     var nodeManager = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
