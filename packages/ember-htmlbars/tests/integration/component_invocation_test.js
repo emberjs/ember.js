@@ -432,3 +432,22 @@ QUnit.test('non-expression hasBlockParams', function() {
   equal(jQuery('#qunit-fixture #expect-no').text(), 'No');
   equal(jQuery('#qunit-fixture #expect-yes').text(), 'Yes');
 });
+
+QUnit.test('implementing `render` allows pushing into a string buffer', function() {
+  expect(1);
+
+  registry.register('component:non-block', Component.extend({
+    render(buffer) {
+      buffer.push('<span id="zomg">Whoop!</span>');
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{non-block}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#zomg').text(), 'Whoop!');
+});
