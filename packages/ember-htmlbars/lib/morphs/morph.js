@@ -7,9 +7,16 @@ function EmberMorph(DOMHelper, contextualElement) {
   this.HTMLBarsMorph$constructor(DOMHelper, contextualElement);
 
   this.emberView = null;
-  this.emberComponent = null;
   this.emberToDestroy = null;
   this.streamUnsubscribers = null;
+
+  // A component can become dirty either because one of its
+  // attributes changed, or because it was re-rendered. If any part
+  // of the component's template changes through observation, it has
+  // re-rendered from the perpsective of the programming model. This
+  // flag is set to true whenever a component becomes dirty because
+  // one of its attributes changed, which also triggers the attribute
+  // update flag (didUpdateAttrs).
   this.shouldReceiveAttrs = false;
 }
 
