@@ -203,7 +203,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   }
 
   component._renderNode = renderNode;
-  renderNode.emberComponent = component;
   renderNode.emberView = component;
   return component;
 }

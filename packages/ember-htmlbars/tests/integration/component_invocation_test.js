@@ -88,11 +88,11 @@ QUnit.test('non-block with properties on attrs and component class', function() 
 
 QUnit.test('rerendering component with attrs from parent', function() {
   var willUpdate = 0;
-  var willReceiveAttrs = 0;
+  var didReceiveAttrs = 0;
 
   registry.register('component:non-block', Component.extend({
-    willReceiveAttrs() {
-      willReceiveAttrs++;
+    didReceiveAttrs() {
+      didReceiveAttrs++;
     },
 
     willUpdate() {
@@ -109,6 +109,8 @@ QUnit.test('rerendering component with attrs from parent', function() {
 
   runAppend(view);
 
+  equal(didReceiveAttrs, 1, "The didReceiveAttrs hook fired");
+
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
 
   run(function() {
@@ -116,13 +118,13 @@ QUnit.test('rerendering component with attrs from parent', function() {
   });
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(willReceiveAttrs, 1, "The willReceiveAttrs hook fired");
+  equal(didReceiveAttrs, 2, "The didReceiveAttrs hook fired again");
   equal(willUpdate, 1, "The willUpdate hook fired once");
 
   Ember.run(view, 'rerender');
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(willReceiveAttrs, 2, "The willReceiveAttrs hook fired again");
+  equal(didReceiveAttrs, 3, "The didReceiveAttrs hook fired again");
   equal(willUpdate, 2, "The willUpdate hook fired again");
 });
 

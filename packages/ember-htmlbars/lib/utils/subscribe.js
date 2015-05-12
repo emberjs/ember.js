@@ -8,6 +8,11 @@ export default function subscribe(node, scope, stream) {
   unsubscribers.push(stream.subscribe(function() {
     node.isDirty = true;
 
+    // Whenever a render node directly inside a component becomes
+    // dirty, we want to invoke the willRenderElement and
+    // didRenderElement lifecycle hooks. From the perspective of the
+    // programming model, whenever anything in the DOM changes, a
+    // "re-render" has occured.
     if (component && component._renderNode) {
       component._renderNode.isDirty = true;
     }

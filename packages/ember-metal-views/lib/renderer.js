@@ -137,6 +137,12 @@ Renderer.prototype.setAttrs = function (view, attrs) {
   set(view, 'attrs', attrs);
 }; // set attrs the first time
 
+Renderer.prototype.componentInitAttrs = function (component, attrs) {
+  set(component, 'attrs', attrs);
+  component.trigger('didInitAttrs', { attrs });
+  component.trigger('didReceiveAttrs', { attrs });
+}; // set attrs the first time
+
 Renderer.prototype.didInsertElement = function (view) {
   if (view._transitionTo) {
     view._transitionTo('inDOM');
@@ -161,16 +167,31 @@ Renderer.prototype.updateAttrs = function (view, attrs) {
   this.setAttrs(view, attrs);
 }; // setting new attrs
 
+Renderer.prototype.componentUpdateAttrs = function (component, oldAttrs, newAttrs) {
+  set(component, 'attrs', newAttrs);
+
+  component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
+  component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
+};
+
 Renderer.prototype.willUpdate = function (view, attrs) {
   if (view.willUpdate) {
     view.willUpdate(attrs);
   }
 };
 
+Renderer.prototype.componentWillUpdate = function (component) {
+  component.trigger('willUpdate');
+};
+
 Renderer.prototype.willRender = function (view) {
   if (view.willRender) {
     view.willRender();
   }
+};
+
+Renderer.prototype.componentWillRender = function (component) {
+  component.trigger('willRender');
 };
 
 Renderer.prototype.remove = function (view, shouldDestroy) {
