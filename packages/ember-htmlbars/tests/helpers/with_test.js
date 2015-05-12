@@ -538,3 +538,57 @@ QUnit.test("{{with}} block should not render if passed variable is falsey", func
   runAppend(view);
   equal(view.$().text(), "", "should not render the inner template");
 });
+
+QUnit.module("{{#with}} inverse template", {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = EmberView.create({
+      template: compile("{{#with view.falsyThing as |thing|}}Has Thing{{else}}No Thing{{/with}}"),
+      falsyThing: null
+    });
+
+    runAppend(view);
+  },
+
+  teardown() {
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test("inverse template is displayed", function() {
+  equal(view.$().text(), "No Thing", "should render inverse template");
+});
+
+QUnit.test("changing the property to truthy causes standard template to be displayed", function() {
+  run(function() {
+    set(view, 'falsyThing', true);
+  });
+  equal(view.$().text(), "Has Thing", "should render standard template");
+});
+
+QUnit.module("{{#with}} inverse template preserves context", {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = EmberView.create({
+      template: compile("{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}"),
+      context: {
+        falsyThing: null,
+        otherThing: 'bar'
+      }
+    });
+
+    runAppend(view);
+  },
+
+  teardown() {
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test("inverse template is displayed with context", function() {
+  equal(view.$().text(), "No Thing bar", "should render inverse template with context preserved");
+});
