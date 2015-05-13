@@ -32,34 +32,6 @@ import shouldDisplay from "ember-views/streams/should_display";
   For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
   the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
 
-  ### `controller` option
-
-  Adding `controller='someController'` instructs the `{{with}}` helper to create and use an instance of
-  the specified controller wrapping the aliased keyword.  This is very similar to using an
-  `itemController` option with the [{{each}}](/api/classes/Ember.Handlebars.helpers.html#method_each) helper.
-
-  ```javascript
-  App.UserBlogPostsController = Ember.Controller.extend({
-    isProlificBlogger: function() {
-      return this.get('model.length') > 5;
-    }.property('model.length')
-  })
-  ```
-
-  ```handlebars
-  {{#with users.posts controller='userBlogPosts' as |posts|}}
-    {{! `posts` is wrapped in our controller instance }}
-    {{#if isProlificBlogger}}
-      {{user.name}} has written more than {{posts.model.length}} blog posts!
-    {{else}}
-      {{user.name}} has only written {{posts.model.length}} blog posts.
-    {{/if}}
-  {{/with}}
-  ```
-
-  In the above example, the `posts` keyword is now wrapped in the `userBlogPosts` controller,
-  which provides an elegant way to decorate the context with custom functions/properties.
-
   @method with
   @for Ember.Handlebars.helpers
   @param {Function} context
