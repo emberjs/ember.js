@@ -45,55 +45,6 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
   {{/each}}
   ```
 
-  ### Specifying an alternative view for each item
-
-  `itemViewClass` can control which view will be used during the render of each
-  item's template. The following template:
-
-  ```handlebars
-  <ul>
-    {{#each developers itemViewClass="person" as |developer|}}
-      {{developer.name}}
-    {{/each}}
-  </ul>
-  ```
-
-  Will use the following view for each item:
-
-  ```javascript
-  App.PersonView = Ember.View.extend({
-    tagName: 'li'
-  });
-  ```
-
-  Resulting in HTML output that looks like the following:
-
-  ```html
-  <ul>
-    <li class="ember-view">Yehuda</li>
-    <li class="ember-view">Tom</li>
-    <li class="ember-view">Paul</li>
-  </ul>
-  ```
-
-  `itemViewClass` also enables a non-block form of `{{each}}`. The view
-  must [provide its own template](/api/classes/Ember.View.html#toc_templates)
-  and then the block should be dropped. An example that outputs the same HTML
-  as the previous one:
-
-  ```javascript
-  App.PersonView = Ember.View.extend({
-    tagName: 'li',
-    template: '{{developer.name}}'
-  });
-  ```
-
-  ```handlebars
-  <ul>
-    {{each developers itemViewClass="person" as |developer|}}
-  </ul>
-  ```
-
   ### Specifying an alternative view for no items (else)
 
   The `emptyViewClass` option provides the same flexibility to the `{{else}}`
