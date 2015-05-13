@@ -185,6 +185,9 @@ export function concat(array, separator) {
       subscribe(array[i], stream.notify, stream);
     }
 
+    // used by angle bracket components to detect an attribute was provided
+    // as a string literal
+    stream.isConcat = true;
     return stream;
   } else {
     return array.join(separator);

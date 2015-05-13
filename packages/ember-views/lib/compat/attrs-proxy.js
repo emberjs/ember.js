@@ -60,7 +60,7 @@ let AttrsProxyMixin = {
   },
 
   willWatchProperty(key) {
-    if (key === 'attrs') { return; }
+    if (this._isAngleBracket || key === 'attrs') { return; }
 
     let attrsKey = `attrs.${key}`;
     addBeforeObserver(this, attrsKey, null, attrsWillChange);
@@ -68,7 +68,7 @@ let AttrsProxyMixin = {
   },
 
   didUnwatchProperty(key) {
-    if (key === 'attrs') { return; }
+    if (this._isAngleBracket || key === 'attrs') { return; }
 
     let attrsKey = `attrs.${key}`;
     removeBeforeObserver(this, attrsKey, null, attrsWillChange);
@@ -76,6 +76,8 @@ let AttrsProxyMixin = {
   },
 
   legacyDidReceiveAttrs: on('didReceiveAttrs', function() {
+    if (this._isAngleBracket) { return; }
+
     var keys = objectKeys(this.attrs);
 
     for (var i=0, l=keys.length; i<l; i++) {
@@ -88,6 +90,8 @@ let AttrsProxyMixin = {
   }),
 
   unknownProperty(key) {
+    if (this._isAngleBracket) { return; }
+
     var attrs = get(this, 'attrs');
 
     if (attrs && key in attrs) {
@@ -110,6 +114,8 @@ let AttrsProxyMixin = {
 };
 
 AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
+  if (this._isAngleBracket) { return; }
+
   if (this.currentState) {
     this.currentState.legacyPropertyDidChange(this, key);
   }

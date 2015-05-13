@@ -3,7 +3,7 @@ import getValue from "ember-htmlbars/hooks/get-value";
 import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 
-export default function buildComponentTemplate({ component, layout }, attrs, content) {
+export default function buildComponentTemplate({ component, layout, isAngleBracket}, attrs, content) {
   var blockToRender, tagName, meta;
 
   if (component === undefined) {
@@ -26,7 +26,7 @@ export default function buildComponentTemplate({ component, layout }, attrs, con
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      var attributes = normalizeComponentAttributes(component, attrs);
+      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -113,7 +113,7 @@ function tagNameFor(view) {
 
 // Takes a component and builds a normalized set of attribute
 // bindings consumable by HTMLBars' `attribute` hook.
-function normalizeComponentAttributes(component, attrs) {
+function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   var normalized = {};
   var attributeBindings = component.attributeBindings;
   var i, l;
@@ -143,6 +143,17 @@ function normalizeComponentAttributes(component, attrs) {
       Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
 
       normalized[attrName] = expression;
+    }
+  }
+
+  if (isAngleBracket) {
+    for (var prop in attrs) {
+      let val = attrs[prop];
+      if (!val) { continue; }
+
+      if (typeof val === 'string' || val.isConcat) {
+        normalized[prop] = ['value', val];
+      }
     }
   }
 

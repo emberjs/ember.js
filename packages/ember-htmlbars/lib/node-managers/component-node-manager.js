@@ -9,6 +9,7 @@ import setProperties from "ember-metal/set_properties";
 import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import SafeString from "htmlbars-util/safe-string";
 import { instrument } from "ember-htmlbars/system/instrumentation-support";
+import EmberComponent from "ember-views/views/component";
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -16,8 +17,9 @@ import { instrument } from "ember-htmlbars/system/instrumentation-support";
 // libraries.
 import getValue from "ember-htmlbars/hooks/get-value";
 
-function ComponentNodeManager(component, scope, renderNode, attrs, block, expectElement) {
+function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attrs, block, expectElement) {
   this.component = component;
+  this.isAngleBracket = isAngleBracket;
   this.scope = scope;
   this.renderNode = renderNode;
   this.attrs = attrs;
@@ -33,6 +35,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
         attrs,
         parentView,
         parentScope,
+        isAngleBracket,
         templates } = options;
 
   attrs = attrs || {};
@@ -45,39 +48,40 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     return component || layout;
   });
 
-  if (component) {
-    let createOptions = { parentView };
+  component = component || EmberComponent;
 
-    // Map passed attributes (e.g. <my-component id="foo">) to component
-    // properties ({ id: "foo" }).
-    configureCreateOptions(attrs, createOptions);
+  let createOptions = { parentView };
 
-    // If there is a controller on the scope, pluck it off and save it on the
-    // component. This allows the component to target actions sent via
-    // `sendAction` correctly.
-    if (parentScope.locals.controller) {
-      createOptions._controller = getValue(parentScope.locals.controller);
-    }
+  configureTagName(attrs, tagName, component, isAngleBracket, createOptions);
 
-    // Instantiate the component
-    component = createComponent(component, createOptions, renderNode, env, attrs);
+  // Map passed attributes (e.g. <my-component id="foo">) to component
+  // properties ({ id: "foo" }).
+  configureCreateOptions(attrs, createOptions);
 
-    // If the component specifies its template via the `layout` or `template`
-    // properties instead of using the template looked up in the container, get
-    // them now that we have the component instance.
-    let result = extractComponentTemplates(component, templates);
-    layout = result.layout || layout;
-    templates = result.templates || templates;
-
-    extractPositionalParams(renderNode, component, params, attrs);
+  // If there is a controller on the scope, pluck it off and save it on the
+  // component. This allows the component to target actions sent via
+  // `sendAction` correctly.
+  if (parentScope.locals.controller) {
+    createOptions._controller = getValue(parentScope.locals.controller);
   }
 
-  var results = buildComponentTemplate({ layout: layout, component: component }, attrs, {
-    templates,
-    scope: parentScope
-  });
+  // Instantiate the component
+  component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
-  return new ComponentNodeManager(component, parentScope, renderNode, attrs, results.block, results.createdElement);
+  // If the component specifies its template via the `layout` or `template`
+  // properties instead of using the template looked up in the container, get
+  // them now that we have the component instance.
+  let result = extractComponentTemplates(component, templates);
+  layout = result.layout || layout;
+  templates = result.templates || templates;
+
+  extractPositionalParams(renderNode, component, params, attrs);
+
+  var results = buildComponentTemplate(
+    { layout, component, isAngleBracket }, attrs, { templates, scope: parentScope }
+  );
+
+  return new ComponentNodeManager(component, isAngleBracket, parentScope, renderNode, attrs, results.block, results.createdElement);
 };
 
 function extractPositionalParams(renderNode, component, params, attrs) {
@@ -132,12 +136,19 @@ function extractLegacyTemplate(_templates, componentTemplate) {
   return templates;
 }
 
+function configureTagName(attrs, tagName, component, isAngleBracket, createOptions) {
+  if (isAngleBracket) {
+    createOptions.tagName = tagName;
+  } else if (attrs.tagName) {
+    createOptions.tagName = getValue(attrs.tagName);
+  }
+}
+
 function configureCreateOptions(attrs, createOptions) {
   // Some attrs are special and need to be set as properties on the component
   // instance. Make sure we use getValue() to get them from `attrs` since
   // they are still streams.
   if (attrs.id) { createOptions.elementId = getValue(attrs.id); }
-  if (attrs.tagName) { createOptions.tagName = getValue(attrs.tagName); }
   if (attrs._defaultTagName) { createOptions._defaultTagName = getValue(attrs._defaultTagName); }
   if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 }
@@ -148,31 +159,31 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
   return instrument(component, function() {
     let env = _env;
 
-    if (component) {
-      env = assign({ view: component }, env);
+    env = assign({ view: component }, env);
 
-      var snapshot = takeSnapshot(attrs);
-      env.renderer.componentInitAttrs(this.component, snapshot);
-      env.renderer.componentWillRender(component);
-      env.renderedViews.push(component.elementId);
-    }
+    var snapshot = takeSnapshot(attrs);
+    env.renderer.componentInitAttrs(this.component, snapshot);
+    env.renderer.componentWillRender(component);
+    env.renderedViews.push(component.elementId);
 
     if (this.block) {
       this.block(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
-    if (component) {
-      var element = this.expectElement && this.renderNode.firstNode;
-      handleLegacyRender(component, element);
-      env.renderer.didCreateElement(component, element);
-      env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
-      env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
-    }
+    var element = this.expectElement && this.renderNode.firstNode;
+
+    handleLegacyRender(component, element);
+    env.renderer.didCreateElement(component, element);
+    env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
+
+    env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
   }, this);
 };
 
 export function handleLegacyRender(component, element) {
   if (!component.render) { return; }
+
+  Ember.assert("Legacy render functions are not supported with angle-bracket components", !component._isAngleBracket);
 
   var content, node, lastChildIndex;
   var buffer = [];
@@ -194,60 +205,63 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   return instrument(component, function() {
     let env = _env;
 
-    if (component) {
-      env = assign({ view: component }, env);
+    env = assign({ view: component }, env);
 
-      var snapshot = takeSnapshot(attrs);
+    var snapshot = takeSnapshot(attrs);
 
-      if (component._renderNode.shouldReceiveAttrs) {
-        env.renderer.componentUpdateAttrs(component, component.attrs, snapshot);
+    if (component._renderNode.shouldReceiveAttrs) {
+      env.renderer.componentUpdateAttrs(component, component.attrs, snapshot);
 
-        // 2.0TODO: remove legacy semantics for angle-bracket semantics
+      if (!component._isAngleBracket) {
         setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
-
-        component._renderNode.shouldReceiveAttrs = false;
       }
 
-      // Notify component that it has become dirty and is about to change.
-      env.renderer.componentWillUpdate(component, snapshot);
-      env.renderer.componentWillRender(component);
-
-      env.renderedViews.push(component.elementId);
+      component._renderNode.shouldReceiveAttrs = false;
     }
+
+    // Notify component that it has become dirty and is about to change.
+    env.renderer.componentWillUpdate(component, snapshot);
+    env.renderer.componentWillRender(component);
+
+    env.renderedViews.push(component.elementId);
 
     if (this.block) {
       this.block(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
-    if (component) {
-      env.lifecycleHooks.push({ type: 'didUpdate', view: component });
-    }
+    env.lifecycleHooks.push({ type: 'didUpdate', view: component });
 
     return env;
   }, this);
 };
 
 
-export function createComponent(_component, options, renderNode, env, attrs = {}) {
-  let snapshot = takeSnapshot(attrs);
-  let props = assign({}, options);
-  let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
+export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}) {
+  let props = assign({}, _props);
 
-  Ember.deprecate("controller= is deprecated", !hasSuppliedController);
+  if (!isAngleBracket) {
+    let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
+    Ember.deprecate("controller= is deprecated", !hasSuppliedController);
 
-  props.attrs = snapshot;
+    let snapshot = takeSnapshot(attrs);
+    props.attrs = snapshot;
 
-  // 2.0TODO deprecate and remove from angle components
-  let proto = _component.proto();
-  mergeBindings(props, shadowedAttrs(proto, snapshot));
+    let proto = _component.proto();
+    mergeBindings(props, shadowedAttrs(proto, snapshot));
+  } else {
+    props._isAngleBracket = true;
+  }
 
   let component = _component.create(props);
 
-  if (options.parentView) {
-    options.parentView.appendChild(component);
+  // for the fallback case
+  component.container = component.container || env.container;
 
-    if (options.viewName) {
-      set(options.parentView, options.viewName, component);
+  if (props.parentView) {
+    props.parentView.appendChild(component);
+
+    if (props.viewName) {
+      set(props.parentView, props.viewName, component);
     }
   }
 
