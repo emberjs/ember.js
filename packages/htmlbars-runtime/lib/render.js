@@ -5,6 +5,8 @@ import { AlwaysDirtyVisitor } from "./expression-visitor";
 import Morph from "./morph";
 import { clearMorph } from "../htmlbars-util/template-utils";
 
+var svgNamespace = "http://www.w3.org/2000/svg";
+
 export default function render(template, env, scope, options) {
   var dom = env.dom;
   var contextualElement;
@@ -90,6 +92,9 @@ export function manualElement(tagName, attributes) {
     hasRendered: false,
     buildFragment: function buildFragment(dom) {
       var el0 = dom.createDocumentFragment();
+      if (tagName === 'svg') {
+        dom.setNamespace(svgNamespace);
+      }
       var el1 = dom.createElement(tagName);
 
       for (var key in attributes) {
