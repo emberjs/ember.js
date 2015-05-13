@@ -451,3 +451,107 @@ QUnit.test('implementing `render` allows pushing into a string buffer', function
 
   equal(view.$('#zomg').text(), 'Whoop!');
 });
+
+QUnit.test("comopnent should rerender when a property is changed during children's rendering", function() {
+  expectDeprecation(/twice in a single render/);
+
+  var outer, middle;
+
+  registry.register('component:x-outer', Component.extend({
+    value: 1,
+    grabReference: Ember.on('init', function() {
+      outer = this;
+    })
+  }));
+
+  registry.register('component:x-middle', Component.extend({
+    grabReference: Ember.on('init', function() {
+      middle = this;
+    })
+  }));
+
+  registry.register('component:x-inner', Component.extend({
+    pushDataUp: Ember.observer('value', function() {
+      middle.set('value', this.get('value'));
+    })
+  }));
+
+  registry.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
+  registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
+  registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
+
+
+  view = EmberView.extend({
+    template: compile('{{x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#inner-value').text(), '1', 'initial render of inner');
+  equal(view.$('#middle-value').text(), '1', 'initial render of middle');
+
+  run(() => outer.set('value', 2));
+
+  equal(view.$('#inner-value').text(), '2', 'second render of inner');
+  equal(view.$('#middle-value').text(), '2', 'second render of middle');
+
+  run(() => outer.set('value', 3));
+
+  equal(view.$('#inner-value').text(), '3', 'third render of inner');
+  equal(view.$('#middle-value').text(), '3', 'third render of middle');
+
+});
+
+QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {
+  expectDeprecation(/modified value twice in a single render/);
+
+  var outer, middle;
+
+  registry.register('component:x-outer', Component.extend({
+    value: 1,
+    grabReference: Ember.on('init', function() {
+      outer = this;
+    })
+  }));
+
+  registry.register('component:x-middle', Component.extend({
+    value: null,
+    grabReference: Ember.on('init', function() {
+      middle = this;
+    })
+  }));
+
+  registry.register('component:x-inner', Component.extend({
+    value: null,
+    pushDataUp: Ember.observer('value', function() {
+      middle.set('value', this.get('value'));
+    })
+  }));
+
+  registry.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
+  registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
+  registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
+
+
+  view = EmberView.extend({
+    template: compile('{{x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#inner-value').text(), '1', 'initial render of inner');
+  equal(view.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
+
+  run(() => outer.set('value', 2));
+
+  equal(view.$('#inner-value').text(), '2', 'second render of inner');
+  equal(view.$('#middle-value').text(), '2', 'second render of middle');
+
+  run(() => outer.set('value', 3));
+
+  equal(view.$('#inner-value').text(), '3', 'third render of inner');
+  equal(view.$('#middle-value').text(), '3', 'third render of middle');
+
+});

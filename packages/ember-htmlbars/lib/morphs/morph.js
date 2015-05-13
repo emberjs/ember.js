@@ -2,6 +2,7 @@ import DOMHelper from "dom-helper";
 import o_create from 'ember-metal/platform/create';
 
 var HTMLBarsMorph = DOMHelper.prototype.MorphClass;
+let guid = 1;
 
 function EmberMorph(DOMHelper, contextualElement) {
   this.HTMLBarsMorph$constructor(DOMHelper, contextualElement);
@@ -9,6 +10,7 @@ function EmberMorph(DOMHelper, contextualElement) {
   this.emberView = null;
   this.emberToDestroy = null;
   this.streamUnsubscribers = null;
+  this.guid = guid++;
 
   // A component can become dirty either because one of its
   // attributes changed, or because it was re-rendered. If any part
@@ -47,6 +49,10 @@ proto.cleanup = function() {
 
     this.emberToDestroy = null;
   }
+};
+
+proto.didRender = function(env, scope) {
+  env.renderedNodes[this.guid] = true;
 };
 
 export default EmberMorph;

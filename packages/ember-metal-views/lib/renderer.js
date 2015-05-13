@@ -89,6 +89,7 @@ Renderer.prototype.ensureViewNotRendering =
 
 Renderer.prototype.clearRenderedViews =
   function Renderer_clearRenderedViews(env) {
+    env.renderedNodes = {};
     env.renderedViews.length = 0;
   };
 
