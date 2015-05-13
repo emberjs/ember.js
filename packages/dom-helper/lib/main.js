@@ -105,10 +105,13 @@ function buildSVGDOM(html, dom){
   return div.firstChild.childNodes;
 }
 
+var guid = 1;
+
 function ElementMorph(element, dom, namespace) {
   this.element = element;
   this.dom = dom;
   this.namespace = namespace;
+  this.guid = "element" + guid++;
 
   this.state = {};
   this.isDirty = true;

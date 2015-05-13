@@ -1,6 +1,8 @@
 import MorphBase from "../morph-range";
 import { createObject } from "../htmlbars-util/object-utils";
 
+var guid = 1;
+
 function HTMLBarsMorph(domHelper, contextualElement) {
   this.super$constructor(domHelper, contextualElement);
 
@@ -17,6 +19,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.key = null;
   this.linkedParams = null;
   this.rendered = false;
+  this.guid = "range" + guid++;
 }
 
 HTMLBarsMorph.empty = function(domHelper, contextualElement) {
