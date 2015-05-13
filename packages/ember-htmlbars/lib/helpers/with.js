@@ -33,7 +33,12 @@ import shouldDisplay from "ember-views/streams/should_display";
   This is very similar to using an `itemController` option with the `{{each}}` helper.
   ```handlebars
   {{#with users.posts controller='userBlogPosts' as |posts|}}
-    {{!- `posts` is wrapped in our controller instance }}
+    {{! `posts` is wrapped in our controller instance }}
+    {{#if isProlificBlogger}}
+      {{user.name}} has written more than {{posts.model.length}} blog posts!
+    {{else}}
+      {{user.name}} has only written {{posts.model.length}} blog posts.
+    {{/if}}
   {{/with}}
   ```
   In the above example, the `posts` keyword is now wrapped in the `userBlogPost` controller,
