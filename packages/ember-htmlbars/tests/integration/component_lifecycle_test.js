@@ -61,8 +61,8 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
         pushHook(label, 'willUpdate', options);
       },
 
-      didReceiveAttrs(nextAttrs) {
-        pushHook(label, 'didReceiveAttrs', nextAttrs);
+      didReceiveAttrs(options) {
+        pushHook(label, 'didReceiveAttrs', options);
       },
 
       willRender() {
@@ -102,14 +102,14 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
   ok(component, "The component was inserted");
   equal(jQuery('#qunit-fixture').text(), 'Twitter: @tomdale Name: Tom Dale Website: tomdale.net');
 
-  let topAttrs = { attrs: { twitter: "@tomdale" } };
-  let middleAttrs = { attrs: { name: "Tom Dale" } };
-  let bottomAttrs = { attrs: { website: "tomdale.net" } };
+  let topAttrs = { twitter: "@tomdale" };
+  let middleAttrs = { name: "Tom Dale" };
+  let bottomAttrs = { website: "tomdale.net" };
 
   deepEqual(hooks, [
-    hook('top', 'didInitAttrs', topAttrs), hook('top', 'didReceiveAttrs', topAttrs), hook('top', 'willRender'),
-    hook('middle', 'didInitAttrs', middleAttrs), hook('middle', 'didReceiveAttrs', middleAttrs), hook('middle', 'willRender'),
-    hook('bottom', 'didInitAttrs', bottomAttrs), hook('bottom', 'didReceiveAttrs', bottomAttrs), hook('bottom', 'willRender'),
+    hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
+    hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
+    hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
     hook('bottom', 'didInsertElement'), hook('bottom', 'didRender'),
     hook('middle', 'didInsertElement'), hook('middle', 'didRender'),
     hook('top', 'didInsertElement'), hook('top', 'didRender')
@@ -212,8 +212,8 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
         pushHook(label, 'willUpdate', options);
       },
 
-      didReceiveAttrs(nextAttrs) {
-        pushHook(label, 'didReceiveAttrs', nextAttrs);
+      didReceiveAttrs(options) {
+        pushHook(label, 'didReceiveAttrs', options);
       },
 
       willRender() {
@@ -253,14 +253,14 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   ok(component, "The component was inserted");
   equal(jQuery('#qunit-fixture').text(), 'Top: Middle: Bottom: @tomdale');
 
-  let topAttrs = { attrs: { twitter: "@tomdale" } };
-  let middleAttrs = { attrs: { twitterTop: "@tomdale" } };
-  let bottomAttrs = { attrs: { twitterMiddle: "@tomdale" } };
+  let topAttrs = { twitter: "@tomdale" };
+  let middleAttrs = { twitterTop: "@tomdale" };
+  let bottomAttrs = { twitterMiddle: "@tomdale" };
 
   deepEqual(hooks, [
-    hook('top', 'didInitAttrs', topAttrs), hook('top', 'didReceiveAttrs', topAttrs), hook('top', 'willRender'),
-    hook('middle', 'didInitAttrs', middleAttrs), hook('middle', 'didReceiveAttrs', middleAttrs), hook('middle', 'willRender'),
-    hook('bottom', 'didInitAttrs', bottomAttrs), hook('bottom', 'didReceiveAttrs', bottomAttrs), hook('bottom', 'willRender'),
+    hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
+    hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
+    hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
     hook('bottom', 'didInsertElement'), hook('bottom', 'didRender'),
     hook('middle', 'didInsertElement'), hook('middle', 'didRender'),
     hook('top', 'didInsertElement'), hook('top', 'didRender')
