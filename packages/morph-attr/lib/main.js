@@ -42,6 +42,8 @@ function updateAttributeNS(value) {
 
 var UNSET = { unset: true };
 
+var guid = 1;
+
 function AttrMorph(element, attrName, domHelper, namespace) {
   this.element = element;
   this.domHelper = domHelper;
@@ -51,6 +53,7 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.escaped = true;
   this.lastValue = UNSET;
   this.linkedParams = null;
+  this.guid = "attr" + guid++;
   this.rendered = false;
   this._renderedInitially = false;
 
