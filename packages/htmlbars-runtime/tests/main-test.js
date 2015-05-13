@@ -1,3 +1,4 @@
+/*globals SVGElement, SVGLinearGradientElement */
 import { hooks } from "../htmlbars-runtime";
 import { manualElement } from "../htmlbars-runtime/render";
 import { compile } from "../htmlbars-compiler/compiler";
