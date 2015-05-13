@@ -45,34 +45,11 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
   {{/each}}
   ```
 
-  ### Specifying an alternative view for no items (else)
-
-  The `emptyViewClass` option provides the same flexibility to the `{{else}}`
-  case of the each helper.
-
-  ```javascript
-  App.NoPeopleView = Ember.View.extend({
-    tagName: 'li',
-    template: '<p>No person is available, sorry</p>'
-  });
-  ```
-
-  ```handlebars
-  <ul>
-    {{#each developers emptyViewClass="no-people" as |developer|}}
-      <li>{{developer.name}}</li>
-    {{/each}}
-  </ul>
-  ```
-
   @method each
   @for Ember.Handlebars.helpers
   @param [name] {String} name for item (used with `as`)
   @param [path] {String} path
   @param [options] {Object} Handlebars key/value pairs of options
-  @param [options.itemViewClass] {String} a path to a view class used for each item
-  @param [options.emptyViewClass] {String} a path to a view class used for each item
-  @param [options.itemController] {String} name of a controller to be created for each item
 */
 export default function eachHelper(params, hash, blocks) {
   var list = params[0];
