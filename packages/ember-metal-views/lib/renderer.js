@@ -140,7 +140,7 @@ Renderer.prototype.setAttrs = function (view, attrs) {
 Renderer.prototype.componentInitAttrs = function (component, attrs) {
   set(component, 'attrs', attrs);
   component.trigger('didInitAttrs', { attrs });
-  component.trigger('didReceiveAttrs', { attrs });
+  component.trigger('didReceiveAttrs', { newAttrs: attrs });
 }; // set attrs the first time
 
 Renderer.prototype.didInsertElement = function (view) {
