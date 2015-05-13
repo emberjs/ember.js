@@ -6,7 +6,7 @@
 import { get } from "ember-metal/property_get";
 import updateScope from "ember-htmlbars/utils/update-scope";
 
-export default function bindSelf(env, scope, _self) {
+export default function updateSelf(env, scope, _self) {
   let self = _self;
 
   if (self && self.hasBoundController) {
