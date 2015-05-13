@@ -65,30 +65,6 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
   </ul>
   ```
 
-  ### Wrapping each item in a controller
-
-  Controllers in Ember manage state and decorate data. In many cases,
-  providing a controller for each item in a list can be useful.
-  An item that is passed to an item controller will be set as the `model` property
-  on the controller.
-
-  This allows state and decoration to be added to the controller
-  while any other property lookups can be delegated to the model. An example:
-
-  ```javascript
-  App.RecruitController = Ember.Controller.extend({
-    isAvailableForHire: function() {
-      return !this.get('model.isEmployed') && this.get('model.isSeekingWork');
-    }.property('model.isEmployed', 'model.isSeekingWork')
-  })
-  ```
-
-  ```handlebars
-  {{#each developers itemController="recruit" as |person|}}
-    {{person.model.name}} {{#if person.isAvailableForHire}}Hire me!{{/if}}
-  {{/each}}
-  ```
-
   @method each
   @for Ember.Handlebars.helpers
   @param [name] {String} name for item (used with `as`)
