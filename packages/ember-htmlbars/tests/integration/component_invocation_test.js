@@ -453,6 +453,8 @@ QUnit.test('implementing `render` allows pushing into a string buffer', function
 });
 
 QUnit.test("comopnent should rerender when a property is changed during children's rendering", function() {
+  expectDeprecation(/twice in a single render/);
+
   var outer, middle;
 
   registry.register('component:x-outer', Component.extend({
@@ -502,6 +504,8 @@ QUnit.test("comopnent should rerender when a property is changed during children
 });
 
 QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {
+  expectDeprecation(/modified value twice in a single render/);
+
   var outer, middle;
 
   registry.register('component:x-outer', Component.extend({
@@ -538,7 +542,7 @@ QUnit.test("comopnent should rerender when a property (with a default) is change
   runAppend(view);
 
   equal(view.$('#inner-value').text(), '1', 'initial render of inner');
-  equal(view.$('#middle-value').text(), '1', 'initial render of middle');
+  equal(view.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
   run(() => outer.set('value', 2));
 

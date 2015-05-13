@@ -26,7 +26,7 @@ export var CoreOutletView = View.extend({
       this.dirtyOutlets();
       this._outlets = [];
 
-      this.scheduleRevalidate();
+      this.scheduleRevalidate(null, null);
     }
   },
 

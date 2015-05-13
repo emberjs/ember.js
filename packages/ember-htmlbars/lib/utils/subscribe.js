@@ -1,6 +1,6 @@
-import { isStream } from "ember-metal/streams/utils";
+import { isStream, labelFor } from "ember-metal/streams/utils";
 
-export default function subscribe(node, scope, stream) {
+export default function subscribe(node, env, scope, stream) {
   if (!isStream(stream)) { return; }
   var component = scope.component;
   var unsubscribers = node.streamUnsubscribers = node.streamUnsubscribers || [];
@@ -21,6 +21,6 @@ export default function subscribe(node, scope, stream) {
       node.shouldReceiveAttrs = true;
     }
 
-    node.ownerNode.emberView.scheduleRevalidate();
+    node.ownerNode.emberView.scheduleRevalidate(node, labelFor(stream));
   }));
 }

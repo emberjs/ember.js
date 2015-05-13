@@ -1330,7 +1330,17 @@ var View = CoreView.extend(
     this.scheduledRevalidation = false;
   },
 
-  scheduleRevalidate() {
+  scheduleRevalidate(node, label, manualRerender) {
+    if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
+      if (manualRerender) {
+        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`);
+      } else {
+        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`);
+      }
+      run.scheduleOnce('render', this, this.revalidate);
+      return;
+    }
+
     Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`, !this._dispatching);
 
     if (!this.scheduledRevalidation || this._dispatching) {

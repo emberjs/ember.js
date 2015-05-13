@@ -34,13 +34,13 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
 
   if (params && params.length) {
     for (var i = 0; i < params.length; i++) {
-      subscribe(renderNode, scope, params[i]);
+      subscribe(renderNode, env, scope, params[i]);
     }
   }
 
   if (hash) {
     for (var key in hash) {
-      subscribe(renderNode, scope, hash[key]);
+      subscribe(renderNode, env, scope, hash[key]);
     }
   }
 

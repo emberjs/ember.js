@@ -40,7 +40,8 @@ merge(hasElement, {
       }
       node.isDirty = true;
     });
-    renderNode.ownerNode.emberView.scheduleRevalidate();
+
+    renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), "rerendering");
   },
 
   cleanup(view) {

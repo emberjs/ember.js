@@ -7,6 +7,7 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
   var env = {
     lifecycleHooks: [],
     renderedViews: [],
+    renderedNodes: {},
     view: view,
     outletState: view.outletState,
     container: view.container,
