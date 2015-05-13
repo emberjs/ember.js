@@ -52,7 +52,7 @@ import shouldDisplay from "ember-views/streams/should_display";
     {{#if isProlificBlogger}}
       {{user.name}} has written more than {{posts.model.length}} blog posts!
     {{else}}
-      {{user.name}} has only written {{posts.model.length}} blog posts. 
+      {{user.name}} has only written {{posts.model.length}} blog posts.
     {{/if}}
   {{/with}}
   ```
