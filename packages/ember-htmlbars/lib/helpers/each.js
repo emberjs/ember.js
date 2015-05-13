@@ -53,7 +53,7 @@ import normalizeSelf from "ember-htmlbars/utils/normalize-self";
   ```javascript
   App.NoPeopleView = Ember.View.extend({
     tagName: 'li',
-    template: 'No person is available, sorry'
+    template: '<p>No person is available, sorry</p>'
   });
   ```
 
