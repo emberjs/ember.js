@@ -177,6 +177,10 @@ RenderResult.prototype.populateNodes = function(visitor) {
     var statement = statements[i];
     var morph = nodes[i];
 
+    if (env.hooks.willRenderNode) {
+      env.hooks.willRenderNode(morph, env, scope);
+    }
+
     switch (statement[0]) {
       case 'block': visitor.block(statement, morph, env, scope, template, visitor); break;
       case 'inline': visitor.inline(statement, morph, env, scope, visitor); break;
@@ -184,6 +188,10 @@ RenderResult.prototype.populateNodes = function(visitor) {
       case 'element': visitor.element(statement, morph, env, scope, template, visitor); break;
       case 'attribute': visitor.attribute(statement, morph, env, scope); break;
       case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
+    }
+
+    if (env.hooks.didRenderNode) {
+      env.hooks.didRenderNode(morph, env, scope);
     }
   }
 };

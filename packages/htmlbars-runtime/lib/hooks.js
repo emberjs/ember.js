@@ -998,6 +998,8 @@ export default {
   destroyRenderNode: null,
   willCleanupTree: null,
   didCleanupTree: null,
+  willRenderNode: null,
+  didRenderNode: null,
 
   // derived hooks
   attribute: attribute,
