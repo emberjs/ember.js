@@ -67,8 +67,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
     run(function() {
       component.set('categories', {
         "Programming Languages": 199303,
-        "Good Programming Languages": 0.2 + 0.4,
-        "Bad Programming Languages": 0
+        "Good Programming Languages": 123,
+        "Bad Programming Languages": 456
       });
     });
 
@@ -76,9 +76,9 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
     assert.equal(component.$('li').first().text(),
       "Programming Languages: 199303", "renders first item correctly after rerender");
     assert.equal(component.$('li:eq(1)').text(),
-      "Good Programming Languages: 0.6000000000000001", "renders second item correctly after rerender");
+      "Good Programming Languages: 123", "renders second item correctly after rerender");
     assert.equal(component.$('li:eq(2)').text(),
-      "Bad Programming Languages: 0", "renders third item correctly after rerender");
+      "Bad Programming Languages: 456", "renders third item correctly after rerender");
   });
 
   QUnit.test("it only iterates over an object's own properties", function(assert) {
@@ -129,5 +129,35 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
 
     run(() => component.rerender());
     assert.equal(component.$('li').length, 0, "nothing is rendered if the object is not passed after rerender");
+  });
+
+  QUnit.test("it supports rendering an inverse", function(assert) {
+    let categories = null;
+
+    renderTemplate(`
+      <ul class="categories">
+      {{#each-in categories as |category count|}}
+        <li>{{category}}: {{count}}</li>
+      {{else}}
+        <li>No categories.</li>
+      {{/each-in}}
+      </ul>
+    `, { categories });
+
+    assert.equal(component.$('li').length, 1, "one li is rendered");
+    assert.equal(component.$('li').text(), "No categories.", "the inverse is rendered");
+
+    run(() => component.rerender());
+    assert.equal(component.$('li').length, 1, "one li is rendered");
+    assert.equal(component.$('li').text(), "No categories.", "the inverse is rendered");
+
+    run(() => {
+      component.set('categories', {
+        "First Category": 123
+      });
+    });
+
+    assert.equal(component.$('li').length, 1, "one li is rendered");
+    assert.equal(component.$('li').text(), "First Category: 123", "the list is rendered after being set");
   });
 }
