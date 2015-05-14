@@ -34,7 +34,12 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 import ApplicationInstance from "ember-application/system/application-instance";
-
+import TextField from "ember-views/views/text_field";
+import TextArea from "ember-views/views/text_area";
+import Checkbox from "ember-views/views/checkbox";
+import LegacyEachView from "ember-views/views/legacy_each_view";
+import LinkToComponent from "ember-routing-views/views/link";
+import RoutingService from "ember-routing/services/routing";
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
 import environment from 'ember-metal/environment';
@@ -1037,6 +1042,17 @@ Application.reopenClass({
     registry.injection('controller', '_bucketCache', '-bucket-cache:main');
 
     registry.injection('route', 'router', 'router:main');
+
+    registry.register('component:-text-field', TextField);
+    registry.register('component:-text-area', TextArea);
+    registry.register('component:-checkbox', Checkbox);
+    registry.register('view:-legacy-each', LegacyEachView);
+    registry.register('component:-link-to', LinkToComponent);
+
+    // Register the routing service...
+    registry.register('service:-routing', RoutingService);
+    // Then inject the app router into it
+    registry.injection('service:-routing', 'router', 'router:main');
 
     // DEBUGGING
     registry.register('resolver-for-debugging:main', registry.resolver.__resolver__, { instantiate: false });
