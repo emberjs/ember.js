@@ -1,19 +1,13 @@
 # Ember Changelog
 
-### 1.12.0-beta.3 (May 1, 2015)
+### 1.12.0 (May 13, 2015)
 
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
 - [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsey values.
 - [#10883](https://github.com/emberjs/ember.js/pull/10883) [BUGFIX] Fix `View.prototype.replaceIn` functionality.
 - [#10920](https://github.com/emberjs/ember.js/pull/10920) [BUGFIX] Fix `Component.prototype.layout` so that it can now be set and recompute properly.
 - [#10968](https://github.com/emberjs/ember.js/pull/10968) [BUGFIX] Fix assertion that incorrectly fired on legacy settable computed properties.
-
-### 1.12.0-beta.2 (April 14, 2015)
-
 - [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options
-
-### 1.12.0-beta.1 (March 28, 2015)
-
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
 - [#10200](https://github.com/emberjs/ember.js/pull/10200) Add 'autocomplete' to Ember.Select view
 - [#10464](https://github.com/emberjs/ember.js/pull/10464) Ensure templates were compiled with the current compiler version.
