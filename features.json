@@ -1,6 +1,6 @@
 {
   "features": {
-    "features-stripped-test": null,
+    "features-stripped-test": false,
     "ember-routing-named-substates": true,
     "mandatory-setter": "development-only",
     "ember-htmlbars-component-generation": true,
@@ -9,15 +9,15 @@
     "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
     "new-computed-syntax": true,
-    "ember-testing-checkbox-helpers": null,
-    "ember-metal-stream": null,
+    "ember-testing-checkbox-helpers": false,
+    "ember-metal-stream": false,
     "ember-application-instance-initializers": true,
     "ember-application-initializer-context": true,
     "ember-router-willtransition": true,
-    "ember-application-visit": null,
+    "ember-application-visit": false,
     "ember-views-component-block-info": true,
-    "ember-routing-core-outlet": null,
-    "ember-libraries-isregistered": null,
+    "ember-routing-core-outlet": false,
+    "ember-libraries-isregistered": false,
     "ember-routing-htmlbars-improved-actions": true
   },
   "debugStatements": [
