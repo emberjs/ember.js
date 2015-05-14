@@ -497,6 +497,25 @@ QUnit.test("select with group doesn't break options", function() {
   deepEqual(select.get('selection'), content.get('firstObject'));
 });
 
+QUnit.test("select with group works for initial value", function() {
+  var content = Ember.A([
+    { id: 1, firstName: 'Yehuda', organization: 'Tilde' },
+    { id: 2, firstName: 'Tom', organization: 'Tilde' },
+    { id: 3, firstName: 'Keith', organization: 'Envato' }
+  ]);
+
+  run(function() {
+    select.set('content', content);
+    select.set('optionGroupPath', 'organization');
+    select.set('optionValuePath', 'content.id');
+    select.set('value', 2);
+  });
+
+  append();
+
+  equal(select.$().val(), 2, "Initial value is set properly");
+});
+
 QUnit.test("select with group observes its content", function() {
   var wycats = { firstName: 'Yehuda', organization: 'Tilde' };
   var content = Ember.A([
