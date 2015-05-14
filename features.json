@@ -15,7 +15,7 @@
     "ember-application-initializer-context": true,
     "ember-router-willtransition": true,
     "ember-application-visit": null,
-    "ember-views-component-block-info": null,
+    "ember-views-component-block-info": true,
     "ember-routing-core-outlet": null,
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true
