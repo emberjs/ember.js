@@ -5,19 +5,18 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import { isGlobalPath } from "ember-metal/binding";
+import ContainerView from "ember-views/views/container_view";
+import View from "ember-views/views/view";
+import EmberArray from "ember-runtime/mixins/array";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { fmt } from "ember-runtime/system/string";
-import ContainerView from "ember-views/views/container_view";
-import CoreView from "ember-views/views/core_view";
-import View from "ember-views/views/view";
+import { computed } from "ember-metal/computed";
 import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
-import EmberArray from "ember-runtime/mixins/array";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -308,23 +307,7 @@ var CollectionView = ContainerView.extend({
     @param {Number} removed number of object to be removed from content
   */
   arrayWillChange(content, start, removedCount) {
-    // If the contents were empty before and this template collection has an
-    // empty view remove it now.
-    var emptyView = get(this, 'emptyView');
-    if (emptyView && emptyView instanceof View) {
-      emptyView.removeFromParent();
-    }
-
-    // Loop through child views that correspond with the removed items.
-    // Note that we loop from the end of the array to the beginning because
-    // we are mutating it as we go.
-    var childViews = this._childViews;
-    var childView, idx;
-
-    for (idx = start + removedCount - 1; idx >= start; idx--) {
-      childView = childViews[idx];
-      childView.destroy();
-    }
+    this.replace(start, removedCount, []);
   },
 
   /**
@@ -343,13 +326,13 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange(content, start, removed, added) {
     var addedViews = [];
-    var view, item, idx, len, itemViewClass, emptyView, itemViewProps;
+    var view, item, idx, len, itemViewClass, itemViewProps;
 
     len = content ? get(content, 'length') : 0;
 
     if (len) {
       itemViewProps = this._itemViewProps || {};
-      itemViewClass = get(this, 'itemViewClass');
+      itemViewClass = this.getAttr('itemViewClass') || get(this, 'itemViewClass');
 
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
@@ -361,11 +344,16 @@ var CollectionView = ContainerView.extend({
 
         view = this.createChildView(itemViewClass, itemViewProps);
 
-        if (this.blockParams > 0) {
-          view._blockArguments = [item];
-        }
-        if (this.blockParams > 1) {
-          view._blockArguments.push(view.getStream('_view.contentIndex'));
+        if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+          if (this.blockParams > 1) {
+            view._blockArguments = [item, view.getStream('_view.contentIndex')];
+          } else if (this.blockParams === 1) {
+            view._blockArguments = [item];
+          }
+        } else {
+          if (this.blockParams > 0) {
+            view._blockArguments = [item];
+          }
         }
 
         addedViews.push(view);
@@ -373,32 +361,15 @@ var CollectionView = ContainerView.extend({
 
       this.replace(start, 0, addedViews);
 
-      if (this.blockParams > 1) {
-        var childViews = this._childViews;
-        for (idx = start+added; idx < len; idx++) {
-          view = childViews[idx];
-          set(view, 'contentIndex', idx);
+      if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
+        if (this.blockParams > 1) {
+          var childViews = this.childViews;
+          for (idx = start+added; idx < len; idx++) {
+            view = childViews[idx];
+            set(view, 'contentIndex', idx);
+          }
         }
       }
-    } else {
-      emptyView = get(this, 'emptyView');
-
-      if (!emptyView) { return; }
-
-      if ('string' === typeof emptyView && isGlobalPath(emptyView)) {
-        emptyView = get(emptyView) || emptyView;
-      }
-
-      emptyView = this.createChildView(emptyView);
-
-      addedViews.push(emptyView);
-      set(this, 'emptyView', emptyView);
-
-      if (CoreView.detect(emptyView)) {
-        this._createdEmptyView = emptyView;
-      }
-
-      this.replace(start, 0, addedViews);
     }
   },
 
@@ -428,7 +399,58 @@ var CollectionView = ContainerView.extend({
     }
 
     return view;
-  }
+  },
+
+  willRender: function() {
+    var attrs = this.attrs;
+    var itemProps = buildItemViewProps(this._itemViewTemplate, attrs);
+    this._itemViewProps = itemProps;
+    var childViews = get(this, 'childViews');
+
+    for (var i=0, l=childViews.length; i<l; i++) {
+      childViews[i].setProperties(itemProps);
+    }
+
+    if ('content' in attrs) {
+      set(this, 'content', this.getAttr('content'));
+    }
+
+    if ('emptyView' in attrs) {
+      set(this, 'emptyView', this.getAttr('emptyView'));
+    }
+  },
+
+  _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {
+    var emptyView = get(this, 'emptyView');
+    var attrsEmptyViewClass = this.getAttr('emptyViewClass');
+    var emptyViewClass = get(this, 'emptyViewClass');
+    var inverse = get(this, '_itemViewInverse');
+    var actualEmpty = emptyView || attrsEmptyViewClass;
+
+    // Somehow, our previous semantics differed depending on whether the
+    // `emptyViewClass` was provided on the JavaScript class or via the
+    // Handlebars template.
+    // In Glimmer, we disambiguate between the two by checking first (and
+    // preferring) the attrs-supplied class.
+    // If not present, we fall back to the class's `emptyViewClass`, but only
+    // if an inverse has been provided via an `{{else}}`.
+    if (inverse && actualEmpty) {
+      if (actualEmpty.extend) {
+        return actualEmpty.extend({ template: inverse });
+      } else {
+        set(actualEmpty, 'template', inverse);
+      }
+    } else if (inverse && emptyViewClass) {
+      return emptyViewClass.extend({ template: inverse });
+    }
+
+    return actualEmpty;
+  }),
+
+  _emptyViewTagName: computed('tagName', function() {
+    var tagName = get(this, 'tagName');
+    return CollectionView.CONTAINER_MAP[tagName] || 'div';
+  })
 });
 
 /**
@@ -451,5 +473,39 @@ CollectionView.CONTAINER_MAP = {
   tr: 'td',
   select: 'option'
 };
+
+export let CONTAINER_MAP = CollectionView.CONTAINER_MAP;
+
+function buildItemViewProps(template, attrs) {
+  var props = {};
+
+  // Go through options passed to the {{collection}} helper and extract options
+  // that configure item views instead of the collection itself.
+  for (var prop in attrs) {
+    if (prop === 'itemViewClass' || prop === 'itemController' || prop === 'itemClassBinding') {
+      continue;
+    }
+    if (attrs.hasOwnProperty(prop)) {
+      var match = prop.match(/^item(.)(.*)$/);
+      if (match) {
+        var childProp = match[1].toLowerCase() + match[2];
+
+        if (childProp === 'class' || childProp === 'classNames') {
+          props.classNames = [attrs[prop]];
+        } else {
+          props[childProp] = attrs[prop];
+        }
+
+        delete attrs[prop];
+      }
+    }
+  }
+
+  if (template) {
+    props.template = template;
+  }
+
+  return props;
+}
 
 export default CollectionView;

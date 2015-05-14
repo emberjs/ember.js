@@ -28,6 +28,8 @@ case $TRAVIS_BRANCH in
     CHANNEL="release" ;;
   "metal-views" )
     CHANNEL="metal-views" ;;
+  "idempotent-rerender" )
+    CHANNEL="glimmer" ;;
   * )
     echo "Not a bower release branch.  Exiting!"
     exit 0 ;;

@@ -3,6 +3,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
 import EmberView from "ember-views/views/view";
+import { compile } from "ember-template-compiler";
 
 var originalLookup = Ember.lookup;
 var lookup, view;
@@ -55,15 +56,13 @@ QUnit.test("should warn if a non-array is used for classNameBindings", function(
 QUnit.test("creates a renderer if one is not provided", function() {
   var childView;
 
-  view = EmberView.create({
-    render(buffer) {
-      buffer.push('Em');
-      this.appendChild(childView);
-    }
+  childView = EmberView.create({
+    template: compile("ber")
   });
 
-  childView = EmberView.create({
-    template() { return 'ber'; }
+  view = EmberView.create({
+    childView: childView,
+    template: compile("Em{{view.childView}}")
   });
 
   run(function() {

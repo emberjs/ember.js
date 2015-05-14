@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 import { _getPath as getPath } from "ember-metal/property_get";
 import {
+  PROPERTY_DID_CHANGE,
   propertyWillChange,
   propertyDidChange
 } from "ember-metal/property_events";
@@ -11,6 +12,10 @@ import {
   isGlobalPath
 } from "ember-metal/path_cache";
 import { hasPropertyAccessors } from "ember-metal/platform/define_property";
+
+import { symbol } from "ember-metal/utils";
+export let INTERCEPT_SET = symbol("INTERCEPT_SET");
+export let UNHANDLED_SET = symbol("UNHANDLED_SET");
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -37,6 +42,14 @@ export function set(obj, keyName, value, tolerant) {
 
   if (obj === Ember.lookup) {
     return setPath(obj, keyName, value, tolerant);
+  }
+
+  // This path exists purely to implement backwards-compatible
+  // effects (specifically, setting a property on a view may
+  // invoke a mutator on `attrs`).
+  if (obj && typeof obj[INTERCEPT_SET] === 'function') {
+    let result = obj[INTERCEPT_SET](obj, keyName, value, tolerant);
+    if (result !== UNHANDLED_SET) { return result; }
   }
 
   var meta, possibleDesc, desc;
@@ -104,6 +117,9 @@ export function set(obj, keyName, value, tolerant) {
       }
     } else {
       obj[keyName] = value;
+      if (obj[PROPERTY_DID_CHANGE]) {
+        obj[PROPERTY_DID_CHANGE](keyName);
+      }
     }
   }
   return value;

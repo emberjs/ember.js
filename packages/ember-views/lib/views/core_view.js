@@ -1,5 +1,4 @@
-import Renderer from "ember-views/system/renderer";
-import DOMHelper from "dom-helper";
+import Renderer from "ember-metal-views/renderer";
 
 import {
   cloneStates,
@@ -10,9 +9,9 @@ import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
 import { get } from "ember-metal/property_get";
-import { computed } from "ember-metal/computed";
 
-import { typeOf } from "ember-metal/utils";
+import { typeOf } from "ember-runtime/utils";
+import { internal } from "htmlbars-runtime";
 
 function K() { return this; }
 
@@ -40,7 +39,6 @@ var renderer;
 */
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
-  isVirtual: false,
 
   _states: cloneStates(states),
 
@@ -53,9 +51,13 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     // Fallback for legacy cases where the view was created directly
     // via `create()` instead of going through the container.
     if (!this.renderer) {
+      var DOMHelper = domHelper();
       renderer = renderer || new Renderer(new DOMHelper());
       this.renderer = renderer;
     }
+
+    this.isDestroyingSubtree = false;
+    this._dispatching = null;
   },
 
   /**
@@ -66,28 +68,9 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: computed('_parentView', function() {
-    var parent = this._parentView;
-
-    if (parent && parent.isVirtual) {
-      return get(parent, 'parentView');
-    } else {
-      return parent;
-    }
-  }),
+  parentView: null,
 
   _state: null,
-
-  _parentView: null,
-
-  // return the current view, not including virtual views
-  concreteView: computed('parentView', function() {
-    if (!this.isVirtual) {
-      return this;
-    } else {
-      return get(this, 'parentView.concreteView');
-    }
-  }),
 
   instrumentName: 'core_view',
 
@@ -124,23 +107,21 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   destroy() {
-    var parent = this._parentView;
+    var parent = this.parentView;
 
     if (!this._super(...arguments)) { return; }
 
+    this.currentState.cleanup(this);
 
-    // destroy the element -- this will avoid each child view destroying
-    // the element over and over again...
-    if (!this.removedFromDOM && this._renderer) {
-      this._renderer.remove(this, true);
+    if (!this.ownerView.isDestroyingSubtree) {
+      this.ownerView.isDestroyingSubtree = true;
+      if (parent) { parent.removeChild(this); }
+      if (this._renderNode) {
+        Ember.assert("BUG: Render node exists without concomitant env.", this.ownerView.env);
+        internal.clearMorph(this._renderNode, this.ownerView.env, true);
+      }
+      this.ownerView.isDestroyingSubtree = false;
     }
-
-    // remove from parent if found. Don't call removeFromParent,
-    // as removeFromParent will try to remove the element from
-    // the DOM again.
-    if (parent) { parent.removeChild(this); }
-
-    this._transitionTo('destroying', false);
 
     return this;
   },
@@ -160,5 +141,10 @@ export var DeprecatedCoreView = CoreView.extend({
     this._super.apply(this, arguments);
   }
 });
+
+var _domHelper;
+function domHelper() {
+  return _domHelper = _domHelper || Ember.__loader.require("ember-htmlbars/system/dom-helper")['default'];
+}
 
 export default CoreView;

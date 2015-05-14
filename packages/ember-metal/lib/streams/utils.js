@@ -27,7 +27,7 @@ export function isStream(object) {
  */
 export function subscribe(object, callback, context) {
   if (object && object.isStream) {
-    object.subscribe(callback, context);
+    return object.subscribe(callback, context);
   }
 }
 
@@ -175,20 +175,119 @@ export function concat(array, separator) {
   if (hasStream) {
     var i, l;
     var stream = new Stream(function() {
-      return readArray(array).join(separator);
+      return concat(readArray(array), separator);
+    }, function() {
+      var labels = labelsFor(array);
+      return `concat([${labels.join(', ')}]; separator=${inspect(separator)})`;
     });
 
     for (i = 0, l=array.length; i < l; i++) {
       subscribe(array[i], stream.notify, stream);
     }
 
+    // used by angle bracket components to detect an attribute was provided
+    // as a string literal
+    stream.isConcat = true;
     return stream;
   } else {
     return array.join(separator);
   }
 }
 
-/*
+export function labelsFor(streams) {
+  var labels =  [];
+
+  for (var i=0, l=streams.length; i<l; i++) {
+    var stream = streams[i];
+    labels.push(labelFor(stream));
+  }
+
+  return labels;
+}
+
+export function labelsForObject(streams) {
+  var labels = [];
+
+  for (var prop in streams) {
+    labels.push(`${prop}: ${inspect(streams[prop])}`);
+  }
+
+  return labels.length ? `{ ${labels.join(', ')} }` : "{}";
+}
+
+export function labelFor(maybeStream) {
+  if (isStream(maybeStream)) {
+    var stream = maybeStream;
+    return typeof stream.label === 'function' ? stream.label() : stream.label;
+  } else {
+    return inspect(maybeStream);
+  }
+}
+
+function inspect(value) {
+  switch (typeof value) {
+    case 'string': return `"${value}"`;
+    case 'object': return "{ ... }";
+    case 'function': return "function() { ... }";
+    default: return String(value);
+  }
+}
+
+export function or(first, second) {
+  var stream = new Stream(function() {
+    return first.value() || second.value();
+  }, function() {
+    return `${labelFor(first)} || ${labelFor(second)}`;
+  });
+
+  stream.addDependency(first);
+  stream.addDependency(second);
+
+  return stream;
+}
+
+export function addDependency(stream, dependency) {
+  Ember.assert("Cannot add a stream as a dependency to a non-stream", isStream(stream) || !isStream(dependency));
+  if (isStream(stream)) {
+    stream.addDependency(dependency);
+  }
+}
+
+export function zip(streams, callback, label) {
+  Ember.assert("Must call zip with a label", !!label);
+
+  var stream = new Stream(function() {
+    var array = readArray(streams);
+    return callback ? callback(array) : array;
+  }, function() {
+    return `${label}(${labelsFor(streams)})`;
+  });
+
+  for (var i=0, l=streams.length; i<l; i++) {
+    stream.addDependency(streams[i]);
+  }
+
+  return stream;
+}
+
+export function zipHash(object, callback, label) {
+  Ember.assert("Must call zipHash with a label", !!label);
+
+  var stream = new Stream(function() {
+    var hash = readHash(object);
+    return callback ? callback(hash) : hash;
+  }, function() {
+    return `${label}(${labelsForObject(object)})`;
+  });
+
+  for (var prop in object) {
+    stream.addDependency(object[prop]);
+  }
+
+  return stream;
+}
+
+/**
  Generate a new stream by providing a source stream and a function that can
  be used to transform the stream's value. In the case of a non-stream object,
  returns the result of the function.
@@ -220,12 +319,19 @@ export function concat(array, separator) {
                          non-stream object, the return value of the provided
                          function `fn`.
  */
-export function chain(value, fn) {
+export function chain(value, fn, label) {
+  Ember.assert("Must call chain with a label", !!label);
   if (isStream(value)) {
-    var stream = new Stream(fn);
-    subscribe(value, stream.notify, stream);
+    var stream = new Stream(fn, function() { return `${label}(${labelFor(value)})`; });
+    stream.addDependency(value);
     return stream;
   } else {
     return fn();
+  }
+}
+
+export function setValue(object, value) {
+  if (object && object.isStream) {
+    object.setValue(value);
   }
 }

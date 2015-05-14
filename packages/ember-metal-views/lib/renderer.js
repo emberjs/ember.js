@@ -1,309 +1,260 @@
-import DOMHelper from "dom-helper";
-import environment from "ember-metal/environment";
+import run from "ember-metal/run_loop";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import buildComponentTemplate from "ember-views/system/build-component-template";
+import { indexOf } from "ember-metal/enumerable_utils";
+//import { deprecation } from "ember-views/compat/attrs-proxy";
 
-var domHelper = environment.hasDOM ? new DOMHelper() : null;
-
-function Renderer(_helper, _destinedForDOM) {
-  this._uuid = 0;
-
-  // These sizes and values are somewhat arbitrary (but sensible)
-  // pre-allocation defaults.
-  this._views = new Array(2000);
-  this._queue = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-  this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-  this._elements = new Array(17);
-  this._inserts = {};
-  this._dom = _helper || domHelper;
-  this._destinedForDOM = _destinedForDOM === undefined ? true : _destinedForDOM;
+function Renderer(_helper) {
+  this._dom = _helper;
 }
 
-function Renderer_renderTree(_view, _parentView, _refMorph) {
-  var views = this._views;
-  views[0] = _view;
-  var index = 0;
-  var total = 1;
-  var levelBase = _parentView ? _parentView._level+1 : 0;
-
-  var root = _parentView == null ? _view : _parentView._root;
-
-  // if root view has a _morph assigned
-  var willInsert = !!root._morph;
-
-  var queue = this._queue;
-  queue[0] = 0;
-  var length = 1;
-
-  var parentIndex = -1;
-  var parents = this._parents;
-  var parent = _parentView || null;
-  var elements = this._elements;
-  var element = null;
-  var contextualElement = null;
-  var level = 0;
-
-  var view = _view;
-  var children, i, child;
-  while (length) {
-    elements[level] = element;
-    if (!view._morph) {
-      // ensure props we add are in same order
-      view._morph = null;
-    }
-    view._root = root;
-    this.uuid(view);
-    view._level = levelBase + level;
-    if (view._elementCreated) {
-      this.remove(view, false, true);
-    }
-
-    this.willCreateElement(view);
-
-    contextualElement = view._morph && view._morph.contextualElement;
-    if (!contextualElement && parent && parent._childViewsMorph) {
-      contextualElement = parent._childViewsMorph.contextualElement;
-    }
-    if (!contextualElement && view._didCreateElementWithoutMorph) {
-      // This code path is used by view.createElement(), which has two purposes:
-      //
-      // 1. Legacy usage of `createElement()`. Nobody really knows what the point
-      //    of that is. This usage may be removed in Ember 2.0.
-      // 2. FastBoot, which creates an element and has no DOM to insert it into.
-      //
-      // For FastBoot purposes, rendering the DOM without a contextual element
-      // should work fine, because it essentially re-emits the original markup
-      // as a String, which will then be parsed again by the browser, which will
-      // apply the appropriate parsing rules.
-      contextualElement = typeof document !== 'undefined' ? document.body : null;
-    }
-    element = this.createElement(view, contextualElement);
-
-    parents[level++] = parentIndex;
-    parentIndex = index;
-    parent = view;
-
-    // enqueue for end
-    queue[length++] = index;
-    // enqueue children
-    children = this.childViews(view);
-    if (children) {
-      for (i=children.length-1;i>=0;i--) {
-        child = children[i];
-        index = total++;
-        views[index] = child;
-        queue[length++] = index;
-        view = child;
-      }
-    }
-
-    index = queue[--length];
-    view = views[index];
-
-    while (parentIndex === index) {
-      level--;
-      view._elementCreated = true;
-      this.didCreateElement(view);
-      if (willInsert) {
-        this.willInsertElement(view);
-      }
-
-      if (level === 0) {
-        length--;
-        break;
-      }
-
-      parentIndex = parents[level];
-      parent = parentIndex === -1 ? _parentView : views[parentIndex];
-      this.insertElement(view, parent, element, null);
-      index = queue[--length];
-      view = views[index];
-      element = elements[level];
-      elements[level] = null;
-    }
-  }
-
-  this.insertElement(view, _parentView, element, _refMorph);
-
-  for (i=total-1; i>=0; i--) {
-    if (willInsert) {
-      views[i]._elementInserted = true;
-      this.didInsertElement(views[i]);
-    }
-    views[i] = null;
-  }
-
-  return element;
-}
-
-Renderer.prototype.uuid = function Renderer_uuid(view) {
-  if (view._uuid === undefined) {
-    view._uuid = ++this._uuid;
-    view._renderer = this;
-  } // else assert(view._renderer === this)
-  return view._uuid;
-};
-
-Renderer.prototype.scheduleInsert =
-  function Renderer_scheduleInsert(view, morph) {
-    if (view._morph || view._elementCreated) {
+Renderer.prototype.prerenderTopLevelView =
+  function Renderer_prerenderTopLevelView(view, renderNode) {
+    if (view._state === 'inDOM') {
       throw new Error("You cannot insert a View that has already been rendered");
     }
-    Ember.assert("You cannot insert a View without a morph", morph);
-    view._morph = morph;
-    var viewId = this.uuid(view);
-    this._inserts[viewId] = this.scheduleRender(this, function scheduledRenderTree() {
-      this._inserts[viewId] = null;
-      this.renderTree(view);
-    });
+    view.ownerView = renderNode.emberView = view;
+    view._renderNode = renderNode;
+
+    var layout = get(view, 'layout');
+    var template = get(view, 'template');
+
+    var componentInfo = { component: view, layout: layout };
+
+    var block = buildComponentTemplate(componentInfo, {}, {
+      self: view,
+      templates: template ? { default: template.raw } : undefined
+    }).block;
+
+    view.renderBlock(block, renderNode);
+    view.lastResult = renderNode.lastResult;
+    this.clearRenderedViews(view.env);
   };
 
+Renderer.prototype.renderTopLevelView =
+  function Renderer_renderTopLevelView(view, renderNode) {
+    // Check to see if insertion has been canceled
+    if (view._willInsert) {
+      view._willInsert = false;
+      this.prerenderTopLevelView(view, renderNode);
+      this.dispatchLifecycleHooks(view.env);
+    }
+  };
+
+Renderer.prototype.revalidateTopLevelView =
+  function Renderer_revalidateTopLevelView(view) {
+    // This guard prevents revalidation on an already-destroyed view.
+    if (view._renderNode.lastResult) {
+      view._renderNode.lastResult.revalidate(view.env);
+      // supports createElement, which operates without moving the view into
+      // the inDOM state.
+      if (view._state === 'inDOM') {
+        this.dispatchLifecycleHooks(view.env);
+      }
+      this.clearRenderedViews(view.env);
+    }
+  };
+
+Renderer.prototype.dispatchLifecycleHooks =
+  function Renderer_dispatchLifecycleHooks(env) {
+    var ownerView = env.view;
+
+    var lifecycleHooks = env.lifecycleHooks;
+    var i, hook;
+
+    for (i=0; i<lifecycleHooks.length; i++) {
+      hook = lifecycleHooks[i];
+      ownerView._dispatching = hook.type;
+
+      switch (hook.type) {
+        case 'didInsertElement': this.didInsertElement(hook.view); break;
+        case 'didUpdate': this.didUpdate(hook.view); break;
+      }
+
+      this.didRender(hook.view);
+    }
+
+    ownerView._dispatching = null;
+    env.lifecycleHooks.length = 0;
+  };
+
+Renderer.prototype.ensureViewNotRendering =
+  function Renderer_ensureViewNotRendering(view) {
+    var env = view.ownerView.env;
+    if (env && indexOf(env.renderedViews, view.elementId) !== -1) {
+      throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
+    }
+  };
+
+Renderer.prototype.clearRenderedViews =
+  function Renderer_clearRenderedViews(env) {
+    env.renderedNodes = {};
+    env.renderedViews.length = 0;
+  };
+
+// This entry point is called from top-level `view.appendTo`
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
     var morph = this._dom.appendMorph(target);
-    this.scheduleInsert(view, morph);
-  };
-
-Renderer.prototype.appendAttrTo =
-  function Renderer_appendAttrTo(view, target, attrName) {
-    var morph = this._dom.createAttrMorph(target, attrName);
-    this.scheduleInsert(view, morph);
+    morph.ownerNode = morph;
+    view._willInsert = true;
+    run.schedule('render', this, this.renderTopLevelView, view, morph);
   };
 
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    var morph;
-    if (target.firstChild) {
-      morph = this._dom.createMorph(target, target.firstChild, target.lastChild);
-    } else {
-      morph = this._dom.appendMorph(target);
-    }
-    this.scheduleInsert(view, morph);
+    var morph = this._dom.replaceContentWithMorph(target);
+    morph.ownerNode = morph;
+    view._willInsert = true;
+    run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
   };
 
-function Renderer_remove(_view, shouldDestroy, reset) {
-  var viewId = this.uuid(_view);
+Renderer.prototype.createElement =
+  function Renderer_createElement(view) {
+    var morph = this._dom.createFragmentMorph();
+    morph.ownerNode = morph;
+    this.prerenderTopLevelView(view, morph);
+  };
 
-  if (this._inserts[viewId]) {
-    this.cancelRender(this._inserts[viewId]);
-    this._inserts[viewId] = undefined;
+// inBuffer
+Renderer.prototype.willCreateElement = function (/*view*/) {};
+
+Renderer.prototype.didCreateElement = function (view, element) {
+  if (element) {
+    view.element = element;
   }
 
-  if (!_view._elementCreated) {
-    return;
+  if (view._transitionTo) {
+    view._transitionTo('hasElement');
+  }
+}; // hasElement
+
+Renderer.prototype.willInsertElement = function (view) {
+  if (view.trigger) { view.trigger('willInsertElement'); }
+}; // will place into DOM
+
+Renderer.prototype.setAttrs = function (view, attrs) {
+  set(view, 'attrs', attrs);
+}; // set attrs the first time
+
+Renderer.prototype.componentInitAttrs = function (component, attrs) {
+  set(component, 'attrs', attrs);
+  component.trigger('didInitAttrs', { attrs });
+  component.trigger('didReceiveAttrs', { newAttrs: attrs });
+}; // set attrs the first time
+
+Renderer.prototype.didInsertElement = function (view) {
+  if (view._transitionTo) {
+    view._transitionTo('inDOM');
   }
 
-  var removeQueue = [];
-  var destroyQueue = [];
-  var morph = _view._morph;
-  var idx, len, view, queue, childViews, i, l;
+  if (view.trigger) { view.trigger('didInsertElement'); }
+}; // inDOM // placed into DOM
 
-  removeQueue.push(_view);
-
-  for (idx=0; idx<removeQueue.length; idx++) {
-    view = removeQueue[idx];
-
-    if (!shouldDestroy && view._childViewsMorph) {
-      queue = removeQueue;
-    } else {
-      queue = destroyQueue;
-    }
-
-    this.beforeRemove(removeQueue[idx]);
-
-    childViews = this.childViews(view);
-    if (childViews) {
-      for (i=0,l=childViews.length; i<l; i++) {
-        queue.push(childViews[i]);
-      }
-    }
-  }
-
-  for (idx=0; idx<destroyQueue.length; idx++) {
-    view = destroyQueue[idx];
-
-    this.beforeRemove(destroyQueue[idx]);
-
-    childViews = this.childViews(view);
-    if (childViews) {
-      for (i=0,l=childViews.length; i<l; i++) {
-        destroyQueue.push(childViews[i]);
-      }
-    }
-  }
-
-  // destroy DOM from root insertion
-  if (morph && !reset) {
-    morph.destroy();
-  }
-
-  for (idx=0, len=removeQueue.length; idx < len; idx++) {
-    this.afterRemove(removeQueue[idx], false);
-  }
-
-  for (idx=0, len=destroyQueue.length; idx < len; idx++) {
-    this.afterRemove(destroyQueue[idx], true);
-  }
-
-  if (reset) {
-    _view._morph = morph;
-  }
-}
-
-function Renderer_insertElement(view, parentView, element, refMorph) {
-  if (element === null || element === undefined) {
-    return;
-  }
-
-  if (view._morph) {
-    view._morph.setContent(element);
-  } else if (parentView) {
-    view._morph = parentView._childViewsMorph.insertContentBeforeMorph(element, refMorph);
-  }
-}
-
-function Renderer_beforeRemove(view) {
-  if (view._elementCreated) {
-    this.willDestroyElement(view);
-  }
-  if (view._elementInserted) {
-    this.willRemoveElement(view);
-  }
-}
-
-function Renderer_afterRemove(view, shouldDestroy) {
-  view._elementInserted = false;
-  view._morph = null;
-  view._childViewsMorph = null;
-  if (view._elementCreated) {
-    view._elementCreated = false;
-    this.didDestroyElement(view);
-  }
-  if (shouldDestroy) {
-    this.destroyView(view);
-  }
-}
-
-Renderer.prototype.remove = Renderer_remove;
-Renderer.prototype.removeAndDestroy = function (view) {
-  this.remove(view, true);
+Renderer.prototype.didUpdate = function (view) {
+  if (view.trigger) { view.trigger('didUpdate'); }
 };
 
-Renderer.prototype.renderTree = Renderer_renderTree;
-Renderer.prototype.insertElement = Renderer_insertElement;
-Renderer.prototype.beforeRemove = Renderer_beforeRemove;
-Renderer.prototype.afterRemove = Renderer_afterRemove;
+Renderer.prototype.didRender = function (view) {
+  if (view.trigger) { view.trigger('didRender'); }
+};
 
-/// HOOKS
-var noop = function () {};
+Renderer.prototype.updateAttrs = function (view, attrs) {
+  if (view.willReceiveAttrs) {
+    view.willReceiveAttrs(attrs);
+  }
 
-Renderer.prototype.willCreateElement = noop; // inBuffer
-Renderer.prototype.createElement = noop; // renderToBuffer or createElement
-Renderer.prototype.didCreateElement = noop; // hasElement
-Renderer.prototype.willInsertElement = noop; // will place into DOM
-Renderer.prototype.didInsertElement = noop; // inDOM // placed into DOM
-Renderer.prototype.willRemoveElement = noop; // removed from DOM  willDestroyElement currently paired with didInsertElement
-Renderer.prototype.willDestroyElement = noop; // willClearRender (currently balanced with render) this is now paired with createElement
-Renderer.prototype.didDestroyElement = noop; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
-Renderer.prototype.destroyView = noop;
-Renderer.prototype.childViews = noop;
+  this.setAttrs(view, attrs);
+}; // setting new attrs
+
+Renderer.prototype.componentUpdateAttrs = function (component, oldAttrs, newAttrs) {
+  set(component, 'attrs', newAttrs);
+
+  component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
+  component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
+};
+
+Renderer.prototype.willUpdate = function (view, attrs) {
+  if (view.willUpdate) {
+    view.willUpdate(attrs);
+  }
+};
+
+Renderer.prototype.componentWillUpdate = function (component) {
+  component.trigger('willUpdate');
+};
+
+Renderer.prototype.willRender = function (view) {
+  if (view.willRender) {
+    view.willRender();
+  }
+};
+
+Renderer.prototype.componentWillRender = function (component) {
+  component.trigger('willRender');
+};
+
+Renderer.prototype.remove = function (view, shouldDestroy) {
+  this.willDestroyElement(view);
+
+  view._willRemoveElement = true;
+  run.schedule('render', this, this.renderElementRemoval, view);
+};
+
+Renderer.prototype.renderElementRemoval =
+  function Renderer_renderElementRemoval(view) {
+    // Use the _willRemoveElement flag to avoid mulitple removal attempts in
+    // case many have been scheduled. This should be more performant than using
+    // `scheduleOnce`.
+    if (view._willRemoveElement) {
+      view._willRemoveElement = false;
+
+      if (view._renderNode) {
+        view._renderNode.clear();
+      }
+      this.didDestroyElement(view);
+    }
+  };
+
+Renderer.prototype.willRemoveElement = function (/*view*/) {};
+
+Renderer.prototype.willDestroyElement = function (view) {
+  if (view._willDestroyElement) {
+    view._willDestroyElement();
+  }
+  if (view.trigger) {
+    view.trigger('willDestroyElement');
+    view.trigger('willClearRender');
+  }
+
+  view._transitionTo('destroying', false);
+
+  var childViews = view.childViews;
+  if (childViews) {
+    for (var i = 0; i < childViews.length; i++) {
+      this.willDestroyElement(childViews[i]);
+    }
+  }
+};
+
+Renderer.prototype.didDestroyElement = function (view) {
+  view.element = null;
+
+  // Views that are being destroyed should never go back to the preRender state.
+  // However if we're just destroying an element on a view (as is the case when
+  // using View#remove) then the view should go to a preRender state so that
+  // it can be rendered again later.
+  if (view._state !== 'destroying') {
+    view._transitionTo('preRender');
+  }
+
+  var childViews = view.childViews;
+  if (childViews) {
+    for (var i = 0; i < childViews.length; i++) {
+      this.didDestroyElement(childViews[i]);
+    }
+  }
+}; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 
 export default Renderer;

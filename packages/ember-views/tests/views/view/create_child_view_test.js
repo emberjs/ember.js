@@ -54,7 +54,7 @@ QUnit.test("should create property on parentView to a childView instance if prov
   equal(get(view, 'someChildView'), newView);
 });
 
-QUnit.test("should update a view instances attributes, including the _parentView and container properties", function() {
+QUnit.test("should update a view instances attributes, including the parentView and container properties", function() {
   var attrs = {
     foo: "baz"
   };
@@ -63,7 +63,7 @@ QUnit.test("should update a view instances attributes, including the _parentView
   newView = view.createChildView(myView, attrs);
 
   equal(newView.container, container, 'expects to share container with parent');
-  equal(newView._parentView, view, 'expects to have the correct parent');
+  equal(newView.parentView, view, 'expects to have the correct parent');
   equal(get(newView, 'foo'), 'baz', 'view did get custom attributes');
 
   deepEqual(newView, myView);
@@ -84,7 +84,7 @@ QUnit.test("should create from string via container lookup", function() {
   newView = view.createChildView('bro');
 
   equal(newView.container, container, 'expects to share container with parent');
-  equal(newView._parentView, view, 'expects to have the correct parent');
+  equal(newView.parentView, view, 'expects to have the correct parent');
 });
 
 QUnit.test("should assert when trying to create childView from string, but no such view is registered", function() {

@@ -2,14 +2,6 @@ import Ember from 'ember-metal/core';
 
 QUnit.module('ember-debug');
 
-QUnit.test('Ember.deprecate throws deprecation with one argument', function() {
-  expect(1);
-
-  throws(function() {
-    Ember.deprecate('Deprecation is thrown');
-  });
-});
-
 QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
   expect(3);
 
@@ -38,7 +30,6 @@ QUnit.test('Ember.deprecate does not throw deprecation if second argument is a f
 
 QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
   expect(1);
-
   throws(function() {
     Ember.deprecate('Deprecation is thrown', function() {
       return false;
@@ -84,7 +75,6 @@ QUnit.test('Ember.assert does not throw if second argument is a function and it 
 
 QUnit.test('Ember.assert throws if second argument is a function and it returns false', function() {
   expect(1);
-
   throws(function() {
     Ember.assert('Assertion is thrown', function() {
       return false;

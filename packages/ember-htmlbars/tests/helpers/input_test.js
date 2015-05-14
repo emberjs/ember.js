@@ -3,12 +3,26 @@ import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
+import Registry from "container/registry";
+import ComponentLookup from "ember-views/component_lookup";
+import TextField from 'ember-views/views/text_field';
+import Checkbox from 'ember-views/views/checkbox';
 
 var view;
-var controller;
+var controller, registry, container;
+
+function commonSetup() {
+  registry = new Registry();
+  registry.register('component:-text-field', TextField);
+  registry.register('component:-checkbox', Checkbox);
+  registry.register('component-lookup:main', ComponentLookup);
+  container = registry.container();
+}
 
 QUnit.module("{{input type='text'}}", {
   setup() {
+    commonSetup();
+
     controller = {
       val: "hello",
       place: "Enter some text",
@@ -19,6 +33,7 @@ QUnit.module("{{input type='text'}}", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
     }).create();
@@ -47,8 +62,13 @@ QUnit.test("should become disabled if the disabled attribute is true", function(
 
 QUnit.test("input value is updated when setting value property of view", function() {
   equal(view.$('input').val(), "hello", "renders text field with value");
+
+  let id = view.$('input').prop('id');
+
   run(null, set, controller, 'val', 'bye!');
   equal(view.$('input').val(), "bye!", "updates text field after value changes");
+
+  equal(view.$('input').prop('id'), id, "the component hasn't changed");
 });
 
 QUnit.test("input placeholder is updated when setting placeholder property of view", function() {
@@ -90,10 +110,10 @@ QUnit.test("cursor position is not lost when updating content", function() {
   // set the cursor position to 3 (no selection)
   run(function() {
     input.value = 'derp';
+    view.childViews[0]._elementValueDidChange();
     input.selectionStart = 3;
     input.selectionEnd = 3;
   });
-
   run(null, set, controller, 'val', 'derp');
 
   equal(view.$('input').val(), "derp", "updates text field after value changes");
@@ -125,9 +145,12 @@ QUnit.test("input can be updated multiple times", function() {
 
 QUnit.module("{{input type='text'}} - static values", {
   setup() {
+    commonSetup();
+
     controller = {};
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
     }).create();
@@ -174,11 +197,14 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
 
 QUnit.module("{{input type='text'}} - dynamic type", {
   setup() {
+    commonSetup();
+
     controller = {
       someProperty: 'password'
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type=someProperty}}')
     }).create();
@@ -195,11 +221,24 @@ QUnit.test("should insert a text field into DOM", function() {
   equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type.");
 });
 
+QUnit.test("should change if the type changes", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type.");
+
+  run(function() {
+    set(controller, 'someProperty', 'text');
+  });
+
+  equal(view.$('input').attr('type'), 'text', "it changes after the type changes");
+});
+
 QUnit.module("{{input}} - default type", {
   setup() {
+    commonSetup();
+
     controller = {};
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input}}')
     }).create();
@@ -218,6 +257,8 @@ QUnit.test("should have the default type", function() {
 
 QUnit.module("{{input type='checkbox'}}", {
   setup() {
+    commonSetup();
+
     controller = {
       tab: 6,
       name: 'hello',
@@ -225,6 +266,7 @@ QUnit.module("{{input type='checkbox'}}", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name checked=val}}')
     }).create();
@@ -267,7 +309,10 @@ QUnit.test("checkbox checked property is updated", function() {
 
 QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
   setup() {
+    commonSetup();
+
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
     }).create();
@@ -286,12 +331,15 @@ QUnit.test("It asserts the presence of checked=", function() {
 
 QUnit.module("{{input type=boundType}}", {
   setup() {
+    commonSetup();
+
     controller = {
       inputType: "checkbox",
       isChecked: true
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type=inputType checked=isChecked}}')
     }).create();
@@ -316,6 +364,8 @@ QUnit.test("checkbox checked property is updated", function() {
 
 QUnit.module("{{input type='checkbox'}} - static values", {
   setup() {
+    commonSetup();
+
     controller = {
       tab: 6,
       name: 'hello',
@@ -323,6 +373,7 @@ QUnit.module("{{input type='checkbox'}} - static values", {
     };
 
     view = View.extend({
+      container: container,
       controller: controller,
       template: compile('{{input type="checkbox" disabled=true tabindex=6 name="hello" checked=false}}')
     }).create();
@@ -352,6 +403,10 @@ QUnit.test("checkbox checked property is updated", function() {
 });
 
 QUnit.module("{{input type='text'}} - null/undefined values", {
+  setup() {
+    commonSetup();
+  },
+
   teardown() {
     runDestroy(view);
   }
@@ -359,6 +414,7 @@ QUnit.module("{{input type='text'}} - null/undefined values", {
 
 QUnit.test("placeholder attribute bound to undefined is not present", function() {
   view = View.extend({
+    container: container,
     controller: {},
     template: compile('{{input placeholder=someThingNotThere}}')
   }).create();
@@ -369,11 +425,12 @@ QUnit.test("placeholder attribute bound to undefined is not present", function()
 
   run(null, set, view, 'controller.someThingNotThere', 'foo');
 
-  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+  equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', "attribute is present");
 });
 
 QUnit.test("placeholder attribute bound to null is not present", function() {
   view = View.extend({
+    container: container,
     controller: {
       someNullProperty: null
     },
@@ -386,5 +443,5 @@ QUnit.test("placeholder attribute bound to null is not present", function() {
 
   run(null, set, view, 'controller.someNullProperty', 'foo');
 
-  equal(view.element.childNodes[1].placeholder, 'foo', "attribute is present");
+  equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', "attribute is present");
 });

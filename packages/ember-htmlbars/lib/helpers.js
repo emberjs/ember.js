@@ -16,8 +16,6 @@ var helpers = o_create(null);
 @submodule ember-htmlbars
 */
 
-import Helper from "ember-htmlbars/system/helper";
-
 /**
   @private
   @method _registerHelper
@@ -26,15 +24,7 @@ import Helper from "ember-htmlbars/system/helper";
   @param {Object|Function} helperFunc the helper function to add
 */
 export function registerHelper(name, helperFunc) {
-  var helper;
-
-  if (helperFunc && helperFunc.isHelper) {
-    helper = helperFunc;
-  } else {
-    helper = new Helper(helperFunc);
-  }
-
-  helpers[name] = helper;
+  helpers[name] = helperFunc;
 }
 
 export default helpers;

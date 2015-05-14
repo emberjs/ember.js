@@ -2,19 +2,24 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
-import { read } from "ember-metal/streams/utils";
 import Controller from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import Registry from "container/registry";
+import compile from "ember-template-compiler/system/compile";
+import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 
 var trim = jQuery.trim;
-var container, view, otherContainer;
+var container, registry, view, otherContainer;
 
 QUnit.module("ember-views/views/container_view_test", {
+  setup() {
+    registry = new Registry();
+  },
   teardown() {
     run(function() {
-      container.destroy();
+      if (container) { container.destroy(); }
       if (view) { view.destroy(); }
       if (otherContainer) { otherContainer.destroy(); }
     });
@@ -25,7 +30,7 @@ QUnit.test("should be able to insert views after the DOM representation is creat
   container = ContainerView.create({
     classNameBindings: ['name'],
     name: 'foo',
-    container: {}
+    container: registry.container()
   });
 
   run(function() {
@@ -33,9 +38,7 @@ QUnit.test("should be able to insert views after the DOM representation is creat
   });
 
   view = View.create({
-    template() {
-      return "This is my moment";
-    }
+    template: compile('This is my moment')
   });
 
   run(function() {
@@ -43,7 +46,7 @@ QUnit.test("should be able to insert views after the DOM representation is creat
   });
 
   equal(view.container, container.container, 'view gains its containerViews container');
-  equal(view._parentView, container, 'view\'s _parentView is the container');
+  equal(view.parentView, container, 'view\'s parentView is the container');
   equal(trim(container.$().text()), "This is my moment");
 
   run(function() {
@@ -78,39 +81,39 @@ QUnit.test("should be able to observe properties that contain child views", func
 });
 
 QUnit.test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
+  var iocContainer = registry.container();
+
   container = ContainerView.create({
-    container: {}
+    container: iocContainer
   });
 
   otherContainer = ContainerView.create({
-    container: {}
+    container: iocContainer
   });
 
   view = View.create();
 
   container.pushObject(view);
 
-  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
-  equal(get(view, 'container'), container.container, "inherits its parentViews iocContainer");
+  strictEqual(view.get('parentView'), container, "sets the parent view after the childView is appended");
+  strictEqual(get(view, 'container'), container.container, "inherits its parentViews iocContainer");
 
   container.removeObject(view);
 
-  equal(get(view, 'container'), container.container, "leaves existing iocContainer alone");
+  strictEqual(get(view, 'container'), container.container, "leaves existing iocContainer alone");
 
   otherContainer.pushObject(view);
 
-  equal(view.get('parentView'), otherContainer, "sets the new parent view after the childView is appended");
-  equal(get(view, 'container'), container.container, "still inherits its original parentViews iocContainer");
+  strictEqual(view.get('parentView'), otherContainer, "sets the new parent view after the childView is appended");
+  strictEqual(get(view, 'container'), container.container, "still inherits its original parentViews iocContainer");
 });
 
 QUnit.test("should set the parentView property on views that are added to the child views array", function() {
   container = ContainerView.create();
 
   var ViewKlass = View.extend({
-      template() {
-        return "This is my moment";
-      }
-    });
+    template: compile("This is my moment")
+  });
 
   view = ViewKlass.create();
 
@@ -190,15 +193,11 @@ QUnit.test("should be able to push initial views onto the ContainerView and have
       this._super.apply(this, arguments);
       this.pushObject(View.create({
         name: 'A',
-        template() {
-          return 'A';
-        }
+        template: compile('A')
       }));
       this.pushObject(View.create({
         name: 'B',
-        template() {
-          return 'B';
-        }
+        template: compile('B')
       }));
     },
     // functions here avoid attaching an observer, which is
@@ -226,9 +225,7 @@ QUnit.test("should be able to push initial views onto the ContainerView and have
   run(function () {
     container.pushObject(View.create({
       name: 'C',
-      template() {
-        return 'C';
-      }
+      template: compile('C')
     }));
   });
 
@@ -243,14 +240,12 @@ QUnit.test("should be able to push initial views onto the ContainerView and have
 
 QUnit.test("views that are removed from a ContainerView should have their child views cleared", function() {
   container = ContainerView.create();
-  view = View.createWithMixins({
-    remove() {
-      this._super.apply(this, arguments);
-    },
-    template(context, options) {
-      options.data.view.appendChild(View);
-    }
+
+  var ChildView = View.extend({
+    MyView: View,
+    template: compile('{{view MyView}}')
   });
+  var view = ChildView.create();
 
   container.pushObject(view);
 
@@ -262,8 +257,7 @@ QUnit.test("views that are removed from a ContainerView should have their child 
   run(function() {
     container.removeObject(view);
   });
-  equal(get(view, 'childViews.length'), 0, "child views are cleared when removed from container view");
-  equal(container.$().text(), '', "the child view is removed from the DOM");
+  strictEqual(container.$('div').length, 0, "the child view is removed from the DOM");
 });
 
 QUnit.test("if a ContainerView starts with an empty currentView, nothing is displayed", function() {
@@ -282,12 +276,9 @@ QUnit.test("if a ContainerView starts with a currentView, it is rendered as a ch
   container = ContainerView.create({
     controller: controller
   });
-  var context = null;
+
   var mainView = View.create({
-    template(ctx, opts) {
-      context = ctx;
-      return "This is the main view.";
-    }
+    template: compile('This is the main view.')
   });
 
   set(container, 'currentView', mainView);
@@ -300,18 +291,11 @@ QUnit.test("if a ContainerView starts with a currentView, it is rendered as a ch
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  equal(context, container.get('context'), 'context preserved');
-  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
-  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 QUnit.test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
-  var context = null;
   var mainView = View.create({
-    template(ctx, opts) {
-      context = ctx;
-      return "This is the main view.";
-    }
+    template: compile('This is the main view.')
   });
 
   var controller = Controller.create();
@@ -329,21 +313,16 @@ QUnit.test("if a ContainerView is created with a currentView, it is rendered as 
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  equal(context, container.get('context'), 'context preserved');
-  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
-  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 QUnit.test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
-  var context = null;
   var mainView = View.create({
-    template(ctx, opts) {
-      context = ctx;
-      return "This is the main view.";
-    }
+    template: compile("This is the {{name}} view.")
   });
 
-  var controller = Controller.create();
+  var controller = Controller.create({
+    name: "main"
+  });
 
   container = ContainerView.create({
     controller: controller
@@ -364,18 +343,11 @@ QUnit.test("if a ContainerView starts with no currentView and then one is set, t
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  equal(context, container.get('context'), 'context preserved');
-  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
-  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 });
 
 QUnit.test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
-  var context = null;
   var mainView = View.create({
-    template(ctx, opts) {
-      context = ctx;
-      return "This is the main view.";
-    }
+    template: compile("This is the main view.")
   });
 
   var controller = Controller.create();
@@ -394,9 +366,6 @@ QUnit.test("if a ContainerView starts with a currentView and then is set to null
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  equal(context, container.get('context'), 'context preserved');
-  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
-  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
@@ -407,12 +376,8 @@ QUnit.test("if a ContainerView starts with a currentView and then is set to null
 });
 
 QUnit.test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated and the previous currentView is destroyed", function() {
-  var context = null;
   var mainView = View.create({
-    template(ctx, opts) {
-      context = ctx;
-      return "This is the main view.";
-    }
+    template: compile("This is the main view.")
   });
 
   var controller = Controller.create();
@@ -431,9 +396,6 @@ QUnit.test("if a ContainerView starts with a currentView and then is set to null
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  equal(context, container.get('context'), 'context preserved');
-  equal(read(mainView._keywords.controller), controller, 'controller keyword is setup');
-  equal(read(mainView._keywords.view), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
@@ -448,21 +410,15 @@ QUnit.test("if a ContainerView starts with a currentView and then is set to null
 QUnit.test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is destroyed and the new one is added", function() {
   container = ContainerView.create();
   var mainView = View.create({
-    template() {
-      return "This is the main view.";
-    }
+    template: compile("This is the main view.")
   });
 
   var secondaryView = View.create({
-    template() {
-      return "This is the secondary view.";
-    }
+    template: compile("This is the secondary view.")
   });
 
   var tertiaryView = View.create({
-    template() {
-      return "This is the tertiary view.";
-    }
+    template: compile("This is the tertiary view.")
   });
 
   container.set('currentView', mainView);
@@ -478,7 +434,6 @@ QUnit.test("if a ContainerView starts with a currentView and then a different cu
   run(function() {
     set(container, 'currentView', secondaryView);
   });
-
 
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), secondaryView, "should have the currentView as the only child view");
@@ -506,21 +461,15 @@ QUnit.test("should be able to modify childViews many times during an run loop", 
   });
 
   var one = View.create({
-    template() {
-      return 'one';
-    }
+    template: compile('one')
   });
 
   var two = View.create({
-    template() {
-      return 'two';
-    }
+    template: compile('two')
   });
 
   var three = View.create({
-    template() {
-      return 'three';
-    }
+    template: compile('three')
   });
 
   run(function() {
@@ -535,53 +484,6 @@ QUnit.test("should be able to modify childViews many times during an run loop", 
   equal(trim(container.$().text()), 'onetwothree');
 });
 
-QUnit.test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
-  container = ContainerView.create();
-
-  run(function() {
-    container.appendTo('#qunit-fixture');
-  });
-
-  var count = 0;
-  var child = View.create({
-    template() {
-      count++;
-      return 'child';
-    }
-  });
-
-  run(function() {
-    container.pushObject(child);
-    container.remove();
-  });
-
-  equal(count, 0, 'did not render child');
-});
-
-QUnit.test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
-  container = ContainerView.create();
-
-  run(function() {
-    container.appendTo('#qunit-fixture');
-  });
-
-  var count = 0;
-  var child = View.create({
-    template() {
-      count++;
-      return 'child';
-    }
-  });
-
-  run(function() {
-    container.pushObject(child);
-    container.destroy();
-  });
-
-  equal(count, 0, 'did not render child');
-});
-
-
 QUnit.test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
   container = ContainerView.create();
 
@@ -589,21 +491,14 @@ QUnit.test("should be able to modify childViews then rerender the ContainerView 
     container.appendTo('#qunit-fixture');
   });
 
-  var count = 0;
   var child = View.create({
-    template() {
-      count++;
-      return 'child';
-    }
+    template: compile('child')
   });
 
   run(function() {
     container.pushObject(child);
     container.rerender();
   });
-
-  // TODO: Fix with Priority Queue for now ensure valid rendering
-  //equal(count, 1, 'rendered child only once');
 
   equal(trim(container.$().text()), 'child');
 });
@@ -617,11 +512,12 @@ QUnit.test("should be able to modify childViews then rerender then modify again 
 
   var Child = View.extend({
     count: 0,
-    render(buffer) {
+    willRender: function() {
       this.count++;
-      buffer.push(this.label);
-    }
+    },
+    template: compile('{{view.label}}')
   });
+
   var one = Child.create({ label: 'one' });
   var two = Child.create({ label: 'two' });
 
@@ -645,11 +541,12 @@ QUnit.test("should be able to modify childViews then rerender again the Containe
 
   var Child = View.extend({
     count: 0,
-    render(buffer) {
+    willRender() {
       this.count++;
-      buffer.push(this.label);
-    }
+    },
+    template: compile('{{view.label}}')
   });
+
   var one = Child.create({ label: 'one' });
   var two = Child.create({ label: 'two' });
 
@@ -658,16 +555,14 @@ QUnit.test("should be able to modify childViews then rerender again the Containe
     container.rerender();
   });
 
-  // TODO: Fix with Priority Queue for now ensure valid rendering
-  //equal(one.count, 1, 'rendered one child only once');
+  equal(one.count, 1, 'rendered one child only once');
   equal(container.$().text(), 'one');
 
   run(function () {
     container.pushObject(two);
   });
 
-  // TODO: Fix with Priority Queue for now ensure valid rendering
-  //equal(one.count, 1, 'rendered one child only once');
+  equal(one.count, 1, 'rendered one child only once');
   equal(two.count, 1, 'rendered two child only once');
 
   // IE 8 adds a line break but this shouldn't affect validity
@@ -679,7 +574,7 @@ QUnit.test("should invalidate `element` on itself and childViews when being rend
 
   var root = ContainerView.create();
 
-  view = View.create({ template() {} });
+  view = View.create({ template: compile('child view') });
   container = ContainerView.create({ childViews: ['child'], child: view });
 
   run(function() {
@@ -735,7 +630,7 @@ QUnit.test("Child view can only be added to one container at a time", function (
   });
 });
 
-QUnit.test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
+QUnit.test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function (assert) {
 
   var counter = 0;
   var root = ContainerView.create({});
@@ -756,17 +651,17 @@ QUnit.test("if a containerView appends a child in its didInsertElement event, th
 
   });
 
-
   run(function() {
     root.appendTo('#qunit-fixture');
   });
 
-  run(function() {
-    root.pushObject(container);
-  });
+  expectDeprecation(function() {
+    run(function() {
+      root.pushObject(container);
+    });
+  }, /was modified inside the didInsertElement hook/);
 
-  equal(container.get('childViews').get('length'), 1 , "containerView should only have a child");
-  equal(counter, 1 , "didInsertElement should be fired once");
+  assert.strictEqual(counter, 1, "child didInsertElement was invoked");
 
   run(function() {
     root.destroy();
@@ -819,13 +714,13 @@ QUnit.test('ContainerView supports bound style attribute', function() {
     container.appendTo('#qunit-fixture');
   });
 
-  equal(container.$().attr('style'), 'width: 100px;', "width is applied to the element");
+  equal(getElementStyle(container.element), 'WIDTH: 100PX;', "width is applied to the element");
 
   run(function() {
     container.set('style', 'width: 200px;');
   });
 
-  equal(container.$().attr('style'), 'width: 200px;', "width is applied to the element");
+  equal(getElementStyle(container.element), 'WIDTH: 200PX;', "width is applied to the element");
 });
 
 QUnit.test('ContainerView supports changing children with style attribute', function() {
@@ -838,11 +733,69 @@ QUnit.test('ContainerView supports changing children with style attribute', func
     container.appendTo('#qunit-fixture');
   });
 
-  equal(container.$().attr('style'), 'width: 100px;', "width is applied to the element");
+  equal(getElementStyle(container.element), 'WIDTH: 100PX;', "width is applied to the element");
 
   view = View.create();
 
   run(function() {
     container.pushObject(view);
   });
+});
+
+QUnit.test("should render child views with a different tagName", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  container = ContainerView.create({
+    childViews: ["child"],
+
+    child: View.create({
+      tagName: 'aside'
+    })
+  });
+
+  run(function() {
+    container.createElement();
+  });
+
+  equal(container.$('aside').length, 1);
+});
+
+QUnit.test("should allow hX tags as tagName", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  container = ContainerView.create({
+    childViews: ["child"],
+
+    child: View.create({
+      tagName: 'h3'
+    })
+  });
+
+  run(function() {
+    container.createElement();
+  });
+
+  ok(container.$('h3').length, "does not render the h3 tag correctly");
+});
+
+QUnit.test("renders contained view with omitted start tag and parent view context", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  view = ContainerView.createWithMixins({
+    tagName: 'table',
+    childViews: ["row"],
+    row: View.createWithMixins({
+      tagName: 'tr'
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[2].tagName, 'TR', 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[2].tagName, 'TR', 'inner view is tr');
 });

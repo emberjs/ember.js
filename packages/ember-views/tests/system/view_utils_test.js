@@ -39,11 +39,7 @@ QUnit.test("getViewClientRects", function() {
     return;
   }
 
-  view = View.create({
-    render(buffer) {
-      buffer.push("Hello, world!");
-    }
-  });
+  view = View.create();
 
   run(function() { view.appendTo('#qunit-fixture'); });
 
@@ -56,11 +52,7 @@ QUnit.test("getViewBoundingClientRect", function() {
     return;
   }
 
-  view = View.create({
-    render(buffer) {
-      buffer.push("Hello, world!");
-    }
-  });
+  view = View.create();
 
   run(function() { view.appendTo('#qunit-fixture'); });
 

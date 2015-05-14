@@ -6,10 +6,8 @@
 import Ember from "ember-metal/core"; // Ember.assert
 
 import { get } from "ember-metal/property_get";
-import {
-  guidFor,
-  typeOf
-} from "ember-metal/utils";
+import { guidFor } from "ember-metal/utils";
+import { typeOf } from "ember-runtime/utils";
 import { forEach } from "ember-metal/enumerable_utils";
 import { indexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?

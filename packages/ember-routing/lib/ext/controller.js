@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // FEATURES, deprecate
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
-import { typeOf, meta } from "ember-metal/utils";
+import { meta } from "ember-metal/utils";
 import merge from "ember-metal/merge";
 
 import ControllerMixin from "ember-runtime/mixins/controller";
@@ -13,7 +13,7 @@ import ControllerMixin from "ember-runtime/mixins/controller";
 */
 
 ControllerMixin.reopen({
-  concatenatedProperties: ['queryParams', '_pCacheMeta'],
+  concatenatedProperties: ['queryParams'],
 
   init() {
     this._super(...arguments);
@@ -322,7 +322,7 @@ var ALL_PERIODS_REGEX = /\./g;
 function accumulateQueryParamDescriptors(_desc, accum) {
   var desc = _desc;
   var tmp;
-  if (typeOf(desc) === 'string') {
+  if (typeof desc === 'string') {
     tmp = {};
     tmp[desc] = { as: null };
     desc = tmp;
@@ -332,7 +332,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
     if (!desc.hasOwnProperty(key)) { return; }
 
     var singleDesc = desc[key];
-    if (typeOf(singleDesc) === 'string') {
+    if (typeof singleDesc === 'string') {
       singleDesc = { as: singleDesc };
     }
 

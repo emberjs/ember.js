@@ -212,12 +212,12 @@ QUnit.test("log which view is used with a template", function() {
   }
 
   App.register('template:application', compile('{{outlet}}'));
-  App.register('template:foo', function() { return 'Template with custom view'; });
+  App.register('template:foo', compile('Template with custom view'));
   App.register('view:posts', View.extend({ templateName: 'foo' }));
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(logs['view:application'], 1, 'expected: Should log use of default view');
+    equal(logs['view:application'], 1, 'toplevel view always get an element');
     equal(logs['view:index'], undefined, 'expected: Should not log when index is not present.');
     equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
   });

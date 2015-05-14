@@ -193,10 +193,7 @@ QUnit.test("the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is 
 });
 
 QUnit.test("the {{link-to}} helper supports a custom disabledClass", function () {
-  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable" disabledClass="do-not-want"}}About{{/link-to}}');
-  App.IndexController = Ember.Controller.extend({
-    shouldDisable: true
-  });
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}');
 
   Router.map(function() {
     this.route("about");
@@ -213,10 +210,7 @@ QUnit.test("the {{link-to}} helper supports a custom disabledClass", function ()
 });
 
 QUnit.test("the {{link-to}} helper does not respond to clicks when disabled", function () {
-  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable"}}About{{/link-to}}');
-  App.IndexController = Ember.Controller.extend({
-    shouldDisable: true
-  });
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}');
 
   Router.map(function() {
     this.route("about");
@@ -449,7 +443,7 @@ QUnit.test("The {{link-to}} helper moves into the named route with context", fun
     this.resource("item", { path: "/item/:id" });
   });
 
-  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each person in model}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.about = compile("<h3>List</h3><ul>{{#each model as |person|}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
     model() {
@@ -934,12 +928,10 @@ QUnit.test("The {{link-to}} helper works in an #each'd array of string route nam
   });
 
   Ember.TEMPLATES = {
-    index: compile('{{#each routeName in routeNames}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
+    index: compile('{{#each routeNames as |routeName|}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames as |r|}}{{#link-to r}}{{r}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
   };
 
-  expectDeprecation(function() {
-    bootApplication();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
+  bootApplication();
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");
@@ -1054,7 +1046,7 @@ QUnit.test("The non-block form {{link-to}} helper moves into the named route wit
     }
   });
 
-  Ember.TEMPLATES.index = compile("<h3>Home</h3><ul>{{#each person in controller}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
+  Ember.TEMPLATES.index = compile("<h3>Home</h3><ul>{{#each controller as |person|}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
   Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   bootApplication();

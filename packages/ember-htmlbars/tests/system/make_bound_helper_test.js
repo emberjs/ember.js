@@ -7,8 +7,6 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import {
   dasherize
 } from 'ember-runtime/system/string';
-import SimpleBoundView from "ember-views/views/simple_bound_view";
-import EmberObject from "ember-runtime/system/object";
 
 var view, registry, container;
 
@@ -38,10 +36,12 @@ QUnit.test("should update bound helpers in a subexpression when properties chang
     return dasherize(params[0]);
   }));
 
-  view = EmberView.create({
-    container: container,
-    controller: { prop: "isThing" },
-    template: compile("<div {{bind-attr data-foo=(x-dasherize prop)}}>{{prop}}</div>")
+  ignoreDeprecation(function() {
+    view = EmberView.create({
+      container: container,
+      controller: { prop: "isThing" },
+      template: compile("<div {{bind-attr data-foo=(x-dasherize prop)}}>{{prop}}</div>")
+    });
   });
 
   runAppend(view);
@@ -110,10 +110,16 @@ QUnit.test("bound helpers should support keywords", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-QUnit.test("bound helpers should not process `fooBinding` style hash properties", function() {
+QUnit.test("bound helpers should process `fooBinding` style hash properties [DEPRECATED]", function() {
   registry.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
-    equal(hash.timesBinding, "numRepeats");
+    equal(hash.times, 3);
   }));
+
+  var template;
+
+  expectDeprecation(function() {
+    template = compile('{{x-repeat text timesBinding="numRepeats"}}');
+  }, /You're using legacy binding syntax: timesBinding="numRepeats"/);
 
   view = EmberView.create({
     container: container,
@@ -121,7 +127,7 @@ QUnit.test("bound helpers should not process `fooBinding` style hash properties"
       text: 'ab',
       numRepeats: 3
     },
-    template: compile('{{x-repeat text timesBinding="numRepeats"}}')
+    template
   });
 
   runAppend(view);
@@ -211,7 +217,9 @@ QUnit.test("shouldn't treat raw numbers as bound paths", function() {
 
 QUnit.test("should have correct argument types", function() {
   registry.register('helper:get-type', makeBoundHelper(function(params) {
-    return typeof params[0];
+    var value = params[0];
+
+    return value === null ? 'null' : typeof value;
   }));
 
   view = EmberView.create({
@@ -222,54 +230,5 @@ QUnit.test("should have correct argument types", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
-});
-
-QUnit.test("when no parameters are bound, no new views are created", function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{x-repeat "a"}}'),
-      controller: EmberObject.create(),
-      container: container
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'a');
-});
-
-
-QUnit.test('when no hash parameters are bound, no new views are created', function() {
-  registerRepeatHelper();
-  var originalRender = SimpleBoundView.prototype.render;
-  var renderWasCalled = false;
-  SimpleBoundView.prototype.render = function() {
-    renderWasCalled = true;
-    return originalRender.apply(this, arguments);
-  };
-
-  try {
-    view = EmberView.create({
-      template: compile('{{x-repeat "a" times=3}}'),
-      controller: EmberObject.create(),
-      container: container
-    });
-    runAppend(view);
-  } finally {
-    SimpleBoundView.prototype.render = originalRender;
-  }
-
-  ok(!renderWasCalled, 'simple bound view should not have been created and rendered');
-  equal(view.$().text(), 'aaa');
+  equal(view.$().text(), 'null, undefined, string, number, object', "helper output is correct");
 });

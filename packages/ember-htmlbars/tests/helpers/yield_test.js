@@ -3,11 +3,9 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { computed } from "ember-metal/computed";
 import { Registry } from "ember-runtime/system/container";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+//import { set } from "ember-metal/property_set";
 import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
-import EmberError from "ember-metal/error";
 import helpers from "ember-htmlbars/helpers";
 import {
   registerHelper
@@ -37,7 +35,7 @@ QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
 
 QUnit.test("a view with a layout set renders its template where the {{yield}} helper appears", function() {
   var ViewWithLayout = EmberView.extend({
-    layout: compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
+    layout: compile('<div class="wrapper"><h1>{{attrs.title}}</h1>{{yield}}</div>')
   });
 
   view = EmberView.create({
@@ -51,7 +49,7 @@ QUnit.test("a view with a layout set renders its template where the {{yield}} he
 });
 
 QUnit.test("block should work properly even when templates are not hard-coded", function() {
-  registry.register('template:nester', compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
+  registry.register('template:nester', compile('<div class="wrapper"><h1>{{attrs.title}}</h1>{{yield}}</div>'));
   registry.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
   registry.register('view:with-layout', EmberView.extend({
@@ -72,10 +70,10 @@ QUnit.test("block should work properly even when templates are not hard-coded", 
 
 QUnit.test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
-    layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
+    layout: compile('<div class="times">{{#each view.index as |item|}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
-      var n = get(this, 'n');
+      var n = this.attrs.n;
       var indexArray = A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
@@ -195,8 +193,7 @@ QUnit.test("inner keyword doesn't mask yield property", function() {
 
 QUnit.test("can bind a keyword to a component and use it in yield", function() {
   var component = Component.extend({
-    content: null,
-    layout: compile("<p>{{content}}</p><p>{{yield}}</p>")
+    layout: compile("<p>{{attrs.content}}</p><p>{{yield}}</p>")
   });
 
   view = EmberView.create({
@@ -240,37 +237,7 @@ QUnit.test("yield view should be a virtual view", function() {
 });
 
 
-QUnit.test("adding a layout should not affect the context of normal views", function() {
-  var parentView = EmberView.create({
-    context: "ParentContext"
-  });
-
-  view = EmberView.create({
-    template:     compile("View context: {{this}}"),
-    context:      "ViewContext",
-    _parentView:  parentView
-  });
-
-  run(function() {
-    view.createElement();
-  });
-
-  equal(view.$().text(), "View context: ViewContext");
-
-
-  set(view, 'layout', compile("Layout: {{yield}}"));
-
-  run(function() {
-    view.destroyElement();
-    view.createElement();
-  });
-
-  equal(view.$().text(), "Layout: View context: ViewContext");
-
-  runDestroy(parentView);
-});
-
-QUnit.test("yield should work for views even if _parentView is null", function() {
+QUnit.test("yield should work for views even if parentView is null", function() {
   view = EmberView.create({
     layout:   compile('Layout: {{yield}}'),
     template: compile("View Content")
@@ -322,17 +289,8 @@ QUnit.module("ember-htmlbars: Component {{yield}}", {
 });
 
 QUnit.test("yield with nested components (#3220)", function() {
-  var count = 0;
   var InnerComponent = Component.extend({
-    layout: compile("{{yield}}"),
-    _yield(context, options, morph) {
-      count++;
-      if (count > 1) {
-        throw new EmberError('is looping');
-      }
-
-      return this._super(context, options, morph);
-    }
+    layout: compile("{{yield}}")
   });
 
   registerHelper('inner-component', makeViewHelper(InnerComponent));
@@ -343,31 +301,15 @@ QUnit.test("yield with nested components (#3220)", function() {
 
   registerHelper('outer-component', makeViewHelper(OuterComponent));
 
-  view = EmberView.create({
+  view = EmberView.extend({
     template: compile(
       "{{#outer-component}}Hello world{{/outer-component}}"
     )
-  });
+  }).create();
 
   runAppend(view);
 
   equal(view.$('div > span').text(), "Hello world");
-});
-
-QUnit.test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
-  var component = Component.extend(Ember._Metamorph, {
-    item: "inner",
-    layout: compile("<p>{{item}}</p>{{#if item}}<p>{{yield}}</p>{{/if}}")
-  });
-
-  view = Ember.View.create({
-    controller: { item: "outer", component: component },
-    template: compile('{{#view component}}{{item}}{{/view}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'innerouter', "{{yield}} renders yielded content inside metamorph component");
 });
 
 QUnit.test("view keyword works inside component yield", function () {

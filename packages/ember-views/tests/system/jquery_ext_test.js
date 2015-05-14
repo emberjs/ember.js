@@ -25,7 +25,7 @@ if (document.createEvent) {
   };
 }
 
-QUnit.module("EventDispatcher", {
+QUnit.module("EventDispatcher - jQuery integration", {
   setup() {
     run(function() {
       dispatcher = EventDispatcher.create();
@@ -63,11 +63,6 @@ if (canDataTransfer) {
     var dropCalled = 0;
 
     view = View.createWithMixins({
-      render(buffer) {
-        buffer.push('please drop stuff on me');
-        this._super(buffer);
-      },
-
       drop(evt) {
         receivedEvent = evt;
         dropCalled++;

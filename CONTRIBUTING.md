@@ -171,9 +171,9 @@ All commits should be tagged. Tags are denoted by square brackets (`[]`) and com
 
 ### Bug Fixes
 
-In general bug fixes are pulled into the beta branch. As such, the prefix is: `[BUGFIX beta]`. If a bug fix is a serious regression that requires a new patch relese, `[BUGFIX release]` can be used instead.
+In general bug fixes are pulled into the beta branch. As such, the prefix is: `[BUGFIX beta]`. If a bug fix is a serious regression that requires a new patch release, `[BUGFIX release]` can be used instead.
 
-For bugs releated to canary features, follow the prefixing rules for features.
+For bugs related to canary features, follow the prefixing rules for features.
 
 ### Features
 

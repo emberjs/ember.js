@@ -24,9 +24,16 @@ export default function(_options) {
     options = {};
   }
 
-  options.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   options.disableComponentGeneration = disableComponentGeneration;
   options.plugins = plugins;
+
+  options.buildMeta = function buildMeta(program) {
+    return {
+      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
+      loc: program.loc,
+      moduleName: options.moduleName
+    };
+  };
 
   return options;
 }

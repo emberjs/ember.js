@@ -1,9 +1,7 @@
 import _default from "ember-views/views/states/default";
-import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
 import create from 'ember-metal/platform/create';
 import jQuery from "ember-views/system/jquery";
-import EmberError from "ember-metal/error";
 
 /**
 @module ember
@@ -11,12 +9,13 @@ import EmberError from "ember-metal/error";
 */
 
 import { get } from "ember-metal/property_get";
+import { internal } from "htmlbars-runtime";
 
 var hasElement = create(_default);
 
 merge(hasElement, {
   $(view, sel) {
-    var elem = view.get('concreteView').element;
+    var elem = view.element;
     return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
@@ -30,11 +29,23 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender(view) {
-    if (view._root._morph && !view._elementInserted) {
-      throw new EmberError('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
-    }
+    view.renderer.ensureViewNotRendering(view);
 
-    run.scheduleOnce('render', view, '_rerender');
+    var renderNode = view._renderNode;
+
+    renderNode.isDirty = true;
+    internal.visitChildren(renderNode.childNodes, function(node) {
+      if (node.state && node.state.manager) {
+        node.shouldReceiveAttrs = true;
+      }
+      node.isDirty = true;
+    });
+
+    renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), "rerendering");
+  },
+
+  cleanup(view) {
+    view.currentState.destroyElement(view);
   },
 
   // once the view is already in the DOM, destroying it removes it
@@ -42,7 +53,7 @@ merge(hasElement, {
   // preRender state if inDOM.
 
   destroyElement(view) {
-    view._renderer.remove(view, false);
+    view.renderer.remove(view, false);
     return view;
   },
 

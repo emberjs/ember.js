@@ -1142,7 +1142,7 @@ QUnit.test("opting into replace does not affect transitions between routes", fun
   Ember.TEMPLATES.application = compile(
     "{{link-to 'Foo' 'foo' id='foo-link'}}" +
     "{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}" +
-    "{{link-to 'Bar' 'bar' (query-params raytiley='isanerd') id='bar-link'}}" +
+    "{{link-to 'Bar' 'bar' (query-params raytiley='isthebest') id='bar-link'}}" +
     "{{outlet}}"
   );
   App.Router.map(function() {
@@ -1152,7 +1152,7 @@ QUnit.test("opting into replace does not affect transitions between routes", fun
 
   App.BarController = Ember.Controller.extend({
     queryParams: ['raytiley'],
-    raytiley: 'isadork'
+    raytiley: 'israd'
   });
 
   App.BarRoute = Ember.Route.extend({
@@ -1172,13 +1172,13 @@ QUnit.test("opting into replace does not affect transitions between routes", fun
   expectedPushURL = '/bar';
   Ember.run(Ember.$('#bar-no-qp-link'), 'click');
 
-  expectedReplaceURL = '/bar?raytiley=boo';
-  setAndFlush(controller, 'raytiley', 'boo');
+  expectedReplaceURL = '/bar?raytiley=woot';
+  setAndFlush(controller, 'raytiley', 'woot');
 
   expectedPushURL = '/foo';
   Ember.run(Ember.$('#foo-link'), 'click');
 
-  expectedPushURL = '/bar?raytiley=isanerd';
+  expectedPushURL = '/bar?raytiley=isthebest';
   Ember.run(Ember.$('#bar-link'), 'click');
 });
 

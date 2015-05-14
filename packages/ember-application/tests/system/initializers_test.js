@@ -237,6 +237,7 @@ QUnit.test("initializers set on Application subclasses should not be shared betw
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
+  var firstApp, secondApp;
   FirstApp.initializer({
     name: 'first',
     initialize(registry) {
@@ -252,7 +253,7 @@ QUnit.test("initializers set on Application subclasses should not be shared betw
   });
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   run(function() {
-    FirstApp.create({
+    firstApp = FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
@@ -260,19 +261,24 @@ QUnit.test("initializers set on Application subclasses should not be shared betw
   equal(firstInitializerRunCount, 1, 'first initializer only was run');
   equal(secondInitializerRunCount, 0, 'first initializer only was run');
   run(function() {
-    SecondApp.create({
+    secondApp = SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });
   });
   equal(firstInitializerRunCount, 1, 'second initializer only was run');
   equal(secondInitializerRunCount, 1, 'second initializer only was run');
+  run(function() {
+    firstApp.destroy();
+    secondApp.destroy();
+  });
 });
 
 QUnit.test("initializers are concatenated", function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
+  var firstApp, secondApp;
   FirstApp.initializer({
     name: 'first',
     initialize(registry) {
@@ -290,7 +296,7 @@ QUnit.test("initializers are concatenated", function() {
 
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   run(function() {
-    FirstApp.create({
+    firstApp = FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
@@ -299,13 +305,17 @@ QUnit.test("initializers are concatenated", function() {
   equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
   firstInitializerRunCount = 0;
   run(function() {
-    SecondApp.create({
+    secondApp = SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });
   });
   equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
   equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+  run(function() {
+    firstApp.destroy();
+    secondApp.destroy();
+  });
 });
 
 QUnit.test("initializers are per-app", function() {

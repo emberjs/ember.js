@@ -1,6 +1,12 @@
 import EmberError from "ember-metal/error";
+import { get } from "ember-metal/property_get";
 
-function K() { return this; }
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 
 /**
 @module ember
@@ -20,19 +26,42 @@ export default {
     return null;
   },
 
+  legacyAttrWillChange(view, key) {
+    if (key in view.attrs && !(key in view)) {
+      propertyWillChange(view, key);
+    }
+  },
+
+  legacyAttrDidChange(view, key) {
+    if (key in view.attrs && !(key in view)) {
+      propertyDidChange(view, key);
+    }
+  },
+
+  legacyPropertyDidChange(view, key) {
+    let attrs = view.attrs;
+
+    if (attrs && key in attrs) {
+      let possibleCell = attrs[key];
+
+      if (possibleCell && possibleCell[MUTABLE_CELL]) {
+        let value = get(view, key);
+        if (value === possibleCell.value) { return; }
+        possibleCell.update(value);
+      }
+    }
+  },
+
   // Handle events from `Ember.EventDispatcher`
   handleEvent() {
     return true; // continue event propagation
   },
 
-  destroyElement(view) {
-    if (view._renderer) {
-      view._renderer.remove(view, false);
-    }
+  cleanup() { } ,
+  destroyElement() { },
 
-    return view;
+  rerender(view) {
+    view.renderer.ensureViewNotRendering(view);
   },
-
-  rerender: K,
-  invokeObserver: K
+  invokeObserver() { }
 };

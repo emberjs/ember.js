@@ -7,7 +7,7 @@ import dictionary from 'ember-metal/dictionary';
 var Registry;
 
 /**
- A lightweight container used to instantiate and cache objects.
+ A container used to instantiate and cache objects.
 
  Every `Container` must be associated with a `Registry`, which is referenced
  to determine the factory and options that should be used to instantiate
@@ -21,11 +21,7 @@ var Registry;
  */
 function Container(registry, options) {
   this._registry = registry || (function() {
-    Ember.deprecate(
-      "A container should only be created for an already instantiated " +
-      "registry. For backward compatibility, an isolated registry will " +
-      "be instantiated just for this container."
-    );
+    Ember.deprecate("A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.");
 
     // TODO - See note above about transpiler import workaround.
     if (!Registry) { Registry = requireModule('container/registry')['default']; }

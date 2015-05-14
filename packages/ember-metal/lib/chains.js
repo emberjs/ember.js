@@ -61,9 +61,7 @@ function removeChainWatcher(obj, keyName, node) {
   }
 
   var m = obj['__ember_meta__'];
-  if (m && !m.hasOwnProperty('chainWatchers')) {
-    return;
-  }
+  if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
   var nodes = m && m.chainWatchers;
 

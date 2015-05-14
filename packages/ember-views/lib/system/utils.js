@@ -17,8 +17,8 @@ export function isSimpleClick(event) {
 */
 function getViewRange(view) {
   var range = document.createRange();
-  range.setStartBefore(view._morph.firstNode);
-  range.setEndAfter(view._morph.lastNode);
+  range.setStartBefore(view._renderNode.firstNode);
+  range.setEndAfter(view._renderNode.lastNode);
   return range;
 }
 

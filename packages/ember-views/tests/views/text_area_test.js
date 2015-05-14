@@ -186,9 +186,11 @@ forEach.call(['cut', 'paste', 'input'], function(eventName) {
     });
 
     textArea.$().val('new value');
-    textArea.trigger(eventName, EmberObject.create({
-      type: eventName
-    }));
+    run(function() {
+      textArea.trigger(eventName, EmberObject.create({
+        type: eventName
+      }));
+    });
 
     equal(textArea.get('value'), 'new value', 'value property updates on ' + eventName + ' events');
   });

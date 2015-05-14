@@ -6,6 +6,7 @@ var trim = jQuery.trim;
 import { Registry } from "ember-runtime/system/container";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { deprecation } from "ember-htmlbars/keywords/template";
 
 var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
@@ -34,7 +35,7 @@ QUnit.test("should render other templates via the container (DEPRECATED)", funct
     template: compile('This {{template "sub_template_from_container"}} is pretty great.')
   });
 
-  expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
+  expectDeprecation(deprecation);
 
   runAppend(view);
 
@@ -53,7 +54,7 @@ QUnit.test("should use the current view's context (DEPRECATED)", function() {
     lastName: 'Selden'
   }));
 
-  expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
+  expectDeprecation(deprecation);
 
   runAppend(view);
 

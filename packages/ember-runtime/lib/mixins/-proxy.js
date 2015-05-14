@@ -76,8 +76,7 @@ export default Mixin.create({
       Ember.deprecate(
         fmt('You attempted to access `%@` from `%@`, but object proxying is deprecated. ' +
             'Please use `model.%@` instead.', [key, this, key]),
-        !this.isController,
-        { url: 'http://emberjs.com/guides/deprecations/#toc_objectcontroller' }
+        !this.isController
       );
       return get(content, key);
     }
@@ -99,8 +98,7 @@ export default Mixin.create({
     Ember.deprecate(
       fmt('You attempted to set `%@` from `%@`, but object proxying is deprecated. ' +
           'Please use `model.%@` instead.', [key, this, key]),
-      !this.isController,
-      { url: 'http://emberjs.com/guides/deprecations/#toc_objectcontroller' }
+      !this.isController
     );
     return set(content, key, value);
   }

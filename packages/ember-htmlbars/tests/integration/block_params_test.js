@@ -9,15 +9,8 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var registry, container, view;
 
-function aliasHelper(params, hash, options, env) {
-  var view = env.data.view;
-
-  view.appendChild(View, {
-    isVirtual: true,
-    _morph: options.morph,
-    template: options.template,
-    _blockArguments: params
-  });
+function aliasHelper(params, hash, options) {
+  this.yield(params);
 }
 
 QUnit.module("ember-htmlbars: block params", {
@@ -45,12 +38,13 @@ QUnit.module("ember-htmlbars: block params", {
 
 QUnit.test("should raise error if helper not available", function() {
   view = View.create({
+    container: container,
     template: compile('{{#shouldfail}}{{/shouldfail}}')
   });
 
   expectAssertion(function() {
     runAppend(view);
-  }, 'A helper named `shouldfail` could not be found');
+  }, `A helper named 'shouldfail' could not be found`);
 
 });
 
@@ -103,7 +97,7 @@ QUnit.test("nested block params shadow correctly", function() {
 });
 
 QUnit.test("components can yield values", function() {
-  registry.register('template:components/x-alias', compile('{{yield param.name}}'));
+  registry.register('template:components/x-alias', compile('{{yield attrs.param.name}}'));
 
   view = View.create({
     container: container,

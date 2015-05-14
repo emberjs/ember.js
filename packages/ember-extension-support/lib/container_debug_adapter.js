@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import { A as emberA } from "ember-runtime/system/native_array";
-import { typeOf } from "ember-metal/utils";
+import { typeOf } from "ember-runtime/utils";
 import {
   dasherize,
   classify
@@ -94,7 +94,7 @@ export default EmberObject.extend({
   catalogEntriesByType(type) {
     var namespaces = emberA(Namespace.NAMESPACES);
     var types = emberA();
-    var typeSuffixRegex = new RegExp(classify(type) + "$");
+    var typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {

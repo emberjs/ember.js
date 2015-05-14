@@ -266,3 +266,13 @@ for a detailed explanation.
   ```
 
   Addd in [#10461](https://github.com/emberjs/ember.js/pull/10461)
+
+* `ember-routing-htmlbars-improved-actions`
+
+  Using the `(action` subexpression, allow for the creation of closure-wrapped
+  callbacks to pass into downstream components. The returned value of
+  the `(action` subexpression (or `submit={{action 'save'}}` style subexpression)
+  is a function. mut objects expose an `INVOKE` interface making them
+  compatible with action subexpressions.
+
+  Per RFC [#50](https://github.com/emberjs/rfcs/pull/50)

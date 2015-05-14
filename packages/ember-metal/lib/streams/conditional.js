@@ -30,7 +30,7 @@ function ConditionalStream(test, consequent, alternate) {
 
 ConditionalStream.prototype = create(Stream.prototype);
 
-ConditionalStream.prototype.valueFn = function() {
+ConditionalStream.prototype.compute = function() {
   var oldTestResult = this.oldTestResult;
   var newTestResult = !!read(this.test);
 

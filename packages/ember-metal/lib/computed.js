@@ -219,7 +219,6 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   Ember.deprecate('Passing arguments to ComputedProperty.readOnly() is deprecated.', arguments.length === 0);
   this._readOnly = readOnly === undefined || !!readOnly; // Force to true once this deprecation is gone
   Ember.assert("Computed properties that define a setter using the new syntax cannot be read-only", !(this._readOnly && this._setter && this._setter !== this._getter));
-
   return this;
 };
 

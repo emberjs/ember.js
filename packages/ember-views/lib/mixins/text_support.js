@@ -42,6 +42,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   The following chart is a visual representation of what takes place when the
   escape key is pressed in this scenario:
 
+  ```
   The Template
   +---------------------------+
   |                           |
@@ -66,6 +67,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |  }                                        |
   |                                           |
   +-------------------------------------------+
+  ```
 
   Here are the events that we currently support along with the name of the
   attribute you would need to use on your field. To reiterate, you would use the
@@ -75,6 +77,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
     {{input attribute-name='controllerAction'}}
   ```
 
+  ```
   +--------------------+----------------+
   |                    |                |
   | event              | attribute name |
@@ -95,6 +98,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   |                    |                |
   | keydown            | key-down       |
   +--------------------+----------------+
+  ```
 
   @class TextSupport
   @namespace Ember
@@ -184,7 +188,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   _elementValueDidChange() {
-    set(this, 'value', this.$().val());
+    // Using readDOMAttr will ensure that HTMLBars knows the last
+    // value.
+    set(this, 'value', this.readDOMAttr('value'));
   },
 
   change(event) {
@@ -318,7 +324,7 @@ TextSupport.KEY_EVENTS = {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  var action = get(view, eventName);
+  var action = get(view, 'attrs.' + eventName) || get(view, eventName);
   var on = get(view, 'onEvent');
   var value = get(view, 'value');
 

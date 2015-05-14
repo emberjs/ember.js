@@ -50,27 +50,3 @@ QUnit.test('localize takes passed formats into an account', function() {
 
   runDestroy(view);
 });
-
-QUnit.test('localize throws an assertion if the second parameter is a binding', function() {
-  var view = buildView('{{loc "Hello %@" name}}', {
-    name: 'Bob Foster'
-  });
-
-  expectAssertion(function() {
-    runAppend(view);
-  }, /You cannot pass bindings to `loc` helper/);
-
-  runDestroy(view);
-});
-
-QUnit.test('localize a binding throws an assertion', function() {
-  var view = buildView('{{loc localizationKey}}', {
-    localizationKey: 'villain'
-  });
-
-  expectAssertion(function() {
-    runAppend(view);
-  }, /You cannot pass bindings to `loc` helper/);
-
-  runDestroy(view);
-});

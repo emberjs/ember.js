@@ -40,4 +40,3 @@ QUnit.test("setting a controller on an inner view should change it context", fun
     outerView.destroy();
   });
 });
-

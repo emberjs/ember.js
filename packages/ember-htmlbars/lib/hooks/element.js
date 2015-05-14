@@ -1,39 +1,45 @@
 /**
-@module ember
-@submodule ember-htmlbars
-*/
+ @module ember
+ @submodule ember-htmlbars
+ */
 
-import Ember from "ember-metal/core";
-import { read } from "ember-metal/streams/utils";
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
+import { findHelper } from "ember-htmlbars/system/lookup-helper";
+import { handleRedirect } from "htmlbars-runtime/hooks";
 
-export default function element(env, domElement, view, path, params, hash) { //jshint ignore:line
-  var helper = lookupHelper(path, view, env);
-  var valueOrLazyValue;
+var fakeElement;
 
-  if (helper) {
-    var options = {
-      element: domElement
-    };
-    valueOrLazyValue = helper.helperFunction.call(undefined, params, hash, options, env);
-  } else {
-    valueOrLazyValue = view.getStream(path);
+function updateElementAttributesFromString(element, string) {
+  if (!fakeElement) {
+    fakeElement = document.createElement('div');
   }
 
-  var value = read(valueOrLazyValue);
-  if (value) {
-    Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.');
+  fakeElement.innerHTML = '<' + element.tagName + ' ' + string + '><' + '/' + element.tagName + '>';
 
-    var parts = value.toString().split(/\s+/);
-    for (var i = 0, l = parts.length; i < l; i++) {
-      var attrParts = parts[i].split('=');
-      var attrName = attrParts[0];
-      var attrValue = attrParts[1];
-
-      attrValue = attrValue.replace(/^['"]/, '').replace(/['"]$/, '');
-
-      env.dom.setAttribute(domElement, attrName, attrValue);
+  var attrs = fakeElement.firstChild.attributes;
+  for (var i = 0, l = attrs.length; i < l; i++) {
+    var attr = attrs[i];
+    if (attr.specified) {
+      element.setAttribute(attr.name, attr.value);
     }
   }
 }
 
+export default function emberElement(morph, env, scope, path, params, hash, visitor) {
+  if (handleRedirect(morph, env, scope, path, params, hash, null, null, visitor)) {
+    return;
+  }
+
+  var result;
+  var helper = findHelper(path, scope.self, env);
+  if (helper) {
+    result = env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { element: morph.element }).value;
+  } else {
+    result = env.hooks.get(env, scope, path);
+  }
+
+  var value = env.hooks.getValue(result);
+  if (value) {
+    Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.');
+    updateElementAttributesFromString(morph.element, value);
+  }
+}

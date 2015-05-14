@@ -3,9 +3,11 @@ import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import run from "ember-metal/run_loop";
+import { set } from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import Component from "ember-views/views/component";
 
-var set = Ember.set;
-var get = Ember.get;
 var view, registry, container;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
@@ -26,8 +28,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("component helper with unquoted string is bound", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
-    registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+    registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -104,9 +106,9 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("nested component helpers", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
-    registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
-    registry.register('template:components/corge-grault', compile('delicious {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+    registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
+    registry.register('template:components/corge-grault', compile('delicious {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -127,7 +129,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   });
 
   QUnit.test("component helper can be used with a quoted string (though you probably would not do this)", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
       container: container,
@@ -148,13 +150,13 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
-    }, /HTMLBars error: Could not find component named "does-not-exist"./);
+    }, /HTMLBars error: Could not find component named "does-not-exist"./, "Expected missing component to generate an exception");
   });
 
   QUnit.test("component with unquoted param resolving to a component, then non-existent component", function() {
-    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
     view = EmberView.create({
       container: container,
       dynamicComponent: 'foo-bar',
@@ -180,8 +182,39 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       template: compile('{{#component "does-not-exist" location=view.location}}arepas!{{/component}}')
     });
 
-    throws(function() {
+    expectAssertion(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
+  });
+
+  QUnit.test("component helper properly invalidates hash params inside an {{each}} invocation #11044", function() {
+    registry.register('component:foo-bar', Component.extend({
+      willRender() {
+        // store internally available name to ensure that the name available in `this.attrs.name`
+        // matches the template lookup name
+        set(this, 'internalName', this.attrs.name);
+      }
+    }));
+    registry.register('template:components/foo-bar', compile('{{internalName}} - {{attrs.name}}|'));
+
+    view = EmberView.create({
+      container: container,
+      items: [
+        { name: 'Robert' },
+        { name: 'Jacquie' }
+      ],
+      template: compile('{{#each view.items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}')
+    });
+
+    runAppend(view);
+    equal(view.$().text(), 'Robert - Robert|Jacquie - Jacquie|', 'component was rendered');
+
+    run(function() {
+      set(view, 'items', [
+        { name: 'Max' },
+        { name: 'James' }
+      ]);
+    });
+    equal(view.$().text(), 'Max - Max|James - James|', 'component was updated and re-rendered');
   });
 }

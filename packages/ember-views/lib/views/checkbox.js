@@ -31,6 +31,7 @@ import View from "ember-views/views/view";
   @namespace Ember
   @extends Ember.View
 */
+// 2.0TODO: Subclass Component rather than View
 export default View.extend({
   instrumentDisplay: '{{input type="checkbox"}}',
 

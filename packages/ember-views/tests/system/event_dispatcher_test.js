@@ -7,6 +7,7 @@ import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ContainerView from "ember-views/views/container_view";
+import compile from "ember-template-compiler/system/compile";
 
 var view;
 var dispatcher;
@@ -34,9 +35,7 @@ QUnit.test("should dispatch events to views", function() {
   var parentKeyDownCalled = 0;
 
   var childView = View.createWithMixins({
-    render(buffer) {
-      buffer.push('<span id="wot">ewot</span>');
-    },
+    template: compile('<span id="wot">ewot</span>'),
 
     keyDown(evt) {
       childKeyDownCalled++;
@@ -46,10 +45,8 @@ QUnit.test("should dispatch events to views", function() {
   });
 
   view = View.createWithMixins({
-    render(buffer) {
-      buffer.push('some <span id="awesome">awesome</span> content');
-      this.appendChild(childView);
-    },
+    template: compile('some <span id="awesome">awesome</span> content {{view view.childView}}'),
+    childView: childView,
 
     mouseDown(evt) {
       parentMouseDownCalled++;
@@ -88,10 +85,7 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
   view = View.createWithMixins({
-    render(buffer) {
-      buffer.push('some <span id="awesome">awesome</span> content');
-      this._super(buffer);
-    },
+    template: compile('some <span id="awesome">awesome</span> content'),
 
     mouseDown(evt) {
       receivedEvent = evt;
@@ -104,9 +98,11 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
 
   var $element = view.$();
 
-  // TODO change this test not to use private API
-  // Force into preRender
-  view._renderer.remove(view, false, true);
+  run(function() {
+    // TODO change this test not to use private API
+    // Force into preRender
+    view.renderer.remove(view, false, true);
+  });
 
   $element.trigger('mousedown');
 
@@ -124,9 +120,7 @@ QUnit.test("should not dispatch events to views not inDOM", function() {
 QUnit.test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = View.create({
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+    template: compile('<input id="is-done" type="checkbox">'),
 
     change(evt) {
       receivedEvent = evt;
@@ -152,9 +146,7 @@ QUnit.test("events should stop propagating if the view is destroyed", function()
   });
 
   view = parentView.createChildView(View, {
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+    template: compile('<input id="is-done" type="checkbox">'),
 
     change(evt) {
       receivedEvent = true;
@@ -178,36 +170,10 @@ QUnit.test("events should stop propagating if the view is destroyed", function()
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
-QUnit.test('should not interfere with event propagation of virtualViews', function() {
-  var receivedEvent;
-
-  var view = View.create({
-    isVirtual: true,
-    render(buffer) {
-      buffer.push('<div id="propagate-test-div"></div>');
-    }
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  jQuery(window).bind('click', function(evt) {
-    receivedEvent = evt;
-  });
-
-  jQuery('#propagate-test-div').click();
-
-  ok(receivedEvent, 'allowed event to propagate');
-  deepEqual(receivedEvent && receivedEvent.target, jQuery('#propagate-test-div')[0], 'target property is the element that was clicked');
-});
-
 QUnit.test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
-  view = ContainerView.create({
-    render(buffer) {
-      buffer.push('<input id="is-done" type="checkbox">');
-    },
+  view = View.create({
+    template: compile('<input id="is-done" type="checkbox">'),
 
     eventManager: EmberObject.create({
       mouseDown() {

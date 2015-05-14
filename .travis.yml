@@ -8,6 +8,12 @@ sudo: false
 cache:
   directories:
     - node_modules
+    - bower_components
+
+before_install:
+  - "npm config set spin false"
+  - "npm install -g npm@^2"
+  - "npm --version"
 
 install:
   - "npm install"
@@ -18,8 +24,19 @@ after_success:
 script:
   - npm test
 
+after_script:
+    - ember stop-sauce-connect
+
+branches:
+  only:
+    - master
+    - beta
+    - stable
+
 env:
   global:
+    - SAUCE_USERNAME=ember-ci
+    - SAUCE_ACCESS_KEY=b5cff982-069f-4a0d-ac34-b77e57c2e295
     - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
     - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
@@ -38,7 +55,8 @@ env:
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
     - TEST_SUITE=each-package-tests
-    - TEST_SUITE=built-tests EMBER_ENV=production
+    - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
+    - TEST_SUITE=sauce

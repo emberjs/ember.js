@@ -3,90 +3,72 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
-import WithView from "ember-views/views/with_view";
+import normalizeSelf from "ember-htmlbars/utils/normalize-self";
+import shouldDisplay from "ember-views/streams/should_display";
 
 /**
-  Use the `{{with}}` helper when you want to aliases the to a new name. It's helpful
-  for semantic clarity and to retain default scope or to reference from another
+  Use the `{{with}}` helper when you want to alias a property to a new name. This is helpful
+  for semantic clarity as it allows you to retain default scope or to reference a property from another
   `{{with}}` block.
-
+  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0` or
+  an empty array, the block will not be rendered.
   ```handlebars
-  // posts might not be
+  // will only render if user.posts contains items
   {{#with user.posts as |blogPosts|}}
     <div class="notice">
       There are {{blogPosts.length}} blog posts written by {{user.name}}.
     </div>
-
-    {{#each blogPosts as |post|}}
+    {{#each post in blogPosts}}
       <li>{{post.title}}</li>
     {{/each}}
   {{/with}}
   ```
-
   Without the `as` operator, it would be impossible to reference `user.name` in the example above.
-
   NOTE: The alias should not reuse a name from the bound property path.
-  For example: `{{#with foo as |foo.bar|}}` is not supported because it attempts to alias using
-  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
-
+  For example: `{{#with foo.bar as foo}}` is not supported because it attempts to alias using
+  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as baz}}`.
   ### `controller` option
-
   Adding `controller='something'` instructs the `{{with}}` helper to create and use an instance of
   the specified controller wrapping the aliased keyword.
-
   This is very similar to using an `itemController` option with the `{{each}}` helper.
-
   ```handlebars
   {{#with users.posts controller='userBlogPosts' as |posts|}}
     {{!- `posts` is wrapped in our controller instance }}
   {{/with}}
   ```
-
   In the above example, the `posts` keyword is now wrapped in the `userBlogPost` controller,
   which provides an elegant way to decorate the context with custom
   functions/properties.
-
   @method with
   @for Ember.Handlebars.helpers
   @param {Function} context
   @param {Hash} options
   @return {String} HTML string
 */
-export function withHelper(params, hash, options, env) {
-  Ember.assert(
-    "{{#with}} must be called with an argument. For example, `{{#with foo as |bar|}}{{/with}}`",
-    params.length === 1
-  );
 
-  Ember.assert(
-    "The {{#with}} helper must be called with a block",
-    !!options.template
-  );
+export default function withHelper(params, hash, options) {
+  if (shouldDisplay(params[0])) {
+    var preserveContext = false;
 
-  var view = env.data.view;
-  var preserveContext;
+    if (options.template.arity !== 0) {
+      preserveContext = true;
+    }
 
-  if (options.template.blockParams) {
-    preserveContext = true;
-  } else {
-    Ember.deprecate(
-      "Using the context switching form of `{{with}}` is deprecated. " +
-      "Please use the block param form (`{{#with bar as |foo|}}`) instead.",
-      false,
-      { url: 'http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope' }
-    );
-    preserveContext = false;
+    if (preserveContext) {
+      this.yield([params[0]]);
+    } else {
+      let self = normalizeSelf(params[0]);
+      if (hash.controller) {
+        self = {
+          hasBoundController: true,
+          controller: hash.controller,
+          self: self
+        };
+      }
+
+      this.yield([], self);
+    }
+  } else if (options.inverse && options.inverse.yield) {
+    options.inverse.yield([]);
   }
-
-  view.appendChild(WithView, {
-    _morph: options.morph,
-    withValue: params[0],
-    preserveContext: preserveContext,
-    previousContext: view.get('context'),
-    controllerName: hash.controller,
-    mainTemplate: options.template,
-    inverseTemplate: options.inverse,
-    helperName: options.helperName || 'with'
-  });
 }

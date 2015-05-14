@@ -92,7 +92,7 @@ QUnit.test("Late-registered components can be rendered with custom `template` pr
   boot(function() {
     registry.register('component:my-hero', Ember.Component.extend({
       classNames: 'testing123',
-      template() { return "watch him as he GOES"; }
+      template: compile("watch him as he GOES")
     }));
   });
 
@@ -160,8 +160,9 @@ QUnit.test("Assigning templateName to a component should setup the template as a
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-QUnit.test("Assigning templateName and layoutName should use the templates specified", function() {
-  expect(1);
+QUnit.test("Assigning templateName and layoutName should use the templates specified [DEPRECATED]", function() {
+  expect(2);
+  expectDeprecation(/Using deprecated `template` property on a Component/);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
   Ember.TEMPLATES['foo'] = compile("{{text}}");
@@ -187,7 +188,7 @@ QUnit.test('Using name of component that does not exist', function () {
 
   expectAssertion(function () {
     boot();
-  }, /A helper named `no-good` could not be found/);
+  }, /A helper named 'no-good' could not be found/);
 });
 
 QUnit.module("Application Lifecycle - Component Context", {
@@ -263,7 +264,8 @@ QUnit.test("Components without a block should have the proper content", function
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
-QUnit.test("properties of a component  without a template should not collide with internal structures", function() {
+// The test following this one is the non-deprecated version
+QUnit.test("properties of a component without a template should not collide with internal structures [DEPRECATED]", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
 
   boot(function() {
@@ -275,6 +277,26 @@ QUnit.test("properties of a component  without a template should not collide wit
     registry.register('component:my-component', Ember.Component.extend({
       didInsertElement() {
         this.$().html(this.get('data'));
+      }
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
+
+QUnit.test("attrs property of a component without a template should not collide with internal structures", function() {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component attrs=foo}}</div>");
+
+  boot(function() {
+    registry.register('controller:application', Ember.Controller.extend({
+      'text': 'outer',
+      'foo': 'Some text inserted by jQuery'
+    }));
+
+    registry.register('component:my-component', Ember.Component.extend({
+      didInsertElement() {
+        // FIXME: I'm unsure if this is even the right way to access attrs
+        this.$().html(this.get('attrs.attrs.value'));
       }
     }));
   });

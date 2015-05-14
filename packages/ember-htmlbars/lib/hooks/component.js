@@ -1,16 +1,36 @@
-/**
-@module ember
-@submodule ember-htmlbars
-*/
+import ComponentNodeManager from "ember-htmlbars/node-managers/component-node-manager";
 
-import Ember from "ember-metal/core";
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
+export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
+  var state = renderNode.state;
 
-export default function component(env, morph, view, tagName, attrs, template) {
-  var helper = lookupHelper(tagName, view, env);
+  // Determine if this is an initial render or a re-render
+  if (state.manager) {
+    state.manager.rerender(env, attrs, visitor);
+    return;
+  }
 
-  Ember.assert('You specified `' + tagName + '` in your template, but a component for `' + tagName + '` could not be found.', !!helper);
+  let tagName = _tagName;
+  let isAngleBracket = false;
 
-  return helper.helperFunction.call(undefined, [], attrs, { morph: morph, template: template }, env);
+  if (tagName.charAt(0) === '<') {
+    tagName = tagName.slice(1, -1);
+    isAngleBracket = true;
+  }
+
+  var read = env.hooks.getValue;
+  var parentView = read(env.view);
+
+  var manager = ComponentNodeManager.create(renderNode, env, {
+    tagName,
+    params,
+    attrs,
+    parentView,
+    templates,
+    isAngleBracket,
+    parentScope: scope
+  });
+
+  state.manager = manager;
+
+  manager.render(env, visitor);
 }
-

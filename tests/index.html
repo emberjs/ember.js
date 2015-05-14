@@ -5,6 +5,7 @@
     <title>Ember</title>
     <link rel="stylesheet" href="../qunit/qunit.css">
     <script src="../qunit/qunit.js"></script>
+    <script src="/testem.js"></script>
 
     <script type="text/javascript">
       window.loadScript = function(url) {
@@ -35,6 +36,18 @@
           testing: true
         };
         window.ENV = window.ENV || {};
+
+        window.printTestCounts = function() {
+          var passing = $("li[id^='qunit-'].pass").length;
+          var failing = $("li[id^='qunit-'].fail").length;
+          var total = passing + failing;
+
+          console.table([{ passing: passing, failing: failing, total: total }], ["passing", "failing", "total"]);
+        }
+
+        window.findPassingSkippedTests = function() {
+          console.log($("li[id^='qunit-'].pass:contains(SKIPPED)").map(function() { return $("strong", this).text() }).toArray().join("\n"));
+        };
 
         // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
         ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
@@ -85,6 +98,19 @@
 
     <script>
       (function() {
+        if (QUnit.urlParams.forceskip) {
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return QUnit.test(string, callback);
+          };
+        } else {
+          var skip = QUnit.skip;
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return skip(string, callback);
+          }
+        }
+
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
 
@@ -114,8 +140,11 @@
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
         QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
+        // Enable/disable livereload
+        QUnit.config.urlConfig.push({ id: 'livereload', label: 'Live Reload'});
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
+        QUnit.config.urlConfig.push('forceskip');
       })();
     </script>
 
@@ -136,6 +165,19 @@
         if (!QUnit.urlParams.nojshint && moduleName.match(/[-_.]jshint$/)) { Ember.__loader.require(moduleName); }
       }
     </script>
+
+    <script>
+      if (QUnit.urlParams.livereload) {
+        (function() {
+          var src = (location.protocol || 'http:') + '//' + (location.hostname || 'localhost') + ':' + (parseInt(location.port, 10) + 31529) + '/livereload.js?snipver=1';
+          var script    = document.createElement('script');
+          script.type   = 'text/javascript';
+          script.src    = src;
+          document.getElementsByTagName('head')[0].appendChild(script);
+        }());
+      }
+    </script>
+
   </head>
 <body>
   <div id="qunit"></div>

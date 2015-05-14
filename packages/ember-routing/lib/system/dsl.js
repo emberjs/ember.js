@@ -15,6 +15,7 @@ export default DSL;
 
 DSL.prototype = {
   route(name, options, callback) {
+    var dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -26,7 +27,7 @@ DSL.prototype = {
 
     var type = options.resetNamespace === true ? 'resource' : 'route';
     Ember.assert(
-      "'" + name + "' cannot be used as a " + type + " name.",
+      `'${name}' cannot be used as a ${type} name.`,
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
 
@@ -36,8 +37,8 @@ DSL.prototype = {
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       if (this.enableLoadingSubstates) {
-        createRoute(this, name + '_loading', { resetNamespace: options.resetNamespace });
-        createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+        createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
+        createRoute(this, `${name}_error`, { path: dummyErrorRoute });
       }
     }
 
@@ -48,7 +49,7 @@ DSL.prototype = {
       });
 
       createRoute(dsl, 'loading');
-      createRoute(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+      createRoute(dsl, 'error', { path: dummyErrorRoute });
 
       callback.call(dsl);
 
@@ -101,7 +102,7 @@ function canNest(dsl) {
 
 function getFullName(dsl, name, resetNamespace) {
   if (canNest(dsl) && resetNamespace !== true) {
-    return dsl.parent + "." + name;
+    return `${dsl.parent}.${name}`;
   } else {
     return name;
   }
@@ -113,7 +114,7 @@ function createRoute(dsl, name, options, callback) {
   var fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
-    options.path = "/" + name;
+    options.path = `/${name}`;
   }
 
   dsl.push(options.path, fullName, callback);

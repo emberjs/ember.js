@@ -49,6 +49,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     The following location types are currently available:
 
+    * `auto`
     * `hash`
     * `history`
     * `none`
@@ -143,7 +144,6 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     var router = this.router;
     var location = get(this, 'location');
-    var self = this;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -153,8 +153,8 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(router, location);
 
-    location.onUpdateURL(function(url) {
-      self.handleURL(url);
+    location.onUpdateURL((url) => {
+      this.handleURL(url);
     });
 
     return true;
@@ -183,7 +183,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'didTransition');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log("Transitioned into '" + EmberRouter._routePath(infos) + "'");
+      Ember.Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
     }
   },
 
@@ -215,7 +215,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
     if (!this._toplevelView) {
       var OutletView = this.container.lookupFactory('view:-outlet');
-      this._toplevelView = OutletView.create({ _isTopLevel: true });
+      this._toplevelView = OutletView.create();
       var instance = this.container.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
     }
@@ -236,7 +236,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log("Preparing to transition from '" + EmberRouter._routePath(oldInfos) + "' to '" + EmberRouter._routePath(newInfos) + "'");
+      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to ' ${EmberRouter._routePath(newInfos)}'`);
     }
   },
 
@@ -277,7 +277,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     var infos = this.router.currentHandlerInfos;
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log("Intermediate-transitioned into '" + EmberRouter._routePath(infos) + "'");
+      Ember.Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
     }
   },
 
@@ -357,24 +357,20 @@ var EmberRouter = EmberObject.extend(Evented, {
     this.reset();
   },
 
-  _lookupActiveView(templateName) {
-    var active = this._activeViews[templateName];
-    return active && active[0];
+  _lookupActiveComponentNode(templateName) {
+    return this._activeViews[templateName];
   },
 
-  _connectActiveView(templateName, view) {
-    var existing = this._activeViews[templateName];
+  _connectActiveComponentNode(templateName, componentNode) {
+    Ember.assert('cannot connect an activeView that already exists', !this._activeViews[templateName]);
 
-    if (existing) {
-      existing[0].off('willDestroyElement', this, existing[1]);
-    }
-
+    var _activeViews = this._activeViews;
     function disconnectActiveView() {
-      delete this._activeViews[templateName];
+      delete _activeViews[templateName];
     }
 
-    this._activeViews[templateName] = [view, disconnectActiveView];
-    view.one('willDestroyElement', this, disconnectActiveView);
+    this._activeViews[templateName] = componentNode;
+    componentNode.renderNode.addDestruction({ destroy: disconnectActiveView });
   },
 
   _setupLocation() {
@@ -382,7 +378,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var rootURL = get(this, 'rootURL');
 
     if ('string' === typeof location && this.container) {
-      var resolvedLocation = this.container.lookup('location:' + location);
+      var resolvedLocation = this.container.lookup(`location:${location}`);
 
       if ('undefined' !== typeof resolvedLocation) {
         location = set(this, 'location', resolvedLocation);
@@ -420,9 +416,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     var seen = create(null);
     var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
-    var self = this;
 
-    return function(name) {
+    return (name) => {
       var routeName = 'route:' + name;
       var handler = container.lookup(routeName);
 
@@ -436,8 +431,8 @@ var EmberRouter = EmberObject.extend(Evented, {
         container._registry.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
-        if (get(self, 'namespace.LOG_ACTIVE_GENERATION')) {
-          Ember.Logger.info("generated -> " + routeName, { fullName: routeName });
+        if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
+          Ember.Logger.info(`generated -> ${routeName}`, { fullName: routeName });
         }
       }
 
@@ -530,7 +525,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doTransition(_targetRouteName, models, _queryParams) {
     var targetRouteName = _targetRouteName || getActiveTargetName(this.router);
-    Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
+    Ember.assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
     merge(queryParams, _queryParams);
@@ -806,7 +801,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 function routeHasBeenDefined(router, name) {
   var container = router.container;
   return router.hasRoute(name) &&
-         (container._registry.has('template:' + name) || container._registry.has('route:' + name));
+         (container._registry.has(`template:${name}`) || container._registry.has(`route:${name}`));
 }
 
 function triggerEvent(handlerInfos, ignoreFailure, args) {
@@ -814,7 +809,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
 
   if (!handlerInfos) {
     if (ignoreFailure) { return; }
-    throw new EmberError("Can't trigger action '" + name + "' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call `.send()` on the `Transition` object passed to the `model/beforeModel/afterModel` hooks.");
+    throw new EmberError(`Can't trigger action '${name}' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call \`.send()\` on the \`Transition\` object passed to the \`model/beforeModel/afterModel\` hooks.`);
   }
 
   var eventWasHandled = false;
@@ -839,7 +834,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new EmberError("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.");
+    throw new EmberError(`Nothing handled the action '${name}'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.`);
   }
 }
 
@@ -877,12 +872,14 @@ function updatePaths(router) {
   }
 
   set(appController, 'currentPath', path);
+  set(router, 'currentPath', path);
 
   if (!('currentRouteName' in appController)) {
     defineProperty(appController, 'currentRouteName');
   }
 
   set(appController, 'currentRouteName', infos[infos.length - 1].name);
+  set(router, 'currentRouteName', infos[infos.length - 1].name);
 }
 
 EmberRouter.reopenClass({
@@ -969,7 +966,7 @@ function didBeginTransition(transition, router) {
   transition.then(null, function(error) {
     if (!error || !error.name) { return; }
 
-    Ember.assert("The URL '" + error.message + "' did not match any routes in your application", error.name !== "UnrecognizedURLError");
+    Ember.assert(`The URL '${error.message}' did not match any routes in your application`, error.name !== "UnrecognizedURLError");
 
     return error;
   }, 'Ember: Process errors from Router');

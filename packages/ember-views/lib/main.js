@@ -15,15 +15,14 @@ import {
   getViewClientRects,
   getViewBoundingClientRect
 } from "ember-views/system/utils";
-import RenderBuffer from "ember-views/system/render_buffer";
-import Renderer from "ember-views/system/renderer";
-import DOMHelper from "dom-helper";
+import RenderBuffer from "ember-views/compat/render_buffer";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
   states
 } from "ember-views/views/states";
 
+import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
@@ -38,16 +37,15 @@ import TextSupport from "ember-views/mixins/text_support";
 import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
-import SimpleBoundView from "ember-views/views/simple_bound_view";
-import _MetamorphView from "ember-views/views/metamorph_view";
-import {
-  _Metamorph
-} from "ember-views/views/metamorph_view";
 import {
   Select,
   SelectOption,
   SelectOptgroup
 } from "ember-views/views/select";
+import "ember-views/initializers/components";
+import _MetamorphView, { _Metamorph } from "ember-views/compat/metamorph_view";
+import LegacyEachView from "ember-views/views/legacy_each_view";
+
 // END IMPORTS
 
 /**
@@ -72,15 +70,11 @@ Ember.CoreView = DeprecatedCoreView;
 Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
-Ember.View.DOMHelper = DOMHelper;
 Ember.View._Renderer = Renderer;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
-Ember._SimpleBoundView = SimpleBoundView;
-Ember._MetamorphView = _MetamorphView;
-Ember._Metamorph = _Metamorph;
 Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
@@ -91,6 +85,12 @@ Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
+
+// Deprecated:
+Ember._Metamorph = _Metamorph;
+Ember._MetamorphView = _MetamorphView;
+Ember._LegacyEachView = LegacyEachView;
+
 // END EXPORTS
 
 export default Ember;

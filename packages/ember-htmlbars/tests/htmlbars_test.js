@@ -11,6 +11,6 @@ QUnit.test("HTMLBars is present and can be executed", function() {
 
   var env = merge({ dom: domHelper }, defaultEnv);
 
-  var output = template.render({}, env, document.body);
+  var output = template.render({}, env, { contextualElement: document.body }).fragment;
   equalHTML(output, "ohai");
 });

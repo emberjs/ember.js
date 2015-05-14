@@ -176,15 +176,14 @@ export default EmberObject.extend({
   */
   onUpdateURL(callback) {
     var guid = guidFor(this);
-    var self = this;
 
-    jQuery(window).on('popstate.ember-location-'+guid, function(e) {
+    jQuery(window).on(`popstate.ember-location-${guid}`, (e) => {
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
-        if (self.getURL() === self._previousURL) { return; }
+        if (this.getURL() === this._previousURL) { return; }
       }
-      callback(self.getURL());
+      callback(this.getURL());
     });
   },
 
@@ -219,7 +218,7 @@ export default EmberObject.extend({
   willDestroy() {
     var guid = guidFor(this);
 
-    jQuery(window).off('popstate.ember-location-'+guid);
+    jQuery(window).off(`popstate.ember-location-${guid}`);
   },
 
   /**

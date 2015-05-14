@@ -7,6 +7,9 @@ import {
   accumulateListeners
 } from "ember-metal/events";
 import ObserverSet from "ember-metal/observer_set";
+import { symbol } from "ember-metal/utils";
+
+export let PROPERTY_DID_CHANGE = symbol("PROPERTY_DID_CHANGE");
 
 var beforeObserverSet = new ObserverSet();
 var observerSet = new ObserverSet();
@@ -84,6 +87,10 @@ function propertyDidChange(obj, keyName) {
   // shouldn't this mean that we're watching this key?
   if (desc && desc.didChange) {
     desc.didChange(obj, keyName);
+  }
+
+  if (obj[PROPERTY_DID_CHANGE]) {
+    obj[PROPERTY_DID_CHANGE](keyName);
   }
 
   if (!watching && keyName !== 'length') {

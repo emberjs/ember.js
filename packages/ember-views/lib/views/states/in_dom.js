@@ -15,7 +15,7 @@ merge(inDOM, {
   enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
-    if (!view.isVirtual) {
+    if (view.tagName !== '') {
       view._register();
     }
 
@@ -27,18 +27,16 @@ merge(inDOM, {
   },
 
   exit(view) {
-    if (!this.isVirtual) {
-      view._unregister();
-    }
+    view._unregister();
   },
 
   appendAttr(view, attrNode) {
-    var _attrNodes = view._attrNodes;
+    var childViews = view.childViews;
 
-    if (!_attrNodes.length) { _attrNodes = view._attrNodes = _attrNodes.slice(); }
-    _attrNodes.push(attrNode);
+    if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
+    childViews.push(attrNode);
 
-    attrNode._parentView = view;
+    attrNode.parentView = view;
     view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);
 
     view.propertyDidChange('childViews');

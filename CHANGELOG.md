@@ -1,38 +1,8 @@
 # Ember Changelog
 
-### 1.12.0-beta.3 (May 1, 2015)
-
-- [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
-- [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsey values.
-- [#10883](https://github.com/emberjs/ember.js/pull/10883) [BUGFIX] Fix `View.prototype.replaceIn` functionality.
-- [#10920](https://github.com/emberjs/ember.js/pull/10920) [BUGFIX] Fix `Component.prototype.layout` so that it can now be set and recompute properly.
-- [#10968](https://github.com/emberjs/ember.js/pull/10968) [BUGFIX] Fix assertion that incorrectly fired on legacy settable computed properties.
-
-### 1.12.0-beta.2 (April 14, 2015)
-
-- [CVE-2015-1866] Ember.js XSS Vulnerability With {{view "select"}} Options
-
-### 1.12.0-beta.1 (March 28, 2015)
+### Canary
 
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
-- [#10200](https://github.com/emberjs/ember.js/pull/10200) Add 'autocomplete' to Ember.Select view
-- [#10464](https://github.com/emberjs/ember.js/pull/10464) Ensure templates were compiled with the current compiler version.
-- [#10494](https://github.com/emberjs/ember.js/pull/10494) Make it easier to write lazy streams.
-- [#10483](https://github.com/emberjs/ember.js/pull/10483) [REFACTOR] Lazily reify router’s location.
-- [#10673](https://github.com/emberjs/ember.js/pull/10673) Remove EachProxy and EachArray from exports.
-- [#10572](https://github.com/emberjs/ember.js/pull/10572) Fix UnrecognizedURLError not being an Error.
-- [#10585](https://github.com/emberjs/ember.js/pull/10585) Deprecate direct use of `Ember.CoreView`.
-- [#10599](https://github.com/emberjs/ember.js/pull/10599) Don’t share view registry across containers.
-- [#10667](https://github.com/emberjs/ember.js/pull/10667) Deprecate `Ember.tryFinally` and `Ember.tryCatchFinally`.
-- [#10668](https://github.com/emberjs/ember.js/pull/10668) Deprecate `Ember.required`.
-- [#10678](https://github.com/emberjs/ember.js/pull/10678) Fix typos in deprecations of unescaped style attribute
-- [#10679](https://github.com/emberjs/ember.js/pull/10679) Ensure docs are not detected for deprecation mixins.
-- [#10672](https://github.com/emberjs/ember.js/pull/10672) Do not export `Ember.Descriptor`.
-- [#10695](https://github.com/emberjs/ember.js/pull/10695) Require that `base` `href` and `embed` `src` are escaped.
-- [#10690](https://github.com/emberjs/ember.js/pull/10690) [BUGFIX canary] Prevent unknown input types from erroring.
-- [#10731](https://github.com/emberjs/ember.js/pull/10731) [FEATURE] Enable `new-computed-syntax` feature.  See [emberjs/rfcs#11](https://github.com/emberjs/rfcs/pull/11) for more details.
-- [#10731](https://github.com/emberjs/ember.js/pull/10731) [FEATURE] Enable `ember-application-instance-initializers` feature.
-- [#10731](https://github.com/emberjs/ember.js/pull/10731) [FEATURE] Enable `ember-application-initializer-context` feature.
 
 ### 1.11.0 (March 28, 2015)
 
@@ -340,11 +310,6 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [FEATURE ember-routing-consistent-resources]
 * `uuid` is now consistently used across the project.
 * `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
-* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch.
-  Also no longer force deoptimization of the run loop queue flush.
-* [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
-  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
-  array as truthy value in `bind-attr`.
 * [BREAKING BUGFIX] On Controllers, the content property is now derived from model. This reduces many
   caveats with model/content, and also sets a simple ground rule: Never set a controllers content,
   rather always set it's model and ember will do the right thing.

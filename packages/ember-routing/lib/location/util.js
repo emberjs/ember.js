@@ -7,7 +7,7 @@ export function getPath(location) {
   var pathname = location.pathname;
   // Various versions of IE/Opera don't always return a leading slash
   if (pathname.charAt(0) !== '/') {
-    pathname = '/' + pathname;
+    pathname = `/${pathname}`;
   }
 
   return pathname;
@@ -55,7 +55,7 @@ export function getOrigin(location) {
     origin = location.protocol + '//' + location.hostname;
 
     if (location.port) {
-      origin += ':' + location.port;
+      origin += `:${location.port}`;
     }
   }
 

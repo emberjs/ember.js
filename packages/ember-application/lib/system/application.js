@@ -19,12 +19,11 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import Renderer from "ember-views/system/renderer";
-import DOMHelper from "dom-helper";
+import Renderer from "ember-metal-views/renderer";
+import DOMHelper from "ember-htmlbars/system/dom-helper";
 import SelectView from "ember-views/views/select";
 import { OutletView } from "ember-routing-views/views/outlet";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-views/views/metamorph_view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
@@ -1016,7 +1015,6 @@ Application.reopenClass({
 
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 
-    registry.register('view:default', _MetamorphView);
     registry.register('view:toplevel', EmberView.extend());
 
     registry.register('route:basic', Route, { instantiate: false });
@@ -1069,10 +1067,7 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  Ember.deprecate(
-    'Application.resolver is deprecated in favor of Application.Resolver',
-    !namespace.get('resolver')
-  );
+  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
 
   var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
   var resolver = ResolverClass.create({
@@ -1095,7 +1090,7 @@ function resolverFor(namespace) {
     if (resolver.normalize) {
       return resolver.normalize(fullName);
     } else {
-      Ember.deprecate('The Resolver should now provide a \'normalize\' function');
+      Ember.deprecate('The Resolver should now provide a \'normalize\' function', false);
       return fullName;
     }
   };
