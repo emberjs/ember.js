@@ -1,8 +1,16 @@
 # Ember Changelog
 
-### Canary
+### 1.13.0-beta.1
 
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
+- [#10501](https://github.com/emberjs/ember.js/pull/10501) Implement Glimmer Engine.
+- [#11029](https://github.com/emberjs/ember.js/pull/11029) Allow bound outlet names.
+- [#11035](https://github.com/emberjs/ember.js/pull/11035) {{#with}} helper should not render if passed variable is falsey.
+- [#11104](https://github.com/emberjs/ember.js/pull/11104) /  [#10501](https://github.com/emberjs/ember.js/pull/10501) Remove support for non-HTMLBars templates.
+- [#11116](https://github.com/emberjs/ember.js/pull/11116) / [emberjs/rfcs#50](https://github.com/emberjs/rfcs/pull/50) [FEATURE ember-routing-htmlbars-improved-actions].
+- [#11028](https://github.com/emberjs/ember.js/pull/11028) Add positional parameter support to components.
+- [#11084](https://github.com/emberjs/ember.js/pull/11084) Enable {{yield to="inverse"}} in components.
+- [#11141](https://github.com/emberjs/ember.js/pull/11141) Implement angle-bracket components.
 
 ### 1.12.0 (May 13, 2015)
 
