@@ -722,7 +722,7 @@ QUnit.test("it supports {{emptyViewClass=}} with in format", function() {
   assertText(view, "I'm empty");
 });
 
-QUnit.test("it supports {{else}}", function() {
+QUnit.test("it uses {{else}} when replacing model with an empty array", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
@@ -735,6 +735,26 @@ QUnit.test("it supports {{else}}", function() {
 
   run(function() {
     view.set('items', A());
+  });
+
+  assertHTML(view, "Nothing");
+});
+
+QUnit.test("it uses {{else}} when removing all items in an array", function() {
+  var items = A(['one', 'two']);
+  runDestroy(view);
+  view = EmberView.create({
+    template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
+    items
+  });
+
+  runAppend(view);
+
+  assertHTML(view, "onetwo");
+
+  run(function() {
+    items.shiftObject();
+    items.shiftObject();
   });
 
   assertHTML(view, "Nothing");
