@@ -9,7 +9,6 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
-import { bool } from "ember-metal/computed_macros";
 
 /**
 @module ember
