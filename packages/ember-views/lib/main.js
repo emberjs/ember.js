@@ -42,7 +42,6 @@ import {
   SelectOption,
   SelectOptgroup
 } from "ember-views/views/select";
-import "ember-views/initializers/components";
 import _MetamorphView, { _Metamorph } from "ember-views/compat/metamorph_view";
 import LegacyEachView from "ember-views/views/legacy_each_view";
 
