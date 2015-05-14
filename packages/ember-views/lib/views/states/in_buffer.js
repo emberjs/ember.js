@@ -13,7 +13,7 @@ import merge from "ember-metal/merge";
 var inBuffer = create(_default);
 
 merge(inBuffer, {
-  $: function(view, sel) {
+  $(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
     // trying to update an element that isn't in the DOM. Instead,
     // rerender the view to allow the render method to reflect the
@@ -24,14 +24,14 @@ merge(inBuffer, {
 
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
-  rerender: function(view) {
+  rerender(view) {
     throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
   },
 
   // when a view is rendered in a buffer, appending a child
   // view will render that view and append the resulting
   // buffer into its buffer.
-  appendChild: function(view, childView, options) {
+  appendChild(view, childView, options) {
     var buffer = view.buffer;
     var _childViews = view._childViews;
 
@@ -48,7 +48,7 @@ merge(inBuffer, {
     return childView;
   },
 
-  appendAttr: function(view, attrNode) {
+  appendAttr(view, attrNode) {
     var buffer = view.buffer;
     var _attrNodes = view._attrNodes;
 
@@ -65,7 +65,7 @@ merge(inBuffer, {
     return attrNode;
   },
 
-  invokeObserver: function(target, observer) {
+  invokeObserver(target, observer) {
     observer.call(target);
   }
 });

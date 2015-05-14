@@ -14,7 +14,7 @@ function DSL(name, options) {
 export default DSL;
 
 DSL.prototype = {
-  route: function(name, options, callback) {
+  route(name, options, callback) {
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -58,14 +58,14 @@ DSL.prototype = {
     }
   },
 
-  push: function(url, name, callback) {
+  push(url, name, callback) {
     var parts = name.split('.');
     if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
   },
 
-  resource: function(name, options, callback) {
+  resource(name, options, callback) {
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -79,7 +79,7 @@ DSL.prototype = {
     this.route(name, options, callback);
   },
 
-  generate: function() {
+  generate() {
     var dslMatches = this.matches;
 
     if (!this.explicitIndex) {

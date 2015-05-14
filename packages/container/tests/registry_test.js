@@ -9,10 +9,10 @@ import {
 var originalModelInjections;
 
 QUnit.module("Registry", {
-  setup: function() {
+  setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
   },
-  teardown: function() {
+  teardown() {
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });

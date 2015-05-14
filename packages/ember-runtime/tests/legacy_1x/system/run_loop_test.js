@@ -21,7 +21,7 @@ import EmberObject from 'ember-runtime/system/object';
 var MyApp, binding1, binding2;
 
 QUnit.module("System:run_loop() - chained binding", {
-  setup: function() {
+  setup() {
     MyApp = {};
     MyApp.first = EmberObject.createWithMixins(Observable, {
       output: 'MyApp.first'

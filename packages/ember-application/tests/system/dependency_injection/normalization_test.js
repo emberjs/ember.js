@@ -5,12 +5,12 @@ import Application from "ember-application/system/application";
 var application, registry;
 
 QUnit.module("Ember.Application Dependency Injection – normalization", {
-  setup: function() {
+  setup() {
     application = run(Application, 'create');
     registry = application.registry;
   },
 
-  teardown: function() {
+  teardown() {
     run(application, 'destroy');
   }
 });

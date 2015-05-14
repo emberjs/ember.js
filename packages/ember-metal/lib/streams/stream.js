@@ -8,6 +8,30 @@ import {
 @module ember-metal
 */
 
+function Subscriber(callback, context) {
+  this.next = null;
+  this.prev = null;
+  this.callback = callback;
+  this.context = context;
+}
+
+Subscriber.prototype.removeFrom = function(stream) {
+  var next = this.next;
+  var prev = this.prev;
+
+  if (prev) {
+    prev.next = next;
+  } else {
+    stream.subscriberHead = next;
+  }
+
+  if (next) {
+    next.prev = prev;
+  } else {
+    stream.subscriberTail = prev;
+  }
+};
+
 /*
   @public
   @class Stream
@@ -22,15 +46,16 @@ function Stream(fn) {
 Stream.prototype = {
   isStream: true,
 
-  init: function() {
+  init() {
     this.state = 'dirty';
     this.cache = undefined;
-    this.subscribers = undefined;
+    this.subscriberHead = null;
+    this.subscriberTail = null;
     this.children = undefined;
     this._label = undefined;
   },
 
-  get: function(path) {
+  get(path) {
     var firstKey = getFirstKey(path);
     var tailPath = getTailPath(path);
 
@@ -52,7 +77,7 @@ Stream.prototype = {
     }
   },
 
-  value: function() {
+  value() {
     if (this.state === 'clean') {
       return this.cache;
     } else if (this.state === 'dirty') {
@@ -65,68 +90,76 @@ Stream.prototype = {
     // Ember.assert("Stream error: value was called in an invalid state: " + this.state);
   },
 
-  valueFn: function() {
+  valueFn() {
     throw new Error("Stream error: valueFn not implemented");
   },
 
-  setValue: function() {
+  setValue() {
     throw new Error("Stream error: setValue not implemented");
   },
 
-  notify: function() {
+  notify() {
     this.notifyExcept();
   },
 
-  notifyExcept: function(callbackToSkip, contextToSkip) {
+  notifyExcept(callbackToSkip, contextToSkip) {
     if (this.state === 'clean') {
       this.state = 'dirty';
       this._notifySubscribers(callbackToSkip, contextToSkip);
     }
   },
 
-  subscribe: function(callback, context) {
-    if (this.subscribers === undefined) {
-      this.subscribers = [callback, context];
+  subscribe(callback, context) {
+    var subscriber = new Subscriber(callback, context, this);
+    if (this.subscriberHead === null) {
+      this.subscriberHead = this.subscriberTail = subscriber;
     } else {
-      this.subscribers.push(callback, context);
+      var tail = this.subscriberTail;
+      tail.next = subscriber;
+      subscriber.prev = tail;
+      this.subscriberTail = subscriber;
+    }
+
+    var stream = this;
+    return function() { subscriber.removeFrom(stream); };
+  },
+
+  unsubscribe(callback, context) {
+    var subscriber = this.subscriberHead;
+
+    while (subscriber) {
+      var next = subscriber.next;
+      if (subscriber.callback === callback && subscriber.context === context) {
+        subscriber.removeFrom(this);
+      }
+      subscriber = next;
     }
   },
 
-  unsubscribe: function(callback, context) {
-    var subscribers = this.subscribers;
+  _notifySubscribers(callbackToSkip, contextToSkip) {
+    var subscriber = this.subscriberHead;
 
-    if (subscribers !== undefined) {
-      for (var i = 0, l = subscribers.length; i < l; i += 2) {
-        if (subscribers[i] === callback && subscribers[i+1] === context) {
-          subscribers.splice(i, 2);
-          return;
-        }
+    while (subscriber) {
+      var next = subscriber.next;
+
+      var callback = subscriber.callback;
+      var context = subscriber.context;
+
+      subscriber = next;
+
+      if (callback === callbackToSkip && context === contextToSkip) {
+        continue;
+      }
+
+      if (context === undefined) {
+        callback(this);
+      } else {
+        callback.call(context, this);
       }
     }
   },
 
-  _notifySubscribers: function(callbackToSkip, contextToSkip) {
-    var subscribers = this.subscribers;
-
-    if (subscribers !== undefined) {
-      for (var i = 0, l = subscribers.length; i < l; i += 2) {
-        var callback = subscribers[i];
-        var context = subscribers[i+1];
-
-        if (callback === callbackToSkip && context === contextToSkip) {
-          continue;
-        }
-
-        if (context === undefined) {
-          callback(this);
-        } else {
-          callback.call(context, this);
-        }
-      }
-    }
-  },
-
-  destroy: function() {
+  destroy() {
     if (this.state !== 'destroyed') {
       this.state = 'destroyed';
 
@@ -135,11 +168,13 @@ Stream.prototype = {
         children[key].destroy();
       }
 
+      this.subscriberHead = this.subscriberTail = null;
+
       return true;
     }
   },
 
-  isGlobal: function() {
+  isGlobal() {
     var stream = this;
     while (stream !== undefined) {
       if (stream._isRoot) {

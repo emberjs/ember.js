@@ -7,13 +7,13 @@ var data = [];
 var Comp = EmberObject.extend(Comparable);
 
 Comp.reopenClass({
-  compare: function (obj) {
+  compare(obj) {
     return obj.get('val');
   }
 });
 
 QUnit.module('Ember.compare()', {
-  setup: function() {
+  setup() {
     data[0]  = null;
     data[1]  = false;
     data[2]  = true;

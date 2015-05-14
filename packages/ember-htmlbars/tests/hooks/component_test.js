@@ -8,7 +8,7 @@ var view, registry, container;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
   QUnit.module("ember-htmlbars: component hook", {
-    setup: function() {
+    setup() {
       registry = new Registry();
       container = registry.container();
 
@@ -16,7 +16,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
       registry.register('component-lookup:main', ComponentLookup);
     },
 
-    teardown: function() {
+    teardown() {
       runDestroy(view);
       runDestroy(container);
       registry = container = view = null;

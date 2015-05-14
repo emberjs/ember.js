@@ -49,6 +49,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     The following location types are currently available:
 
+    * `auto`
     * `hash`
     * `history`
     * `none`
@@ -68,7 +69,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
-  _initRouterJs: function(moduleBasedResolver) {
+  _initRouterJs(moduleBasedResolver) {
     var router = this.router = new Router();
     router.triggerEvent = triggerEvent;
 
@@ -97,9 +98,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     router.map(dsl.generate());
   },
 
-  init: function() {
+  init() {
     this._activeViews = {};
-    this._setupLocation();
     this._qpCache = {};
     this._queuedQPChanges = {};
   },
@@ -124,11 +124,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting: function(moduleBasedResolver) {
+  startRouting(moduleBasedResolver) {
     var initialURL = get(this, 'initialURL');
-    var location = get(this, 'location');
 
-    if (this.setupRouter(moduleBasedResolver, location)) {
+    if (this.setupRouter(moduleBasedResolver)) {
       if (typeof initialURL === "undefined") {
         initialURL = get(this, 'location').getURL();
       }
@@ -139,8 +138,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  setupRouter: function(moduleBasedResolver) {
+  setupRouter(moduleBasedResolver) {
     this._initRouterJs(moduleBasedResolver);
+    this._setupLocation();
 
     var router = this.router;
     var location = get(this, 'location');
@@ -171,7 +171,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
     @since 1.2.0
   */
-  didTransition: function(infos) {
+  didTransition(infos) {
     updatePaths(this);
 
     this._cancelSlowTransitionTimer();
@@ -188,7 +188,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _setOutlets: function() {
+  _setOutlets() {
     var handlerInfos = this.router.currentHandlerInfos;
     var route;
     var defaultParentState;
@@ -233,7 +233,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
     @since 1.11.0
   */
-  willTransition: function(oldInfos, newInfos, transition) {
+  willTransition(oldInfos, newInfos, transition) {
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -241,21 +241,20 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  handleURL: function(url) {
+  handleURL(url) {
     // Until we have an ember-idiomatic way of accessing #hashes, we need to
     // remove it because router.js doesn't know how to handle it.
     url = url.split(/#(.+)?/)[0];
     return this._doURLTransition('handleURL', url);
   },
 
-  _doURLTransition: function(routerJsMethod, url) {
+  _doURLTransition(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
     didBeginTransition(transition, this);
     return transition;
   },
 
-  transitionTo: function() {
-    var args = slice.call(arguments);
+  transitionTo(...args) {
     var queryParams;
     if (resemblesURL(args[0])) {
       return this._doURLTransition('transitionTo', args[0]);
@@ -272,8 +271,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     return this._doTransition(targetRouteName, args, queryParams);
   },
 
-  intermediateTransitionTo: function() {
-    this.router.intermediateTransitionTo.apply(this.router, arguments);
+  intermediateTransitionTo() {
+    this.router.intermediateTransitionTo(...arguments);
 
     updatePaths(this);
 
@@ -283,12 +282,12 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  replaceWith: function() {
-    return this.transitionTo.apply(this, arguments).method('replace');
+  replaceWith() {
+    return this.transitionTo(...arguments).method('replace');
   },
 
-  generate: function() {
-    var url = this.router.generate.apply(this.router, arguments);
+  generate() {
+    var url = this.router.generate(...arguments);
     return this.location.formatURL(url);
   },
 
@@ -300,9 +299,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     @return {Boolean}
     @private
   */
-  isActive: function(routeName) {
+  isActive(routeName) {
     var router = this.router;
-    return router.isActive.apply(router, arguments);
+    return router.isActive(...arguments);
   },
 
   /**
@@ -318,12 +317,12 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
     @since 1.7.0
   */
-  isActiveIntent: function(routeName, models, queryParams) {
+  isActiveIntent(routeName, models, queryParams) {
     return this.currentState.isActiveIntent(routeName, models, queryParams);
   },
 
-  send: function(name, context) {
-    this.router.trigger.apply(this.router, arguments);
+  send(name, context) {
+    this.router.trigger(...arguments);
   },
 
   /**
@@ -333,7 +332,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @return {Boolean}
     @private
   */
-  hasRoute: function(route) {
+  hasRoute(route) {
     return this.router.hasRoute(route);
   },
 
@@ -344,27 +343,27 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
     @method reset
    */
-  reset: function() {
+  reset() {
     if (this.router) {
       this.router.reset();
     }
   },
 
-  willDestroy: function() {
+  willDestroy() {
     if (this._toplevelView) {
       this._toplevelView.destroy();
       this._toplevelView = null;
     }
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this.reset();
   },
 
-  _lookupActiveView: function(templateName) {
+  _lookupActiveView(templateName) {
     var active = this._activeViews[templateName];
     return active && active[0];
   },
 
-  _connectActiveView: function(templateName, view) {
+  _connectActiveView(templateName, view) {
     var existing = this._activeViews[templateName];
 
     if (existing) {
@@ -379,15 +378,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     view.one('willDestroyElement', this, disconnectActiveView);
   },
 
-  _setupLocation: function() {
+  _setupLocation() {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
-
-    if (rootURL && this.container && !this.container._registry.has('-location-setting:root-url')) {
-      this.container._registry.register('-location-setting:root-url', rootURL, {
-        instantiate: false
-      });
-    }
 
     if ('string' === typeof location && this.container) {
       var resolvedLocation = this.container.lookup('location:' + location);
@@ -405,8 +398,15 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
 
     if (location !== null && typeof location === 'object') {
-      if (rootURL && typeof rootURL === 'string') {
-        location.rootURL = rootURL;
+      if (rootURL) {
+        set(location, 'rootURL', rootURL);
+      }
+
+      // Allow the location to do any feature detection, such as AutoLocation
+      // detecting history support. This gives it a chance to set its
+      // `cancelRouterSetup` property which aborts routing.
+      if (typeof location.detect === 'function') {
+        location.detect();
       }
 
       // ensure that initState is called AFTER the rootURL is set on
@@ -417,7 +417,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _getHandlerFunction: function() {
+  _getHandlerFunction() {
     var seen = create(null);
     var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
@@ -447,7 +447,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
-  _setupRouter: function(router, location) {
+  _setupRouter(router, location) {
     var lastURL;
     var emberRouter = this;
 
@@ -484,7 +484,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _serializeQueryParams: function(targetRouteName, queryParams) {
+  _serializeQueryParams(targetRouteName, queryParams) {
     var groupedByUrlKey = {};
 
     forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
@@ -512,14 +512,14 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _deserializeQueryParams: function(targetRouteName, queryParams) {
+  _deserializeQueryParams(targetRouteName, queryParams) {
     forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
       delete queryParams[key];
       queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
     });
   },
 
-  _pruneDefaultQueryParamValues: function(targetRouteName, queryParams) {
+  _pruneDefaultQueryParamValues(targetRouteName, queryParams) {
     var qps = this._queryParamsFor(targetRouteName);
     for (var key in queryParams) {
       var qp = qps.map[key];
@@ -529,7 +529,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _doTransition: function(_targetRouteName, models, _queryParams) {
+  _doTransition(_targetRouteName, models, _queryParams) {
     var targetRouteName = _targetRouteName || getActiveTargetName(this.router);
     Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
 
@@ -545,7 +545,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     return transitionPromise;
   },
 
-  _prepareQueryParams: function(targetRouteName, models, queryParams) {
+  _prepareQueryParams(targetRouteName, models, queryParams) {
     this._hydrateUnsuppliedQueryParams(targetRouteName, models, queryParams);
     this._serializeQueryParams(targetRouteName, queryParams);
     this._pruneDefaultQueryParamValues(targetRouteName, queryParams);
@@ -555,7 +555,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Returns a merged query params meta object for a given route.
     Useful for asking a route what its known query params are.
    */
-  _queryParamsFor: function(leafRouteName) {
+  _queryParamsFor(leafRouteName) {
     if (this._qpCache[leafRouteName]) {
       return this._qpCache[leafRouteName];
     }
@@ -606,7 +606,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     },
   */
 
-  _hydrateUnsuppliedQueryParams: function(leafRouteName, contexts, queryParams) {
+  _hydrateUnsuppliedQueryParams(leafRouteName, contexts, queryParams) {
     var state = calculatePostTransitionState(this, leafRouteName, contexts);
     var handlerInfos = state.handlerInfos;
     var appCache = this._bucketCache;
@@ -638,7 +638,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _scheduleLoadingEvent: function(transition, originRoute) {
+  _scheduleLoadingEvent(transition, originRoute) {
     this._cancelSlowTransitionTimer();
     this._slowTransitionTimer = run.scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
   },
@@ -646,7 +646,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   currentState: null,
   targetState: null,
 
-  _handleSlowTransition: function(transition, originRoute) {
+  _handleSlowTransition(transition, originRoute) {
     if (!this.router.activeTransition) {
       // Don't fire an event if we've since moved on from
       // the transition that put us in a loading state.
@@ -662,7 +662,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     transition.trigger(true, 'loading', transition, originRoute);
   },
 
-  _cancelSlowTransitionTimer: function () {
+  _cancelSlowTransitionTimer() {
     if (this._slowTransitionTimer) {
       run.cancel(this._slowTransitionTimer);
     }
@@ -706,11 +706,11 @@ function forEachRouteAbove(originRoute, transition, callback) {
 // and are not meant to be overridable.
 var defaultActionHandlers = {
 
-  willResolveModel: function(transition, originRoute) {
+  willResolveModel(transition, originRoute) {
     originRoute.router._scheduleLoadingEvent(transition, originRoute);
   },
 
-  error: function(error, transition, originRoute) {
+  error(error, transition, originRoute) {
     // Attempt to find an appropriate error substate to enter.
     var router = originRoute.router;
 
@@ -734,7 +734,7 @@ var defaultActionHandlers = {
     logError(error, 'Error while processing route: ' + transition.targetName);
   },
 
-  loading: function(transition, originRoute) {
+  loading(transition, originRoute) {
     // Attempt to find an appropriate loading substate to enter.
     var router = originRoute.router;
 
@@ -895,10 +895,10 @@ EmberRouter.reopenClass({
     supplied callback function using `this.resource` and `this.route`.
 
     ```javascript
-    App.Router.map(function({
+    App.Router.map(function(){
       this.route('about');
       this.resource('article');
-    }));
+    });
     ```
 
     For more detailed examples please see
@@ -907,7 +907,7 @@ EmberRouter.reopenClass({
     @method map
     @param callback
   */
-  map: function(callback) {
+  map(callback) {
 
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
@@ -919,7 +919,7 @@ EmberRouter.reopenClass({
     return this;
   },
 
-  _routePath: function(handlerInfos) {
+  _routePath(handlerInfos) {
     var path = [];
 
     // We have to handle coalescing resource names that

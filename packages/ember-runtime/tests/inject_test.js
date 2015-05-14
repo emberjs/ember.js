@@ -1,9 +1,9 @@
 /* global EmberDev */
 
 import InjectedProperty from "ember-metal/injected_property";
+import inject from "ember-runtime/inject";
 import {
-  createInjectionHelper,
-  default as inject
+  createInjectionHelper
 } from "ember-runtime/inject";
 import { Registry } from "ember-runtime/system/container";
 import Object from "ember-runtime/system/object";

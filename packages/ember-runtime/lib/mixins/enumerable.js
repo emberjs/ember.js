@@ -10,10 +10,8 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { apply } from 'ember-metal/utils';
 import {
   Mixin,
-  required,
   aliasMethod
 } from 'ember-metal/mixin';
 import { indexOf } from 'ember-metal/enumerable_utils';
@@ -29,8 +27,6 @@ import {
   hasListeners
 } from 'ember-metal/events';
 import compare from 'ember-runtime/compare';
-
-var a_slice = Array.prototype.slice;
 
 var contexts = [];
 
@@ -94,6 +90,8 @@ function iter(key, value) {
 export default Mixin.create({
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement this method to make your class enumerable.
 
     This method will be called repeatedly during enumeration. The index value
@@ -126,7 +124,7 @@ export default Mixin.create({
     @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined
   */
-  nextObject: required(Function),
+  nextObject: null,
 
   /**
     Helper method returns the first object from a collection. This is usually
@@ -217,7 +215,7 @@ export default Mixin.create({
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
   */
-  contains: function(obj) {
+  contains(obj) {
     var found = this.find(function(item) {
       return item === obj;
     });
@@ -250,7 +248,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Object} receiver
   */
-  forEach: function(callback, target) {
+  forEach(callback, target) {
     if (typeof callback !== 'function') {
       throw new TypeError();
     }
@@ -295,7 +293,7 @@ export default Mixin.create({
     @param {Object} value The object to set
     @return {Object} receiver
   */
-  setEach: function(key, value) {
+  setEach(key, value) {
     return this.forEach(function(item) {
       set(item, key, value);
     });
@@ -327,7 +325,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Array} The mapped array.
   */
-  map: function(callback, target) {
+  map(callback, target) {
     var ret = Ember.A();
 
     this.forEach(function(x, idx, i) {
@@ -345,7 +343,7 @@ export default Mixin.create({
     @param {String} key name of the property
     @return {Array} The mapped array.
   */
-  mapBy: function(key) {
+  mapBy(key) {
     return this.map(function(next) {
       return get(next, key);
     });
@@ -391,7 +389,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Array} A filtered array.
   */
-  filter: function(callback, target) {
+  filter(callback, target) {
     var ret = Ember.A();
 
     this.forEach(function(x, idx, i) {
@@ -429,9 +427,9 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Array} A rejected array.
    */
-  reject: function(callback, target) {
+  reject(callback, target) {
     return this.filter(function() {
-      return !(apply(target, callback, arguments));
+      return !(callback.apply(target, arguments));
     });
   },
 
@@ -445,8 +443,8 @@ export default Mixin.create({
     @param {*} [value] optional value to test against.
     @return {Array} filtered array
   */
-  filterBy: function(key, value) {
-    return this.filter(apply(this, iter, arguments));
+  filterBy(key, value) {
+    return this.filter(iter.apply(this, arguments));
   },
 
   /**
@@ -472,7 +470,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Array} rejected array
   */
-  rejectBy: function(key, value) {
+  rejectBy(key, value) {
     var exactValue = function(item) {
       return get(item, key) === value;
     };
@@ -527,7 +525,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Object} Found item or `undefined`.
   */
-  find: function(callback, target) {
+  find(callback, target) {
     var len = get(this, 'length');
 
     if (target === undefined) {
@@ -567,8 +565,8 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Object} found item or `undefined`
   */
-  findBy: function(key, value) {
-    return this.find(apply(this, iter, arguments));
+  findBy(key, value) {
+    return this.find(iter.apply(this, arguments));
   },
 
   /**
@@ -620,7 +618,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Boolean}
   */
-  every: function(callback, target) {
+  every(callback, target) {
     return !this.find(function(x, idx, i) {
       return !callback.call(target, x, idx, i);
     });
@@ -654,8 +652,8 @@ export default Mixin.create({
     @return {Boolean}
     @since 1.3.0
   */
-  isEvery: function(key, value) {
-    return this.every(apply(this, iter, arguments));
+  isEvery(key, value) {
+    return this.every(iter.apply(this, arguments));
   },
 
   /**
@@ -693,7 +691,7 @@ export default Mixin.create({
     @param {Object} [target] The target object to use
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
-  any: function(callback, target) {
+  any(callback, target) {
     var len = get(this, 'length');
     var context = popCtx();
     var found = false;
@@ -763,8 +761,8 @@ export default Mixin.create({
     @return {Boolean}
     @since 1.3.0
   */
-  isAny: function(key, value) {
-    return this.any(apply(this, iter, arguments));
+  isAny(key, value) {
+    return this.any(iter.apply(this, arguments));
   },
 
   /**
@@ -818,7 +816,7 @@ export default Mixin.create({
     @param {String} reducerProperty internal use only.
     @return {Object} The reduced value.
   */
-  reduce: function(callback, initialValue, reducerProperty) {
+  reduce(callback, initialValue, reducerProperty) {
     if (typeof callback !== 'function') {
       throw new TypeError();
     }
@@ -842,19 +840,14 @@ export default Mixin.create({
     @param {Object...} args optional arguments to pass as well.
     @return {Array} return values from calling invoke.
   */
-  invoke: function(methodName) {
+  invoke(methodName, ...args) {
     var ret = Ember.A();
-    var args;
-
-    if (arguments.length > 1) {
-      args = a_slice.call(arguments, 1);
-    }
 
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? apply(x, method, args) : x[methodName]();
+        ret[idx] = args ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 
@@ -868,7 +861,7 @@ export default Mixin.create({
     @method toArray
     @return {Array} the enumerable as an array.
   */
-  toArray: function() {
+  toArray() {
     var ret = Ember.A();
 
     this.forEach(function(o, idx) {
@@ -889,7 +882,7 @@ export default Mixin.create({
     @method compact
     @return {Array} the array without null and undefined elements.
   */
-  compact: function() {
+  compact() {
     return this.filter(function(value) {
       return value != null;
     });
@@ -909,7 +902,7 @@ export default Mixin.create({
     @param {Object} value
     @return {Ember.Enumerable}
   */
-  without: function(value) {
+  without(value) {
     if (!this.contains(value)) {
       return this; // nothing to do
     }
@@ -939,7 +932,7 @@ export default Mixin.create({
     @method uniq
     @return {Ember.Enumerable}
   */
-  uniq: function() {
+  uniq() {
     var ret = Ember.A();
 
     this.forEach(function(k) {
@@ -963,8 +956,8 @@ export default Mixin.create({
     @type Array
     @return this
   */
-  '[]': computed(function(key, value) {
-    return this;
+  '[]': computed({
+    get(key) { return this; }
   }),
 
   // ..........................................................
@@ -980,7 +973,7 @@ export default Mixin.create({
     @param {Hash} [opts]
     @return this
   */
-  addEnumerableObserver: function(target, opts) {
+  addEnumerableObserver(target, opts) {
     var willChange = (opts && opts.willChange) || 'enumerableWillChange';
     var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
@@ -1007,7 +1000,7 @@ export default Mixin.create({
     @param {Hash} [opts]
     @return this
   */
-  removeEnumerableObserver: function(target, opts) {
+  removeEnumerableObserver(target, opts) {
     var willChange = (opts && opts.willChange) || 'enumerableWillChange';
     var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
@@ -1050,7 +1043,7 @@ export default Mixin.create({
       added or the number of items to be added.
     @chainable
   */
-  enumerableContentWillChange: function(removing, adding) {
+  enumerableContentWillChange(removing, adding) {
     var removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) {
@@ -1104,7 +1097,7 @@ export default Mixin.create({
       be added or the number of items to be added.
     @chainable
   */
-  enumerableContentDidChange: function(removing, adding) {
+  enumerableContentDidChange(removing, adding) {
     var removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) {
@@ -1155,7 +1148,7 @@ export default Mixin.create({
     @return {Array} The sorted array.
     @since 1.2.0
     */
-  sortBy: function() {
+  sortBy() {
     var sortKeys = arguments;
 
     return this.toArray().sort(function(a, b) {

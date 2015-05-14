@@ -10,7 +10,7 @@ var view, registry, container;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
   QUnit.module("ember-htmlbars: {{#component}} helper", {
-    setup: function() {
+    setup() {
       registry = new Registry();
       container = registry.container();
 
@@ -18,7 +18,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       registry.register('component-lookup:main', ComponentLookup);
     },
 
-    teardown: function() {
+    teardown() {
       runDestroy(view);
       runDestroy(container);
       registry = container = view = null;
@@ -50,14 +50,14 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
     registry.register('component:foo-bar', Ember.Component.extend({
       classNames: 'foo-bar',
-      didInsertElement: function() {
+      didInsertElement() {
         // trigger action on click in absence of app's EventDispatcher
         var self = this;
         this.$().on('click', function() {
           self.sendAction('fooBarred');
         });
       },
-      willDestroyElement: function() {
+      willDestroyElement() {
         this.$().off('click');
       }
     }));
@@ -66,7 +66,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     var controller = Ember.Controller.extend({
       dynamicComponent: 'foo-bar',
       actions: {
-        mappedAction: function() {
+        mappedAction() {
           actionTriggered++;
         }
       }
@@ -88,7 +88,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
     var componentInstance;
     registry.register('component:foo-bar', Ember.Component.extend({
-      didInsertElement: function() {
+      didInsertElement() {
         componentInstance = this;
       }
     }));
@@ -151,6 +151,26 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     throws(function() {
       runAppend(view);
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
+  });
+
+  QUnit.test("component with unquoted param resolving to a component, then non-existent component", function() {
+    registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+    view = EmberView.create({
+      container: container,
+      dynamicComponent: 'foo-bar',
+      location: 'Caracas',
+      template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
+
+    Ember.run(function() {
+      set(view, "dynamicComponent", undefined);
+    });
+
+    equal(view.$().text(), '', 'component correctly deals with falsey values set post-render');
   });
 
   QUnit.test("component with quoted param for non-existent component", function() {

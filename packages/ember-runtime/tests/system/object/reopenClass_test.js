@@ -7,7 +7,7 @@ QUnit.test('adds new properties to subclass', function() {
 
   var Subclass = EmberObject.extend();
   Subclass.reopenClass({
-    foo: function() { return 'FOO'; },
+    foo() { return 'FOO'; },
     bar: 'BAR'
   });
 
@@ -19,7 +19,7 @@ QUnit.test('class properties inherited by subclasses', function() {
 
   var Subclass = EmberObject.extend();
   Subclass.reopenClass({
-    foo: function() { return 'FOO'; },
+    foo() { return 'FOO'; },
     bar: 'BAR'
   });
 

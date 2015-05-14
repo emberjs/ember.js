@@ -34,7 +34,7 @@ import { sendEvent } from "ember-metal/events";
 import {
   IS_BINDING,
   Mixin,
-  required
+  REQUIRED
 } from "ember-metal/mixin";
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
@@ -229,12 +229,7 @@ function makeCtor() {
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
 CoreObject.PrototypeMixin = Mixin.create({
-  reopen: function() {
-    var length = arguments.length;
-    var args = new Array(length);
-    for (var i = 0; i < length; i++) {
-      args[i] = arguments[i];
-    }
+  reopen(...args) {
     applyMixin(this, args, true);
     return this;
   },
@@ -267,8 +262,8 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     @method init
   */
-  init: function() {},
-  __defineNonEnumerable: function(property) {
+  init() {},
+  __defineNonEnumerable(property) {
     o_defineProperty(this, property.name, property.descriptor);
     //this[property.name] = property.descriptor.value;
   },
@@ -376,7 +371,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method destroy
     @return {Ember.Object} receiver
   */
-  destroy: function() {
+  destroy() {
     if (this.isDestroying) { return; }
     this.isDestroying = true;
 
@@ -399,13 +394,13 @@ CoreObject.PrototypeMixin = Mixin.create({
     @private
     @method _scheduledDestroy
   */
-  _scheduledDestroy: function() {
+  _scheduledDestroy() {
     if (this.isDestroyed) { return; }
     destroy(this);
     this.isDestroyed = true;
   },
 
-  bind: function(to, from) {
+  bind(to, from) {
     if (!(from instanceof Binding)) { from = Binding.from(from); }
     from.to(to).connect(this);
     return from;
@@ -447,7 +442,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method toString
     @return {String} string representation
   */
-  toString: function toString() {
+  toString() {
     var hasToStringExtension = typeof this.toStringExtension === 'function';
     var extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
     var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
@@ -467,9 +462,9 @@ CoreObject.__super__ = null;
 
 var ClassMixinProps = {
 
-  ClassMixin: required(),
+  ClassMixin: REQUIRED,
 
-  PrototypeMixin: required(),
+  PrototypeMixin: REQUIRED,
 
   isClass: true,
 
@@ -555,7 +550,7 @@ var ClassMixinProps = {
     @param {Mixin} [mixins]* One or more Mixin classes
     @param {Object} [arguments]* Object containing values to use within the new class
   */
-  extend: function extend() {
+  extend() {
     var Class = makeCtor();
     var proto;
     Class.ClassMixin = Mixin.create(this.ClassMixin);
@@ -586,14 +581,9 @@ var ClassMixinProps = {
     @static
     @param [arguments]*
   */
-  createWithMixins: function() {
+  createWithMixins(...args) {
     var C = this;
-    var l= arguments.length;
-    if (l > 0) {
-      var args = new Array(l);
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
+    if (args.length > 0) {
       this._initMixins(args);
     }
     return new C();
@@ -636,14 +626,9 @@ var ClassMixinProps = {
     @static
     @param [arguments]*
   */
-  create: function() {
+  create(...args) {
     var C = this;
-    var l = arguments.length;
-    if (l > 0) {
-      var args = new Array(l);
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
+    if (args.length > 0) {
       this._initProperties(args);
     }
     return new C();
@@ -678,18 +663,9 @@ var ClassMixinProps = {
 
     @method reopen
   */
-  reopen: function() {
+  reopen() {
     this.willReopen();
-
-    var l = arguments.length;
-    var args = new Array(l);
-    if (l > 0) {
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
-    }
-
-    apply(this.PrototypeMixin, reopen, args);
+    reopen.apply(this.PrototypeMixin, arguments);
     return this;
   },
 
@@ -748,21 +724,13 @@ var ClassMixinProps = {
 
     @method reopenClass
   */
-  reopenClass: function() {
-    var l = arguments.length;
-    var args = new Array(l);
-    if (l > 0) {
-      for (var i = 0; i < l; i++) {
-        args[i] = arguments[i];
-      }
-    }
-
-    apply(this.ClassMixin, reopen, args);
+  reopenClass() {
+    reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);
     return this;
   },
 
-  detect: function(obj) {
+  detect(obj) {
     if ('function' !== typeof obj) { return false; }
     while (obj) {
       if (obj===this) { return true; }
@@ -771,7 +739,7 @@ var ClassMixinProps = {
     return false;
   },
 
-  detectInstance: function(obj) {
+  detectInstance(obj) {
     return obj instanceof this;
   },
 
@@ -803,7 +771,7 @@ var ClassMixinProps = {
     @method metaForProperty
     @param key {String} property name
   */
-  metaForProperty: function(key) {
+  metaForProperty(key) {
     var proto = this.proto();
     var possibleDesc = proto[key];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
@@ -840,7 +808,7 @@ var ClassMixinProps = {
     @param {Function} callback
     @param {Object} binding
   */
-  eachComputedProperty: function(callback, binding) {
+  eachComputedProperty(callback, binding) {
     var property, name;
     var empty = {};
 
@@ -899,7 +867,7 @@ CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
 CoreObject.reopen({
-  didDefineProperty: function(proto, key, value) {
+  didDefineProperty(proto, key, value) {
     if (hasCachedComputedProperties === false) { return; }
     if (value instanceof Ember.ComputedProperty) {
       var cache = Ember.meta(this.constructor).cache;

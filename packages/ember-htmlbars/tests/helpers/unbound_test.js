@@ -26,7 +26,7 @@ var view, lookup, registry, container;
 var originalLookup = Ember.lookup;
 
 QUnit.module('ember-htmlbars: {{#unbound}} helper', {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
@@ -40,7 +40,7 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper', {
     runAppend(view);
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }
@@ -100,7 +100,7 @@ QUnit.test('should property escape unsafe hrefs', function() {
 });
 
 QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
     expectDeprecationInHTMLBars();
 
@@ -125,7 +125,7 @@ QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
     }, 'firstName', 'lastName');
   },
 
-  teardown: function() {
+  teardown() {
     delete helpers['surround'];
     delete helpers['capitalize'];
     delete helpers['capitalizeName'];
@@ -314,14 +314,14 @@ QUnit.test("should be able to render bound form of a helper inside unbound form 
 });
 
 QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('helper', { instantiate: false });
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     runDestroy(container);
     Ember.lookup = originalLookup;

@@ -6,14 +6,14 @@ import create from 'ember-metal/platform/create';
 import { isStream } from "ember-metal/streams/utils";
 
 var ViewStreamSupport = Mixin.create({
-  init: function() {
+  init() {
     this._baseContext = undefined;
     this._contextStream = undefined;
     this._streamBindings = undefined;
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
-  getStream: function(path) {
+  getStream(path) {
     var stream = this._getContextStream().get(path);
 
     stream._label = path;
@@ -21,7 +21,7 @@ var ViewStreamSupport = Mixin.create({
     return stream;
   },
 
-  _willDestroyElement: function() {
+  _willDestroyElement() {
     if (this._streamBindings) {
       this._destroyStreamBindings();
     }
@@ -30,7 +30,7 @@ var ViewStreamSupport = Mixin.create({
     }
   },
 
-  _getBindingForStream: function(pathOrStream) {
+  _getBindingForStream(pathOrStream) {
     if (this._streamBindings === undefined) {
       this._streamBindings = create(null);
     }
@@ -59,7 +59,7 @@ var ViewStreamSupport = Mixin.create({
     }
   },
 
-  _destroyStreamBindings: function() {
+  _destroyStreamBindings() {
     var streamBindings = this._streamBindings;
     for (var path in streamBindings) {
       streamBindings[path].destroy();
@@ -67,7 +67,7 @@ var ViewStreamSupport = Mixin.create({
     this._streamBindings = undefined;
   },
 
-  _getContextStream: function() {
+  _getContextStream() {
     if (this._contextStream === undefined) {
       this._baseContext = new KeyStream(this, 'context');
       this._contextStream = new ContextStream(this);
@@ -76,14 +76,14 @@ var ViewStreamSupport = Mixin.create({
     return this._contextStream;
   },
 
-  _destroyContextStream: function() {
+  _destroyContextStream() {
     this._baseContext.destroy();
     this._baseContext = undefined;
     this._contextStream.destroy();
     this._contextStream = undefined;
   },
 
-  _unsubscribeFromStreamBindings: function() {
+  _unsubscribeFromStreamBindings() {
     for (var key in this._streamBindingSubscriptions) {
       var streamBinding = this[key + 'Binding'];
       var callback = this._streamBindingSubscriptions[key];

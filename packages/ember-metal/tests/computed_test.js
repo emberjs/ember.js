@@ -65,15 +65,15 @@ QUnit.test('defining computed property should invoke property on get', function(
 });
 
 QUnit.test('defining computed property should invoke property on set', function() {
-
   var obj = {};
   var count = 0;
-  defineProperty(obj, 'foo', computed(function(key, value) {
-    if (value !== undefined) {
+  defineProperty(obj, 'foo', computed({
+    get: function(key) { return this['__'+key]; },
+    set: function(key, value) {
       count++;
       this['__'+key] = 'computed '+value;
+      return this['__'+key];
     }
-    return this['__'+key];
   }));
 
   equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
@@ -83,20 +83,23 @@ QUnit.test('defining computed property should invoke property on set', function(
 
 var objA, objB;
 QUnit.module('computed should inherit through prototype', {
-  setup: function() {
+  setup() {
     objA = { __foo: 'FOO' };
-    defineProperty(objA, 'foo', computed(function(key, value) {
-      if (value !== undefined) {
+    defineProperty(objA, 'foo', computed({
+      get: function(key) {
+        return this['__'+key];
+      },
+      set: function(key, value) {
         this['__'+key] = 'computed '+value;
+        return this['__'+key];
       }
-      return this['__'+key];
     }));
 
     objB = create(objA);
     objB.__foo = 'FOO'; // make a copy;
   },
 
-  teardown: function() {
+  teardown() {
     objA = objB = null;
   }
 });
@@ -119,20 +122,23 @@ testBoth('using get() and set()', function(get, set) {
 });
 
 QUnit.module('redefining computed property to normal', {
-  setup: function() {
+  setup() {
     objA = { __foo: 'FOO' };
-    defineProperty(objA, 'foo', computed(function(key, value) {
-      if (value !== undefined) {
+    defineProperty(objA, 'foo', computed({
+      get: function(key) {
+        return this['__'+key];
+      },
+      set: function(key, value) {
         this['__'+key] = 'computed '+value;
+        return this['__'+key];
       }
-      return this['__'+key];
     }));
 
     objB = create(objA);
     defineProperty(objB, 'foo'); // make this just a normal property.
   },
 
-  teardown: function() {
+  teardown() {
     objA = objB = null;
   }
 });
@@ -155,26 +161,30 @@ testBoth('using get() and set()', function(get, set) {
 });
 
 QUnit.module('redefining computed property to another property', {
-  setup: function() {
+  setup() {
     objA = { __foo: 'FOO' };
-    defineProperty(objA, 'foo', computed(function(key, value) {
-      if (value !== undefined) {
+    defineProperty(objA, 'foo', computed({
+      get: function(key) {
+        return this['__'+key];
+      },
+      set: function(key, value) {
         this['__'+key] = 'A '+value;
+        return this['__'+key];
       }
-      return this['__'+key];
     }));
 
     objB = create(objA);
     objB.__foo = 'FOO';
-    defineProperty(objB, 'foo', computed(function(key, value) {
-      if (value !== undefined) {
+    defineProperty(objB, 'foo', computed({
+      get: function(key) { return this['__'+key]; },
+      set: function(key, value) {
         this['__'+key] = 'B '+value;
+        return this['__'+key];
       }
-      return this['__'+key];
     }));
   },
 
-  teardown: function() {
+  teardown() {
     objA = objB = null;
   }
 });
@@ -215,16 +225,17 @@ QUnit.test("meta should return an empty hash if no meta is set", function() {
 //
 
 QUnit.module('computed - cacheable', {
-  setup: function() {
+  setup() {
     obj = {};
     count = 0;
-    defineProperty(obj, 'foo', computed(function(key, value) {
+    var func = function(key, value) {
       count++;
       return 'bar '+count;
-    }));
+    };
+    defineProperty(obj, 'foo', computed({ get: func, set: func }));
   },
 
-  teardown: function() {
+  teardown() {
     obj = count = null;
   }
 });
@@ -267,7 +278,7 @@ QUnit.test('calling readOnly() on a computed property with arguments raises a de
 QUnit.test('passing readOnly in a the options to the CP constructor raises a deprecation', function() {
   expectDeprecation(function() {
     new ComputedProperty(function() {}, { readOnly: false });
-  }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.");
+  }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. You can invoke `readOnly()` on the CP to change this.");
 });
 
 testBoth('inherited property should not pick up cache', function(get, set) {
@@ -312,11 +323,12 @@ testBoth("setting a cached computed property passes the old value as the third a
 
   var receivedOldValue;
 
-  defineProperty(obj, 'plusOne', computed(
-    function(key, value, oldValue) {
+  defineProperty(obj, 'plusOne', computed({
+    get: function() {},
+    set: function(key, value, oldValue) {
       receivedOldValue = oldValue;
       return value;
-    }).property('foo')
+    } }).property('foo')
   );
 
   set(obj, 'plusOne', 1);
@@ -334,10 +346,12 @@ testBoth("the old value is only passed in if the computed property specifies thr
     foo: 0
   };
 
-  defineProperty(obj, 'plusOne', computed(
-    function(key, value) {
-      equal(arguments.length, 2, "computed property is only invoked with two arguments");
-      return value;
+  defineProperty(obj, 'plusOne', computed({
+      get: function() {},
+      set: function(key, value) {
+        equal(arguments.length, 2, "computed property is only invoked with two arguments");
+        return value;
+      }
     }).property('foo')
   );
 
@@ -351,17 +365,21 @@ testBoth("the old value is only passed in if the computed property specifies thr
 //
 
 QUnit.module('computed - dependentkey', {
-  setup: function() {
+  setup() {
     obj = { bar: 'baz' };
     count = 0;
-    defineProperty(obj, 'foo', computed(function(key, value) {
+    var getterAndSetter = function(key, value) {
       count++;
       get(this, 'bar');
       return 'bar '+count;
+    };
+    defineProperty(obj, 'foo', computed({
+      get: getterAndSetter,
+      set: getterAndSetter
     }).property('bar'));
   },
 
-  teardown: function() {
+  teardown() {
     obj = count = null;
   }
 });
@@ -416,13 +434,13 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
 });
 
 testBoth('circular keys should not blow up', function(get, set) {
-
-  defineProperty(obj, 'bar', computed(function(key, value) {
+  var func = function(key, value) {
     count++;
     return 'bar '+count;
-  }).property('foo'));
+  };
+  defineProperty(obj, 'bar', computed({ get: func, set: func }).property('foo'));
 
-  defineProperty(obj, 'foo', computed(function(key, value) {
+  defineProperty(obj, 'foo', computed(function(key) {
     count++;
     return 'foo '+count;
   }).property('bar'));
@@ -459,7 +477,7 @@ testBoth('redefining a property should undo old dependent keys', function(get, s
 });
 
 testBoth('can watch multiple dependent keys specified declaratively via brace expansion', function (get, set) {
-  defineProperty(obj, 'foo', computed(function(key, value) {
+  defineProperty(obj, 'foo', computed(function(key) {
     count++;
     return 'foo '+count;
   }).property('qux.{bar,baz}'));
@@ -483,7 +501,7 @@ testBoth('can watch multiple dependent keys specified declaratively via brace ex
 
 testBoth('throws assertion if brace expansion notation has spaces', function (get, set) {
   throws(function () {
-    defineProperty(obj, 'roo', computed(function (key, value) {
+    defineProperty(obj, 'roo', computed(function (key) {
       count++;
       return 'roo ' + count;
     }).property('fee.{bar, baz,bop , }'));
@@ -497,7 +515,7 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
 
 var func;
 var moduleOpts = {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     lookup = Ember.lookup = {};
 
@@ -530,7 +548,7 @@ var moduleOpts = {
     };
   },
 
-  teardown: function() {
+  teardown() {
     obj = count = func = Global = null;
     Ember.lookup = originalLookup;
   }
@@ -650,11 +668,11 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       a: '1',
       b: '2',
       aInt: computed('a', {
-        get: function(keyName) {
+        get(keyName) {
           equal(keyName, 'aInt', 'getter receives the keyName');
           return parseInt(this.get('a'));
         },
-        set: function(keyName, value, oldValue) {
+        set(keyName, value, oldValue) {
           equal(keyName, 'aInt', 'setter receives the keyName');
           equal(value, 123, 'setter receives the new value');
           equal(oldValue, 1, 'setter receives the old value');
@@ -675,7 +693,7 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
       a: '1',
       b: '2',
       aInt: computed('a', {
-        get: function(keyName) {
+        get(keyName) {
           equal(keyName, 'aInt', 'getter receives the keyName');
           return parseInt(this.get('a'));
         }
@@ -692,11 +710,11 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
     var testObj = Ember.Object.extend({
       a: '1',
       sampleCP: computed('a', {
-        get: function(keyName) {
+        get(keyName) {
           ok(false, "The getter should not be invoked");
           return 'get-value';
         },
-        set: function(keyName, value, oldValue) {
+        set(keyName, value, oldValue) {
           return 'set-value';
         }
       })
@@ -704,6 +722,15 @@ if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
 
     testObj.set('sampleCP', 'abcd');
     ok(testObj.get('sampleCP') === 'set-value', 'The return value of the CP was cached');
+  });
+
+  QUnit.test('Passing a function that acts both as getter and setter is deprecated', function() {
+    var regex = /Using the same function as getter and setter is deprecated/;
+    expectDeprecation(function() {
+      Ember.Object.extend({
+        aInt: computed('a', function(keyName, value, oldValue) {})
+      });
+    }, regex);
   });
 }
 
@@ -730,12 +757,14 @@ testBoth("when setting a value after it had been retrieved empty don't pass func
   var obj = {};
   var oldValueIsNoFunction = true;
 
-  defineProperty(obj, 'foo', computed(function(key, value, oldValue) {
-    if (typeof oldValue === 'function') {
-      oldValueIsNoFunction = false;
+  defineProperty(obj, 'foo', computed({
+    get: function() { },
+    set: function(key, value, oldValue) {
+      if (typeof oldValue === 'function') {
+        oldValueIsNoFunction = false;
+      }
+      return undefined;
     }
-
-    return undefined;
   }));
 
   get(obj, 'foo');
@@ -751,15 +780,14 @@ testBoth('setting a watched computed property', function(get, set) {
     firstName: 'Yehuda',
     lastName: 'Katz'
   };
-  defineProperty(obj, 'fullName', computed(
-    function(key, value) {
-      if (arguments.length > 1) {
+  defineProperty(obj, 'fullName', computed({
+      get: function() { return get(this, 'firstName') + ' ' + get(this, 'lastName'); },
+      set: function(key, value) {
         var values = value.split(' ');
         set(this, 'firstName', values[0]);
         set(this, 'lastName', values[1]);
         return value;
       }
-      return get(this, 'firstName') + ' ' + get(this, 'lastName');
     }).property('firstName', 'lastName')
   );
   var fullNameWillChange = 0;
@@ -809,13 +837,12 @@ testBoth('setting a cached computed property that modifies the value you give it
   var obj = {
     foo: 0
   };
-  defineProperty(obj, 'plusOne', computed(
-    function(key, value) {
-      if (arguments.length > 1) {
+  defineProperty(obj, 'plusOne', computed({
+      get: function(key) { return get(this, 'foo') + 1; },
+      set: function(key, value) {
         set(this, 'foo', value);
         return value + 1;
       }
-      return get(this, 'foo') + 1;
     }).property('foo')
   );
   var plusOneWillChange = 0;
@@ -873,6 +900,21 @@ QUnit.test('is chainable', function() {
   ok(cp instanceof ComputedProperty);
 });
 
+QUnit.test('throws assertion if called over a CP with a setter defined with the new syntax', function() {
+  expectAssertion(function() {
+    computed({
+      get: function() { },
+      set: function() { }
+    }).readOnly();
+  }, /Computed properties that define a setter using the new syntax cannot be read-only/);
+});
+
+QUnit.test('doesn\'t throws assertion if called over a CP with a setter defined with the old syntax', function() {
+  expectDeprecation(function() {
+    computed(function(key, value) {}).readOnly();
+  }, /same function as getter and setter/);
+});
+
 testBoth('protects against setting', function(get, set) {
   var obj = {  };
 
@@ -919,7 +961,7 @@ testBoth('computed.empty', function(get, set) {
 });
 
 testBoth('computed.bool', function(get, set) {
-  var obj = { foo: function() {}, bar: 'asdf', baz: null, quz: false };
+  var obj = { foo() {}, bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'fooBool', bool('foo'));
   defineProperty(obj, 'barBool', bool('bar'));
   defineProperty(obj, 'bazBool', bool('baz'));
@@ -963,8 +1005,9 @@ testBoth('computed.alias set', function(get, set) {
   var obj = {};
   var constantValue = 'always `a`';
 
-  defineProperty(obj, 'original', computed(function(key, value) {
-    return constantValue;
+  defineProperty(obj, 'original', computed({
+    get: function(key) { return constantValue; },
+    set: function(key, value) { return constantValue; }
   }));
   defineProperty(obj, 'aliased', alias('original'));
 

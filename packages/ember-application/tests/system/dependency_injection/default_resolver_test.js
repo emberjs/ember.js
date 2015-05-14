@@ -12,7 +12,7 @@ import {
 var registry, locator, application, originalLookup, originalLoggerInfo;
 
 QUnit.module("Ember.Application Dependency Injection - default resolver", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     application = run(Application, 'create');
 
@@ -21,7 +21,7 @@ QUnit.module("Ember.Application Dependency Injection - default resolver", {
     originalLoggerInfo = Logger.info;
   },
 
-  teardown: function() {
+  teardown() {
     Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
     run(application, 'destroy');

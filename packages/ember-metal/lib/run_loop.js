@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import {
-  apply,
   GUID_KEY
 } from 'ember-metal/utils';
 import { indexOf } from 'ember-metal/array';
@@ -31,7 +30,6 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   onErrorTarget: Ember,
   onErrorMethod: 'onerror'
 });
-var slice = [].slice;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees
@@ -66,7 +64,7 @@ var slice = [].slice;
 */
 export default run;
 function run() {
-  return backburner.run.apply(backburner, arguments);
+  return backburner.run(...arguments);
 }
 
 /**
@@ -107,7 +105,7 @@ function run() {
   when called within an existing loop, no return value is possible.
 */
 run.join = function() {
-  return backburner.join.apply(backburner, arguments);
+  return backburner.join(...arguments);
 };
 
 /**
@@ -128,12 +126,12 @@ run.join = function() {
 
   ```javascript
   App.RichTextEditorComponent = Ember.Component.extend({
-    initializeTinyMCE: function() {
+    initializeTinyMCE: Ember.on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
         setup: Ember.run.bind(this, this.setupEditor)
       });
-    }.on('didInsertElement'),
+    }),
 
     setupEditor: function(editor) {
       this.set('editor', editor);
@@ -145,7 +143,7 @@ run.join = function() {
   });
   ```
 
-  In this example, we use Ember.run.bind to bind the setupEditor message to the
+  In this example, we use Ember.run.bind to bind the setupEditor method to the
   context of the App.RichTextEditorComponent and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
@@ -159,10 +157,9 @@ run.join = function() {
   @return {Function} returns a new function that will always have a particular context
   @since 1.4.0
 */
-run.bind = function(target, method /* args */) {
-  var args = slice.call(arguments);
-  return function() {
-    return run.join.apply(run, args.concat(slice.call(arguments)));
+run.bind = function(...curried) {
+  return function(...args) {
+    return run.join(...curried.concat(args));
   };
 };
 
@@ -254,9 +251,9 @@ run.end = function() {
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
   @return {void}
 */
-run.schedule = function(queue, target, method) {
+run.schedule = function(/* queue, target, method */) {
   checkAutoRun();
-  backburner.schedule.apply(backburner, arguments);
+  backburner.schedule(...arguments);
 };
 
 // Used by global test teardown
@@ -265,7 +262,7 @@ run.hasScheduledTimers = function() {
 };
 
 // Used by global test teardown
-run.cancelTimers = function () {
+run.cancelTimers = function() {
   backburner.cancelTimers();
 };
 
@@ -317,7 +314,7 @@ run.sync = function() {
   @return {*} Timer information for use in cancelling, see `run.cancel`.
 */
 run.later = function(/*target, method*/) {
-  return backburner.later.apply(backburner, arguments);
+  return backburner.later(...arguments);
 };
 
 /**
@@ -332,15 +329,10 @@ run.later = function(/*target, method*/) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.once = function(/*target, method */) {
+run.once = function(...args) {
   checkAutoRun();
-  var length = arguments.length;
-  var args = new Array(length);
-  args[0] = 'actions';
-  for (var i = 0; i < length; i++) {
-    args[i + 1] = arguments[i];
-  }
-  return apply(backburner, backburner.scheduleOnce, args);
+  args.unshift('actions');
+  return backburner.scheduleOnce(...args);
 };
 
 /**
@@ -396,7 +388,7 @@ run.once = function(/*target, method */) {
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
   checkAutoRun();
-  return backburner.scheduleOnce.apply(backburner, arguments);
+  return backburner.scheduleOnce(...arguments);
 };
 
 /**
@@ -457,10 +449,9 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.next = function() {
-  var args = slice.call(arguments);
+run.next = function(...args) {
   args.push(1);
-  return apply(backburner, backburner.later, args);
+  return backburner.later(...args);
 };
 
 /**
@@ -584,7 +575,7 @@ run.cancel = function(timer) {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.debounce = function() {
-  return backburner.debounce.apply(backburner, arguments);
+  return backburner.debounce(...arguments);
 };
 
 /**
@@ -626,14 +617,14 @@ run.debounce = function() {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.throttle = function() {
-  return backburner.throttle.apply(backburner, arguments);
+  return backburner.throttle(...arguments);
 };
 
 // Make sure it's not an autorun during testing
 function checkAutoRun() {
   if (!run.currentRunLoop) {
-    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun." +
-                 " You will need to wrap any code with asynchronous side-effects in a run", !Ember.testing);
+    Ember.assert(`You have turned on testing mode, which disabled the run-loop's autorun.
+                  You will need to wrap any code with asynchronous side-effects in a run`, !Ember.testing);
   }
 }
 

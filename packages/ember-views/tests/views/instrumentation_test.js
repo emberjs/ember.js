@@ -14,16 +14,16 @@ function confirmPayload(payload, view) {
 }
 
 QUnit.module("EmberView#instrumentation", {
-  setup: function () {
+  setup() {
     beforeCalls = [];
     afterCalls  = [];
 
     subscribe("render", {
-      before: function(name, timestamp, payload) {
+      before(name, timestamp, payload) {
         beforeCalls.push(payload);
       },
 
-      after: function(name, timestamp, payload) {
+      after(name, timestamp, payload) {
         afterCalls.push(payload);
       }
     });
@@ -34,7 +34,7 @@ QUnit.module("EmberView#instrumentation", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, 'destroy');
     }

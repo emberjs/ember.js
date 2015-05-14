@@ -13,7 +13,7 @@ function appendView(view) {
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: svg attribute", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }

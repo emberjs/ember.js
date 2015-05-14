@@ -4,7 +4,7 @@ import {loc} from "ember-runtime/system/string";
 var oldString;
 
 QUnit.module('EmberStringUtils.loc', {
-  setup: function() {
+  setup() {
     oldString = Ember.STRINGS;
     Ember.STRINGS = {
       '_Hello World': 'Bonjour le monde',
@@ -14,7 +14,7 @@ QUnit.module('EmberStringUtils.loc', {
     };
   },
 
-  teardown: function() {
+  teardown() {
     Ember.STRINGS = oldString;
   }
 });

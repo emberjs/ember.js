@@ -25,7 +25,7 @@ QUnit.test("The `arrangedContentWillChange` method is invoked before `content` i
   var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),
 
-    arrangedContentWillChange: function() {
+    arrangedContentWillChange() {
       equal(this.get('arrangedContent.length'), expectedLength, "hook should be invoked before array has changed");
       callCount++;
     }
@@ -49,7 +49,7 @@ QUnit.test("The `arrangedContentDidChange` method is invoked after `content` is 
   var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),
 
-    arrangedContentDidChange: function() {
+    arrangedContentDidChange() {
       equal(this.get('arrangedContent.length'), expectedLength, "hook should be invoked after array has changed");
       callCount++;
     }

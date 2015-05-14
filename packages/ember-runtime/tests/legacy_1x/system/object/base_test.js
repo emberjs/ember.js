@@ -31,18 +31,18 @@ var TestNamespace, originalLookup, lookup;
 
 QUnit.module("A new EmberObject instance", {
 
-  setup: function() {
+  setup() {
     obj = EmberObject.create({
       foo: "bar",
       total: 12345,
-      aMethodThatExists: function() {},
-      aMethodThatReturnsTrue: function() { return true; },
-      aMethodThatReturnsFoobar: function() { return "Foobar"; },
-      aMethodThatReturnsFalse: function() { return false; }
+      aMethodThatExists() {},
+      aMethodThatReturnsTrue() { return true; },
+      aMethodThatReturnsFoobar() { return "Foobar"; },
+      aMethodThatReturnsFalse() { return false; }
     });
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
   }
 
@@ -65,7 +65,7 @@ QUnit.test("Should allow changing of those properties by calling EmberObject#set
 });
 
 QUnit.module("EmberObject observers", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -96,7 +96,7 @@ QUnit.module("EmberObject observers", {
 
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 });
@@ -120,21 +120,21 @@ QUnit.test("Global+Local observer works", function() {
 });
 
 QUnit.module("EmberObject superclass and subclasses", {
-  setup: function() {
+  setup() {
     obj = EmberObject.extend({
-      method1: function() {
+      method1() {
         return "hello";
       }
     });
     obj1 = obj.extend();
     don = obj1.create({
-      method2: function() {
+      method2() {
         return this.superclass();
       }
     });
   },
 
-  teardown: function() {
+  teardown() {
     obj = undefined;
     obj1 = undefined;
     don = undefined;

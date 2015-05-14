@@ -13,7 +13,7 @@ var view;
 //  render()
 //
 QUnit.module("EmberView#render", {
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });
@@ -29,13 +29,13 @@ QUnit.test("default implementation does not render child views", function() {
   view = ContainerView.createWithMixins({
     childViews: ["child"],
 
-    render: function(buffer) {
+    render(buffer) {
       parentRendered++;
       this._super(buffer);
     },
 
     child: EmberView.createWithMixins({
-      render: function(buffer) {
+      render(buffer) {
         rendered++;
         this._super(buffer);
       }
@@ -60,13 +60,13 @@ QUnit.test("should invoke renderChildViews if layer is destroyed then re-rendere
   view = ContainerView.createWithMixins({
     childViews: ["child"],
 
-    render: function(buffer) {
+    render(buffer) {
       parentRendered++;
       this._super(buffer);
     },
 
     child: EmberView.createWithMixins({
-      render: function(buffer) {
+      render(buffer) {
         rendered++;
         this._super(buffer);
       }
@@ -176,7 +176,7 @@ QUnit.test("should re-render if the context is changed", function() {
   view = EmberView.create({
     elementId: 'template-context-test',
     context: { foo: "bar" },
-    render: function(buffer) {
+    render(buffer) {
       var value = get(get(this, 'context'), 'foo');
       buffer.push(value);
     }

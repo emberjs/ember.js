@@ -13,7 +13,7 @@ var originalLookup = Ember.lookup;
 var TemplateTests, registry, container, lookup, view;
 
 QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
     registry = new Registry();
     container = registry.container();
@@ -23,7 +23,7 @@ QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -71,7 +71,7 @@ QUnit.test('it can lookup a path from the current keywords', function() {
     controller: {
       foo: 'bar'
     },
-    template: compile('{{#with foo as bar}}{{handlebars-get "bar"}}{{/with}}')
+    template: compile('{{#with foo as |bar|}}{{handlebars-get "bar"}}{{/with}}')
   });
 
   runAppend(view);

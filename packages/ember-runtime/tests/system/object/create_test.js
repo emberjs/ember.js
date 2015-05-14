@@ -3,7 +3,7 @@ import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
-import {required, Mixin, observer} from "ember-metal/mixin";
+import {Mixin, observer} from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 import {on} from "ember-metal/events";
 import EmberObject from "ember-runtime/system/object";
@@ -12,12 +12,12 @@ import keys from "ember-metal/keys";
 var moduleOptions, originalLookup;
 
 moduleOptions = {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     Ember.lookup = originalLookup;
   }
 };
@@ -31,9 +31,13 @@ QUnit.test("simple properties are set", function() {
 
 QUnit.test("calls computed property setters", function() {
   var MyClass = EmberObject.extend({
-    foo: computed(function(key, val) {
-      if (arguments.length === 2) { return val; }
-      return "this is not the value you're looking for";
+    foo: computed({
+      get: function() {
+        return "this is not the value you're looking for";
+      },
+      set: function(key, value) {
+        return value;
+      }
     })
   });
 
@@ -81,7 +85,7 @@ QUnit.test("calls setUnknownProperty if defined", function() {
   var setUnknownPropertyCalled = false;
 
   var MyClass = EmberObject.extend({
-    setUnknownProperty: function(key, value) {
+    setUnknownProperty(key, value) {
       setUnknownPropertyCalled = true;
     }
   });
@@ -101,7 +105,7 @@ QUnit.test("throws if you try to define a computed property", function() {
 QUnit.test("throws if you try to call _super in a method", function() {
   expectAssertion(function() {
     EmberObject.create({
-      foo: function() {
+      foo() {
         this._super.apply(this, arguments);
       }
     });
@@ -110,7 +114,7 @@ QUnit.test("throws if you try to call _super in a method", function() {
 
 QUnit.test("throws if you try to 'mixin' a definition", function() {
   var myMixin = Mixin.create({
-    adder: function(arg1, arg2) {
+    adder(arg1, arg2) {
       return arg1 + arg2;
     }
   });
@@ -123,7 +127,7 @@ QUnit.test("throws if you try to 'mixin' a definition", function() {
 // This test is for IE8.
 QUnit.test("property name is the same as own prototype property", function() {
   var MyClass = EmberObject.extend({
-    toString: function() { return 'MyClass'; }
+    toString() { return 'MyClass'; }
   });
 
   equal(MyClass.create().toString(), 'MyClass', "should inherit property from the arguments of `EmberObject.create`");
@@ -161,7 +165,7 @@ QUnit.test("Creates a new object that contains passed properties", function() {
   var called = false;
   var obj = EmberObject.createWithMixins({
     prop: 'FOO',
-    method: function() { called=true; }
+    method() { called=true; }
   });
 
   equal(get(obj, 'prop'), 'FOO', 'obj.prop');
@@ -188,9 +192,9 @@ QUnit.test("Creates a new object that includes mixins and properties", function(
 
 QUnit.test("Configures _super() on methods with override", function() {
   var completed = false;
-  var MixinA = Mixin.create({ method: function() {} });
+  var MixinA = Mixin.create({ method() {} });
   var obj = EmberObject.createWithMixins(MixinA, {
-    method: function() {
+    method() {
       this._super.apply(this, arguments);
       completed = true;
     }
@@ -203,7 +207,7 @@ QUnit.test("Configures _super() on methods with override", function() {
 QUnit.test("Calls init if defined", function() {
   var completed = false;
   EmberObject.createWithMixins({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       completed = true;
     }
@@ -215,14 +219,14 @@ QUnit.test("Calls init if defined", function() {
 QUnit.test("Calls all mixin inits if defined", function() {
   var completed = 0;
   var Mixin1 = Mixin.create({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       completed++;
     }
   });
 
   var Mixin2 = Mixin.create({
-    init: function() {
+    init() {
       this._super.apply(this, arguments);
       completed++;
     }
@@ -245,7 +249,7 @@ QUnit.test("Triggers init", function() {
 
 QUnit.test('creating an object with required properties', function() {
   var ClassA = EmberObject.extend({
-    foo: required()
+    foo: null // required
   });
 
   var obj = ClassA.createWithMixins({ foo: 'FOO' }); // should not throw
@@ -264,7 +268,7 @@ QUnit.test('create should not break observed values', function() {
 
     _count: 0,
 
-    reset: function() {
+    reset() {
       this._count = 0;
       return this;
     },

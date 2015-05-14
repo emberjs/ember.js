@@ -17,14 +17,15 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
   run(function() {
     a = {};
 
-    defineProperty(a, 'foo', computed(function(key, value) {
-      if (arguments.length === 2) {
+    defineProperty(a, 'foo', computed({
+      get: function(key) {
+        getCalled++;
+        return setValue;
+      },
+      set: function(key, value) {
         setCalled++;
         setValue = value;
         return value;
-      } else {
-        getCalled++;
-        return setValue;
       }
     }).volatile());
 

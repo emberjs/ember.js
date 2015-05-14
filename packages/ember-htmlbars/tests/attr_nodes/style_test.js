@@ -10,7 +10,7 @@ import { styleWarning } from "ember-views/attr_nodes/attr_node";
 var view, originalWarn, warnings;
 
 QUnit.module("ember-htmlbars: style attribute", {
-  setup: function() {
+  setup() {
     warnings = [];
     originalWarn = Ember.warn;
     Ember.warn = function(message, test) {
@@ -20,7 +20,7 @@ QUnit.module("ember-htmlbars: style attribute", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(view);
     Ember.warn = originalWarn;
   }

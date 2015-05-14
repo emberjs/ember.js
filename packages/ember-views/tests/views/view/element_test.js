@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
@@ -8,7 +10,7 @@ import ContainerView from "ember-views/views/container_view";
 var parentView, view;
 
 QUnit.module("Ember.View#element", {
-  teardown: function() {
+  teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
       view.destroy();
@@ -45,7 +47,7 @@ QUnit.test("returns element if you set the value", function() {
   equal(get(view, 'element'), dom, 'now has set element');
 });
 
-Ember.runInDebug(function() {
+if (EmberDev && !EmberDev.runningProdBuild) {
   QUnit.test("should not allow the elementId to be changed after inserted", function() {
     view = EmberView.create({
       elementId: 'one'
@@ -61,5 +63,4 @@ Ember.runInDebug(function() {
 
     equal(view.get('elementId'), 'one', 'elementId is still "one"');
   });
-});
-
+}

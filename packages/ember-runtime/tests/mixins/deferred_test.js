@@ -8,12 +8,12 @@ import Deferred from "ember-runtime/mixins/deferred";
 var originalDeprecate;
 
 QUnit.module("Deferred", {
-  setup: function() {
+  setup() {
     originalDeprecate = Ember.deprecate;
     Ember.deprecate = function() { };
   },
 
-  teardown: function() {
+  teardown() {
     Ember.deprecate = originalDeprecate;
   }
 });

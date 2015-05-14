@@ -18,7 +18,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: class attribute", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(view, view.destroy);
     }
@@ -28,7 +28,7 @@ QUnit.module("ember-htmlbars: class attribute", {
 QUnit.test("class renders before didInsertElement", function() {
   var matchingElement;
   view = EmberView.create({
-    didInsertElement: function() {
+    didInsertElement() {
       matchingElement = this.$('div.blue');
     },
     context: { color: 'blue' },

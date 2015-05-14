@@ -22,7 +22,7 @@ var SPLIT_REGEX = /\{|\}/;
   Ember.expandProperties('foo.bar', echo);              //=> 'foo.bar'
   Ember.expandProperties('{foo,bar}', echo);            //=> 'foo', 'bar'
   Ember.expandProperties('foo.{bar,baz}', echo);        //=> 'foo.bar', 'foo.baz'
-  Ember.expandProperties('{foo,bar}.baz', echo);        //=> '{foo,bar}.baz'
+  Ember.expandProperties('{foo,bar}.baz', echo);        //=> 'foo.baz', 'bar.baz'
   Ember.expandProperties('foo.{bar,baz}.@each', echo)   //=> 'foo.bar.@each', 'foo.baz.@each'
   Ember.expandProperties('{foo,bar}.{spam,eggs}', echo) //=> 'foo.spam', 'foo.eggs', 'bar.spam', 'bar.eggs'
   Ember.expandProperties('{foo}.bar.{baz}')             //=> 'foo.bar.baz'
@@ -36,8 +36,7 @@ var SPLIT_REGEX = /\{|\}/;
   */
 export default function expandProperties(pattern, callback) {
   if (pattern.indexOf(' ') > -1) {
-    throw new EmberError('Brace expanded properties cannot contain spaces, ' +
-      'e.g. `user.{firstName, lastName}` should be `user.{firstName,lastName}`');
+    throw new EmberError(`Brace expanded properties cannot contain spaces, e.g. 'user.{firstName, lastName}' should be 'user.{firstName,lastName}'`);
   }
 
   if ('string' === typeOf(pattern)) {
@@ -61,8 +60,8 @@ export default function expandProperties(pattern, callback) {
 function duplicateAndReplace(properties, currentParts, index) {
   var all = [];
 
-  forEach(properties, function(property) {
-    forEach(currentParts, function(part) {
+  forEach(properties, (property) => {
+    forEach(currentParts, (part) => {
       var current = property.slice(0);
       current[index] = part;
       all.push(current);

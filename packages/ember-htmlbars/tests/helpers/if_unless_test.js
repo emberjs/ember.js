@@ -18,7 +18,7 @@ var originalLookup = Ember.lookup;
 var view, lookup, registry, container, TemplateTests;
 
 QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -28,7 +28,7 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -47,7 +47,7 @@ QUnit.test("unless should keep the current context (#784) [DEPRECATED]", functio
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$().text(), 'foo: 42');
 });
@@ -214,7 +214,7 @@ QUnit.test("The `if` helper ignores a controller option", function() {
 
   view = EmberView.create({
     container: {
-      lookup: function() {
+      lookup() {
         lookupCalled = true;
       }
     },
@@ -239,7 +239,7 @@ QUnit.test('should not rerender if truthiness does not change', function() {
     InnerViewClass: EmberView.extend({
       template: compile('bam'),
 
-      render: function() {
+      render() {
         renderCount++;
         return this._super.apply(this, arguments);
       }
@@ -570,7 +570,7 @@ QUnit.test('edge case: child conditional should not render children if parent co
     cond1: true,
     cond2: false,
     viewClass: EmberView.extend({
-      init: function() {
+      init() {
         this._super.apply(this, arguments);
         childCreated = true;
         child = this;

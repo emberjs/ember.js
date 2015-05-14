@@ -76,7 +76,7 @@ QUnit.test('adding a listener with a target should invoke with target', function
 
   target = {
     count: 0,
-    method: function() { this.count++; }
+    method() { this.count++; }
   };
 
   addListener(obj, 'event!', target, target.method);
@@ -90,12 +90,12 @@ QUnit.test('suspending a listener should not invoke during callback', function()
 
   target = {
     count: 0,
-    method: function() { this.count++; }
+    method() { this.count++; }
   };
 
   otherTarget = {
     count: 0,
-    method: function() { this.count++; }
+    method() { this.count++; }
   };
 
   addListener(obj, 'event!', target, target.method);
@@ -126,7 +126,7 @@ QUnit.test('adding a listener with string method should lookup method on event d
 
   target = {
     count: 0,
-    method: function() {}
+    method() {}
   };
 
   addListener(obj, 'event!', target, 'method');
@@ -152,7 +152,7 @@ QUnit.test('calling sendEvent with extra params should be passed to listeners', 
 
 QUnit.test('implementing sendEvent on object should invoke', function() {
   var obj = {
-    sendEvent: function(eventName, params) {
+    sendEvent(eventName, params) {
       equal(eventName, 'event!', 'eventName');
       deepEqual(params, ['foo', 'bar']);
       this.count++;
@@ -213,7 +213,7 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
 
   target = {
     count: 0,
-    method: function() { this.count++; }
+    method() { this.count++; }
   };
 
   addListener(obj, 'event!', target, target.method);

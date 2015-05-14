@@ -12,7 +12,10 @@
 + [Conditional Statements](#conditional-statements)
 + [Properties](#properties)
 + [Functions](#functions)
++ [Arrow Functions](#arrow-functions)
 + [Function Arguments](#function-arguments)
++ [Rest Parameters](#rest-parameters)
++ [Destructuring](#destructuring)
 + [Comments](#comments)
 
 ## Objects
@@ -272,6 +275,15 @@ foo[propertyName];
 function fooBar() {
 }
 ```
+## Arrow Functions
+
++ Make sure arrow functions are done on multiple lines.
+
+```javascript
+var foo = [1,2,3,4].map((item) => {
+  return item * 2;
+});
+```
 
 ## Function Arguments
 
@@ -313,6 +325,45 @@ function fooBar(opt) {
   options = 3;
 }
 ```
+
+## Rest Parameters
+
+Since [Babel implements](https://babeljs.io/repl/#?experimental=true&playground=true&evaluate=true&loose=false&spec=false&code=function%20foo\(...args\)%20%7B%0A%20%20%0A%7D) Rest parameters in a non-leaking matter you should use them whenever applicable.
+
+```javascript
+function foo(...args) {
+  args.forEach((item) => {
+    console.log(item);
+  });
+}
+```
+
+## Destructuring
+
+When decomposing simple arrays or objects, prefer [destructuring](http://babeljs.io/docs/learn-es6/#destructuring).
+
+```javascript
+// array destructuring
+var fullName = 'component:foo-bar';
+var [
+  first,
+  last
+] = fullName.split(':');
+```
+
+```javascript
+// object destructuring
+var person = {
+  firstName: 'Stefan',
+  lastName: 'Penner'
+}
+
+var {
+  firstName,
+  lastName
+} = person;
+```
+
 
 ## Comments
 

@@ -19,7 +19,7 @@ var defineNativeShim = function(nativeFunc, shim) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-var map = defineNativeShim(ArrayPrototype.map, function(fun /*, thisp */) {
+var map = defineNativeShim(ArrayPrototype.map, function(fun, ...thisp) {
   //"use strict";
 
   if (this === void 0 || this === null || typeof fun !== "function") {
@@ -29,11 +29,10 @@ var map = defineNativeShim(ArrayPrototype.map, function(fun /*, thisp */) {
   var t = Object(this);
   var len = t.length >>> 0;
   var res = new Array(len);
-  var thisp = arguments[1];
 
   for (var i = 0; i < len; i++) {
     if (i in t) {
-      res[i] = fun.call(thisp, t[i], i, t);
+      res[i] = fun.call(thisp[0], t[i], i, t);
     }
   }
 
@@ -41,7 +40,7 @@ var map = defineNativeShim(ArrayPrototype.map, function(fun /*, thisp */) {
 });
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-var forEach = defineNativeShim(ArrayPrototype.forEach, function(fun /*, thisp */) {
+var forEach = defineNativeShim(ArrayPrototype.forEach, function(fun, ...thisp) {
   //"use strict";
 
   if (this === void 0 || this === null || typeof fun !== "function") {
@@ -50,16 +49,15 @@ var forEach = defineNativeShim(ArrayPrototype.forEach, function(fun /*, thisp */
 
   var t = Object(this);
   var len = t.length >>> 0;
-  var thisp = arguments[1];
 
   for (var i = 0; i < len; i++) {
     if (i in t) {
-      fun.call(thisp, t[i], i, t);
+      fun.call(thisp[0], t[i], i, t);
     }
   }
 });
 
-var indexOf = defineNativeShim(ArrayPrototype.indexOf, function (obj, fromIndex) {
+var indexOf = defineNativeShim(ArrayPrototype.indexOf, function(obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) {
     fromIndex = 0;
   } else if (fromIndex < 0) {
@@ -96,7 +94,7 @@ var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, function(obj, fro
   return -1;
 });
 
-var filter = defineNativeShim(ArrayPrototype.filter, function (fn, context) {
+var filter = defineNativeShim(ArrayPrototype.filter, function(fn, context) {
   var i, value;
   var result = [];
   var length = this.length;

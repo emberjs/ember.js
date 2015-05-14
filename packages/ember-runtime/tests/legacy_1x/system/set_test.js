@@ -18,14 +18,14 @@ var a, b, c ; // global variables
 
 QUnit.module("creating Set instances", {
 
-  setup: function() {
+  setup() {
     // create objects...
     a = { name: "a" };
     b = { name: "b" };
     c = { name: "c" };
   },
 
-  teardown: function() {
+  teardown() {
     a = undefined;
     b = undefined;
     c = undefined;
@@ -54,7 +54,7 @@ QUnit.test("new Set() should accept anything that implements EmberArray", functi
   var arrayLikeObject = EmberObject.createWithMixins(EmberArray, {
     _content: [a,b,c],
     length: 3,
-    objectAt: function(idx) { return this._content[idx]; }
+    objectAt(idx) { return this._content[idx]; }
   });
 
   ignoreDeprecation(function() {
@@ -72,13 +72,13 @@ var set; // global variables
 // exhaustively.
 QUnit.module("Set.add + Set.contains", {
 
-  setup: function() {
+  setup() {
     ignoreDeprecation(function() {
       set = new Set();
     });
   },
 
-  teardown: function() {
+  teardown() {
     set = undefined;
   }
 
@@ -179,7 +179,7 @@ QUnit.module("Set.remove + Set.contains", {
 
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
-  setup: function() {
+  setup() {
     ignoreDeprecation(function() {
       set = new Set(Ember.A([
         EmberObject.create({ dummy: true }),
@@ -189,7 +189,7 @@ QUnit.module("Set.remove + Set.contains", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     set = undefined;
   }
 
@@ -290,7 +290,7 @@ QUnit.test("should ignore removing an object not in the set", function() {
 QUnit.module("Set.pop + Set.copy", {
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
-  setup: function() {
+  setup() {
     ignoreDeprecation(function() {
       set = new Set(Ember.A([
         EmberObject.create({ dummy: true }),
@@ -300,7 +300,7 @@ QUnit.module("Set.pop + Set.copy", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     set = undefined;
   }
 });

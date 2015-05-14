@@ -30,7 +30,10 @@ import CoreView from "ember-views/views/core_view";
 import ViewStreamSupport from "ember-views/mixins/view_stream_support";
 import ViewKeywordSupport from "ember-views/mixins/view_keyword_support";
 import ViewContextSupport from "ember-views/mixins/view_context_support";
-import { default as ViewChildViewsSupport, childViewsProperty } from "ember-views/mixins/view_child_views_support";
+import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
+import {
+  childViewsProperty
+} from "ember-views/mixins/view_child_views_support";
 import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
@@ -663,6 +666,14 @@ var EMPTY_ARRAY = [];
   @class View
   @namespace Ember
   @extends Ember.CoreView
+  @uses Ember.ViewContextSupport
+  @uses Ember.ViewChildViewsSupport
+  @uses Ember.TemplateRenderingSupport
+  @uses Ember.ClassNamesSupport
+  @uses Ember.AttributeBindingsSupport
+  @uses Ember.LegacyViewSupport
+  @uses Ember.InstrumentationSupport
+  @uses Ember.VisibilitySupport
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
@@ -725,15 +736,18 @@ var View = CoreView.extend(
     @property template
     @type Function
   */
-  template: computed('templateName', function(key, value) {
-    if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName');
-    var template = this.templateForName(templateName, 'template');
-
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-
-    return template || get(this, 'defaultTemplate');
+  template: computed('templateName', {
+    get() {
+      var templateName = get(this, 'templateName');
+      var template = this.templateForName(templateName, 'template');
+      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
+      return template || get(this, 'defaultTemplate');
+    },
+    set(key, value) {
+      if (value !== undefined) { return value; }
+      return get(this, key);
+    }
   }),
 
   /**
@@ -749,17 +763,23 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-  */
-  layout: computed(function(key) {
-    var layoutName = get(this, 'layoutName');
-    var layout = this.templateForName(layoutName, 'layout');
+    */
+  layout: computed('layoutName', {
+    get(key) {
+      var layoutName = get(this, 'layoutName');
+      var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
+      Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
-    return layout || get(this, 'defaultLayout');
-  }).property('layoutName'),
+      return layout || get(this, 'defaultLayout');
+    },
 
-  _yield: function(context, options, morph) {
+    set(key, value) {
+      return value;
+    }
+  }),
+
+  _yield(context, options, morph) {
     var template = get(this, 'template');
 
     if (template) {
@@ -773,7 +793,7 @@ var View = CoreView.extend(
 
   _blockArguments: EMPTY_ARRAY,
 
-  templateForName: function(name, type) {
+  templateForName(name, type) {
     if (!name) { return; }
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
 
@@ -824,7 +844,7 @@ var View = CoreView.extend(
            or an instance of Ember.Mixin.
     @return Ember.View
   */
-  nearestOfType: function(klass) {
+  nearestOfType(klass) {
     var view = get(this, 'parentView');
     var isOfType = klass instanceof Mixin ?
                    function(view) { return klass.detect(view); } :
@@ -843,7 +863,7 @@ var View = CoreView.extend(
     @param {String} property A property name
     @return Ember.View
   */
-  nearestWithProperty: function(property) {
+  nearestWithProperty(property) {
     var view = get(this, 'parentView');
 
     while (view) {
@@ -895,8 +915,21 @@ var View = CoreView.extend(
 
     @method rerender
   */
-  rerender: function() {
+  rerender() {
     return this.currentState.rerender(this);
+  },
+
+  /*
+   * @private
+   *
+   * @method _rerender
+   */
+  _rerender() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    this._renderer.renderTree(this, this._parentView);
   },
 
   /**
@@ -910,7 +943,7 @@ var View = CoreView.extend(
     @param property
     @private
   */
-  _classStringForProperty: function(parsedPath) {
+  _classStringForProperty(parsedPath) {
     return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
   },
 
@@ -938,12 +971,12 @@ var View = CoreView.extend(
     @param {String} [selector] a jQuery-compatible selector string
     @return {jQuery} the jQuery object for the DOM node
   */
-  $: function(sel) {
+  $(sel) {
     Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
     return this.currentState.$(this, sel);
   },
 
-  forEachChildView: function(callback) {
+  forEachChildView(callback) {
     var childViews = this._childViews;
 
     if (!childViews) { return this; }
@@ -979,7 +1012,7 @@ var View = CoreView.extend(
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @return {Ember.View} receiver
   */
-  appendTo: function(selector) {
+  appendTo(selector) {
     var target = jQuery(selector);
 
     Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
@@ -988,6 +1021,58 @@ var View = CoreView.extend(
     this.renderer.appendTo(this, target[0]);
 
     return this;
+  },
+
+  /**
+    @private
+
+    Creates a new DOM element, renders the view into it, then returns the
+    element.
+
+    By default, the element created and rendered into will be a `BODY` element,
+    since this is the default context that views are rendered into when being
+    inserted directly into the DOM.
+
+    ```js
+    var element = view.renderToElement();
+    element.tagName; // => "BODY"
+    ```
+
+    You can override the kind of element rendered into and returned by
+    specifying an optional tag name as the first argument.
+
+    ```js
+    var element = view.renderToElement('table');
+    element.tagName; // => "TABLE"
+    ```
+
+    This method is useful if you want to render the view into an element that
+    is not in the document's body. Instead, a new `body` element, detached from
+    the DOM is returned. FastBoot uses this to serialize the rendered view into
+    a string for transmission over the network.
+
+    ```js
+    app.visit('/').then(function(instance) {
+      var element;
+      Ember.run(function() {
+        element = renderToElement(instance);
+      });
+
+      res.send(serialize(element));
+    });
+    ```
+
+    @method renderToElement
+    @param {String} tagName The tag of the element to create and render into. Defaults to "body".
+    @return {HTMLBodyElement} element
+  */
+  renderToElement(tagName) {
+    tagName = tagName || 'body';
+
+    var element = this.renderer._dom.createElement(tagName);
+
+    this.renderer.appendTo(this, element);
+    return element;
   },
 
   /**
@@ -1003,7 +1088,7 @@ var View = CoreView.extend(
     @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
   */
-  replaceIn: function(selector) {
+  replaceIn(selector) {
     var target = jQuery(selector);
 
     Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
@@ -1030,7 +1115,7 @@ var View = CoreView.extend(
     @method append
     @return {Ember.View} receiver
   */
-  append: function() {
+  append() {
     return this.appendTo(document.body);
   },
 
@@ -1040,7 +1125,7 @@ var View = CoreView.extend(
     @method remove
     @return {Ember.View} receiver
   */
-  remove: function() {
+  remove() {
     // What we should really do here is wait until the end of the run loop
     // to determine if the element has been re-appended to a different
     // element.
@@ -1060,7 +1145,18 @@ var View = CoreView.extend(
     If not manually set a default value will be provided by the framework.
 
     Once rendered an element's `elementId` is considered immutable and you
-    should never change it.
+    should never change it. If you need to compute a dynamic value for the
+    `elementId`, you should do this when the component or element is being
+    instantiated:
+
+    ```javascript
+      export default Ember.Component.extend({
+        setElementId: function() {
+          var index = this.get('index');
+          this.set('elementId', 'component-id' + index);
+        }.on('init')
+      });
+    ```
 
     @property elementId
     @type String
@@ -1078,14 +1174,15 @@ var View = CoreView.extend(
     @param {DOMElement} parentElement The parent's DOM element
     @return {DOMElement} The discovered element
   */
-  findElementInParentElement: function(parentElem) {
+  findElementInParentElement(parentElem) {
     var id = "#" + this.elementId;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
   /**
     Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method.
+    recursively calling the `render()` method. Once the element is created,
+    it sets the `element` property of the view to the rendered element.
 
     After the element has been inserted into the DOM, `didInsertElement` will
     be called on this view and all of its child views.
@@ -1093,7 +1190,7 @@ var View = CoreView.extend(
     @method createElement
     @return {Ember.View} receiver
   */
-  createElement: function() {
+  createElement() {
     if (this.element) { return this; }
 
     this._didCreateElementWithoutMorph = true;
@@ -1148,7 +1245,7 @@ var View = CoreView.extend(
     @method destroyElement
     @return {Ember.View} receiver
   */
-  destroyElement: function() {
+  destroyElement() {
     return this.currentState.destroyElement(this);
   },
 
@@ -1171,7 +1268,7 @@ var View = CoreView.extend(
   */
   parentViewDidChange: K,
 
-  applyAttributesToBuffer: function(buffer) {
+  applyAttributesToBuffer(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
 
@@ -1244,19 +1341,23 @@ var View = CoreView.extend(
     @method init
     @private
   */
-  init: function() {
+  init() {
     if (!this.isVirtual && !this.elementId) {
       this.elementId = guidFor(this);
     }
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
+
+    if (!this._viewRegistry) {
+      this._viewRegistry = View.views;
+    }
   },
 
-  __defineNonEnumerable: function(property) {
+  __defineNonEnumerable(property) {
     this[property.name] = property.descriptor.value;
   },
 
-  appendAttr: function(node) {
+  appendAttr(node) {
     return this.currentState.appendAttr(this, node);
   },
 
@@ -1267,7 +1368,7 @@ var View = CoreView.extend(
     @method removeFromParent
     @return {Ember.View} receiver
   */
-  removeFromParent: function() {
+  removeFromParent() {
     var parent = this._parentView;
 
     // Remove DOM element from parent
@@ -1285,12 +1386,12 @@ var View = CoreView.extend(
 
     @method destroy
   */
-  destroy: function() {
+  destroy() {
     // get parentView before calling super because it'll be destroyed
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
 
-    if (!this._super.apply(this, arguments)) { return; }
+    if (!this._super(...arguments)) { return; }
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {
@@ -1312,11 +1413,38 @@ var View = CoreView.extend(
     @param evt {Event}
     @private
   */
-  handleEvent: function(eventName, evt) {
+  handleEvent(eventName, evt) {
     return this.currentState.handleEvent(this, eventName, evt);
   },
 
-  registerObserver: function(root, path, target, observer) {
+  /**
+    Registers the view in the view registry, keyed on the view's `elementId`.
+    This is used by the EventDispatcher to locate the view in response to
+    events.
+
+    This method should only be called once the view has been inserted into the
+    DOM.
+
+    @method _register
+    @private
+  */
+  _register() {
+    Ember.assert("Attempted to register a view with an id already in use: "+this.elementId, !this._viewRegistry[this.elementId]);
+    this._viewRegistry[this.elementId] = this;
+  },
+
+  /**
+    Removes the view from the view registry. This should be called when the
+    view is removed from DOM.
+
+    @method _unregister
+    @private
+  */
+  _unregister() {
+    delete this._viewRegistry[this.elementId];
+  },
+
+  registerObserver(root, path, target, observer) {
     if (!observer && 'function' === typeof target) {
       observer = target;
       target = null;
@@ -1335,7 +1463,7 @@ var View = CoreView.extend(
     });
   },
 
-  _wrapAsScheduled: function(fn) {
+  _wrapAsScheduled(fn) {
     var view = this;
     var stateCheckedFn = function() {
       view.currentState.invokeObserver(this, fn);

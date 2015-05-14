@@ -21,7 +21,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     QUnit.test('does not assert if property is not being watched', function() {
       var obj = {
         someProp: null,
-        toString: function() {
+        toString() {
           return 'custom-object';
         }
       };
@@ -63,7 +63,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       var obj = { someProp: null };
 
       defineProperty(obj, 'someProp', {
-        set: function(value) {
+        set(value) {
           equal(value, 'foo-bar', 'custom setter was called');
         }
       });
@@ -77,7 +77,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     QUnit.test('should assert if set without Ember.set when property is being watched', function() {
       var obj = {
         someProp: null,
-        toString: function() {
+        toString() {
           return 'custom-object';
         }
       };
@@ -92,7 +92,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     QUnit.test('should not assert if set with Ember.set when property is being watched', function() {
       var obj = {
         someProp: null,
-        toString: function() {
+        toString() {
           return 'custom-object';
         }
       };
@@ -106,7 +106,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     QUnit.test('does not setup mandatory-setter if non-configurable', function() {
       var obj = {
         someProp: null,
-        toString: function() {
+        toString() {
           return 'custom-object';
         }
       };
@@ -128,7 +128,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 
       var obj = {
         someProp: null,
-        toString: function() {
+        toString() {
           return 'custom-object';
         }
       };
@@ -148,7 +148,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   QUnit.test('does not assert', function() {
     var obj = {
       someProp: null,
-      toString: function() {
+      toString() {
         return 'custom-object';
       }
     };

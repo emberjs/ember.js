@@ -55,17 +55,17 @@ export default View.extend({
   disabled: false,
   indeterminate: false,
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this.on('change', this, this._updateElementValue);
   },
 
-  didInsertElement: function() {
-    this._super.apply(this, arguments);
+  didInsertElement() {
+    this._super(...arguments);
     get(this, 'element').indeterminate = !!get(this, 'indeterminate');
   },
 
-  _updateElementValue: function() {
+  _updateElementValue() {
     set(this, 'checked', this.$().prop('checked'));
   }
 });

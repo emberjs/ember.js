@@ -18,19 +18,19 @@ function StreamBinding(stream) {
 StreamBinding.prototype = create(Stream.prototype);
 
 merge(StreamBinding.prototype, {
-  valueFn: function() {
+  valueFn() {
     return this.stream.value();
   },
 
-  _onNotify: function() {
+  _onNotify() {
     this._scheduleSync(undefined, undefined, this);
   },
 
-  setValue: function(value, callback, context) {
+  setValue(value, callback, context) {
     this._scheduleSync(value, callback, context);
   },
 
-  _scheduleSync: function(value, callback, context) {
+  _scheduleSync(value, callback, context) {
     if (this.senderCallback === undefined && this.senderContext === undefined) {
       this.senderCallback = callback;
       this.senderContext = context;
@@ -43,7 +43,7 @@ merge(StreamBinding.prototype, {
     }
   },
 
-  _sync: function() {
+  _sync() {
     if (this.state === 'destroyed') {
       return;
     }

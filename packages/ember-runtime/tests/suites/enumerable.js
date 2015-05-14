@@ -1,6 +1,5 @@
 import { Suite } from 'ember-runtime/tests/suites/suite';
 import EmberObject from "ember-runtime/system/object";
-import {required} from "ember-metal/mixin";
 import {guidFor, generateGuid} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {get} from "ember-metal/property_get";
@@ -16,13 +15,13 @@ var ObserverClass = EmberObject.extend({
 
   isEnabled: true,
 
-  init: function() {
+  init() {
     this._super.apply(this, arguments);
     this.reset();
   },
 
 
-  propertyWillChange: function(target, key) {
+  propertyWillChange(target, key) {
     if (this._keysBefore[key] === undefined) { this._keysBefore[key] = 0; }
     this._keysBefore[key]++;
   },
@@ -31,7 +30,7 @@ var ObserverClass = EmberObject.extend({
     Invoked when the property changes.  Just records the parameters for
     later analysis.
   */
-  propertyDidChange: function(target, key, value) {
+  propertyDidChange(target, key, value) {
     if (this._keys[key] === undefined) { this._keys[key] = 0; }
     this._keys[key]++;
     this._values[key] = value;
@@ -42,7 +41,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Object} receiver
   */
-  reset: function() {
+  reset() {
     this._keysBefore = {};
     this._keys = {};
     this._values = {};
@@ -52,7 +51,7 @@ var ObserverClass = EmberObject.extend({
   },
 
 
-  observeBefore: function(obj) {
+  observeBefore(obj) {
     var keys = Array.prototype.slice.call(arguments, 1);
     var loc  = keys.length;
     while (--loc>=0) {
@@ -71,7 +70,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Object} receiver
   */
-  observe: function(obj) {
+  observe(obj) {
     if (obj.addObserver) {
       var keys = Array.prototype.slice.call(arguments, 1);
       var loc  = keys.length;
@@ -97,7 +96,7 @@ var ObserverClass = EmberObject.extend({
 
     @returns {Boolean}
   */
-  validate: function(key, value) {
+  validate(key, value) {
     if (!this.isEnabled) {
       return true;
     }
@@ -119,7 +118,7 @@ var ObserverClass = EmberObject.extend({
     @param {String} key
       Key to check
   */
-  timesCalledBefore: function(key) {
+  timesCalledBefore(key) {
     return this._keysBefore[key] || 0;
   },
 
@@ -129,29 +128,29 @@ var ObserverClass = EmberObject.extend({
     @param {String} key
       Key to check
   */
-  timesCalled: function(key) {
+  timesCalled(key) {
     return this._keys[key] || 0;
   },
 
   /**
     begins acting as an enumerable observer.
   */
-  observeEnumerable: function(obj) {
+  observeEnumerable(obj) {
     obj.addEnumerableObserver(this);
     return this;
   },
 
-  stopObserveEnumerable: function(obj) {
+  stopObserveEnumerable(obj) {
     obj.removeEnumerableObserver(this);
     return this;
   },
 
-  enumerableWillChange: function() {
+  enumerableWillChange() {
     equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
-  enumerableDidChange: function() {
+  enumerableDidChange() {
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
@@ -161,6 +160,8 @@ var ObserverClass = EmberObject.extend({
 
 var EnumerableTests = Suite.extend({
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement to return a new enumerable object for testing.  Should accept
     either no parameters, a single number (indicating the desired length of
     the collection) or an array of objects.
@@ -170,7 +171,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Ember.Enumerable} a new enumerable
   */
-  newObject: required(Function),
+  newObject: null,
 
   /**
     Implement to return a set of new fixture strings that can be applied to
@@ -181,7 +182,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of strings
   */
-  newFixture: function(cnt) {
+  newFixture(cnt) {
     var ret = [];
     while (--cnt >= 0) {
       ret.push(generateGuid());
@@ -199,7 +200,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of objects
   */
-  newObjectsFixture: function(cnt) {
+  newObjectsFixture(cnt) {
     var ret = [];
     var item;
     while (--cnt >= 0) {
@@ -211,6 +212,8 @@ var EnumerableTests = Suite.extend({
   },
 
   /**
+    __Required.__ You must implement this method to apply this mixin.
+
     Implement accept an instance of the enumerable and return an array
     containing the objects in the enumerable.  This is used only for testing
     so performance is not important.
@@ -220,7 +223,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {Array} array of items
   */
-  toArray: required(Function),
+  toArray: null,
 
   /**
     Implement this method if your object can mutate internally (even if it
@@ -237,7 +240,7 @@ var EnumerableTests = Suite.extend({
 
     @returns {void}
   */
-  mutate: function() {},
+  mutate() {},
 
   /**
     Becomes true when you define a new mutate() method, indicating that
@@ -252,7 +255,7 @@ var EnumerableTests = Suite.extend({
   /**
     Invoked to actually run the test - overridden by mixins
   */
-  run: function() {},
+  run() {},
 
 
   /**
@@ -261,7 +264,7 @@ var EnumerableTests = Suite.extend({
     After running the test, call the validate() method on the observer to
     validate the results.
   */
-  newObserver: function(obj) {
+  newObserver(obj) {
     var ret = get(this, 'observerClass').create();
     if (arguments.length>0) {
       ret.observeBefore.apply(ret, arguments);

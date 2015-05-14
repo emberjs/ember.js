@@ -29,7 +29,7 @@ function bootApplication(startingURL) {
 }
 
 QUnit.module("Loading/Error Substates", {
-  setup: function() {
+  setup() {
     counter = 1;
 
     Ember.run(function() {
@@ -58,7 +58,7 @@ QUnit.module("Loading/Error Substates", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     Ember.run(function() {
       App.destroy();
       App = null;
@@ -82,13 +82,13 @@ QUnit.test("Slow promise from a child route of application enters nested loading
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       step(2, "ApplicationRoute#setup");
     }
   });
 
   App.BroRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(1, "BroRoute#model");
       return broDeferred.promise;
     }
@@ -124,25 +124,25 @@ QUnit.test("Slow promises waterfall on startup", function() {
   templates['mom/sally'] = "SALLY";
 
   App.GrandmaRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(1, "GrandmaRoute#model");
       return grandmaDeferred.promise;
     }
   });
 
   App.MomRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(2, "Mom#model");
       return {};
     }
   });
 
   App.MomSallyRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(3, "SallyRoute#model");
       return sallyDeferred.promise;
     },
-    setupController: function() {
+    setupController() {
       step(4, "SallyRoute#setupController");
     }
   });
@@ -175,7 +175,7 @@ QUnit.test("ApplicationRoute#currentPath reflects loading state path", function(
   templates['grandma/mom'] = "MOM";
 
   App.GrandmaMomRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return momDeferred.promise;
     }
   });
@@ -199,13 +199,13 @@ QUnit.test("Slow promises returned from ApplicationRoute#model don't enter Loadi
   var appDeferred = Ember.RSVP.defer();
 
   App.ApplicationRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return appDeferred.promise;
     }
   });
 
   App.LoadingRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       ok(false, "shouldn't get here");
     }
   });
@@ -229,7 +229,7 @@ QUnit.test("Don't enter loading route unless either route or template defined", 
   App.ApplicationController = Ember.Controller.extend();
 
   App.IndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return indexDeferred.promise;
     }
   });
@@ -252,14 +252,14 @@ QUnit.test("Enter loading route if only LoadingRoute defined", function() {
   var indexDeferred = Ember.RSVP.defer();
 
   App.IndexRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(1, "IndexRoute#model");
       return indexDeferred.promise;
     }
   });
 
   App.LoadingRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       step(2, "LoadingRoute#setupController");
     }
   });
@@ -293,13 +293,13 @@ QUnit.test("Enter child loading state of pivot route", function() {
   App.ApplicationController = Ember.Controller.extend();
 
   App.MomSallyRoute = Ember.Route.extend({
-    setupController: function() {
+    setupController() {
       step(1, "SallyRoute#setupController");
     }
   });
 
   App.GrandmaSmellsRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return deferred.promise;
     }
   });
@@ -339,20 +339,20 @@ QUnit.test("Loading actions bubble to root, but don't enter substates above pivo
 
   App.ApplicationRoute = Ember.Route.extend({
     actions: {
-      loading: function(transition, route) {
+      loading(transition, route) {
         ok(true, "loading action received on ApplicationRoute");
       }
     }
   });
 
   App.MomSallyRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return sallyDeferred.promise;
     }
   });
 
   App.GrandmaSmellsRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return smellsDeferred.promise;
     }
   });
@@ -391,7 +391,7 @@ QUnit.test("Default error event moves into nested route", function() {
   App.ApplicationController = Ember.Controller.extend();
 
   App.MomSallyRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       step(1, "MomSallyRoute#model");
 
       return Ember.RSVP.reject({
@@ -399,7 +399,7 @@ QUnit.test("Default error event moves into nested route", function() {
       });
     },
     actions: {
-      error: function() {
+      error() {
         step(2, "MomSallyRoute#actions.error");
         return true;
       }
@@ -428,14 +428,14 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     var appDeferred = Ember.RSVP.defer();
 
     App.ApplicationRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return appDeferred.promise;
       }
     });
 
     var loadingRouteEntered = false;
     App.ApplicationLoadingRoute = Ember.Route.extend({
-      setupController: function() {
+      setupController() {
         loadingRouteEntered = true;
       }
     });
@@ -459,14 +459,14 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     var appDeferred = Ember.RSVP.defer();
     App.ApplicationRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return appDeferred.promise;
       }
     });
 
     var loadingRouteEntered = false;
     App.ApplicationLoadingRoute = Ember.Route.extend({
-      setupController: function() {
+      setupController() {
         loadingRouteEntered = true;
       }
     });
@@ -508,7 +508,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     App.ApplicationController = Ember.Controller.extend();
 
     App.MomSallyRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         step(1, "MomSallyRoute#model");
 
         return Ember.RSVP.reject({
@@ -516,7 +516,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
         });
       },
       actions: {
-        error: function() {
+        error() {
           step(2, "MomSallyRoute#actions.error");
           return true;
         }
@@ -554,7 +554,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     var deferred = Ember.RSVP.defer();
     App.FooBarRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return deferred.promise;
       }
     });
@@ -588,7 +588,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     var deferred = Ember.RSVP.defer();
     App.FooBarRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return deferred.promise;
       }
     });
@@ -621,7 +621,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     App.ApplicationController = Ember.Controller.extend();
 
     App.FooBarRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return Ember.RSVP.reject({
           msg: "did it broke?"
         });
@@ -654,12 +654,12 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     var deferred = Ember.RSVP.defer();
     App.FooIndexRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return deferred.promise;
       }
     });
     App.FooRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return true;
       }
     });
@@ -693,14 +693,14 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     App.ApplicationController = Ember.Controller.extend();
 
     App.FooIndexRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return Ember.RSVP.reject({
           msg: "did it broke?"
         });
       }
     });
     App.FooRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         return true;
       }
     });
@@ -721,7 +721,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     var reject = true;
     App.ApplicationRoute = Ember.Route.extend({
-      model: function() {
+      model() {
         if (reject) {
           return Ember.RSVP.reject({ msg: "BAD NEWS BEARS" });
         } else {

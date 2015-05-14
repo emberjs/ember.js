@@ -206,8 +206,8 @@ var LinkView = EmberComponent.extend({
 
     @method init
   */
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
 
     Ember.deprecate(
       'Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.',
@@ -227,7 +227,7 @@ var LinkView = EmberComponent.extend({
     @method _paramsChanged
     @since 1.3.0
    */
-  _paramsChanged: function() {
+  _paramsChanged() {
     this.notifyPropertyChange('resolvedParams');
   },
 
@@ -238,7 +238,7 @@ var LinkView = EmberComponent.extend({
    @method _setupPathObservers
    @since 1.3.0
   **/
-  _setupPathObservers: function() {
+  _setupPathObservers() {
     var params = this.params;
 
     var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
@@ -260,8 +260,8 @@ var LinkView = EmberComponent.extend({
     }
   },
 
-  afterRender: function() {
-    this._super.apply(this, arguments);
+  afterRender() {
+    this._super(...arguments);
     this._setupPathObservers();
   },
 
@@ -273,10 +273,15 @@ var LinkView = EmberComponent.extend({
     When `true` interactions with the element will not trigger route changes.
     @property disabled
   */
-  disabled: computed(function computeLinkViewDisabled(key, value) {
-    if (value !== undefined) { this.set('_isDisabled', value); }
+  disabled: computed({
+    get(key, value) {
+      return false;
+    },
+    set(key, value) {
+      if (value !== undefined) { this.set('_isDisabled', value); }
 
-    return value ? get(this, 'disabledClass') : false;
+      return value ? get(this, 'disabledClass') : false;
+    }
   }),
 
   /**
@@ -356,7 +361,7 @@ var LinkView = EmberComponent.extend({
     @method _invoke
     @param {Event} event
   */
-  _invoke: function(event) {
+  _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
 
     if (this.preventDefault !== false) {
@@ -410,7 +415,7 @@ var LinkView = EmberComponent.extend({
     @param transition
     @param href
    */
-  _eagerUpdateUrl: function(transition, href) {
+  _eagerUpdateUrl(transition, href) {
     if (!transition.isActive || !transition.urlMethod) {
       // transition was aborted, already ran to completion,
       // or it has a null url-updated method.

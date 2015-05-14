@@ -15,7 +15,7 @@ function testMap(nameAndFunc) {
   variety = nameAndFunc[0];
 
   QUnit.module("Ember." + variety + " (forEach and get are implicitly tested)", {
-    setup: function() {
+    setup() {
       object = {};
       number = 42;
       string = "foo";
@@ -514,7 +514,7 @@ QUnit.module("MapWithDefault - default values");
 
 QUnit.test("Retrieving a value that has not been set returns and sets a default value", function() {
   var map = MapWithDefault.create({
-    defaultValue: function(key) {
+    defaultValue(key) {
       return [key];
     }
   });
@@ -532,14 +532,14 @@ QUnit.test("Map.prototype.constructor", function() {
 
 QUnit.test("MapWithDefault.prototype.constructor", function() {
   var map = new MapWithDefault({
-    defaultValue: function(key) { return key; }
+    defaultValue(key) { return key; }
   });
   equal(map.constructor, MapWithDefault);
 });
 
 QUnit.test("Copying a MapWithDefault copies the default value", function() {
   var map = MapWithDefault.create({
-    defaultValue: function(key) {
+    defaultValue(key) {
       return [key];
     }
   });
@@ -567,7 +567,7 @@ QUnit.test("Copying a MapWithDefault copies the default value", function() {
 });
 
 QUnit.module("OrderedSet", {
-  setup: function() {
+  setup() {
     object = {};
     number = 42;
     string = "foo";

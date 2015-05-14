@@ -24,7 +24,7 @@ var popstateFired = false;
 export default EmberObject.extend({
   implementation: 'history',
 
-  init: function() {
+  init() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, 'baseURL', jQuery('base').attr('href') || '');
 
@@ -36,7 +36,7 @@ export default EmberObject.extend({
     @private
     @method initState
   */
-  initState: function() {
+  initState() {
     var history = get(this, 'history') || window.history;
     set(this, 'history', history);
 
@@ -62,7 +62,7 @@ export default EmberObject.extend({
     @method getURL
     @return url {String}
   */
-  getURL: function() {
+  getURL() {
     var rootURL = get(this, 'rootURL');
     var location = get(this, 'location');
     var path = location.pathname;
@@ -87,7 +87,7 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL: function(path) {
+  setURL(path) {
     var state = this.getState();
     path = this.formatURL(path);
 
@@ -104,7 +104,7 @@ export default EmberObject.extend({
     @method replaceURL
     @param path {String}
   */
-  replaceURL: function(path) {
+  replaceURL(path) {
     var state = this.getState();
     path = this.formatURL(path);
 
@@ -123,7 +123,7 @@ export default EmberObject.extend({
     @method getState
     @return state {Object}
   */
-  getState: function() {
+  getState() {
     if (this.supportsHistory) {
       return get(this, 'history').state;
     }
@@ -138,7 +138,7 @@ export default EmberObject.extend({
    @method pushState
    @param path {String}
   */
-  pushState: function(path) {
+  pushState(path) {
     var state = { path: path };
 
     get(this, 'history').pushState(state, null, path);
@@ -156,7 +156,7 @@ export default EmberObject.extend({
    @method replaceState
    @param path {String}
   */
-  replaceState: function(path) {
+  replaceState(path) {
     var state = { path: path };
     get(this, 'history').replaceState(state, null, path);
 
@@ -174,7 +174,7 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL: function(callback) {
+  onUpdateURL(callback) {
     var guid = guidFor(this);
     var self = this;
 
@@ -196,7 +196,7 @@ export default EmberObject.extend({
     @param url {String}
     @return formatted url {String}
   */
-  formatURL: function(url) {
+  formatURL(url) {
     var rootURL = get(this, 'rootURL');
     var baseURL = get(this, 'baseURL');
 
@@ -216,7 +216,7 @@ export default EmberObject.extend({
     @private
     @method willDestroy
   */
-  willDestroy: function() {
+  willDestroy() {
     var guid = guidFor(this);
 
     jQuery(window).off('popstate.ember-location-'+guid);

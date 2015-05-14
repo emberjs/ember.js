@@ -13,7 +13,7 @@ var unsortedArray, sortedArrayController;
 QUnit.module("Ember.Sortable");
 
 QUnit.module("Ember.Sortable with content", {
-  setup: function() {
+  setup() {
     run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
@@ -25,7 +25,7 @@ QUnit.module("Ember.Sortable with content", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       sortedArrayController.set('content', null);
       sortedArrayController.destroy();
@@ -153,7 +153,7 @@ QUnit.test("changing sortProperties and sortAscending with setProperties, sortAs
 });
 
 QUnit.module("Ember.Sortable with content and sortProperties", {
-  setup: function() {
+  setup() {
     run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
@@ -166,7 +166,7 @@ QUnit.module("Ember.Sortable with content and sortProperties", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       sortedArrayController.destroy();
     });
@@ -256,7 +256,7 @@ QUnit.test("don't remove and insert if position didn't change", function() {
   var insertItemSortedCalled = false;
 
   sortedArrayController.reopen({
-    insertItemSorted: function(item) {
+    insertItemSorted(item) {
       insertItemSortedCalled = true;
       this._super(item);
     }
@@ -279,7 +279,7 @@ QUnit.test("sortProperties observers removed on content removal", function() {
 });
 
 QUnit.module("Ember.Sortable with sortProperties", {
-  setup: function() {
+  setup() {
     run(function() {
       sortedArrayController = ArrayController.create({
         sortProperties: ['name']
@@ -289,7 +289,7 @@ QUnit.module("Ember.Sortable with sortProperties", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       sortedArrayController.destroy();
     });
@@ -308,11 +308,11 @@ QUnit.test("you can set content later and it will be sorted", function() {
 });
 
 QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
-  setup: function() {
+  setup() {
     run(function() {
       sortedArrayController = ArrayController.create({
         sortProperties: ['name'],
-        sortFunction: function(v, w) {
+        sortFunction(v, w) {
           var lowerV = v.toLowerCase();
           var lowerW = w.toLowerCase();
 
@@ -332,7 +332,7 @@ QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       sortedArrayController.destroy();
     });
@@ -354,7 +354,7 @@ QUnit.test("Ember.Sortable with sortFunction on ArrayProxy should work like Arra
   run(function() {
     sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
       sortProperties: ['name'],
-      sortFunction: function(v, w) {
+      sortFunction(v, w) {
         var lowerV = v.toLowerCase();
         var lowerW = w.toLowerCase();
 

@@ -35,11 +35,11 @@ var SelectOption = View.extend({
 
   defaultTemplate: selectOptionDefaultTemplate,
 
-  init: function() {
+  init() {
     this.labelPathDidChange();
     this.valuePathDidChange();
 
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
   selected: computed(function() {
@@ -98,7 +98,7 @@ var SelectOptgroup = CollectionView.extend({
   Example:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     names: ["Yehuda", "Tom"]
   });
   ```
@@ -120,7 +120,7 @@ var SelectOptgroup = CollectionView.extend({
   `value` property:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedName: 'Tom',
     names: ["Yehuda", "Tom"]
   });
@@ -157,7 +157,7 @@ var SelectOptgroup = CollectionView.extend({
   element's text. Both paths must reference each object itself as `content`:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -185,7 +185,7 @@ var SelectOptgroup = CollectionView.extend({
   can be bound to a property on another object:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -228,7 +228,7 @@ var SelectOptgroup = CollectionView.extend({
   var yehuda = {firstName: "Yehuda", id: 1, bff4eva: 'tom'}
   var tom = {firstName: "Tom", id: 2, bff4eva: 'yehuda'};
 
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedPerson: tom,
     programmers: [ yehuda, tom ]
   });
@@ -262,7 +262,7 @@ var SelectOptgroup = CollectionView.extend({
   results in there being no `<option>` with a `selected` attribute:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedProgrammer: null,
     programmers: ["Yehuda", "Tom"]
   });
@@ -291,7 +291,7 @@ var SelectOptgroup = CollectionView.extend({
   with the `prompt` option:
 
   ```javascript
-  App.ApplicationController = Ember.ObjectController.extend({
+  App.ApplicationController = Ember.Controller.extend({
     selectedProgrammer: null,
     programmers: [ "Yehuda", "Tom" ]
   });
@@ -325,8 +325,17 @@ var Select = View.extend({
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: defaultTemplate,
-  attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
-                      'form', 'size'],
+  attributeBindings: [
+    'autofocus',
+    'autocomplete',
+    'disabled',
+    'form',
+    'multiple',
+    'name',
+    'required',
+    'size',
+    'tabindex'
+  ],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
@@ -407,11 +416,15 @@ var Select = View.extend({
     @type String
     @default null
   */
-  value: computed('_valuePath', 'selection', function(key, value) {
-    if (arguments.length === 2) { return value; }
-    var valuePath = get(this, '_valuePath');
-    return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
-  }),
+  value: computed({
+    get(key) {
+      var valuePath = get(this, '_valuePath');
+      return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
+    },
+    set(key, value) {
+      return value;
+    }
+  }).property('_valuePath', 'selection'),
 
   /**
     If given, a top-most dummy option will be rendered to serve as a user
@@ -490,7 +503,7 @@ var Select = View.extend({
   */
   optionView: SelectOption,
 
-  _change: function() {
+  _change() {
     if (get(this, 'multiple')) {
       this._changeMultiple();
     } else {
@@ -527,7 +540,7 @@ var Select = View.extend({
     }
   }),
 
-  _setDefaults: function() {
+  _setDefaults() {
     var selection = get(this, 'selection');
     var value = get(this, 'value');
 
@@ -538,7 +551,7 @@ var Select = View.extend({
     }
   },
 
-  _changeSingle: function() {
+  _changeSingle() {
     var selectedIndex = this.$()[0].selectedIndex;
     var content = get(this, 'content');
     var prompt = get(this, 'prompt');
@@ -553,7 +566,7 @@ var Select = View.extend({
     set(this, 'selection', content.objectAt(selectedIndex));
   },
 
-  _changeMultiple: function() {
+  _changeMultiple() {
     var options = this.$('option:selected');
     var prompt = get(this, 'prompt');
     var offset = prompt ? 1 : 0;
@@ -575,7 +588,7 @@ var Select = View.extend({
     }
   },
 
-  _selectionDidChangeSingle: function() {
+  _selectionDidChangeSingle() {
     var value = get(this, 'value');
     var self = this;
     if (value && value.then) {
@@ -590,7 +603,7 @@ var Select = View.extend({
     }
   },
 
-  _setSelectedIndex: function (selectionValue) {
+  _setSelectedIndex(selectionValue) {
     var el = get(this, 'element');
     var content = get(this, 'contentValues');
     if (!el) { return; }
@@ -618,7 +631,7 @@ var Select = View.extend({
     }
   }),
 
-  _selectionDidChangeMultiple: function() {
+  _selectionDidChangeMultiple() {
     var content = get(this, 'content');
     var selection = get(this, 'selection');
     var selectedIndexes = content ? indexesOf(content, selection) : [-1];
@@ -635,8 +648,8 @@ var Select = View.extend({
     }
   },
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this.on("didInsertElement", this, this._setDefaults);
     this.on("change", this, this._change);
   }

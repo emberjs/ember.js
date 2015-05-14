@@ -31,7 +31,7 @@ var TemplateTests, registry, container, lookup, warnings, originalWarn;
   file in which to test.
 */
 QUnit.module("ember-htmlbars: {{bind-attr}}", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -49,7 +49,7 @@ QUnit.module("ember-htmlbars: {{bind-attr}}", {
     };
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -218,7 +218,7 @@ QUnit.test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
 
   try {
     helpers['bind-attr'] = {
-      helperFunction: function() {
+      helperFunction() {
         equal(arguments[0], 'foo', 'First arg match');
         equal(arguments[1], 'bar', 'Second arg match');
 
@@ -259,7 +259,7 @@ QUnit.test("{{bindAttr}} can be used to bind attributes [DEPRECATED]", function(
 });
 
 QUnit.test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
-  var template = compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
+  var template = compile('{{#with view.content as |image|}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
 
   view = EmberView.create({
     template: template,
@@ -446,7 +446,7 @@ QUnit.test("should be able to bind classes to globals with {{bind-attr class}} (
 });
 
 QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   view = EmberView.create({
     template: compile('{{#each view.images}}<img {{bind-attr src=this}}>{{/each}}'),
@@ -462,7 +462,7 @@ QUnit.test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECA
 });
 
 QUnit.test("should be able to bind classes to 'this' in an {{#each}} block with {{bind-attr class}} [DEPRECATED]", function() {
-  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   view = EmberView.create({
     template: compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),
@@ -553,7 +553,7 @@ QUnit.test("property before didInsertElement", function() {
   view = EmberView.create({
     name: 'bob',
     template: compile('<div {{bind-attr alt=view.name}}></div>'),
-    didInsertElement: function() {
+    didInsertElement() {
       matchingElement = this.$('div[alt=bob]');
     }
   });

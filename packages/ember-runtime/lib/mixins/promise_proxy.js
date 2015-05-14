@@ -34,7 +34,7 @@ function tap(proxy, promise) {
 }
 
 /**
-  A low level mixin making ObjectProxy, ObjectController or ArrayController's promise aware.
+  A low level mixin making ObjectProxy, ObjectController or ArrayControllers promise-aware.
 
   ```javascript
   var ObjectPromiseController = Ember.ObjectController.extend(Ember.PromiseProxyMixin);
@@ -156,11 +156,12 @@ export default Mixin.create({
 
     @property promise
   */
-  promise: computed(function(key, promise) {
-    if (arguments.length === 2) {
-      return tap(this, promise);
-    } else {
+  promise: computed({
+    get() {
       throw new EmberError("PromiseProxy's promise must be set");
+    },
+    set(key, promise) {
+      return tap(this, promise);
     }
   }),
 
@@ -204,6 +205,6 @@ export default Mixin.create({
 function promiseAlias(name) {
   return function () {
     var promise = get(this, 'promise');
-    return promise[name].apply(promise, arguments);
+    return promise[name](...arguments);
   };
 }

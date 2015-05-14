@@ -33,14 +33,14 @@ import {
 
 var EachArray = EmberObject.extend(EmberArray, {
 
-  init: function(content, keyName, owner) {
-    this._super.apply(this, arguments);
+  init(content, keyName, owner) {
+    this._super(...arguments);
     this._keyName = keyName;
     this._owner   = owner;
     this._content = content;
   },
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     var item = this._content.objectAt(idx);
     return item && get(item, this._keyName);
   },
@@ -105,16 +105,11 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   This is the object instance returned when you get the `@each` property on an
   array. It uses the unknownProperty handler to automatically create
   EachArray instances for property names.
-
-  @private
-  @class EachProxy
-  @namespace Ember
-  @extends Ember.Object
 */
 var EachProxy = EmberObject.extend({
 
-  init: function(content) {
-    this._super.apply(this, arguments);
+  init(content) {
+    this._super(...arguments);
     this._content = content;
     content.addArrayObserver(this);
 
@@ -133,9 +128,8 @@ var EachProxy = EmberObject.extend({
     @param keyName {String}
     @param value {*}
   */
-  unknownProperty: function(keyName, value) {
-    var ret;
-    ret = new EachArray(this._content, keyName, this);
+  unknownProperty(keyName, value) {
+    var ret = new EachArray(this._content, keyName, this);
     defineProperty(this, keyName, null, ret);
     this.beginObservingContentKey(keyName);
     return ret;
@@ -145,7 +139,7 @@ var EachProxy = EmberObject.extend({
   // ARRAY CHANGES
   // Invokes whenever the content array itself changes.
 
-  arrayWillChange: function(content, idx, removedCnt, addedCnt) {
+  arrayWillChange(content, idx, removedCnt, addedCnt) {
     var keys = this._keys;
     var key, lim;
 
@@ -164,7 +158,7 @@ var EachProxy = EmberObject.extend({
     endPropertyChanges(this);
   },
 
-  arrayDidChange: function(content, idx, removedCnt, addedCnt) {
+  arrayDidChange(content, idx, removedCnt, addedCnt) {
     var keys = this._keys;
     var lim;
 
@@ -186,13 +180,13 @@ var EachProxy = EmberObject.extend({
   // LISTEN FOR NEW OBSERVERS AND OTHER EVENT LISTENERS
   // Start monitoring keys based on who is listening...
 
-  didAddListener: function(eventName) {
+  didAddListener(eventName) {
     if (IS_OBSERVER.test(eventName)) {
       this.beginObservingContentKey(eventName.slice(0, -7));
     }
   },
 
-  didRemoveListener: function(eventName) {
+  didRemoveListener(eventName) {
     if (IS_OBSERVER.test(eventName)) {
       this.stopObservingContentKey(eventName.slice(0, -7));
     }
@@ -202,7 +196,7 @@ var EachProxy = EmberObject.extend({
   // CONTENT KEY OBSERVING
   // Actual watch keys on the source content.
 
-  beginObservingContentKey: function(keyName) {
+  beginObservingContentKey(keyName) {
     var keys = this._keys;
     if (!keys) {
       keys = this._keys = {};
@@ -219,7 +213,7 @@ var EachProxy = EmberObject.extend({
     }
   },
 
-  stopObservingContentKey: function(keyName) {
+  stopObservingContentKey(keyName) {
     var keys = this._keys;
     if (keys && (keys[keyName]>0) && (--keys[keyName]<=0)) {
       var content = this._content;
@@ -229,11 +223,11 @@ var EachProxy = EmberObject.extend({
     }
   },
 
-  contentKeyWillChange: function(obj, keyName) {
+  contentKeyWillChange(obj, keyName) {
     propertyWillChange(this, keyName);
   },
 
-  contentKeyDidChange: function(obj, keyName) {
+  contentKeyDidChange(obj, keyName) {
     propertyDidChange(this, keyName);
   }
 });

@@ -15,7 +15,7 @@ function reverseHelper(value) {
 
 
 QUnit.module("Application Lifecycle - Helper Registration", {
-  teardown: function() {
+  teardown() {
     Ember.run(function() {
       if (App) {
         App.destroy();

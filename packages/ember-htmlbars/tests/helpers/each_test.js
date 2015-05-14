@@ -7,7 +7,7 @@ import _MetamorphView from "ember-views/views/metamorph_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import { Registry } from "ember-runtime/system/container";
 
@@ -75,8 +75,8 @@ function templateFor(templateString, useBlockParams) {
 var originalLookup = Ember.lookup;
 var lookup;
 
-QUnit.module("the scope changing #each helper [DEPRECATED]", {
-  setup: function() {
+QUnit.module("the #each helper [DEPRECATED]", {
+  setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     template = templateFor("{{#each view.people}}{{name}}{{/each}}");
@@ -106,10 +106,10 @@ QUnit.module("the scope changing #each helper [DEPRECATED]", {
 
     expectDeprecation(function() {
       runAppend(view);
-    }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+    }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -553,7 +553,7 @@ QUnit.test("it supports {{itemViewClass=}} via container", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name) {
+      lookupFactory(name) {
         equal(name, 'view:my-view');
         return MyView;
       }
@@ -591,7 +591,7 @@ QUnit.test("it supports {{itemViewClass=}} with in format", function() {
   runDestroy(view);
   view = EmberView.create({
     container: {
-      lookupFactory: function(name) {
+      lookupFactory(name) {
         return MyView;
       }
     },
@@ -670,7 +670,7 @@ QUnit.test("it supports {{emptyViewClass=}} via container", function() {
 
   view = EmberView.create({
     container: {
-      lookupFactory: function(name) {
+      lookupFactory(name) {
         equal(name, 'view:my-empty-view');
         return MyEmptyView;
       }
@@ -705,7 +705,7 @@ QUnit.test("it supports {{emptyViewClass=}} with in format", function() {
 
   view = EmberView.create({
     container: {
-      lookupFactory: function(name) {
+      lookupFactory(name) {
         return MyEmptyView;
       }
     },
@@ -769,7 +769,7 @@ QUnit.test("views inside #each preserve the new context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -784,7 +784,7 @@ QUnit.test("single-arg each defaults to current context [DEPRECATED]", function(
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -799,21 +799,21 @@ QUnit.test("single-arg each will iterate over controller if present [DEPRECATED]
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
   equal(view.$().text(), "AdamSteve");
 });
 
 function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
-    setup: function() {
+    setup() {
       registry = new Registry();
       container = registry.container();
 
       registry.register('view:default', _MetamorphView);
       registry.register('view:toplevel', EmberView.extend());
     },
-    teardown: function() {
+    teardown() {
       runDestroy(container);
       runDestroy(view);
       container = view = null;
@@ -889,7 +889,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1012,7 +1012,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
@@ -1027,36 +1027,34 @@ function testEachWithItem(moduleName, useBlockParams) {
 
       expectDeprecation(function() {
         runAppend(view);
-      }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead.');
+      }, 'Using the context switching form of {{each}} is deprecated. Please use the block param form (`{{#each bar as |foo|}}`) instead.');
 
       equal(view.$().text(), "AdamSteve");
     });
   }
 
   if (useBlockParams) {
-    if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
-      QUnit.test("the index is passed as the second parameter to #each blocks", function() {
-        expect(3);
+    QUnit.test("the index is passed as the second parameter to #each blocks", function() {
+      expect(3);
 
-        var adam = { name: "Adam" };
-        view = EmberView.create({
-          controller: A([adam, { name: "Steve" }]),
-          template: templateFor('{{#each this as |person index|}}{{index}}. {{person.name}}{{/each}}', true)
-        });
-        runAppend(view);
-        equal(view.$().text(), "0. Adam1. Steve");
-
-        run(function() {
-          view.get('controller').unshiftObject({ name: "Bob" });
-        });
-        equal(view.$().text(), "0. Bob1. Adam2. Steve");
-
-        run(function() {
-          view.get('controller').removeObject(adam);
-        });
-        equal(view.$().text(), "0. Bob1. Steve");
+      var adam = { name: "Adam" };
+      view = EmberView.create({
+        controller: A([adam, { name: "Steve" }]),
+        template: templateFor('{{#each this as |person index|}}{{index}}. {{person.name}}{{/each}}', true)
       });
-    }
+      runAppend(view);
+      equal(view.$().text(), "0. Adam1. Steve");
+
+      run(function() {
+        view.get('controller').unshiftObject({ name: "Bob" });
+      });
+      equal(view.$().text(), "0. Bob1. Adam2. Steve");
+
+      run(function() {
+        view.get('controller').removeObject(adam);
+      });
+      equal(view.$().text(), "0. Bob1. Steve");
+    });
   }
 }
 

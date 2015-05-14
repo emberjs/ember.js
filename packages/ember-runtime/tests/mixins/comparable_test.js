@@ -7,11 +7,11 @@ var Rectangle = EmberObject.extend(Comparable, {
   length: 0,
   width: 0,
 
-  area: function() {
+  area() {
     return get(this, 'length') * get(this, 'width');
   },
 
-  compare: function(a, b) {
+  compare(a, b) {
     return compare(a.area(), b.area());
   }
 
@@ -21,12 +21,12 @@ var r1, r2;
 
 QUnit.module("Comparable", {
 
-  setup: function() {
+  setup() {
     r1 = Rectangle.create({ length: 6, width: 12 });
     r2 = Rectangle.create({ length: 6, width: 13 });
   },
 
-  teardown: function() {
+  teardown() {
   }
 
 });

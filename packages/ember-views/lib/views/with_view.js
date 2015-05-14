@@ -10,8 +10,8 @@ import run from 'ember-metal/run_loop';
 import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
 
     var self = this;
 
@@ -46,11 +46,11 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     }
   },
 
-  normalizedValue: function() {
+  normalizedValue() {
     return this.withValue.value();
   },
 
-  render: function(buffer) {
+  render(buffer) {
     var withValue = this.normalizedValue();
     this._lastNormalizedValue = withValue;
 
@@ -62,8 +62,8 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     renderView(this, buffer, template);
   },
 
-  willDestroy: function() {
-    this._super.apply(this, arguments);
+  willDestroy() {
+    this._super(...arguments);
 
     if (this._generatedController) {
       this._generatedController.destroy();

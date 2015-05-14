@@ -11,14 +11,14 @@ import {
 } from "ember-metal/streams/utils";
 import run from "ember-metal/run_loop";
 
-function AttrNode(attrName, attrValue) {
+export default function AttrNode(attrName, attrValue) {
   this.init(attrName, attrValue);
 }
 
 export var styleWarning = 'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
                           'please ensure that values being bound are properly escaped. For more information, ' +
                           'including how to disable this warning, see ' +
-                          'http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes.';
+                          'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
 
 AttrNode.prototype.init = function init(attrName, simpleAttrValue) {
   this.isAttrNode = true;
@@ -97,12 +97,12 @@ AttrNode.prototype._deprecateEscapedStyle = function AttrNode_deprecateEscapedSt
   );
 };
 
-AttrNode.prototype.rerender = function render() {
+AttrNode.prototype.rerender = function AttrNode_render() {
   this.isDirty = true;
   run.schedule('render', this, this.renderIfDirty);
 };
 
-AttrNode.prototype.destroy = function render() {
+AttrNode.prototype.destroy = function AttrNode_destroy() {
   this.isDestroying = true;
   this.isDirty = false;
 
@@ -121,5 +121,3 @@ AttrNode.prototype._notifyBecameHidden = function render() {
 
 AttrNode.prototype._notifyBecameVisible = function render() {
 };
-
-export default AttrNode;

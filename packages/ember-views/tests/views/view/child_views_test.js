@@ -5,20 +5,20 @@ import EmberView from "ember-views/views/view";
 var parentView, childView;
 
 QUnit.module('tests/views/view/child_views_tests.js', {
-  setup: function() {
+  setup() {
     parentView = EmberView.create({
-      render: function(buffer) {
+      render(buffer) {
         buffer.push('Em');
         this.appendChild(childView);
       }
     });
 
     childView = EmberView.create({
-      template: function() { return 'ber'; }
+      template() { return 'ber'; }
     });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       parentView.destroy();
       childView.destroy();
@@ -41,22 +41,22 @@ QUnit.test("should render an inserted child view when the child is inserted befo
 QUnit.test("should not duplicate childViews when rerendering", function() {
 
   var Inner = EmberView.extend({
-    template: function() { return ''; }
+    template() { return ''; }
   });
 
   var Inner2 = EmberView.extend({
-    template: function() { return ''; }
+    template() { return ''; }
   });
 
   var Middle = EmberView.extend({
-    render: function(buffer) {
+    render(buffer) {
       this.appendChild(Inner);
       this.appendChild(Inner2);
     }
   });
 
   var outer = EmberView.create({
-    render: function(buffer) {
+    render(buffer) {
       this.middle = this.appendChild(Middle);
     }
   });

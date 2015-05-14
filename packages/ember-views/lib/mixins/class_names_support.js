@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 import { A as emberA } from "ember-runtime/system/native_array";
@@ -17,11 +21,15 @@ import {
 
 var EMPTY_ARRAY = [];
 
+/**
+  @class ClassNamesSupport
+  @namespace Ember
+*/
 var ClassNamesSupport = Mixin.create({
   concatenatedProperties: ['classNames', 'classNameBindings'],
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
@@ -93,7 +101,7 @@ var ClassNamesSupport = Mixin.create({
     @method _applyClassNameBindings
     @private
   */
-  _applyClassNameBindings: function() {
+  _applyClassNameBindings() {
     var classBindings = this.classNameBindings;
 
     if (!classBindings || !classBindings.length) { return; }

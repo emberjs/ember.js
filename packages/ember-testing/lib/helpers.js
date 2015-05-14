@@ -57,13 +57,13 @@ function focus(el) {
 
 function visit(app, url) {
   var router = app.__container__.lookup('router:main');
-  router.location.setURL(url);
 
   if (app._readinessDeferrals > 0) {
     router['initialURL'] = url;
     run(app, 'advanceReadiness');
     delete router['initialURL'];
   } else {
+    router.location.setURL(url);
     run(app.__deprecatedInstance__, 'handleURL', url);
   }
 

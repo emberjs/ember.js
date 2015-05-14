@@ -92,7 +92,7 @@ function HandlebarsCompatibleHelper(fn) {
 }
 
 HandlebarsCompatibleHelper.prototype = {
-  preprocessArguments: function() { }
+  preprocessArguments() { }
 };
 
 export function registerHandlebarsCompatibleHelper(name, value) {

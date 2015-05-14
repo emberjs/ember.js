@@ -7,7 +7,7 @@ var view;
 var compile = EmberHandlebars.compile;
 
 QUnit.module("ember-htmlbars: tagless views should be able to add/remove child views", {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

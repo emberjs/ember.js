@@ -23,7 +23,6 @@ import {
 */
 
 var metaFor = meta;
-var a_slice = [].slice;
 
 function UNDEFINED() { }
 
@@ -109,7 +108,6 @@ function UNDEFINED() { }
 
   @class ComputedProperty
   @namespace Ember
-  @extends Ember.Descriptor
   @constructor
 */
 function ComputedProperty(config, opts) {
@@ -119,6 +117,9 @@ function ComputedProperty(config, opts) {
       config.__ember_arity = config.length;
       this._getter = config;
       if (config.__ember_arity > 1) {
+        Ember.deprecate("Using the same function as getter and setter is deprecated.", false, {
+          url: "http://emberjs.com/deprecations/v1.x/#toc_computed-properties-with-a-shared-getter-and-setter"
+        });
         this._setter = config;
       }
     } else {
@@ -143,7 +144,7 @@ function ComputedProperty(config, opts) {
   Ember.deprecate("Passing opts.cacheable to the CP constructor is deprecated. Invoke `volatile()` on the CP instead.", !opts || !opts.hasOwnProperty('cacheable'));
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;   // TODO: Set always to `true` once this deprecation is gone.
   this._dependentKeys = opts && opts.dependentKeys;
-  Ember.deprecate("Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.", !opts || !opts.hasOwnProperty('readOnly'));
+  Ember.deprecate("Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. You can invoke `readOnly()` on the CP to change this.", !opts || !opts.hasOwnProperty('readOnly'));
   this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false; // TODO: Set always to `false` once this deprecation is gone.
 }
 
@@ -217,6 +218,8 @@ ComputedPropertyPrototype.volatile = function() {
 ComputedPropertyPrototype.readOnly = function(readOnly) {
   Ember.deprecate('Passing arguments to ComputedProperty.readOnly() is deprecated.', arguments.length === 0);
   this._readOnly = readOnly === undefined || !!readOnly; // Force to true once this deprecation is gone
+  Ember.assert("Computed properties that define a setter using the new syntax cannot be read-only", !(this._readOnly && this._setter && this._setter !== this._getter));
+
   return this;
 };
 
@@ -250,7 +253,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 ComputedPropertyPrototype.property = function() {
   var args;
 
-  var addArg = function (property) {
+  var addArg = function(property) {
     args.push(property);
   };
 
@@ -448,7 +451,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   var cachedValue, ret;
 
   if (this._readOnly) {
-    throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
+    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
   if (cacheable && cache && cache[keyName] !== undefined) {
@@ -576,7 +579,7 @@ function computed(func) {
   var args;
 
   if (arguments.length > 1) {
-    args = a_slice.call(arguments);
+    args = [].slice.call(arguments);
     func = args.pop();
   }
 

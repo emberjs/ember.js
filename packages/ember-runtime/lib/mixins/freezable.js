@@ -81,7 +81,7 @@ export var Freezable = Mixin.create({
     @method freeze
     @return {Object} receiver
   */
-  freeze: function() {
+  freeze() {
     if (get(this, 'isFrozen')) {
       return this;
     }

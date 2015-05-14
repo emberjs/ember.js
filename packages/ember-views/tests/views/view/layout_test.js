@@ -6,13 +6,13 @@ import EmberView from "ember-views/views/view";
 var registry, container, view;
 
 QUnit.module("EmberView - Layout Functionality", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
       container.destroy();
@@ -24,7 +24,7 @@ QUnit.module("EmberView - Layout Functionality", {
 QUnit.test("Layout views return throw if their layout cannot be found", function() {
   view = EmberView.create({
     layoutName: 'cantBeFound',
-    container: { lookup: function() { } }
+    container: { lookup() { } }
   });
 
   expectAssertion(function() {
@@ -53,6 +53,59 @@ QUnit.test("should call the function of the associated layout", function() {
   equal(layoutCalled, 1, "layout is called when layout is present");
 });
 
+QUnit.test("changing layoutName after setting layoutName continous to work", function() {
+  var layoutCalled = 0;
+  var otherLayoutCalled = 0;
+
+  registry.register('template:layout', function() { layoutCalled++; });
+  registry.register('template:other-layout', function() { otherLayoutCalled++; });
+
+  view = EmberView.create({
+    container: container,
+    layoutName: 'layout'
+  });
+
+  run(view, 'createElement');
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 0, "otherLayout is not yet called");
+
+  run(() => {
+    view.set('layoutName', 'other-layout');
+    view.rerender();
+  });
+
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 1, "otherLayoutis called when layoutName changes, and explicit rerender occurs");
+});
+
+QUnit.test("changing layoutName after setting layout CP continous to work", function() {
+  var layoutCalled = 0;
+  var otherLayoutCalled = 0;
+  function otherLayout() {
+    otherLayoutCalled++;
+  }
+
+  registry.register('template:other-layout', otherLayout);
+
+  view = EmberView.create({
+    container: container,
+    layout() {
+      layoutCalled++;
+    }
+  });
+
+  run(view, 'createElement');
+  run(() => {
+    view.set('layoutName', 'other-layout');
+    view.rerender();
+  });
+
+  equal(view.get('layout'), otherLayout);
+
+  equal(layoutCalled, 1, "layout is called when layout is present");
+  equal(otherLayoutCalled, 1, "otherLayoutis called when layoutName changes, and explicit rerender occurs");
+});
+
 QUnit.test("should call the function of the associated template with itself as the context", function() {
   registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
@@ -78,7 +131,7 @@ QUnit.test("should fall back to defaultTemplate if neither template nor template
   var View;
 
   View = EmberView.extend({
-    defaultLayout: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    defaultLayout(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create({
@@ -98,8 +151,8 @@ QUnit.test("should not use defaultLayout if layout is provided", function() {
   var View;
 
   View = EmberView.extend({
-    layout:  function() { return "foo"; },
-    defaultLayout: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    layout() { return "foo"; },
+    defaultLayout(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
@@ -113,11 +166,11 @@ QUnit.test("should not use defaultLayout if layout is provided", function() {
 
 QUnit.test("the template property is available to the layout template", function() {
   view = EmberView.create({
-    template: function(context, options) {
+    template(context, options) {
       options.data.buffer.push(" derp");
     },
 
-    layout: function(context, options) {
+    layout(context, options) {
       options.data.buffer.push("Herp");
       get(options.data.view, 'template')(context, options);
     }

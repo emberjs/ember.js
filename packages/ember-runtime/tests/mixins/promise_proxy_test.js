@@ -3,8 +3,8 @@ import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
+import EmberRSVP from "ember-runtime/ext/rsvp";
 import {
-  default as EmberRSVP,
   onerrorDefault
 } from "ember-runtime/ext/rsvp";
 import * as RSVP from 'rsvp';
@@ -16,7 +16,7 @@ QUnit.test("present on ember namespace", function() {
 });
 
 QUnit.module("Ember.PromiseProxy - ObjectProxy", {
-  setup: function() {
+  setup() {
     ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
   }
 });

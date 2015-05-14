@@ -9,7 +9,6 @@ import create from "ember-metal/platform/create";
 
   @class InjectedProperty
   @namespace Ember
-  @extends Ember.Descriptor
   @constructor
   @param {String} type The container type the property will lookup
   @param {String} name (optional) The name the property will lookup, defaults
@@ -27,9 +26,7 @@ function injectedPropertyGet(keyName) {
   var possibleDesc = this[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-  Ember.assert("Attempting to lookup an injected property on an object " +
-               "without a container, ensure that the object was " +
-               "instantiated via a container.", this.container);
+  Ember.assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
 
   return this.container.lookup(desc.type + ':' + (desc.name || keyName));
 }

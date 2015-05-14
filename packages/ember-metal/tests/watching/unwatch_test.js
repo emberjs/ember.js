@@ -11,7 +11,7 @@ import { set } from 'ember-metal/property_set';
 var willCount, didCount;
 
 QUnit.module('unwatch', {
-  setup: function() {
+  setup() {
     willCount = didCount = 0;
   }
 });
@@ -28,12 +28,14 @@ function addListeners(obj, keyPath) {
 testBoth('unwatching a computed property - regular get/set', function(get, set) {
 
   var obj = {};
-  defineProperty(obj, 'foo', computed(function(keyName, value) {
-    if (value !== undefined) {
+  defineProperty(obj, 'foo', computed({
+    get: function() {
+      return this.__foo;
+    },
+    set: function(keyName, value) {
       this.__foo = value;
+      return this.__foo;
     }
-
-    return this.__foo;
   }));
   addListeners(obj, 'foo');
 

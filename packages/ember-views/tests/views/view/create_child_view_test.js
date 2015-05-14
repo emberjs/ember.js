@@ -5,7 +5,7 @@ import EmberView from "ember-views/views/view";
 var view, myViewClass, newView, container;
 
 QUnit.module("EmberView#createChildView", {
-  setup: function() {
+  setup() {
     container = { };
 
     view = EmberView.create({
@@ -15,7 +15,7 @@ QUnit.module("EmberView#createChildView", {
     myViewClass = EmberView.extend({ isMyView: true, foo: 'bar' });
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
       if (newView) { newView.destroy(); }

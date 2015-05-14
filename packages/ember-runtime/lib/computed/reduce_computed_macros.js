@@ -38,11 +38,11 @@ export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: 0,
 
-    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
+    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue + item;
     },
 
-    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
+    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       return accumulatedValue - item;
     }
   });
@@ -85,11 +85,11 @@ export function max(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: -Infinity,
 
-    addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       return Math.max(accumulatedValue, item);
     },
 
-    removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       if (item < accumulatedValue) {
         return accumulatedValue;
       }
@@ -134,11 +134,11 @@ export function min(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: Infinity,
 
-    addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       return Math.min(accumulatedValue, item);
     },
 
-    removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
       if (item > accumulatedValue) {
         return accumulatedValue;
       }
@@ -181,12 +181,12 @@ export function min(dependentKey) {
 */
 export function map(dependentKey, callback) {
   var options = {
-    addedItem: function(array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item, changeMeta.index);
       array.insertAt(changeMeta.index, mapped);
       return array;
     },
-    removedItem: function(array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       array.removeAt(changeMeta.index, 1);
       return array;
     }
@@ -276,11 +276,11 @@ export var mapProperty = mapBy;
 */
 export function filter(dependentKey, callback) {
   var options = {
-    initialize: function (array, changeMeta, instanceMeta) {
+    initialize(array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new SubArray();
     },
 
-    addedItem: function (array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var match = !!callback.call(this, item, changeMeta.index, changeMeta.arrayChanged);
       var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
@@ -291,7 +291,7 @@ export function filter(dependentKey, callback) {
       return array;
     },
 
-    removedItem: function(array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       var filterIndex = instanceMeta.filteredArrayIndexes.removeItem(changeMeta.index);
 
       if (filterIndex > -1) {
@@ -390,11 +390,11 @@ export function uniq() {
   var args = a_slice.call(arguments);
 
   args.push({
-    initialize: function(array, changeMeta, instanceMeta) {
+    initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
 
-    addedItem: function(array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var guid = guidFor(item);
 
       if (!instanceMeta.itemCounts[guid]) {
@@ -406,7 +406,7 @@ export function uniq() {
       return array;
     },
 
-    removedItem: function(array, item, _, instanceMeta) {
+    removedItem(array, item, _, instanceMeta) {
       var guid = guidFor(item);
       var itemCounts = instanceMeta.itemCounts;
 
@@ -458,11 +458,11 @@ export function intersect() {
   var args = a_slice.call(arguments);
 
   args.push({
-    initialize: function (array, changeMeta, instanceMeta) {
+    initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
 
-    addedItem: function(array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var itemGuid = guidFor(item);
       var dependentGuid = guidFor(changeMeta.arrayChanged);
       var numberOfDependentArrays = changeMeta.property._dependentKeys.length;
@@ -484,7 +484,7 @@ export function intersect() {
       return array;
     },
 
-    removedItem: function(array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       var itemGuid = guidFor(item);
       var dependentGuid = guidFor(changeMeta.arrayChanged);
       var numberOfArraysItemAppearsIn;
@@ -549,7 +549,7 @@ export function setDiff(setAProperty, setBProperty) {
   }
 
   return arrayComputed(setAProperty, setBProperty, {
-    addedItem: function (array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var setA = get(this, setAProperty);
       var setB = get(this, setBProperty);
 
@@ -564,7 +564,7 @@ export function setDiff(setAProperty, setBProperty) {
       return array;
     },
 
-    removedItem: function (array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       var setA = get(this, setAProperty);
       var setB = get(this, setBProperty);
 
@@ -700,7 +700,7 @@ export function sort(itemsKey, sortDefinition) {
 
 function customSort(itemsKey, comparator) {
   return arrayComputed(itemsKey, {
-    initialize: function (array, changeMeta, instanceMeta) {
+    initialize(array, changeMeta, instanceMeta) {
       instanceMeta.order = comparator;
       instanceMeta.binarySearch = binarySearch;
       instanceMeta.waitingInsertions = [];
@@ -719,17 +719,17 @@ function customSort(itemsKey, comparator) {
       };
     },
 
-    addedItem: function (array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       instanceMeta.insertLater(item);
       return array;
     },
 
-    removedItem: function (array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       array.removeObject(item);
       return array;
     },
 
-    flushedChanges: function(array, instanceMeta) {
+    flushedChanges(array, instanceMeta) {
       instanceMeta.insertWaiting();
     }
   });
@@ -737,7 +737,7 @@ function customSort(itemsKey, comparator) {
 
 function propertySort(itemsKey, sortPropertiesKey) {
   return arrayComputed(itemsKey, {
-    initialize: function (array, changeMeta, instanceMeta) {
+    initialize(array, changeMeta, instanceMeta) {
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey);
         var sortProperties = instanceMeta.sortProperties = [];
@@ -763,7 +763,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
           changeMeta.property.itemPropertyKey(itemsKey, sortProperty);
         });
 
-        sortPropertyDefinitions.addObserver('@each', this, updateSortPropertiesOnce);
+        this.addObserver(sortPropertiesKey + '.@each', this, updateSortPropertiesOnce);
       }
 
       function updateSortPropertiesOnce() {
@@ -801,13 +801,13 @@ function propertySort(itemsKey, sortPropertiesKey) {
       setupKeyCache(instanceMeta);
     },
 
-    addedItem: function (array, item, changeMeta, instanceMeta) {
+    addedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
       array.insertAt(index, item);
       return array;
     },
 
-    removedItem: function (array, item, changeMeta, instanceMeta) {
+    removedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
       array.removeAt(index);
       instanceMeta.dropKeyFor(item);

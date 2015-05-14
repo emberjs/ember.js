@@ -12,10 +12,10 @@ if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
 
 if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   QUnit.module("Ember.Application instance initializers", {
-    setup: function() {
+    setup() {
     },
 
-    teardown: function() {
+    teardown() {
       if (app) {
         run(function() { app.destroy(); });
       }
@@ -44,7 +44,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
     MyApplication.instanceInitializer({
       name: 'initializer',
-      initialize: function(instance) {
+      initialize(instance) {
         ok(instance instanceof ApplicationInstance, "initialize is passed an application instance");
       }
     });
@@ -63,7 +63,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     MyApplication.instanceInitializer({
       name: 'fourth',
       after: 'third',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('fourth');
       }
     });
@@ -72,7 +72,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       name: 'second',
       after: 'first',
       before: 'third',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('second');
       }
     });
@@ -81,7 +81,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       name: 'fifth',
       after: 'fourth',
       before: 'sixth',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('fifth');
       }
     });
@@ -89,21 +89,21 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     MyApplication.instanceInitializer({
       name: 'first',
       before: 'second',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('first');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'third',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('third');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'sixth',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('sixth');
       }
     });
@@ -125,7 +125,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 
     MyApplication.instanceInitializer({
       name: 'third',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('third');
       }
     });
@@ -134,7 +134,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       name: 'second',
       after: 'first',
       before: ['third', 'fourth'],
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('second');
       }
     });
@@ -142,7 +142,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     MyApplication.instanceInitializer({
       name: 'fourth',
       after: ['second', 'third'],
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('fourth');
       }
     });
@@ -151,7 +151,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       name: 'fifth',
       after: 'fourth',
       before: 'sixth',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('fifth');
       }
     });
@@ -159,14 +159,14 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     MyApplication.instanceInitializer({
       name: 'first',
       before: ['second'],
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('first');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'sixth',
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('sixth');
       }
     });
@@ -186,34 +186,34 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var a = {
       name: "a",
       before: "b",
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('a');
       }
     };
     var b = {
       name: "b",
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('b');
       }
     };
     var c = {
       name: "c",
       after: "b",
-      initialize: function(registry) {
+      initialize(registry) {
         order.push('c');
       }
     };
     var afterB = {
       name: "after b",
       after: "b",
-      initialize: function(registry) {
+      initialize(registry) {
         order.push("after b");
       }
     };
     var afterC = {
       name: "after c",
       after: "c",
-      initialize: function(registry) {
+      initialize(registry) {
         order.push("after c");
       }
     };
@@ -243,14 +243,14 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var FirstApp = Application.extend();
     FirstApp.instanceInitializer({
       name: 'first',
-      initialize: function(registry) {
+      initialize(registry) {
         firstInitializerRunCount++;
       }
     });
     var SecondApp = Application.extend();
     SecondApp.instanceInitializer({
       name: 'second',
-      initialize: function(registry) {
+      initialize(registry) {
         secondInitializerRunCount++;
       }
     });
@@ -279,7 +279,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var FirstApp = Application.extend();
     FirstApp.instanceInitializer({
       name: 'first',
-      initialize: function(registry) {
+      initialize(registry) {
         firstInitializerRunCount++;
       }
     });
@@ -287,7 +287,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var SecondApp = FirstApp.extend();
     SecondApp.instanceInitializer({
       name: 'second',
-      initialize: function(registry) {
+      initialize(registry) {
         secondInitializerRunCount++;
       }
     });
@@ -317,13 +317,13 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     var FirstApp = Application.extend();
     FirstApp.instanceInitializer({
       name: 'shouldNotCollide',
-      initialize: function(registry) {}
+      initialize(registry) {}
     });
 
     var SecondApp = Application.extend();
     SecondApp.instanceInitializer({
       name: 'shouldNotCollide',
-      initialize: function(registry) {}
+      initialize(registry) {}
     });
   });
 
@@ -336,7 +336,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       MyApplication.instanceInitializer({
         name: 'coolBabeInitializer',
         myProperty: 'coolBabe',
-        initialize: function(registry, application) {
+        initialize(registry, application) {
           equal(this.myProperty, 'coolBabe', 'should have access to its own context');
         }
       });

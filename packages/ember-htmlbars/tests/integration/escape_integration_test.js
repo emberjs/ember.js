@@ -9,7 +9,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view;
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
 
     view = null;

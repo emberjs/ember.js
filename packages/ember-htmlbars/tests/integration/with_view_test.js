@@ -13,7 +13,7 @@ var view, registry, container;
 var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
@@ -21,7 +21,7 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
     registry.register('view:toplevel', EmberView.extend());
   },
 
-  teardown: function() {
+  teardown() {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
@@ -43,7 +43,7 @@ QUnit.test('View should update when the property used with the #with helper chan
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$('#first').text(), 'bam', 'precond - view renders Handlebars template');
 
@@ -74,7 +74,7 @@ QUnit.test('should expose a view keyword [DEPRECATED]', function() {
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(view.$().text(), 'barbang', 'renders values from view and child view');
 });
@@ -97,14 +97,14 @@ QUnit.test('bindings can be `this`, in which case they *are* the current context
 
   expectDeprecation(function() {
     runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
 QUnit.test('child views can be inserted inside a bind block', function() {
   registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
-  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
+  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as |thing|}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
   registry.register('template:other', compile('cruel'));
 
   var context = {
@@ -143,7 +143,7 @@ QUnit.test('child views can be inserted inside a bind block', function() {
 });
 
 QUnit.test('views render their template in the context of the parent view\'s context', function() {
-  registry.register('template:parent', compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with content as |person|}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -163,7 +163,7 @@ QUnit.test('views render their template in the context of the parent view\'s con
 });
 
 QUnit.test('views make a view keyword available that allows template to reference view context', function() {
-  registry.register('template:parent', compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  registry.register('template:parent', compile('<h1>{{#with view.content as |person|}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,

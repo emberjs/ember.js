@@ -2,9 +2,9 @@
 
 import Controller from "ember-runtime/controllers/controller";
 import Service from "ember-runtime/system/service";
+import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import {
-  default as ObjectController,
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
@@ -19,7 +19,7 @@ QUnit.test("Action can be handled by a function on actions object", function() {
   expect(1);
   var TestController = Controller.extend({
     actions: {
-      poke: function() {
+      poke() {
         ok(true, 'poked');
       }
     }
@@ -48,7 +48,7 @@ QUnit.test("When `_actions` is provided, `actions` is left alone", function() {
   var TestController = Controller.extend({
     actions: ['foo', 'bar'],
     _actions: {
-      poke: function() {
+      poke() {
         ok(true, 'poked');
       }
     }
@@ -66,7 +66,7 @@ QUnit.test("Actions object doesn't shadow a proxied object's 'actions' property"
       actions: 'foo'
     },
     actions: {
-      poke: function() {
+      poke() {
         console.log('ouch');
       }
     }
@@ -79,7 +79,7 @@ QUnit.test("A handled action can be bubbled to the target for continued processi
   expect(2);
   var TestController = Controller.extend({
     actions: {
-      poke: function() {
+      poke() {
         ok(true, 'poked 1');
         return true;
       }
@@ -89,7 +89,7 @@ QUnit.test("A handled action can be bubbled to the target for continued processi
   var controller = TestController.create({
     target: Controller.extend({
       actions: {
-        poke: function() {
+        poke() {
           ok(true, 'poked 2');
         }
       }
@@ -103,10 +103,10 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var SuperController = Controller.extend({
     actions: {
-      foo: function() {
+      foo() {
         ok(true, 'foo');
       },
-      bar: function(msg) {
+      bar(msg) {
         equal(msg, "HELLO");
       }
     }
@@ -114,7 +114,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var BarControllerMixin = Mixin.create({
     actions: {
-      bar: function(msg) {
+      bar(msg) {
         equal(msg, "HELLO");
         this._super(msg);
       }
@@ -123,7 +123,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
 
   var IndexController = SuperController.extend(BarControllerMixin, {
     actions: {
-      baz: function() {
+      baz() {
         ok(true, 'baz');
       }
     }

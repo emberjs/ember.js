@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import {
   Mixin,
   observer
@@ -7,6 +11,10 @@ import run from "ember-metal/run_loop";
 
 function K() { return this; }
 
+/**
+  @class VisibilitySupport
+  @namespace Ember
+*/
 var VisibilitySupport = Mixin.create({
   /**
     If `false`, the view will appear hidden in DOM.
@@ -32,7 +40,7 @@ var VisibilitySupport = Mixin.create({
     run.scheduleOnce('render', this, this._toggleVisibility);
   }),
 
-  _toggleVisibility: function() {
+  _toggleVisibility() {
     var $el = this.$();
     var isVisible = get(this, 'isVisible');
 
@@ -55,7 +63,7 @@ var VisibilitySupport = Mixin.create({
     }
   },
 
-  _notifyBecameVisible: function() {
+  _notifyBecameVisible() {
     this.trigger('becameVisible');
 
     this.forEachChildView(function(view) {
@@ -67,7 +75,7 @@ var VisibilitySupport = Mixin.create({
     });
   },
 
-  _notifyBecameHidden: function() {
+  _notifyBecameHidden() {
     this.trigger('becameHidden');
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
@@ -78,7 +86,7 @@ var VisibilitySupport = Mixin.create({
     });
   },
 
-  _isAncestorHidden: function() {
+  _isAncestorHidden() {
     var parent = get(this, 'parentView');
 
     while (parent) {

@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import { Mixin } from "ember-metal/mixin";
 import AttrNode from "ember-views/attr_nodes/attr_node";
 import { defineProperty } from "ember-metal/properties";
@@ -7,6 +11,10 @@ import { set } from "ember-metal/property_set";
 
 var EMPTY_ARRAY = [];
 
+/**
+  @class AttributeBindingsSupport
+  @namespace Ember
+*/
 var AttributeBindingsSupport = Mixin.create({
   concatenatedProperties: ['attributeBindings'],
 
@@ -51,7 +59,7 @@ var AttributeBindingsSupport = Mixin.create({
     @param {Array} attributeBindings
     @private
   */
-  _applyAttributeBindings: function(buffer) {
+  _applyAttributeBindings(buffer) {
     var attributeBindings = this.attributeBindings;
 
     if (!attributeBindings || !attributeBindings.length) { return; }
@@ -102,7 +110,7 @@ var AttributeBindingsSupport = Mixin.create({
   */
   setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
 
-  _setUnknownProperty: function(key, value) {
+  _setUnknownProperty(key, value) {
     var attrName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
 
     defineProperty(this, key);

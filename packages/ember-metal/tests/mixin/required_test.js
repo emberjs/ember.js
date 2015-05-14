@@ -8,11 +8,13 @@ import { get } from 'ember-metal/property_get';
 var PartialMixin, FinalMixin, obj;
 
 QUnit.module('Module.required', {
-  setup: function() {
-    PartialMixin = Mixin.create({
-      foo: required(),
-      bar: 'BAR'
-    });
+  setup() {
+    expectDeprecation(function() {
+      PartialMixin = Mixin.create({
+        foo: required(),
+        bar: 'BAR'
+      });
+    }, "Ember.required is deprecated as its behavior is inconsistent and unreliable.");
 
     FinalMixin = Mixin.create({
       foo: 'FOO'
@@ -21,7 +23,7 @@ QUnit.module('Module.required', {
     obj = {};
   },
 
-  teardown: function() {
+  teardown() {
     PartialMixin = FinalMixin = obj = null;
   }
 });

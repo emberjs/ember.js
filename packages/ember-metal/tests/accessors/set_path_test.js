@@ -42,7 +42,7 @@ QUnit.module('set with path', {
 });
 
 QUnit.test('[Foo, bar] -> Foo.bar', function() {
-  Ember.lookup.Foo = { toString: function() { return 'Foo'; } }; // Behave like an Ember.Namespace
+  Ember.lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
 
   set(Ember.lookup.Foo, 'bar', 'baz');
   equal(get(Ember.lookup.Foo, 'bar'), 'baz');
@@ -91,12 +91,9 @@ QUnit.module("set with path - deprecated", {
 });
 
 QUnit.test('[null, bla] gives a proper exception message', function() {
-  var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
-  try {
+  expectAssertion(function() {
     set(null, 'bla', "BAM");
-  } catch(ex) {
-    equal(ex.message, exceptionMessage);
-  }
+  }, /You need to provide an object and key to `set`/);
 });
 
 QUnit.test('[obj, bla.bla] gives a proper exception message', function() {

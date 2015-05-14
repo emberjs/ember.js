@@ -9,7 +9,7 @@ import environment from "ember-metal/environment";
 var view;
 
 QUnit.module("ember-htmlbars: sanitized attribute", {
-  teardown: function() {
+  teardown() {
     runDestroy(view);
   }
 });

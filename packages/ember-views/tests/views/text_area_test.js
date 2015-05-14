@@ -18,7 +18,7 @@ function append() {
 }
 
 QUnit.module("TextArea", {
-  setup: function() {
+  setup() {
     TestObject = window.TestObject = EmberObject.create({
       value: null
     });
@@ -26,7 +26,7 @@ QUnit.module("TextArea", {
     textArea = TextArea.create();
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       textArea.destroy();
     });

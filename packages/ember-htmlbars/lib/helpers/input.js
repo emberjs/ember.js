@@ -87,6 +87,7 @@ import Ember from "ember-metal/core"; // Ember.assert
 * `focus-in`
 * `focus-out`
 * `key-press`
+* `key-up`
 
 
   For example, if you desire an action to be sent when the input is blurred,

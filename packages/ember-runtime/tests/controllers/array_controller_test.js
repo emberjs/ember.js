@@ -9,18 +9,18 @@ QUnit.module("ember-runtime/controllers/array_controller_test");
 MutableArrayTests.extend({
   name: 'Ember.ArrayController',
 
-  newObject: function(ary) {
+  newObject(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
     return ArrayController.create({
       model: Ember.A(ret)
     });
   },
 
-  mutate: function(obj) {
+  mutate(obj) {
     obj.pushObject(Ember.get(obj, 'length')+1);
   },
 
-  toArray: function(obj) {
+  toArray(obj) {
     return obj.toArray ? obj.toArray() : obj.slice();
   }
 }).run();

@@ -8,14 +8,16 @@
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,
     "ember-routing-transitioning-classes": true,
-    "new-computed-syntax": false,
+    "new-computed-syntax": true,
     "ember-testing-checkbox-helpers": false,
     "ember-metal-stream": false,
-    "ember-htmlbars-each-with-index": true,
-    "ember-application-instance-initializers": false,
-    "ember-application-initializer-context": false,
+    "ember-application-instance-initializers": true,
+    "ember-application-initializer-context": true,
     "ember-router-willtransition": true,
-    "ember-application-visit": false
+    "ember-application-visit": false,
+    "ember-views-component-block-info": false,
+    "ember-routing-core-outlet": false,
+    "ember-libraries-isregistered": false
   },
   "debugStatements": [
     "Ember.warn",

@@ -28,7 +28,7 @@ var revMatches = false;
 var ObjectA;
 
 QUnit.module("object.propertyChanges", {
-  setup: function() {
+  setup() {
     ObjectA = ObservableObject.createWithMixins({
       foo  : 'fooValue',
       prop : 'propValue',
@@ -49,7 +49,7 @@ QUnit.module("object.propertyChanges", {
       }),
 
       starProp: null,
-      starObserver: function(target, key, value, rev) {
+      starObserver(target, key, value, rev) {
         revMatches = (rev === target.propertyRevision);
         this.starProp = key;
       }
@@ -123,12 +123,12 @@ QUnit.test("should invalidate function property cache when notifyPropertyChange 
 
   var a = ObservableObject.createWithMixins({
     _b: null,
-    b: computed(function(key, value) {
-      if (value !== undefined) {
+    b: computed({
+      get: function() { return this._b; },
+      set: function(key, value) {
         this._b = value;
         return this;
       }
-      return this._b;
     }).volatile()
   });
 

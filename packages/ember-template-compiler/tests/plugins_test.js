@@ -1,5 +1,5 @@
+import plugins from "ember-template-compiler/plugins";
 import {
-  default as plugins,
   registerPlugin
 } from "ember-template-compiler/plugins";
 import compile from "ember-template-compiler/system/compile";
@@ -7,11 +7,11 @@ import compile from "ember-template-compiler/system/compile";
 var originalASTPlugins;
 
 QUnit.module("ember-htmlbars: Ember.HTMLBars.registerASTPlugin", {
-  setup: function() {
+  setup() {
     originalASTPlugins = plugins.ast.slice();
   },
 
-  teardown: function() {
+  teardown() {
     plugins.ast = originalASTPlugins;
   }
 });

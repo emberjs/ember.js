@@ -5,7 +5,7 @@ import EmberView from "ember-views/views/view";
 var view;
 
 QUnit.module("EmberView evented helpers", {
-  teardown: function() {
+  teardown() {
     run(function() {
       view.destroy();
     });
@@ -16,11 +16,11 @@ QUnit.test("fire should call method sharing event name if it exists on the view"
   var eventFired = false;
 
   view = EmberView.create({
-    fireMyEvent: function() {
+    fireMyEvent() {
       this.trigger('myEvent');
     },
 
-    myEvent: function() {
+    myEvent() {
       eventFired = true;
     }
   });
@@ -36,13 +36,13 @@ QUnit.test("fire does not require a view method with the same name", function() 
   var eventFired = false;
 
   view = EmberView.create({
-    fireMyEvent: function() {
+    fireMyEvent() {
       this.trigger('myEvent');
     }
   });
 
   var listenObject = EmberObject.create({
-    onMyEvent: function() {
+    onMyEvent() {
       eventFired = true;
     }
   });

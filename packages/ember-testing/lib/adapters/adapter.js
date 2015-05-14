@@ -51,7 +51,7 @@ var Adapter = EmberObject.extend({
     @method exception
     @param {String} error The exception to be raised.
   */
-  exception: function(error) {
+  exception(error) {
     throw error;
   }
 });

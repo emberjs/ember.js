@@ -12,13 +12,13 @@ import Registry from 'container/registry';
 var application, Application;
 
 QUnit.module("Ember.Application - resetting", {
-  setup: function() {
+  setup() {
     Application = EmberApplication.extend({
       name: "App",
       rootElement: "#qunit-fixture"
     });
   },
-  teardown: function() {
+  teardown() {
     Application = null;
     if (application) {
       run(application, 'destroy');
@@ -88,12 +88,12 @@ QUnit.test("When an application is reset, the eventDispatcher is destroyed and r
   eventDispatcherWasDestroyed = 0;
 
   var mock_event_dispatcher = {
-    create: function() {
+    create() {
       return {
-        setup: function() {
+        setup() {
           eventDispatcherWasSetup++;
         },
-        destroy: function() {
+        destroy() {
           eventDispatcherWasDestroyed++;
         }
       };
@@ -199,7 +199,7 @@ QUnit.test("When an application with advance/deferReadiness is reset, the app do
 
   run(function() {
     application = Application.create({
-      ready: function() {
+      ready() {
         readyCallCount++;
       }
     });
@@ -226,14 +226,14 @@ QUnit.test("With ember-data like initializer and constant", function() {
 
   var DS = {
     Store: EmberObject.extend({
-      init: function() {
+      init() {
         if (!get(DS, 'defaultStore')) {
           set(DS, 'defaultStore', this);
         }
 
         this._super.apply(this, arguments);
       },
-      willDestroy: function() {
+      willDestroy() {
         if (get(DS, 'defaultStore') === this) {
           set(DS, 'defaultStore', null);
         }
@@ -243,7 +243,7 @@ QUnit.test("With ember-data like initializer and constant", function() {
 
   Application.initializer({
     name: "store",
-    initialize: function(registry, application) {
+    initialize(registry, application) {
       registry.unregister('store:main');
       registry.register('store:main', application.Store);
 

@@ -19,12 +19,12 @@ function append() {
 var checkboxView, dispatcher;
 
 QUnit.module("Ember.Checkbox", {
-  setup: function() {
+  setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
-  teardown: function() {
+  teardown() {
     run(function() {
       dispatcher.destroy();
       checkboxView.destroy();

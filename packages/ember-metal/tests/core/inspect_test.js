@@ -30,7 +30,7 @@ QUnit.test("false", function() {
 QUnit.test("object", function() {
   equal(inspect({}), "{}");
   equal(inspect({ foo: 'bar' }), "{foo: bar}");
-  equal(inspect({ foo: function() { return this; } }), "{foo: function() { ... }}");
+  equal(inspect({ foo() { return this; } }), "{foo: function() { ... }}");
 });
 
 QUnit.test("objects without a prototype", function() {

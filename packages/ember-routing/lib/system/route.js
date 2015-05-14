@@ -46,7 +46,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     Configuration hash for this route's queryParams. The possible
     configuration options and their defaults are as follows
-    (assuming a query param whose URL key is `page`):
+    (assuming a query param whose controller property is `page`):
 
     ```javascript
     queryParams: {
@@ -70,7 +70,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         // hash location equivalent), which causes no browser history
         // item to be added. This options name and default value are
         // the same as the `link-to` helper's `replace` option.
-        replace: false
+        replace: false,
+
+        // By default, the query param URL key is the same name as
+        // the controller property name. Use `as` to specify a
+        // different URL key.
+        as: 'page'
       }
     }
     ```
@@ -138,13 +143,13 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       qps: qps,
       map: map,
       states: {
-        active: function(controller, prop) {
+        active(controller, prop) {
           return self._activeQPChanged(controller, map[prop]);
         },
-        allowOverrides: function(controller, prop) {
+        allowOverrides(controller, prop) {
           return self._updatingQPChanged(controller, map[prop]);
         },
-        changingKeys: function(controller, prop) {
+        changingKeys(controller, prop) {
           return self._updateSerializedQPValue(controller, map[prop]);
         }
       }
@@ -163,7 +168,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method _stashNames
   */
-  _stashNames: function(_handlerInfo, dynamicParent) {
+  _stashNames(_handlerInfo, dynamicParent) {
     var handlerInfo = _handlerInfo;
     if (this._names) { return; }
     var names = this._names = handlerInfo._names;
@@ -196,7 +201,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @property _updateSerializedQPValue
   */
-  _updateSerializedQPValue: function(controller, qp) {
+  _updateSerializedQPValue(controller, qp) {
     var value = get(controller, qp.prop);
     qp.svalue = this.serializeQueryParam(value, qp.urlKey, qp.type);
   },
@@ -206,7 +211,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @property _activeQPChanged
   */
-  _activeQPChanged: function(controller, qp) {
+  _activeQPChanged(controller, qp) {
     var value = get(controller, qp.prop);
     this.router._queuedQPChanges[qp.fprop] = value;
     run.once(this, this._fireQueryParamTransition);
@@ -216,7 +221,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
     @method _updatingQPChanged
   */
-  _updatingQPChanged: function(controller, qp) {
+  _updatingQPChanged(controller, qp) {
     var router = this.router;
     if (!router._qpUpdates) {
       router._qpUpdates = {};
@@ -234,7 +239,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name
 
   */
-  paramsFor: function(name) {
+  paramsFor(name) {
     var route = this.container.lookup('route:' + name);
 
     if (!route) {
@@ -257,7 +262,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method serializeQueryParamKey
     @param {String} controllerPropertyName
   */
-  serializeQueryParamKey: function(controllerPropertyName) {
+  serializeQueryParamKey(controllerPropertyName) {
     return controllerPropertyName;
   },
 
@@ -269,7 +274,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} urlKey
     @param {String} defaultValueType
   */
-  serializeQueryParam: function(value, urlKey, defaultValueType) {
+  serializeQueryParam(value, urlKey, defaultValueType) {
     // urlKey isn't used here, but anyone overriding
     // can use it to provide serialization specific
     // to a certain query param.
@@ -287,7 +292,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} urlKey
     @param {String} defaultValueType
   */
-  deserializeQueryParam: function(value, urlKey, defaultValueType) {
+  deserializeQueryParam(value, urlKey, defaultValueType) {
     // urlKey isn't used here, but anyone overriding
     // can use it to provide deserialization specific
     // to a certain query param.
@@ -309,7 +314,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
     @property _fireQueryParamTransition
   */
-  _fireQueryParamTransition: function() {
+  _fireQueryParamTransition() {
     this.transitionTo({ queryParams: this.router._queuedQPChanges });
     this.router._queuedQPChanges = {};
   },
@@ -319,7 +324,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @property _optionsForQueryParam
   */
-  _optionsForQueryParam: function(qp) {
+  _optionsForQueryParam(qp) {
     return get(this, 'queryParams.' + qp.urlKey) || get(this, 'queryParams.' + qp.prop) || {};
   },
 
@@ -352,7 +357,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method exit
   */
-  exit: function() {
+  exit() {
     this.deactivate();
     this.trigger('deactivate');
     this.teardownViews();
@@ -364,7 +369,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method _reset
     @since 1.7.0
   */
-  _reset: function(isExiting, transition) {
+  _reset(isExiting, transition) {
     var controller = this.controller;
 
     controller._qpDelegate = get(this, '_qp.states.inactive');
@@ -377,7 +382,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method enter
   */
-  enter: function() {
+  enter() {
     this.connections = [];
     this.activate();
     this.trigger('activate');
@@ -658,7 +663,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
   _actions: {
 
-    queryParamsDidChange: function(changed, totalPresent, removed) {
+    queryParamsDidChange(changed, totalPresent, removed) {
       var qpMap = get(this, '_qp').map;
 
       var totalChanged = keys(changed).concat(keys(removed));
@@ -672,7 +677,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       return true;
     },
 
-    finalizeQueryParamChange: function(params, finalParams, transition) {
+    finalizeQueryParamChange(params, finalParams, transition) {
       if (this.routeName !== 'application') { return true; }
 
       // Transition object is absent for intermediate transitions.
@@ -933,9 +938,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Transition} the transition object associated with this
       attempted transition
   */
-  transitionTo: function(name, context) {
+  transitionTo(name, context) {
     var router = this.router;
-    return router.transitionTo.apply(router, arguments);
+    return router.transitionTo(...arguments);
   },
 
   /**
@@ -954,9 +959,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     to the route.
     @since 1.2.0
    */
-  intermediateTransitionTo: function() {
+  intermediateTransitionTo() {
     var router = this.router;
-    router.intermediateTransitionTo.apply(router, arguments);
+    router.intermediateTransitionTo(...arguments);
   },
 
   /**
@@ -980,7 +985,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       attempted transition
     @since 1.4.0
    */
-  refresh: function() {
+  refresh() {
     return this.router.router.refresh(this);
   },
 
@@ -1014,9 +1019,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Transition} the transition object associated with this
       attempted transition
   */
-  replaceWith: function() {
+  replaceWith() {
     var router = this.router;
-    return router.replaceWith.apply(router, arguments);
+    return router.replaceWith(...arguments);
   },
 
   /**
@@ -1053,9 +1058,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the action to trigger
     @param {...*} args
   */
-  send: function() {
+  send() {
     if (this.router || !Ember.testing) {
-      this.router.send.apply(this.router, arguments);
+      this.router.send(...arguments);
     } else {
       var name = arguments[0];
       var args = slice.call(arguments, 1);
@@ -1072,7 +1077,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
     @method setup
   */
-  setup: function(context, transition) {
+  setup(context, transition) {
     var controllerName = this.controllerName || this.routeName;
     var controller = this.controllerFor(controllerName, true);
 
@@ -1254,7 +1259,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
     @method contextDidChange
   */
-  contextDidChange: function() {
+  contextDidChange() {
     this.currentModel = this.context;
   },
 
@@ -1324,7 +1329,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       the promise resolves, and the resolved value of the promise
       will be used as the model for this route.
   */
-  model: function(params, transition) {
+  model(params, transition) {
     var match, name, sawParams, value;
 
     var queryParams = get(this, '_qp.map');
@@ -1363,7 +1368,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     Router.js hook.
    */
-  deserialize: function(params, transition) {
+  deserialize(params, transition) {
     return this.model(this.paramsFor(this.routeName), transition);
   },
 
@@ -1373,9 +1378,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} type the model type
     @param {Object} value the value passed to find
   */
-  findModel: function() {
+  findModel() {
     var store = get(this, 'store');
-    return store.find.apply(store, arguments);
+    return store.find(...arguments);
   },
 
   /**
@@ -1397,7 +1402,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var namespace = get(this, 'router.namespace');
 
     return {
-      find: function(name, value) {
+      find(name, value) {
         var modelClass = container.lookupFactory('model:' + name);
 
         Ember.assert("You used the dynamic segment " + name + "_id in your route " +
@@ -1450,7 +1455,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       route (in the example, `['post_id']`.
     @return {Object} the serialized parameters
   */
-  serialize: function(model, params) {
+  serialize(model, params) {
     if (params.length < 1) { return; }
     if (!model) { return; }
 
@@ -1538,7 +1543,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Controller} controller instance
     @param {Object} model
   */
-  setupController: function(controller, context, transition) {
+  setupController(controller, context, transition) {
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }
@@ -1563,7 +1568,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the route or controller
     @return {Ember.Controller}
   */
-  controllerFor: function(name, _skipAssert) {
+  controllerFor(name, _skipAssert) {
     var container = this.container;
     var route = container.lookup('route:'+name);
     var controller;
@@ -1607,7 +1612,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the controller
     @param {Object} model the model to infer the type of the controller (optional)
   */
-  generateController: function(name, model) {
+  generateController(name, model) {
     var container = this.container;
 
     model = model || this.modelFor(name);
@@ -1644,7 +1649,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the route
     @return {Object} the model object
   */
-  modelFor: function(name) {
+  modelFor(name) {
     var route = this.container.lookup('route:' + name);
     var transition = this.router ? this.router.router.activeTransition : null;
 
@@ -1690,7 +1695,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Object} controller the route's controller
     @param {Object} model the route's model
   */
-  renderTemplate: function(controller, model) {
+  renderTemplate(controller, model) {
     this.render();
   },
 
@@ -1812,7 +1817,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Object} [options.model] the model object to set on `options.controller`.
                     Defaults to the return value of the Route's model hook
   */
-  render: function(_name, options) {
+  render(_name, options) {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
@@ -1874,7 +1879,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
   */
-  disconnectOutlet: function(options) {
+  disconnectOutlet(options) {
     var outletName;
     var parentView;
     if (!options || typeof options === "string") {
@@ -1896,7 +1901,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
   },
 
-  _disconnectOutlet: function(outletName, parentView) {
+  _disconnectOutlet(outletName, parentView) {
     var parent = parentRoute(this);
     if (parent && parentView === parent.routeName) {
       parentView = undefined;
@@ -1920,7 +1925,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
   },
 
-  willDestroy: function() {
+  willDestroy() {
     this.teardownViews();
   },
 
@@ -1929,7 +1934,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method teardownViews
   */
-  teardownViews: function() {
+  teardownViews() {
     if (this.connections && this.connections.length > 0) {
       this.connections = [];
       run.once(this.router, '_setOutlets');

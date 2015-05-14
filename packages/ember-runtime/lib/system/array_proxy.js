@@ -1,8 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import {
-  isArray,
-  apply
+  isArray
 } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import {
@@ -99,7 +98,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
   */
-  objectAtContent: function(idx) {
+  objectAtContent(idx) {
     return get(this, 'arrangedContent').objectAt(idx);
   },
 
@@ -117,7 +116,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       objects.
     @return {void}
   */
-  replaceContent: function(idx, amt, objects) {
+  replaceContent(idx, amt, objects) {
     get(this, 'content').replace(idx, amt, objects);
   },
 
@@ -132,7 +131,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._teardownContent();
   }),
 
-  _teardownContent: function() {
+  _teardownContent() {
     var content = get(this, 'content');
 
     if (content) {
@@ -182,7 +181,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._setupContent();
   }),
 
-  _setupContent: function() {
+  _setupContent() {
     var content = get(this, 'content');
 
     if (content) {
@@ -219,7 +218,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this.arrangedContentArrayDidChange(this, 0, undefined, len);
   }),
 
-  _setupArrangedContent: function() {
+  _setupArrangedContent() {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
@@ -234,7 +233,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     }
   },
 
-  _teardownArrangedContent: function() {
+  _teardownArrangedContent() {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
@@ -248,7 +247,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   arrangedContentWillChange: K,
   arrangedContentDidChange: K,
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     return get(this, 'content') && this.objectAtContent(idx);
   },
 
@@ -258,7 +257,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     // No dependencies since Enumerable notifies length of change
   }),
 
-  _replace: function(idx, amt, objects) {
+  _replace(idx, amt, objects) {
     var content = get(this, 'content');
     Ember.assert('The content property of '+ this.constructor + ' should be set before modifying it', content);
     if (content) {
@@ -268,15 +267,15 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  replace: function() {
+  replace() {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
-      apply(this, this._replace, arguments);
+      this._replace(...arguments);
     } else {
       throw new EmberError("Using replace on an arranged ArrayProxy is not allowed.");
     }
   },
 
-  _insertAt: function(idx, object) {
+  _insertAt(idx, object) {
     if (idx > get(this, 'content.length')) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
@@ -285,7 +284,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  insertAt: function(idx, object) {
+  insertAt(idx, object) {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
       return this._insertAt(idx, object);
     } else {
@@ -293,7 +292,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     }
   },
 
-  removeAt: function(start, len) {
+  removeAt(start, len) {
     if ('number' === typeof start) {
       var content = get(this, 'content');
       var arrangedContent = get(this, 'arrangedContent');
@@ -327,12 +326,12 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  pushObject: function(obj) {
+  pushObject(obj) {
     this._insertAt(get(this, 'content.length'), obj);
     return obj;
   },
 
-  pushObjects: function(objects) {
+  pushObjects(objects) {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
@@ -340,7 +339,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  setObjects: function(objects) {
+  setObjects(objects) {
     if (objects.length === 0) {
       return this.clear();
     }
@@ -350,36 +349,36 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  unshiftObject: function(obj) {
+  unshiftObject(obj) {
     this._insertAt(0, obj);
     return obj;
   },
 
-  unshiftObjects: function(objects) {
+  unshiftObjects(objects) {
     this._replace(0, 0, objects);
     return this;
   },
 
-  slice: function() {
+  slice() {
     var arr = this.toArray();
-    return arr.slice.apply(arr, arguments);
+    return arr.slice(...arguments);
   },
 
-  arrangedContentArrayWillChange: function(item, idx, removedCnt, addedCnt) {
+  arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {
     this.arrayContentWillChange(idx, removedCnt, addedCnt);
   },
 
-  arrangedContentArrayDidChange: function(item, idx, removedCnt, addedCnt) {
+  arrangedContentArrayDidChange(item, idx, removedCnt, addedCnt) {
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
     this._setupContent();
     this._setupArrangedContent();
   },
 
-  willDestroy: function() {
+  willDestroy() {
     this._teardownArrangedContent();
     this._teardownContent();
   }

@@ -26,11 +26,11 @@ import create from "ember-metal/platform/create";
 import { deprecateProperty } from "ember-metal/deprecate_property";
 
 function missingFunction(fn) {
-  throw new TypeError('' + Object.prototype.toString.call(fn) + " is not a function");
+  throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
 }
 
 function missingNew(name) {
-  throw new TypeError("Constructor " + name + "requires 'new'");
+  throw new TypeError(`Constructor ${name} requires 'new'`);
 }
 
 function copyNull(obj) {
@@ -91,7 +91,7 @@ OrderedSet.prototype = {
   /**
     @method clear
   */
-  clear: function() {
+  clear() {
     this.presenceSet = create(null);
     this.list = [];
     this.size = 0;
@@ -103,7 +103,7 @@ OrderedSet.prototype = {
     @param guid (optional, and for internal use)
     @return {Ember.OrderedSet}
   */
-  add: function(obj, _guid) {
+  add(obj, _guid) {
     var guid = _guid || guidFor(obj);
     var presenceSet = this.presenceSet;
     var list = this.list;
@@ -124,11 +124,8 @@ OrderedSet.prototype = {
     @param _guid (optional and for internal use only)
     @return {Boolean}
   */
-  remove: function(obj, _guid) {
-    Ember.deprecate(
-      'Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.',
-      this._silenceRemoveDeprecation
-    );
+  remove(obj, _guid) {
+    Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
 
     return this.delete(obj, _guid);
   },
@@ -140,7 +137,7 @@ OrderedSet.prototype = {
     @param _guid (optional and for internal use only)
     @return {Boolean}
   */
-  delete: function(obj, _guid) {
+  delete(obj, _guid) {
     var guid = _guid || guidFor(obj);
     var presenceSet = this.presenceSet;
     var list = this.list;
@@ -162,7 +159,7 @@ OrderedSet.prototype = {
     @method isEmpty
     @return {Boolean}
   */
-  isEmpty: function() {
+  isEmpty() {
     return this.size === 0;
   },
 
@@ -171,7 +168,7 @@ OrderedSet.prototype = {
     @param obj
     @return {Boolean}
   */
-  has: function(obj) {
+  has(obj) {
     if (this.size === 0) { return false; }
 
     var guid = guidFor(obj);
@@ -185,7 +182,7 @@ OrderedSet.prototype = {
     @param {Function} fn
     @param self
   */
-  forEach: function(fn /*, thisArg*/) {
+  forEach(fn /*, ...thisArg*/) {
     if (typeof fn !== 'function') {
       missingFunction(fn);
     }
@@ -211,7 +208,7 @@ OrderedSet.prototype = {
     @method toArray
     @return {Array}
   */
-  toArray: function() {
+  toArray() {
     return this.list.slice();
   },
 
@@ -219,7 +216,7 @@ OrderedSet.prototype = {
     @method copy
     @return {Ember.OrderedSet}
   */
-  copy: function() {
+  copy() {
     var Constructor = this.constructor;
     var set = new Constructor();
 
@@ -296,7 +293,7 @@ Map.prototype = {
     @param {*} key
     @return {*} the value associated with the key, or `undefined`
   */
-  get: function(key) {
+  get(key) {
     if (this.size === 0) { return; }
 
     var values = this._values;
@@ -314,7 +311,7 @@ Map.prototype = {
     @param {*} value
     @return {Ember.Map}
   */
-  set: function(key, value) {
+  set(key, value) {
     var keys = this._keys;
     var values = this._values;
     var guid = guidFor(key);
@@ -339,7 +336,7 @@ Map.prototype = {
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
   */
-  remove: function(key) {
+  remove(key) {
     Ember.deprecate('Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
 
     return this.delete(key);
@@ -353,7 +350,7 @@ Map.prototype = {
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
   */
-  delete: function(key) {
+  delete(key) {
     if (this.size === 0) { return false; }
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
@@ -377,7 +374,7 @@ Map.prototype = {
     @param {*} key
     @return {Boolean} true if the item was present, false otherwise
   */
-  has: function(key) {
+  has(key) {
     return this._keys.has(key);
   },
 
@@ -393,7 +390,7 @@ Map.prototype = {
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
   */
-  forEach: function(callback /*, thisArg*/) {
+  forEach(callback/*, ...thisArg*/) {
     if (typeof callback !== 'function') {
       missingFunction(callback);
     }
@@ -421,7 +418,7 @@ Map.prototype = {
   /**
     @method clear
   */
-  clear: function() {
+  clear() {
     this._keys.clear();
     this._values = create(null);
     this.size = 0;
@@ -431,7 +428,7 @@ Map.prototype = {
     @method copy
     @return {Ember.Map}
   */
-  copy: function() {
+  copy() {
     return copyMap(this, new Map());
   }
 };

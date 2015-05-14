@@ -4,8 +4,8 @@ import NormalizedRerenderIfNeededSupport from "ember-views/mixins/normalized_rer
 import renderView from "ember-htmlbars/system/render-view";
 
 export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
 
     var self = this;
 
@@ -14,11 +14,11 @@ export default _MetamorphView.extend(NormalizedRerenderIfNeededSupport, {
     }));
   },
 
-  normalizedValue: function() {
+  normalizedValue() {
     return this.conditionStream.value();
   },
 
-  render: function(buffer) {
+  render(buffer) {
     var result = this.conditionStream.value();
     this._lastNormalizedValue = result;
 

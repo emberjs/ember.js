@@ -30,8 +30,8 @@ import {
   meta,
   metaPath,
   setMeta,
-  tryCatchFinally,
-  tryFinally,
+  deprecatedTryCatchFinally,
+  deprecatedTryFinally,
   tryInvoke,
   typeOf,
   uuid,
@@ -84,7 +84,6 @@ import {
 } from "ember-metal/property_events";
 
 import {
-  Descriptor,
   defineProperty
 } from "ember-metal/properties";
 import {
@@ -263,12 +262,12 @@ Ember.setMeta         = setMeta;
 Ember.metaPath        = metaPath;
 Ember.inspect         = inspect;
 Ember.typeOf          = typeOf;
-Ember.tryCatchFinally = tryCatchFinally;
+Ember.tryCatchFinally = deprecatedTryCatchFinally;
 Ember.isArray         = isArray;
 Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
 Ember.tryInvoke       = tryInvoke;
-Ember.tryFinally      = tryFinally;
+Ember.tryFinally      = deprecatedTryFinally;
 Ember.wrap            = wrap;
 Ember.apply           = apply;
 Ember.applyStr        = applyStr;
@@ -303,7 +302,6 @@ Ember.beginPropertyChanges = beginPropertyChanges;
 Ember.endPropertyChanges = endPropertyChanges;
 Ember.changeProperties = changeProperties;
 
-Ember.Descriptor     = Descriptor;
 Ember.defineProperty = defineProperty;
 
 Ember.set    = set;

@@ -8,7 +8,7 @@ import {
 var view;
 
 testsFor("ember-metal-views", {
-  teardown: function(renderer) {
+  teardown(renderer) {
     if (view) { renderer.removeAndDestroy(view); }
     view = null;
   }
@@ -89,7 +89,7 @@ QUnit.test("willInsertElement hook", function() {
   view = {
     isView: true,
 
-    willInsertElement: function(el) {
+    willInsertElement(el) {
       ok(this.element && this.element.nodeType === 1, "We have an element");
       equal(this.element.parentElement, null, "The element is parentless");
       setElementText(this.element, 'you gone and done inserted that element');
@@ -107,7 +107,7 @@ QUnit.test("didInsertElement hook", function() {
   view = {
     isView: true,
 
-    didInsertElement: function() {
+    didInsertElement() {
       ok(this.element && this.element.nodeType === 1, "We have an element");
       equal(this.element.parentElement, document.getElementById('qunit-fixture'), "The element's parent is correct");
       setElementText(this.element, 'you gone and done inserted that element');

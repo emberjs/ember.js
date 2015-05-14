@@ -7,14 +7,12 @@ import Registry from 'container/registry';
 import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
-import {
-  default as ObjectController
-} from "ember-runtime/controllers/object_controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
+import generateController from "ember-routing/system/generate_controller";
 import {
-  generateControllerFactory,
-  default as generateController
+  generateControllerFactory
 } from "ember-routing/system/generate_controller";
 
 var buildContainer = function(namespace) {
@@ -53,13 +51,13 @@ function resolverFor(namespace) {
 var container, appController, namespace;
 
 QUnit.module("Ember.controllerFor", {
-  setup: function() {
+  setup() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
     container._registry.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
-  teardown: function() {
+  teardown() {
     run(function () {
       container.destroy();
       namespace.destroy();
@@ -74,11 +72,11 @@ QUnit.test("controllerFor should lookup for registered controllers", function() 
 });
 
 QUnit.module("Ember.generateController", {
-  setup: function() {
+  setup() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
   },
-  teardown: function() {
+  teardown() {
     run(function () {
       container.destroy();
       namespace.destroy();

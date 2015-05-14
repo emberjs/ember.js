@@ -8,11 +8,11 @@ var originalLookup = Ember.lookup;
 var lookup, view;
 
 QUnit.module("views/view/view_lifecycle_test - pre-render", {
-  setup: function() {
+  setup() {
     Ember.lookup = lookup = {};
   },
 
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() {
         view.destroy();
@@ -41,7 +41,7 @@ QUnit.test("should create and append a DOM element after bindings have synced", 
     view = EmberView.createWithMixins({
       fooBinding: 'ViewTest.fakeController.fakeThing',
 
-      render: function(buffer) {
+      render(buffer) {
         buffer.push(this.get('foo'));
       }
     });
@@ -91,11 +91,11 @@ QUnit.test("should not affect rendering if destroyElement is called before initi
 });
 
 QUnit.module("views/view/view_lifecycle_test - in render", {
-  setup: function() {
+  setup() {
 
   },
 
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() {
         view.destroy();
@@ -107,7 +107,7 @@ QUnit.module("views/view/view_lifecycle_test - in render", {
 QUnit.test("appendChild should work inside a template", function() {
   run(function() {
     view = EmberView.create({
-      template: function(context, options) {
+      template(context, options) {
         var buffer = options.data.buffer;
 
         buffer.push("<h1>Hi!</h1>");
@@ -132,18 +132,18 @@ QUnit.test("rerender should throw inside a template", function() {
     run(function() {
       var renderCount = 0;
       view = EmberView.create({
-        template: function(context, options) {
+        template(context, options) {
           var view = options.data.view;
 
           var child1 = view.appendChild(EmberView, {
-            template: function(context, options) {
+            template(context, options) {
               renderCount++;
               options.data.buffer.push(String(renderCount));
             }
           });
 
           view.appendChild(EmberView, {
-            template: function(context, options) {
+            template(context, options) {
               options.data.buffer.push("Inside child2");
               child1.rerender();
             }
@@ -157,7 +157,7 @@ QUnit.test("rerender should throw inside a template", function() {
 });
 
 QUnit.module("views/view/view_lifecycle_test - hasElement", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() {
         view.destroy();
@@ -168,7 +168,7 @@ QUnit.module("views/view/view_lifecycle_test - hasElement", {
 
 QUnit.test("createElement puts the view into the hasElement state", function() {
   view = EmberView.create({
-    render: function(buffer) { buffer.push('hello'); }
+    render(buffer) { buffer.push('hello'); }
   });
 
   run(function() {
@@ -180,7 +180,7 @@ QUnit.test("createElement puts the view into the hasElement state", function() {
 
 QUnit.test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
   view = EmberView.create({
-    render: function(buffer) { buffer.push('hello'); }
+    render(buffer) { buffer.push('hello'); }
   });
 
   run(function() {
@@ -193,7 +193,7 @@ QUnit.test("trigger rerender on a view in the hasElement state doesn't change it
 
 
 QUnit.module("views/view/view_lifecycle_test - in DOM", {
-  teardown: function() {
+  teardown() {
     if (view) {
       run(function() {
         view.destroy();
@@ -221,7 +221,7 @@ QUnit.test("should throw an exception when calling appendChild when DOM element 
 QUnit.test("should replace DOM representation if rerender() is called after element is created", function() {
   run(function() {
     view = EmberView.create({
-      template: function(context, options) {
+      template(context, options) {
         var buffer = options.data.buffer;
         var value = context.get('shape');
 

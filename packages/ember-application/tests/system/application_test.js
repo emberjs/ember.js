@@ -17,7 +17,7 @@ var trim = jQuery.trim;
 var app, application, originalLookup, originalDebug;
 
 QUnit.module("Ember.Application", {
-  setup: function() {
+  setup() {
     originalLookup = Ember.lookup;
     originalDebug = Ember.debug;
 
@@ -27,7 +27,7 @@ QUnit.module("Ember.Application", {
     });
   },
 
-  teardown: function() {
+  teardown() {
     jQuery("#qunit-fixture").empty();
     Ember.debug = originalDebug;
 
@@ -98,7 +98,7 @@ QUnit.test("acts like a namespace", function() {
 });
 
 QUnit.module("Ember.Application initialization", {
-  teardown: function() {
+  teardown() {
     if (app) {
       run(app, 'destroy');
     }
@@ -139,7 +139,7 @@ QUnit.test("initialize application via initialize call", function() {
     });
 
     app.ApplicationView = View.extend({
-      template: function() { return "<h1>Hello!</h1>"; }
+      template() { return "<h1>Hello!</h1>"; }
     });
   });
 
@@ -177,7 +177,7 @@ QUnit.test("ApplicationView is inserted into the page", function() {
     });
 
     app.ApplicationView = View.extend({
-      render: function(buffer) {
+      render(buffer) {
         buffer.push("<h1>Hello!</h1>");
       }
     });
@@ -263,7 +263,7 @@ QUnit.test("can resolve custom router", function() {
   var CustomRouter = Router.extend();
 
   var CustomResolver = DefaultResolver.extend({
-    resolveMain: function(parsedName) {
+    resolveMain(parsedName) {
       if (parsedName.type === "router") {
         return CustomRouter;
       } else {

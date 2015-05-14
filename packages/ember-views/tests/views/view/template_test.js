@@ -7,12 +7,12 @@ import EmberView from "ember-views/views/view";
 var registry, container, view;
 
 QUnit.module("EmberView - Template Functionality", {
-  setup: function() {
+  setup() {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
   },
-  teardown: function() {
+  teardown() {
     run(function() {
       if (view) { view.destroy(); }
       container.destroy();
@@ -24,7 +24,7 @@ QUnit.module("EmberView - Template Functionality", {
 QUnit.test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
-    container: { lookup: function() { } }
+    container: { lookup() { } }
   });
 
   expectAssertion(function() {
@@ -89,7 +89,7 @@ QUnit.test("should fall back to defaultTemplate if neither template nor template
   var View;
 
   View = EmberView.extend({
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    defaultTemplate(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create({
@@ -109,8 +109,8 @@ QUnit.test("should not use defaultTemplate if template is provided", function() 
   var View;
 
   View = EmberView.extend({
-    template:  function() { return "foo"; },
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    template() { return "foo"; },
+    defaultTemplate(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
@@ -129,7 +129,7 @@ QUnit.test("should not use defaultTemplate if template is provided", function() 
   View = EmberView.extend({
     container: container,
     templateName: 'foobar',
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
+    defaultTemplate(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
@@ -153,11 +153,11 @@ QUnit.test("should provide a controller to the template if a controller is speci
   expect(7);
 
   var Controller1 = EmberObject.extend({
-    toString: function() { return "Controller1"; }
+    toString() { return "Controller1"; }
   });
 
   var Controller2 = EmberObject.extend({
-    toString: function() { return "Controller2"; }
+    toString() { return "Controller2"; }
   });
 
   var controller1 = Controller1.create();
@@ -170,7 +170,7 @@ QUnit.test("should provide a controller to the template if a controller is speci
   view = EmberView.create({
     controller: controller1,
 
-    template: function(buffer, options) {
+    template(buffer, options) {
       optionsDataKeywordsControllerForView = options.data.view._keywords.controller.value();
     }
   });
@@ -188,10 +188,10 @@ QUnit.test("should provide a controller to the template if a controller is speci
   var parentView = EmberView.create({
     controller: controller1,
 
-    template: function(buffer, options) {
+    template(buffer, options) {
       options.data.view.appendChild(EmberView.create({
         controller: controller2,
-        template: function(context, options) {
+        template(context, options) {
           contextForView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
         }
@@ -214,9 +214,9 @@ QUnit.test("should provide a controller to the template if a controller is speci
   var parentViewWithControllerlessChild = EmberView.create({
     controller: controller1,
 
-    template: function(buffer, options) {
+    template(buffer, options) {
       options.data.view.appendChild(EmberView.create({
-        template: function(context, options) {
+        template(context, options) {
           contextForControllerlessView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
         }

@@ -4,10 +4,10 @@ import { forEach } from "ember-metal/enumerable_utils";
 var Router;
 
 QUnit.module("Ember Router DSL", {
-  setup: function() {
+  setup() {
     Router = EmberRouter.extend();
   },
-  teardown: function() {
+  teardown() {
     Router = null;
   }
 });

@@ -187,15 +187,15 @@ var states = cloneStates(EmberViewStates);
 var ContainerView = View.extend(MutableArray, {
   _states: states,
 
-  willWatchProperty: function(prop) {
+  willWatchProperty(prop) {
     Ember.deprecate(
       "ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.",
       !prop.match(/\[]/) && prop.indexOf('@') !== 0
     );
   },
 
-  init: function() {
-    this._super.apply(this, arguments);
+  init() {
+    this._super(...arguments);
 
     var childViews = get(this, 'childViews');
     Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(childViews));
@@ -226,7 +226,7 @@ var ContainerView = View.extend(MutableArray, {
     }
   },
 
-  replace: function(idx, removedCount, addedViews) {
+  replace(idx, removedCount, addedViews) {
     var addedCount = addedViews ? get(addedViews, 'length') : 0;
     var self = this;
     Ember.assert("You can't add a child to a container - the child is already a child of another view", emberA(addedViews).every(function(item) { return !item._parentView || item._parentView === self; }));
@@ -248,7 +248,7 @@ var ContainerView = View.extend(MutableArray, {
     return this;
   },
 
-  objectAt: function(idx) {
+  objectAt(idx) {
     return this._childViews[idx];
   },
 
@@ -263,7 +263,7 @@ var ContainerView = View.extend(MutableArray, {
     @method render
     @param {Ember.RenderBuffer} buffer the buffer to render to
   */
-  render: function(buffer) {
+  render(buffer) {
     var element = buffer.element();
     var dom = buffer.dom;
 
@@ -293,7 +293,7 @@ var ContainerView = View.extend(MutableArray, {
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
   **/
-  childViewsWillChange: function(views, start, removed) {
+  childViewsWillChange(views, start, removed) {
     this.propertyWillChange('childViews');
 
     if (removed > 0) {
@@ -304,7 +304,7 @@ var ContainerView = View.extend(MutableArray, {
     }
   },
 
-  removeChild: function(child) {
+  removeChild(child) {
     this.removeObject(child);
     return this;
   },
@@ -325,7 +325,7 @@ var ContainerView = View.extend(MutableArray, {
     @param {Number} removed the number of child views removed
     @param {Number} added the number of child views added
   */
-  childViewsDidChange: function(views, start, removed, added) {
+  childViewsDidChange(views, start, removed, added) {
     if (added > 0) {
       var changedViews = views.slice(start, start+added);
       this.initializeViews(changedViews, this);
@@ -334,7 +334,7 @@ var ContainerView = View.extend(MutableArray, {
     this.propertyDidChange('childViews');
   },
 
-  initializeViews: function(views, parentView) {
+  initializeViews(views, parentView) {
     forEach(views, function(view) {
       set(view, '_parentView', parentView);
 
@@ -361,7 +361,7 @@ var ContainerView = View.extend(MutableArray, {
     }
   }),
 
-  _ensureChildrenAreInDOM: function () {
+  _ensureChildrenAreInDOM() {
     this.currentState.ensureChildrenAreInDOM(this);
   }
 });
@@ -373,13 +373,13 @@ merge(states._default, {
 });
 
 merge(states.inBuffer, {
-  childViewsDidChange: function(parentView, views, start, added) {
+  childViewsDidChange(parentView, views, start, added) {
     throw new EmberError('You cannot modify child views while in the inBuffer state');
   }
 });
 
 merge(states.hasElement, {
-  childViewsWillChange: function(view, views, start, removed) {
+  childViewsWillChange(view, views, start, removed) {
     for (var i=start; i<start+removed; i++) {
       var _view = views[i];
       _view._unsubscribeFromStreamBindings();
@@ -387,11 +387,11 @@ merge(states.hasElement, {
     }
   },
 
-  childViewsDidChange: function(view, views, start, added) {
+  childViewsDidChange(view, views, start, added) {
     run.scheduleOnce('render', view, '_ensureChildrenAreInDOM');
   },
 
-  ensureChildrenAreInDOM: function(view) {
+  ensureChildrenAreInDOM(view) {
     var childViews = view._childViews;
     var renderer = view._renderer;
 

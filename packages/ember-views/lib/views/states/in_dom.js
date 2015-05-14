@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core"; // Ember.assert
 import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
@@ -12,17 +11,12 @@ import hasElement from "ember-views/views/states/has_element";
 
 var inDOM = create(hasElement);
 
-var View;
-
 merge(inDOM, {
-  enter: function(view) {
-    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
-
+  enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     if (!view.isVirtual) {
-      Ember.assert("Attempted to register a view with an id already in use: "+view.elementId, !View.views[view.elementId]);
-      View.views[view.elementId] = view;
+      view._register();
     }
 
     Ember.runInDebug(function() {
@@ -32,15 +26,13 @@ merge(inDOM, {
     });
   },
 
-  exit: function(view) {
-    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
-
+  exit(view) {
     if (!this.isVirtual) {
-      delete View.views[view.elementId];
+      view._unregister();
     }
   },
 
-  appendAttr: function(view, attrNode) {
+  appendAttr(view, attrNode) {
     var _attrNodes = view._attrNodes;
 
     if (!_attrNodes.length) { _attrNodes = view._attrNodes = _attrNodes.slice(); }

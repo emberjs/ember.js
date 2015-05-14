@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - "0.11"
+  - "0.10"
 
 sudo: false
 
@@ -20,6 +20,7 @@ script:
 
 env:
   global:
+    - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
     - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
     - S3_BUCKET_NAME=builds.emberjs.com
@@ -40,4 +41,4 @@ env:
     - TEST_SUITE=built-tests EMBER_ENV=production
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
-    - TEST_SUITE=node EMBER_ENV=production
+    - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true

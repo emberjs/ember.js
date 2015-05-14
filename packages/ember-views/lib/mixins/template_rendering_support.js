@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-views
+*/
 import { Mixin } from "ember-metal/mixin";
 import { get } from "ember-metal/property_get";
 
@@ -10,6 +14,10 @@ function renderView(view, buffer, template) {
   _renderView(view, buffer, template);
 }
 
+/**
+  @class TemplateRenderingSupport
+  @namespace Ember
+*/
 var TemplateRenderingSupport = Mixin.create({
   /**
     Called on your view when it should push strings of HTML into a
@@ -23,7 +31,7 @@ var TemplateRenderingSupport = Mixin.create({
     @method render
     @param {Ember.RenderBuffer} buffer The render buffer
   */
-  render: function(buffer) {
+  render(buffer) {
     // If this view has a layout, it is the responsibility of the
     // the layout to render the view's template. Otherwise, render the template
     // directly.

@@ -24,7 +24,7 @@ QUnit.module('ember-htmlbars: lookupHelper hook');
 
 QUnit.test('looks for helpers in the provided `env.helpers`', function() {
   var env = generateEnv({
-    'flubarb': function() { }
+    'flubarb'() { }
   });
 
   var actual = lookupHelper('flubarb', null, env);
@@ -45,7 +45,7 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
   var env = generateEnv();
   var view = {
     container: {
-      lookup: function() {
+      lookup() {
         ok(false, 'should not lookup in the container');
       }
     }
@@ -91,7 +91,7 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
   var fakeParams = [];
   var fakeHash = {};
   var fakeOptions = {
-    morph: { update: function() { } }
+    morph: { update() { } }
   };
   var fakeEnv = {
     data: {
