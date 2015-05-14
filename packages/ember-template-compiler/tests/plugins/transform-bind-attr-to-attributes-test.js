@@ -6,8 +6,10 @@ QUnit.test("Using the `bind-attr` helper throws a deprecation", function() {
   expect(1);
 
   expectDeprecation(function() {
-    compile('<div {{bind-attr class=view.foo}}></div>');
-  }, /The `bind-attr` helper is deprecated in favor of HTMLBars-style bound attributes/);
+    compile('<div {{bind-attr class=view.foo}}></div>', {
+      moduleName: 'foo/bar/baz'
+    });
+  }, "The `bind-attr` helper ('foo/bar/baz' @ L1:C7) is deprecated in favor of HTMLBars-style bound attributes.");
 });
 
 QUnit.test("Using the `bindAttr` helper throws a deprecation", function() {
@@ -15,7 +17,7 @@ QUnit.test("Using the `bindAttr` helper throws a deprecation", function() {
 
   expectDeprecation(function() {
     compile('<div {{bindAttr class=view.foo}}></div>');
-  }, /The `bindAttr` helper is deprecated in favor of HTMLBars-style bound attributes/);
+  }, "The `bindAttr` helper (L1:C7) is deprecated in favor of HTMLBars-style bound attributes.");
 });
 
 QUnit.test("asserts for <div class='foo' {{bind-attr class='bar'}}></div>", function() {
