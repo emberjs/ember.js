@@ -7,7 +7,7 @@ export default EmberObject.extend({
     var invalidName = ISNT_HELPER_CACHE.get(name);
 
     if (invalidName) {
-      Ember.assert(`You canot use '${name}' as a component name. Component names must contain a hyphen.`);
+      Ember.assert(`You cannot use '${name}' as a component name. Component names must contain a hyphen.`);
     }
   },
 
