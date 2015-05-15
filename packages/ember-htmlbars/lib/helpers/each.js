@@ -3,6 +3,55 @@ import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
 
+/**
+  The `{{#each}}` helper loops over elements in a collection. It is an extension
+  of the base Handlebars `{{#each}}` helper.
+
+  The default behavior of `{{#each}}` is to yield its inner block once for every
+  item in an array.
+
+  ```javascript
+  var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
+  ```
+
+  ```handlebars
+  {{#each developers as |person|}}
+    {{person.name}}
+    {{! `this` is whatever it was outside the #each }}
+  {{/each}}
+  ```
+
+  The same rules apply to arrays of primitives.
+
+  ```javascript
+  var developerNames = ['Yehuda', 'Tom', 'Paul']
+  ```
+
+  ```handlebars
+  {{#each developerNames as |name|}}
+    {{name}}
+  {{/each}}
+  ```
+
+  ### {{else}} condition
+
+  `{{#each}}` can have a matching `{{else}}`. The contents of this block will render
+  if the collection is empty.
+
+  ```handlebars
+  {{#each developers as |person|}}
+    {{person.name}}
+  {{else}}
+    <p>Sorry, nobody is available for this task.</p>
+  {{/each}}
+  ```
+
+  @method each
+  @for Ember.Handlebars.helpers
+  @param [name] {String} name for item (used with `as`)
+  @param [path] {String} path
+  @param [options] {Object} Handlebars key/value pairs of options
+*/
 export default function eachHelper(params, hash, blocks) {
   var list = params[0];
   var keyPath = hash.key;
