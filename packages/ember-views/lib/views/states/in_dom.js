@@ -28,20 +28,6 @@ merge(inDOM, {
 
   exit(view) {
     view._unregister();
-  },
-
-  appendAttr(view, attrNode) {
-    var childViews = view.childViews;
-
-    if (!childViews.length) { childViews = view.childViews = childViews.slice(); }
-    childViews.push(attrNode);
-
-    attrNode.parentView = view;
-    view.renderer.appendAttrTo(attrNode, view.element, attrNode.attrName);
-
-    view.propertyDidChange('childViews');
-
-    return attrNode;
   }
 
 });
