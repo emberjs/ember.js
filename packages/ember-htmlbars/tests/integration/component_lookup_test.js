@@ -36,5 +36,5 @@ QUnit.test('dashless components should not be found', function() {
 
   expectAssertion(function() {
     runAppend(view);
-  }, /You canot use 'dashless' as a component name. Component names must contain a hyphen./);
+  }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
 });
