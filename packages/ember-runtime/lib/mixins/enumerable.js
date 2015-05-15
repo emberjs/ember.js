@@ -403,7 +403,7 @@ export default Mixin.create({
 
   /**
     Returns an array with all of the items in the enumeration where the passed
-    function returns true. This method is the inverse of filter().
+    function returns false. This method is the inverse of filter().
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -416,7 +416,7 @@ export default Mixin.create({
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return the a falsey value to include the item in the results.
+    It should return a falsey value to include the item in the results.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way
