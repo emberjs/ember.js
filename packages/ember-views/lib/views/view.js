@@ -55,8 +55,6 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 */
 Ember.TEMPLATES = {};
 
-var EMPTY_ARRAY = [];
-
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -770,16 +768,6 @@ var View = CoreView.extend(
       return value;
     }
   }),
-
-  _yield(context, options, morph) {
-    var template = get(this, 'template');
-
-    if (template) {
-      return template.render(context, options, { contextualElement: morph.contextualElement }).fragment;
-    }
-  },
-
-  _blockArguments: EMPTY_ARRAY,
 
   templateForName(name, type) {
     if (!name) { return; }
