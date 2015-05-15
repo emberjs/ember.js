@@ -16,7 +16,7 @@ export default function getRoot(scope, key) {
     return [!!(scope.blocks.default && scope.blocks.default.arity)];
   } else if (isGlobal(key) && Ember.lookup[key]) {
     return [getGlobal(key)];
-  } else if (scope.locals[key]) {
+  } else if (key in scope.locals) {
     return [scope.locals[key]];
   } else {
     return [getKey(scope, key)];
