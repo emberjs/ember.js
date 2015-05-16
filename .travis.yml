@@ -24,9 +24,6 @@ after_success:
 script:
   - npm test
 
-after_script:
-    - ember stop-sauce-connect
-
 env:
   global:
     - SAUCE_USERNAME=ember-ci
