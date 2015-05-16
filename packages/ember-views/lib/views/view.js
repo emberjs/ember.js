@@ -6,12 +6,7 @@ import Ember from 'ember-metal/core';
 
 import Evented from "ember-runtime/mixins/evented";
 import EmberObject from "ember-runtime/system/object";
-import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import { addObserver, removeObserver } from "ember-metal/observer";
-import { guidFor } from "ember-metal/utils";
-import { computed } from "ember-metal/computed";
 import {
   Mixin,
   observer
@@ -29,11 +24,13 @@ import {
 } from "ember-views/mixins/view_child_views_support";
 import ViewStateSupport from "ember-views/mixins/view_state_support";
 import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
+import TemplateLookupSupport from "ember-views/mixins/template_lookup_support";
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
 import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
 import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
 import VisibilitySupport from "ember-views/mixins/visibility_support";
 import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
+import DOMSupport from "ember-views/mixins/dom_support";
 
 function K() { return this; }
 
@@ -672,10 +669,12 @@ var View = CoreView.extend(
   ViewChildViewsSupport,
   ViewStateSupport,
   TemplateRenderingSupport,
+  TemplateLookupSupport,
   ClassNamesSupport,
   LegacyViewSupport,
   InstrumentationSupport,
   VisibilitySupport,
+  DOMSupport,
   CompatAttrsProxy, {
   concatenatedProperties: ['attributeBindings'],
 
@@ -702,85 +701,6 @@ var View = CoreView.extend(
     @default null
   */
   templateName: null,
-
-  /**
-    The name of the layout to lookup if no layout is provided.
-
-    By default `Ember.View` will lookup a template with this name in
-    `Ember.TEMPLATES` (a shared global object).
-
-    @property layoutName
-    @type String
-    @default null
-  */
-  layoutName: null,
-
-  /**
-    The template used to render the view. This should be a function that
-    accepts an optional context parameter and returns a string of HTML that
-    will be inserted into the DOM relative to its parent view.
-
-    In general, you should set the `templateName` property instead of setting
-    the template yourself.
-
-    @property template
-    @type Function
-  */
-
-  template: computed('templateName', {
-    get() {
-      var templateName = get(this, 'templateName');
-      var template = this.templateForName(templateName, 'template');
-      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
-      return template || get(this, 'defaultTemplate');
-    },
-    set(key, value) {
-      if (value !== undefined) { return value; }
-      return get(this, key);
-    }
-  }),
-
-  /**
-    A view may contain a layout. A layout is a regular template but
-    supersedes the `template` property during rendering. It is the
-    responsibility of the layout template to retrieve the `template`
-    property from the view (or alternatively, call `Handlebars.helpers.yield`,
-    `{{yield}}`) to render it in the correct location.
-
-    This is useful for a view that has a shared wrapper, but which delegates
-    the rendering of the contents of the wrapper to the `template` property
-    on a subclass.
-
-    @property layout
-    @type Function
-    */
-  layout: computed('layoutName', {
-    get(key) {
-      var layoutName = get(this, 'layoutName');
-      var layout = this.templateForName(layoutName, 'layout');
-
-      Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
-
-      return layout || get(this, 'defaultLayout');
-    },
-
-    set(key, value) {
-      return value;
-    }
-  }),
-
-  templateForName(name, type) {
-    if (!name) { return; }
-    Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
-
-    if (!this.container) {
-      throw new EmberError('Container was not found when looking up a views template. ' +
-                 'This is most likely due to manually instantiating an Ember.View. ' +
-                 'See: http://git.io/EKPpnA');
-    }
-
-    return this.container.lookup('template:' + name);
-  },
 
   /**
     If a value that affects template rendering changes, the view should be
@@ -830,83 +750,6 @@ var View = CoreView.extend(
     }
   },
 
-  /**
-    Renders the view again. This will work regardless of whether the
-    view is already in the DOM or not. If the view is in the DOM, the
-    rendering process will be deferred to give bindings a chance
-    to synchronize.
-
-    If children were added during the rendering process using `appendChild`,
-    `rerender` will remove them, because they will be added again
-    if needed by the next `render`.
-
-    In general, if the display of your view changes, you should modify
-    the DOM element directly instead of manually calling `rerender`, which can
-    be slow.
-
-    @method rerender
-  */
-  rerender() {
-    return this.currentState.rerender(this);
-  },
-
-  /*
-   * @private
-   *
-   * @method _rerender
-   */
-  _rerender() {
-    if (this.isDestroying || this.isDestroyed) {
-      return;
-    }
-
-    this._renderer.renderTree(this, this.parentView);
-  },
-
-  /**
-    Given a property name, returns a dasherized version of that
-    property name if the property evaluates to a non-falsy value.
-
-    For example, if the view has property `isUrgent` that evaluates to true,
-    passing `isUrgent` to this method will return `"is-urgent"`.
-
-    @method _classStringForProperty
-    @param property
-    @private
-  */
-  _classStringForProperty(parsedPath) {
-    return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
-  },
-
-  // ..........................................................
-  // ELEMENT SUPPORT
-  //
-
-  /**
-    Returns the current DOM element for the view.
-
-    @property element
-    @type DOMElement
-  */
-  element: null,
-
-  /**
-    Returns a jQuery object for this view's element. If you pass in a selector
-    string, this method will return a jQuery object, using the current element
-    as its buffer.
-
-    For example, calling `view.$('li')` will return a jQuery object containing
-    all of the `li` elements inside the DOM element of this view.
-
-    @method $
-    @param {String} [selector] a jQuery-compatible selector string
-    @return {jQuery} the jQuery object for the DOM node
-  */
-  $(sel) {
-    Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
-    return this.currentState.$(this, sel);
-  },
-
   forEachChildView(callback) {
     var childViews = this.childViews;
 
@@ -919,37 +762,6 @@ var View = CoreView.extend(
       view = childViews[idx];
       callback(view);
     }
-
-    return this;
-  },
-
-  /**
-    Appends the view's element to the specified parent element.
-
-    If the view does not have an HTML representation yet, `createElement()`
-    will be called automatically.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the given element until all bindings have
-    finished synchronizing.
-
-    This is not typically a function that you will need to call directly when
-    building your application. You might consider using `Ember.ContainerView`
-    instead. If you do need to use `appendTo`, be sure that the target element
-    you are providing is associated with an `Ember.Application` and does not
-    have an ancestor element that is associated with an Ember view.
-
-    @method appendTo
-    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
-    @return {Ember.View} receiver
-  */
-  appendTo(selector) {
-    var target = jQuery(selector);
-
-    Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
-    Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
-
-    this.renderer.appendTo(this, target[0]);
 
     return this;
   },
@@ -1007,97 +819,6 @@ var View = CoreView.extend(
   },
 
   /**
-    Replaces the content of the specified parent element with this view's
-    element. If the view does not have an HTML representation yet,
-    the element will be generated automatically.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the given element until all bindings have
-    finished synchronizing
-
-    @method replaceIn
-    @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
-    @return {Ember.View} received
-  */
-  replaceIn(selector) {
-    var target = jQuery(selector);
-
-    Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
-    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
-
-    this.renderer.replaceIn(this, target[0]);
-
-    return this;
-  },
-
-  /**
-    Appends the view's element to the document body. If the view does
-    not have an HTML representation yet
-    the element will be generated automatically.
-
-    If your application uses the `rootElement` property, you must append
-    the view within that element. Rendering views outside of the `rootElement`
-    is not supported.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the document body until all bindings have
-    finished synchronizing.
-
-    @method append
-    @return {Ember.View} receiver
-  */
-  append() {
-    return this.appendTo(document.body);
-  },
-
-  /**
-    Removes the view's element from the element to which it is attached.
-
-    @method remove
-    @return {Ember.View} receiver
-  */
-  remove() {
-    // What we should really do here is wait until the end of the run loop
-    // to determine if the element has been re-appended to a different
-    // element.
-    // In the interim, we will just re-render if that happens. It is more
-    // important than elements get garbage collected.
-    if (!this.removedFromDOM) { this.destroyElement(); }
-
-    // Set flag to avoid future renders
-    this._willInsert = false;
-  },
-
-  /**
-    The HTML `id` of the view's element in the DOM. You can provide this
-    value yourself but it must be unique (just as in HTML):
-
-    ```handlebars
-      {{my-component elementId="a-really-cool-id"}}
-    ```
-
-    If not manually set a default value will be provided by the framework.
-
-    Once rendered an element's `elementId` is considered immutable and you
-    should never change it. If you need to compute a dynamic value for the
-    `elementId`, you should do this when the component or element is being
-    instantiated:
-
-    ```javascript
-      export default Ember.Component.extend({
-        setElementId: function() {
-          var index = this.get('index');
-          this.set('elementId', 'component-id' + index);
-        }.on('init')
-      });
-    ```
-
-    @property elementId
-    @type String
-  */
-  elementId: null,
-
-  /**
     Attempts to discover the element in the parent element. The default
     implementation looks for an element with an ID of `elementId` (or the
     view's guid if `elementId` is null). You can override this method to
@@ -1111,25 +832,6 @@ var View = CoreView.extend(
   findElementInParentElement(parentElem) {
     var id = "#" + this.elementId;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
-  },
-
-  /**
-    Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method. Once the element is created,
-    it sets the `element` property of the view to the rendered element.
-
-    After the element has been inserted into the DOM, `didInsertElement` will
-    be called on this view and all of its child views.
-
-    @method createElement
-    @return {Ember.View} receiver
-  */
-  createElement() {
-    if (this.element) { return this; }
-
-    this.renderer.createElement(this);
-
-    return this;
   },
 
   /**
@@ -1159,28 +861,6 @@ var View = CoreView.extend(
     @event willClearRender
   */
   willClearRender: K,
-
-  /**
-    Destroys any existing element along with the element for any child views
-    as well. If the view does not currently have a element, then this method
-    will do nothing.
-
-    If you implement `willDestroyElement()` on your view, then this method will
-    be invoked on your view before your element is destroyed to give you a
-    chance to clean up any event handlers, etc.
-
-    If you write a `willDestroyElement()` handler, you can assume that your
-    `didInsertElement()` handler was called earlier for the same element.
-
-    You should not call or override this method yourself, but you may
-    want to implement the above callbacks.
-
-    @method destroyElement
-    @return {Ember.View} receiver
-  */
-  destroyElement() {
-    return this.currentState.destroyElement(this);
-  },
 
   /**
     Called when the element of the view is going to be destroyed. Override
@@ -1244,43 +924,6 @@ var View = CoreView.extend(
   */
   ariaRole: null,
 
-  /**
-    Normally, Ember's component model is "write-only". The component takes a
-    bunch of attributes that it got passed in, and uses them to render its
-    template.
-
-    One nice thing about this model is that if you try to set a value to the
-    same thing as last time, Ember (through HTMLBars) will avoid doing any
-    work on the DOM.
-
-    This is not just a performance optimization. If an attribute has not
-    changed, it is important not to clobber the element's "hidden state".
-    For example, if you set an input's `value` to the same value as before,
-    it will clobber selection state and cursor position. In other words,
-    setting an attribute is not **always** idempotent.
-
-    This method provides a way to read an element's attribute and also
-    update the last value Ember knows about at the same time. This makes
-    setting an attribute idempotent.
-
-    In particular, what this means is that if you get an `<input>` element's
-    `value` attribute and then re-render the template with the same value,
-    it will avoid clobbering the cursor and selection position.
-
-    Since most attribute sets are idempotent in the browser, you typically
-    can get away with reading attributes using jQuery, but the most reliable
-    way to do so is through this method.
-
-    @method readDOMAttr
-    @param {String} name the name of the attribute
-    @return String
-  */
-  readDOMAttr(name) {
-    let attr = this._renderNode.childNodes.filter(node => node.attrName === name)[0];
-    if (!attr) { return null; }
-    return attr.getContent();
-  },
-
   // .......................................................
   // CORE DISPLAY METHODS
   //
@@ -1296,45 +939,17 @@ var View = CoreView.extend(
     @private
   */
   init() {
-    if (!this.elementId) {
-      this.elementId = guidFor(this);
-    }
-
-    this.scheduledRevalidation = false;
-
     this._super(...arguments);
 
     if (!this._viewRegistry) {
       this._viewRegistry = View.views;
     }
+
+    this.scheduledRevalidation = false;
   },
 
   __defineNonEnumerable(property) {
     this[property.name] = property.descriptor.value;
-  },
-
-  revalidate() {
-    this.renderer.revalidateTopLevelView(this);
-    this.scheduledRevalidation = false;
-  },
-
-  scheduleRevalidate(node, label, manualRerender) {
-    if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
-      if (manualRerender) {
-        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`);
-      } else {
-        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`);
-      }
-      run.scheduleOnce('render', this, this.revalidate);
-      return;
-    }
-
-    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`, !this._dispatching);
-
-    if (!this.scheduledRevalidation || this._dispatching) {
-      this.scheduledRevalidation = true;
-      run.scheduleOnce('render', this, this.revalidate);
-    }
   },
 
   templateRenderer: null,
@@ -1376,85 +991,7 @@ var View = CoreView.extend(
       parentView.set(viewName, null);
     }
 
-    // Destroy HTMLbars template
-    if (this.lastResult) {
-      this.lastResult.destroy();
-    }
-
     return this;
-  },
-
-  // .......................................................
-  // EVENT HANDLING
-  //
-
-  /**
-    Handle events from `Ember.EventDispatcher`
-
-    @method handleEvent
-    @param eventName {String}
-    @param evt {Event}
-    @private
-  */
-  handleEvent(eventName, evt) {
-    return this.currentState.handleEvent(this, eventName, evt);
-  },
-
-  /**
-    Registers the view in the view registry, keyed on the view's `elementId`.
-    This is used by the EventDispatcher to locate the view in response to
-    events.
-
-    This method should only be called once the view has been inserted into the
-    DOM.
-
-    @method _register
-    @private
-  */
-  _register() {
-    Ember.assert("Attempted to register a view with an id already in use: "+this.elementId, !this._viewRegistry[this.elementId]);
-    this._viewRegistry[this.elementId] = this;
-  },
-
-  /**
-    Removes the view from the view registry. This should be called when the
-    view is removed from DOM.
-
-    @method _unregister
-    @private
-  */
-  _unregister() {
-    delete this._viewRegistry[this.elementId];
-  },
-
-  registerObserver(root, path, target, observer) {
-    if (!observer && 'function' === typeof target) {
-      observer = target;
-      target = null;
-    }
-
-    if (!root || typeof root !== 'object') {
-      return;
-    }
-
-    var scheduledObserver = this._wrapAsScheduled(observer);
-
-    addObserver(root, path, target, scheduledObserver);
-
-    this.one('willClearRender', function() {
-      removeObserver(root, path, target, scheduledObserver);
-    });
-  },
-
-  _wrapAsScheduled(fn) {
-    var view = this;
-    var stateCheckedFn = function() {
-      view.currentState.invokeObserver(this, fn);
-    };
-    var scheduledFn = function() {
-      run.scheduleOnce('render', this, stateCheckedFn);
-    };
-    return scheduledFn;
   }
 });
 // jscs:enable validateIndentation

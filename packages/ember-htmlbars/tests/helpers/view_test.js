@@ -1321,7 +1321,7 @@ QUnit.test("{{view}} asserts that a view class is present", function() {
 
   expectAssertion(function() {
     runAppend(view);
-  }, /must be a subclass or an instance of Ember.View/);
+  }, /must be a Component or View/);
 });
 
 QUnit.test("{{view}} asserts that a view class is present off controller", function() {
@@ -1337,7 +1337,7 @@ QUnit.test("{{view}} asserts that a view class is present off controller", funct
 
   expectAssertion(function() {
     runAppend(view);
-  }, /must be a subclass or an instance of Ember.View/);
+  }, /must be a Component or View/);
 });
 
 QUnit.test("{{view}} asserts that a view instance is present", function() {
@@ -1351,7 +1351,7 @@ QUnit.test("{{view}} asserts that a view instance is present", function() {
 
   expectAssertion(function() {
     runAppend(view);
-  }, /must be a subclass or an instance of Ember.View/);
+  }, /must be a Component or View/);
 });
 
 QUnit.test("{{view}} asserts that a view subclass instance is present off controller", function() {
@@ -1367,7 +1367,7 @@ QUnit.test("{{view}} asserts that a view subclass instance is present off contro
 
   expectAssertion(function() {
     runAppend(view);
-  }, /must be a subclass or an instance of Ember.View/);
+  }, /must be a Component or View/);
 });
 
 QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {

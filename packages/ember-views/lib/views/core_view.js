@@ -9,6 +9,7 @@ import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
 import { get } from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
 
 import { typeOf } from "ember-runtime/utils";
 import { internal } from "htmlbars-runtime";
@@ -58,6 +59,53 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
     this.isDestroyingSubtree = false;
     this._dispatching = null;
+  },
+
+  /**
+    Renders the view again. This will work regardless of whether the
+    view is already in the DOM or not. If the view is in the DOM, the
+    rendering process will be deferred to give bindings a chance
+    to synchronize.
+
+    If children were added during the rendering process using `appendChild`,
+    `rerender` will remove them, because they will be added again
+    if needed by the next `render`.
+
+    In general, if the display of your view changes, you should modify
+    the DOM element directly instead of manually calling `rerender`, which can
+    be slow.
+
+    @method rerender
+  */
+  rerender() {
+    return this.currentState.rerender(this);
+  },
+
+  revalidate() {
+    this.renderer.revalidateTopLevelView(this);
+    this.scheduledRevalidation = false;
+  },
+
+  // .......................................................
+  // GLIMMER RE-RENDERING
+  //
+  scheduleRevalidate(node, label, manualRerender) {
+    if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
+      if (manualRerender) {
+        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`);
+      } else {
+        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`);
+      }
+      run.scheduleOnce('render', this, this.revalidate);
+      return;
+    }
+
+    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`, !this._dispatching);
+
+    if (!this.scheduledRevalidation || this._dispatching) {
+      this.scheduledRevalidation = true;
+      run.scheduleOnce('render', this, this.revalidate);
+    }
   },
 
   /**
@@ -121,6 +169,11 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
         internal.clearMorph(this._renderNode, this.ownerView.env, true);
       }
       this.ownerView.isDestroyingSubtree = false;
+    }
+
+    // Destroy HTMLbars template
+    if (this.lastResult) {
+      this.lastResult.destroy();
     }
 
     return this;
