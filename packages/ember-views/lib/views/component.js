@@ -10,6 +10,18 @@ import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
 
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+
+function validateAction(component, actionName) {
+  if (actionName && actionName[MUTABLE_CELL]) {
+    actionName = actionName.value;
+  }
+  Ember.assert("The default action was triggered on the component " + component.toString() +
+               ", but the action name (" + actionName + ") was not a string.",
+               isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
+  return actionName;
+}
+
 /**
 @module ember
 @submodule ember-views
@@ -262,17 +274,10 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
     // Send the default action
     if (action === undefined) {
-      actionName = get(this, 'action');
-      Ember.assert("The default action was triggered on the component " + this.toString() +
-                   ", but the action name (" + actionName + ") was not a string.",
-                   isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
-    } else {
-      actionName = get(this, 'attrs.' + action) || get(this, action);
-      Ember.assert("The " + action + " action was triggered on the component " +
-                   this.toString() + ", but the action name (" + actionName +
-                   ") was not a string.",
-                   isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
+      action = 'action';
     }
+    actionName = get(this, 'attrs.' + action) || get(this, action);
+    actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
