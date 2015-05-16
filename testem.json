@@ -5,35 +5,35 @@
   "parallel": 4,
   "launchers": {
     "SL_Chrome_Current": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b chrome --no-ct -u <url>",
+      "command": "ember sauce:launch -b chrome --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_Firefox_Current": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b firefox -v 34 --no-ct -u <url>",
+      "command": "ember sauce:launch -b firefox -v 34 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_Safari_Current": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b safari -v 8 --no-ct -u <url>",
+      "command": "ember sauce:launch -b safari -v 8 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_Safari_Last": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b safari -v 7 --no-ct -u <url>",
+      "command": "ember sauce:launch -b safari -v 7 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_IE_11": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b 'internet explorer' -v 11 --no-ct -u <url>",
+      "command": "ember sauce:launch -b 'internet explorer' -v 11 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_IE_10": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b 'internet explorer' -v 10 --no-ct -u <url>",
+      "command": "ember sauce:launch -b 'internet explorer' -v 10 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_IE_9": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b 'internet explorer' -v 9 --no-ct -u <url>",
+      "command": "ember sauce:launch -b 'internet explorer' -v 9 --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_IE_8": {
-      "command": "./node_modules/.bin/ember-cli-sauce -b 'internet explorer' -v 8 --no-ct -u <url>",
+      "command": "ember sauce:launch -b 'internet explorer' -v 8 --no-ct -u <url>",
       "protocol": "tap"
     }
   },
