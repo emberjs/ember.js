@@ -35,7 +35,7 @@ function run(command, _args) {
 
 RSVP.resolve()
   .then(function() {
-    return run('./node_modules/.bin/ember', [ 'start-sauce-connect' ]);
+    return run('./node_modules/.bin/ember', [ 'sauce:connect' ]);
   })
   .then(function() {
     // calling testem directly here instead of `ember test` so that
@@ -44,7 +44,7 @@ RSVP.resolve()
     return run('./node_modules/.bin/testem', [ 'ci', '--port', '7000' ]);
   })
   .finally(function() {
-    return run('./node_modules/.bin/ember', [ 'stop-sauce-connect' ]);
+    return run('./node_modules/.bin/ember', [ 'sauce:disconnect' ]);
   })
   .catch(function() {
     process.exit(1);
