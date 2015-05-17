@@ -238,7 +238,7 @@ function normalizeClasses(classes, output) {
     // Legacy :class microsyntax for static class names
     if (propName === '') {
       output.push(activeClass);
-      return;
+      continue;
     }
 
     // 2.0TODO: Remove deprecated global path
