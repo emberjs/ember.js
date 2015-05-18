@@ -53,6 +53,7 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.escaped = true;
   this.lastValue = UNSET;
   this.linkedParams = null;
+  this.linkedResult = null;
   this.guid = "attr" + guid++;
   this.rendered = false;
   this._renderedInitially = false;

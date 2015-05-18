@@ -18,6 +18,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.morphMap = null;
   this.key = null;
   this.linkedParams = null;
+  this.linkedResult = null;
   this.rendered = false;
   this.guid = "range" + guid++;
 }

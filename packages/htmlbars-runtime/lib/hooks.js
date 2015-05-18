@@ -650,13 +650,27 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
     return;
   }
 
-  var options = optionsFor(null, null, env, scope, morph);
+  let value, hasValue;
+  if (morph.linkedResult) {
+    value = env.hooks.getValue(morph.linkedResult);
+    hasValue = true;
+  } else {
+    var options = optionsFor(null, null, env, scope, morph);
 
-  var helper = env.hooks.lookupHelper(env, scope, path);
-  var result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
+    var helper = env.hooks.lookupHelper(env, scope, path);
+    var result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
 
-  if (result && 'value' in result) {
-    var value = result.value;
+    if (result && 'value' in result) {
+      value = result.value;
+      hasValue = true;
+    }
+
+    if (result && result.link) {
+      morph.linkedResult = result.value;
+    }
+  }
+
+  if (hasValue) {
     if (morph.lastValue !== value) {
       morph.setContent(value);
     }
