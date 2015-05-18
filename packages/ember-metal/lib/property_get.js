@@ -10,6 +10,7 @@ import {
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
 import { hasPropertyAccessors } from "ember-metal/platform/define_property";
+import isNone from 'ember-metal/is_none';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -58,7 +59,7 @@ export function get(obj, keyName) {
   Ember.assert(`Cannot call get with ${keyName} key.`, !!keyName);
   Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined);
 
-  if (!obj) {
+  if (isNone(obj)) {
     return _getPath(obj, keyName);
   }
 
