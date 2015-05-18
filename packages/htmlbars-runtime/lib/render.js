@@ -4,6 +4,7 @@ import ExpressionVisitor from "./expression-visitor";
 import { AlwaysDirtyVisitor } from "./expression-visitor";
 import Morph from "./morph";
 import { clearMorph } from "../htmlbars-util/template-utils";
+import voidMap from '../htmlbars-util/void-tag-names';
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
@@ -102,9 +103,13 @@ export function manualElement(tagName, attributes) {
         dom.setAttribute(el1, key, attributes[key]);
       }
 
-      var el2 = dom.createComment("");
-      dom.appendChild(el1, el2);
+      if (!voidMap[tagName]) {
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+      }
+
       dom.appendChild(el0, el1);
+
       return el0;
     },
     buildRenderNodes: function buildRenderNodes(dom, fragment) {

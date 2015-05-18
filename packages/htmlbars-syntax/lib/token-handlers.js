@@ -1,20 +1,9 @@
-import { forEach } from "../htmlbars-util/array-utils";
 import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "./builders";
 import {
   appendChild,
   parseComponentBlockParams
 } from "./utils";
-
-// The HTML elements in this list are speced by
-// http://www.w3.org/TR/html-markup/syntax.html#syntax-elements,
-// and will be forced to close regardless of if they have a
-// self-closing /> at the end.
-var voidTagNames = "area base br col command embed hr img input keygen link meta param source track wbr";
-var voidMap = {};
-
-forEach(voidTagNames.split(" "), function(tagName) {
-  voidMap[tagName] = true;
-});
+import voidMap from '../htmlbars-util/void-tag-names';
 
 // Except for `mustache`, all tokens are only allowed outside of
 // a start or end tag.
