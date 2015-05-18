@@ -12,7 +12,8 @@ import RSVP from "ember-runtime/ext/rsvp";
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 import "ember-routing"; //ES6TODO: fixme?
 
-var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
+var App, find, click, fillIn, fillInWithInputEvents, currentRoute, visit, originalAdapter, andThen, indexHitCount,
+    keyDownTriggerd, inputTriggered;
 
 QUnit.module("ember-testing Acceptance", {
   setup() {
@@ -58,7 +59,13 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.CommentsView = EmberView.extend({
-        defaultTemplate: compile('{{input type="text"}}')
+        defaultTemplate: compile('{{input type="text"}}'),
+        keyDown: function(e) {
+          keyDownTriggerd = true;
+        },
+        input: function(e) {
+          inputTriggered = true;
+        }
       });
 
       App.AbortTransitionRoute = EmberRoute.extend({
@@ -81,6 +88,7 @@ QUnit.module("ember-testing Acceptance", {
     find = window.find;
     click = window.click;
     fillIn = window.fillIn;
+    fillInWithInputEvents = window.fillInWithInputEvents;
     visit = window.visit;
     andThen = window.andThen;
 
@@ -125,7 +133,7 @@ QUnit.test("helpers can be chained with then", function() {
 // Keep this for backwards compatibility
 
 QUnit.test("helpers can be chained to each other", function() {
-  expect(5);
+  expect(8);
 
   currentRoute = 'index';
 
@@ -141,6 +149,12 @@ QUnit.test("helpers can be chained to each other", function() {
     });
   })
   .keyEvent('.ember-text-field', 'keypress', 13)
+  .fillInWithInputEvents('.ember-text-field', 'updated', ['keydown', 'input'])
+  .then(function() {
+    ok(keyDownTriggerd);
+    ok(inputTriggered);
+    equal(find('.ember-text-field').val(), 'updated', "fillInWithInputEvents successfully works");
+  })
   .visit('/posts')
   .then(function() {
     equal(currentRoute, 'posts', "Thens can also be chained to helpers");
@@ -171,7 +185,7 @@ QUnit.test("helpers don't need to be chained", function() {
 });
 
 QUnit.test("Nested async helpers", function() {
-  expect(3);
+  expect(6);
 
   currentRoute = 'index';
 
@@ -186,6 +200,16 @@ QUnit.test("Nested async helpers", function() {
   andThen(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
     equal(find('.ember-text-field').val(), 'hello', "Fillin successfully works");
+  });
+
+  andThen(function() {
+    fillInWithInputEvents('.ember-text-field', 'updated', ['keydown', 'input']);
+  });
+
+  andThen(function() {
+    ok(keyDownTriggerd);
+    ok(inputTriggered);
+    equal(find('.ember-text-field').val(), 'updated', "fillInWithInputEvents successfully works");
   });
 
   visit('/posts');
