@@ -181,6 +181,12 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
     morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.component(morph, env, scope, path, paramsAndHash[0], paramsAndHash[1],
                         templates, visitor);
+  },
+
+  // [ 'attributes', template ]
+  attributes: function(node, morph, env, scope, parentMorph, visitor) {
+    let template = node[1];
+    env.hooks.attributes(morph, env, scope, template, parentMorph, visitor);
   }
 });
 
@@ -226,6 +232,11 @@ export default merge(createObject(base), {
       AlwaysDirtyVisitor.component(node, morph, env, scope, template, visitor);
     });
   },
+
+  // [ 'attributes', template ]
+  attributes: function(node, morph, env, scope, parentMorph, visitor) {
+    AlwaysDirtyVisitor.attributes(node, morph, env, scope, parentMorph, visitor);
+  }
 });
 
 function dirtyCheck(env, morph, visitor, callback) {

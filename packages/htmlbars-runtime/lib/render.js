@@ -34,11 +34,17 @@ function RenderResult(env, scope, options, rootNode, nodes, fragment, template, 
 
   this.nodes = nodes;
   this.template = template;
+  this.statements = template.statements.slice();
   this.env = env;
   this.scope = scope;
   this.shouldSetContent = shouldSetContent;
 
   this.bindScope();
+
+  if (options.attributes !== undefined) {
+    nodes.push({ state: {} });
+    this.statements.push(['attributes', attachAttributes(options.attributes)]);
+  }
 
   if (options.self !== undefined) { this.bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
@@ -132,12 +138,56 @@ export function manualElement(tagName, attributes) {
   return template;
 }
 
+export function attachAttributes(attributes) {
+  var statements = [];
+
+  for (var key in attributes) {
+    if (typeof attributes[key] === 'string') { continue; }
+    statements.push(["attribute", key, attributes[key]]);
+  }
+
+  var template = {
+    arity: 0,
+    cachedFragment: null,
+    hasRendered: false,
+    buildFragment: function buildFragment(dom) {
+      var el0 = this.element;
+      if (el0.namespaceURI === "http://www.w3.org/2000/svg") {
+        dom.setNamespace(svgNamespace);
+      }
+      for (var key in attributes) {
+        if (typeof attributes[key] !== 'string') { continue; }
+        dom.setAttribute(el0, key, attributes[key]);
+      }
+
+      return el0;
+    },
+    buildRenderNodes: function buildRenderNodes(dom) {
+      var element = this.element;
+      var morphs = [];
+
+      for (var key in attributes) {
+        if (typeof attributes[key] === 'string') { continue; }
+        morphs.push(dom.createAttrMorph(element, key));
+      }
+
+      return morphs;
+    },
+    statements: statements,
+    locals: [],
+    templates: [],
+    element: null
+  };
+
+  return template;
+}
+
 RenderResult.prototype.render = function() {
   this.root.lastResult = this;
   this.root.rendered = true;
   this.populateNodes(AlwaysDirtyVisitor);
 
-  if (this.shouldSetContent) {
+  if (this.shouldSetContent && this.root.setContent) {
     this.root.setContent(this.fragment);
   }
 };
@@ -175,7 +225,7 @@ RenderResult.prototype.populateNodes = function(visitor) {
   var scope = this.scope;
   var template = this.template;
   var nodes = this.nodes;
-  var statements = template.statements;
+  var statements = this.statements;
   var i, l;
 
   for (i=0, l=statements.length; i<l; i++) {
@@ -193,6 +243,7 @@ RenderResult.prototype.populateNodes = function(visitor) {
       case 'element': visitor.element(statement, morph, env, scope, template, visitor); break;
       case 'attribute': visitor.attribute(statement, morph, env, scope); break;
       case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
+      case 'attributes': visitor.attributes(statement, morph, env, scope, this.root, visitor); break;
     }
 
     if (env.hooks.didRenderNode) {
