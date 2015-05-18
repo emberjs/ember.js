@@ -278,3 +278,35 @@ for a detailed explanation.
   compatible with action subexpressions.
 
   Per RFC [#50](https://github.com/emberjs/rfcs/pull/50)
+
+* `ember-htmlbars-get-helper`
+
+  The Syntax: `{{get object path}}`
+
+  A new keyword/helper that can be used to allow your object and/or key
+  values to be dynamic.
+
+  Example:
+  ```js
+
+  context = {
+    displayedPropertyTitle: 'First Name',
+    displayedPropertyKey: 'firstName'
+  };
+  ```  
+
+  ```hbs
+  <h2>{{displayedPropertyTitle}}</h2>
+
+  <ul>
+  {{#each people as |person|}}
+    <li>{{get person displayedPropertyKey}}</li>
+  {{/each}}
+  </ul>
+  ```
+
+  This allows the template to provide `displayedPropertyTitle`
+  and `displayedPropertyKey` to render a list for a single property
+  for each person.. E.g. a list of all `firstNames`, or `lastNames`, or `ages`.
+
+  Addd in [#11196](https://github.com/emberjs/ember.js/pull/11196)

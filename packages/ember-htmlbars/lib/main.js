@@ -27,6 +27,7 @@ import normalizeClassHelper from "ember-htmlbars/helpers/-normalize-class";
 import concatHelper from "ember-htmlbars/helpers/-concat";
 import joinClassesHelper from "ember-htmlbars/helpers/-join-classes";
 import legacyEachWithControllerHelper from "ember-htmlbars/helpers/-legacy-each-with-controller";
+import getHelper from "ember-htmlbars/helpers/-get";
 import DOMHelper from "ember-htmlbars/system/dom-helper";
 
 // importing adds template bootstrapping
@@ -51,6 +52,9 @@ registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('-concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
+if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+  registerHelper('-get', getHelper);
+}
 
 Ember.HTMLBars = {
   _registerHelper: registerHelper,
