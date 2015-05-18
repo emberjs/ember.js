@@ -768,7 +768,10 @@ var Application = Namespace.extend(DeferredMixin, {
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
-    this.__deprecatedInstance__.destroy();
+
+    if (this.__deprecatedInstance__) {
+      this.__deprecatedInstance__.destroy();
+    }
   },
 
   initializer(options) {
