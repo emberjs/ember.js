@@ -100,3 +100,15 @@ test("manualElement function honors namespaces", function() {
     ok(result.fragment.childNodes[1].childNodes[0] instanceof SVGLinearGradientElement);
     equalTokens(result.fragment, '<svg version="1.1"><linearGradient><stop offset="0.1"></stop><stop offset="0.6"></stop></linearGradient></svg>');
 });
+
+test("manualElement function honors void elements", function() {
+  var attributes = {
+    class: 'foo-bar'
+  };
+  var layout = manualElement('input', attributes);
+  var fragment = layout.buildFragment(new DOMHelper());
+
+  equal(fragment.childNodes.length, 1, 'includes a single element');
+  equal(fragment.childNodes[0].childNodes.length, 0, 'no child nodes were added to `<input>` because it is a void tag');
+  equalTokens(fragment, '<input class="foo-bar">');
+});
