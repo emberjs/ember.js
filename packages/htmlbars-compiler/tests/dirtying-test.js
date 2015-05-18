@@ -706,3 +706,26 @@ test("It is possible to nest multiple templates into a manual element", function
   equalTokens(result.fragment, "<span title='Tom Dale' data-bar='baz' href='http://tomdale.net'><em>foo. Hello world!</em></span>");
 });
 
+test("The invoke helper hook can instruct the runtime to link the result", function() {
+  let invokeCount = 0;
+
+  env.hooks.invokeHelper = function(morph, env, scope, visitor, params, hash, helper) {
+    invokeCount++;
+    return { value: helper(params, hash), link: true };
+  };
+
+  helpers.double = function([input]) {
+    return input * 2;
+  };
+
+  let template = compile("{{double 12}}");
+  let result = template.render({}, env);
+
+  equalTokens(result.fragment, "24");
+  equal(invokeCount, 1);
+
+  result.rerender();
+
+  equalTokens(result.fragment, "24");
+  equal(invokeCount, 1);
+});
