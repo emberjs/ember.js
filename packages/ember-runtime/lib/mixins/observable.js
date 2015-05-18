@@ -214,8 +214,7 @@ export default Mixin.create({
     @public
   */
   set(keyName, value) {
-    set(this, keyName, value);
-    return this;
+    return set(this, keyName, value);
   },
 
 
