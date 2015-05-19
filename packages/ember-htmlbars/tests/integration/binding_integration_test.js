@@ -87,6 +87,16 @@ QUnit.test("should be able to update when bound property updates", function() {
   equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
 });
 
+QUnit.test('should allow rendering of undefined props', function() {
+  view = EmberView.create({
+    template: compile('{{name}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '', 'rendered undefined binding');
+});
+
 QUnit.test('should cleanup bound properties on rerender', function() {
   view = EmberView.create({
     controller: EmberObject.create({ name: 'wycats' }),
