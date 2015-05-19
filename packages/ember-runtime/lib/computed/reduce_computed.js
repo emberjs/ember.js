@@ -513,11 +513,13 @@ function ReduceComputedProperty(options) {
         var previousDependentArray = meta.dependentArrays[dependentKey];
 
         if (dependentArray === previousDependentArray) {
+
           // The array may be the same, but our item property keys may have
           // changed, so we set them up again.  We can't easily tell if they've
           // changed: the array may be the same object, but with different
           // contents.
           if (cp._previousItemPropertyKeys[dependentKey]) {
+            meta.dependentArraysObserver.teardownPropertyObservers(dependentKey, cp._previousItemPropertyKeys[dependentKey]);
             delete cp._previousItemPropertyKeys[dependentKey];
             meta.dependentArraysObserver.setupPropertyObservers(dependentKey, cp._itemPropertyKeys[dependentKey]);
           }
