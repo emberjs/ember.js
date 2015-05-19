@@ -106,6 +106,43 @@ QUnit.test('non-block with properties on attrs and component class', function() 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
+QUnit.test('lookup of component takes priority over property', function() {
+  expect(1);
+
+  registry.register('template:components/some-component', compile('some-component'));
+
+  view = EmberView.extend({
+    template: compile('{{some-prop}} {{some-component}}'),
+    container: container,
+    context: {
+      'some-component': 'not-some-component',
+      'some-prop': 'some-prop'
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'some-prop some-component');
+});
+
+QUnit.test('component without dash is not looked up', function() {
+  expect(1);
+
+  registry.register('template:components/somecomponent', compile('somecomponent'));
+
+  view = EmberView.extend({
+    template: compile('{{somecomponent}}'),
+    container: container,
+    context: {
+      'somecomponent': 'notsomecomponent'
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'notsomecomponent');
+});
+
 QUnit.test('rerendering component with attrs from parent', function() {
   var willUpdate = 0;
   var didReceiveAttrs = 0;

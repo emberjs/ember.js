@@ -217,4 +217,19 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     });
     equal(view.$().text(), 'Max - Max|James - James|', 'component was updated and re-rendered');
   });
+
+  QUnit.test('dashless components should not be found', function() {
+    expect(1);
+
+    registry.register('template:components/dashless', compile('Do not render me!'));
+
+    view = EmberView.extend({
+      template: compile('{{component "dashless"}}'),
+      container: container
+    }).create();
+
+    expectAssertion(function() {
+      runAppend(view);
+    }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
+  });
 }
