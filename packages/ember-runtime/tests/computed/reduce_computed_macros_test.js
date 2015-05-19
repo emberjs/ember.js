@@ -837,6 +837,34 @@ QUnit.module('computedSort - sortProperties', {
 
 commonSortTests();
 
+QUnit.test("updating sort properties detaches observers for old sort properties", function() {
+  var objectToRemove = get(obj, 'items').objectAt(3);
+
+  run(function() {
+    sorted = get(obj, 'sortedItems');
+  });
+
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+
+  run(function() {
+    set(obj, 'itemSorting', Ember.A(['fname:desc']));
+  });
+
+  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
+
+  run(function() {
+    get(obj, 'items').removeObject(objectToRemove);
+  });
+
+  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei'], "after removing item array is updated");
+
+  run(function() {
+    set(objectToRemove, 'lname', 'Updated-Stark');
+  });
+
+  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei'], "after changing removed item array is not updated");
+});
+
 QUnit.test("updating sort properties updates the sorted array", function() {
   run(function() {
     sorted = get(obj, 'sortedItems');
