@@ -274,41 +274,41 @@ QUnit.module("object.set()", {
 
 });
 
-QUnit.test("should change normal properties and return this", function() {
+QUnit.test("should change normal properties and return the value", function() {
   var ret = object.set("normal", "changed");
   equal(object.normal, "changed");
-  equal(ret, object);
+  equal(ret, "changed");
 });
 
-QUnit.test("should call computed properties passing value and return this", function() {
+QUnit.test("should call computed properties passing value and return the value", function() {
   var ret = object.set("computed", "changed");
   equal(object._computed, "changed");
-  equal(ret, object);
+  equal(ret, "changed");
 });
 
 QUnit.test("should change normal properties when passing undefined", function() {
   var ret = object.set('normal', undefined);
   equal(object.normal, undefined);
-  equal(ret, object);
+  equal(ret, undefined);
 });
 
-QUnit.test("should replace the function for a non-computed property and return this", function() {
+QUnit.test("should replace the function for a non-computed property and return the value", function() {
   var ret = object.set("method", "changed");
   equal(object._method, "method"); // make sure this was NOT run
   ok(typeof object.method !== 'function');
-  equal(ret, object);
+  equal(ret, "changed");
 });
 
 QUnit.test("should replace prover when property value is null", function() {
   var ret = object.set("nullProperty", "changed");
   equal(object.nullProperty, "changed");
-  equal(ret, object);
+  equal(ret, "changed");
 });
 
 QUnit.test("should call unknownProperty with value when property is undefined", function() {
   var ret = object.set("unknown", "changed");
   equal(object._unknown, "changed");
-  equal(ret, object);
+  equal(ret, "changed");
 });
 
 // ..........................................................
@@ -453,11 +453,11 @@ QUnit.test("setting values should call function return value", function() {
 
   forEach(keys, function(key) {
 
-    equal(object.set(key, values[0]), object, fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
+    equal(object.set(key, values[0]), values[0], fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
-    equal(object.set(key, values[1]), object, fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
+    equal(object.set(key, values[1]), values[1], fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
 
-    equal(object.set(key, values[1]), object, fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
+    equal(object.set(key, values[1]), values[1], fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
 
   });
 
