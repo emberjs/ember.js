@@ -106,6 +106,30 @@ QUnit.test('should property escape unsafe hrefs', function() {
   }
 });
 
+QUnit.module('ember-htmlbars: {{#unbound}} helper with container present', {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = EmberView.create({
+      container: new Registry().container,
+      template: compile('{{unbound foo}}'),
+      context: EmberObject.create({
+        foo: 'bleep'
+      })
+    });
+  },
+
+  teardown() {
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test('it should render the current value of a property path on the context', function() {
+  runAppend(view);
+  equal(view.$().text(), 'bleep', 'should render the current value of a property path');
+});
+
 QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
