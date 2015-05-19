@@ -6,6 +6,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 var registry, container, view;
@@ -402,7 +403,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
   });
 }
 
-QUnit.test('static positional parameters', function() {
+QUnit.test('static named positional parameters', function() {
   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
   registry.register('component:sample-component', Component.extend({
     positionalParams: ['name', 'age']
@@ -418,7 +419,7 @@ QUnit.test('static positional parameters', function() {
   equal(jQuery('#qunit-fixture').text(), 'Quint4');
 });
 
-QUnit.test('dynamic positional parameters', function() {
+QUnit.test('dynamic named positional parameters', function() {
   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
   registry.register('component:sample-component', Component.extend({
     positionalParams: ['name', 'age']
@@ -436,11 +437,56 @@ QUnit.test('dynamic positional parameters', function() {
   runAppend(view);
   equal(jQuery('#qunit-fixture').text(), 'Quint4');
   run(function() {
-    Ember.set(view.context, 'myName', 'Edward');
-    Ember.set(view.context, 'myAge', '5');
+    set(view.context, 'myName', 'Edward');
+    set(view.context, 'myAge', '5');
   });
 
   equal(jQuery('#qunit-fixture').text(), 'Edward5');
+});
+
+QUnit.test('static arbitrary number of positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: 'names'
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#args-3').text(), 'Foo4Bar');
+  equal(view.$('#args-5').text(), 'Foo4Bar5Baz');
+  equal(view.$('#helper').text(), 'Foo4Bar5Baz');
+});
+
+QUnit.test('dynamic arbitrary number of positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: 'names'
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component user1 user2 id="direct"}}{{component "sample-component" user1 user2 id="helper"}}'),
+    container: container,
+    context: {
+      user1: 'Foo',
+      user2: 4
+    }
+  }).create();
+
+  runAppend(view);
+  equal(view.$('#direct').text(), 'Foo4');
+  equal(view.$('#helper').text(), 'Foo4');
+  run(function() {
+    set(view.context, 'user1', 'Bar');
+    set(view.context, 'user2', '5');
+  });
+
+  equal(view.$('#direct').text(), 'Bar5');
+  equal(view.$('#helper').text(), 'Bar5');
 });
 
 QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
@@ -504,8 +550,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     runAppend(view);
     equal(jQuery('#qunit-fixture').text(), 'Quint4');
     run(function() {
-      Ember.set(view.context, 'myName', 'Edward');
-      Ember.set(view.context, 'myAge', '5');
+      set(view.context, 'myName', 'Edward');
+      set(view.context, 'myAge', '5');
     });
 
     equal(jQuery('#qunit-fixture').text(), 'Edward5');
@@ -526,7 +572,7 @@ QUnit.test('yield to inverse', function() {
   runAppend(view);
   equal(jQuery('#qunit-fixture').text(), 'Yes:Hello42');
   run(function() {
-    Ember.set(view.context, 'activated', false);
+    set(view.context, 'activated', false);
   });
 
   equal(jQuery('#qunit-fixture').text(), 'No:Goodbye');
