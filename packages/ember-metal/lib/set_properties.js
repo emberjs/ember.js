@@ -20,11 +20,11 @@ import keys from "ember-metal/keys";
   @method setProperties
   @param obj
   @param {Object} properties
-  @return obj
+  @return properties
   @public
 */
 export default function setProperties(obj, properties) {
-  if (!properties || typeof properties !== "object") { return obj; }
+  if (!properties || typeof properties !== "object") { return properties; }
   changeProperties(function() {
     var props = keys(properties);
     var propertyName;
@@ -35,5 +35,5 @@ export default function setProperties(obj, properties) {
       set(obj, propertyName, properties[propertyName]);
     }
   });
-  return obj;
+  return properties;
 }
