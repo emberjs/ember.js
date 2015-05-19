@@ -173,9 +173,11 @@ var Test = {
     @public
     @method promise
     @param {Function} resolver The function used to resolve the promise.
+    @param {String} label An optional string for identifying the promise.
   */
-  promise(resolver) {
-    return new Test.Promise(resolver);
+  promise(resolver, label) {
+    var fullLabel = `Ember.Test.promise: ${label || "<Unknown Promise>"}`;
+    return new Test.Promise(resolver, fullLabel);
   },
 
   /**
