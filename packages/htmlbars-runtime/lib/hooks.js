@@ -503,6 +503,10 @@ export function hostBlock(morph, env, scope, template, inverse, shadowOptions, v
 }
 
 export function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
+  if (!path) {
+    return false;
+  }
+
   var redirect = env.hooks.classify(env, scope, path);
   if (redirect) {
     switch(redirect) {
