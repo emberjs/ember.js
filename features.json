@@ -19,7 +19,8 @@
     "ember-routing-core-outlet": null,
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true,
-    "ember-htmlbars-get-helper": null
+    "ember-htmlbars-get-helper": null,
+    "ember-htmlbars-each-helper-index-plus-one": null
   },
   "debugStatements": [
     "Ember.warn",

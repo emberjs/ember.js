@@ -1151,6 +1151,30 @@ function testEachWithItem(moduleName, useBlockParams) {
       });
       equal(view.$().text(), "0. Bob1. Steve");
     });
+
+    if (Ember.FEATURES.isEnabled('ember-htmlbars-each-helper-index-plus-one')) {
+      QUnit.test("the result of (index + 1) is passed as the third parameter to #each blocks", function() {
+        expect(3);
+
+        var adam = { name: "Adam" };
+        view = EmberView.create({
+          controller: A([adam, { name: "Steve" }]),
+          template: templateFor('{{#each this as |person index oneBasedIndex|}}{{oneBasedIndex}}. {{person.name}}{{/each}}', true)
+        });
+        runAppend(view);
+        equal(view.$().text(), "1. Adam2. Steve");
+
+        run(function() {
+          view.get('controller').unshiftObject({ name: "Bob" });
+        });
+        equal(view.$().text(), "1. Bob2. Adam3. Steve");
+
+        run(function() {
+          view.get('controller').removeObject(adam);
+        });
+        equal(view.$().text(), "1. Bob2. Steve");
+      });
+    }
   }
 }
 
