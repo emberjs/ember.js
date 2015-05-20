@@ -622,6 +622,25 @@ QUnit.test("it supports {{itemViewClass=}} with tagName in itemViewClass (DEPREC
   equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
 });
 
+QUnit.test("it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)", function() {
+  runDestroy(view);
+
+  view = EmberView.create({
+    template: templateFor(`
+      {{~#each view.people itemViewClass="my-view" as |item|~}}
+        {{item.name}}
+      {{~else~}}
+        No records!
+      {{~/each}}`),
+    people: A(),
+    container: container
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'No records!');
+});
+
 QUnit.test("it supports {{itemViewClass=}} with in format", function() {
   MyView = EmberView.extend({
     template: templateFor("{{person.name}}")
