@@ -8,8 +8,9 @@ import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import View from "ember-views/views/view";
 import { CONTAINER_MAP } from "ember-views/views/collection_view";
+import EmptyViewSupport from "ember-views/mixins/empty_view_support";
 
-export default View.extend({
+export default View.extend(EmptyViewSupport, {
   template: legacyEachTemplate,
   tagName: '',
 
