@@ -65,7 +65,12 @@ export default function eachHelper(params, hash, blocks) {
       }
 
       var key = keyPath ? get(item, keyPath) : String(i);
-      blocks.template.yieldItem(key, [item, i], self);
+      var blockArguments = [item, i];
+      if (Ember.FEATURES.isEnabled('ember-htmlbars-each-helper-index-plus-one')) {
+        blockArguments.push(i + 1);
+      }
+
+      blocks.template.yieldItem(key, blockArguments, self);
     });
   } else if (blocks.inverse.yield) {
     blocks.inverse.yield();

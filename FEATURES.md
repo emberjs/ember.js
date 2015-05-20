@@ -310,3 +310,17 @@ for a detailed explanation.
   for each person.. E.g. a list of all `firstNames`, or `lastNames`, or `ages`.
 
   Addd in [#11196](https://github.com/emberjs/ember.js/pull/11196)
+  
+* `ember-htmlbars-each-helper-index-plus-one`
+  	
+  Adds a the result of `index + 1` (1-based index) as the third block param to the `{{#each}}` helper.
+  	
+  Example:
+
+  ```hbs
+  <ul>
+  {{#each pages as |page index pageNumber|}}
+    <li>Page: {{pageNumber}}</li>
+  {{/each}}
+  </ul>
+  ```
