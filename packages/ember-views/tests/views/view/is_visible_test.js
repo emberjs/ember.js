@@ -3,7 +3,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
-//import compile from "ember-template-compiler/system/compile";
+import { computed } from "ember-metal/computed";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
@@ -66,6 +66,29 @@ QUnit.test("should hide element if isVisible is false before element is created"
 
   ok(view.$().is(':visible'), "view should be visible");
 
+  run(function() {
+    view.remove();
+  });
+});
+
+QUnit.test("should hide views when isVisible is a CP returning false", function() {
+  view = EmberView.extend({
+    isVisible: computed(function() {
+      return false;
+    })
+  }).create();
+
+  run(function() {
+    view.append();
+  });
+
+  ok(view.$().is(':hidden'), "the view is hidden");
+
+  run(function() {
+    set(view, 'isVisible', true);
+  });
+
+  ok(view.$().is(':visible'), "the view is visible");
   run(function() {
     view.remove();
   });
