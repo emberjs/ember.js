@@ -512,7 +512,7 @@ QUnit.test("should be able to modify childViews then rerender then modify again 
 
   var Child = View.extend({
     count: 0,
-    willRender: function() {
+    _willRender() {
       this.count++;
     },
     template: compile('{{view.label}}')
@@ -541,7 +541,7 @@ QUnit.test("should be able to modify childViews then rerender again the Containe
 
   var Child = View.extend({
     count: 0,
-    willRender() {
+    _willRender() {
       this.count++;
     },
     template: compile('{{view.label}}')

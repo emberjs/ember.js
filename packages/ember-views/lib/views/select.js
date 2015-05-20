@@ -37,7 +37,7 @@ var SelectOption = View.extend({
 
   content: null,
 
-  willRender() {
+  _willRender() {
     this.labelPathDidChange();
     this.valuePathDidChange();
   },
@@ -651,7 +651,7 @@ var Select = View.extend({
     }
   },
 
-  willRender() {
+  _willRender() {
     this._setDefaults();
   },
 
