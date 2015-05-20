@@ -1,7 +1,7 @@
 /**
-@module ember
-@submodule ember-views
-*/
+ @module ember
+ @submodule ember-views
+ */
 import {
   Mixin,
   observer
@@ -12,9 +12,9 @@ import run from "ember-metal/run_loop";
 function K() { return this; }
 
 /**
-  @class VisibilitySupport
-  @namespace Ember
-*/
+ @class VisibilitySupport
+ @namespace Ember
+ */
 var VisibilitySupport = Mixin.create({
   /**
     If `false`, the view will appear hidden in DOM.
