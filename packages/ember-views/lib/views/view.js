@@ -32,6 +32,7 @@ import TemplateRenderingSupport from "ember-views/mixins/template_rendering_supp
 import ClassNamesSupport from "ember-views/mixins/class_names_support";
 import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
 import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
+import AriaRoleSupport from "ember-views/mixins/aria_role_support";
 import VisibilitySupport from "ember-views/mixins/visibility_support";
 import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
 
@@ -665,6 +666,7 @@ Ember.TEMPLATES = {};
   @uses Ember.LegacyViewSupport
   @uses Ember.InstrumentationSupport
   @uses Ember.VisibilitySupport
+  @uses Ember.AriaRoleSupport
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
@@ -676,7 +678,8 @@ var View = CoreView.extend(
   LegacyViewSupport,
   InstrumentationSupport,
   VisibilitySupport,
-  CompatAttrsProxy, {
+  CompatAttrsProxy,
+  AriaRoleSupport, {
   concatenatedProperties: ['attributeBindings'],
 
   /**
@@ -1228,21 +1231,6 @@ var View = CoreView.extend(
     @property _defaultTagName
     @private
   */
-
-  /**
-    The WAI-ARIA role of the control represented by this view. For example, a
-    button may have a role of type 'button', or a pane may have a role of
-    type 'alertdialog'. This property is used by assistive software to help
-    visually challenged users navigate rich web applications.
-
-    The full list of valid WAI-ARIA roles is available at:
-    [http://www.w3.org/TR/wai-aria/roles#roles_categorization](http://www.w3.org/TR/wai-aria/roles#roles_categorization)
-
-    @property ariaRole
-    @type String
-    @default null
-  */
-  ariaRole: null,
 
   /**
     Normally, Ember's component model is "write-only". The component takes a

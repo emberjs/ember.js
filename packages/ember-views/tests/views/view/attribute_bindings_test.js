@@ -448,3 +448,21 @@ QUnit.test("attributeBindings should be overridable", function() {
 
   equal(view.$().attr('href'), "a new href", "expect value from subclass attribute binding");
 });
+
+QUnit.test("role attribute is included if provided as ariaRole", function() {
+  view = EmberView.create({
+    ariaRole: 'main'
+  });
+
+  appendView();
+
+  equal(view.$().attr('role'), "main");
+});
+
+QUnit.test("role attribute is not included if not provided", function() {
+  view = EmberView.create();
+
+  appendView();
+
+  ok(!view.element.hasAttribute('role'), 'role attribute is not present');
+});
