@@ -233,6 +233,21 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
 });
 
+QUnit.test('with ariaRole specified', function() {
+  expect(1);
+
+  registry.register('template:components/aria-test', compile('Here!'));
+
+  view = EmberView.extend({
+    template: compile('{{aria-test id="aria-test" ariaRole="main"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#aria-test').attr('role'), 'main', 'role attribute is applied');
+});
+
 if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
   QUnit.test('hasBlock is true when block supplied', function() {
     expect(1);
