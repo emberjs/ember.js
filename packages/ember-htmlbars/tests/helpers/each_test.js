@@ -589,7 +589,7 @@ QUnit.test("it supports {{itemViewClass=}} via container", function() {
   assertText(view, "Steve HoltAnnabelle");
 });
 
-QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
+QUnit.test("it supports {{itemViewClass=}} with each view tagName (DEPRECATED)", function() {
   runDestroy(view);
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
@@ -598,6 +598,25 @@ QUnit.test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function(
   });
 
   runAppend(view);
+  equal(view.$('ul').length, 1, 'rendered ul tag');
+  equal(view.$('ul li').length, 2, 'rendered 2 li tags');
+  equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
+});
+
+QUnit.test("it supports {{itemViewClass=}} with tagName in itemViewClass (DEPRECATED)", function() {
+  runDestroy(view);
+  registry.register('view:li-view', EmberView.extend({
+    tagName: 'li'
+  }));
+
+  view = EmberView.create({
+    template: templateFor('<ul>{{#each view.people itemViewClass="li-view" as |item|}}{{item.name}}{{/each}}</ul>'),
+    people: people,
+    container: container
+  });
+
+  runAppend(view);
+
   equal(view.$('ul').length, 1, 'rendered ul tag');
   equal(view.$('ul li').length, 2, 'rendered 2 li tags');
   equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
