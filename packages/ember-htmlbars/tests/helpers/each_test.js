@@ -386,7 +386,7 @@ QUnit.test("itemController should not affect the DOM structure", function() {
     container: container,
     template: templateFor(
       '<div id="a">{{#each view.people itemController="person" as |person|}}{{person.name}}{{/each}}</div>' +
-      '<div id="b">{{#each view.people as |person|}}{{person.name}}{{/each}}</div>'
+        '<div id="b">{{#each view.people as |person|}}{{person.name}}{{/each}}</div>'
     ),
     people: people
   });
@@ -641,22 +641,20 @@ QUnit.test("it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)", fu
   equal(view.$().text(), 'No records!');
 });
 
-QUnit.test("it supports {{itemViewClass=}} with in format", function() {
-  MyView = EmberView.extend({
-    template: templateFor("{{person.name}}")
-  });
-
+QUnit.test("it supports non-context switching with {{itemViewClass=}} (DEPRECATED)", function() {
   runDestroy(view);
+  registry.register('view:foo-view', EmberView.extend({
+    template: templateFor(`{{person.name}}`)
+  }));
+
   view = EmberView.create({
-    container: registry.container(),
-    template: templateFor('{{each person in view.people itemViewClass="my-view"}}'),
-    people: people
+    template: templateFor(`{{each person in view.people itemViewClass="foo-view"}}`),
+    people: people,
+    container: container
   });
 
   runAppend(view);
-
-  assertText(view, "Steve HoltAnnabelle");
-
+  equal(view.$().text(), 'Steve HoltAnnabelle');
 });
 
 QUnit.test("it supports {{emptyView=}}", function() {
