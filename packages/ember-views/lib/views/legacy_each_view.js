@@ -27,7 +27,7 @@ export default View.extend({
     return controller;
   }),
 
-  willUpdate(attrs) {
+  _willUpdate(attrs) {
     let itemController = this.getAttrFor(attrs, 'itemController');
 
     if (itemController) {

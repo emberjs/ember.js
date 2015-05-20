@@ -116,9 +116,6 @@ Renderer.prototype.createElement =
     this.prerenderTopLevelView(view, morph);
   };
 
-// inBuffer
-Renderer.prototype.willCreateElement = function (/*view*/) {};
-
 Renderer.prototype.didCreateElement = function (view, element) {
   if (element) {
     view.element = element;
@@ -160,10 +157,6 @@ Renderer.prototype.didRender = function (view) {
 };
 
 Renderer.prototype.updateAttrs = function (view, attrs) {
-  if (view.willReceiveAttrs) {
-    view.willReceiveAttrs(attrs);
-  }
-
   this.setAttrs(view, attrs);
 }; // setting new attrs
 
@@ -175,8 +168,8 @@ Renderer.prototype.componentUpdateAttrs = function (component, oldAttrs, newAttr
 };
 
 Renderer.prototype.willUpdate = function (view, attrs) {
-  if (view.willUpdate) {
-    view.willUpdate(attrs);
+  if (view._willUpdate) {
+    view._willUpdate(attrs);
   }
 };
 
@@ -185,8 +178,8 @@ Renderer.prototype.componentWillUpdate = function (component) {
 };
 
 Renderer.prototype.willRender = function (view) {
-  if (view.willRender) {
-    view.willRender();
+  if (view._willRender) {
+    view._willRender();
   }
 };
 

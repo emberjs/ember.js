@@ -401,7 +401,7 @@ var CollectionView = ContainerView.extend({
     return view;
   },
 
-  willRender: function() {
+  _willRender: function() {
     var attrs = this.attrs;
     var itemProps = buildItemViewProps(this._itemViewTemplate, attrs);
     this._itemViewProps = itemProps;
