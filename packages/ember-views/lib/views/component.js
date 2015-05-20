@@ -2,6 +2,25 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.Handlebars
 
 import ComponentTemplateDeprecation from "ember-views/mixins/component_template_deprecation";
 import TargetActionSupport from "ember-runtime/mixins/target_action_support";
+import ViewContextSupport from "ember-views/mixins/view_context_support";
+import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
+import ViewStateSupport from "ember-views/mixins/view_state_support";
+import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
+import TemplateLookupSupport from "ember-views/mixins/template_lookup_support";
+import ClassNamesSupport from "ember-views/mixins/class_names_support";
+import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
+import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
+import Evented from "ember-runtime/mixins/evented";
+import ActionHandler from "ember-runtime/mixins/action_handler";
+import VisibilitySupport from "ember-views/mixins/visibility_support";
+import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
+import DOMSupport from "ember-views/mixins/dom_support";
+import CoreView from "ember-views/views/core_view";
+
+// The only dependency left for Ember.View is falling back to the
+// Ember.View.views hash, which is unfortunately still set for backwards
+// compatibility by Ember.Application. If we can deprecate Ember.View.views
+// and remove it in 2.0, we can eliminate this dependency.
 import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
@@ -112,7 +131,25 @@ function validateAction(component, actionName) {
   @namespace Ember
   @extends Ember.View
 */
-var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+var Component = CoreView.extend(
+  DOMSupport,
+  TargetActionSupport,
+  ViewContextSupport,
+  ViewChildViewsSupport,
+  ViewStateSupport,
+  TemplateRenderingSupport,
+  TemplateLookupSupport,
+  ClassNamesSupport,
+  LegacyViewSupport,
+  InstrumentationSupport,
+  VisibilitySupport,
+  Evented,
+  ActionHandler,
+  ComponentTemplateDeprecation,
+  CompatAttrsProxy, {
+
+  concatenatedProperties: ['attributeBindings'],
+
   /*
     This is set so that the proto inspection in appendTemplatedView does not
     think that it should set the components `context` to that of the parent view.
@@ -131,6 +168,14 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     this._super.apply(this, arguments);
     set(this, 'controller', this);
     set(this, 'context', this);
+
+    if (!this._viewRegistry) {
+      this._viewRegistry = View.views;
+    }
+  },
+
+  __defineNonEnumerable(property) {
+    this[property.name] = property.descriptor.value;
   },
 
   /**

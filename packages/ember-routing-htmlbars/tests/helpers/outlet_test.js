@@ -157,7 +157,7 @@ QUnit.test("outlet should assert view path is successfully resolved [DEPRECATED]
 
   expectAssertion(function () {
     runAppend(top);
-  }, /someViewNameHere must be a subclass or an instance of Ember.View/);
+  }, /someViewNameHere must be a Component or View/);
 
 });
 
