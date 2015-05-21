@@ -655,7 +655,7 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
   var helper = env.hooks.lookupHelper(env, scope, path);
   var result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
 
-  if (result && result.value) {
+  if (result && 'value' in result) {
     var value = result.value;
     if (morph.lastValue !== value) {
       morph.setContent(value);
