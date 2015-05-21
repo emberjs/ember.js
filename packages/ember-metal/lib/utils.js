@@ -799,7 +799,8 @@ export function inspect(obj) {
     return '[' + obj + ']';
   }
   // for non objects
-  if (typeof obj !== 'object') {
+  var type = typeof obj;
+  if (type !== 'object' && type !== 'symbol') {
     return ''+obj;
   }
   // overridden toString
