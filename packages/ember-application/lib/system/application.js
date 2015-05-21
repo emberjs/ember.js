@@ -718,6 +718,8 @@ var Application = Namespace.extend(DeferredMixin, {
     @method didBecomeReady
   */
   didBecomeReady() {
+    this._bootResolver.resolve();
+
     if (this.autoboot) {
       if (environment.hasDOM) {
         this.__deprecatedInstance__.setupEventDispatcher();
@@ -734,8 +736,6 @@ var Application = Namespace.extend(DeferredMixin, {
 
       this.resolve(this);
     }
-
-    this._bootResolver.resolve();
   },
 
   /**
