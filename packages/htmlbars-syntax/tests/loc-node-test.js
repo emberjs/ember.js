@@ -13,7 +13,7 @@ function locEqual(node, startLine, startColumn, endLine, endColumn, message) {
   deepEqual(node.loc, expected, message);
 }
 
-test("blocks", function() {
+test("programs", function() {
   var ast = parse(`
   {{#if foo}}
     {{bar}}
@@ -27,3 +27,18 @@ test("blocks", function() {
   locEqual(ast.body[1].program, 2, 2, 4, 7, 'nested program');
 });
 
+test("blocks", function() {
+  var ast = parse(`
+  {{#if foo}}
+    {{#if bar}}
+        test
+        {{else}}
+      test
+  {{/if    }}
+       {{/if
+      }}
+    `);
+
+  locEqual(ast.body[1], 2, 2, 9, 8, 'outer block');
+  locEqual(ast.body[1].program.body[0], 3, 4, 7, 13, 'nested block');
+});

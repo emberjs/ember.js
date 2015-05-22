@@ -10,14 +10,15 @@ export function buildMustache(path, params, hash, raw) {
   };
 }
 
-export function buildBlock(path, params, hash, program, inverse) {
+export function buildBlock(path, params, hash, program, inverse, loc) {
   return {
     type: "BlockStatement",
     path: path,
     params: params || [],
     hash: hash || buildHash([]),
     program: program || null,
-    inverse: inverse || null
+    inverse: inverse || null,
+    loc: buildLoc(loc)
   };
 }
 
