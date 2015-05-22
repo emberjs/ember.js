@@ -349,4 +349,26 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       });
     });
   }
+
+  QUnit.test("Initializers get an instance on app reset", function() {
+    expect(2);
+
+    var MyApplication = Application.extend();
+
+    MyApplication.instanceInitializer({
+      name: 'giveMeAnInstance',
+      initialize(instance) {
+        ok(!!instance, 'Initializer got an instance');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+
+    run(app, 'reset');
+  });
 }
