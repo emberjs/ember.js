@@ -45,7 +45,7 @@ var nodeHandlers = {
     var program = block.program ? this.acceptNode(block.program) : null;
     var inverse = block.inverse ? this.acceptNode(block.inverse) : null;
 
-    var node = buildBlock(block.path, block.params, block.hash, program, inverse);
+    var node = buildBlock(block.path, block.params, block.hash, program, inverse, block.loc);
     var parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   },
