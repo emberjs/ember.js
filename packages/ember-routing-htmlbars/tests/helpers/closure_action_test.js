@@ -164,6 +164,42 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     innerComponent.fireAction();
   });
 
+  QUnit.test("array arguments are passed correctly to action", function(assert) {
+    assert.expect(3);
+
+    const first = 'foo';
+    const second = [3, 5];
+    const third = [4, 9];
+
+    innerComponent = EmberComponent.extend({
+      fireAction() {
+        this.attrs.submit(second, third);
+      }
+    }).create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action outerSubmit first)}}
+      `),
+      innerComponent,
+      value: '',
+      outerSubmit(actualFirst, actualSecond, actualThird) {
+        assert.equal(actualFirst, first, 'action has the correct first arg');
+        assert.equal(actualSecond, second, 'action has the correct second arg');
+        assert.equal(actualThird, third, 'action has the correct third arg');
+      }
+    }).create();
+
+    runAppend(outerComponent);
+
+    run(function() {
+      outerComponent.set('first', first);
+      outerComponent.set('second', second);
+    });
+
+    innerComponent.fireAction();
+  });
+
   QUnit.test("mut values can be wrapped in actions, are settable", function(assert) {
     assert.expect(1);
 
