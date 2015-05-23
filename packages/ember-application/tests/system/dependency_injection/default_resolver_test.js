@@ -1,7 +1,13 @@
 import Ember from "ember-metal/core"; // Ember.TEMPLATES
 import run from "ember-metal/run_loop";
+import { forEach } from "ember-metal/enumerable_utils";
+import { capitalize } from "ember-runtime/system/string";
 import Logger from "ember-metal/logger";
 import Controller from "ember-runtime/controllers/controller";
+import Route from "ember-routing/system/route";
+import Component from "ember-views/views/component";
+import View from "ember-views/views/view";
+import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
@@ -169,4 +175,35 @@ QUnit.test("lookup description", function() {
   equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
   equal(registry.describe('model:foo'), 'App.Foo', "models don't get appended at the end");
 
+});
+
+QUnit.test("validating resolved objects", function() {
+  let types = ['route', 'component', 'view', 'service'];
+
+  // Valid setup
+  application.FooRoute = Route.extend();
+  application.FooComponent = Component.extend();
+  application.FooView = View.extend();
+  application.FooService = Service.extend();
+
+  forEach(types, function(type) {
+    // No errors when resolving correct object types
+    registry.resolve(`${type}:foo`);
+
+    // Unregister to clear cache
+    registry.unregister(`${type}:foo`);
+  });
+
+  // Invalid setup
+  application.FooRoute = Component.extend();
+  application.FooComponent = View.extend();
+  application.FooView = Service.extend();
+  application.FooService = Route.extend();
+
+  forEach(types, function(type) {
+    let matcher = new RegExp(`to resolve to an Ember.${capitalize(type)}`);
+    expectAssertion(function() {
+      registry.resolve(`${type}:foo`);
+    }, matcher, `Should assert for ${type}`);
+  });
 });
