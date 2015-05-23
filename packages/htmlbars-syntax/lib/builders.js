@@ -23,12 +23,13 @@ export function buildBlock(path, params, hash, program, inverse, loc) {
   };
 }
 
-export function buildElementModifier(path, params, hash) {
+export function buildElementModifier(path, params, hash, loc) {
   return {
     type: "ElementModifierStatement",
     path: path,
     params: params || [],
-    hash: hash || buildHash([])
+    hash: hash || buildHash([]),
+    loc: buildLoc(loc)
   };
 }
 
