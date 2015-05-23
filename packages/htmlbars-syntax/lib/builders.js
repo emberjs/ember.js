@@ -1,12 +1,13 @@
 // Statements
 
-export function buildMustache(path, params, hash, raw) {
+export function buildMustache(path, params, hash, raw, loc) {
   return {
     type: "MustacheStatement",
     path: path,
     params: params || [],
     hash: hash || buildHash([]),
-    escaped: !raw
+    escaped: !raw,
+    loc: buildLoc(loc)
   };
 }
 
