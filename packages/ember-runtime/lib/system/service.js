@@ -37,4 +37,10 @@ createInjectionHelper('service');
   @extends Ember.Object
   @since 1.10.0
 */
-export default Object.extend();
+const Service = Object.extend();
+
+Service.reopenClass({
+  isServiceFactory: true
+});
+
+export default Service;
