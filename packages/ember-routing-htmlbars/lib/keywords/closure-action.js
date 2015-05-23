@@ -63,7 +63,8 @@ function createClosureAction(target, action, valuePath, actionArguments) {
     closureAction = function() {
       var args = actionArguments;
       if (arguments.length > 0) {
-        args = actionArguments.concat(...arguments);
+        var passedArguments = Array.prototype.slice.apply(arguments);
+        args = actionArguments.concat(passedArguments);
       }
       if (valuePath && args.length > 0) {
         args[0] = get(args[0], valuePath);
