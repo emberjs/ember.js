@@ -42,3 +42,16 @@ test("blocks", function() {
   locEqual(ast.body[1], 2, 2, 9, 8, 'outer block');
   locEqual(ast.body[1].program.body[0], 3, 4, 7, 13, 'nested block');
 });
+
+test("mustache", function() {
+  var ast = parse(`
+    {{foo}}
+    {{#if foo}}
+      bar: {{bar
+        }}
+    {{/if}}
+  `);
+
+  locEqual(ast.body[1], 2, 4, 2, 11, 'outer mustache');
+  locEqual(ast.body[3].program.body[1], 4, 11, 5, 10, 'inner mustache');
+});

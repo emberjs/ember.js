@@ -1,4 +1,4 @@
-import { buildProgram, buildBlock, buildHash } from "./builders";
+import b, { buildProgram, buildBlock, buildHash } from "./builders";
 import { forEach } from "../htmlbars-util/array-utils";
 import { appendChild } from "./utils";
 
@@ -50,8 +50,9 @@ var nodeHandlers = {
     appendChild(parentProgram, node);
   },
 
-  MustacheStatement: function(mustache) {
-    delete mustache.strip;
+  MustacheStatement: function(rawMustache) {
+    let { path, params, hash, escaped, loc } = rawMustache;
+    let mustache = b.mustache(path, params, hash, !escaped, loc);
 
     if (this.tokenizer.state === 'comment') {
       this.tokenizer.addChar('{{' + this.sourceForMustache(mustache) + '}}');
