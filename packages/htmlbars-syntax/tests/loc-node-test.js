@@ -55,3 +55,13 @@ test("mustache", function() {
   locEqual(ast.body[1], 2, 4, 2, 11, 'outer mustache');
   locEqual(ast.body[3].program.body[1], 4, 11, 5, 10, 'inner mustache');
 });
+
+test("element modifier", function() {
+  var ast = parse(`
+    <div {{bind-attr
+      foo
+      bar=wat}}></div>
+  `);
+
+  locEqual(ast.body[1].modifiers[0], 2, 9, 4, 15, 'element modifier');
+});
