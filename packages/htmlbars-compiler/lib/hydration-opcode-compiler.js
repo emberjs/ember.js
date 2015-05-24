@@ -133,8 +133,12 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   var end = this.currentDOMChildIndex;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  this.opcode(opcode);
+  this.opcode(opcode, meta(mustache));
 };
+
+function meta({ loc: { source, start, end }}) {
+  return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
+}
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount) {
   this.pushMorphPlaceholderNode(childIndex, childCount);
@@ -151,7 +155,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
   var templateId = this.templateId++;
   var inverseId = block.inverse === null ? null : this.templateId++;
 
-  this.opcode('printBlockHook', templateId, inverseId);
+  this.opcode('printBlockHook', templateId, inverseId, meta(block));
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childCount) {
@@ -185,7 +189,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
 
   this.opcode('prepareObject', attrs.length);
   this.opcode('pushLiteral', component.tag);
-  this.opcode('printComponentHook', this.templateId++, blockParams.length);
+  this.opcode('printComponentHook', this.templateId++, blockParams.length, meta(component));
 };
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
@@ -227,7 +231,7 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
   }
 
   publishElementMorph(this);
-  this.opcode('printElementHook');
+  this.opcode('printElementHook', meta(modifier));
 };
 
 HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
@@ -246,18 +250,18 @@ HydrationOpcodeCompiler.prototype.MustacheStatement = function(mustache) {
   prepareHash(this, mustache.hash);
   prepareParams(this, mustache.params);
   preparePath(this, mustache.path);
-  this.opcode('pushSexprHook');
+  this.opcode('pushSexprHook', meta(mustache));
 };
 
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
   prepareHash(this, sexpr.hash);
   prepareParams(this, sexpr.params);
   preparePath(this, sexpr.path);
-  this.opcode('pushSexprHook');
+  this.opcode('pushSexprHook', meta(sexpr));
 };
 
 HydrationOpcodeCompiler.prototype.PathExpression = function(path) {
-  this.opcode('pushGetHook', path.original);
+  this.opcode('pushGetHook', path.original, meta(path));
 };
 
 HydrationOpcodeCompiler.prototype.StringLiteral = function(node) {
