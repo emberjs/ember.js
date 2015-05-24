@@ -288,35 +288,17 @@ ChainNode.prototype = {
     }
 
     if (this._parent) {
-      this._parent.chainWillChange(this, this._key, 1, events);
+      this._parent.notifyChainChange(this, this._key, 1, events);
     }
   },
 
-  chainWillChange(chain, path, depth, events) {
+  notifyChainChange(chain, path, depth, events) {
     if (this._key) {
       path = this._key + '.' + path;
     }
 
     if (this._parent) {
-      this._parent.chainWillChange(this, path, depth + 1, events);
-    } else {
-      if (depth > 1) {
-        events.push(this.value(), path);
-      }
-      path = 'this.' + path;
-      if (this._paths[path] > 0) {
-        events.push(this.value(), path);
-      }
-    }
-  },
-
-  chainDidChange(chain, path, depth, events) {
-    if (this._key) {
-      path = this._key + '.' + path;
-    }
-
-    if (this._parent) {
-      this._parent.chainDidChange(this, path, depth + 1, events);
+      this._parent.notifyChainChange(this, path, depth + 1, events);
     } else {
       if (depth > 1) {
         events.push(this.value(), path);
@@ -364,7 +346,7 @@ ChainNode.prototype = {
 
     // and finally tell parent about my path changing...
     if (this._parent) {
-      this._parent.chainDidChange(this, this._key, 1, events);
+      this._parent.notifyChainChange(this, this._key, 1, events);
     }
   }
 };
