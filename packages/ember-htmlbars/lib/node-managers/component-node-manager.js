@@ -252,6 +252,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
     props._isAngleBracket = true;
   }
 
+  props.renderer = props.parentView ? props.parentView.renderer : env.container.lookup('renderer:-dom');
   let component = _component.create(props);
 
   // for the fallback case

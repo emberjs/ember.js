@@ -165,7 +165,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.skip("It is possible to render a view with a nested {{view}} helper in Node", function(assert) {
+  QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function(assert) {
     var View = Ember.Component.extend({
       renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
@@ -176,9 +176,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       })
     });
 
-    var view = View.create({
-      _domHelper: new DOMHelper(new SimpleDOM.Document())
-    });
+    var view = View.create();
 
     run(view, view.createElement);
 
@@ -186,7 +184,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1> <div><div id="(.*)" class="ember-view"><p>The files are \*inside\* the computer\?\!<\/p><\/div><\/div>/));
   });
 
-  QUnit.skip("It is possible to render a view with {{link-to}} in Node", function(assert) {
+  QUnit.test("It is possible to render a view with {{link-to}} in Node", function(assert) {
     run(function() {
       app = createApplication();
 
@@ -203,11 +201,11 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     return app.visit('/').then(function(instance) {
       var element = renderToElement(instance);
 
-      assertHTMLMatches(assert, element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" class="ember-view" href="\/photos">Go to photos<\/a><\/h1><\/div>$/);
+      assertHTMLMatches(assert, element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" href="\/photos" class="ember-view">Go to photos<\/a><\/h1><\/div>$/);
     });
   });
 
-  QUnit.skip("It is possible to render outlets in Node", function(assert) {
+  QUnit.test("It is possible to render outlets in Node", function(assert) {
     run(function() {
       app = createApplication();
 

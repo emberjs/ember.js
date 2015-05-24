@@ -74,8 +74,8 @@ function _bootstrap() {
   bootstrap(jQuery(document));
 }
 
-function registerComponentLookup(registry) {
-  registry.register('component-lookup:main', ComponentLookup);
+function registerComponentLookup(app) {
+  app.registry.register('component-lookup:main', ComponentLookup);
 }
 
 /*
@@ -95,9 +95,8 @@ onLoad('Ember.Application', function(Application) {
     initialize: environment.hasDOM ? _bootstrap : function() { }
   });
 
-  Application.initializer({
+  Application.instanceInitializer({
     name: 'registerComponentLookup',
-    after: 'domTemplates',
     initialize: registerComponentLookup
   });
 });
