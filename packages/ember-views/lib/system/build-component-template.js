@@ -180,7 +180,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
     var existingStyle = normalized.style;
 
     if (existingStyle) {
-      normalized.style = ['subexpr', '-concat', [existingStyle, hiddenStyle], ['separator', ' ']];
+      normalized.style = ['subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]];
     } else {
       normalized.style = hiddenStyle;
     }

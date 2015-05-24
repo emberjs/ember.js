@@ -51,7 +51,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
 }
 registerHelper('-bind-attr-class', bindAttrClassHelper);
 registerHelper('-normalize-class', normalizeClassHelper);
-registerHelper('-concat', concatHelper);
+registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
 registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);

@@ -31,6 +31,7 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 
     if (classPair) {
       classValue.push(classPair.value);
+      classValue.push(b.string(' '));
     } else {
       classPair = b.pair('class', null);
       node.hash.pairs.push(classPair);
@@ -54,8 +55,8 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
       }
     });
 
-    let hash = b.hash([b.pair('separator', b.string(' '))]);
-    classPair.value = b.sexpr(b.string('-concat'), classValue, hash);
+    let hash = b.hash();
+    classPair.value = b.sexpr(b.string('concat'), classValue, hash);
   });
 
   return ast;
@@ -97,6 +98,7 @@ function buildSexprs(microsyntax, sexprs, b) {
     }
 
     sexprs.push(sexpr);
+    sexprs.push(b.string(' '));
   }
 }
 
