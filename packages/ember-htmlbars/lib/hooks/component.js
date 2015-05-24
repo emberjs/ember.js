@@ -18,7 +18,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   }
 
   var read = env.hooks.getValue;
-  var parentView = read(env.view);
+  var parentView = read(scope.view);
 
   var manager = ComponentNodeManager.create(renderNode, env, {
     tagName,

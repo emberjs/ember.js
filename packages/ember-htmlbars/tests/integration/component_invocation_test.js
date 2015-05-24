@@ -575,6 +575,44 @@ QUnit.test("comopnent should rerender when a property is changed during children
 
 });
 
+QUnit.test("components in template of a yielding component should have the proper parentView", function() {
+  var outer, innerTemplate, innerLayout;
+
+  registry.register('component:x-outer', Component.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-template', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerTemplate = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-layout', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerLayout = this;
+    }
+  }));
+
+  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+
+  view = EmberView.extend({
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+  equal(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
+  equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+});
+
 QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {
   expectDeprecation(/modified value twice in a single render/);
 
