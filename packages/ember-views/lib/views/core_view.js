@@ -132,7 +132,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 });
 
 CoreView.reopenClass({
-  isViewClass: true
+  isViewFactory: true
 });
 
 export var DeprecatedCoreView = CoreView.extend({

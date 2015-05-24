@@ -1931,6 +1931,10 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   }
 });
 
+Route.reopenClass({
+  isRouteFactory: true
+});
+
 var defaultQPMeta = {
   qps: [],
   map: {},
