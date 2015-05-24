@@ -140,16 +140,17 @@ prototype.pushLiteral = function(value) {
   this.expressionStack.push(value);
 };
 
-prototype.pushGetHook = function(path) {
-  this.expressionStack.push([ 'get', path ]);
+prototype.pushGetHook = function(path, meta) {
+  this.expressionStack.push([ 'get', path, meta ]);
 };
 
-prototype.pushSexprHook = function() {
+prototype.pushSexprHook = function(meta) {
   this.expressionStack.push([
     'subexpr',
     this.expressionStack.pop(),
     this.expressionStack.pop(),
-    this.expressionStack.pop()
+    this.expressionStack.pop(),
+    meta
   ]);
 };
 
@@ -161,27 +162,28 @@ prototype.printSetHook = function(name) {
   this.locals.push(name);
 };
 
-prototype.printBlockHook = function(templateId, inverseId) {
+prototype.printBlockHook = function(templateId, inverseId, meta) {
   this.statements.push([
     'block',
     this.expressionStack.pop(), // path
     this.expressionStack.pop(), // params
     this.expressionStack.pop(), // hash
     templateId,
-    inverseId
+    inverseId,
+    meta
   ]);
 };
 
-prototype.printInlineHook = function() {
+prototype.printInlineHook = function(meta) {
   var path = this.expressionStack.pop();
   var params = this.expressionStack.pop();
   var hash = this.expressionStack.pop();
 
-  this.statements.push([ 'inline', path, params, hash ]);
+  this.statements.push([ 'inline', path, params, hash, meta ]);
 };
 
-prototype.printContentHook = function() {
-  this.statements.push([ 'content', this.expressionStack.pop() ]);
+prototype.printContentHook = function(meta) {
+  this.statements.push([ 'content', this.expressionStack.pop(), meta]);
 };
 
 prototype.printComponentHook = function(templateId) {
@@ -201,12 +203,13 @@ prototype.printAttributeHook = function() {
   ]);
 };
 
-prototype.printElementHook = function() {
+prototype.printElementHook = function(meta) {
   this.statements.push([
     'element',
     this.expressionStack.pop(), // path
     this.expressionStack.pop(), // params
-    this.expressionStack.pop()  // hash
+    this.expressionStack.pop(), // hash
+    meta
   ]);
 };
 
