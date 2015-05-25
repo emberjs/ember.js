@@ -243,7 +243,7 @@ QUnit.test("mixing old and new styles of property binding fires a warning, treat
   let compiled;
   expectDeprecation(function() {
     compiled = compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}");
-  }, "You're using legacy binding syntax: borfBinding=view.snork @ 1:8 in (inline). Please replace with borf=view.snork");
+  }, "You're using legacy binding syntax: borfBinding=view.snork (L1:C8) . Please replace with borf=view.snork");
 
   view = EmberView.extend({
     template: compiled,
@@ -271,7 +271,7 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
   let compiled;
   expectDeprecation(function() {
     compiled = compile('<h1>{{view view.Subview colorBinding="view.color"}}</h1>');
-  }, `You're using legacy binding syntax: colorBinding="view.color" @ 1:24 in (inline). Please replace with color=view.color`);
+  }, `You're using legacy binding syntax: colorBinding="view.color" (L1:C24) . Please replace with color=view.color`);
 
   var View = EmberView.extend({
     color: "mauve",
@@ -826,7 +826,7 @@ QUnit.test('{{view}} should not allow attributeBindings to be set', function() {
       template: compile('{{view attributeBindings="one two"}}')
     });
     runAppend(view);
-  }, "Setting 'attributeBindings' via template helpers is not allowed @ 1:7 in (inline)");
+  }, /Setting 'attributeBindings' via template helpers is not allowed/);
 });
 
 QUnit.test('{{view}} should be able to point to a local view', function() {

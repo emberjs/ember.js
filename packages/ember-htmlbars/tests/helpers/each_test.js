@@ -1007,7 +1007,7 @@ function testEachWithItem(moduleName, useBlockParams) {
     var template;
     expectDeprecation(function() {
       template = templateFor('{{#EACH|people|person|itemController="person"}}{{controllerName}} - {{person.controllerName}} - {{/each}}', useBlockParams);
-    }, /Using 'itemController' with '{{each}}' @L1/);
+    }, /Using 'itemController' with '{{each}}'/);
 
     view = EmberView.create({
       template,
