@@ -178,7 +178,8 @@ QUnit.test("lookup description", function() {
 });
 
 QUnit.test("validating resolved objects", function() {
-  let types = ['route', 'component', 'view', 'service'];
+  // 2.0TODO: Add service to this list
+  let types = ['route', 'component', 'view'];
 
   // Valid setup
   application.FooRoute = Route.extend();
@@ -206,4 +207,17 @@ QUnit.test("validating resolved objects", function() {
       registry.resolve(`${type}:foo`);
     }, matcher, `Should assert for ${type}`);
   });
+});
+
+QUnit.test("deprecation warning for service factories without isServiceFactory property", function() {
+  expectDeprecation(/service factories must have an `isServiceFactory` property/);
+  application.FooService = EmberObject.extend();
+  registry.resolve('service:foo');
+
+});
+
+QUnit.test("no deprecation warning for service factories that extend from Ember.Service", function() {
+  expectNoDeprecation();
+  application.FooService = Service.extend();
+  registry.resolve('service:foo');
 });
