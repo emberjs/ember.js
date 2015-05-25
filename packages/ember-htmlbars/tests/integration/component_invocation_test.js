@@ -613,6 +613,47 @@ QUnit.test("components in template of a yielding component should have the prope
   equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
 });
 
+QUnit.test("components should receive the viewRegistry from the parent view", function() {
+  var outer, innerTemplate, innerLayout;
+
+  var viewRegistry = {};
+
+  registry.register('component:x-outer', Component.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-template', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerTemplate = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-layout', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerLayout = this;
+    }
+  }));
+
+  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+
+  view = EmberView.extend({
+    _viewRegistry: viewRegistry,
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(innerTemplate._viewRegistry, viewRegistry);
+  equal(innerLayout._viewRegistry, viewRegistry);
+  equal(outer._viewRegistry, viewRegistry);
+});
+
 QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {
   expectDeprecation(/modified value twice in a single render/);
 

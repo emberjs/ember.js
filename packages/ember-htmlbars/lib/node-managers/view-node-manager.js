@@ -172,6 +172,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     mergeBindings(props, shadowedAttrs(proto, snapshot));
     props.container = options.parentView ? options.parentView.container : env.container;
     props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
+    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
 
     if (proto.controller !== defaultController || hasSuppliedController) {
       delete props._context;
