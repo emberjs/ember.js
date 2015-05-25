@@ -5,6 +5,7 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import { dasherize } from "ember-template-compiler/system/string";
+import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
 
 /**
   An HTMLBars AST transformation that replaces all instances of
@@ -161,20 +162,7 @@ TransformBindAttrToAttributes.prototype.parseClass = function parseClass(value) 
 function isBindAttrModifier(modifier, moduleName) {
   var name = modifier.path.original;
 
-  let { column, line } = modifier.path.loc.start || {};
-  let moduleInfo = '';
-
-  if (moduleName) {
-    moduleInfo +=  `'${moduleName}' @ `;
-  }
-
-  if (line && column) {
-    moduleInfo += `L${line}:C${column}`;
-  }
-
-  if (moduleInfo) {
-    moduleInfo = `(${moduleInfo}) `;
-  }
+  let moduleInfo = calculateLocationDisplay(moduleName, modifier.path.loc);
 
   if (name === 'bind-attr' || name === 'bindAttr') {
     Ember.deprecate(

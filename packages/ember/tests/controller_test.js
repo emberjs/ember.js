@@ -100,7 +100,7 @@ QUnit.test("{{#each}} inside outlet can have an itemController", function(assert
         <p>hi</p>
       {{/each}}
     `);
-  }, `Using 'itemController' with '{{each}}' @L2:C20 is deprecated.  Please refactor to a component.`);
+  }, `Using 'itemController' with '{{each}}' (L2:C20) is deprecated.  Please refactor to a component.`);
 
   App.IndexController = Ember.Controller.extend({
     model: Ember.A([1, 2, 3])

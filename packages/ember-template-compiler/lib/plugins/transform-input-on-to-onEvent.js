@@ -1,3 +1,5 @@
+import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
+
 /**
  @module ember
  @submodule ember-htmlbars
@@ -36,6 +38,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
   const pluginContext = this;
   const b = pluginContext.syntax.builders;
   const walker = new pluginContext.syntax.Walker();
+  const moduleName = pluginContext.options.moduleName;
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {
@@ -43,11 +46,11 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       let on = hashPairForKey(node.hash, 'on');
       let onEvent = hashPairForKey(node.hash, 'onEvent');
       let normalizedOn = on || onEvent;
-      let moduleInfo = pluginContext.calculateModuleInfo(node.loc);
+      let moduleInfo = calculateLocationDisplay(moduleName, node.loc);
 
       if (normalizedOn && normalizedOn.value.type !== 'StringLiteral') {
         Ember.deprecate(
-          `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo} is deprecated.`
+          `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo}is deprecated.`
         );
 
         normalizedOn.key = 'onEvent';
@@ -59,7 +62,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
 
       if (!action) {
         Ember.deprecate(
-          `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo} will do nothing.`
+          `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo}will do nothing.`
         );
 
         return; // exit early, if no action was available there is nothing to do
@@ -76,7 +79,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       let expected = `${normalizedOn ? normalizedOn.value.value : 'enter'}="${action.value.original}"`;
 
       Ember.deprecate(
-        `Using '{{input ${specifiedOn}action="${action.value.original}"}} ${moduleInfo} is deprecated. Please use '{{input ${expected}}}' instead.`
+        `Using '{{input ${specifiedOn}action="${action.value.original}"}}' ${moduleInfo}is deprecated. Please use '{{input ${expected}}}' instead.`
       );
       if (!normalizedOn) {
         normalizedOn = b.pair('onEvent', b.string('enter'));
@@ -100,20 +103,6 @@ TransformInputOnToOnEvent.prototype.validate = function TransformWithAsToHash_va
         hashPairForKey(node.hash, 'on') ||
         hashPairForKey(node.hash, 'onEvent')
     );
-};
-
-TransformInputOnToOnEvent.prototype.calculateModuleInfo = function TransformInputOnToOnEvent_calculateModuleInfo(loc) {
-  let { column, line } = loc.start || {};
-  let moduleInfo = '';
-  if (this.options.moduleName) {
-    moduleInfo +=  `'${this.options.moduleName}' `;
-  }
-
-  if (line !== undefined && column !== undefined) {
-    moduleInfo += `@L${line}:C${column}`;
-  }
-
-  return moduleInfo;
 };
 
 function hashPairForKey(hash, key) {
