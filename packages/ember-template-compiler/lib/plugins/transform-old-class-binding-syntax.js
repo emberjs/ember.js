@@ -1,6 +1,3 @@
-import Ember from 'ember-metal/core';
-import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
-
 export default function TransformOldClassBindingSyntax(options) {
   this.syntax = null;
   this.options = options;
@@ -9,7 +6,6 @@ export default function TransformOldClassBindingSyntax(options) {
 TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassBindingSyntax_transform(ast) {
   var b = this.syntax.builders;
   var walker = new this.syntax.Walker();
-  var moduleName = this.options.moduleName;
 
   walker.visit(ast, function(node) {
     if (!validate(node)) { return; }
@@ -46,10 +42,8 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 
     each(allOfTheMicrosyntaxes, ({ value, loc }) => {
       let sexprs = [];
-      let sourceInformation = calculateLocationDisplay(moduleName, loc);
-
-      // TODO: Parse the microsyntax and offer the correct information
-      Ember.deprecate(`You're using legacy class binding syntax: classBinding=${exprToString(value)} ${sourceInformation}. Please replace with class=""`);
+      // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
+      // be removed.
 
       if (value.type === 'StringLiteral') {
         let microsyntax = parseMicrosyntax(value.original);
@@ -124,11 +118,4 @@ function parseMicrosyntax(string) {
   }
 
   return segments;
-}
-
-function exprToString(expr) {
-  switch (expr.type) {
-    case 'StringLiteral': return `"${expr.original}"`;
-    case 'PathExpression': return expr.original;
-  }
 }
