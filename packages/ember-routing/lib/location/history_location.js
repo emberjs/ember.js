@@ -207,6 +207,9 @@ export default EmberObject.extend({
       baseURL = baseURL.replace(/\/$/, '');
     }
 
+    // Sanitize double slashes in URL
+    url = url.replace(/[/]{2,}/, '/');
+
     return baseURL + rootURL + url;
   },
 
