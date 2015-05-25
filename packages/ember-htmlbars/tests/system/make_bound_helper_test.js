@@ -21,7 +21,6 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup() {
     registry = new Registry();
     container = registry.container();
-    registry.optionsForType('helper', { instantiate: false });
   },
 
   teardown() {
@@ -192,7 +191,7 @@ QUnit.test("bound helpers should not be invoked with blocks", function() {
 
   expectAssertion(function() {
     runAppend(view);
-  }, /makeBoundHelper generated helpers do not support use with blocks/i);
+  }, /Helpers may not be used in the block form/);
 });
 
 QUnit.test("shouldn't treat raw numbers as bound paths", function() {

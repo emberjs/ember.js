@@ -9,6 +9,11 @@ import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
+import Helper from "ember-htmlbars/helper";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import makeHandlebarsBoundHelper from "ember-htmlbars/compat/make-bound-helper";
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import makeHTMLBarsBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import {
   registerHelper
 } from "ember-htmlbars/helpers";
@@ -102,12 +107,48 @@ QUnit.test("the default resolver resolves helpers", function() {
 });
 
 QUnit.test("the default resolver resolves container-registered helpers", function() {
-  function gooresolvertestHelper() { return 'GOO'; }
-  function gooGazResolverTestHelper() { return 'GAZ'; }
-  application.register('helper:gooresolvertest', gooresolvertestHelper);
-  application.register('helper:goo-baz-resolver-test', gooGazResolverTestHelper);
-  equal(gooresolvertestHelper, locator.lookup('helper:gooresolvertest'), "looks up gooresolvertest helper");
-  equal(gooGazResolverTestHelper, locator.lookup('helper:goo-baz-resolver-test'), "looks up gooGazResolverTestHelper helper");
+  let shorthandHelper = Helper.helper(function() {});
+  let helper = Helper.extend();
+
+  application.register('helper:shorthand', shorthandHelper);
+  application.register('helper:complete', helper);
+
+  let lookedUpShorthandHelper = locator.lookupFactory('helper:shorthand');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+
+  let lookedUpHelper = locator.lookupFactory('helper:complete');
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), "looked up complete helper");
+});
+
+QUnit.test("the default resolver resolves helpers on the namespace", function() {
+  let ShorthandHelper = Helper.helper(function() {});
+  let CompleteHelper = Helper.extend();
+  let LegacyBareFunctionHelper = function() {};
+  let LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
+  let LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
+  let ViewHelper = makeViewHelper(function() {});
+
+  application.ShorthandHelper = ShorthandHelper;
+  application.CompleteHelper = CompleteHelper;
+  application.LegacyBareFunctionHelper = LegacyBareFunctionHelper;
+  application.LegacyHandlebarsBoundHelper = LegacyHandlebarsBoundHelper;
+  application.LegacyHtmlBarsBoundHelper = LegacyHTMLBarsBoundHelper; // Must use lowered "tml" in "HTMLBars" for resolver to find this
+  application.ViewHelper = ViewHelper;
+
+  let resolvedShorthand = registry.resolve('helper:shorthand');
+  let resolvedComplete = registry.resolve('helper:complete');
+  let resolvedLegacy = registry.resolve('helper:legacy-bare-function');
+  let resolvedLegacyHandlebars = registry.resolve('helper:legacy-handlebars-bound');
+  let resolvedLegacyHTMLBars = registry.resolve('helper:legacy-html-bars-bound');
+  let resolvedView = registry.resolve('helper:view');
+
+  equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
+  equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
+  ok(resolvedLegacy instanceof HandlebarsCompatibleHelper, 'legacy function helper is wrapped in HandlebarsCompatibleHelper');
+  equal(resolvedView, ViewHelper, 'resolves view helper');
+  equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
+  equal(resolvedLegacyHandlebars, LegacyHandlebarsBoundHelper, 'resolves legacy Handlebars bound helper');
 });
 
 QUnit.test("the default resolver throws an error if the fullName to resolve is invalid", function() {
