@@ -5,6 +5,7 @@
 
 import { findHelper } from "ember-htmlbars/system/lookup-helper";
 import { handleRedirect } from "htmlbars-runtime/hooks";
+import { buildHelperStream } from "ember-htmlbars/system/invoke-helper";
 
 var fakeElement;
 
@@ -32,7 +33,8 @@ export default function emberElement(morph, env, scope, path, params, hash, visi
   var result;
   var helper = findHelper(path, scope.self, env);
   if (helper) {
-    result = env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { element: morph.element }).value;
+    var helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope);
+    result = helperStream.value();
   } else {
     result = env.hooks.get(env, scope, path);
   }

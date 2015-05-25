@@ -1,5 +1,17 @@
-import { findHelper } from "ember-htmlbars/system/lookup-helper";
+import { validateLazyHelperName } from "ember-htmlbars/system/lookup-helper";
 
 export default function hasHelperHook(env, scope, helperName) {
-  return !!findHelper(helperName, scope.self, env);
+  if (env.helpers[helperName]) {
+    return true;
+  }
+
+  var container = env.container;
+  if (validateLazyHelperName(helperName, container, env.hooks.keywords)) {
+    var containerName = 'helper:' + helperName;
+    if (container._registry.has(containerName)) {
+      return true;
+    }
+  }
+
+  return false;
 }

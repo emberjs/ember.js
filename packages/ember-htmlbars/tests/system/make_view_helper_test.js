@@ -10,7 +10,6 @@ QUnit.module("ember-htmlbars: makeViewHelper", {
   setup() {
     registry = new Registry();
     container = registry.container();
-    registry.optionsForType('helper', { instantiate: false });
   },
   teardown() {
     runDestroy(view);

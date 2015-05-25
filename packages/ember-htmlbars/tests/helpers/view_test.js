@@ -49,7 +49,6 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('view:toplevel', EmberView.extend());
     registry.register('component-lookup:main', ComponentLookup);
   },
