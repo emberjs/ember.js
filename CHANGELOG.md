@@ -1,5 +1,32 @@
 # Ember Changelog
 
+### 1.13.0-beta.2 (May 25, 2015)
+
+- [#11138](https://github.com/emberjs/ember.js/pull/11138) Add a better deprecation for `{{bind-attr}}`.
+- [#11201](https://github.com/emberjs/ember.js/pull/11201) [BUGFIX] Fix `currentURL` test helper.
+- [#11161](https://github.com/emberjs/ember.js/pull/11161) [BUGFIX] Fix initial selection for select with optgroup.
+- [#10980](https://github.com/emberjs/ember.js/pull/10980) [BUGFIX] Fix `Ember.String.dasherize`, `Ember.String.underscore`, `Ember.String.capitalize`, `Ember.String.classify` for multi-word input values.
+- [#11187](https://github.com/emberjs/ember.js/pull/11187) [BUGFIX] Handle mut cell action names.
+- [#11194](https://github.com/emberjs/ember.js/pull/11194) [BUGFIX] Ensure `classNameBindings` properly handles multiple entries.
+- [#11203](https://github.com/emberjs/ember.js/pull/11203) [BUGFIX] Ensure components for void tagNames do not have childNodes.
+- [#11205](https://github.com/emberjs/ember.js/pull/11205) [BUGFIX] Ensure `Ember.get` works on empty string paths.
+- [#11220](https://github.com/emberjs/ember.js/pull/11220) [BUGFIX] Fix issue with `Ember.computed.sort` where array observers were not properly detached.
+- [#11222](https://github.com/emberjs/ember.js/pull/11222) [BUGFIX] Only attempt to lookup components with a dash.
+- [#11227](https://github.com/emberjs/ember.js/pull/11227) [BUGFIX] Ensure `role` is properly applied to views if `ariaRole` attribute is present.
+- [#11228](https://github.com/emberjs/ember.js/pull/11228) [BUGFIX] Fix `{{each}}` with `itemViewClass` specified `tagName`.
+- [#11231](https://github.com/emberjs/ember.js/pull/11231) [BUGFIX] Fix `{{each}}` with `itemViewClass` and `{{else}}`.
+- [#11234](https://github.com/emberjs/ember.js/pull/11234) [BUGFIX] Fix `{{each item in model itemViewClass="..."}}`.
+- [#11235](https://github.com/emberjs/ember.js/pull/11235) [BUGFIX] Properly handle `isVisible` as a computed property.
+- [#11242](https://github.com/emberjs/ember.js/pull/11242) [BUGFIX] Use the proper value for `options.data.view` with Handlebars compat helpers.
+- [#11252](https://github.com/emberjs/ember.js/pull/11253) [BUGFIX] Ensure `instanceInitializers` are called with the proper arguments when calling `App.reset`.
+- [#11257](https://github.com/emberjs/ember.js/pull/11257) [BUGFIX] Fix (and deprecate) `{{input on="..." action="..."}}`.
+- [#11260](https://github.com/emberjs/ember.js/pull/11260) [BUGFIX] Ensure that passing an array argument to `(action` helper is handled properly.
+- [#11261](https://github.com/emberjs/ember.js/pull/11261) Add helpful assertion when exporting the wrong type of factory (for Routes, Components, Services, and Views).
+- [#11266](https://github.com/emberjs/ember.js/pull/11266) [BUGFIX] Ensure `parentView` includes yielding component.
+- [#11267](https://github.com/emberjs/ember.js/pull/11267) Disable angle bracket components. See [#11267](https://github.com/emberjs/ember.js/pull/11267) and [emberjs/rfcs#60](https://github.com/emberjs/rfcs/pull/60) for more details.
+
+
+
 ### 1.13.0-beta.1
 
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
