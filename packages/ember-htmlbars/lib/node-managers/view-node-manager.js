@@ -98,7 +98,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     if (component) {
       var snapshot = takeSnapshot(attrs);
       env.renderer.setAttrs(this.component, snapshot);
-      env.renderer.willCreateElement(component);
       env.renderer.willRender(component);
       env.renderedViews.push(component.elementId);
     }
@@ -145,10 +144,6 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
     }
     if (this.block) {
       this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
-    }
-
-    if (component) {
-      env.lifecycleHooks.push({ type: 'didUpdate', view: component });
     }
 
     return newEnv;
