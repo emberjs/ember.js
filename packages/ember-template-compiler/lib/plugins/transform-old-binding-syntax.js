@@ -1,10 +1,13 @@
 import Ember from 'ember-metal/core';
+import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
 
-export default function TransformOldBindingSyntax() {
+export default function TransformOldBindingSyntax(options) {
   this.syntax = null;
+  this.options = options;
 }
 
 TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSyntax_transform(ast) {
+  var moduleName = this.options.moduleName;
   var b = this.syntax.builders;
   var walker = new this.syntax.Walker();
 
@@ -14,13 +17,7 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
     each(node.hash.pairs, function(pair) {
       let { key, value } = pair;
 
-      var sourceInformation = '';
-
-      if (pair.loc) {
-        let { start, source } = pair.loc;
-
-        sourceInformation = `@ ${start.line}:${start.column} in ${source || '(inline)'}`;
-      }
+      var sourceInformation = calculateLocationDisplay(moduleName, pair.loc);
 
       if (key === 'classBinding') { return; }
 

@@ -205,7 +205,7 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
 QUnit.test('specifying `on="someevent" action="foo"` triggers the action', function() {
   expect(2);
   runDestroy(view);
-  expectDeprecation(`Using '{{input on="focus-in" action="doFoo"}} 'foo.hbs' @L1:C0 is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
+  expectDeprecation(`Using '{{input on="focus-in" action="doFoo"}}' ('foo.hbs' @ L1:C0) is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
 
   controller = {
     send(actionName, value, sender) {

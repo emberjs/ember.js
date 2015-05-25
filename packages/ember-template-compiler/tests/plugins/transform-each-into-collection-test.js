@@ -12,7 +12,7 @@ function testBlockForm(attr) {
       compile(`\n\n    {{#each model ${attr}="foo" as |item|}}{{item}}{{/each}}`, {
         moduleName: 'lol-wat-app/index/template'
       });
-    }, `Using '${attr}' with '{{each}}' 'lol-wat-app/index/template' @L3:C18 is deprecated.  Please refactor to a component.`);
+    }, `Using '${attr}' with '{{each}}' ('lol-wat-app/index/template' @ L3:C18) is deprecated.  Please refactor to a component.`);
   });
 }
 
@@ -24,7 +24,7 @@ function testNonBlockForm(attr) {
       compile(`\n\n    {{each model ${attr}="foo"}}`, {
         moduleName: 'lol-wat-app/index/template'
       });
-    }, `Using '${attr}' with '{{each}}' 'lol-wat-app/index/template' @L3:C17 is deprecated.  Please refactor to a component.`);
+    }, `Using '${attr}' with '{{each}}' ('lol-wat-app/index/template' @ L3:C17) is deprecated.  Please refactor to a component.`);
   });
 }
 
