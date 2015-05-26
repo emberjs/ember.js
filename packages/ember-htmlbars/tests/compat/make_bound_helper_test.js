@@ -484,7 +484,7 @@ QUnit.test("bound helpers can handle nulls in array (with primitives) [DEPRECATE
     controller: EmberObject.create({
       things: A([null, 0, undefined, false, "OMG"])
     }),
-    template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
+    template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each things as |thing|}}{{thing}}|{{reverse thing}} {{/each}}")
   });
 
   expectDeprecation(function() {
@@ -512,7 +512,7 @@ QUnit.test("bound helpers can handle nulls in array (with objects)", function() 
     controller: EmberObject.create({
       things: A([null, { foo: 5 }])
     }),
-    template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
+    template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each things as |thing|}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
   });
 
   expectDeprecation(function() {
