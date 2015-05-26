@@ -8,125 +8,183 @@ import {
 var splice = Array.prototype.splice;
 
 /**
- * Defines some convenience methods for working with Enumerables.
- * `Ember.EnumerableUtils` uses `Ember.ArrayPolyfills` when necessary.
- *
- * @class EnumerableUtils
- * @namespace Ember
- * @static
- * */
+  Defines some convenience methods for working with Enumerables.
+  `Ember.EnumerableUtils` uses `Ember.ArrayPolyfills` when necessary.
+
+  @class EnumerableUtils
+  @namespace Ember
+  @static
+ */
 
 /**
- * Calls the map function on the passed object with a specified callback. This
- * uses `Ember.ArrayPolyfill`'s-map method when necessary.
- *
- * @method map
- * @param {Object} obj The object that should be mapped
- * @param {Function} callback The callback to execute
- * @param {Object} thisArg Value to use as this when executing *callback*
- *
- * @return {Array} An array of mapped values.
+  Creates and returns a new array with the results of calling the specified
+  `callback` on each element in the enumerable. This method corresponds to
+  `map()` defined in ES2015.
+
+  The callback function you provide should have the following signature (all
+  parameters are optional):
+
+  ```javascript
+  function(item, index, enumerable);
+  ```
+
+  - `item` is the current item in the iteration.
+  - `index` is the current index in the iteration.
+  - `enumerable` is the enumerable object itself.
+
+  The `callback` function should return the mapped value.
+
+  Note that in addition to a `callback`, you can also pass an optional target
+  object that will be set as `this` on the context. This is a good way
+  to give your iterator function access to the current object.
+
+  @method map
+  @param {Object} object The enumerable to iterate over.
+  @param {Function} callback The function invoked per iteration.
+  @param {Object} [target] The target object to use.
+  @return {Array} The mapped array.
  */
-export function map(obj, callback, thisArg) {
-  return obj.map ? obj.map(callback, thisArg) : _map.call(obj, callback, thisArg);
+export function map(object, callback, thisArg) {
+  return object.map ? object.map(callback, thisArg) : _map.call(object, callback, thisArg);
 }
 
 /**
- * Calls the forEach function on the passed object with a specified callback. This
- * uses `Ember.ArrayPolyfill`'s-forEach method when necessary.
- *
- * @method forEach
- * @param {Object} obj The object to call forEach on
- * @param {Function} callback The callback to execute
- * @param {Object} thisArg Value to use as this when executing *callback*
- *
+  Iterates through the enumerable, calling the specified `callback` on each
+  item. This method corresponds to the `forEach()` method defined in
+  ES2015.
+
+  The callback method you provide should have the following signature (all
+  parameters are optional):
+
+  ```javascript
+  function(item, index, enumerable);
+  ```
+
+  - `item` is the current item in the iteration.
+  - `index` is the current index in the iteration.
+  - `enumerable` is the enumerable object itself.
+
+  Note that in addition to a callback, you can also pass an optional target
+  object that will be set as `this` on the context. This is a good way
+  to give your iterator function access to the current object.
+
+  @method forEach
+  @param {Object} object The enumerable to iterate over.
+  @param {Function} callback The function invoked per iteration.
+  @param {Object} [target] The target object to use.
+  @return {Object} receiver
  */
-export function forEach(obj, callback, thisArg) {
-  return obj.forEach ? obj.forEach(callback, thisArg) : a_forEach.call(obj, callback, thisArg);
+export function forEach(object, callback, thisArg) {
+  return object.forEach ? object.forEach(callback, thisArg) : a_forEach.call(object, callback, thisArg);
 }
 
 /**
- * Calls the filter function on the passed object with a specified callback. This
- * uses `Ember.ArrayPolyfill`'s-filter method when necessary.
- *
- * @method filter
- * @param {Object} obj The object to call filter on
- * @param {Function} callback The callback to execute
- * @param {Object} thisArg Value to use as this when executing *callback*
- *
- * @return {Array} An array containing the filtered values
- * @since 1.4.0
+  Creates and returns a new array with all of the elements in the enumeration
+  that pass the test implemented by the `callback` function. This method
+  corresponds to `filter()` defined in ES2015.
+
+  The callback method you provide should have the following signature (all
+  parameters are optional):
+
+  ```javascript
+  function(item, index, enumerable);
+  ```
+
+  - `item` is the current item in the iteration.
+  - `index` is the current index in the iteration.
+  - `enumerable` is the enumerable object itself.
+
+  It should return `true` to include the item in the results, `false`
+  otherwise.
+
+  Note that in addition to a callback, you can also pass an optional target
+  object that will be set as `this` on the context. This is a good way
+  to give your iterator function access to the current object.
+
+  @method filter
+  @param {Object} object The enumerable to iterate over.
+  @param {Function} callback The function invoked per iteration.
+  @param {Object} [target] The target object to use.
+  @return {Array} The new filtered array.
  */
 export function filter(obj, callback, thisArg) {
   return obj.filter ? obj.filter(callback, thisArg) : _filter.call(obj, callback, thisArg);
 }
 
 /**
- * Calls the indexOf function on the passed object with a specified callback. This
- * uses `Ember.ArrayPolyfill`'s-indexOf method when necessary.
- *
- * @method indexOf
- * @param {Object} obj The object to call indexOn on
- * @param {Function} callback The callback to execute
- * @param {Object} index The index to start searching from
- *
+  Returns the index at which the first occurence of `element` is found in `object`, or
+  -1 if it is not present.
+
+  ```js
+  var arr = ['a', 'b', 'c', 'd', 'a'];
+
+  Ember.EnumerableUtils.indexOf(arr, 'a');       //  0
+  Ember.EnumerableUtils.indexOf(arr, 'z');       // -1
+  Ember.EnumerableUtils.indexOf(arr, 'a', 2);    //  4
+  Ember.EnumerableUtils.indexOf(arr, 'a', -1);   //  4
+  Ember.EnumerableUtils.indexOf(arr, 'b', 3);    // -1
+  Ember.EnumerableUtils.indexOf(arr, 'a', 100);  // -1
+  ```
+
+  @method indexOf
+  @param {Object} object The enumerable to search.
+  @param {Object} element The element to locate in the enumerable.
+  @param {Number} fromIndex The index from which to start the search. If negative, it is
+  used as the offset from the end of the enumerable. If greater than or equal to the
+  enumerable's length, the enumerable is not searched and -1 is returned. Default: 0.
+  @return {Number} The index of the found element else -1 if not present.
  */
-export function indexOf(obj, element, index) {
-  return obj.indexOf ? obj.indexOf(element, index) : _indexOf.call(obj, element, index);
+export function indexOf(object, element, fromIndex) {
+  return object.indexOf ? object.indexOf(element, fromIndex) : _indexOf.call(object, element, fromIndex);
 }
 
 /**
- * Returns an array of indexes of the first occurrences of the passed elements
- * on the passed object.
- *
- * ```javascript
- *  var array = [1, 2, 3, 4, 5];
- *  Ember.EnumerableUtils.indexesOf(array, [2, 5]); // [1, 4]
- *
- *  var fubar = "Fubarr";
- *  Ember.EnumerableUtils.indexesOf(fubar, ['b', 'r']); // [2, 4]
- * ```
- *
- * @method indexesOf
- * @param {Object} obj The object to check for element indexes
- * @param {Array} elements The elements to search for on *obj*
- *
- * @return {Array} An array of indexes.
- *
+  Returns an array of first occurence indexes for each element in `elements` as found in `object`.
+
+  ```js
+  var array = [1, 2, 3, 4, 5];
+  Ember.EnumerableUtils.indexesOf(array, [2, 5]);     // [1, 4]
+
+  var fubar = "Fubarr";
+  Ember.EnumerableUtils.indexesOf(fubar, ['b', 'r']); // [2, 4]
+  ```
+
+  @method indexesOf
+  @param {Object} object The enumerable to search.
+  @param {Object} elements The elements to locate in the enumerable.
+  @return {Array} The array of indexes for each element in `elements` with -1 for each
+  element not present.
  */
-export function indexesOf(obj, elements) {
+export function indexesOf(object, elements) {
   return elements === undefined ? [] : map(elements, (item) => {
-    return indexOf(obj, item);
+    return indexOf(object, item);
   });
 }
 
 /**
- * Adds an object to an array. If the array already includes the object this
- * method has no effect.
- *
- * @method addObject
- * @param {Array} array The array the passed item should be added to
- * @param {Object} item The item to add to the passed array
- *
- * @return 'undefined'
+  Adds an element to the array. If the array already contains the element, it is not
+  added.
+
+  @method addObject
+  @param {Object} array The array to modify.
+  @param {Object} element The element to add.
+  @return 'undefined'
  */
-export function addObject(array, item) {
-  var index = indexOf(array, item);
-  if (index === -1) { array.push(item); }
+export function addObject(array, element) {
+  var index = indexOf(array, element);
+  if (index === -1) { array.push(element); }
 }
 
 /**
- * Removes an object from an array. If the array does not contain the passed
- * object this method has no effect.
- *
- * @method removeObject
- * @param {Array} array The array to remove the item from.
- * @param {Object} item The item to remove from the passed array.
- *
- * @return 'undefined'
+  Removes an element from the array.
+
+  @method removeObject
+  @param {Object} array The array to modify.
+  @param {Object} element The element to remove.
+  @return 'undefined'
  */
-export function removeObject(array, item) {
-  var index = indexOf(array, item);
+export function removeObject(array, element) {
+  var index = indexOf(array, element);
   if (index !== -1) { array.splice(index, 1); }
 }
 
@@ -155,60 +213,57 @@ export function _replace(array, idx, amt, objects) {
 }
 
 /**
- * Replaces objects in an array with the passed objects.
- *
- * ```javascript
- *   var array = [1,2,3];
- *   Ember.EnumerableUtils.replace(array, 1, 2, [4, 5]); // [1, 4, 5]
- *
- *   var array = [1,2,3];
- *   Ember.EnumerableUtils.replace(array, 1, 1, [4, 5]); // [1, 4, 5, 3]
- *
- *   var array = [1,2,3];
- *   Ember.EnumerableUtils.replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
- * ```
- *
- * @method replace
- * @param {Array} array The array the objects should be inserted into.
- * @param {Number} idx Starting index in the array to replace. If *idx* >=
- * length, then append to the end of the array.
- * @param {Number} amt Number of elements that should be removed from the array,
- * starting at *idx*
- * @param {Array} objects An array of zero or more objects that should be
- * inserted into the array at *idx*
- *
- * @return {Array} The modified array.
+  Replaces objects in the `array` with the specified `elements`.
+
+  ```javascript
+  var array = [1,2,3];
+  Ember.EnumerableUtils.replace(array, 1, 2, [4, 5]);  // [1, 4, 5]
+
+  var array = [1,2,3];
+  Ember.EnumerableUtils.replace(array, 1, 1, [4, 5]);  // [1, 4, 5, 3]
+
+  var array = [1,2,3];
+  Ember.EnumerableUtils.replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
+  ```
+
+  @method replace
+  @param {Array} array The array to modify.
+  @param {Number} fromIndex The index from which to start the replacement. If greater than
+  or equal to the array's length, appends to the end of the array.
+  @param {Number} amt The number of elements that should be removed from the array,
+  starting at `fromIndex`.
+  @param {Array} elements The array of objects to insert.
+  @return {Array} The modified array.
  */
-export function replace(array, idx, amt, objects) {
+export function replace(array, fromIndex, amt, elements) {
   if (array.replace) {
-    return array.replace(idx, amt, objects);
+    return array.replace(fromIndex, amt, elements);
   } else {
-    return _replace(array, idx, amt, objects);
+    return _replace(array, fromIndex, amt, elements);
   }
 }
 
 /**
- * Calculates the intersection of two arrays. This method returns a new array
- * filled with the records that the two passed arrays share with each other.
- * If there is no intersection, an empty array will be returned.
- *
- * ```javascript
- * var array1 = [1, 2, 3, 4, 5];
- * var array2 = [1, 3, 5, 6, 7];
- *
- * Ember.EnumerableUtils.intersection(array1, array2); // [1, 3, 5]
- *
- * var array1 = [1, 2, 3];
- * var array2 = [4, 5, 6];
- *
- * Ember.EnumerableUtils.intersection(array1, array2); // []
- * ```
- *
- * @method intersection
- * @param {Array} array1 The first array
- * @param {Array} array2 The second array
- *
- * @return {Array} The intersection of the two passed arrays.
+  Calculates the intersection of two arrays and returns a new array
+  containing shared elements. If there are no shared elements, an
+  empty array will be returned.
+
+  ```javascript
+  var array1 = [1, 2, 3, 4, 5];
+  var array2 = [1, 3, 5, 6, 7];
+
+  Ember.EnumerableUtils.intersection(array1, array2); // [1, 3, 5]
+
+  var array1 = [1, 2, 3];
+  var array2 = [4, 5, 6];
+
+  Ember.EnumerableUtils.intersection(array1, array2); // []
+  ```
+
+  @method intersection
+  @param {Array} array1 The first array to inspect.
+  @param {Array} array2 The second array to inspect.
+  @return {Array} The new array containing shared elements.
  */
 export function intersection(array1, array2) {
   var result = [];
