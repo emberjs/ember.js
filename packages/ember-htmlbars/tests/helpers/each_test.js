@@ -1131,5 +1131,18 @@ function testEachWithItem(moduleName, useBlockParams) {
   }
 }
 
+QUnit.test("context switching deprecation is printed when no items are present", function() {
+  runDestroy(view);
+  view = EmberView.create({
+    template: compile("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}")
+  });
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, /Using the context switching form of \{\{each\}\} is deprecated/);
+
+  assertHTML(view, "Nothing");
+});
+
 testEachWithItem("{{#each foo in bar}}", false);
 testEachWithItem("{{#each bar as |foo|}}", true);
