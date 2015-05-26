@@ -551,7 +551,7 @@ QUnit.test("`fillIn` takes context into consideration", function() {
   });
 });
 
-QUnit.skip("`fillIn` focuses on the element", function() {
+QUnit.test("`fillIn` focuses on the element", function() {
   expect(2);
   var fillIn, find, visit, andThen;
 
