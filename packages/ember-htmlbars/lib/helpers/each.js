@@ -56,11 +56,14 @@ export default function eachHelper(params, hash, blocks) {
   var list = params[0];
   var keyPath = hash.key;
 
+  if (blocks.template.arity === 0) {
+    Ember.deprecate(deprecation);
+  }
+
   if (shouldDisplay(list)) {
     forEach(list, function(item, i) {
       var self;
       if (blocks.template.arity === 0) {
-        Ember.deprecate(deprecation);
         self = normalizeSelf(item);
       }
 
