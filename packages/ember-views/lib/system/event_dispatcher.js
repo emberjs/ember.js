@@ -15,9 +15,6 @@ import ActionManager from "ember-views/system/action_manager";
 import View from "ember-views/views/view";
 import merge from "ember-metal/merge";
 
-//ES6TODO:
-// find a better way to do Ember.View.views without global state
-
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
@@ -172,9 +169,10 @@ export default EmberObject.extend({
   */
   setupHandler(rootElement, event, eventName) {
     var self = this;
+    var viewRegistry = this.container && this.container.lookup('-view-registry:main') || View.views;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = View.views[this.id];
+      var view = viewRegistry[this.id];
       var result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;

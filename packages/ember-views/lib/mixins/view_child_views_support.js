@@ -89,6 +89,7 @@ var ViewChildViewsSupport = Mixin.create({
     var attrs = _attrs || {};
     var view;
     attrs.renderer = this.renderer;
+    attrs._viewRegistry = this._viewRegistry;
 
     if (maybeViewClass.isViewFactory) {
       attrs.container = this.container;
