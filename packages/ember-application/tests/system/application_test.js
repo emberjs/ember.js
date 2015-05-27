@@ -9,6 +9,7 @@ import View from "ember-views/views/view";
 import Controller from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberObject from "ember-runtime/system/object";
+import EmberRoute from "ember-routing/system/route";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-template-compiler/system/compile";
 
@@ -126,6 +127,40 @@ QUnit.test('initialized application go to initial route', function() {
   });
 
   equal(jQuery('#qunit-fixture h1').text(), "Hi from index");
+});
+
+QUnit.test("ready hook is called before routing begins", function() {
+  expect(2);
+
+  run(function() {
+    function registerRoute(application, name, callback) {
+      var route = EmberRoute.extend({
+        activate: callback
+      });
+
+      application.register('route:' + name, route);
+    }
+
+    var MyApplication = Application.extend({
+      ready() {
+        registerRoute(this, 'index', function() {
+          ok(true, 'last-minite route is activated');
+        });
+      }
+    });
+
+    app = MyApplication.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.Router.reopen({
+      location: 'none'
+    });
+
+    registerRoute(app, 'application', function() {
+      ok(true, 'normal route is activated');
+    });
+  });
 });
 
 QUnit.test("initialize application via initialize call", function() {
