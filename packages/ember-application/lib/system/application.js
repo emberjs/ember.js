@@ -16,7 +16,7 @@ import create from "ember-metal/platform/create";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
 import Controller from "ember-runtime/controllers/controller";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { map } from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-metal-views/renderer";
@@ -1129,7 +1129,7 @@ function logLibraryVersions() {
     Ember.LOG_VERSION = false;
     var libs = Ember.libraries._registry;
 
-    var nameLengths = EnumerableUtils.map(libs, function(item) {
+    var nameLengths = map(libs, function(item) {
       return get(item, 'name.length');
     });
 

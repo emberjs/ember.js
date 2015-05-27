@@ -1,5 +1,5 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { map } from 'ember-metal/enumerable_utils';
 import {get} from 'ember-metal/property_get';
 import {guidFor} from "ember-metal/utils";
 
@@ -11,7 +11,7 @@ function mapFunc(item) { return item ? item.toString() : null; }
 
 suite.test('map should iterate over list', function() {
   var obj = this.newObject();
-  var ary = EnumerableUtils.map(this.toArray(obj), mapFunc);
+  var ary = map(this.toArray(obj), mapFunc);
   var found = [];
 
   found = obj.map(mapFunc);
