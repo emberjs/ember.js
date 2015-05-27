@@ -296,11 +296,13 @@ var Application = Namespace.extend(DeferredMixin, {
         // tamper with the default `Ember.Router`.
         // 2.0TODO: Can we move this into a globals-mode-only library?
         this.Router = (this.Router || Router).extend();
-        this.waitForDOMReady(this.buildDefaultInstance());
+        this.buildDefaultInstance();
+        this.waitForDOMReady();
       }
     } else {
       this.Router = (this.Router || Router).extend();
-      this.waitForDOMReady(this.buildDefaultInstance());
+      this.buildDefaultInstance();
+      this.waitForDOMReady();
     }
   },
 
@@ -362,13 +364,13 @@ var Application = Namespace.extend(DeferredMixin, {
     loading.
 
     @private
-    @method scheduleInitialize
+    @method waitForDOMReady
   */
-  waitForDOMReady(_instance) {
+  waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady', _instance);
+      run.schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, 'domReady', _instance));
+      this.$().ready(run.bind(this, 'domReady'));
     }
   },
 
@@ -557,16 +559,12 @@ var Application = Namespace.extend(DeferredMixin, {
     to defer readiness until the auth token has been retrieved.
 
     @private
-    @method _initialize
+    @method domReady
   */
-  domReady(_instance) {
+  domReady() {
     if (this.isDestroyed) { return; }
 
-    var app = this;
-
-    this.boot().then(function() {
-      app.runInstanceInitializers(_instance);
-    });
+    this.boot();
 
     return this;
   },
@@ -721,6 +719,7 @@ var Application = Namespace.extend(DeferredMixin, {
         this.__deprecatedInstance__.setupEventDispatcher();
       }
 
+      this.runInstanceInitializers(this.__deprecatedInstance__);
       this.ready(); // user hook
       this.__deprecatedInstance__.startRouting();
 
@@ -737,8 +736,8 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Called when the Application has become ready.
-    The call will be delayed until the DOM has become ready.
+    Called when the Application has become ready, immediately before routing
+    begins. The call will be delayed until the DOM has become ready.
 
     @event ready
   */

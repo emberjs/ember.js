@@ -340,6 +340,33 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     });
   });
 
+  QUnit.test("initializers are run before ready hook", function() {
+    expect(2);
+
+    var readyWasCalled = false;
+
+    var MyApplication = Application.extend({
+      ready() {
+        ok(true, 'ready is called');
+        readyWasCalled = true;
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'initializer',
+      initialize() {
+        ok(!readyWasCalled, 'ready is not yet called');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  });
+
   if (initializeContextFeatureEnabled) {
     QUnit.test("initializers should be executed in their own context", function() {
       expect(1);
