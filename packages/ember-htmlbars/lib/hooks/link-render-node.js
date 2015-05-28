@@ -20,6 +20,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
   } else {
     switch (path) {
       case 'unbound': return true;
+      case 'unless':
       case 'if': params[0] = shouldDisplay(params[0]); break;
       case 'each': params[0] = eachParam(params[0]); break;
       default:

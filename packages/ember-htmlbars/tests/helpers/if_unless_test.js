@@ -156,6 +156,30 @@ QUnit.test("The `if` helper updates if an array-like object is empty or not", fu
   testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
 });
 
+QUnit.test("The `unless` helper updates if an array-like object is empty or not", function() {
+  view = EmberView.create({
+    array: ArrayProxy.create({ content: Ember.A([]) }),
+
+    template: compile('{{#unless view.array}}Yep{{/unless}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Yep');
+
+  run(function() {
+    view.get('array').pushObject(1);
+  });
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.get('array').removeObject(1);
+  });
+
+  equal(view.$().text(), 'Yep');
+});
+
 QUnit.test("The `if` helper updates when the value changes", function() {
   view = EmberView.create({
     conditional: true,
