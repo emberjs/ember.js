@@ -176,7 +176,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   }
 
   if (get(component, 'isVisible') === false) {
-    var hiddenStyle = ['value', "display: none;"];
+    var hiddenStyle = ['subexpr', '-html-safe', ['display: none;'], []];
     var existingStyle = normalized.style;
 
     if (existingStyle) {
