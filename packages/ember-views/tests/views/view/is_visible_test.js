@@ -7,8 +7,19 @@ import { computed } from "ember-metal/computed";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
+var warnings, originalWarn;
 
 QUnit.module("EmberView#isVisible", {
+  setup() {
+    warnings = [];
+    originalWarn = Ember.warn;
+    Ember.warn = function(message, test) {
+      if (!test) {
+        warnings.push(message);
+      }
+    };
+  },
+
   teardown() {
     if (view) {
       run(function() { view.destroy(); });
@@ -35,6 +46,8 @@ QUnit.test("should hide views when isVisible is false", function() {
   run(function() {
     view.remove();
   });
+
+  deepEqual(warnings, [], 'no warnings were triggered');
 });
 
 QUnit.test("should hide element if isVisible is false before element is created", function() {
@@ -69,6 +82,8 @@ QUnit.test("should hide element if isVisible is false before element is created"
   run(function() {
     view.remove();
   });
+
+  deepEqual(warnings, [], 'no warnings were triggered');
 });
 
 QUnit.test("should hide views when isVisible is a CP returning false", function() {
@@ -92,6 +107,8 @@ QUnit.test("should hide views when isVisible is a CP returning false", function(
   run(function() {
     view.remove();
   });
+
+  deepEqual(warnings, [], 'no warnings were triggered');
 });
 
 QUnit.test("doesn't overwrite existing style attribute bindings", function() {
