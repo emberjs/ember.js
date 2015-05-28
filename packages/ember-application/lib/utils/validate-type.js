@@ -4,10 +4,10 @@
 */
 
 let VALIDATED_TYPES = {
-  route:     ['isRouteFactory',     'Ember.Route'],
-  component: ['isComponentFactory', 'Ember.Component'],
-  view:      ['isViewFactory',      'Ember.View'],
-  service:   ['isServiceFactory',   'Ember.Service']
+  route:     ['assert',    'isRouteFactory',     'Ember.Route'],
+  component: ['deprecate', 'isComponentFactory', 'Ember.Component'],
+  view:      ['deprecate', 'isViewFactory',      'Ember.View'],
+  service:   ['deprecate', 'isServiceFactory',   'Ember.Service']
 };
 
 export default function validateType(resolvedType, parsedName) {
@@ -17,21 +17,23 @@ export default function validateType(resolvedType, parsedName) {
     return;
   }
 
-  // 2.0TODO: Remove this deprecation warning
-  if (parsedName.type === 'service') {
+  let [action, factoryFlag, expectedType] = validationAttributes;
+
+  if (action === 'deprecate') {
     Ember.deprecate(
-      "In Ember 2.0 service factories must have an `isServiceFactory` " +
-      `property set to true. You registered ${resolvedType} as a service ` +
-      "factory. Either add the `isServiceFactory` property to this factory or " +
-      "extend from Ember.Service.",
-      resolvedType.isServiceFactory
+      `In Ember 2.0 ${parsedName.type} factories must have an \`${factoryFlag}\` ` +
+      `property set to true. You registered ${resolvedType} as a ${parsedName.type} ` +
+      `factory. Either add the \`${factoryFlag}\` property to this factory or ` +
+      `extend from ${expectedType}.`,
+      resolvedType[factoryFlag]
     );
-    return;
+  } else {
+    Ember.assert(
+      `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +
+      `instead it was ${resolvedType}.`,
+      function() {
+        return resolvedType[factoryFlag];
+      }
+    );
   }
-
-  let [factoryFlag, expectedType] = validationAttributes;
-
-  Ember.assert(`Expected ${parsedName.fullName} to resolve to an ${expectedType} but instead it was ${resolvedType}.`, function() {
-    return resolvedType[factoryFlag];
-  });
 }
