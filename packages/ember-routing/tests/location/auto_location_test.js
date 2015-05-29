@@ -215,6 +215,22 @@ QUnit.test("AutoLocation requires any rootURL given to end in a trailing forward
   }, expectedMsg);
 });
 
+QUnit.test("AutoLocation provides its rootURL to the concreteImplementation", function() {
+  expect(1);
+  var browserLocation = mockBrowserLocation({
+    pathname: '/some/subdir/derp'
+  });
+  var browserHistory = mockBrowserHistory();
+
+  location = createLocation(browserLocation, browserHistory);
+  location.rootURL = '/some/subdir/';
+
+  location.detect();
+
+  var concreteLocation = get(location, 'concreteImplementation');
+  equal(location.rootURL, concreteLocation.rootURL);
+});
+
 QUnit.test("getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
   expect(3);
 
