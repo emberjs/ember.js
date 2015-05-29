@@ -74,3 +74,20 @@ QUnit.test('allows unbound usage within an element creating multiple attributes'
 
   equal(view.$('.foo[data-foo="bar"]').length, 1, 'attributes added by helper');
 });
+
+QUnit.test('allows unbound usage within an element creating multiple attributes with spaces #11243', function() {
+  expect(2);
+
+  view = EmberView.create({
+    controller: {
+      someProp: 'class="foo" data-foo="bar baz biff"'
+    },
+    template: compile('<div {{someProp}}>Bar</div>')
+  });
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, 'Returning a string of attributes from a helper inside an element is deprecated.');
+
+  equal(view.$('.foo').attr('data-foo'), 'bar baz biff', 'attributes added by helper');
+});

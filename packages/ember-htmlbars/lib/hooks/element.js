@@ -7,6 +7,24 @@ import Ember from "ember-metal/core";
 import { read } from "ember-metal/streams/utils";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 
+var fakeElement;
+
+function updateElementAttributesFromString(dom, element, string) {
+  if (!fakeElement) {
+    fakeElement = document.createElement('div');
+  }
+
+  fakeElement.innerHTML = '<' + element.tagName + ' ' + string + '><' + '/' + element.tagName + '>';
+
+  var attrs = fakeElement.firstChild.attributes;
+  for (var i = 0, l = attrs.length; i < l; i++) {
+    var attr = attrs[i];
+    if (attr.specified) {
+      dom.setAttribute(element, attr.name, attr.value);
+    }
+  }
+}
+
 export default function element(env, domElement, view, path, params, hash) { //jshint ignore:line
   var helper = lookupHelper(path, view, env);
   var valueOrLazyValue;
@@ -23,17 +41,6 @@ export default function element(env, domElement, view, path, params, hash) { //j
   var value = read(valueOrLazyValue);
   if (value) {
     Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.');
-
-    var parts = value.toString().split(/\s+/);
-    for (var i = 0, l = parts.length; i < l; i++) {
-      var attrParts = parts[i].split('=');
-      var attrName = attrParts[0];
-      var attrValue = attrParts[1];
-
-      attrValue = attrValue.replace(/^['"]/, '').replace(/['"]$/, '');
-
-      env.dom.setAttribute(domElement, attrName, attrValue);
-    }
+    updateElementAttributesFromString(env.dom, domElement, value);
   }
 }
-
