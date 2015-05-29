@@ -131,6 +131,8 @@ export default EmberObject.extend({
     }
 
     var concrete = this.container.lookup('location:' + implementation);
+    set(concrete, 'rootURL', rootURL);
+
     Ember.assert("Could not find location '" + implementation + "'.", !!concrete);
 
     set(this, 'concreteImplementation', concrete);
