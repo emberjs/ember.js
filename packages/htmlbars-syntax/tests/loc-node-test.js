@@ -65,3 +65,23 @@ test("element modifier", function() {
 
   locEqual(ast.body[1].modifiers[0], 2, 9, 4, 15, 'element modifier');
 });
+
+test("html elements", function() {
+  var ast = parse(`
+    <section>
+      <br>
+      <div>
+        <hr />
+      </div>
+    </section>
+  `);
+
+  let [,section] = ast.body;
+  let [,br,,div] = section.children;
+  let [,hr] = div.children;
+
+  locEqual(section, 2, 4, 7, 14, 'section element');
+  locEqual(br, 3, 6, 3, 10, 'br element');
+  locEqual(div, 4, 6, 6, 12, 'div element');
+  locEqual(hr, 5, 8, 5, 14, 'hr element');
+});
