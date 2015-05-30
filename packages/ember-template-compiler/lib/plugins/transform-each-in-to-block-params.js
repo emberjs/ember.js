@@ -51,7 +51,7 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
         moduleInfo = calculateLocationDisplay(moduleName, node.program.loc);
 
         if (node.program.blockParams.length) {
-          throw new Error('You cannot use keyword (`{{each foo in bar}}`) and block params (`{{each bar as |foo|}}`) at the same time ' + moduleInfo + '.');
+          throw new Error('You cannot use keyword (`{{#each foo in bar}}`) and block params (`{{#each bar as |foo|}}`) at the same time ' + moduleInfo + '.');
         }
 
         node.program.blockParams = [keyword];
@@ -65,8 +65,8 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
       }
 
       Ember.deprecate(
-        `Using the '{{each item in model}}' form of the {{each}} helper ${moduleInfo}is deprecated. ` +
-          `Please use the block param form instead ('{{each model as |item|}}').`,
+        `Using the '{{#each item in model}}' form of the {{#each}} helper ${moduleInfo}is deprecated. ` +
+          `Please use the block param form instead ('{{#each model as |item|}}').`,
         false,
         { url: 'http://emberjs.com/guides/deprecations/#toc_code-in-code-syntax-for-code-each-code' }
       );
