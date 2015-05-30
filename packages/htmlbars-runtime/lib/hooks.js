@@ -863,7 +863,7 @@ export function attribute(morph, env, scope, name, value) {
 export function subexpr(env, scope, helperName, params, hash) {
   var helper = env.hooks.lookupHelper(env, scope, helperName);
   var result = env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, {});
-  if (result && result.value) { return result.value; }
+  if (result && 'value' in result) { return result.value; }
 }
 
 /**

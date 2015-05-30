@@ -51,21 +51,22 @@ test("inline hook correctly handles false-like values", function() {
 
 });
 
-test("subexr hook correctly handles false-like values", function() {
-  registerHelper('if', function(params) {
-    return params[0] ? params[1] : params[2];
+test("inline hook correctly handles false-like values", function() {
+
+  registerHelper('get', function(params) {
+    return params[0];
   });
 
-  var object = { val: true};
-  var template = compile('<div data-foo={{if val "stuff" ""}}></div>');
+  var object = { val: 'hello' };
+  var template = compile('<div>{{get val}}</div>');
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, '<div data-foo="stuff"></div>');
+  equalTokens(result.fragment, '<div>hello</div>');
 
-  object.val = false;
+  object.val = '';
 
   result.rerender();
 
-  equalTokens(result.fragment, '<div data-foo=""></div>');
+  equalTokens(result.fragment, '<div></div>');
 
 });
