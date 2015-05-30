@@ -889,4 +889,26 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
+  QUnit.test("`if` helper with inline form: updates when given a falsey second argument", function() {
+    view = EmberView.create({
+      conditional: false,
+      template: compile('{{if view.conditional "" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', true);
+    });
+
+    equal(view.$().text(), '');
+
+    run(function() {
+      view.set('conditional', false);
+    });
+
+    equal(view.$().text(), 'falsy');
+  });
 }
