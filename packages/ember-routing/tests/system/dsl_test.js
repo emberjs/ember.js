@@ -143,4 +143,96 @@ if (isEnabled('ember-routing-named-substates')) {
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
 });
 }
+
+if (isEnabled('ember-routing-namespace')) {
+QUnit.test('should retain namespace if nested with routes but only have one handler', function() {
+  Router.map(function() {
+    this.namespace('bleep', function() {
+      this.route('blork');
+      this.route('bloop');
+    });
+  });
+
+  var router = Router.create();
+  router._initRouterJs();
+
+  ok(router.router.recognizer.names['bleep.blork'], 'parent name was used as base of nested routes');
+  ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+
+  ok(!router.router.recognizer.names['bleep'], 'parent name was not added');
+  ok(!router.router.recognizer.names['bleep.error'], 'error name under the parent name was not added');
+  ok(!router.router.recognizer.names['bleep.loading'], 'loading name under the parent name was not added');
+  ok(!router.router.recognizer.names['bleep.index'], 'index name under the parent name was not added');
+});
+
+QUnit.test('calling route should have higher priority then calling namespace (calling route after namespace)', function() {
+  Router.map(function() {
+    this.namespace('bleep', function() {
+      this.route('blork');
+      this.route('bloop');
+    });
+    this.route('bleep', function() {
+      this.route('blork');
+      this.route('bloop');
+    });
+  });
+
+  var router = Router.create();
+  router._initRouterJs();
+
+  ok(router.router.recognizer.names['bleep.blork'], 'parent name was used as base of nested routes');
+  ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+
+  ok(router.router.recognizer.names['bleep'], 'parent name was not added');
+  ok(router.router.recognizer.names['bleep.error'], 'error name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.loading'], 'loading name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.index'], 'index name under the parent name was not added');
+});
+
+QUnit.test('calling route should have higher priority then calling namespace (calling route before namespace)', function() {
+  Router.map(function() {
+    this.route('bleep', function() {
+      this.route('blork');
+      this.route('bloop');
+    });
+    this.namespace('bleep', function() {
+      this.route('blork');
+      this.route('bloop');
+    });
+  });
+
+  var router = Router.create();
+  router._initRouterJs();
+
+  ok(router.router.recognizer.names['bleep.blork'], 'parent name was used as base of nested routes');
+  ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+
+  ok(router.router.recognizer.names['bleep'], 'parent name was not added');
+  ok(router.router.recognizer.names['bleep.error'], 'error name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.loading'], 'loading name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.index'], 'index name under the parent name was not added');
+});
+
+QUnit.test('calls to this.route and this.namespace with the same route should concatenate child routes', function() {
+  Router.map(function() {
+    this.route('bleep', function() {
+      this.route('blork');
+    });
+    this.namespace('bleep', function() {
+      this.route('bloop');
+    });
+  });
+
+  var router = Router.create();
+  router._initRouterJs();
+
+  ok(router.router.recognizer.names['bleep.blork'], 'parent name was used as base of nested routes');
+  ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+
+  ok(router.router.recognizer.names['bleep'], 'parent name was not added');
+  ok(router.router.recognizer.names['bleep.error'], 'error name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.loading'], 'loading name under the parent name was not added');
+  ok(router.router.recognizer.names['bleep.index'], 'index name under the parent name was not added');
+});
+}
 // jscs:enable validateIndentation
