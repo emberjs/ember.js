@@ -42,7 +42,7 @@ export default preprocess;
 function HTMLProcessor(source, options) {
   this.options = options || {};
   this.elementStack = [];
-  this.tokenizer = new Tokenizer('', new EntityParser(fullCharRefs));
+  this.tokenizer = new Tokenizer(new EntityParser(fullCharRefs));
   this.nodeHandlers = nodeHandlers;
   this.tokenHandlers = tokenHandlers;
 

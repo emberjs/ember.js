@@ -23,7 +23,7 @@ var tokenHandlers = {
   StartTag: function(tag) {
     var element = buildElement(tag.tagName, tag.attributes, tag.modifiers || [], []);
     element.loc = {
-      start: { line: tag.firstLine, column: tag.firstColumn},
+      start: { line: tag.loc.start.line, column: tag.loc.start.column},
       end: { line: null, column: null}
     };
 
@@ -122,7 +122,7 @@ function validateEndTag(tag, element, selfClosing) {
 }
 
 function formatEndTagInfo(tag) {
-  return "`" + tag.tagName + "` (on line " + tag.lastLine + ")";
+  return "`" + tag.tagName + "` (on line " + tag.loc.end.line + ")";
 }
 
 export default tokenHandlers;
