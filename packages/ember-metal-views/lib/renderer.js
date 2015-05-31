@@ -20,7 +20,7 @@ Renderer.prototype.prerenderTopLevelView =
     view._renderNode = renderNode;
 
     var layout = get(view, 'layout');
-    var template = get(view, 'template');
+    var template = view.isComponent ? get(view, '_template') : get(view, 'template');
 
     var componentInfo = { component: view, layout: layout };
 

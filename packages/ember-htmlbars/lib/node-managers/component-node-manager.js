@@ -65,6 +65,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     createOptions._controller = getValue(parentScope.locals.controller);
   }
 
+  // this flag is set when a block was provided so that components can see if
+  // `this.get('template')` is truthy.  this is added for backwards compat only
+  // and accessing `template` prop on a component will trigger a deprecation
+  // 2.0TODO: remove
+  if (templates.default) {
+    createOptions._deprecatedFlagForBlockProvided = true;
+  }
+
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
@@ -103,7 +111,8 @@ function extractComponentTemplates(component, _templates) {
   // The component may also provide a `template` property we should
   // respect (though this behavior is deprecated).
   let componentLayout = get(component, 'layout');
-  let componentTemplate = get(component, 'template');
+  let hasBlock = _templates && _templates.default;
+  let componentTemplate = hasBlock ? null : get(component, '_template');
   let layout, templates;
 
   if (componentLayout) {
@@ -126,7 +135,7 @@ function extractLegacyTemplate(_templates, componentTemplate) {
 
   // There is no block template provided but the component has a
   // `template` property.
-  if ((!templates || !templates.default) && componentTemplate) {
+  if ((!_templates || !_templates.default) && componentTemplate) {
     Ember.deprecate("Using deprecated `template` property on a Component.");
     templates = { default: componentTemplate.raw };
   } else {

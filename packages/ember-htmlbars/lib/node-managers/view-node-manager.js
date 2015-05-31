@@ -60,14 +60,15 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     if (layout) {
       componentInfo.layout = layout;
       if (!contentTemplate) {
-        let template = get(component, 'template');
+        let template = getTemplate(component);
+
         if (template) {
           Ember.deprecate("Using deprecated `template` property on a " + (component.isView ? 'View' : 'Component') + ".");
           contentTemplate = template.raw;
         }
       }
     } else {
-      componentInfo.layout = get(component, 'template') || componentInfo.layout;
+      componentInfo.layout = getTemplate(component) || componentInfo.layout;
     }
 
     renderNode.emberView = component;
@@ -147,6 +148,10 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
     return newEnv;
   }, this);
 };
+
+function getTemplate(componentOrView) {
+  return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
+}
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
