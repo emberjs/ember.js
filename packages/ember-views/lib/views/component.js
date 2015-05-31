@@ -114,7 +114,6 @@ function validateAction(component, actionName) {
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   isComponent: true,
-
   /*
     This is set so that the proto inspection in appendTemplatedView does not
     think that it should set the components `context` to that of the parent view.
@@ -154,8 +153,23 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @deprecated
   @property template
   */
-  template: computed('templateName', {
+  template: computed('_template', {
     get() {
+      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`);
+
+      return get(this, '_template');
+    },
+
+    set(key, value) {
+      return set(this, '_template', value);
+    }
+  }),
+
+  _template: computed('templateName', {
+    get() {
+      if (get(this, '_deprecatedFlagForBlockProvided')) {
+        return true;
+      }
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
 

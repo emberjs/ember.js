@@ -33,7 +33,7 @@ QUnit.test('adds the attribute to the element', function() {
   component = Component.create({
     container,
 
-    template: compile(`<div style={{-html-safe "display: none;"}}></div>`)
+    layout: compile(`<div style={{-html-safe "display: none;"}}></div>`)
   });
 
   runAppend(component);
@@ -43,11 +43,11 @@ QUnit.test('adds the attribute to the element', function() {
 
 if (!EmberDev.runningProdBuild) {
 
-  QUnit.test('adds the attribute to the element', function() {
+  QUnit.test('no warnings are triggered from setting style attribute', function() {
     component = Component.create({
       container,
 
-      template: compile(`<div style={{-html-safe "display: none;"}}></div>`)
+      layout: compile(`<div style={{-html-safe "display: none;"}}></div>`)
     });
 
     runAppend(component);
