@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 1.12.1 (May 31, 2015)
+
+- [11201](https://github.com/emberjs/ember.js/pull/11201) [BUGFIX] Fix `currentURL` test helper.
+- [11205](https://github.com/emberjs/ember.js/pull/11205) [BUGFIX] Fix usage of `Ember.get` with an empty string.
+- [11252](https://github.com/emberjs/ember.js/pull/11253) [BUGFIX] Ensure `instanceInitializers` receive an instance after `App.reset()`.
+- [11289](https://github.com/emberjs/ember.js/pull/11289) [BUGFIX] Ensure `instanceInitializers` are ran before routing begins.
+- [11304](https://github.com/emberjs/ember.js/pull/11304) [BUGFIX] Fix issue with deprecated element space helpers returning attributes with spaces.
+- [11303](https://github.com/emberjs/ember.js/pull/11303) [BUGFIX] Ensure `rootURL` is preserved when using AutoLocation.
+
 ### 1.12.0 (May 13, 2015)
 
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
