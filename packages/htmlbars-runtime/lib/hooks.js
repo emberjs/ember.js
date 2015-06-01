@@ -247,7 +247,10 @@ function isStableShadowRoot(template, shadowTemplate, lastYielded) {
 }
 
 function optionsFor(template, inverse, env, scope, morph, visitor) {
-  var renderState = { morphListStart: null, clearMorph: morph, shadowOptions: null };
+  // If there was a template yielded last time, set clearMorph so it will be cleared
+  // if no template is yielded on this render.
+  var clearMorph = morph.lastResult ? morph : null;
+  var renderState = { morphListStart: null, clearMorph: clearMorph, shadowOptions: null };
 
   return {
     templates: {
