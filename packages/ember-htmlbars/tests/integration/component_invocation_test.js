@@ -233,6 +233,32 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
 });
 
+QUnit.test('changing `layout` causes component to re-render with the new layout', function() {
+  let innerComponent;
+  registry.register('template:components/foo-bar', compile('Here!'));
+  registry.register('component:foo-bar', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerComponent = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{foo-bar}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Here!', 'initial layout is used');
+
+  run(function() {
+    innerComponent.set('layout', compile('Not there!'));
+  });
+
+  equal(view.$().text(), 'Not there!', 'updated layout is used');
+});
+
 QUnit.test('with ariaRole specified', function() {
   expect(1);
 
