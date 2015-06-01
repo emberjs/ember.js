@@ -57,8 +57,14 @@ function focus(el) {
 
 function visit(app, url) {
   var router = app.__container__.lookup('router:main');
+  var shouldHandleURL = false;
+
   app.boot().then(function() {
     router.location.setURL(url);
+
+    if (shouldHandleURL) {
+      run(app.__deprecatedInstance__, 'handleURL', url);
+    }
   });
 
   if (app._readinessDeferrals > 0) {
@@ -66,7 +72,7 @@ function visit(app, url) {
     run(app, 'advanceReadiness');
     delete router['initialURL'];
   } else {
-    run(app.__deprecatedInstance__, 'handleURL', url);
+    shouldHandleURL = true;
   }
 
   return app.testHelpers.wait();

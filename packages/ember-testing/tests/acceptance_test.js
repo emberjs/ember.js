@@ -30,6 +30,8 @@ QUnit.module("ember-testing Acceptance", {
         this.route('comments');
 
         this.route('abort_transition');
+
+        this.route('redirect');
       });
 
       App.IndexRoute = EmberRoute.extend({
@@ -64,6 +66,12 @@ QUnit.module("ember-testing Acceptance", {
       App.AbortTransitionRoute = EmberRoute.extend({
         beforeModel(transition) {
           transition.abort();
+        }
+      });
+
+      App.RedirectRoute = EmberRoute.extend({
+        beforeModel() {
+          this.transitionTo('comments');
         }
       });
 
@@ -354,4 +362,20 @@ QUnit.test("test must not finish while asyncHelpers are pending", function () {
       Test.adapter.asyncEnd();
     });
   }
+});
+
+QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+  expect(2);
+
+  visit('/posts');
+
+  andThen(function () {
+    equal(currentURL(), '/posts', 'First visited URL is correct');
+  });
+
+  visit('/redirect');
+
+  andThen(function () {
+    equal(currentURL(), '/comments', 'Redirected to Comments URL');
+  });
 });
