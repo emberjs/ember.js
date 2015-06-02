@@ -221,7 +221,9 @@ Renderer.prototype.willDestroyElement = function (view) {
     view.trigger('willClearRender');
   }
 
-  view._transitionTo('destroying', false);
+  if (view._transitionTo) {
+    view._transitionTo('destroying', false);
+  }
 
   var childViews = view.childViews;
   if (childViews) {
@@ -238,7 +240,7 @@ Renderer.prototype.didDestroyElement = function (view) {
   // However if we're just destroying an element on a view (as is the case when
   // using View#remove) then the view should go to a preRender state so that
   // it can be rendered again later.
-  if (view._state !== 'destroying') {
+  if (view._state !== 'destroying' && view._transitionTo) {
     view._transitionTo('preRender');
   }
 
