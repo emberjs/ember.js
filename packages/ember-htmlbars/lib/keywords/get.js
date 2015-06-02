@@ -3,7 +3,6 @@ import { labelFor } from "ember-metal/streams/utils";
 import { read, isStream } from "ember-metal/streams/utils";
 import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
-import SafeString from "htmlbars-util/safe-string";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
 
@@ -24,22 +23,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
 
     return true;
   };
-
-  var workaroundValue = function workaroundValue(value) {
-    // this is used to compensate for the following line of code
-    //     if (result && result.value) {
-    // in the 'inline' hook. If the stream returns a falsy value after
-    // previously returning a truthy value, this line causes the value not
-    // to be updated
-
-    // so for falsey values we need to enforce something that evalutes to
-    // truthy but returns an empty string.
-
-    // this can be removed if the `inline` hook handles it.
-
-    return value || new SafeString('');
-  };
-
 
   var GetStream = function GetStream(obj, path) {
     this.init('(get '+labelFor(obj)+' '+labelFor(path)+')');
@@ -76,7 +59,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
 
     compute() {
       this.updateValueDependency();
-      return workaroundValue(this.valueDep.getValue());
+      return this.valueDep.getValue();
     },
 
     setValue(value) {

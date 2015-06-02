@@ -156,6 +156,30 @@ QUnit.test("The `if` helper updates if an array-like object is empty or not", fu
   testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
 });
 
+QUnit.test("The `unless` helper updates if an array-like object is empty or not", function() {
+  view = EmberView.create({
+    array: ArrayProxy.create({ content: Ember.A([]) }),
+
+    template: compile('{{#unless view.array}}Yep{{/unless}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Yep');
+
+  run(function() {
+    view.get('array').pushObject(1);
+  });
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.get('array').removeObject(1);
+  });
+
+  equal(view.$().text(), 'Yep');
+});
+
 QUnit.test("The `if` helper updates when the value changes", function() {
   view = EmberView.create({
     conditional: true,
@@ -865,4 +889,26 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
+  QUnit.test("`if` helper with inline form: updates when given a falsey second argument", function() {
+    view = EmberView.create({
+      conditional: false,
+      template: compile('{{if view.conditional "" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', true);
+    });
+
+    equal(view.$().text(), '');
+
+    run(function() {
+      view.set('conditional', false);
+    });
+
+    equal(view.$().text(), 'falsy');
+  });
 }

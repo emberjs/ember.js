@@ -1,7 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.TEMPLATES
 import run from "ember-metal/run_loop";
-import { forEach } from "ember-metal/enumerable_utils";
-import { capitalize } from "ember-runtime/system/string";
 import Logger from "ember-metal/logger";
 import Controller from "ember-runtime/controllers/controller";
 import Route from "ember-routing/system/route";
@@ -177,47 +175,52 @@ QUnit.test("lookup description", function() {
 
 });
 
-QUnit.test("validating resolved objects", function() {
-  // 2.0TODO: Add service to this list
-  let types = ['route', 'component', 'view'];
-
-  // Valid setup
-  application.FooRoute = Route.extend();
-  application.FooComponent = Component.extend();
-  application.FooView = View.extend();
-  application.FooService = Service.extend();
-
-  forEach(types, function(type) {
-    // No errors when resolving correct object types
-    registry.resolve(`${type}:foo`);
-
-    // Unregister to clear cache
-    registry.unregister(`${type}:foo`);
-  });
-
-  // Invalid setup
+QUnit.test("assertion for routes without isRouteFactory property", function() {
   application.FooRoute = Component.extend();
-  application.FooComponent = View.extend();
-  application.FooView = Service.extend();
-  application.FooService = Route.extend();
 
-  forEach(types, function(type) {
-    let matcher = new RegExp(`to resolve to an Ember.${capitalize(type)}`);
-    expectAssertion(function() {
-      registry.resolve(`${type}:foo`);
-    }, matcher, `Should assert for ${type}`);
-  });
+  expectAssertion(function() {
+    registry.resolve(`route:foo`);
+  }, /to resolve to an Ember.Route/, 'Should assert');
+});
+
+QUnit.test("no assertion for routes that extend from Ember.Route", function() {
+  expect(0);
+  application.FooRoute = Route.extend();
+  registry.resolve(`route:foo`);
 });
 
 QUnit.test("deprecation warning for service factories without isServiceFactory property", function() {
   expectDeprecation(/service factories must have an `isServiceFactory` property/);
   application.FooService = EmberObject.extend();
   registry.resolve('service:foo');
-
 });
 
 QUnit.test("no deprecation warning for service factories that extend from Ember.Service", function() {
   expectNoDeprecation();
   application.FooService = Service.extend();
   registry.resolve('service:foo');
+});
+
+QUnit.test("deprecation warning for view factories without isViewFactory property", function() {
+  expectDeprecation(/view factories must have an `isViewFactory` property/);
+  application.FooView = EmberObject.extend();
+  registry.resolve('view:foo');
+});
+
+QUnit.test("no deprecation warning for view factories that extend from Ember.View", function() {
+  expectNoDeprecation();
+  application.FooView = View.extend();
+  registry.resolve('view:foo');
+});
+
+QUnit.test("deprecation warning for component factories without isComponentFactory property", function() {
+  expectDeprecation(/component factories must have an `isComponentFactory` property/);
+  application.FooComponent = View.extend();
+  registry.resolve('component:foo');
+});
+
+QUnit.test("no deprecation warning for component factories that extend from Ember.Component", function() {
+  expectNoDeprecation();
+  application.FooView = Component.extend();
+  registry.resolve('component:foo');
 });

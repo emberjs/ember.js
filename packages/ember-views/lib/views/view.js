@@ -105,9 +105,9 @@ Ember.TEMPLATES = {};
   MyView = Ember.View.extend({
     classNameBindings: ['propertyA', 'propertyB'],
     propertyA: 'from-a',
-    propertyB: function() {
+    propertyB: Ember.computed(function() {
       if (someLogic) { return 'from-b'; }
-    }.property()
+    })
   });
   ```
 
@@ -320,13 +320,13 @@ Ember.TEMPLATES = {};
   MyTextInput = Ember.View.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
-    disabled: function() {
+    disabled: Ember.computed(function() {
       if (someLogic) {
         return true;
       } else {
         return false;
       }
-    }.property()
+    })
   });
   ```
 
@@ -442,9 +442,9 @@ Ember.TEMPLATES = {};
 
   aController = Ember.Object.create({
     firstName: 'Barry',
-    excitedGreeting: function() {
-      return this.get("content.firstName") + "!!!"
-    }.property()
+    excitedGreeting: Ember.computed('content.firstName', function() {
+      return this.get('content.firstName') + '!!!';
+    })
   });
 
   aView = AView.create({
@@ -729,7 +729,6 @@ var View = CoreView.extend(
     @property template
     @type Function
   */
-
   template: computed('templateName', {
     get() {
       var templateName = get(this, 'templateName');
@@ -756,7 +755,7 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-    */
+  */
   layout: computed('layoutName', {
     get(key) {
       var layoutName = get(this, 'layoutName');
@@ -1088,10 +1087,10 @@ var View = CoreView.extend(
 
     ```javascript
       export default Ember.Component.extend({
-        setElementId: function() {
+        setElementId: Ember.on('init', function() {
           var index = this.get('index');
           this.set('elementId', 'component-id' + index);
-        }.on('init')
+        })
       });
     ```
 

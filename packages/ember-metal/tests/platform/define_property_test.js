@@ -3,7 +3,7 @@ import {
   hasPropertyAccessors,
   canDefineNonEnumerableProperties
 } from 'ember-metal/platform/define_property';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { indexOf } from 'ember-metal/enumerable_utils';
 
 function isEnumerable(obj, keyName) {
   var keys = [];
@@ -12,7 +12,7 @@ function isEnumerable(obj, keyName) {
       keys.push(key);
     }
   }
-  return EnumerableUtils.indexOf(keys, keyName)>=0;
+  return indexOf(keys, keyName)>=0;
 }
 
 QUnit.module("defineProperty()");
