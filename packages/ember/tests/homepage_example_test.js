@@ -9,7 +9,7 @@ var App, $fixture;
 function setupExample() {
   // setup templates
   Ember.TEMPLATES.application = compile("{{outlet}}");
-  Ember.TEMPLATES.index = compile("<h1>People</h1><ul>{{#each person in model}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>");
+  Ember.TEMPLATES.index = compile("<h1>People</h1><ul>{{#each model as |person|}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>");
 
 
   App.Person = Ember.Object.extend({

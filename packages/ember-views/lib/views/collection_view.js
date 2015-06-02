@@ -1,4 +1,3 @@
-
 /**
 @module ember
 @submodule ember-views
@@ -17,6 +16,7 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
+import EmptyViewSupport from "ember-views/mixins/empty_view_support";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -179,9 +179,10 @@ import { readViewFactory } from "ember-views/streams/utils";
   @class CollectionView
   @namespace Ember
   @extends Ember.ContainerView
+  @uses Ember.EmptyViewSupport
   @since Ember 0.9
 */
-var CollectionView = ContainerView.extend({
+var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
   /**
     A list of items to be displayed by the `Ember.CollectionView`.
@@ -191,25 +192,6 @@ var CollectionView = ContainerView.extend({
     @default null
   */
   content: null,
-
-  /**
-    This provides metadata about what kind of empty view class this
-    collection would like if it is being instantiated from another
-    system (like Handlebars)
-
-    @private
-    @property emptyViewClass
-  */
-  emptyViewClass: View,
-
-  /**
-    An optional view to display if content is set to an empty array.
-
-    @property emptyView
-    @type Ember.View
-    @default null
-  */
-  emptyView: null,
 
   /**
     @property itemViewClass
@@ -379,7 +361,7 @@ var CollectionView = ContainerView.extend({
     return view;
   },
 
-  willRender: function() {
+  _willRender: function() {
     var attrs = this.attrs;
     var itemProps = buildItemViewProps(this._itemViewTemplate, attrs);
     this._itemViewProps = itemProps;
@@ -397,33 +379,6 @@ var CollectionView = ContainerView.extend({
       set(this, 'emptyView', this.getAttr('emptyView'));
     }
   },
-
-  _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {
-    var emptyView = get(this, 'emptyView');
-    var attrsEmptyViewClass = this.getAttr('emptyViewClass');
-    var emptyViewClass = get(this, 'emptyViewClass');
-    var inverse = get(this, '_itemViewInverse');
-    var actualEmpty = emptyView || attrsEmptyViewClass;
-
-    // Somehow, our previous semantics differed depending on whether the
-    // `emptyViewClass` was provided on the JavaScript class or via the
-    // Handlebars template.
-    // In Glimmer, we disambiguate between the two by checking first (and
-    // preferring) the attrs-supplied class.
-    // If not present, we fall back to the class's `emptyViewClass`, but only
-    // if an inverse has been provided via an `{{else}}`.
-    if (inverse && actualEmpty) {
-      if (actualEmpty.extend) {
-        return actualEmpty.extend({ template: inverse });
-      } else {
-        set(actualEmpty, 'template', inverse);
-      }
-    } else if (inverse && emptyViewClass) {
-      return emptyViewClass.extend({ template: inverse });
-    }
-
-    return actualEmpty;
-  }),
 
   _emptyViewTagName: computed('tagName', function() {
     var tagName = get(this, 'tagName');

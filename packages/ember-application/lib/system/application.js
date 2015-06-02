@@ -664,9 +664,7 @@ var Application = Namespace.extend(DeferredMixin, {
     function handleReset() {
       run(instance, 'destroy');
 
-      this.buildDefaultInstance();
-
-      run.schedule('actions', this, 'domReady');
+      run.schedule('actions', this, 'domReady', this.buildDefaultInstance());
     }
 
     run.join(this, handleReset);
@@ -1113,6 +1111,8 @@ function resolverFor(namespace) {
       return fullName;
     }
   };
+
+  resolve.moduleBasedResolver = resolver.moduleBasedResolver;
 
   resolve.__resolver__ = resolver;
 

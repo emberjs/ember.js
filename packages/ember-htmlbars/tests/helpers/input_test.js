@@ -7,6 +7,7 @@ import Registry from "container/registry";
 import ComponentLookup from "ember-views/component_lookup";
 import TextField from 'ember-views/views/text_field';
 import Checkbox from 'ember-views/views/checkbox';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
 
 var view;
 var controller, registry, container;
@@ -16,7 +17,11 @@ function commonSetup() {
   registry.register('component:-text-field', TextField);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component-lookup:main', ComponentLookup);
+  registry.register('event_dispatcher:main', EventDispatcher);
   container = registry.container();
+
+  var dispatcher = container.lookup('event_dispatcher:main');
+  dispatcher.setup({}, '#qunit-fixture');
 }
 
 QUnit.module("{{input type='text'}}", {
@@ -43,6 +48,7 @@ QUnit.module("{{input type='text'}}", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -160,6 +166,7 @@ QUnit.module("{{input type='text'}} - static values", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -195,6 +202,32 @@ QUnit.test("input tabindex is updated when setting tabindex property of view", f
   equal(view.$('input').attr('tabindex'), "5", "renders text field with the tabindex");
 });
 
+QUnit.test('specifying `on="someevent" action="foo"` triggers the action', function() {
+  expect(2);
+  runDestroy(view);
+  expectDeprecation(`Using '{{input on="focus-in" action="doFoo"}}' ('foo.hbs' @ L1:C0) is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
+
+  controller = {
+    send(actionName, value, sender) {
+      equal(actionName, 'doFoo', "text field sent correct action name");
+    }
+  };
+
+  view = View.create({
+    container,
+    controller,
+
+    template: compile('{{input type="text" on="focus-in" action="doFoo"}}', { moduleName: 'foo.hbs' })
+  });
+
+  runAppend(view);
+
+  run(function() {
+    var textField = view.$('input');
+    textField.trigger('focusin');
+  });
+});
+
 QUnit.module("{{input type='text'}} - dynamic type", {
   setup() {
     commonSetup();
@@ -214,6 +247,7 @@ QUnit.module("{{input type='text'}} - dynamic type", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -248,6 +282,7 @@ QUnit.module("{{input}} - default type", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -276,6 +311,8 @@ QUnit.module("{{input type='checkbox'}}", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
+
   }
 });
 
@@ -320,6 +357,8 @@ QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
+
   }
 });
 
@@ -349,6 +388,7 @@ QUnit.module("{{input type=boundType}}", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -383,6 +423,7 @@ QUnit.module("{{input type='checkbox'}} - static values", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -409,6 +450,7 @@ QUnit.module("{{input type='text'}} - null/undefined values", {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
   }
 });
 

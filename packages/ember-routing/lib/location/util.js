@@ -77,24 +77,25 @@ export function supportsHashChange(documentMode, global) {
 
 /*
   `userAgent` is a user agent string. We use user agent testing here, because
-  the stock Android browser in Gingerbread has a buggy versions of this API,
-  Before feature detecting, we blacklist a browser identifying as both Android 2
-  and Mobile Safari, but not Chrome.
+  the stock Android browser is known to have buggy versions of the History API,
+  in some Android versions.
 
   @private
   @function supportsHistory
 */
 export function supportsHistory(userAgent, history) {
   // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
-  // The stock browser on Android 2.2 & 2.3 returns positive on history support
+  // The stock browser on Android 2.2 & 2.3, and 4.0.x returns positive on history support
   // Unfortunately support is really buggy and there is no clean way to detect
   // these bugs, so we fall back to a user agent sniff :(
 
-  // We only want Android 2, stock browser, and not Chrome which identifies
-  // itself as 'Mobile Safari' as well
-  if (userAgent.indexOf('Android 2') !== -1 &&
+  // We only want Android 2 and 4.0, stock browser, and not Chrome which identifies
+  // itself as 'Mobile Safari' as well, nor Windows Phone.
+  if ((userAgent.indexOf('Android 2.') !== -1 ||
+      (userAgent.indexOf('Android 4.0') !== -1)) &&
       userAgent.indexOf('Mobile Safari') !== -1 &&
-      userAgent.indexOf('Chrome') === -1) {
+      userAgent.indexOf('Chrome') === -1 &&
+      userAgent.indexOf('Windows Phone') === -1) {
     return false;
   }
 

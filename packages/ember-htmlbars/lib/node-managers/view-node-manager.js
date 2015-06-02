@@ -98,7 +98,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     if (component) {
       var snapshot = takeSnapshot(attrs);
       env.renderer.setAttrs(this.component, snapshot);
-      env.renderer.willCreateElement(component);
       env.renderer.willRender(component);
       env.renderedViews.push(component.elementId);
     }
@@ -147,10 +146,6 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
-    if (component) {
-      env.lifecycleHooks.push({ type: 'didUpdate', view: component });
-    }
-
     return newEnv;
   }, this);
 };
@@ -171,6 +166,8 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
     mergeBindings(props, shadowedAttrs(proto, snapshot));
     props.container = options.parentView ? options.parentView.container : env.container;
+    props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
+    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
 
     if (proto.controller !== defaultController || hasSuppliedController) {
       delete props._context;

@@ -2029,6 +2029,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   }
 });
 
+
+Route.reopenClass({
+  isRouteFactory: true
+});
+
 function parentRoute(route) {
   var handlerInfo = handlerInfoFor(route, route.router.router.state.handlerInfos, -1);
   return handlerInfo && handlerInfo.handler;

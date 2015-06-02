@@ -243,7 +243,7 @@ QUnit.test("mixing old and new styles of property binding fires a warning, treat
   let compiled;
   expectDeprecation(function() {
     compiled = compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}");
-  }, "You're using legacy binding syntax: borfBinding=view.snork @ 1:8 in (inline). Please replace with borf=view.snork");
+  }, "You're using legacy binding syntax: borfBinding=view.snork (L1:C8) . Please replace with borf=view.snork");
 
   view = EmberView.extend({
     template: compiled,
@@ -271,7 +271,7 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
   let compiled;
   expectDeprecation(function() {
     compiled = compile('<h1>{{view view.Subview colorBinding="view.color"}}</h1>');
-  }, `You're using legacy binding syntax: colorBinding="view.color" @ 1:24 in (inline). Please replace with color=view.color`);
+  }, `You're using legacy binding syntax: colorBinding="view.color" (L1:C24) . Please replace with color=view.color`);
 
   var View = EmberView.extend({
     color: "mauve",
@@ -370,12 +370,10 @@ QUnit.test("allows you to pass attributes that will be assigned to the class ins
 });
 
 QUnit.test("Should apply class without condition always", function() {
-  expectDeprecation(function() {
-    view = EmberView.create({
-      controller: Ember.Object.create(),
-      template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
-    });
-  }, /legacy class binding syntax/);
+  view = EmberView.create({
+    controller: Ember.Object.create(),
+    template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
+  });
 
   runAppend(view);
 
@@ -826,7 +824,7 @@ QUnit.test('{{view}} should not allow attributeBindings to be set', function() {
       template: compile('{{view attributeBindings="one two"}}')
     });
     runAppend(view);
-  }, "Setting 'attributeBindings' via template helpers is not allowed @ 1:7 in (inline)");
+  }, /Setting 'attributeBindings' via template helpers is not allowed/);
 });
 
 QUnit.test('{{view}} should be able to point to a local view', function() {
@@ -855,12 +853,10 @@ QUnit.test('{{view}} should evaluate class bindings set to global paths DEPRECAT
     });
   });
 
-  expectDeprecation(function() {
-    view = EmberView.create({
-      textField: TextField,
-      template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
-    });
-  }, /legacy class binding/);
+  view = EmberView.create({
+    textField: TextField,
+    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
+  });
 
   expectDeprecation(function() {
     runAppend(view);
@@ -886,16 +882,14 @@ QUnit.test('{{view}} should evaluate class bindings set to global paths DEPRECAT
 });
 
 QUnit.test('{{view}} should evaluate class bindings set in the current context', function() {
-  expectDeprecation(function() {
-    view = EmberView.create({
-      isView:      true,
-      isEditable:  true,
-      directClass: 'view-direct',
-      isEnabled: true,
-      textField: TextField,
-      template: compile('{{view view.textField class="unbound" classBinding="view.isEditable:editable view.directClass view.isView view.isEnabled:enabled:disabled"}}')
-    });
-  }, /legacy class binding syntax/);
+  view = EmberView.create({
+    isView:      true,
+    isEditable:  true,
+    directClass: 'view-direct',
+    isEnabled: true,
+    textField: TextField,
+    template: compile('{{view view.textField class="unbound" classBinding="view.isEditable:editable view.directClass view.isView view.isEnabled:enabled:disabled"}}')
+  });
 
   runAppend(view);
 
@@ -926,12 +920,10 @@ QUnit.test('{{view}} should evaluate class bindings set with either classBinding
     });
   });
 
-  expectDeprecation(function() {
-    view = EmberView.create({
-      textField: TextField,
-      template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
-    });
-  }, /legacy class binding/);
+  view = EmberView.create({
+    textField: TextField,
+    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
+  });
 
   expectDeprecation(function() {
     runAppend(view);
@@ -996,9 +988,7 @@ QUnit.test('{{view}} should evaluate other attributes bindings set in the curren
 });
 
 QUnit.test('{{view}} should be able to bind class names to truthy properties', function() {
-  expectDeprecation(function() {
-    registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
-  }, /legacy class binding syntax/);
+  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 
@@ -1021,9 +1011,7 @@ QUnit.test('{{view}} should be able to bind class names to truthy properties', f
 });
 
 QUnit.test('{{view}} should be able to bind class names to truthy or falsy properties', function() {
-  expectDeprecation(function() {
-    registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
-  }, /legacy class binding syntax/);
+  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 

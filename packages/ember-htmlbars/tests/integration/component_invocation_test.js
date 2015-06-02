@@ -106,6 +106,43 @@ QUnit.test('non-block with properties on attrs and component class', function() 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
+QUnit.test('lookup of component takes priority over property', function() {
+  expect(1);
+
+  registry.register('template:components/some-component', compile('some-component'));
+
+  view = EmberView.extend({
+    template: compile('{{some-prop}} {{some-component}}'),
+    container: container,
+    context: {
+      'some-component': 'not-some-component',
+      'some-prop': 'some-prop'
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'some-prop some-component');
+});
+
+QUnit.test('component without dash is not looked up', function() {
+  expect(1);
+
+  registry.register('template:components/somecomponent', compile('somecomponent'));
+
+  view = EmberView.extend({
+    template: compile('{{somecomponent}}'),
+    container: container,
+    context: {
+      'somecomponent': 'notsomecomponent'
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'notsomecomponent');
+});
+
 QUnit.test('rerendering component with attrs from parent', function() {
   var willUpdate = 0;
   var didReceiveAttrs = 0;
@@ -194,6 +231,21 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
   runAppend(view);
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
+});
+
+QUnit.test('with ariaRole specified', function() {
+  expect(1);
+
+  registry.register('template:components/aria-test', compile('Here!'));
+
+  view = EmberView.extend({
+    template: compile('{{aria-test id="aria-test" ariaRole="main"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#aria-test').attr('role'), 'main', 'role attribute is applied');
 });
 
 if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
@@ -521,6 +573,85 @@ QUnit.test("comopnent should rerender when a property is changed during children
   equal(view.$('#inner-value').text(), '3', 'third render of inner');
   equal(view.$('#middle-value').text(), '3', 'third render of middle');
 
+});
+
+QUnit.test("components in template of a yielding component should have the proper parentView", function() {
+  var outer, innerTemplate, innerLayout;
+
+  registry.register('component:x-outer', Component.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-template', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerTemplate = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-layout', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerLayout = this;
+    }
+  }));
+
+  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+
+  view = EmberView.extend({
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+  equal(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
+  equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+});
+
+QUnit.test("components should receive the viewRegistry from the parent view", function() {
+  var outer, innerTemplate, innerLayout;
+
+  var viewRegistry = {};
+
+  registry.register('component:x-outer', Component.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-template', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerTemplate = this;
+    }
+  }));
+
+  registry.register('component:x-inner-in-layout', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerLayout = this;
+    }
+  }));
+
+  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+
+  view = EmberView.extend({
+    _viewRegistry: viewRegistry,
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(innerTemplate._viewRegistry, viewRegistry);
+  equal(innerLayout._viewRegistry, viewRegistry);
+  equal(outer._viewRegistry, viewRegistry);
 });
 
 QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {

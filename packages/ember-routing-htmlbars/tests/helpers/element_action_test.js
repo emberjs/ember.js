@@ -450,7 +450,7 @@ QUnit.test("should work properly in an #each block", function() {
   view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: compile('{{#each item in view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: compile('{{#each view.items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   runAppend(view);
@@ -537,7 +537,7 @@ QUnit.test("should unregister event handlers on inside virtual views", function(
     }
   ]);
   view = EmberView.create({
-    template: compile('{{#each thing in view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: compile('{{#each view.things as |thing|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 

@@ -390,4 +390,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
 });
 
+Component.reopenClass({
+  isComponentFactory: true
+});
+
 export default Component;

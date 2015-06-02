@@ -84,7 +84,7 @@ QUnit.test('should property escape unsafe hrefs', function() {
   runDestroy(view);
 
   view = EmberView.create({
-    template: compile('<ul>{{#each person in view.people}}<a href="{{unbound person.url}}">{{person.name}}</a>{{/each}}</ul>'),
+    template: compile('<ul>{{#each view.people as |person|}}<a href="{{unbound person.url}}">{{person.name}}</a>{{/each}}</ul>'),
     people: A([{
       name: 'Bob',
       url: 'javascript:bob-is-cool'
@@ -104,6 +104,30 @@ QUnit.test('should property escape unsafe hrefs', function() {
     var link = links[i];
     equal(link.protocol, 'unsafe:', 'properly escaped');
   }
+});
+
+QUnit.module('ember-htmlbars: {{#unbound}} helper with container present', {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = EmberView.create({
+      container: new Registry().container,
+      template: compile('{{unbound foo}}'),
+      context: EmberObject.create({
+        foo: 'bleep'
+      })
+    });
+  },
+
+  teardown() {
+    runDestroy(view);
+    Ember.lookup = originalLookup;
+  }
+});
+
+QUnit.test('it should render the current value of a property path on the context', function() {
+  runAppend(view);
+  equal(view.$().text(), 'bleep', 'should render the current value of a property path');
 });
 
 QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
@@ -374,7 +398,7 @@ QUnit.test("should be able to render an unbound helper invocation for helpers wi
 QUnit.test("should be able to render an unbound helper invocation in #each helper", function() {
   view = EmberView.create({
     template: compile(
-      ["{{#each person in people}}",
+      ["{{#each people as |person|}}",
         "{{capitalize person.firstName}} {{unbound capitalize person.firstName}}",
         "{{/each}}"].join("")),
     context: {
@@ -515,7 +539,7 @@ QUnit.test("should be able to output a property without binding", function() {
 QUnit.test("should be able to use unbound helper in #each helper", function() {
   view = EmberView.create({
     items: A(['a', 'b', 'c', 1, 2, 3]),
-    template: compile('<ul>{{#each item in view.items}}<li>{{unbound item}}</li>{{/each}}</ul>')
+    template: compile('<ul>{{#each view.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>')
   });
 
   runAppend(view);
@@ -527,7 +551,7 @@ QUnit.test("should be able to use unbound helper in #each helper", function() {
 QUnit.test("should be able to use unbound helper in #each helper (with objects)", function() {
   view = EmberView.create({
     items: A([{ wham: 'bam' }, { wham: 1 }]),
-    template: compile('<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
+    template: compile('<ul>{{#each view.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
   });
 
   runAppend(view);
@@ -540,7 +564,7 @@ QUnit.test('should work properly with attributes', function() {
   expect(4);
 
   view = EmberView.create({
-    template: compile('<ul>{{#each person in view.people}}<li class="{{unbound person.cool}}">{{person.name}}</li>{{/each}}</ul>'),
+    template: compile('<ul>{{#each view.people as |person|}}<li class="{{unbound person.cool}}">{{person.name}}</li>{{/each}}</ul>'),
     people: A([{
       name: 'Bob',
       cool: 'not-cool'

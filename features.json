@@ -3,7 +3,7 @@
     "features-stripped-test": null,
     "ember-routing-named-substates": true,
     "mandatory-setter": "development-only",
-    "ember-htmlbars-component-generation": true,
+    "ember-htmlbars-component-generation": null,
     "ember-htmlbars-component-helper": true,
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,

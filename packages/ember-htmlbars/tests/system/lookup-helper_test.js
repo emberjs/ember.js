@@ -98,12 +98,9 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
     template: {},
     inverse: {}
   };
-  var fakeEnv = {
-    data: {
-      view: { }
-    }
-  };
-  actual.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  var fakeEnv = { };
+  var fakeScope = { };
+  actual.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv, fakeScope);
 
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });

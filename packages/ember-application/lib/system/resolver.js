@@ -14,6 +14,7 @@ import {
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import helpers from 'ember-htmlbars/helpers';
+import validateType from 'ember-application/utils/validate-type';
 
 export var Resolver = EmberObject.extend({
   /**
@@ -170,6 +171,10 @@ export default EmberObject.extend({
 
     if (parsedName.root && parsedName.root.LOG_RESOLVER) {
       this._logLookup(resolved, parsedName);
+    }
+
+    if (resolved) {
+      validateType(resolved, parsedName);
     }
 
     return resolved;
