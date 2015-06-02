@@ -8,7 +8,7 @@
     "pretest": "ember build",
     "test": "bin/run-tests.js",
     "start": "ember serve",
-    "docs": "ember yuidoc"
+    "docs": "ember ember-cli-yuidoc"
   },
   "devDependencies": {
     "aws-sdk": "~2.1.5",
