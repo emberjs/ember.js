@@ -269,6 +269,9 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   }
 
   component._renderNode = renderNode;
+  if (renderNode.emberView && renderNode.emberView !== component) {
+    throw new Error('Need to clean up this view before blindly reassigning.');
+  }
   renderNode.emberView = component;
   return component;
 }
