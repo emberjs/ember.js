@@ -1,11 +1,19 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
 
+export function RenderState(renderNode) {
+  this.morphListStart = null;
+  this.deletionCandidates = {};
+  this.handledMorphs = {};
+  this.clearMorph = renderNode;
+  this.shadowOptions = null;
+}
+
 export function blockFor(render, template, blockOptions) {
   var block = function(env, blockArguments, self, renderNode, parentScope, visitor) {
     if (renderNode.lastResult) {
       renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
     } else {
-      var options = { renderState: { morphListStart: null, clearMorph: renderNode, shadowOptions: null } };
+      var options = { renderState: new RenderState(renderNode) };
 
       var scope = blockOptions.scope;
       var shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
@@ -55,16 +63,25 @@ export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
     return;
   }
 
-  var item = options.renderState.morphListStart;
   var toClear = options.renderState.clearMorph;
+  var handledMorphs = options.renderState.handledMorphs;
   var morphMap = morph.morphMap;
+  var morphList = morph.morphList;
 
-  while (item) {
-    var next = item.nextMorph;
-    delete morphMap[item.key];
-    clearMorph(item, env, true);
-    item.destroy();
-    item = next;
+  if (morphList) {
+    let item = morphList.firstChildMorph;
+
+    while (item) {
+      let next = item.nextMorph;
+
+      if (!(item.key in handledMorphs)) {
+        delete morphMap[item.key];
+        clearMorph(item, env, true);
+        item.destroy();
+      }
+
+      item = next;
+    }
   }
 
   if (toClear) {

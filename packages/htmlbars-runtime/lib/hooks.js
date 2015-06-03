@@ -1,9 +1,9 @@
 import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
-import { createObject, keyLength, shallowCopy, merge } from "../htmlbars-util/object-utils";
+import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
-import { clearMorph, renderAndCleanup } from "../htmlbars-util/template-utils";
+import { RenderState, clearMorph, renderAndCleanup } from "../htmlbars-util/template-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -157,6 +157,20 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     renderState.morphListStart = currentMorph;
   }
 
+  // This helper function assumes that the morph was already rendered; if this is
+  // called and the morph does not exist, it will result in an infinite loop
+  function advanceToKey(key) {
+    let seek = currentMorph;
+
+    while (seek.key !== key) {
+      renderState.deletionCandidates[seek.key] = seek;
+      seek = seek.nextMorph;
+    }
+
+    currentMorph = seek.nextMorph;
+    return seek;
+  }
+
   return function(key, blockArguments, self) {
     if (typeof key !== 'string') {
       throw new Error("You must provide a string key when calling `yieldItem`; you provided " + key);
@@ -173,22 +187,34 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     morphList = morph.morphList;
     morphMap = morph.morphMap;
 
+    var candidates = renderState.deletionCandidates;
+    var handledMorphs = renderState.handledMorphs;
+
     if (currentMorph && currentMorph.key === key) {
       yieldTemplate(template, env, parentScope, currentMorph, renderState, visitor)(blockArguments, self);
       currentMorph = currentMorph.nextMorph;
-    } else if (currentMorph && morphMap[key] !== undefined) {
-      var foundMorph = morphMap[key];
+      handledMorphs[key] = currentMorph;
+    } else if (morphMap[key] !== undefined) {
+      let foundMorph = morphMap[key];
+
+      if (key in candidates) {
+        // If we already saw this morph, move it forward to this position
+        morphList.insertBeforeMorph(foundMorph, currentMorph);
+      } else {
+        // Otherwise, move the pointer forward to the existing morph for this key
+        advanceToKey(key);
+      }
+
+      handledMorphs[foundMorph.key] = foundMorph;
       yieldTemplate(template, env, parentScope, foundMorph, renderState, visitor)(blockArguments, self);
-      morphList.insertBeforeMorph(foundMorph, currentMorph);
     } else {
       var childMorph = createChildMorph(env.dom, morph);
       childMorph.key = key;
-      morphMap[key] = childMorph;
+      morphMap[key] = handledMorphs[key] = childMorph;
       morphList.insertBeforeMorph(childMorph, currentMorph);
       yieldTemplate(template, env, parentScope, childMorph, renderState, visitor)(blockArguments, self);
     }
 
-    renderState.morphListStart = currentMorph;
     renderState.clearMorph = morph.childNodes;
     morph.childNodes = null;
   };
@@ -250,7 +276,7 @@ function optionsFor(template, inverse, env, scope, morph, visitor) {
   // If there was a template yielded last time, set clearMorph so it will be cleared
   // if no template is yielded on this render.
   var clearMorph = morph.lastResult ? morph : null;
-  var renderState = { morphListStart: null, clearMorph: clearMorph, shadowOptions: null };
+  var renderState = new RenderState(clearMorph);
 
   return {
     templates: {
