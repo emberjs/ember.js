@@ -422,7 +422,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('mmun', "after removing the middle entry");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
+    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "after removing the middle entry");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
