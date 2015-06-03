@@ -48,6 +48,54 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yummy Loisaida arepas!', 'component was updated and re-rendered');
   });
 
+  QUnit.test("component helper destroys underlying component when it is swapped out", function() {
+    var currentComponent;
+    var destroyCalls = 0;
+    registry.register('component:foo-bar', Component.extend({
+      init() {
+        this._super(...arguments);
+        currentComponent = 'foo-bar';
+      },
+      willDestroy() {
+        destroyCalls++;
+      }
+    }));
+    registry.register('component:baz-qux', Component.extend({
+      init() {
+        this._super(...arguments);
+        currentComponent = 'baz-qux';
+      },
+      willDestroy() {
+        destroyCalls++;
+      }
+    }));
+
+    view = EmberView.create({
+      container: container,
+      dynamicComponent: 'foo-bar',
+      template: compile('{{component view.dynamicComponent}}')
+    });
+
+    runAppend(view);
+
+    equal(currentComponent, 'foo-bar', 'precond - instantiates the proper component');
+    equal(destroyCalls, 0, 'precond - nothing destroyed yet');
+
+    Ember.run(function() {
+      set(view, "dynamicComponent", 'baz-qux');
+    });
+
+    equal(currentComponent, 'baz-qux', 'changing bound value instantiates the proper component');
+    equal(destroyCalls, 1, 'prior component should be destroyed');
+
+    Ember.run(function() {
+      set(view, "dynamicComponent", 'foo-bar');
+    });
+
+    equal(currentComponent, 'foo-bar', 'changing bound value instantiates the proper component');
+    equal(destroyCalls, 2, 'prior components destroyed');
+  });
+
   QUnit.test("component helper with actions", function() {
     registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
     registry.register('component:foo-bar', Ember.Component.extend({

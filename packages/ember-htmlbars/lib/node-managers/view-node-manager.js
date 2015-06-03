@@ -188,6 +188,10 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   }
 
   component._renderNode = renderNode;
+
+  if (renderNode.emberView && renderNode.emberView !== component) {
+    throw new Error('Need to clean up this view before blindly reassigning.');
+  }
   renderNode.emberView = component;
   return component;
 }
