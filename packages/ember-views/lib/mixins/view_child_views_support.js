@@ -8,8 +8,7 @@ import { removeObject } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
-
-var EMPTY_ARRAY = [];
+import { computed } from "ember-metal/computed";
 
 var ViewChildViewsSupport = Mixin.create({
   /**
@@ -21,20 +20,44 @@ var ViewChildViewsSupport = Mixin.create({
     @default []
     @private
   */
-  childViews: EMPTY_ARRAY,
+  childViews: computed(function() {
+
+    if (!this._renderNode || !this._renderNode.childNodes) {
+      return Ember.A();
+    }
+
+    let currentElementMorph, index, length;
+    let childNodes = this._renderNode.childNodes;
+
+    for (index = 0, length = this._renderNode.childNodes.length; index < length; index++) {
+      let node = childNodes[index];
+      if (node.isElementMorph) {
+        currentElementMorph = node;
+        break;
+      }
+    }
+
+    var childViews = [];
+    if (currentElementMorph.childNodes) {
+      for (index = 0, length = currentElementMorph.childNodes.length; index < length; index++) {
+        let node = currentElementMorph.childNodes[index];
+
+        if (node.isElementMorph && node.emberView) {
+          childViews.push(node.emberView);
+        }
+      }
+    }
+
+    return Ember.A(childViews);
+  }),
 
   init() {
     this._super(...arguments);
-
-    // setup child views. be sure to clone the child views array first
-    // 2.0TODO: Remove Ember.A() here
-    this.childViews = Ember.A(this.childViews.slice());
     this.ownerView = this;
   },
 
   appendChild(view) {
     this.linkChild(view);
-    this.childViews.push(view);
   },
 
   destroyChild(view) {
@@ -57,11 +80,6 @@ var ViewChildViewsSupport = Mixin.create({
 
     // update parent node
     this.unlinkChild(view);
-
-    // remove view from childViews array.
-    var childViews = get(this, 'childViews');
-
-    removeObject(childViews, view);
 
     return this;
   },
@@ -131,6 +149,12 @@ var ViewChildViewsSupport = Mixin.create({
   unlinkChild(instance) {
     set(instance, 'parentView', null);
     instance.trigger('parentViewDidChange');
+  },
+
+  _internalDidRender() {
+    this._super(...arguments);
+
+    this.notifyPropertyChange('childViews');
   }
 });
 

@@ -116,7 +116,7 @@ QUnit.test("cursor position is not lost when updating content", function() {
   // set the cursor position to 3 (no selection)
   run(function() {
     input.value = 'derp';
-    view.childViews[0]._elementValueDidChange();
+    view.get('childViews')[0]._elementValueDidChange();
     input.selectionStart = 3;
     input.selectionEnd = 3;
   });

@@ -75,6 +75,7 @@ Renderer.prototype.dispatchLifecycleHooks =
       }
 
       this.didRender(hook.view);
+      this.internalDidRender(hook.view);
     }
 
     ownerView._dispatching = null;
@@ -157,6 +158,10 @@ Renderer.prototype.didUpdate = function (view) {
 
 Renderer.prototype.didRender = function (view) {
   if (view.trigger) { view.trigger('didRender'); }
+};
+
+Renderer.prototype.internalDidRender = function (view) {
+  if (view.trigger) { view.trigger('_internalDidRender'); }
 };
 
 Renderer.prototype.updateAttrs = function (view, attrs) {

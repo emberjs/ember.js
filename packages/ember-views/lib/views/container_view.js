@@ -300,7 +300,10 @@ var ContainerView = View.extend(MutableArray, {
         this.renderer.didDestroyElement(childViews[i]);
       }
     }
-  })
+  }),
+
+  // override default hook which notifies `childViews` property
+  _internalDidRender() { }
 });
 
 export default ContainerView;

@@ -924,7 +924,7 @@ var View = CoreView.extend(
   },
 
   forEachChildView(callback) {
-    var childViews = this.childViews;
+    var childViews = get(this, 'childViews');
 
     if (!childViews) { return this; }
 

@@ -378,7 +378,7 @@ QUnit.test("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(get(view, 'childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
 QUnit.test("itemController should not affect the DOM structure", function() {
@@ -1044,7 +1044,7 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-    strictEqual(view.childViews[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+    strictEqual(get(view, 'childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
   });
 
   QUnit.test("itemController specified in ArrayController with name binding does not change context", function() {
