@@ -13,7 +13,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.lastYielded = null;
   this.lastResult = null;
   this.lastValue = null;
-  this.lastEnv = null;
+  this.buildChildEnv = null;
   this.morphList = null;
   this.morphMap = null;
   this.key = null;

@@ -547,8 +547,14 @@ export function handleKeyword(path, morph, env, scope, params, hash, template, i
   }
 
   if (keyword.childEnv) {
-    morph.lastEnv = keyword.childEnv(morph.state);
-    env = merge(shallowCopy(morph.lastEnv), env);
+    // Build the child environment...
+    env = keyword.childEnv(morph.state, env);
+
+    // ..then save off the child env builder on the render node. If the render
+    // node tree is re-rendered and this node is not dirty, the child env
+    // builder will still be invoked so that child dirty render nodes still get
+    // the correct child env.
+    morph.buildChildEnv = keyword.childEnv;
   }
 
   var firstTime = !morph.rendered;
