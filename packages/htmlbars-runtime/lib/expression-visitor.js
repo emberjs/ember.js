@@ -1,4 +1,4 @@
-import { merge, createObject, shallowCopy } from "../htmlbars-util/object-utils";
+import { merge, createObject } from "../htmlbars-util/object-utils";
 import { validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 
 /**
@@ -239,9 +239,10 @@ export default merge(createObject(base), {
   }
 });
 
-function dirtyCheck(env, morph, visitor, callback) {
+function dirtyCheck(_env, morph, visitor, callback) {
   var isDirty = morph.isDirty;
   var isSubtreeDirty = morph.isSubtreeDirty;
+  var env = _env;
 
   if (isSubtreeDirty) {
     visitor = AlwaysDirtyVisitor;
@@ -250,8 +251,8 @@ function dirtyCheck(env, morph, visitor, callback) {
   if (isDirty || isSubtreeDirty) {
     callback(visitor);
   } else {
-    if (morph.lastEnv) {
-      env = merge(shallowCopy(morph.lastEnv), env);
+    if (morph.buildChildEnv) {
+      env = morph.buildChildEnv(morph.state, env);
     }
     validateChildMorphs(env, morph, visitor);
   }
