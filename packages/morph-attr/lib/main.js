@@ -50,11 +50,16 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.namespace = namespace !== undefined ? namespace : getAttrNamespace(attrName);
   this.state = {};
   this.isDirty = false;
+  this.isSubtreeDirty = false;
   this.escaped = true;
   this.lastValue = UNSET;
+  this.lastResult = null;
+  this.lastYielded = null;
+  this.childNodes = null;
   this.linkedParams = null;
   this.linkedResult = null;
   this.guid = "attr" + guid++;
+  this.ownerNode = null;
   this.rendered = false;
   this._renderedInitially = false;
 
@@ -65,13 +70,13 @@ function AttrMorph(element, attrName, domHelper, namespace) {
     this.attrName = attrName;
   } else {
     if (element.namespaceURI === svgNamespace || attrName === 'style' || !normalizedAttrName) {
-      this.attrName = attrName;
       this._update = updateAttribute;
       this._get = getAttribute;
+      this.attrName = attrName;
     } else {
-      this.attrName = normalizedAttrName;
       this._update = updateProperty;
       this._get = getProperty;
+      this.attrName = normalizedAttrName;
     }
   }
 }
