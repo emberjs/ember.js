@@ -38,8 +38,11 @@ export function assign(original, ...args) {
     let arg = args[i];
     if (!arg) { continue; }
 
-    for (let prop in arg) {
-      if (arg.hasOwnProperty(prop)) { original[prop] = arg[prop]; }
+    let updates = keys(arg);
+
+    for (let i=0, l=updates.length; i<l; i++) {
+      let prop = updates[i];
+      original[prop] = arg[prop];
     }
   }
 
