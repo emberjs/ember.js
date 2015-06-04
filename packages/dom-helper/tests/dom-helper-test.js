@@ -194,6 +194,36 @@ test('#setProperty removes attr with undefined', function(){
   equalHTML(node, '<div></div>', 'undefined attribute removes the attribute');
 });
 
+test('#setProperty uses setAttribute for special non-compliant element props', function() {
+  expect(6);
+  
+  var badPairs = [
+    { tagName: 'button', key: 'type', value: 'submit', selfClosing: false },
+    { tagName: 'input', key: 'type', value: 'x-not-supported', selfClosing: true }
+  ];
+
+  badPairs.forEach(function(pair) {
+    var node = dom.createElement(pair.tagName);   
+    var setAttribute = node.setAttribute;
+
+    node.setAttribute = function(attrName, value) {
+      equal(attrName, pair.key, 'setAttribute called with correct attrName');
+      equal(value, pair.value, 'setAttribute called with correct value');
+      return setAttribute.call(this, attrName, value);
+    };
+
+    dom.setProperty(node, pair.key, pair.value);
+
+    // e.g. <button type="submit"></button>
+    var expected = '<' + pair.tagName + ' ' + pair.key + '="' + pair.value + '">';
+    if (pair.selfClosing === false) {
+      expected += '</' + pair.tagName + '>';
+    }
+
+    equalHTML(node, expected, 'output html is correct');
+  });
+});
+
 test('#addClasses', function(){
   var node = dom.createElement('div');
   dom.addClasses(node, ['super-fun']);
