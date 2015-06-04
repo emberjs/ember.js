@@ -289,6 +289,47 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
+  QUnit.test("provides a helpful error if an action is not present", function(assert) {
+    assert.expect(1);
+
+    innerComponent = EmberComponent.create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action 'doesNotExist')}}
+      `),
+      innerComponent,
+      actions: {
+        something() {
+          // this is present to ensure `actions` hash is present
+          // a different error is triggered if `actions` is missing
+          // completely
+        }
+      }
+    }).create();
+
+    throws(function() {
+      runAppend(outerComponent);
+    }, /An action named 'doesNotExist' was not found in /);
+  });
+
+  QUnit.test("provides a helpful error if actions hash is not present", function(assert) {
+    assert.expect(1);
+
+    innerComponent = EmberComponent.create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action 'doesNotExist')}}
+      `),
+      innerComponent
+    }).create();
+
+    throws(function() {
+      runAppend(outerComponent);
+    }, /An action named 'doesNotExist' was not found in /);
+  });
+
   QUnit.test("action can create closures over actions with target", function(assert) {
     assert.expect(1);
 
