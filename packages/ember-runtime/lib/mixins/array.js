@@ -205,8 +205,8 @@ export default Mixin.create(Enumerable, {
     ```
 
     @method slice
-    @param {Integer} beginIndex (Optional) index to begin slicing from.
-    @param {Integer} endIndex (Optional) index to end the slice at (but not included).
+    @param {Number} beginIndex (Optional) index to begin slicing from.
+    @param {Number} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
   */
   slice(beginIndex, endIndex) {
