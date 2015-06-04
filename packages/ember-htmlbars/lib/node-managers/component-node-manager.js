@@ -212,7 +212,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   return instrument(component, function() {
     let env = _env;
 
-    env = assign({ view: component }, env);
+    env = assign(env, { view: component });
 
     var snapshot = takeSnapshot(attrs);
 
