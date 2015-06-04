@@ -6,7 +6,7 @@ function TransformAngleBracketComponents() {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformAngleBracketComponents.prototype.transform = function TransformBindAttrToAttributes_transform(ast) {
   var walker = new this.syntax.Walker();

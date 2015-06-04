@@ -32,7 +32,7 @@ function TransformWithAsToHash(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_transform(ast) {
   var pluginContext = this;

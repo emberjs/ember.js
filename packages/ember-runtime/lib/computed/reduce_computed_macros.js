@@ -681,7 +681,7 @@ function binarySearch(array, item, low, high) {
 
   @method sort
   @for Ember.computed
-  @param {String} dependentKey
+  @param {String} itemsKey
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
   @return {Ember.ComputedProperty} computes a new sorted array based

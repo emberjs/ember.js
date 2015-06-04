@@ -46,7 +46,7 @@ import { readHash, readArray } from "ember-metal/streams/utils";
   @private
   @method makeBoundHelper
   @for Ember.HTMLBars
-  @param {Function} function
+  @param {Function} fn
   @since 1.10.0
 */
 export default function makeBoundHelper(fn) {

@@ -29,8 +29,8 @@ function beforeEvent(keyName) {
   @method addObserver
   @for Ember
   @param obj
-  @param {String} path
-  @param {Object|Function} targetOrMethod
+  @param {String} _path
+  @param {Object|Function} target
   @param {Function|String} [method]
 */
 export function addObserver(obj, _path, target, method) {

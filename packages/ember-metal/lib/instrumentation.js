@@ -81,7 +81,7 @@ var time = (function() {
   @namespace Ember.Instrumentation
 
   @param {String} [name] Namespaced event name.
-  @param {Object} payload
+  @param {Object} _payload
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
 */

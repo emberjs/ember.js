@@ -33,7 +33,7 @@ import {
   @method watch
   @for Ember
   @param obj
-  @param {String} keyName
+  @param {String} _keyPath
 */
 function watch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
