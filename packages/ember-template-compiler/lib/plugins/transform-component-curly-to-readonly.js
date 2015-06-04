@@ -6,7 +6,7 @@ function TransformComponentCurlyToReadonly() {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformComponentCurlyToReadonly.prototype.transform = function TransformComponetnCurlyToReadonly_transform(ast) {
   var b = this.syntax.builders;

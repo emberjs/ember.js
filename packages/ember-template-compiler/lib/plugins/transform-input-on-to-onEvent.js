@@ -33,7 +33,7 @@ function TransformInputOnToOnEvent(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEvent_transform(ast) {
   const pluginContext = this;

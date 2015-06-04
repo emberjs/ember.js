@@ -36,7 +36,6 @@ import Logger from "ember-metal/logger";
   ```
   @method debugger
   @for Ember.Handlebars.helpers
-  @param {String} property
 */
 export default function debuggerKeyword(morph, env, scope) {
   /* jshint unused: false, debug: true */

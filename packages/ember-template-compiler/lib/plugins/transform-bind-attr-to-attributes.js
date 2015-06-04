@@ -34,7 +34,7 @@ function TransformBindAttrToAttributes(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformBindAttrToAttributes.prototype.transform = function TransformBindAttrToAttributes_transform(ast) {
   var plugin = this;

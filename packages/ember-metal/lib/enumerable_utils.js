@@ -76,7 +76,6 @@ var deprecatedFilter = Ember.deprecateFunc('Ember.EnumberableUtils.filter is dep
  * @method indexOf
  * @deprecated Use ES5's Array.prototype.indexOf instead.
  * @param {Object} obj The object to call indexOn on
- * @param {Function} callback The callback to execute
  * @param {Object} index The index to start searching from
  *
  */

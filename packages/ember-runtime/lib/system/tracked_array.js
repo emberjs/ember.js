@@ -292,7 +292,7 @@ TrackedArray.prototype = {
 
   @method ArrayOperation
   @private
-  @param {String} type The type of the operation.  One of
+  @param {String} operation The type of the operation.  One of
   `Ember.TrackedArray.{RETAIN, INSERT, DELETE}`
   @param {Number} count The number of items in this operation.
   @param {Array} items The items of the operation, if included.  RETAIN and

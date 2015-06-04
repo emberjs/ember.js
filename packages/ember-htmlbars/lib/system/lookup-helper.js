@@ -23,7 +23,6 @@ export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
 
   @private
   @method resolveHelper
-  @param {Container} container
   @param {String} name the name of the helper to lookup
   @return {Handlebars Helper}
 */

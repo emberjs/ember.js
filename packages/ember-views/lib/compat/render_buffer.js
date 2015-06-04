@@ -127,7 +127,6 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
 
   @method renderBuffer
   @namespace Ember
-  @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
 
 var RenderBuffer = function(domHelper) {

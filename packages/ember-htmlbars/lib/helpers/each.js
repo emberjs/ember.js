@@ -73,9 +73,6 @@ import shouldDisplay from "ember-views/streams/should_display";
 
   @method each
   @for Ember.Handlebars.helpers
-  @param [name] {String} name for item (used with `as`)
-  @param [path] {String} path
-  @param [options] {Object} Handlebars key/value pairs of options
 */
 export default function eachHelper(params, hash, blocks) {
   var list = params[0];

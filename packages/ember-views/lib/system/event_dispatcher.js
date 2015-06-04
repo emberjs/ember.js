@@ -124,7 +124,7 @@ export default EmberObject.extend({
 
     @private
     @method setup
-    @param addedEvents {Hash}
+    @param addedEvents {Object}
   */
   setup(addedEvents, rootElement) {
     var event;

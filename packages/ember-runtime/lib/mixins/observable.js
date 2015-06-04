@@ -155,7 +155,7 @@ export default Mixin.create({
 
     @method getProperties
     @param {String...|Array} list of keys to get
-    @return {Hash}
+    @return {Object}
   */
   getProperties(...args) {
     return getProperties.apply(null, [this].concat(args));
@@ -225,7 +225,7 @@ export default Mixin.create({
     ```
 
     @method setProperties
-    @param {Hash} hash the hash of keys and values to set
+    @param {Object} hash the hash of keys and values to set
     @return {Ember.Observable}
   */
   setProperties(hash) {

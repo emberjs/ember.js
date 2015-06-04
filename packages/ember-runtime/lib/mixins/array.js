@@ -205,8 +205,8 @@ export default Mixin.create(Enumerable, {
     ```
 
     @method slice
-    @param {Integer} beginIndex (Optional) index to begin slicing from.
-    @param {Integer} endIndex (Optional) index to end the slice at (but not included).
+    @param {Number} beginIndex (Optional) index to begin slicing from.
+    @param {Number} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
   */
   slice(beginIndex, endIndex) {
@@ -346,7 +346,7 @@ export default Mixin.create(Enumerable, {
 
     @method addArrayObserver
     @param {Object} target The observer object.
-    @param {Hash} opts Optional hash of configuration options including
+    @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
@@ -362,7 +362,7 @@ export default Mixin.create(Enumerable, {
 
     @method removeArrayObserver
     @param {Object} target The object observing the array.
-    @param {Hash} opts Optional hash of configuration options including
+    @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
