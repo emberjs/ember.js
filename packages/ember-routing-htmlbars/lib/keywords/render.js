@@ -32,8 +32,8 @@ export default {
     };
   },
 
-  childEnv(state) {
-    return { outletState: state.childOutletState };
+  childEnv(state, env) {
+    return env.childWithOutletState(state.childOutletState);
   },
 
   isStable(lastState, nextState) {

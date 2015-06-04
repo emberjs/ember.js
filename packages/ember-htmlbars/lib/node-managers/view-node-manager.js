@@ -91,8 +91,7 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
 
     var newEnv = env;
     if (component) {
-      newEnv = merge({}, env);
-      newEnv.view = component;
+      newEnv = env.childWithView(component);
     }
 
     if (component) {
@@ -124,8 +123,7 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
   return instrument(component, function() {
     var newEnv = env;
     if (component) {
-      newEnv = merge({}, env);
-      newEnv.view = component;
+      newEnv = env.childWithView(component);
 
       var snapshot = takeSnapshot(attrs);
 
