@@ -970,7 +970,7 @@ export default Mixin.create({
 
     @method addEnumerableObserver
     @param {Object} target
-    @param {Hash} [opts]
+    @param {Object} [opts]
     @return this
   */
   addEnumerableObserver(target, opts) {
@@ -997,7 +997,7 @@ export default Mixin.create({
 
     @method removeEnumerableObserver
     @param {Object} target
-    @param {Hash} [opts]
+    @param {Object} [opts]
     @return this
   */
   removeEnumerableObserver(target, opts) {

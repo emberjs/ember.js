@@ -346,7 +346,7 @@ export default Mixin.create(Enumerable, {
 
     @method addArrayObserver
     @param {Object} target The observer object.
-    @param {Hash} opts Optional hash of configuration options including
+    @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
@@ -362,7 +362,7 @@ export default Mixin.create(Enumerable, {
 
     @method removeArrayObserver
     @param {Object} target The object observing the array.
-    @param {Hash} opts Optional hash of configuration options including
+    @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */

@@ -52,7 +52,7 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 
   @property TEMPLATES
   @for Ember
-  @type Hash
+  @type Object
 */
 Ember.TEMPLATES = {};
 
@@ -1500,7 +1500,7 @@ View.notifyMutationListeners = function() {
 
   @property views
   @static
-  @type Hash
+  @type Object
 */
 View.views = {};
 

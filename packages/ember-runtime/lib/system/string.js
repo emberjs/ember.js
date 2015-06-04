@@ -124,7 +124,7 @@ function capitalize(str) {
 
   @property STRINGS
   @for Ember
-  @type Hash
+  @type Object
 */
 Ember.STRINGS = {};
 

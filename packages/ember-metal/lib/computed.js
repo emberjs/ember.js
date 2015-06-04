@@ -278,7 +278,7 @@ ComputedPropertyPrototype.property = function() {
   via the `metaForProperty()` function.
 
   @method meta
-  @param {Hash} meta
+  @param {Object} meta
   @chainable
 */
 

@@ -124,7 +124,7 @@
   @method bind-attr
   @for Ember.Handlebars.helpers
   @deprecated
-  @param {Hash} options
+  @param {Object} options
   @return {String} HTML string
 */
 
@@ -135,6 +135,6 @@
   @for Ember.Handlebars.helpers
   @deprecated
   @param {Function} context
-  @param {Hash} options
+  @param {Object} options
   @return {String} HTML string
 */
