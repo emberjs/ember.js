@@ -43,4 +43,8 @@ if (Array.prototype.indexOf) {
   };
 }
 
+export var isArray = (Array.isArray || function(array) {
+  return Object.prototype.toString.call(array) === '[object Array]';
+});
+
 export var indexOfArray = getIdx;
