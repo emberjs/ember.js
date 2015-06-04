@@ -82,7 +82,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @property queryParams
     @for Ember.Route
-    @type Hash
+    @type Object
   */
   queryParams: {},
 

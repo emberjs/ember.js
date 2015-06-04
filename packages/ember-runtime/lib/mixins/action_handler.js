@@ -140,7 +140,7 @@ var ActionHandler = Mixin.create({
     ```
 
     @property actions
-    @type Hash
+    @type Object
     @default null
   */
 

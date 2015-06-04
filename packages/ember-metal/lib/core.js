@@ -63,7 +63,7 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
   hash must be created before loading Ember.
 
   @property ENV
-  @type Hash
+  @type Object
 */
 
 if (Ember.ENV) {

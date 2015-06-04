@@ -345,7 +345,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
     @method createChildView
     @param {Class} viewClass
-    @param {Hash} [attrs] Attributes to add
+    @param {Object} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
   createChildView(_view, attrs) {
@@ -392,7 +392,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
   a particular parent tag to default to a child tag.
 
   @property CONTAINER_MAP
-  @type Hash
+  @type Object
   @static
   @final
 */

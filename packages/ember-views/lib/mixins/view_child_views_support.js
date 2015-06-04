@@ -74,7 +74,7 @@ var ViewChildViewsSupport = Mixin.create({
 
     @method createChildView
     @param {Class|String} viewClass
-    @param {Hash} [attrs] Attributes to add
+    @param {Object} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
   createChildView(maybeViewClass, _attrs) {
