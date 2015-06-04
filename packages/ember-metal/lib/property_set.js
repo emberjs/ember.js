@@ -164,7 +164,7 @@ function setPath(root, path, value, tolerant) {
 
   @method trySet
   @for Ember
-  @param {Object} obj The object to modify.
+  @param {Object} root The object to modify.
   @param {String} path The property path to set
   @param {Object} value The value to set
 */
