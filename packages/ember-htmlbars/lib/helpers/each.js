@@ -1,5 +1,6 @@
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
+import { guidFor } from "ember-metal/utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
 
@@ -15,7 +16,7 @@ import shouldDisplay from "ember-views/streams/should_display";
   ```
 
   ```handlebars
-  {{#each developers as |person|}}
+  {{#each developers key="name" as |person|}}
     {{person.name}}
     {{! `this` is whatever it was outside the #each }}
   {{/each}}
@@ -28,10 +29,34 @@ import shouldDisplay from "ember-views/streams/should_display";
   ```
 
   ```handlebars
-  {{#each developerNames as |name|}}
+  {{#each developerNames key="@index" as |name|}}
     {{name}}
   {{/each}}
   ```
+
+  ### `key` param
+
+  The `key` hash parameter provides much needed insight into how the rendering
+  engine should determine if a given iteration of the loop matches a previous one.
+  This is mostly apparent during re-rendering when the array being iterated may
+  have changed (via sort, removal, addition, etc).
+
+  For example, using the following:
+
+  ```handlebars
+  {{#each model key="id" as |item|}}
+  {{/each}}
+  ```
+
+  Upon re-render, the rendering engine will match up the previously rendered items
+  (and reorder the generated DOM elements) based on each item's `id` property.
+
+  There are a few special values for `key`:
+
+    * `@index` - The index of the item in the array.
+    * `@item` - The item in the array itself.  This can only be used for arrays of strings
+      or numbers.
+    * `@guid` - Generate a unique identifier for each object (uses `Ember.guidFor`).
 
   ### {{else}} condition
 
@@ -67,7 +92,25 @@ export default function eachHelper(params, hash, blocks) {
         self = normalizeSelf(item);
       }
 
-      var key = keyPath ? get(item, keyPath) : String(i);
+      var key;
+      switch (keyPath) {
+      case '@index':
+        key = i;
+        break;
+      case '@guid':
+        key = guidFor(item);
+        break;
+      case '@item':
+        key = item;
+        break;
+      default:
+        key = keyPath ? get(item, keyPath) : i;
+      }
+
+      if (typeof key === 'number') {
+        key = String(key);
+      }
+
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {

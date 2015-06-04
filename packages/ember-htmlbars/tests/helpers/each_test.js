@@ -1144,5 +1144,87 @@ QUnit.test("context switching deprecation is printed when no items are present",
   assertHTML(view, "Nothing");
 });
 
+QUnit.test('a string key can be used with {{each}}', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 'foo' },
+      { id: 'bar' },
+      { id: 'baz' }
+    ],
+    template: compile("{{#each view.items key='id' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'foobarbaz');
+});
+
+QUnit.test('a numeric key can be used with {{each}}', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='id' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@index` to represent the items index in the array being iterated', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='@index' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@guid` to represent the items GUID', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='@guid' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@item` to represent primitive items', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [1, 2, 3],
+    template: compile("{{#each view.items key='@item' as |item|}}{{item}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+
+  run(function() {
+    set(view, 'items', ['foo', 'bar', 'baz']);
+  });
+
+  equal(view.$().text(), 'foobarbaz');
+});
+
 testEachWithItem("{{#each foo in bar}}", false);
 testEachWithItem("{{#each bar as |foo|}}", true);
