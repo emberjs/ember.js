@@ -1,4 +1,5 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
+import { isArray } from "./array-utils";
 
 export function RenderState(renderNode) {
   this.morphListStart = null;
@@ -85,7 +86,7 @@ export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
   }
 
   if (toClear) {
-    if (Object.prototype.toString.call(toClear) === '[object Array]') {
+    if (isArray(toClear)) {
       for (var i=0, l=toClear.length; i<l; i++) {
         clearMorph(toClear[i], env);
       }
