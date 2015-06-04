@@ -780,6 +780,31 @@ QUnit.test("comopnent should rerender when a property (with a default) is change
 
 });
 
+QUnit.test('non-block with each rendering child components', function() {
+  expect(2);
+
+  registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
+  registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
+
+  var items = Ember.A(['Tom', 'Dick', 'Harry']);
+
+  view = EmberView.extend({
+    template: compile('{{non-block items=view.items}}'),
+    container: container,
+    items: items
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+
+  run(function() {
+    items.pushObject('James');
+  });
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
+});
+
 // jscs:disable validateIndentation
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
 

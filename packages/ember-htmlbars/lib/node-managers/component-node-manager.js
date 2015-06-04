@@ -210,9 +210,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   var component = this.component;
 
   return instrument(component, function() {
-    let env = _env;
-
-    env = assign({ view: component }, env);
+    let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
 
