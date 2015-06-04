@@ -157,9 +157,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
   var { component, attrs } = this;
 
   return instrument(component, function() {
-    let env = _env;
-
-    env = assign({ view: component }, env);
+    let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
     env.renderer.componentInitAttrs(this.component, snapshot);
@@ -210,7 +208,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
-      env.renderer.componentUpdateAttrs(component, component.attrs, snapshot);
+      env.renderer.componentUpdateAttrs(component, snapshot);
 
       if (!component._isAngleBracket) {
         setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
