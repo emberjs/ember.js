@@ -112,8 +112,14 @@ function extractComponentTemplates(component, _templates) {
   // respect (though this behavior is deprecated).
   let componentLayout = get(component, 'layout');
   let hasBlock = _templates && _templates.default;
-  let componentTemplate = hasBlock ? null : get(component, '_template');
-  let layout, templates;
+  let layout, templates, componentTemplate;
+  if (hasBlock) {
+    componentTemplate = null;
+  } else if (component.isComponent) {
+    componentTemplate = get(component, '_template');
+  } else {
+    componentTemplate = get(component, 'template');
+  }
 
   if (componentLayout) {
     layout = componentLayout;
