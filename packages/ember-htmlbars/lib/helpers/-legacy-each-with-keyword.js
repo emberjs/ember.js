@@ -1,6 +1,6 @@
-import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
 import shouldDisplay from "ember-views/streams/should_display";
+import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
 export default function legacyEachWithKeywordHelper(params, hash, blocks) {
   var list = params[0];
@@ -14,7 +14,7 @@ export default function legacyEachWithKeywordHelper(params, hash, blocks) {
         self = bindKeyword(self, legacyKeyword, item);
       }
 
-      var key = keyPath ? get(item, keyPath) : String(i);
+      var key = decodeEachKey(item, keyPath, i);
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {
