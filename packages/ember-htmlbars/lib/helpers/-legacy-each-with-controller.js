@@ -1,6 +1,7 @@
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
+import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
 export default function legacyEachWithControllerHelper(params, hash, blocks) {
   var list = params[0];
@@ -21,7 +22,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
       self = bindController(self, true);
     }
 
-    var key = keyPath ? get(item, keyPath) : String(i);
+    var key = decodeEachKey(item, keyPath, i);
     blocks.template.yieldItem(key, [item, i], self);
   });
 }

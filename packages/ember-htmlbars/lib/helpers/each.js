@@ -1,8 +1,7 @@
-import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
-import { guidFor } from "ember-metal/utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
+import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -92,25 +91,7 @@ export default function eachHelper(params, hash, blocks) {
         self = normalizeSelf(item);
       }
 
-      var key;
-      switch (keyPath) {
-      case '@index':
-        key = i;
-        break;
-      case '@guid':
-        key = guidFor(item);
-        break;
-      case '@item':
-        key = item;
-        break;
-      default:
-        key = keyPath ? get(item, keyPath) : i;
-      }
-
-      if (typeof key === 'number') {
-        key = String(key);
-      }
-
+      var key = decodeEachKey(item, keyPath, i);
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {
