@@ -906,229 +906,318 @@ QUnit.test('non-block with each rendering child components', function() {
 if (isEnabled('ember-htmlbars-component-generation')) {
 
   QUnit.module('component - invocation (angle brackets)', {
-  setup() {
-    commonSetup();
-  },
-
-  teardown() {
-    commonTeardown();
-  }
-});
-
-  QUnit.test('non-block without properties', function() {
-  registry.register('template:components/non-block', compile('In layout'));
-
-  view = appendViewFor('<non-block />');
-
-  equal(view.$().text(), 'In layout');
-  ok(view.$('non-block.ember-view').length === 1, 'The non-block tag name was used');
-});
-
-  QUnit.test('block without properties', function() {
-  registry.register('template:components/with-block', compile('In layout - {{yield}}'));
-
-  view = appendViewFor('<with-block>In template</with-block>');
-
-  equal(view.$('with-block.ember-view').text(), 'In layout - In template', 'Both the layout and template are rendered');
-});
-
-  QUnit.test('non-block with properties on attrs', function() {
-  registry.register('template:components/non-block', compile('In layout'));
-
-  view = appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
-    dynamic: 'dynamic'
-  });
-
-  let el = view.$('non-block.ember-view');
-  ok(el, 'precond - the view was rendered');
-  equal(el.attr('static-prop'), 'static text');
-  equal(el.attr('concat-prop'), 'dynamic text');
-  equal(el.attr('dynamic-prop'), undefined);
-
-  //equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
-});
-
-  QUnit.test('attributes are not installed on the top level', function() {
-  let component;
-
-  registry.register('template:components/non-block', compile('In layout - {{attrs.text}}'));
-  registry.register('component:non-block', Component.extend({
-    text: null,
-    dynamic: null,
-
-    didInitAttrs() {
-      component = this;
-    }
-  }));
-
-  view = appendViewFor('<non-block text="texting" dynamic={{view.dynamic}} />', {
-    dynamic: 'dynamic'
-  });
-
-  let el = view.$('non-block.ember-view');
-  ok(el, 'precond - the view was rendered');
-
-  equal(el.text(), 'In layout - texting');
-  equal(component.attrs.text, 'texting');
-  equal(component.attrs.dynamic, 'dynamic');
-  strictEqual(get(component, 'text'), null);
-  strictEqual(get(component, 'dynamic'), null);
-
-  run(() => view.rerender());
-
-  equal(el.text(), 'In layout - texting');
-  equal(component.attrs.text, 'texting');
-  equal(component.attrs.dynamic, 'dynamic');
-  strictEqual(get(component, 'text'), null);
-  strictEqual(get(component, 'dynamic'), null);
-});
-
-  QUnit.test('non-block with properties on attrs and component class', function() {
-  registry.register('component:non-block', Component.extend());
-  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
-
-  view = appendViewFor('<non-block someProp="something here" />');
-
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
-});
-
-  QUnit.test('rerendering component with attrs from parent', function() {
-  var willUpdate = 0;
-  var didReceiveAttrs = 0;
-
-  registry.register('component:non-block', Component.extend({
-    didReceiveAttrs() {
-      didReceiveAttrs++;
+    setup() {
+      commonSetup();
     },
 
-    willUpdate() {
-      willUpdate++;
+    teardown() {
+      commonTeardown();
     }
-  }));
-
-  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
-
-  view = appendViewFor('<non-block someProp={{view.someProp}} />', {
-    someProp: 'wycats'
   });
 
-  equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
+  QUnit.test('non-block without properties replaced with a fragment when the content is just text', function() {
+    registry.register('template:components/non-block', compile('In layout'));
 
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
+    view = appendViewFor('<non-block />');
 
-  run(function() {
-    view.set('someProp', 'tomdale');
+    equal(view.$().html(), 'In layout', 'Just the fragment was used');
   });
 
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
-  equal(willUpdate, 1, 'The willUpdate hook fired once');
+  QUnit.test('non-block without properties replaced with a fragment when the content is multiple elements', function() {
+    registry.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
 
-  Ember.run(view, 'rerender');
+    view = appendViewFor('<non-block />');
 
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-  equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
-  equal(willUpdate, 2, 'The willUpdate hook fired again');
-});
+    equal(view.$().html(), '<div>This is a</div><div>fragment</div>', 'Just the fragment was used');
+  });
+
+  QUnit.test('non-block without properties replaced with a div', function() {
+    // The whitespace is added intentionally to verify that the heuristic is not "a single node" but
+    // rather "a single non-whitespace, non-comment node"
+    registry.register('template:components/non-block', compile('  <div>In layout</div>  '));
+
+    view = appendViewFor('<non-block />');
+
+    equal(view.$().text(), '  In layout  ');
+    ok(view.$().html().match(/^  <div id="[^"]*" class="ember-view">In layout<\/div>  $/), 'The root element has gotten the default class and ids');
+    ok(view.$('div.ember-view[id]').length === 1, 'The div became an Ember view');
+
+    run(view, 'rerender');
+
+    equal(view.$().text(), '  In layout  ');
+    ok(view.$().html().match(/^  <div id="[^"]*" class="ember-view">In layout<\/div>  $/), 'The root element has gotten the default class and ids');
+    ok(view.$('div.ember-view[id]').length === 1, 'The non-block tag name was used');
+  });
+
+  QUnit.test('non-block without properties replaced with identity element', function() {
+    registry.register('template:components/non-block', compile('<non-block such="{{attrs.stability}}">In layout</non-block>'));
+
+    view = appendViewFor('<non-block stability={{view.stability}} />', {
+      stability: 'stability'
+    });
+
+    let node = view.$()[0];
+    equal(view.$().text(), 'In layout');
+    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    ok(view.$('non-block.ember-view[id][such=stability]').length === 1, 'The non-block tag name was used');
+
+    run(() => view.set('stability', 'stability!'));
+
+    strictEqual(view.$()[0], node, 'the DOM node has remained stable');
+    equal(view.$().text(), 'In layout');
+    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability!" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+  });
+
+  QUnit.test('non-block with class replaced with a div merges classes', function() {
+    registry.register('template:components/non-block', compile('<div class="inner-class" />'));
+
+    view = appendViewFor('<non-block class="{{view.outer}}" />', {
+      outer: 'outer'
+    });
+
+    equal(view.$('div').attr('class'), 'inner-class outer ember-view', 'the classes are merged');
+
+    run(() => view.set('outer', 'new-outer'));
+
+    equal(view.$('div').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
+  });
+
+  QUnit.test('non-block with class replaced with a identity element merges classes', function() {
+    registry.register('template:components/non-block', compile('<non-block class="inner-class" />'));
+
+    view = appendViewFor('<non-block class="{{view.outer}}" />', {
+      outer: 'outer'
+    });
+
+    equal(view.$('non-block').attr('class'), 'inner-class outer ember-view', 'the classes are merged');
+
+    run(() => view.set('outer', 'new-outer'));
+
+    equal(view.$('non-block').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
+  });
+
+  QUnit.test('non-block rendering a fragment', function() {
+    registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
+
+    view = appendViewFor('<non-block first={{view.first}} second={{view.second}} />', {
+      first: 'first1',
+      second: 'second1'
+    });
+
+    equal(view.$().html(), '<p>first1</p><p>second1</p>', 'No wrapping element was created');
+
+    run(view, 'setProperties', {
+      first: 'first2',
+      second: 'second2'
+    });
+
+    equal(view.$().html(), '<p>first2</p><p>second2</p>', 'The fragment was updated');
+  });
+
+    QUnit.test('block without properties', function() {
+    registry.register('template:components/with-block', compile('<with-block>In layout - {{yield}}</with-block>'));
+
+    view = appendViewFor('<with-block>In template</with-block>');
+
+    equal(view.$('with-block.ember-view').text(), 'In layout - In template', 'Both the layout and template are rendered');
+  });
+
+    QUnit.test('non-block with properties on attrs', function() {
+    registry.register('template:components/non-block', compile('<non-block>In layout</non-block>'));
+
+    view = appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
+      dynamic: 'dynamic'
+    });
+
+    let el = view.$('non-block.ember-view');
+    ok(el, 'precond - the view was rendered');
+    equal(el.attr('static-prop'), 'static text');
+    equal(el.attr('concat-prop'), 'dynamic text');
+    equal(el.attr('dynamic-prop'), undefined);
+
+    //equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
+  });
+
+    QUnit.test('attributes are not installed on the top level', function() {
+    let component;
+
+    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}}</non-block>'));
+    registry.register('component:non-block', Component.extend({
+      text: null,
+      dynamic: null,
+
+      didInitAttrs() {
+        component = this;
+      }
+    }));
+
+    view = appendViewFor('<non-block text="texting" dynamic={{view.dynamic}} />', {
+      dynamic: 'dynamic'
+    });
+
+    let el = view.$('non-block.ember-view');
+    ok(el, 'precond - the view was rendered');
+
+    equal(el.text(), 'In layout - texting');
+    equal(component.attrs.text, 'texting');
+    equal(component.attrs.dynamic, 'dynamic');
+    strictEqual(get(component, 'text'), null);
+    strictEqual(get(component, 'dynamic'), null);
+
+    run(() => view.rerender());
+
+    equal(el.text(), 'In layout - texting');
+    equal(component.attrs.text, 'texting');
+    equal(component.attrs.dynamic, 'dynamic');
+    strictEqual(get(component, 'text'), null);
+    strictEqual(get(component, 'dynamic'), null);
+  });
+
+    QUnit.test('non-block with properties on attrs and component class', function() {
+    registry.register('component:non-block', Component.extend());
+    registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+
+    view = appendViewFor('<non-block someProp="something here" />');
+
+    equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
+  });
+
+  QUnit.test('rerendering component with attrs from parent', function() {
+    var willUpdate = 0;
+    var didReceiveAttrs = 0;
+
+    registry.register('component:non-block', Component.extend({
+      didReceiveAttrs() {
+        didReceiveAttrs++;
+      },
+
+      willUpdate() {
+        willUpdate++;
+      }
+    }));
+
+    registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+
+    view = appendViewFor('<non-block someProp={{view.someProp}} />', {
+      someProp: 'wycats'
+    });
+
+    equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
+
+    equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
+
+    run(function() {
+      view.set('someProp', 'tomdale');
+    });
+
+    equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+    equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
+    equal(willUpdate, 1, 'The willUpdate hook fired once');
+
+    Ember.run(view, 'rerender');
+
+    equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
+    equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
+    equal(willUpdate, 2, 'The willUpdate hook fired again');
+  });
 
   QUnit.test('block with properties on attrs', function() {
-  registry.register('template:components/with-block', compile('In layout - someProp: {{attrs.someProp}} - {{yield}}'));
+    registry.register('template:components/with-block', compile('<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>'));
 
-  view = appendViewFor('<with-block someProp="something here">In template</with-block>');
+    view = appendViewFor('<with-block someProp="something here">In template</with-block>');
 
-  equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
-});
+    equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
+  });
 
   QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
-  expect(1);
+    expect(1);
 
-  var layoutModuleName = 'my-app-name/templates/components/sample-component';
-  var sampleComponentLayout = compile('Sample Component - {{yield}}', {
-    moduleName: layoutModuleName
+    var layoutModuleName = 'my-app-name/templates/components/sample-component';
+    var sampleComponentLayout = compile('<sample-component>Sample Component - {{yield}}</sample-component>', {
+      moduleName: layoutModuleName
+    });
+    registry.register('template:components/sample-component', sampleComponentLayout);
+    registry.register('component:sample-component', Component.extend({
+      didInsertElement: function() {
+        equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
+      }
+    }));
+
+    view = EmberView.extend({
+      layout: compile('<sample-component />'),
+      container
+    }).create();
+
+    runAppend(view);
   });
-  registry.register('template:components/sample-component', sampleComponentLayout);
-  registry.register('component:sample-component', Component.extend({
-    didInsertElement: function() {
-      equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
-    }
-  }));
-
-  view = EmberView.extend({
-    layout: compile('<sample-component />'),
-    container
-  }).create();
-
-  runAppend(view);
-});
 
   QUnit.test('moduleName is available on _renderNode when no layout is present', function() {
-  expect(1);
+    expect(1);
 
-  var templateModuleName = 'my-app-name/templates/application';
-  registry.register('component:sample-component', Component.extend({
-    didInsertElement: function() {
-      equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
-    }
-  }));
+    var templateModuleName = 'my-app-name/templates/application';
+    registry.register('component:sample-component', Component.extend({
+      didInsertElement: function() {
+        equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
+      }
+    }));
 
-  view = EmberView.extend({
-    layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
-      moduleName: templateModuleName
-    }),
-    container
-  }).create();
+    view = EmberView.extend({
+      layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
+        moduleName: templateModuleName
+      }),
+      container
+    }).create();
 
-  runAppend(view);
-});
+    runAppend(view);
+  });
 
   QUnit.test('parameterized hasBlock default', function() {
-  registry.register('template:components/check-block', compile('{{#if (hasBlock)}}Yes{{else}}No{{/if}}'));
+    registry.register('template:components/check-block', compile('<check-block>{{#if (hasBlock)}}Yes{{else}}No{{/if}}</check-block>'));
 
-  view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
+    view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
 
-  equal(view.$('#expect-yes-1').text(), 'Yes');
-  equal(view.$('#expect-yes-2').text(), 'Yes');
-});
+    equal(view.$('#expect-yes-1').text(), 'Yes');
+    equal(view.$('#expect-yes-2').text(), 'Yes');
+  });
 
   QUnit.test('non-expression hasBlock ', function() {
-  registry.register('template:components/check-block', compile('{{#if hasBlock}}Yes{{else}}No{{/if}}'));
+    registry.register('template:components/check-block', compile('<check-block>{{#if hasBlock}}Yes{{else}}No{{/if}}</check-block>'));
 
-  view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
+    view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
 
-  equal(view.$('#expect-yes-1').text(), 'Yes');
-  equal(view.$('#expect-yes-2').text(), 'Yes');
-});
+    equal(view.$('#expect-yes-1').text(), 'Yes');
+    equal(view.$('#expect-yes-2').text(), 'Yes');
+  });
 
   QUnit.test('parameterized hasBlockParams', function() {
-  registry.register('template:components/check-params', compile('{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}'));
+    registry.register('template:components/check-params', compile('<check-params>{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}</check-params>'));
 
-  view = appendViewFor('<check-params id="expect-no"/>  <check-params id="expect-yes" as |foo|></check-params>');
+    view = appendViewFor('<check-params id="expect-no"/>  <check-params id="expect-yes" as |foo|></check-params>');
 
-  equal(view.$('#expect-no').text(), 'No');
-  equal(view.$('#expect-yes').text(), 'Yes');
-});
+    equal(view.$('#expect-no').text(), 'No');
+    equal(view.$('#expect-yes').text(), 'Yes');
+  });
 
   QUnit.test('non-expression hasBlockParams', function() {
-  registry.register('template:components/check-params', compile('{{#if hasBlockParams}}Yes{{else}}No{{/if}}'));
+    registry.register('template:components/check-params', compile('<check-params>{{#if hasBlockParams}}Yes{{else}}No{{/if}}</check-params>'));
 
-  view = appendViewFor('<check-params id="expect-no" />  <check-params id="expect-yes" as |foo|></check-params>');
+    view = appendViewFor('<check-params id="expect-no" />  <check-params id="expect-yes" as |foo|></check-params>');
 
-  equal(view.$('#expect-no').text(), 'No');
-  equal(view.$('#expect-yes').text(), 'Yes');
-});
+    equal(view.$('#expect-no').text(), 'No');
+    equal(view.$('#expect-yes').text(), 'Yes');
+  });
 
   QUnit.test('implementing `render` allows pushing into a string buffer', function() {
-  expect(1);
+    expect(1);
 
-  registry.register('component:non-block', Component.extend({
-    render(buffer) {
-      buffer.push('<span id="zomg">Whoop!</span>');
-    }
-  }));
+    registry.register('component:non-block', Component.extend({
+      render(buffer) {
+        buffer.push('<span id="zomg">Whoop!</span>');
+      }
+    }));
 
-  expectAssertion(function() {
-    appendViewFor('<non-block />');
+    expectAssertion(function() {
+      appendViewFor('<non-block />');
+    });
   });
-});
-
 }

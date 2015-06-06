@@ -1,10 +1,12 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
+import { assign } from 'ember-metal/merge';
 import { isGlobal } from 'ember-metal/path_cache';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
+import { isStream } from 'ember-metal/streams/utils';
 
-export default function buildComponentTemplate({ component, layout, isAngleBracket}, attrs, content) {
+export default function buildComponentTemplate({ component, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
   var blockToRender, tagName, meta;
 
   if (component === undefined) {
@@ -12,21 +14,25 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   }
 
   if (layout && layout.raw) {
+    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
+
     let yieldTo = createContentBlocks(content.templates, content.scope, content.self, component);
-    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs);
+    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs, attributes);
     meta = layout.raw.meta;
   } else if (content.templates && content.templates.default) {
-    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component);
+    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
+    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component, attributes);
     meta = content.templates.default.meta;
   }
 
-  if (component) {
+  if (component && !component._isAngleBracket || isComponentElement) {
     tagName = tagNameFor(component);
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
+      if (isComponentElement) { attrs = mergeAttrs(attrs, outerAttrs); }
       var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
@@ -44,17 +50,28 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   return { createdElement: !!tagName, block: blockToRender };
 }
 
+function mergeAttrs(innerAttrs, outerAttrs) {
+  let result = assign({}, innerAttrs, outerAttrs);
+
+  if (innerAttrs.class && outerAttrs.class) {
+    result.class = ['subexpr', '-join-classes', [['value', innerAttrs.class], ['value', outerAttrs.class]], []];
+  }
+
+  return result;
+}
+
 function blockFor(template, options) {
   Ember.assert('BUG: Must pass a template to blockFor', !!template);
   return internal.blockFor(render, template, options);
 }
 
-function createContentBlock(template, scope, self, component) {
+function createContentBlock(template, scope, self, component, attributes) {
   Ember.assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
 
   return blockFor(template, {
-    scope: scope,
-    self: self,
+    scope,
+    self,
+    attributes,
     options: { view: component }
   });
 }
@@ -75,9 +92,10 @@ function createContentBlocks(templates, scope, self, component) {
   return output;
 }
 
-function createLayoutBlock(template, yieldTo, self, component, attrs) {
+function createLayoutBlock(template, yieldTo, self, component, attrs, attributes) {
   return blockFor(template, {
     yieldTo,
+    attributes,
 
     // If we have an old-style Controller with a template it will be
     // passed as our `self` argument, and it should be the context for
@@ -197,10 +215,10 @@ function normalizeClass(component, attrs) {
   var classNameBindings = get(component, 'classNameBindings');
 
   if (attrs.class) {
-    if (typeof attrs.class === 'string') {
-      normalizedClass.push(attrs.class);
-    } else {
+    if (isStream(attrs.class)) {
       normalizedClass.push(['subexpr', '-normalize-class', [['value', attrs.class.path], ['value', attrs.class]], []]);
+    } else {
+      normalizedClass.push(attrs.class);
     }
   }
 
