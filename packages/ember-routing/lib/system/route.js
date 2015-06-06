@@ -119,7 +119,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
         if (controllerDefinedQueryParameterConfiguration.length) {
-          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
+          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
         }
       }
 
@@ -148,7 +148,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var desc = combinedQueryParameterConfiguration[propName];
 
-      if (Ember.FEATURES['ember-routing-route-configured-query-params']) {
+      if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
         // apply default values to controllers
         // detect that default value defined on router config
         if (desc.hasOwnProperty('defaultValue')) {
@@ -2179,12 +2179,12 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
     keysAlreadyMergedOrSkippable = {};
   } else {
-    keysAlreadyMergedOrSkippable = {
-      defaultValue: true,
-      type: true,
-      scope: true,
-      as: true
-    };
+    keysAlreadyMergedOrSkippable = {};
+    //   defaultValue: true,
+    //   type: true,
+    //   scope: true,
+    //   as: true
+    // };
   }
 
   // first loop over all controller qps, merging them with any matching route qps
