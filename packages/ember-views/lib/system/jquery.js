@@ -4,15 +4,6 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import { forEach } from 'ember-metal/enumerable_utils';
 import environment from 'ember-metal/environment';
 
-/**
-Ember Views
-
-@module ember
-@submodule ember-views
-@requires ember-runtime
-@main ember-views
-*/
-
 var jQuery;
 
 if (environment.hasDOM) {
@@ -26,10 +17,6 @@ if (environment.hasDOM) {
                (jQuery().jquery.match(/^((1\.(7|8|9|10|11))|(2\.(0|1)))(\.\d+)?(pre|rc\d?)?/) ||
                 Ember.ENV.FORCE_JQUERY));
 
-  /**
-  @module ember
-  @submodule ember-views
-  */
   if (jQuery) {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dndevents
     var dragEvents = [

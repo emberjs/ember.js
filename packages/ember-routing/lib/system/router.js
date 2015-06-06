@@ -41,6 +41,7 @@ var slice = [].slice;
   @namespace Ember
   @extends Ember.Object
   @uses Ember.Evented
+  @public
 */
 var EmberRouter = EmberObject.extend(Evented, {
   /**
@@ -57,6 +58,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @property location
     @default 'hash'
     @see {Ember.Location}
+    @public
   */
   location: 'hash',
 
@@ -66,6 +68,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
    @property rootURL
    @default '/'
+   @public
   */
   rootURL: '/',
 
@@ -109,6 +112,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method url
     @return {String} The current URL.
+    @private
   */
   url: computed(function() {
     return get(this, 'location').getURL();
@@ -548,6 +552,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   /**
     Returns a merged query params meta object for a given route.
     Useful for asking a route what its known query params are.
+
+    @private
    */
   _queryParamsFor(leafRouteName) {
     if (this._qpCache[leafRouteName]) {
@@ -902,6 +908,7 @@ EmberRouter.reopenClass({
 
     @method map
     @param callback
+    @public
   */
   map(callback) {
 

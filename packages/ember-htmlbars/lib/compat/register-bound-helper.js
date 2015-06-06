@@ -116,6 +116,7 @@ var slice = [].slice;
   @param {String} name
   @param {Function} fn
   @param {String} dependentKeys*
+  @private
 */
 export default function registerBoundHelper(name, fn) {
   var boundHelperArgs = slice.call(arguments, 1);

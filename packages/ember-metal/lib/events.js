@@ -4,7 +4,8 @@
 "REMOVE_USE_STRICT: true";
 
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 import Ember from "ember-metal/core";
 import {
@@ -113,6 +114,7 @@ export function accumulateListeners(obj, eventName, otherActions) {
   @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Boolean} once A flag whether a function should only be called once
+  @public
 */
 export function addListener(obj, eventName, target, method, once) {
   Ember.assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
@@ -152,6 +154,7 @@ export function addListener(obj, eventName, target, method, once) {
   @param {String} eventName
   @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
+  @public
 */
 function removeListener(obj, eventName, target, method) {
   Ember.assert("You must pass at least an object and event name to Ember.removeListener", !!obj && !!eventName);
@@ -308,6 +311,7 @@ export function watchedEvents(obj) {
   @param {Array} params Optional parameters for each listener.
   @param {Array} actions Optional array of actions (listeners).
   @return true
+  @public
 */
 export function sendEvent(obj, eventName, params, actions) {
   // first give object a chance to handle it
@@ -407,6 +411,7 @@ export function listenersFor(obj, eventName) {
   @param {String} eventNames*
   @param {Function} func
   @return func
+  @public
 */
 export function on(...args) {
   var func = args.pop();

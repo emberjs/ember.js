@@ -14,6 +14,7 @@ import Logger from "ember-metal/logger";
   @method log
   @for Ember.Handlebars.helpers
   @param {*} values
+  @public
 */
 export default function logHelper(values) {
   Logger.log.apply(null, values);

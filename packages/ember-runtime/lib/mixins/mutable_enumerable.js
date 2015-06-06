@@ -46,6 +46,7 @@ import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_eve
   @class MutableEnumerable
   @namespace Ember
   @uses Ember.Enumerable
+  @public
 */
 export default Mixin.create(Enumerable, {
 
@@ -62,6 +63,7 @@ export default Mixin.create(Enumerable, {
     @method addObject
     @param {Object} object The object to add to the enumerable.
     @return {Object} the passed object
+    @public
   */
   addObject: null,
 
@@ -71,6 +73,7 @@ export default Mixin.create(Enumerable, {
     @method addObjects
     @param {Ember.Enumerable} objects the objects to add.
     @return {Object} receiver
+    @public
   */
   addObjects(objects) {
     beginPropertyChanges(this);
@@ -92,6 +95,7 @@ export default Mixin.create(Enumerable, {
     @method removeObject
     @param {Object} object The object to remove from the enumerable.
     @return {Object} the passed object
+    @public
   */
   removeObject: null,
 
@@ -102,6 +106,7 @@ export default Mixin.create(Enumerable, {
     @method removeObjects
     @param {Ember.Enumerable} objects the objects to remove
     @return {Object} receiver
+    @public
   */
   removeObjects(objects) {
     beginPropertyChanges(this);

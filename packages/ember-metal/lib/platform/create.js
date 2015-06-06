@@ -9,6 +9,7 @@ import defineProperties from 'ember-metal/platform/define_properties';
 @class platform
 @namespace Ember
 @static
+@private
 */
 
 /**
@@ -17,6 +18,7 @@ import defineProperties from 'ember-metal/platform/define_properties';
   @since 1.8.0
   @method create
   @for Ember
+  @public
 */
 var create;
 // ES5 15.2.3.5

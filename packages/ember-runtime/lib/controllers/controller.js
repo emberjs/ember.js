@@ -13,6 +13,7 @@ import { createInjectionHelper } from 'ember-runtime/inject';
   @namespace Ember
   @extends Ember.Object
   @uses Ember.ControllerMixin
+  @public
 */
 var Controller = EmberObject.extend(Mixin);
 
@@ -50,7 +51,8 @@ function controllerInjectionHelper(factory) {
   @param {String} name (optional) name of the controller to inject, defaults
          to the property's name
   @return {Ember.InjectedProperty} injection descriptor instance
-  */
+  @private
+*/
 createInjectionHelper('controller', controllerInjectionHelper);
 
 export default Controller;

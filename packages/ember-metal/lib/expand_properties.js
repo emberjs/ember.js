@@ -2,8 +2,9 @@ import EmberError from 'ember-metal/error';
 import { forEach } from 'ember-metal/array';
 
 /**
-  @module ember-metal
-  */
+@module ember
+@submodule ember-metal
+*/
 
 var SPLIT_REGEX = /\{|\}/;
 
@@ -32,7 +33,7 @@ var SPLIT_REGEX = /\{|\}/;
   @param {String} pattern The property pattern to expand.
   @param {Function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
-  */
+*/
 export default function expandProperties(pattern, callback) {
   if (pattern.indexOf(' ') > -1) {
     throw new EmberError(`Brace expanded properties cannot contain spaces, e.g. 'user.{firstName, lastName}' should be 'user.{firstName,lastName}'`);

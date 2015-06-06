@@ -61,6 +61,7 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
     then it will be looked up on the passed target.
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
+  @public
 */
 export default run;
 function run() {
@@ -103,6 +104,7 @@ function run() {
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
+  @public
 */
 run.join = function() {
   return backburner.join(...arguments);
@@ -156,6 +158,7 @@ run.join = function() {
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Function} returns a new function that will always have a particular context
   @since 1.4.0
+  @public
 */
 run.bind = function(...curried) {
   return function(...args) {
@@ -180,6 +183,7 @@ run.queues = backburner.queueNames;
 
   @method begin
   @return {void}
+  @public
 */
 run.begin = function() {
   backburner.begin();
@@ -198,6 +202,7 @@ run.begin = function() {
 
   @method end
   @return {void}
+  @public
 */
 run.end = function() {
   backburner.end();
@@ -212,6 +217,7 @@ run.end = function() {
   @property queues
   @type Array
   @default ['sync', 'actions', 'destroy']
+  @private
 */
 
 /**
@@ -250,6 +256,7 @@ run.end = function() {
     invoked allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
   @return {void}
+  @public
 */
 run.schedule = function(/* queue, target, method */) {
   checkAutoRun();
@@ -281,6 +288,7 @@ run.cancelTimers = function() {
 
   @method sync
   @return {void}
+  @private
 */
 run.sync = function() {
   if (backburner.currentInstance) {
@@ -312,6 +320,7 @@ run.sync = function() {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
   @return {*} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.later = function(/*target, method*/) {
   return backburner.later(...arguments);
@@ -328,6 +337,7 @@ run.later = function(/*target, method*/) {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.once = function(...args) {
   checkAutoRun();
@@ -385,6 +395,7 @@ run.once = function(...args) {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
   checkAutoRun();
@@ -448,6 +459,7 @@ run.scheduleOnce = function(/*queue, target, method*/) {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.next = function(...args) {
   args.push(1);
@@ -501,6 +513,7 @@ run.next = function(...args) {
   @method cancel
   @param {Object} timer Timer object to cancel
   @return {Boolean} true if cancelled or false/undefined if it wasn't found
+  @public
 */
 run.cancel = function(timer) {
   return backburner.cancel(timer);
@@ -573,6 +586,7 @@ run.cancel = function(timer) {
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to false.
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.debounce = function() {
   return backburner.debounce(...arguments);
@@ -615,6 +629,7 @@ run.debounce = function() {
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to true.
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @public
 */
 run.throttle = function() {
   return backburner.throttle(...arguments);

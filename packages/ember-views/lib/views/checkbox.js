@@ -30,6 +30,7 @@ import View from "ember-views/views/view";
   @class Checkbox
   @namespace Ember
   @extends Ember.View
+  @public
 */
 // 2.0TODO: Subclass Component rather than View
 export default View.extend({

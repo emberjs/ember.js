@@ -20,7 +20,7 @@ var view;
 var originalLookup = Ember.lookup;
 var TemplateTests, registry, container, lookup, warnings, originalWarn;
 
-/**
+/*
   This module specifically tests integration with Handlebars and Ember-specific
   Handlebars extensions.
 

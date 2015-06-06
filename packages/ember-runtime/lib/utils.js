@@ -40,6 +40,7 @@ var toString = Object.prototype.toString;
   @for Ember
   @param {Object} obj The object to test
   @return {Boolean} true if the passed object is an array or Array-like
+  @public
 */
 export function isArray(obj) {
   if (!obj || obj.setInterval) { return false; }
@@ -103,6 +104,7 @@ export function isArray(obj) {
   @for Ember
   @param {Object} item the item to check
   @return {String} the type
+  @public
 */
 export function typeOf(item) {
   if (item === null) { return 'null'; }

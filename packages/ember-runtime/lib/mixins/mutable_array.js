@@ -44,6 +44,7 @@ import Enumerable from "ember-runtime/mixins/enumerable";
   @namespace Ember
   @uses Ember.Array
   @uses Ember.MutableEnumerable
+  @public
 */
 export default Mixin.create(EmberArray, MutableEnumerable, {
 
@@ -61,6 +62,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       the array, starting at *idx*.
     @param {Array} objects An array of zero or more objects that should be
       inserted into the array at *idx*
+    @public
   */
   replace: null,
 
@@ -78,6 +80,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method clear
     @return {Ember.Array} An empty Array.
+    @public
   */
   clear() {
     var len = get(this, 'length');
@@ -104,6 +107,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
     @return {Ember.Array} receiver
+    @public
   */
   insertAt(idx, object) {
     if (idx > get(this, 'length')) {
@@ -133,6 +137,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @param {Number} start index, start of range
     @param {Number} len length of passing range
     @return {Ember.Array} receiver
+    @public
   */
   removeAt(start, len) {
     if ('number' === typeof start) {
@@ -166,6 +171,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method pushObject
     @param {*} obj object to push
     @return object same object passed as a param
+    @public
   */
   pushObject(obj) {
     this.insertAt(get(this, 'length'), obj);
@@ -185,6 +191,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method pushObjects
     @param {Ember.Enumerable} objects the objects to add
     @return {Ember.Array} receiver
+    @public
   */
   pushObjects(objects) {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
@@ -207,6 +214,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method popObject
     @return object
+    @public
   */
   popObject() {
     var len = get(this, 'length');
@@ -232,6 +240,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method shiftObject
     @return object
+    @public
   */
   shiftObject() {
     if (get(this, 'length') === 0) {
@@ -257,6 +266,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method unshiftObject
     @param {*} obj object to unshift
     @return object same object passed as a param
+    @public
   */
   unshiftObject(obj) {
     this.insertAt(0, obj);
@@ -277,6 +287,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method unshiftObjects
     @param {Ember.Enumerable} objects the objects to add
     @return {Ember.Array} receiver
+    @public
   */
   unshiftObjects(objects) {
     this.replace(0, 0, objects);
@@ -289,7 +300,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method reverseObjects
     @return {Ember.Array} receiver
-   */
+     @public
+  */
   reverseObjects() {
     var len = get(this, 'length');
     if (len === 0) {
@@ -316,7 +328,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @param {Ember.Array} objects array whose content will be used for replacing
         the content of the receiver
     @return {Ember.Array} receiver with the new content
-   */
+    @public
+  */
   setObjects(objects) {
     if (objects.length === 0) {
       return this.clear();
@@ -345,6 +358,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method removeObject
     @param {*} obj object to remove
     @return {Ember.Array} receiver
+    @public
   */
   removeObject(obj) {
     var loc = get(this, 'length') || 0;
@@ -372,6 +386,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method addObject
     @param {*} obj object to add, if not already present
     @return {Ember.Array} receiver
+    @public
   */
   addObject(obj) {
     if (!this.contains(obj)) {

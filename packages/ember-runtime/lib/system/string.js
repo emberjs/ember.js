@@ -125,6 +125,7 @@ function capitalize(str) {
   @property STRINGS
   @for Ember
   @type Object
+  @private
 */
 Ember.STRINGS = {};
 
@@ -136,6 +137,7 @@ Ember.STRINGS = {};
   @class String
   @namespace Ember
   @static
+  @public
 */
 export default {
   /**
@@ -157,6 +159,7 @@ export default {
     @param {String} str The string to format
     @param {Array} formats An array of parameters to interpolate into string.
     @return {String} formatted string
+    @public
   */
   fmt: fmt,
 
@@ -183,6 +186,7 @@ export default {
     @param {String} str The string to format
     @param {Array} formats Optional array of parameters to interpolate into string.
     @return {String} formatted string
+    @public
   */
   loc: loc,
 
@@ -204,6 +208,7 @@ export default {
     @method w
     @param {String} str The string to split
     @return {Array} array containing the split strings
+    @public
   */
   w: w,
 
@@ -220,6 +225,7 @@ export default {
     @method decamelize
     @param {String} str The string to decamelize.
     @return {String} the decamelized string.
+    @public
   */
   decamelize: decamelize,
 
@@ -237,6 +243,7 @@ export default {
     @method dasherize
     @param {String} str The string to dasherize.
     @return {String} the dasherized string.
+    @public
   */
   dasherize: dasherize,
 
@@ -255,6 +262,7 @@ export default {
     @method camelize
     @param {String} str The string to camelize.
     @return {String} the camelized string.
+    @public
   */
   camelize: camelize,
 
@@ -272,6 +280,7 @@ export default {
     @method classify
     @param {String} str the string to classify
     @return {String} the classified string
+    @public
   */
   classify: classify,
 
@@ -290,6 +299,7 @@ export default {
     @method underscore
     @param {String} str The string to underscore.
     @return {String} the underscored string.
+    @public
   */
   underscore: underscore,
 
@@ -307,6 +317,7 @@ export default {
     @method capitalize
     @param {String} str The string to capitalize.
     @return {String} The capitalized string.
+    @public
   */
   capitalize: capitalize
 };

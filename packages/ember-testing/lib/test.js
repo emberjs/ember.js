@@ -8,7 +8,7 @@ import EmberApplication from "ember-application/system/application";
 /**
   @module ember
   @submodule ember-testing
- */
+*/
 var helpers = {};
 var injectHelpersCallbacks = [];
 
@@ -22,6 +22,7 @@ var injectHelpersCallbacks = [];
 
   @class Test
   @namespace Ember
+  @public
 */
 var Test = {
   /**
@@ -327,6 +328,7 @@ EmberApplication.reopen({
     @property testHelpers
     @type {Object}
     @default {}
+    @public
   */
   testHelpers: {},
 
@@ -355,23 +357,25 @@ EmberApplication.reopen({
   @type {Boolean}
   @default false
   @since 1.3.0
+  @public
   */
   testing: false,
 
   /**
-   This hook defers the readiness of the application, so that you can start
-   the app when your tests are ready to run. It also sets the router's
-   location to 'none', so that the window's location will not be modified
-   (preventing both accidental leaking of state between tests and interference
-   with your testing framework).
+    This hook defers the readiness of the application, so that you can start
+    the app when your tests are ready to run. It also sets the router's
+    location to 'none', so that the window's location will not be modified
+    (preventing both accidental leaking of state between tests and interference
+    with your testing framework).
 
-   Example:
+    Example:
 
-  ```
-  App.setupForTesting();
-  ```
+    ```
+    App.setupForTesting();
+    ```
 
     @method setupForTesting
+    @public
   */
   setupForTesting() {
     setupForTesting();
@@ -391,6 +395,7 @@ EmberApplication.reopen({
     @type {Object} The object to be used for test helpers.
     @default window
     @since 1.2.0
+    @private
   */
   helperContainer: null,
 
@@ -401,15 +406,16 @@ EmberApplication.reopen({
     (so that it can be reset if the helper is removed with `unregisterHelper` or
     `removeTestHelpers`).
 
-   Any callbacks registered with `onInjectHelpers` will be called once the
-   helpers have been injected.
+    Any callbacks registered with `onInjectHelpers` will be called once the
+    helpers have been injected.
 
-  Example:
-  ```
-  App.injectTestHelpers();
-  ```
+    Example:
+    ```
+    App.injectTestHelpers();
+    ```
 
     @method injectTestHelpers
+    @public
   */
   injectTestHelpers(helperContainer) {
     if (helperContainer) {

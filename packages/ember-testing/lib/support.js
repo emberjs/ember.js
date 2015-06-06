@@ -6,7 +6,7 @@ import environment from "ember-metal/environment";
 /**
   @module ember
   @submodule ember-testing
- */
+*/
 
 var $ = jQuery;
 

@@ -122,6 +122,7 @@ import { getHash } from "ember-routing/location/util";
   @class Location
   @namespace Ember
   @static
+  @private
 */
 export default {
   /**
@@ -143,6 +144,7 @@ export default {
     @return {Object} an instance of an implementation of the `location` API
     @deprecated Use the container to lookup the location implementation that you
     need.
+    @private
   */
   create(options) {
     var implementation = options && options.implementation;
@@ -175,6 +177,7 @@ export default {
    @param {Object} implementation of the `location` API
    @deprecated Register your custom location implementation with the
    container directly.
+   @private
   */
   registerImplementation(name, implementation) {
     Ember.deprecate(`Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.`, false);

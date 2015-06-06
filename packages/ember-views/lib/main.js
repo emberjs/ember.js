@@ -1,10 +1,6 @@
 /**
-Ember Views
-
 @module ember
 @submodule ember-views
-@requires ember-runtime
-@main ember-views
 */
 
 // BEGIN IMPORTS
@@ -52,6 +48,7 @@ import LegacyEachView from "ember-views/views/legacy_each_view";
 
   @method $
   @for Ember
+  @public
 */
 
 // BEGIN EXPORTS

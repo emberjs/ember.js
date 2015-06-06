@@ -26,7 +26,7 @@ var ObserverClass = EmberObject.extend({
     this._keysBefore[key]++;
   },
 
-  /**
+  /*
     Invoked when the property changes.  Just records the parameters for
     later analysis.
   */
@@ -36,7 +36,7 @@ var ObserverClass = EmberObject.extend({
     this._values[key] = value;
   },
 
-  /**
+  /*
     Resets the recorded results for another run.
 
     @returns {Object} receiver
@@ -61,7 +61,7 @@ var ObserverClass = EmberObject.extend({
     return this;
   },
 
-  /**
+  /*
     Begins observing the passed key names on the passed object.  Any changes
     on the named properties will be recorded.
 
@@ -84,7 +84,7 @@ var ObserverClass = EmberObject.extend({
     return this;
   },
 
-  /**
+  /*
     Returns true if the passed key was invoked.  If you pass a value as
     well then validates that the values match.
 
@@ -112,7 +112,7 @@ var ObserverClass = EmberObject.extend({
     }
   },
 
-  /**
+  /*
     Returns times the before observer as invoked.
 
     @param {String} key
@@ -122,7 +122,7 @@ var ObserverClass = EmberObject.extend({
     return this._keysBefore[key] || 0;
   },
 
-  /**
+  /*
     Returns times the observer as invoked.
 
     @param {String} key
@@ -132,7 +132,7 @@ var ObserverClass = EmberObject.extend({
     return this._keys[key] || 0;
   },
 
-  /**
+  /*
     begins acting as an enumerable observer.
   */
   observeEnumerable(obj) {
@@ -159,7 +159,7 @@ var ObserverClass = EmberObject.extend({
 
 
 var EnumerableTests = Suite.extend({
-  /**
+  /*
     __Required.__ You must implement this method to apply this mixin.
 
     Implement to return a new enumerable object for testing.  Should accept
@@ -173,7 +173,7 @@ var EnumerableTests = Suite.extend({
   */
   newObject: null,
 
-  /**
+  /*
     Implement to return a set of new fixture strings that can be applied to
     the enumerable.  This may be passed into the newObject method.
 
@@ -191,7 +191,7 @@ var EnumerableTests = Suite.extend({
     return ret;
   },
 
-  /**
+  /*
     Implement to return a set of new fixture objects that can be applied to
     the enumerable.  This may be passed into the newObject method.
 
@@ -211,7 +211,7 @@ var EnumerableTests = Suite.extend({
     return ret;
   },
 
-  /**
+  /*
     __Required.__ You must implement this method to apply this mixin.
 
     Implement accept an instance of the enumerable and return an array
@@ -225,7 +225,7 @@ var EnumerableTests = Suite.extend({
   */
   toArray: null,
 
-  /**
+  /*
     Implement this method if your object can mutate internally (even if it
     does not support the MutableEnumerable API).  The method should accept
     an object of your desired type and modify it somehow.  Suite tests will
@@ -242,7 +242,7 @@ var EnumerableTests = Suite.extend({
   */
   mutate() {},
 
-  /**
+  /*
     Becomes true when you define a new mutate() method, indicating that
     mutation tests should run.  This is calculated automatically.
 
@@ -252,13 +252,13 @@ var EnumerableTests = Suite.extend({
     return this.mutate !== EnumerableTests.prototype.mutate;
   }),
 
-  /**
+  /*
     Invoked to actually run the test - overridden by mixins
   */
   run() {},
 
 
-  /**
+  /*
     Creates a new observer object for testing.  You can add this object as an
     observer on an array and it will record results anytime it is invoked.
     After running the test, call the validate() method on the observer to

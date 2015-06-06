@@ -125,8 +125,9 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
    var buffer = new Ember.RenderBuffer('div', contextualElement);
   ```
 
-  @method renderBuffer
+  @class RenderBuffer
   @namespace Ember
+  @private
 */
 
 var RenderBuffer = function(domHelper) {
@@ -183,6 +184,7 @@ RenderBuffer.prototype = {
     @property classes
     @type Array
     @default null
+    @private
   */
   classes: null,
 
@@ -195,6 +197,7 @@ RenderBuffer.prototype = {
     @property elementId
     @type String
     @default null
+    @private
   */
   elementId: null,
 
@@ -210,6 +213,7 @@ RenderBuffer.prototype = {
     @property elementAttributes
     @type Hash
     @default {}
+    @private
   */
   elementAttributes: null,
 
@@ -225,6 +229,7 @@ RenderBuffer.prototype = {
     @property elementProperties
     @type Hash
     @default {}
+    @private
   */
   elementProperties: null,
 
@@ -241,6 +246,7 @@ RenderBuffer.prototype = {
     @property elementTag
     @type String
     @default null
+    @private
   */
   elementTag: null,
 
@@ -256,6 +262,7 @@ RenderBuffer.prototype = {
     @property elementStyle
     @type Hash
     @default {}
+    @private
   */
   elementStyle: null,
 
@@ -299,6 +306,7 @@ RenderBuffer.prototype = {
     @method push
     @param {String} string HTML to push into the buffer
     @chainable
+    @private
   */
   push(content) {
     if (typeof content === 'string') {
@@ -320,6 +328,7 @@ RenderBuffer.prototype = {
     @method addClass
     @param {String} className Class name to add to the buffer
     @chainable
+    @private
   */
   addClass(className) {
     // lazily create elementClasses
@@ -345,6 +354,7 @@ RenderBuffer.prototype = {
     @method id
     @param {String} id
     @chainable
+    @private
   */
   id(id) {
     this.elementId = id;
@@ -362,6 +372,7 @@ RenderBuffer.prototype = {
     @param {String} value The value to add to the attribute
     @chainable
     @return {Ember.RenderBuffer|String} this or the current attribute value
+    @private
   */
   attr(name, value) {
     var attributes = this.elementAttributes = (this.elementAttributes || {});
@@ -381,6 +392,7 @@ RenderBuffer.prototype = {
     @method removeAttr
     @param {String} name The name of the attribute
     @chainable
+    @private
   */
   removeAttr(name) {
     var attributes = this.elementAttributes;
@@ -397,6 +409,7 @@ RenderBuffer.prototype = {
     @param {String} value The value to add to the property
     @chainable
     @return {Ember.RenderBuffer|String} this or the current property value
+    @private
   */
   prop(name, value) {
     var properties = this.elementProperties = (this.elementProperties || {});
@@ -416,6 +429,7 @@ RenderBuffer.prototype = {
     @method removeProp
     @param {String} name The name of the property
     @chainable
+    @private
   */
   removeProp(name) {
     var properties = this.elementProperties;
@@ -431,6 +445,7 @@ RenderBuffer.prototype = {
     @param {String} name Name of the style
     @param {String} value
     @chainable
+    @private
   */
   style(name, value) {
     this.elementStyle = (this.elementStyle || {});
@@ -503,6 +518,7 @@ RenderBuffer.prototype = {
     @method element
     @return {DOMElement} The element corresponding to the generated HTML
       of this buffer
+    @private
   */
   element() {
 
@@ -549,6 +565,7 @@ RenderBuffer.prototype = {
 
     @method string
     @return {String} The generated HTML
+    @private
   */
   string() {
     if (this._element) {

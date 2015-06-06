@@ -1,5 +1,6 @@
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 import Ember from "ember-metal/core";

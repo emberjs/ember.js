@@ -1,12 +1,14 @@
 import { dasherize } from "ember-runtime/system/string";
 import { isPath } from "ember-metal/path_cache";
 
-/** @private
+/*
   This private helper is used by ComponentNode to convert the classNameBindings
   microsyntax into a class name.
 
   When a component or view is created, we normalize class name bindings into a
   series of attribute nodes that use this helper.
+
+  @private
 */
 export default function normalizeClass(params, hash) {
   var [propName, value] = params;

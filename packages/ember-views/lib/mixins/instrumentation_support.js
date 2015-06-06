@@ -9,6 +9,7 @@ import { get } from "ember-metal/property_get";
 /**
   @class InstrumentationSupport
   @namespace Ember
+  @public
 */
 var InstrumentationSupport = Mixin.create({
   /**
@@ -16,6 +17,7 @@ var InstrumentationSupport = Mixin.create({
 
     @property instrumentDisplay
     @type String
+    @public
   */
   instrumentDisplay: computed(function() {
     if (this.helperName) {

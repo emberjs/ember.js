@@ -23,6 +23,7 @@ import EmberStringUtils from "ember-runtime/system/string";
   @for Ember.String
   @static
   @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
+  @public
 */
 function htmlSafe(str) {
   if (str === null || str === undefined) {
@@ -50,6 +51,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method htmlSafe
     @for String
     @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
+    @public
   */
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);

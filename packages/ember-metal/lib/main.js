@@ -1,6 +1,4 @@
 /**
-Ember Metal
-
 @module ember
 @submodule ember-metal
 */
@@ -413,6 +411,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
   @event onerror
   @for Ember
   @param {Exception} error the error object
+  @public
 */
 Ember.onerror = null;
 // END EXPORTS

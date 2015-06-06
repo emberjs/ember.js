@@ -165,6 +165,7 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
 
   @method action
   @for Ember.Handlebars.helpers
+  @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
   if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {

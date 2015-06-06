@@ -25,6 +25,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method fmt
     @for String
+    @private
   */
   StringPrototype.fmt = function () {
     return fmt(this, arguments);
@@ -35,6 +36,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method w
     @for String
+    @private
   */
   StringPrototype.w = function () {
     return w(this);
@@ -45,6 +47,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method loc
     @for String
+    @private
   */
   StringPrototype.loc = function () {
     return loc(this, arguments);
@@ -55,6 +58,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method camelize
     @for String
+    @private
   */
   StringPrototype.camelize = function () {
     return camelize(this);
@@ -65,6 +69,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method decamelize
     @for String
+    @private
   */
   StringPrototype.decamelize = function () {
     return decamelize(this);
@@ -75,6 +80,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method dasherize
     @for String
+    @private
   */
   StringPrototype.dasherize = function () {
     return dasherize(this);
@@ -85,6 +91,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method underscore
     @for String
+    @private
   */
   StringPrototype.underscore = function () {
     return underscore(this);
@@ -95,6 +102,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method classify
     @for String
+    @private
   */
   StringPrototype.classify = function () {
     return classify(this);
@@ -105,6 +113,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
     @method capitalize
     @for String
+    @private
   */
   StringPrototype.capitalize = function () {
     return capitalize(this);

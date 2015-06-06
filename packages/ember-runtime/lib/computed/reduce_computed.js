@@ -470,6 +470,7 @@ ReduceComputedPropertyInstanceMeta.prototype = {
   @namespace Ember
   @extends Ember.ComputedProperty
   @constructor
+  @private
 */
 
 export { ReduceComputedProperty }; // TODO: default export
@@ -840,6 +841,7 @@ ReduceComputedProperty.prototype.property = function () {
   @param {String} [dependentKeys*]
   @param {Object} options
   @return {Ember.ComputedProperty}
+  @public
 */
 export function reduceComputed(options) {
   var args;

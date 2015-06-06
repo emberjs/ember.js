@@ -33,6 +33,7 @@ var deferred = 0;
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
   @return {void}
+  @private
 */
 function propertyWillChange(obj, keyName) {
   var m = obj['__ember_meta__'];
@@ -72,6 +73,7 @@ function propertyWillChange(obj, keyName) {
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
   @return {void}
+  @private
 */
 function propertyDidChange(obj, keyName) {
   var m = obj['__ember_meta__'];
@@ -270,6 +272,7 @@ function endPropertyChanges() {
   @method changeProperties
   @param {Function} callback
   @param [binding]
+  @private
 */
 function changeProperties(callback, binding) {
   beginPropertyChanges();

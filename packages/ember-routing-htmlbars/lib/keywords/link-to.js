@@ -278,6 +278,7 @@ import merge from "ember-metal/merge";
   @param [options] {Object} Handlebars key/value pairs of options, you can override any property of Ember.LinkView
   @return {String} HTML string
   @see {Ember.LinkView}
+  @public
 */
 export default {
   link(state, params, hash) {
@@ -314,4 +315,5 @@ export default {
   @param {String} routeName
   @param {Object} [context]*
   @return {String} HTML string
+  @private
 */

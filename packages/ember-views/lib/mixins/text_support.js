@@ -145,6 +145,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @property action
     @type String
     @default null
+    @private
   */
   action: null,
 
@@ -159,6 +160,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @property onEvent
     @type String
     @default enter
+    @private
   */
   onEvent: 'enter',
 
@@ -176,6 +178,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @property bubbles
     @type Boolean
     @default false
+    @private
   */
   bubbles: false,
 
@@ -209,6 +212,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method insertNewline
     @param {Event} event
+    @private
   */
   insertNewline(event) {
     sendAction('enter', this, event);
@@ -226,6 +230,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method cancel
     @param {Event} event
+    @private
   */
   cancel(event) {
     sendAction('escape-press', this, event);
@@ -242,6 +247,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method focusIn
     @param {Event} event
+    @private
   */
   focusIn(event) {
     sendAction('focus-in', this, event);
@@ -258,6 +264,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method focusOut
     @param {Event} event
+    @private
   */
   focusOut(event) {
     this._elementValueDidChange(event);
@@ -275,6 +282,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method keyPress
     @param {Event} event
+    @private
   */
   keyPress(event) {
     sendAction('key-press', this, event);
@@ -291,6 +299,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method keyUp
     @param {Event} event
+    @private
   */
   keyUp(event) {
     this.interpretKeyEvents(event);
@@ -309,6 +318,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
     @method keyDown
     @param {Event} event
+    @private
   */
   keyDown(event) {
     this.sendAction('key-down', get(this, 'value'), event);

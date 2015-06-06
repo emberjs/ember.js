@@ -66,6 +66,7 @@ function K() { return this; }
   @namespace Ember
   @extends Ember.Object
   @uses Ember.MutableArray
+  @private
 */
 var ArrayProxy = EmberObject.extend(MutableArray, {
 
@@ -75,6 +76,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
     @property content
     @type Ember.Array
+    @private
   */
   content: null,
 
@@ -84,6 +86,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
    can override this property to provide things like sorting and filtering.
 
    @property arrangedContent
+   @private
   */
   arrangedContent: alias('content'),
 
@@ -97,6 +100,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @method objectAtContent
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
+    @private
   */
   objectAtContent(idx) {
     return get(this, 'arrangedContent').objectAt(idx);
@@ -115,6 +119,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @param {Array} objects Optional array of objects to insert or null if no
       objects.
     @return {void}
+    @private
   */
   replaceContent(idx, amt, objects) {
     get(this, 'content').replace(idx, amt, objects);
@@ -151,7 +156,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @param {Number} start starting index of the change
     @param {Number} removeCount count of items removed
     @param {Number} addCount count of items added
-
+    @private
   */
   contentArrayWillChange: K,
   /**
@@ -163,6 +168,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @param {Number} start starting index of the change
     @param {Number} removeCount count of items removed
     @param {Number} addCount count of items added
+    @private
   */
   contentArrayDidChange: K,
 

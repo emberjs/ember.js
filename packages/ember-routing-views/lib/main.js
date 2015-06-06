@@ -1,9 +1,6 @@
 /**
-Ember Routing Views
-
 @module ember
 @submodule ember-routing-views
-@requires ember-routing
 */
 
 import Ember from "ember-metal/core";
