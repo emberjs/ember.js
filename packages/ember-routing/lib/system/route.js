@@ -115,11 +115,17 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var controllerDefinedQueryParameterConfiguration = get(controllerProto, 'queryParams');
       var normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
-
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
 
+      if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+        if (controllerDefinedQueryParameterConfiguration.length) {
+          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
+        }
+      }
+
+
     } else if (hasRouterDefinedQueryParams) {
-      // the developer has not defined a controller but has supplied route query params.
+      // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
       var generatedControllerClass = generateControllerFactory(this.container, controllerName);
       controllerProto = generatedControllerClass.proto();
@@ -142,16 +148,17 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var desc = combinedQueryParameterConfiguration[propName];
 
-      // apply default values to controllers
-      // detect that default value defined on router config
-      if (desc.hasOwnProperty('defaultValue')) {
-        // detect that property was not defined on controller
-        if (controllerProto[propName] === undefined) {
-          controllerProto[propName] = desc.defaultValue;
+      if (Ember.FEATURES['ember-routing-route-configured-query-params']) {
+        // apply default values to controllers
+        // detect that default value defined on router config
+        if (desc.hasOwnProperty('defaultValue')) {
+          // detect that property was not defined on controller
+          if (controllerProto[propName] === undefined) {
+            controllerProto[propName] = desc.defaultValue;
+          } else {
+            deprecateQueryParamDefaultValuesSetOnController(controllerName, this.routeName, propName);
+          }
         }
-        // else { TODO
-        //   // the default value was set both on route and controller. Throw error;
-        // }
       }
 
       var scope = desc.scope || 'model';
@@ -2166,14 +2173,21 @@ function copyDefaultValue(value) {
   the existing objects.
 */
 function mergeEachQueryParams(controllerQP, routeQP) {
-  var keysMerged = {};
-
-  // needs to be an Ember.Object to support
-  // getting a query params property unknownProperty.
-  // It'd be great to deprecate this for 2.0
+  var keysAlreadyMergedOrSkippable;
   var qps = {};
 
-  // first loop over all controller qps, merging them any matching route qps
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    keysAlreadyMergedOrSkippable = {};
+  } else {
+    keysAlreadyMergedOrSkippable = {
+      defaultValue: true,
+      type: true,
+      scope: true,
+      as: true
+    };
+  }
+
+  // first loop over all controller qps, merging them with any matching route qps
   // into a new empty object to avoid mutating.
   for (var cqpName in controllerQP) {
     if (!controllerQP.hasOwnProperty(cqpName)) { continue; }
@@ -2184,13 +2198,13 @@ function mergeEachQueryParams(controllerQP, routeQP) {
     qps[cqpName] = newControllerParameterConfiguration;
 
     // allows us to skip this QP when we check route QPs.
-    keysMerged[cqpName] = true;
+    keysAlreadyMergedOrSkippable[cqpName] = true;
   }
 
   // loop over all route qps, skipping those that were merged in the first pass
   // because they also appear in controller qps
   for (var rqpName in routeQP) {
-    if (!routeQP.hasOwnProperty(rqpName) || keysMerged[rqpName]) { continue; }
+    if (!routeQP.hasOwnProperty(rqpName) || keysAlreadyMergedOrSkippable[rqpName]) { continue; }
 
     var newRouteParameterConfiguration = {};
     merge(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
@@ -2204,6 +2218,10 @@ function addQueryParamsObservers(controller, propNames) {
   forEach(propNames, function(prop) {
     controller.addObserver(prop + '.[]', controller, controller._qpChanged);
   });
+}
+
+function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeName, propName) {
+  Ember.deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`);
 }
 
 export default Route;
