@@ -111,6 +111,7 @@ function validateAction(component, actionName) {
   @class Component
   @namespace Ember
   @extends Ember.View
+  @public
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   isComponent: true,
@@ -152,6 +153,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property template
+  @public
   */
   template: computed('_template', {
     get() {
@@ -187,6 +189,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property templateName
+  @public
   */
   templateName: null,
 
@@ -197,6 +200,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @property targetObject
     @type Ember.Controller
     @default null
+    @private
   */
   targetObject: computed('controller', function(key) {
     if (this._targetObject) { return this._targetObject; }
@@ -284,6 +288,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @method sendAction
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
+    @public
   */
   sendAction(action, ...contexts) {
     var actionName;

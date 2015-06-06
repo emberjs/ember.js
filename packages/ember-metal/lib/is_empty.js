@@ -23,6 +23,7 @@ import isNone from 'ember-metal/is_none';
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
+  @public
 */
 function isEmpty(obj) {
   var none = isNone(obj);

@@ -532,6 +532,7 @@ export function wrap(func, superFunc) {
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
   @return {Boolean}
+  @private
 */
 function canInvoke(obj, methodName) {
   return !!(obj && typeof obj[methodName] === 'function');
@@ -555,6 +556,7 @@ function canInvoke(obj, methodName) {
   @param {String} methodName The method name to check for
   @param {Array} [args] The arguments to pass to the method
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
+  @public
 */
 export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
@@ -604,6 +606,7 @@ var needsFinallyFix = (function() {
   @return {*} The return value is the that of the finalizer,
   unless that value is undefined, in which case it is the return value
   of the tryable
+  @private
 */
 
 var tryFinally;
@@ -687,6 +690,7 @@ var deprecatedTryFinally = function() {
   @return {*} The return value is the that of the finalizer,
   unless that value is undefined, in which case it is the return value
   of the tryable.
+  @private
 */
 var tryCatchFinally;
 if (needsFinallyFix) {
@@ -769,6 +773,7 @@ var isArray = Array.isArray || function(value) {
   @for Ember
   @param {Object} obj the object
   @return {Array}
+  @private
 */
 export function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
@@ -787,6 +792,7 @@ export function makeArray(obj) {
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
   @since 1.4.0
+  @private
 */
 export function inspect(obj) {
   if (obj === null) {
@@ -832,6 +838,7 @@ export function inspect(obj) {
   @param {Object} t target
   @param {Function} m method
   @param {Array} a args
+  @private
 */
 export function apply(t, m, a) {
   var l = a && a.length;
@@ -850,6 +857,7 @@ export function apply(t, m, a) {
   @param {Object} t target
   @param {String} m method
   @param {Array} a args
+  @private
 */
 export function applyStr(t, m, a) {
   var l = a && a.length;

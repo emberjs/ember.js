@@ -18,6 +18,7 @@ export default SubArray;
 
   @class SubArray
   @namespace Ember
+  @private
 */
 function SubArray(length) {
   if (arguments.length < 1) { length = 0; }
@@ -40,6 +41,7 @@ SubArray.prototype = {
     @param {Boolean} match `true` iff the item is included in the subarray.
 
     @return {number} The index of the item in the subarray.
+    @private
   */
   addItem(index, match) {
     var returnValue = -1;
@@ -93,6 +95,7 @@ SubArray.prototype = {
 
     @return {number} The index of the item in the subarray, or `-1` if the item
     was not in the subarray.
+    @private
   */
   removeItem(index) {
     var returnValue = -1;

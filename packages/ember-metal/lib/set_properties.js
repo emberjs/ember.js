@@ -21,6 +21,7 @@ import keys from "ember-metal/keys";
   @param obj
   @param {Object} properties
   @return obj
+  @public
 */
 export default function setProperties(obj, properties) {
   if (!properties || typeof properties !== "object") { return obj; }

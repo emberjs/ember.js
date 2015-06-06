@@ -42,14 +42,17 @@ App.SaveButtonView = Ember.View.extend(Ember.ViewTargetActionSupport, {
 @class ViewTargetActionSupport
 @namespace Ember
 @extends Ember.TargetActionSupport
+@private
 */
 export default Mixin.create(TargetActionSupport, {
   /**
-  @property target
+   @property target
+   @private
   */
   target: alias('controller'),
   /**
-  @property actionContext
+   @property actionContext
+   @private
   */
   actionContext: alias('context')
 });

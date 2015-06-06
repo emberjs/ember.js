@@ -48,6 +48,7 @@ export let UNHANDLED_GET = symbol("UNHANDLED_GET");
   @param {Object} obj The object to retrieve from.
   @param {String} keyName The property key to retrieve
   @return {Object} the property value or `null`.
+  @public
 */
 export function get(obj, keyName) {
   // Helpers that operate with 'this' within an #each

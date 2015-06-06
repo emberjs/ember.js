@@ -10,11 +10,8 @@ import QUnitAdapter from "ember-testing/adapters/qunit";
 import "ember-testing/helpers";      // adds helpers to helpers object in Test
 
 /**
-  Ember Testing
-
   @module ember
   @submodule ember-testing
-  @requires ember-application
 */
 
 Ember.Test = Test;

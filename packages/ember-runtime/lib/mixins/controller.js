@@ -11,6 +11,7 @@ import ControllerContentModelAliasDeprecation from "ember-runtime/mixins/control
   @class ControllerMixin
   @namespace Ember
   @uses Ember.ActionHandler
+  @private
 */
 export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecation, {
   /* ducktype as a controller */
@@ -33,6 +34,7 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
 
     @property target
     @default null
+    @private
   */
   target: null,
 
@@ -53,9 +55,7 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
 
   /**
     @private
-   */
+  */
   content: alias('model')
 
 });
-
-

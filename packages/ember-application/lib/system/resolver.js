@@ -17,7 +17,7 @@ import helpers from 'ember-htmlbars/helpers';
 import validateType from 'ember-application/utils/validate-type';
 
 export var Resolver = EmberObject.extend({
-  /**
+  /*
     This will be set to the Application instance when it is
     created.
 
@@ -102,6 +102,7 @@ export var Resolver = EmberObject.extend({
   @class DefaultResolver
   @namespace Ember
   @extends Ember.Object
+  @public
 */
 import dictionary from 'ember-metal/dictionary';
 
@@ -111,6 +112,7 @@ export default EmberObject.extend({
     created.
 
     @property namespace
+    @public
   */
   namespace: null,
 
@@ -157,6 +159,7 @@ export default EmberObject.extend({
     @method resolve
     @param {String} fullName the lookup string
     @return {Object} the resolved factory
+    @public
   */
   resolve(fullName) {
     var parsedName = this.parseName(fullName);
@@ -188,6 +191,7 @@ export default EmberObject.extend({
     @protected
     @param {String} fullName the lookup string
     @method parseName
+    @public
   */
 
   parseName(fullName) {
@@ -242,6 +246,7 @@ export default EmberObject.extend({
     @protected
     @param {String} fullName the lookup string
     @method lookupDescription
+    @public
   */
   lookupDescription(fullName) {
     var parsedName = this.parseName(fullName);
@@ -272,6 +277,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method useRouterNaming
+    @public
   */
   useRouterNaming(parsedName) {
     parsedName.name = parsedName.name.replace(/\./g, '_');
@@ -286,6 +292,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveTemplate
+    @public
   */
   resolveTemplate(parsedName) {
     var templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
@@ -307,6 +314,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveView
+    @public
   */
   resolveView(parsedName) {
     this.useRouterNaming(parsedName);
@@ -320,6 +328,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveController
+    @public
   */
   resolveController(parsedName) {
     this.useRouterNaming(parsedName);
@@ -332,6 +341,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveRoute
+    @public
   */
   resolveRoute(parsedName) {
     this.useRouterNaming(parsedName);
@@ -345,6 +355,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveModel
+    @public
   */
   resolveModel(parsedName) {
     var className = classify(parsedName.name);
@@ -360,6 +371,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveHelper
+    @public
   */
   resolveHelper(parsedName) {
     return this.resolveOther(parsedName) || helpers[parsedName.fullNameWithoutType];
@@ -372,6 +384,7 @@ export default EmberObject.extend({
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveOther
+    @public
   */
   resolveOther(parsedName) {
     var className = classify(parsedName.name) + classify(parsedName.type);

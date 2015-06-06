@@ -34,6 +34,7 @@ import {
   @class AutoLocation
   @namespace Ember
   @static
+  @private
 */
 export default EmberObject.extend({
   /**
@@ -109,6 +110,8 @@ export default EmberObject.extend({
    Called by the router to instruct the location to do any feature detection
    necessary. In the case of AutoLocation, we detect whether to use history
    or hash concrete implementations.
+
+   @private
   */
   detect() {
     var rootURL = this.rootURL;
@@ -160,7 +163,7 @@ function delegateToConcreteImplementation(methodName) {
   };
 }
 
-/**
+/*
   Given the browser's `location`, `history` and `userAgent`, and a configured
   root URL, this function detects whether the browser supports the [History
   API](https://developer.mozilla.org/en-US/docs/Web/API/History) and returns a

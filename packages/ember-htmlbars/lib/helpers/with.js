@@ -36,6 +36,7 @@ import shouldDisplay from "ember-views/streams/should_display";
   @for Ember.Handlebars.helpers
   @param {Object} options
   @return {String} HTML string
+  @public
 */
 
 export default function withHelper(params, hash, options) {

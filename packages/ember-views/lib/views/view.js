@@ -53,6 +53,7 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
   @property TEMPLATES
   @for Ember
   @type Object
+  @private
 */
 Ember.TEMPLATES = {};
 
@@ -667,6 +668,7 @@ Ember.TEMPLATES = {};
   @uses Ember.InstrumentationSupport
   @uses Ember.VisibilitySupport
   @uses Ember.AriaRoleSupport
+  @public
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
@@ -687,6 +689,7 @@ var View = CoreView.extend(
     @type Boolean
     @default true
     @static
+    @private
   */
   isView: true,
 
@@ -703,6 +706,7 @@ var View = CoreView.extend(
     @property templateName
     @type String
     @default null
+    @private
   */
   templateName: null,
 
@@ -715,6 +719,7 @@ var View = CoreView.extend(
     @property layoutName
     @type String
     @default null
+    @private
   */
   layoutName: null,
 
@@ -728,6 +733,7 @@ var View = CoreView.extend(
 
     @property template
     @type Function
+    @private
   */
 
   template: computed('templateName', {
@@ -756,7 +762,8 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-    */
+    @private
+  */
   layout: computed('layoutName', {
     get(key) {
       var layoutName = get(this, 'layoutName');
@@ -791,6 +798,7 @@ var View = CoreView.extend(
 
     @method _contextDidChange
     @private
+    @private
   */
   _contextDidChange: observer('context', function() {
     this.rerender();
@@ -804,6 +812,7 @@ var View = CoreView.extend(
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
            or an instance of Ember.Mixin.
     @return Ember.View
+    @private
   */
   nearestOfType(klass) {
     var view = get(this, 'parentView');
@@ -823,6 +832,7 @@ var View = CoreView.extend(
     @method nearestWithProperty
     @param {String} property A property name
     @return Ember.View
+    @private
   */
   nearestWithProperty(property) {
     var view = get(this, 'parentView');
@@ -848,6 +858,7 @@ var View = CoreView.extend(
     be slow.
 
     @method rerender
+    @public
   */
   rerender() {
     return this.currentState.rerender(this);
@@ -890,6 +901,7 @@ var View = CoreView.extend(
 
     @property element
     @type DOMElement
+    @public
   */
   element: null,
 
@@ -904,6 +916,7 @@ var View = CoreView.extend(
     @method $
     @param {String} [selector] a jQuery-compatible selector string
     @return {jQuery} the jQuery object for the DOM node
+    @public
   */
   $(sel) {
     Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
@@ -945,6 +958,7 @@ var View = CoreView.extend(
     @method appendTo
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @return {Ember.View} receiver
+    @private
   */
   appendTo(selector) {
     var target = jQuery(selector);
@@ -999,6 +1013,7 @@ var View = CoreView.extend(
     @method renderToElement
     @param {String} tagName The tag of the element to create and render into. Defaults to "body".
     @return {HTMLBodyElement} element
+    @private
   */
   renderToElement(tagName) {
     tagName = tagName || 'body';
@@ -1021,6 +1036,7 @@ var View = CoreView.extend(
     @method replaceIn
     @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
+    @private
   */
   replaceIn(selector) {
     var target = jQuery(selector);
@@ -1048,6 +1064,7 @@ var View = CoreView.extend(
 
     @method append
     @return {Ember.View} receiver
+    @private
   */
   append() {
     return this.appendTo(document.body);
@@ -1058,6 +1075,7 @@ var View = CoreView.extend(
 
     @method remove
     @return {Ember.View} receiver
+    @private
   */
   remove() {
     // What we should really do here is wait until the end of the run loop
@@ -1097,6 +1115,7 @@ var View = CoreView.extend(
 
     @property elementId
     @type String
+    @public
   */
   elementId: null,
 
@@ -1110,6 +1129,7 @@ var View = CoreView.extend(
     @method findElementInParentElement
     @param {DOMElement} parentElement The parent's DOM element
     @return {DOMElement} The discovered element
+    @private
   */
   findElementInParentElement(parentElem) {
     var id = "#" + this.elementId;
@@ -1126,6 +1146,7 @@ var View = CoreView.extend(
 
     @method createElement
     @return {Ember.View} receiver
+    @private
   */
   createElement() {
     if (this.element) { return this; }
@@ -1139,6 +1160,7 @@ var View = CoreView.extend(
     Called when a view is going to insert an element into the DOM.
 
     @event willInsertElement
+    @public
   */
   willInsertElement: K,
 
@@ -1151,6 +1173,7 @@ var View = CoreView.extend(
     child view(s) first, bubbling upwards through the hierarchy.
 
     @event didInsertElement
+    @public
   */
   didInsertElement: K,
 
@@ -1160,6 +1183,7 @@ var View = CoreView.extend(
     observers you have installed based on the DOM state
 
     @event willClearRender
+    @public
   */
   willClearRender: K,
 
@@ -1180,6 +1204,7 @@ var View = CoreView.extend(
 
     @method destroyElement
     @return {Ember.View} receiver
+    @private
   */
   destroyElement() {
     return this.currentState.destroyElement(this);
@@ -1194,6 +1219,7 @@ var View = CoreView.extend(
     effect on object observers.
 
     @event willDestroyElement
+    @public
   */
   willDestroyElement: K,
 
@@ -1201,6 +1227,7 @@ var View = CoreView.extend(
     Called when the parentView property has changed.
 
     @event parentViewDidChange
+    @private
   */
   parentViewDidChange: K,
 
@@ -1218,6 +1245,7 @@ var View = CoreView.extend(
     @property tagName
     @type String
     @default null
+    @public
   */
 
   // We leave this null by default so we can tell the difference between
@@ -1262,6 +1290,7 @@ var View = CoreView.extend(
     @method readDOMAttr
     @param {String} name the name of the attribute
     @return String
+    @public
   */
   readDOMAttr(name) {
     let attr = this._renderNode.childNodes.filter(node => node.attrName === name)[0];
@@ -1337,6 +1366,7 @@ var View = CoreView.extend(
 
     @method removeFromParent
     @return {Ember.View} receiver
+    @private
   */
   removeFromParent() {
     var parent = this.parentView;
@@ -1355,6 +1385,7 @@ var View = CoreView.extend(
     memory manager.
 
     @method destroy
+    @private
   */
   destroy() {
     // get parentView before calling super because it'll be destroyed
@@ -1501,6 +1532,7 @@ View.notifyMutationListeners = function() {
   @property views
   @static
   @type Object
+  @private
 */
 View.views = {};
 

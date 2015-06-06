@@ -8,6 +8,7 @@ import { inspect } from "ember-metal/utils";
   @class QUnitAdapter
   @namespace Ember.Test
   @extends Ember.Test.Adapter
+  @public
 */
 export default Adapter.extend({
   asyncStart() {

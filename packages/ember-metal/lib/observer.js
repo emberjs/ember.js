@@ -32,6 +32,7 @@ function beforeEvent(keyName) {
   @param {String} _path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @public
 */
 export function addObserver(obj, _path, target, method) {
   addListener(obj, changeEvent(_path), target, method);
@@ -51,6 +52,7 @@ export function observersFor(obj, path) {
   @param {String} path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @public
 */
 export function removeObserver(obj, path, target, method) {
   unwatch(obj, path);
@@ -66,6 +68,7 @@ export function removeObserver(obj, path, target, method) {
   @param {String} path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @private
 */
 export function addBeforeObserver(obj, path, target, method) {
   addListener(obj, beforeEvent(path), target, method);
@@ -107,6 +110,7 @@ export function beforeObserversFor(obj, path) {
   @param {String} path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @private
 */
 export function removeBeforeObserver(obj, path, target, method) {
   unwatch(obj, path);

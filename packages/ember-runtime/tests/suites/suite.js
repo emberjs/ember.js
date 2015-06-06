@@ -5,7 +5,7 @@ import {
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
 
-/**
+/*
   @class
   A Suite can be used to define a reusable set of unit tests that can be
   applied to any object.  Suites are most useful for defining tests that
@@ -38,7 +38,7 @@ import { forEach } from "ember-metal/enumerable_utils";
 */
 var Suite = EmberObject.extend({
 
-  /**
+  /*
     __Required.__ You must implement this method to apply this mixin.
 
     Define a name for these tests - all modules are prefixed w/ it.
@@ -47,7 +47,7 @@ var Suite = EmberObject.extend({
   */
   name: null,
 
-  /**
+  /*
     Invoked to actually run the test - overridden by mixins
   */
   run() {}

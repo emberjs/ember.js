@@ -1,9 +1,6 @@
 /**
-Ember Runtime
-
 @module ember
 @submodule ember-runtime
-@requires ember-metal
 */
 
 // BEGIN IMPORTS

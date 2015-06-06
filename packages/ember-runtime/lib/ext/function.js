@@ -70,6 +70,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method property
     @for Function
+    @public
   */
   FunctionPrototype.property = function () {
     var ret = computed(this);
@@ -102,6 +103,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method observes
     @for Function
+    @public
   */
   FunctionPrototype.observes = function(...args) {
     args.push(this);
@@ -132,6 +134,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method observesImmediately
     @for Function
+    @private
   */
   FunctionPrototype.observesImmediately = function () {
     Ember.assert('Immediate observers must observe internal properties only, ' +
@@ -169,6 +172,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method observesBefore
     @for Function
+    @private
   */
   FunctionPrototype.observesBefore = function () {
     var watched = [];
@@ -205,6 +209,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method on
     @for Function
+    @public
   */
   FunctionPrototype.on = function () {
     var events = a_slice.call(arguments);

@@ -101,6 +101,7 @@ import EmberArray from 'ember-runtime/mixins/array';
   @extends Ember.ArrayProxy
   @uses Ember.SortableMixin
   @uses Ember.ControllerMixin
+  @public
 */
 
 export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
@@ -119,6 +120,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     @property itemController
     @type String
     @default null
+    @private
   */
   itemController: null,
 
@@ -145,6 +147,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     @method lookupItemController
     @param {Object} object
     @return {String}
+    @private
   */
   lookupItemController(object) {
     return get(this, 'itemController');
@@ -220,13 +223,13 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   }),
 
   /**
-   * Flag to mark as being "virtual". Used to keep this instance
-   * from participating in the parentController hierarchy.
-   *
-   * @private
-   * @property _isVirtual
-   * @type Boolean
-   */
+    Flag to mark as being "virtual". Used to keep this instance
+    from participating in the parentController hierarchy.
+
+    @private
+    @property _isVirtual
+    @type Boolean
+  */
   _isVirtual: false,
 
   controllerAt(idx, object, controllerClass) {

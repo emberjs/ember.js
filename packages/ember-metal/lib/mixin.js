@@ -486,6 +486,7 @@ function applyMixin(obj, mixins, partial) {
   @param obj
   @param mixins*
   @return obj
+  @private
 */
 export function mixin(obj, ...args) {
   applyMixin(obj, args, false);
@@ -545,6 +546,7 @@ export function mixin(obj, ...args) {
 
   @class Mixin
   @namespace Ember
+  @public
 */
 export default Mixin;
 function Mixin(args, properties) {
@@ -587,6 +589,7 @@ Ember.anyUnprocessedMixins = false;
   @method create
   @static
   @param arguments*
+  @public
 */
 Mixin.create = function(...args) {
   // ES6TODO: this relies on a global state?
@@ -600,6 +603,7 @@ var MixinPrototype = Mixin.prototype;
 /**
   @method reopen
   @param arguments*
+  @private
 */
 MixinPrototype.reopen = function() {
   var currentMixin;
@@ -636,6 +640,7 @@ MixinPrototype.reopen = function() {
   @method apply
   @param obj
   @return applied object
+  @private
 */
 MixinPrototype.apply = function(obj) {
   return applyMixin(obj, [this], false);
@@ -664,6 +669,7 @@ function _detect(curMixin, targetMixin, seen) {
   @method detect
   @param obj
   @return {Boolean}
+  @private
 */
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
@@ -738,6 +744,7 @@ REQUIRED.toString = function() { return '(Required Property)'; };
 
   @method required
   @for Ember
+  @private
 */
 export function required() {
   Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false);
@@ -771,6 +778,7 @@ Alias.prototype = new Descriptor();
   @method aliasMethod
   @for Ember
   @param {String} methodName name of the method to alias
+  @private
 */
 export function aliasMethod(methodName) {
   return new Alias(methodName);
@@ -802,6 +810,7 @@ export function aliasMethod(methodName) {
   @param {String} propertyNames*
   @param {Function} func
   @return func
+  @private
 */
 export function observer(...args) {
   var func  = args.slice(-1)[0];
@@ -853,6 +862,7 @@ export function observer(...args) {
   @param {String} propertyNames*
   @param {Function} func
   @return func
+  @private
 */
 export function immediateObserver() {
   for (var i=0, l=arguments.length; i<l; i++) {
@@ -905,6 +915,7 @@ export function immediateObserver() {
   @param {String} propertyNames*
   @param {Function} func
   @return func
+  @private
 */
 export function beforeObserver(...args) {
   var func  = args.slice(-1)[0];

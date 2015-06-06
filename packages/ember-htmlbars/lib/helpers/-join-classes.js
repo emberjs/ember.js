@@ -1,5 +1,7 @@
-/** @private
+/*
   this private helper is used to join and compact a list of class names
+
+  @private
 */
 
 export default function joinClasses(classNames) {
@@ -14,5 +16,3 @@ export default function joinClasses(classNames) {
 
   return result.join(' ');
 }
-
-

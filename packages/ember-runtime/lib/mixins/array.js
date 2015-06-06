@@ -86,6 +86,7 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   @namespace Ember
   @uses Ember.Enumerable
   @since Ember 0.9.0
+  @public
 */
 export default Mixin.create(Enumerable, {
 
@@ -96,6 +97,7 @@ export default Mixin.create(Enumerable, {
     set this property whenever it changes.
 
     @property {Number} length
+    @public
   */
   length: null,
 
@@ -121,6 +123,7 @@ export default Mixin.create(Enumerable, {
     @method objectAt
     @param {Number} idx The index of the item to return.
     @return {*} item at index or undefined
+    @public
   */
   objectAt(idx) {
     if (idx < 0 || idx >= get(this, 'length')) {
@@ -143,6 +146,7 @@ export default Mixin.create(Enumerable, {
     @method objectsAt
     @param {Array} indexes An array of indexes of items to return.
     @return {Array}
+    @public
    */
   objectsAt(indexes) {
     var self = this;
@@ -166,6 +170,7 @@ export default Mixin.create(Enumerable, {
 
     @property []
     @return this
+    @public
   */
   '[]': computed({
     get(key) {
@@ -208,6 +213,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} beginIndex (Optional) index to begin slicing from.
     @param {Number} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
+    @public
   */
   slice(beginIndex, endIndex) {
     var ret = Ember.A();
@@ -257,6 +263,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} object the item to search for
     @param {Number} startAt optional starting location to search, default 0
     @return {Number} index or -1 if not found
+    @public
   */
   indexOf(object, startAt) {
     var len = get(this, 'length');
@@ -300,6 +307,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} object the item to search for
     @param {Number} startAt optional starting location to search, default 0
     @return {Number} index or -1 if not found
+    @public
   */
   lastIndexOf(object, startAt) {
     var len = get(this, 'length');
@@ -349,6 +357,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
+    @public
   */
 
   addArrayObserver(target, opts) {
@@ -365,6 +374,7 @@ export default Mixin.create(Enumerable, {
     @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
+    @public
   */
   removeArrayObserver(target, opts) {
     return arrayObserversHelper(this, target, opts, removeListener, true);
@@ -375,6 +385,7 @@ export default Mixin.create(Enumerable, {
     on the array.
 
     @property {Boolean} hasArrayObservers
+    @public
   */
   hasArrayObservers: computed(function() {
     return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
@@ -393,6 +404,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} addAmt The number of items that will be added. If you
       pass `null` assumes 0.
     @return {Ember.Array} receiver
+    @public
   */
   arrayContentWillChange(startIdx, removeAmt, addAmt) {
     var removing, lim;
@@ -447,6 +459,7 @@ export default Mixin.create(Enumerable, {
     @param {Number} addAmt The number of items that were added. If you
       pass `null` assumes 0.
     @return {Ember.Array} receiver
+    @public
   */
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
     var adding, lim;
@@ -510,6 +523,7 @@ export default Mixin.create(Enumerable, {
     use the `[]` property instead of `@each`.
 
     @property @each
+    @public
   */
   '@each': computed(function() {
     if (!this.__each) {

@@ -34,6 +34,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
   @namespace Ember
   @extends Ember.View
   @see {Handlebars.helpers.link-to}
+  @private
 **/
 var LinkComponent = EmberComponent.extend({
   defaultLayout: linkToTemplate,
@@ -43,6 +44,7 @@ var LinkComponent = EmberComponent.extend({
   /**
     @deprecated Use current-when instead.
     @property currentWhen
+    @private
   */
   currentWhen: null,
 
@@ -50,6 +52,7 @@ var LinkComponent = EmberComponent.extend({
     Used to determine when this LinkView is active.
 
     @property currentWhen
+    @private
   */
   'current-when': null,
 
@@ -58,6 +61,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property title
     @default null
+    @private
   **/
   title: null,
 
@@ -66,6 +70,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property rel
     @default null
+    @private
   **/
   rel: null,
 
@@ -74,6 +79,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property tabindex
     @default null
+    @private
   **/
   tabindex: null,
 
@@ -83,6 +89,7 @@ var LinkComponent = EmberComponent.extend({
     @since 1.8.0
     @property target
     @default null
+    @private
   **/
   target: null,
 
@@ -93,6 +100,7 @@ var LinkComponent = EmberComponent.extend({
     @property activeClass
     @type String
     @default active
+    @private
   **/
   activeClass: 'active',
 
@@ -103,6 +111,7 @@ var LinkComponent = EmberComponent.extend({
     @property loadingClass
     @type String
     @default loading
+    @private
   **/
   loadingClass: 'loading',
 
@@ -113,6 +122,7 @@ var LinkComponent = EmberComponent.extend({
     @property disabledClass
     @type String
     @default disabled
+    @private
   **/
   disabledClass: 'disabled',
   _isDisabled: false,
@@ -124,6 +134,7 @@ var LinkComponent = EmberComponent.extend({
     @property replace
     @type Boolean
     @default false
+    @private
   **/
   replace: false,
 
@@ -135,7 +146,8 @@ var LinkComponent = EmberComponent.extend({
     @property attributeBindings
     @type Array | String
     @default ['title', 'rel', 'tabindex', 'target']
-   **/
+     @private
+  */
   attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
   /**
@@ -145,7 +157,8 @@ var LinkComponent = EmberComponent.extend({
     @property classNameBindings
     @type Array
     @default ['active', 'loading', 'disabled']
-   **/
+     @private
+  */
   classNameBindings: linkViewClassNameBindings,
 
   /**
@@ -159,6 +172,7 @@ var LinkComponent = EmberComponent.extend({
     @property eventName
     @type String
     @default click
+    @private
   */
   eventName: 'click',
 
@@ -172,7 +186,8 @@ var LinkComponent = EmberComponent.extend({
     instead.
 
     @event click
-  **/
+    @private
+  */
 
   /**
     An overridable method called when LinkView objects are instantiated.
@@ -195,6 +210,7 @@ var LinkComponent = EmberComponent.extend({
     application.
 
     @method init
+    @private
   */
   init() {
     this._super(...arguments);
@@ -214,6 +230,7 @@ var LinkComponent = EmberComponent.extend({
 
     When `true` interactions with the element will not trigger route changes.
     @property disabled
+    @private
   */
   disabled: computed({
     get(key, value) {
@@ -238,7 +255,8 @@ var LinkComponent = EmberComponent.extend({
     route names using the ` ` (space) character.
 
     @property active
-  **/
+    @private
+  */
   active: computed('attrs.params', '_routing.currentState', function computeLinkViewActive() {
     var currentState = get(this, '_routing.currentState');
     return computeActive(this, currentState);
@@ -272,6 +290,7 @@ var LinkComponent = EmberComponent.extend({
     @private
     @method _invoke
     @param {Event} event
+    @private
   */
   _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
@@ -310,7 +329,8 @@ var LinkComponent = EmberComponent.extend({
     than `a`, this property will be ignored.
 
     @property href
-  **/
+    @private
+  */
   href: computed('models', 'targetRouteName', '_routing.currentState', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
@@ -339,6 +359,7 @@ var LinkComponent = EmberComponent.extend({
     @property loadingHref
     @type String
     @default #
+    @private
   */
   loadingHref: '#',
 

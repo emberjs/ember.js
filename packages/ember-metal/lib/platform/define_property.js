@@ -4,6 +4,7 @@
 @class platform
 @namespace Ember
 @static
+@private
 */
 
 /**
@@ -11,6 +12,7 @@
 
   @property hasPropertyAccessors
   @final
+  @private
 */
 
 /**
@@ -22,6 +24,7 @@
   @param {String} keyName property name to modify
   @param {Object} desc descriptor hash
   @return {void}
+  @public
 */
 var defineProperty = (function checkCompliance(defineProperty) {
   if (!defineProperty) {

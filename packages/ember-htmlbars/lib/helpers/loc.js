@@ -30,6 +30,7 @@ import { loc } from 'ember-runtime/system/string';
   @for Ember.Handlebars.helpers
   @param {String} str The string to format
   @see {Ember.String#loc}
+  @public
 */
 export default function locHelper(params) {
   return loc.apply(null, params);

@@ -195,6 +195,7 @@ var librariesRegistered = false;
   @class Application
   @namespace Ember
   @extends Ember.Namespace
+  @public
 */
 
 var Application = Namespace.extend(DeferredMixin, {
@@ -212,6 +213,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property rootElement
     @type DOMElement
     @default 'body'
+    @public
   */
   rootElement: 'body',
 
@@ -228,6 +230,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property eventDispatcher
     @type Ember.EventDispatcher
     @default null
+    @public
   */
   eventDispatcher: null,
 
@@ -256,6 +259,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property customEvents
     @type Object
     @default null
+    @public
   */
   customEvents: null,
 
@@ -398,6 +402,7 @@ var Application = Namespace.extend(DeferredMixin, {
     to use the router for this purpose.
 
     @method deferReadiness
+    @public
   */
   deferReadiness() {
     Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Application);
@@ -412,6 +417,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @method advanceReadiness
     @see {Ember.Application#deferReadiness}
+    @public
   */
   advanceReadiness() {
     Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Application);
@@ -479,6 +485,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  fullName {String} type:name (e.g., 'model:user')
     @param  factory {Function} (e.g., App.Person)
     @param  options {Object} (optional) disable instantiation or singleton usage
+    @public
   **/
   register() {
     this.registry.register(...arguments);
@@ -532,6 +539,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  factoryNameOrType {String}
     @param  property {String}
     @param  injectionName {String}
+    @public
   **/
   inject() {
     this.registry.injection(...arguments);
@@ -651,6 +659,7 @@ var Application = Namespace.extend(DeferredMixin, {
     ```
 
     @method reset
+    @public
   **/
   reset() {
     var instance = this.__deprecatedInstance__;
@@ -740,15 +749,17 @@ var Application = Namespace.extend(DeferredMixin, {
     begins. The call will be delayed until the DOM has become ready.
 
     @event ready
+    @public
   */
   ready() { return this; },
 
   /**
-    @deprecated Use 'Resolver' instead
     Set this to provide an alternate class to `Ember.DefaultResolver`
 
 
+    @deprecated Use 'Resolver' instead
     @property resolver
+    @public
   */
   resolver: null,
 
@@ -756,6 +767,7 @@ var Application = Namespace.extend(DeferredMixin, {
     Set this to provide an alternate class to `Ember.DefaultResolver`
 
     @property resolver
+    @public
   */
   Resolver: null,
 
@@ -959,6 +971,7 @@ Application.reopenClass({
 
     @method initializer
     @param initializer {Object}
+    @public
    */
   initializer: buildInitializerMethod('initializers', 'initializer'),
 
@@ -986,6 +999,7 @@ Application.reopenClass({
     @param {Ember.Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
+    @public
   */
   buildRegistry(namespace) {
     var registry = new Registry();

@@ -1,7 +1,7 @@
 /**
- @module ember
- @submodule ember-htmlbars
- */
+@module ember
+@submodule ember-htmlbars
+*/
 
 import { findHelper } from "ember-htmlbars/system/lookup-helper";
 import { handleRedirect } from "htmlbars-runtime/hooks";

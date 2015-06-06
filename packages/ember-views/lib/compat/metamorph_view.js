@@ -7,7 +7,7 @@ import { Mixin } from "ember-metal/mixin";
 /**
  @module ember
  @submodule ember-views
- */
+*/
 
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
@@ -16,7 +16,7 @@ import { Mixin } from "ember-metal/mixin";
  @class _Metamorph
  @namespace Ember
  @private
- */
+*/
 export var _Metamorph = Mixin.create({
   tagName: '',
   __metamorphType: 'Ember._Metamorph',
@@ -38,7 +38,7 @@ export var _Metamorph = Mixin.create({
  @extends Ember.View
  @uses Ember._Metamorph
  @private
- */
+*/
 export default View.extend(_Metamorph, {
   __metamorphType: 'Ember._MetamorphView'
 });

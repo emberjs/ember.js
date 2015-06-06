@@ -9,7 +9,8 @@ import keys from "ember-metal/keys";
   @class inject
   @namespace Ember
   @static
-  */
+  @public
+*/
 function inject() {
   Ember.assert("Injected properties must be created through helpers, see `" +
                keys(inject).join("`, `") + "`");

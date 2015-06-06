@@ -47,18 +47,21 @@ Registry.prototype = {
   /**
    A backup registry for resolving registrations when no matches can be found.
 
+   @private
    @property fallback
    @type Registry
    */
   fallback: null,
 
   /**
+   @private
    @property resolver
    @type function
    */
   resolver: null,
 
   /**
+   @private
    @property registrations
    @type InheritingDict
    */
@@ -143,6 +146,7 @@ Registry.prototype = {
   /**
    Creates a container based on this registry.
 
+   @private
    @method container
    @param {Object} options
    @return {Container} created container
@@ -164,6 +168,7 @@ Registry.prototype = {
    2.0TODO: Remove this method. The bookkeeping is only needed to support
             deprecated behavior.
 
+   @private
    @param {Container} newly created container
    */
   registerContainer(container) {
@@ -208,6 +213,7 @@ Registry.prototype = {
    registry.register('communication:main', Email, {singleton: false});
    ```
 
+   @private
    @method register
    @param {String} fullName
    @param {Function} factory
@@ -244,6 +250,7 @@ Registry.prototype = {
    registry.resolve('model:user') === undefined //=> true
    ```
 
+   @private
    @method unregister
    @param {String} fullName
    */
@@ -286,6 +293,7 @@ Registry.prototype = {
    registry.resolve('api:twitter') // => Twitter
    ```
 
+   @private
    @method resolve
    @param {String} fullName
    @return {Function} fullName's factory
@@ -307,6 +315,7 @@ Registry.prototype = {
    class name (including namespace) where Ember's resolver expects
    to find the `fullName`.
 
+   @private
    @method describe
    @param {String} fullName
    @return {string} described fullName
@@ -318,6 +327,7 @@ Registry.prototype = {
   /**
    A hook to enable custom fullName normalization behaviour
 
+   @private
    @method normalizeFullName
    @param {String} fullName
    @return {string} normalized fullName
@@ -329,6 +339,7 @@ Registry.prototype = {
   /**
    normalize a fullName based on the applications conventions
 
+   @private
    @method normalize
    @param {String} fullName
    @return {string} normalized fullName
@@ -342,6 +353,7 @@ Registry.prototype = {
   /**
    @method makeToString
 
+   @private
    @param {any} factory
    @param {string} fullName
    @return {function} toString function
@@ -354,6 +366,7 @@ Registry.prototype = {
    Given a fullName check if the container is aware of its factory
    or singleton instance.
 
+   @private
    @method has
    @param {String} fullName
    @return {Boolean}
@@ -387,6 +400,7 @@ Registry.prototype = {
    facebook === facebook2; // => false
    ```
 
+   @private
    @method optionsForType
    @param {String} type
    @param {Object} options
@@ -404,6 +418,7 @@ Registry.prototype = {
   },
 
   /**
+   @private
    @method options
    @param {String} fullName
    @param {Object} options
@@ -540,6 +555,7 @@ Registry.prototype = {
    user.source === post.source; //=> true
    ```
 
+   @private
    @method injection
    @param {String} factoryName
    @param {String} property
@@ -650,6 +666,7 @@ Registry.prototype = {
    UserFactory.store === PostFactory.store; //=> true
    ```
 
+   @private
    @method factoryInjection
    @param {String} factoryName
    @param {String} property

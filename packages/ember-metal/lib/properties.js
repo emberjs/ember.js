@@ -16,6 +16,9 @@ import { overrideChains } from "ember-metal/property_events";
 /**
   Objects of this type can implement an interface to respond to requests to
   get and set. The default implementation handles simple properties.
+
+  @class Descriptor
+  @private
 */
 export function Descriptor() {
   this.isDescriptor = true;

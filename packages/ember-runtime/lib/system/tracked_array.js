@@ -16,6 +16,7 @@ export default TrackedArray;
   @namespace Ember
   @param {Array} [items=[]] The array to be tracked.  This is used just to get
   the initial items for the starting state of retain:n.
+  @private
 */
 function TrackedArray(items) {
   if (arguments.length < 1) { items = []; }
@@ -41,6 +42,7 @@ TrackedArray.prototype = {
     @method addItems
     @param index
     @param newItems
+    @private
   */
   addItems(index, newItems) {
     var count = get(newItems, 'length');
@@ -78,6 +80,7 @@ TrackedArray.prototype = {
     @method removeItems
     @param index
     @param count
+    @private
   */
   removeItems(index, count) {
     if (count < 1) { return; }
@@ -114,6 +117,7 @@ TrackedArray.prototype = {
 
     @method apply
     @param {Function} callback
+    @private
   */
   apply(callback) {
     var items = [];
@@ -297,6 +301,7 @@ TrackedArray.prototype = {
   @param {Number} count The number of items in this operation.
   @param {Array} items The items of the operation, if included.  RETAIN and
   INSERT include their items, DELETE does not.
+  @private
 */
 function ArrayOperation(operation, count, items) {
   this.type = operation; // RETAIN | INSERT | DELETE
@@ -317,6 +322,7 @@ function ArrayOperation(operation, count, items) {
   @param {Number} rangeStart The index of the first item in the operation,
   with respect to the tracked array.  The index of the last item can be computed
   from `rangeStart` and `operation.count`.
+  @private
 */
 function ArrayOperationMatch(operation, index, split, rangeStart) {
   this.operation = operation;

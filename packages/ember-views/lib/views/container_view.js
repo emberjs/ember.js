@@ -167,6 +167,7 @@ containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @class ContainerView
   @namespace Ember
   @extends Ember.View
+  @private
 */
 var ContainerView = View.extend(MutableArray, {
   willWatchProperty(prop) {
