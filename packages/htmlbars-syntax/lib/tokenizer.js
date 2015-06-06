@@ -60,7 +60,8 @@ Tokenizer.prototype.addElementModifier = function(mustache) {
     this.token.modifiers = [];
   }
 
-  var modifier = builders.elementModifier(mustache.path, mustache.params, mustache.hash);
+  let { path, params, hash, loc } = mustache;
+  var modifier = builders.elementModifier(path, params, hash, loc);
   this.token.modifiers.push(modifier);
 };
 

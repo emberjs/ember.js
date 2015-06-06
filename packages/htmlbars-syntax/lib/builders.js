@@ -1,32 +1,35 @@
 // Statements
 
-export function buildMustache(path, params, hash, raw) {
+export function buildMustache(path, params, hash, raw, loc) {
   return {
     type: "MustacheStatement",
     path: path,
     params: params || [],
     hash: hash || buildHash([]),
-    escaped: !raw
+    escaped: !raw,
+    loc: buildLoc(loc)
   };
 }
 
-export function buildBlock(path, params, hash, program, inverse) {
+export function buildBlock(path, params, hash, program, inverse, loc) {
   return {
     type: "BlockStatement",
     path: path,
     params: params || [],
     hash: hash || buildHash([]),
     program: program || null,
-    inverse: inverse || null
+    inverse: inverse || null,
+    loc: buildLoc(loc)
   };
 }
 
-export function buildElementModifier(path, params, hash) {
+export function buildElementModifier(path, params, hash, loc) {
   return {
     type: "ElementModifierStatement",
     path: path,
     params: params || [],
-    hash: hash || buildHash([])
+    hash: hash || buildHash([]),
+    loc: buildLoc(loc)
   };
 }
 
