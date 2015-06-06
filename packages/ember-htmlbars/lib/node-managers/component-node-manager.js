@@ -10,6 +10,8 @@ import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import SafeString from "htmlbars-util/safe-string";
 import { instrument } from "ember-htmlbars/system/instrumentation-support";
 import EmberComponent from "ember-views/views/component";
+import Stream from 'ember-metal/streams/stream';
+import { readArray } from 'ember-metal/streams/utils';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -97,10 +99,26 @@ function extractPositionalParams(renderNode, component, params, attrs) {
     // if the component is rendered via {{component}} helper, the first
     // element of `params` is the name of the component, so we need to
     // skip that when the positional parameters are constructed
-    let paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
-    let pp = component.positionalParams;
-    for (let i=0; i<pp.length; i++) {
-      attrs[pp[i]] = params[paramsStartIndex + i];
+    const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
+    const positionalParams = component.positionalParams;
+    const isNamed = typeof positionalParams === 'string';
+    let paramsStream;
+
+    if (isNamed) {
+      paramsStream = new Stream(() => {
+        return readArray(params.slice(paramsStartIndex));
+      }, 'params');
+
+      attrs[positionalParams] = paramsStream;
+    }
+
+    for (let i=0; i < positionalParams.length; i++) {
+      let param = params[paramsStartIndex + i];
+      if (isNamed) {
+        paramsStream.addDependency(param);
+      } else {
+        attrs[positionalParams[i]] = param;
+      }
     }
   }
 }
