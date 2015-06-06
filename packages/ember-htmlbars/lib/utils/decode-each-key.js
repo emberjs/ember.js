@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { guidFor } from "ember-metal/utils";
 
@@ -15,7 +16,12 @@ export default function decodeEachKey(item, keyPath, index) {
     key = item;
     break;
   default:
-    key = keyPath ? get(item, keyPath) : index;
+    if (keyPath) {
+      key = get(item, keyPath);
+    } else {
+      Ember.warn('Using `{{each}}` without specifying a key can lead to unusual behavior.  Please specify a `key` that identifies a unique value on each item being iterated. E.g. `{{each model key="@guid" as |item|}}`.');
+      key = index;
+    }
   }
 
   if (typeof key === 'number') {
