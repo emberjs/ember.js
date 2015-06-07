@@ -85,3 +85,22 @@ test("html elements", function() {
   locEqual(div, 4, 6, 6, 12, 'div element');
   locEqual(hr, 5, 8, 5, 14, 'hr element');
 });
+
+test("components", function() {
+  var ast = parse(`
+    <el-page>
+      <el-header></el-header>
+      <el-input />
+      <el-footer>
+          </el-footer>
+    </el-page>
+  `);
+
+  let [,page] = ast.body;
+  let [,header,,input,,footer] = page.program.body;
+
+  locEqual(page, 2, 4, 7, 14, 'page component');
+  locEqual(header, 3, 6, 3, 29, 'header component');
+  locEqual(input, 4, 6, 4, 18, 'input component');
+  locEqual(footer, 5, 6, 6, 22, 'footer component');
+});
