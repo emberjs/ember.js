@@ -3,11 +3,12 @@ import { normalizeProperty } from 'dom-helper/prop';
 QUnit.module('dom-helper prop');
 
 test('returns `undefined` for special element properties that are non-compliant in certain browsers', function() {
-  expect(2);
-  
+  expect(3);
+
   var badPairs = [
     { tagName: 'BUTTON', key: 'type' },
-    { tagName: 'INPUT', key: 'type' }
+    { tagName: 'INPUT', key: 'type' },
+    { tagName: 'INPUT', key: 'list' }
   ];
 
   badPairs.forEach(function(pair) {
