@@ -48,7 +48,8 @@ var RoutingService = Service.extend({
   },
 
   normalizeQueryParams(routeName, models, queryParams) {
-    get(this, 'router')._prepareQueryParams(routeName, models, queryParams);
+    var router = get(this, 'router');
+    router._prepareQueryParams(routeName, models, queryParams);
   },
 
   generateURL(routeName, models, queryParams) {

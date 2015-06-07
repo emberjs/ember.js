@@ -65,6 +65,7 @@ export function generateControllerFactory(container, controllerName, context) {
 */
 export default function generateController(container, controllerName, context) {
   generateControllerFactory(container, controllerName, context);
+
   var fullName = `controller:${controllerName}`;
   var instance = container.lookup(fullName);
 

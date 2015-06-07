@@ -1,10 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, deprecate
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { computed } from "ember-metal/computed";
-import { meta } from "ember-metal/utils";
-import merge from "ember-metal/merge";
-
 import ControllerMixin from "ember-runtime/mixins/controller";
 
 /**
@@ -14,11 +9,6 @@ import ControllerMixin from "ember-runtime/mixins/controller";
 
 ControllerMixin.reopen({
   concatenatedProperties: ['queryParams'],
-
-  init() {
-    this._super(...arguments);
-    listenForQueryParamChanges(this);
-  },
 
   /**
     Defines which query parameters the controller accepts.
@@ -35,87 +25,7 @@ ControllerMixin.reopen({
     @property _qpDelegate
     @private
   */
-  _qpDelegate: null,
-
-  /**
-    @property _normalizedQueryParams
-    @private
-  */
-  _normalizedQueryParams: computed(function() {
-    var m = meta(this);
-    if (m.proto !== this) {
-      return get(m.proto, '_normalizedQueryParams');
-    }
-
-    var queryParams = get(this, 'queryParams');
-    if (queryParams._qpMap) {
-      return queryParams._qpMap;
-    }
-
-    var qpMap = queryParams._qpMap = {};
-
-    for (var i = 0, len = queryParams.length; i < len; ++i) {
-      accumulateQueryParamDescriptors(queryParams[i], qpMap);
-    }
-
-    return qpMap;
-  }),
-
-  /**
-    @property _cacheMeta
-    @private
-  */
-  _cacheMeta: computed(function() {
-    var m = meta(this);
-    if (m.proto !== this) {
-      return get(m.proto, '_cacheMeta');
-    }
-
-    var cacheMeta = {};
-    var qpMap = get(this, '_normalizedQueryParams');
-    for (var prop in qpMap) {
-      if (!qpMap.hasOwnProperty(prop)) { continue; }
-
-      var qp = qpMap[prop];
-      var scope = qp.scope;
-      var parts;
-
-      if (scope === 'controller') {
-        parts = [];
-      }
-
-      cacheMeta[prop] = {
-        parts: parts, // provided by route if 'model' scope
-        values: null, // provided by route
-        scope: scope,
-        prefix: "",
-        def: get(this, prop)
-      };
-    }
-
-    return cacheMeta;
-  }),
-
-  /**
-    @method _updateCacheParams
-    @private
-  */
-  _updateCacheParams(params) {
-    var cacheMeta = get(this, '_cacheMeta');
-    for (var prop in cacheMeta) {
-      if (!cacheMeta.hasOwnProperty(prop)) { continue; }
-      var propMeta = cacheMeta[prop];
-      propMeta.values = params;
-
-      var cacheKey = this._calculateCacheKey(propMeta.prefix, propMeta.parts, propMeta.values);
-      var cache = this._bucketCache;
-
-      if (cache) {
-        var value = cache.lookup(cacheKey, prop, propMeta.def);
-        set(this, prop, value);
-      }
-    }
-  },
+  _qpDelegate: null, // set by route
 
   /**
     @method _qpChanged
@@ -123,37 +33,10 @@ ControllerMixin.reopen({
   */
   _qpChanged(controller, _prop) {
     var prop = _prop.substr(0, _prop.length-3);
-    var cacheMeta = get(controller, '_cacheMeta');
-    var propCache = cacheMeta[prop];
-    var cacheKey = controller._calculateCacheKey(propCache.prefix || "", propCache.parts, propCache.values);
-    var value = get(controller, prop);
 
-    // 1. Update model-dep cache
-    var cache = this._bucketCache;
-    if (cache) {
-      controller._bucketCache.stash(cacheKey, prop, value);
-    }
-
-    // 2. Notify a delegate (e.g. to fire a qp transition)
     var delegate = controller._qpDelegate;
-    if (delegate) {
-      delegate(controller, prop);
-    }
-  },
-
-  /**
-    @method _calculateCacheKey
-    @private
-  */
-  _calculateCacheKey(prefix, _parts, values) {
-    var parts = _parts || [];
-    var suffixes = "";
-    for (var i = 0, len = parts.length; i < len; ++i) {
-      var part = parts[i];
-      var value = get(values, part);
-      suffixes += "::" + part + ":" + value;
-    }
-    return prefix + suffixes.replace(ALL_PERIODS_REGEX, '-');
+    var value = get(controller, prop);
+    delegate(prop, value);
   },
 
   /**
@@ -320,40 +203,5 @@ ControllerMixin.reopen({
     return this.replaceRoute(...arguments);
   }
 });
-
-var ALL_PERIODS_REGEX = /\./g;
-
-function accumulateQueryParamDescriptors(_desc, accum) {
-  var desc = _desc;
-  var tmp;
-  if (typeof desc === 'string') {
-    tmp = {};
-    tmp[desc] = { as: null };
-    desc = tmp;
-  }
-
-  for (var key in desc) {
-    if (!desc.hasOwnProperty(key)) { return; }
-
-    var singleDesc = desc[key];
-    if (typeof singleDesc === 'string') {
-      singleDesc = { as: singleDesc };
-    }
-
-    tmp = accum[key] || { as: null, scope: 'model' };
-    merge(tmp, singleDesc);
-
-    accum[key] = tmp;
-  }
-}
-
-function listenForQueryParamChanges(controller) {
-  var qpMap = get(controller, '_normalizedQueryParams');
-  for (var prop in qpMap) {
-    if (!qpMap.hasOwnProperty(prop)) { continue; }
-    controller.addObserver(prop + '.[]', controller, controller._qpChanged);
-  }
-}
-
 
 export default ControllerMixin;

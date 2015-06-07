@@ -1213,11 +1213,22 @@ QUnit.test("{{link-to}} active property respects changing parent route context",
 
 });
 
+
 QUnit.test("{{link-to}} populates href with default query param values even without query-params object", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo'],
-    foo: '123'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}");
   bootApplication();
@@ -1225,10 +1236,20 @@ QUnit.test("{{link-to}} populates href with default query param values even with
 });
 
 QUnit.test("{{link-to}} populates href with default query param values with empty query-params object", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo'],
-    foo: '123'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}");
   bootApplication();
@@ -1236,10 +1257,20 @@ QUnit.test("{{link-to}} populates href with default query param values with empt
 });
 
 QUnit.test("{{link-to}} populates href with supplied query param values", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo'],
-    foo: '123'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
   bootApplication();
@@ -1247,11 +1278,24 @@ QUnit.test("{{link-to}} populates href with supplied query param values", functi
 });
 
 QUnit.test("{{link-to}} populates href with partially supplied query param values", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo', 'bar'],
-    foo: '123',
-    bar: 'yes'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        },
+        bar: {
+          defaultValue: 'yes'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123',
+      bar: 'yes'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
   bootApplication();
@@ -1259,11 +1303,20 @@ QUnit.test("{{link-to}} populates href with partially supplied query param value
 });
 
 QUnit.test("{{link-to}} populates href with partially supplied query param values, but omits if value is default value", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo', 'bar'],
-    foo: '123',
-    bar: 'yes'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='123') id='the-link'}}Index{{/link-to}}");
   bootApplication();
@@ -1271,658 +1324,26 @@ QUnit.test("{{link-to}} populates href with partially supplied query param value
 });
 
 QUnit.test("{{link-to}} populates href with fully supplied query param values", function() {
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['foo', 'bar'],
-    foo: '123',
-    bar: 'yes'
-  });
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        },
+        bar: {
+          defaultValue: 'yes'
+        }
+      }
+    });
+  } else {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: '123',
+      bar: 'yes'
+    });
+  }
 
   Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}");
   bootApplication();
   equal(Ember.$('#the-link').attr('href'), "/?bar=NAW&foo=456", "link has right href");
 });
-
-QUnit.module("The {{link-to}} helper: invoking with query params", {
-  setup() {
-    Ember.run(function() {
-      sharedSetup();
-
-      App.IndexController = Ember.Controller.extend({
-        queryParams: ['foo', 'bar', 'abool'],
-        foo: '123',
-        bar: 'abc',
-        boundThing: "OMG",
-        abool: true
-      });
-
-      App.AboutController = Ember.Controller.extend({
-        queryParams: ['baz', 'bat'],
-        baz: 'alex',
-        bat: 'borf'
-      });
-
-      registry.unregister('router:main');
-      registry.register('router:main', Router);
-    });
-  },
-
-  teardown: sharedTeardown
-});
-
-QUnit.test("doesn't update controller QP properties on current route when invoked", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}");
-  bootApplication();
-
-  Ember.run(Ember.$('#the-link'), 'click');
-  var indexController = container.lookup('controller:index');
-  deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
-});
-
-QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}");
-  bootApplication();
-
-  Ember.run(Ember.$('#the-link'), 'click');
-  var indexController = container.lookup('controller:index');
-  deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
-});
-
-QUnit.test("link-to with no params throws", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to id='the-link'}}Index{{/link-to}}");
-  expectAssertion(function() {
-    bootApplication();
-  }, /one or more/);
-});
-
-QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to (query-params) id='the-link'}}Index{{/link-to}}");
-  bootApplication();
-
-  Ember.run(Ember.$('#the-link'), 'click');
-  var indexController = container.lookup('controller:index');
-  deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
-});
-
-QUnit.test("updates controller QP properties on current route when invoked", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
-  bootApplication();
-
-  Ember.run(Ember.$('#the-link'), 'click');
-  var indexController = container.lookup('controller:index');
-  deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, "controller QP properties updated");
-});
-
-QUnit.test("updates controller QP properties on current route when invoked (inferred route)", function() {
-  Ember.TEMPLATES.index = compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}");
-  bootApplication();
-
-  Ember.run(Ember.$('#the-link'), 'click');
-  var indexController = container.lookup('controller:index');
-  deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, "controller QP properties updated");
-});
-
-QUnit.test("updates controller QP properties on other route after transitioning to that route", function() {
-  Router.map(function() {
-    this.route('about');
-  });
-
-  Ember.TEMPLATES.index = compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}");
-  bootApplication();
-
-  equal(Ember.$('#the-link').attr('href'), '/about?baz=lol');
-  Ember.run(Ember.$('#the-link'), 'click');
-  var aboutController = container.lookup('controller:about');
-  deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, "about controller QP properties updated");
-
-  equal(container.lookup('controller:application').get('currentPath'), "about");
-});
-
-QUnit.test("supplied QP properties can be bound", function() {
-  var indexController = container.lookup('controller:index');
-  Ember.TEMPLATES.index = compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}");
-
-  bootApplication();
-
-  equal(Ember.$('#the-link').attr('href'), '/?foo=OMG');
-  Ember.run(indexController, 'set', 'boundThing', "ASL");
-  equal(Ember.$('#the-link').attr('href'), '/?foo=ASL');
-});
-
-QUnit.test("supplied QP properties can be bound (booleans)", function() {
-  var indexController = container.lookup('controller:index');
-  Ember.TEMPLATES.index = compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}");
-
-  bootApplication();
-
-  equal(Ember.$('#the-link').attr('href'), '/?abool=OMG');
-  Ember.run(indexController, 'set', 'boundThing', false);
-  equal(Ember.$('#the-link').attr('href'), '/?abool=false');
-
-  Ember.run(Ember.$('#the-link'), 'click');
-
-  deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
-});
-
-QUnit.test("href updates when unsupplied controller QP props change", function() {
-  var indexController = container.lookup('controller:index');
-  Ember.TEMPLATES.index = compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}");
-
-  bootApplication();
-
-  equal(Ember.$('#the-link').attr('href'), '/?foo=lol');
-  Ember.run(indexController, 'set', 'bar', 'BORF');
-  equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
-  Ember.run(indexController, 'set', 'foo', 'YEAH');
-  equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
-});
-
-QUnit.test("The {{link-to}} applies activeClass when query params are not changed", function() {
-  Ember.TEMPLATES.index = compile(
-    "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
-    "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
-    "{{#link-to 'index' id='change-nothing'}}Index{{/link-to}}"
-  );
-
-  Ember.TEMPLATES.search = compile(
-    "{{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}} " +
-    "{{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}} " +
-    "{{outlet}}"
-  );
-
-  Ember.TEMPLATES['search/results'] = compile(
-    "{{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}} " +
-    "{{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
-    "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} "
-  );
-
-  Router.map(function() {
-    this.resource("search", function() {
-      this.route("results");
-    });
-  });
-
-  App.SearchController = Ember.Controller.extend({
-    queryParams: ['search', 'archive'],
-    search: '',
-    archive: false
-  });
-
-  App.SearchResultsController = Ember.Controller.extend({
-    queryParams: ['sort', 'showDetails'],
-    sort: 'title',
-    showDetails: true
-  });
-
-  bootApplication();
-
-  //Basic tests
-  shouldNotBeActive('#cat-link');
-  shouldNotBeActive('#dog-link');
-  Ember.run(router, 'handleURL', '/?foo=cat');
-  shouldBeActive('#cat-link');
-  shouldNotBeActive('#dog-link');
-  Ember.run(router, 'handleURL', '/?foo=dog');
-  shouldBeActive('#dog-link');
-  shouldNotBeActive('#cat-link');
-  shouldBeActive('#change-nothing');
-
-  //Multiple params
-  Ember.run(function() {
-    router.handleURL("/search?search=same");
-  });
-  shouldBeActive('#same-search');
-  shouldNotBeActive('#change-search');
-  shouldNotBeActive('#same-search-add-archive');
-  shouldNotBeActive('#only-add-archive');
-  shouldNotBeActive('#remove-one');
-
-  Ember.run(function() {
-    router.handleURL("/search?search=same&archive=true");
-  });
-  shouldBeActive('#both-same');
-  shouldNotBeActive('#change-one');
-
-  //Nested Controllers
-  Ember.run(function() {
-    // Note: this is kind of a strange case; sort's default value is 'title',
-    // so this URL shouldn't have been generated in the first place, but
-    // we should also be able to gracefully handle these cases.
-    router.handleURL("/search/results?search=same&sort=title&showDetails=true");
-  });
-  //shouldBeActive('#same-sort-child-only');
-  shouldBeActive('#same-search-parent-only');
-  shouldNotBeActive('#change-search-parent-only');
-  shouldBeActive('#same-search-same-sort-child-and-parent');
-  shouldNotBeActive('#same-search-different-sort-child-and-parent');
-  shouldNotBeActive('#change-search-same-sort-child-and-parent');
-});
-
-QUnit.test("The {{link-to}} applies active class when query-param is number", function() {
-  Ember.TEMPLATES.index = compile(
-    "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
-
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['page'],
-    page: 1,
-    pageNumber: 5
-  });
-
-  bootApplication();
-
-  shouldNotBeActive('#page-link');
-  Ember.run(router, 'handleURL', '/?page=5');
-  shouldBeActive('#page-link');
-});
-
-QUnit.test("The {{link-to}} applies active class when query-param is array", function() {
-  Ember.TEMPLATES.index = compile(
-    "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
-    "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
-    "{{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}} "
-  );
-
-  App.IndexController = Ember.Controller.extend({
-    queryParams: ['pages'],
-    pages: [],
-    pagesArray: [1,2],
-    biggerArray: [1,2,3],
-    emptyArray: []
-  });
-
-  bootApplication();
-
-  shouldNotBeActive('#array-link');
-  Ember.run(router, 'handleURL', '/?pages=%5B1%2C2%5D');
-  shouldBeActive('#array-link');
-  shouldNotBeActive('#bigger-link');
-  shouldNotBeActive('#empty-link');
-  Ember.run(router, 'handleURL', '/?pages=%5B2%2C1%5D');
-  shouldNotBeActive('#array-link');
-  shouldNotBeActive('#bigger-link');
-  shouldNotBeActive('#empty-link');
-  Ember.run(router, 'handleURL', '/?pages=%5B1%2C2%2C3%5D');
-  shouldBeActive('#bigger-link');
-  shouldNotBeActive('#array-link');
-  shouldNotBeActive('#empty-link');
-});
-
-QUnit.test("The {{link-to}} helper applies active class to parent route", function() {
-  App.Router.map(function() {
-    this.resource('parent', function() {
-      this.route('child');
-    });
-  });
-
-  Ember.TEMPLATES.application = compile(
-    "{{#link-to 'parent' id='parent-link'}}Parent{{/link-to}} " +
-    "{{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}} " +
-    "{{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}} " +
-    "{{outlet}}"
-  );
-
-  App.ParentChildController = Ember.Controller.extend({
-    queryParams: ['foo'],
-    foo: 'bar'
-  });
-
-  bootApplication();
-  shouldNotBeActive('#parent-link');
-  shouldNotBeActive('#parent-child-link');
-  shouldNotBeActive('#parent-link-qp');
-  Ember.run(router, 'handleURL', '/parent/child?foo=dog');
-  shouldBeActive('#parent-link');
-  shouldNotBeActive('#parent-link-qp');
-});
-
-QUnit.test("The {{link-to}} helper disregards query-params in activeness computation when current-when specified", function() {
-  App.Router.map(function() {
-    this.route('parent');
-  });
-
-  Ember.TEMPLATES.application = compile(
-    "{{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}");
-  Ember.TEMPLATES.parent = compile(
-    "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
-
-  App.ParentController = Ember.Controller.extend({
-    queryParams: ['page'],
-    page: 1
-  });
-
-  bootApplication();
-  equal(Ember.$('#app-link').attr('href'), '/parent');
-  shouldNotBeActive('#app-link');
-
-  Ember.run(router, 'handleURL', '/parent?page=2');
-  equal(Ember.$('#app-link').attr('href'), '/parent');
-  shouldBeActive('#app-link');
-  equal(Ember.$('#parent-link').attr('href'), '/parent');
-  shouldBeActive('#parent-link');
-
-  var parentController = container.lookup('controller:parent');
-  equal(parentController.get('page'), 2);
-  Ember.run(parentController, 'set', 'page', 3);
-  equal(router.get('location.path'), '/parent?page=3');
-  shouldBeActive('#app-link');
-  shouldBeActive('#parent-link');
-
-  Ember.$('#app-link').click();
-  equal(router.get('location.path'), '/parent');
-});
-
-function basicEagerURLUpdateTest(setTagName) {
-  expect(6);
-
-  if (setTagName) {
-    Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link' tagName='span'}}");
-  }
-
-  bootApplication();
-  equal(updateCount, 0);
-  Ember.run(Ember.$('#about-link'), 'click');
-
-  // URL should be eagerly updated now
-  equal(updateCount, 1);
-  equal(router.get('location.path'), '/about');
-
-  // Resolve the promise.
-  Ember.run(aboutDefer, 'resolve');
-  equal(router.get('location.path'), '/about');
-
-  // Shouldn't have called update url again.
-  equal(updateCount, 1);
-  equal(router.get('location.path'), '/about');
-}
-
-var aboutDefer, otherDefer;
-
-if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
-  QUnit.module("The {{link-to}} helper: eager URL updating", {
-    setup() {
-      Ember.run(function() {
-        sharedSetup();
-
-        registry.unregister('router:main');
-        registry.register('router:main', Router);
-
-        Router.map(function() {
-          this.route('about');
-        });
-
-        App.AboutRoute = Ember.Route.extend({
-          model() {
-            aboutDefer = Ember.RSVP.defer();
-            return aboutDefer.promise;
-          }
-        });
-
-        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
-      });
-    },
-
-    teardown() {
-      sharedTeardown();
-      aboutDefer = null;
-    }
-  });
-
-  QUnit.test("invoking a link-to with a slow promise eager updates url", function() {
-    basicEagerURLUpdateTest(false);
-  });
-
-  QUnit.test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
-    expect(2);
-
-    // HistoryLocation is the only Location class that will cause rootURL to be
-    // prepended to link-to href's right now
-    var HistoryTestLocation = Ember.HistoryLocation.extend({
-      location: {
-        hash: '',
-        hostname: 'emberjs.com',
-        href: 'http://emberjs.com/app/',
-        pathname: '/app/',
-        protocol: 'http:',
-        port: '',
-        search: ''
-      },
-
-      // Don't actually touch the URL
-      replaceState(path) {},
-      pushState(path) {},
-
-      setURL(path) {
-        set(this, 'path', path);
-      },
-
-      replaceURL(path) {
-        set(this, 'path', path);
-      }
-    });
-
-    registry.register('location:historyTest', HistoryTestLocation);
-
-    Router.reopen({
-      location: 'historyTest',
-      rootURL: '/app/'
-    });
-
-    bootApplication();
-
-    // href should have rootURL prepended
-    equal(Ember.$('#about-link').attr('href'), '/app/about');
-
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Actual path provided to Location class should NOT have rootURL
-    equal(router.get('location.path'), '/about');
-  });
-
-  QUnit.test("non `a` tags also eagerly update URL", function() {
-    basicEagerURLUpdateTest(true);
-  });
-
-  QUnit.test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
-    App.AboutRoute = Ember.Route.extend({
-      model() {
-        return Ember.RSVP.reject();
-      }
-    });
-
-    bootApplication();
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Shouldn't have called update url.
-    equal(updateCount, 0);
-    equal(router.get('location.path'), '', 'url was not updated');
-  });
-
-  QUnit.test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
-    App.IndexRoute = Ember.Route.extend({
-      actions: {
-        willTransition(transition) {
-          ok(true, "aborting transition");
-          transition.abort();
-        }
-      }
-    });
-
-    bootApplication();
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Shouldn't have called update url.
-    equal(updateCount, 0);
-    equal(router.get('location.path'), '', 'url was not updated');
-  });
-
-}
-
-if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
-
-  QUnit.module("The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes", {
-    setup() {
-      Ember.run(function() {
-        sharedSetup();
-
-        registry.unregister('router:main');
-        registry.register('router:main', Router);
-
-        Router.map(function() {
-          this.route('about');
-          this.route('other');
-        });
-
-        App.AboutRoute = Ember.Route.extend({
-          model() {
-            aboutDefer = Ember.RSVP.defer();
-            return aboutDefer.promise;
-          }
-        });
-
-        App.OtherRoute = Ember.Route.extend({
-          model() {
-            otherDefer = Ember.RSVP.defer();
-            return otherDefer.promise;
-          }
-        });
-
-
-        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}{{link-to 'Other' 'other' id='other-link'}}");
-      });
-    },
-
-    teardown() {
-      sharedTeardown();
-      aboutDefer = null;
-    }
-  });
-
-  QUnit.test("while a transition is underway", function() {
-    expect(18);
-    bootApplication();
-
-    function assertHasClass(className) {
-      var i = 1;
-      while (i < arguments.length) {
-        var $a = arguments[i];
-        var shouldHaveClass = arguments[i+1];
-        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + " should " + (shouldHaveClass ? '' : "not ") + "have class " + className);
-        i +=2;
-      }
-    }
-
-    var $index = Ember.$('#index-link');
-    var $about = Ember.$('#about-link');
-    var $other = Ember.$('#other-link');
-
-    Ember.run($about, 'click');
-
-    assertHasClass('active', $index, true, $about, false, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
-
-    Ember.run(aboutDefer, 'resolve');
-
-    assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
-    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
-  });
-
-  QUnit.test("while a transition is underway with nested link-to's", function() {
-    expect(54);
-
-    Router.map(function() {
-      this.route('parent-route', function() {
-        this.route('about');
-        this.route('other');
-      });
-    });
-
-    App.ParentRouteAboutRoute = Ember.Route.extend({
-      model() {
-        aboutDefer = Ember.RSVP.defer();
-        return aboutDefer.promise;
-      }
-    });
-
-    App.ParentRouteOtherRoute = Ember.Route.extend({
-      model() {
-        otherDefer = Ember.RSVP.defer();
-        return otherDefer.promise;
-      }
-    });
-
-    Ember.TEMPLATES.application = compile(`
-      {{outlet}}
-      {{#link-to 'index' tagName='li'}}
-        {{link-to 'Index' 'index' id='index-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.about' tagName='li'}}
-        {{link-to 'About' 'parent-route.about' id='about-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.other' tagName='li'}}
-        {{link-to 'Other' 'parent-route.other' id='other-link'}}
-      {{/link-to}}
-    `);
-
-    bootApplication();
-
-    function assertHasClass(className) {
-      var i = 1;
-      while (i < arguments.length) {
-        var $a = arguments[i];
-        var shouldHaveClass = arguments[i+1];
-        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + " should " + (shouldHaveClass ? '' : "not ") + "have class " + className);
-        i +=2;
-      }
-    }
-
-    var $index = Ember.$('#index-link');
-    var $about = Ember.$('#about-link');
-    var $other = Ember.$('#other-link');
-
-    Ember.run($about, 'click');
-
-    assertHasClass('active', $index, true, $about, false, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
-
-    Ember.run(aboutDefer, 'resolve');
-
-    assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
-    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
-
-    Ember.run($other, 'click');
-
-    assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, true);
-    assertHasClass('ember-transitioning-out', $index, false, $about, true, $other, false);
-
-    Ember.run(otherDefer, 'resolve');
-
-    assertHasClass('active', $index, false, $about, false, $other, true);
-    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
-    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
-
-    Ember.run($about, 'click');
-
-    assertHasClass('active', $index, false, $about, false, $other, true);
-    assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, true);
-
-    Ember.run(aboutDefer, 'resolve');
-
-    assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
-    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
-  });
-}
