@@ -42,6 +42,13 @@ var badPairs = [{
   // if you set input.type = 'something-unknown'
   tagName: 'INPUT',
   propName: 'type'
+}, {
+  // Some versions of IE (IE8) throw an exception when setting
+  // `input.list = 'somestring'`:
+  // https://github.com/emberjs/ember.js/issues/10908
+  // https://github.com/emberjs/ember.js/issues/11364
+  tagName: 'INPUT',
+  propName: 'list'
 }];
 
 function isSettable(element, attrName) {
