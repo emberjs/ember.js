@@ -2179,12 +2179,12 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
     keysAlreadyMergedOrSkippable = {};
   } else {
-    keysAlreadyMergedOrSkippable = {};
-    //   defaultValue: true,
-    //   type: true,
-    //   scope: true,
-    //   as: true
-    // };
+    keysAlreadyMergedOrSkippable = {
+      defaultValue: true,
+      type: true,
+      scope: true,
+      as: true
+    };
   }
 
   // first loop over all controller qps, merging them with any matching route qps
