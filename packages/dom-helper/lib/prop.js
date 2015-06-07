@@ -9,15 +9,15 @@ export var propertyCaches = {};
 
 export function normalizeProperty(element, attrName) {
   var tagName = element.tagName;
-  var key;
+  var key, cachedAttrName;
   var cache = propertyCaches[tagName];
   if (!cache) {
     // TODO should this be an o_create kind of thing?
     cache = {};
-    for (key in element) {
-      key = key.toLowerCase();
-      if (isSettable(element, key)) {
-        cache[key] = key;
+    for (cachedAttrName in element) {
+      key = cachedAttrName.toLowerCase();
+      if (isSettable(element, cachedAttrName)) {
+        cache[key] = cachedAttrName;
       } else {
         cache[key] = UNDEFINED;
       }
