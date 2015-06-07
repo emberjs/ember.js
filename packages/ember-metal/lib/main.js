@@ -358,7 +358,15 @@ Ember.isGlobalPath = isGlobalPath;
 
 Ember.run = run;
 
+/**
+@class Backburner
+@for Ember
+@private
+*/
 Ember.Backburner = Backburner;
+// this is the new go forward, once Ember Data updates to using `_Backburner` we
+// can remove the non-underscored version.
+Ember._Backburner = Backburner;
 
 Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
