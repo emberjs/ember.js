@@ -33,22 +33,23 @@ import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
   {{/each}}
   ```
 
-  ### `key` param
+  ### Specifying Keys
 
-  The `key` hash parameter provides much needed insight into how the rendering
-  engine should determine if a given iteration of the loop matches a previous one.
-  This is mostly apparent during re-rendering when the array being iterated may
-  have changed (via sort, removal, addition, etc).
+  The `key` option is used to tell Ember how to determine if the array being
+  iterated over with `{{#each}}` has changed between renders. By helping Ember
+  detect that some elements in the array are the same, DOM elements can be
+  re-used, significantly improving rendering speed.
 
-  For example, using the following:
+  For example, here's the `{{#each}}` helper with its `key` set to `id`:
 
   ```handlebars
   {{#each model key="id" as |item|}}
   {{/each}}
   ```
 
-  Upon re-render, the rendering engine will match up the previously rendered items
-  (and reorder the generated DOM elements) based on each item's `id` property.
+  When this `{{#each}}` re-renders, Ember will match up the previously rendered
+  items (and reorder the generated DOM elements) based on each item's `id`
+  property.
 
   There are a few special values for `key`:
 
