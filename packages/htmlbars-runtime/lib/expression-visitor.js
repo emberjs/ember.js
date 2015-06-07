@@ -134,6 +134,9 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
 
     if (isHelper(env, scope, path)) {
       env.hooks.inline(morph, env, scope, path, [], {}, visitor);
+      if (morph.linkedResult) {
+        linkParams(env, scope, morph, '@content-helper', [morph.linkedResult], null);
+      }
       return;
     }
 
