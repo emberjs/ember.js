@@ -1,4 +1,5 @@
-import b, { buildProgram, buildBlock, buildHash } from "./builders";
+import b from "./builders";
+import { buildProgram, buildBlock, buildHash } from "./builders";
 import { forEach } from "../htmlbars-util/array-utils";
 import { appendChild } from "./utils";
 
