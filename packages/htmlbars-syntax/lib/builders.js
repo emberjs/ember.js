@@ -69,12 +69,13 @@ export function buildElement(tag, attributes, modifiers, children) {
   };
 }
 
-export function buildComponent(tag, attributes, program) {
+export function buildComponent(tag, attributes, program, loc) {
   return {
     type: "ComponentNode",
     tag: tag,
     attributes: attributes,
-    program: program
+    program: program,
+    loc: buildLoc(loc)
   };
 }
 
