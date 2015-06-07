@@ -21,6 +21,7 @@
   @class Ember
   @static
   @version VERSION_STRING_PLACEHOLDER
+  @public
 */
 
 if ('undefined' === typeof Ember) {
@@ -52,6 +53,7 @@ Ember.toString = function() { return 'Ember'; };
   @type String
   @default 'VERSION_STRING_PLACEHOLDER'
   @static
+  @public
 */
 Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
@@ -64,6 +66,7 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
   @property ENV
   @type Object
+  @public
 */
 
 if (Ember.ENV) {
@@ -95,6 +98,7 @@ if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
   @namespace Ember
   @static
   @since 1.1.0
+  @public
 */
 Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
 
@@ -121,6 +125,7 @@ if (Ember.ENV.FEATURES) {
   @return {Boolean}
   @for Ember.FEATURES
   @since 1.1.0
+  @public
 */
 
 Ember.FEATURES.isEnabled = function(feature) {
@@ -158,6 +163,7 @@ Ember.FEATURES.isEnabled = function(feature) {
   @type Boolean
   @default true
   @for Ember
+  @public
 */
 Ember.EXTEND_PROTOTYPES = Ember.ENV.EXTEND_PROTOTYPES;
 
@@ -172,6 +178,7 @@ if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
   @property LOG_STACKTRACE_ON_DEPRECATION
   @type Boolean
   @default true
+  @public
 */
 Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
 
@@ -182,6 +189,7 @@ Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !
   @property SHIM_ES5
   @type Boolean
   @default Ember.EXTEND_PROTOTYPES
+  @public
 */
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
@@ -192,6 +200,7 @@ Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPE
   @property LOG_VERSION
   @type Boolean
   @default true
+  @public
 */
 Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
 
@@ -201,6 +210,7 @@ Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
   @method K
   @private
   @return {Object}
+  @public
 */
 function K() { return this; }
 export { K };

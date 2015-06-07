@@ -24,16 +24,16 @@ import compare from 'ember-runtime/compare';
 var a_slice = [].slice;
 
 /**
- A computed property that returns the sum of the value
- in the dependent array.
+  A computed property that returns the sum of the value
+  in the dependent array.
 
- @method sum
- @for Ember.computed
- @param {String} dependentKey
- @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
- @since 1.4.0
+  @method sum
+  @for Ember.computed
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
+  @since 1.4.0
+  @public
 */
-
 export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: 0,
@@ -80,6 +80,7 @@ export function sum(dependentKey) {
   @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the largest value in the dependentKey's array
+  @public
 */
 export function max(dependentKey) {
   return reduceComputed(dependentKey, {
@@ -129,6 +130,7 @@ export function max(dependentKey) {
   @for Ember.computed
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the smallest value in the dependentKey's array
+  @public
 */
 export function min(dependentKey) {
   return reduceComputed(dependentKey, {
@@ -178,6 +180,7 @@ export function min(dependentKey) {
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} an array mapped via the callback
+  @public
 */
 export function map(dependentKey, callback) {
   var options = {
@@ -223,6 +226,7 @@ export function map(dependentKey, callback) {
   @param {String} dependentKey
   @param {String} propertyKey
   @return {Ember.ComputedProperty} an array mapped to the specified key
+  @public
 */
 export function mapBy(dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
@@ -235,6 +239,7 @@ export function mapBy(dependentKey, propertyKey) {
   @deprecated Use `Ember.computed.mapBy` instead
   @param dependentKey
   @param propertyKey
+  @public
 */
 export var mapProperty = mapBy;
 
@@ -273,6 +278,7 @@ export var mapProperty = mapBy;
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} the filtered array
+  @public
 */
 export function filter(dependentKey, callback) {
   var options = {
@@ -330,6 +336,7 @@ export function filter(dependentKey, callback) {
   @param {String} propertyKey
   @param {*} value
   @return {Ember.ComputedProperty} the filtered array
+  @public
 */
 export function filterBy(dependentKey, propertyKey, value) {
   var callback;
@@ -354,6 +361,7 @@ export function filterBy(dependentKey, propertyKey, value) {
   @param propertyKey
   @param value
   @deprecated Use `Ember.computed.filterBy` instead
+  @public
 */
 export var filterProperty = filterBy;
 
@@ -385,6 +393,7 @@ export var filterProperty = filterBy;
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
+  @public
 */
 export function uniq() {
   var args = a_slice.call(arguments);
@@ -429,6 +438,7 @@ export function uniq() {
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
+  @public
 */
 export var union = uniq;
 
@@ -453,6 +463,7 @@ export var union = uniq;
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   duplicated elements from the dependent arrays
+  @public
 */
 export function intersect() {
   var args = a_slice.call(arguments);
@@ -542,6 +553,7 @@ export function intersect() {
   @return {Ember.ComputedProperty} computes a new array with all the
   items from the first dependent array that are not in the second
   dependent array
+  @public
 */
 export function setDiff(setAProperty, setBProperty) {
   if (arguments.length !== 2) {
@@ -686,6 +698,7 @@ function binarySearch(array, item, low, high) {
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
   @return {Ember.ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
+  @public
 */
 export function sort(itemsKey, sortDefinition) {
   Ember.assert('Ember.computed.sort requires two arguments: an array key to sort and ' +

@@ -1,6 +1,7 @@
 /**
 @module ember
 @submodule ember-application
+@public
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
@@ -70,6 +71,7 @@ var defaultControllersComputedProperty = computed(function() {
 /**
   @class ControllerMixin
   @namespace Ember
+  @public
 */
 ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
@@ -118,8 +120,10 @@ ControllerMixin.reopen({
 
     This is only available for singleton controllers.
 
+    @deprecated Use `Ember.inject.controller()` instead.
     @property {Array} needs
     @default []
+    @public
   */
   needs: [],
 
@@ -148,6 +152,7 @@ ControllerMixin.reopen({
     @method controllerFor
     @see {Ember.Route#controllerFor}
     @deprecated Use `needs` instead
+    @public
   */
   controllerFor(controllerName) {
     Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
@@ -172,6 +177,7 @@ ControllerMixin.reopen({
     @see {Ember.ControllerMixin#needs}
     @property {Object} controllers
     @default null
+    @public
   */
   controllers: defaultControllersComputedProperty
 });

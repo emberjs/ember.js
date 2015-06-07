@@ -29,6 +29,7 @@ export let UNHANDLED_SET = symbol("UNHANDLED_SET");
   @param {String} keyName The property key to set
   @param {Object} value The value to set
   @return {Object} the passed value.
+  @public
 */
 export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
@@ -167,6 +168,7 @@ function setPath(root, path, value, tolerant) {
   @param {Object} root The object to modify.
   @param {String} path The property path to set
   @param {Object} value The value to set
+  @public
 */
 export function trySet(root, path, value) {
   return set(root, path, value, true);

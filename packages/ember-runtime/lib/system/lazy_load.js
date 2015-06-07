@@ -29,6 +29,7 @@ var loaded = {};
   @for Ember
   @param name {String} name of hook
   @param callback {Function} callback to be called
+  @private
 */
 export function onLoad(name, callback) {
   var object;
@@ -49,6 +50,7 @@ export function onLoad(name, callback) {
   @for Ember
   @param name {String} name of hook
   @param object {Object} object to pass to callbacks
+  @private
 */
 export function runLoadHooks(name, object) {
   loaded[name] = object;

@@ -1,7 +1,7 @@
 /**
  @module ember
  @submodule ember-views
- */
+*/
 import {
   Mixin,
   observer
@@ -14,7 +14,8 @@ function K() { return this; }
 /**
  @class VisibilitySupport
  @namespace Ember
- */
+ @public
+*/
 var VisibilitySupport = Mixin.create({
   /**
     If `false`, the view will appear hidden in DOM.
@@ -22,6 +23,7 @@ var VisibilitySupport = Mixin.create({
     @property isVisible
     @type Boolean
     @default null
+    @public
   */
   isVisible: true,
 

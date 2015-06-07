@@ -38,6 +38,7 @@ export default EmberObject.extend({
 
     @property events
     @type Object
+    @private
   */
   events: {
     touchstart  : 'touchStart',
@@ -111,6 +112,7 @@ export default EmberObject.extend({
     @type boolean
     @default 'true'
     @since 1.7.0
+    @private
   */
   canDispatchToEventManager: true,
 

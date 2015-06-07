@@ -46,6 +46,7 @@ import { tryCatchFinally } from "ember-metal/utils";
   @class Instrumentation
   @namespace Ember
   @static
+  @private
 */
 export var subscribers = [];
 var cache = {};
@@ -84,6 +85,7 @@ var time = (function() {
   @param {Object} _payload
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
+  @private
 */
 export function instrument(name, _payload, callback, binding) {
   if (arguments.length <= 3 && typeof _payload === 'function') {
@@ -165,6 +167,7 @@ export function _instrumentStart(name, _payload) {
   @param {Object} [object] Before and After hooks.
 
   @return {Subscriber}
+  @private
 */
 export function subscribe(pattern, object) {
   var paths = pattern.split(".");
@@ -202,6 +205,7 @@ export function subscribe(pattern, object) {
   @namespace Ember.Instrumentation
 
   @param {Object} [subscriber]
+  @private
 */
 export function unsubscribe(subscriber) {
   var index;
@@ -221,6 +225,7 @@ export function unsubscribe(subscriber) {
 
   @method reset
   @namespace Ember.Instrumentation
+  @private
 */
 export function reset() {
   subscribers.length = 0;

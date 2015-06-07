@@ -51,6 +51,7 @@ import Application from "ember-application/system/application";
   @class DataAdapter
   @namespace Ember
   @extends EmberObject
+  @public
 */
 export default EmberObject.extend({
   init() {
@@ -66,6 +67,7 @@ export default EmberObject.extend({
     @property container
     @default null
     @since 1.3.0
+    @public
   */
   container: null,
 
@@ -77,6 +79,7 @@ export default EmberObject.extend({
     @property containerDebugAdapter
     @default undefined
     @since 1.5.0
+    @public
   **/
   containerDebugAdapter: undefined,
 
@@ -93,16 +96,16 @@ export default EmberObject.extend({
   attributeLimit: 3,
 
   /**
-   * Ember Data > v1.0.0-beta.18
-   * requires string model names to be passed
-   * around instead of the actual factories.
-   *
-   * This is a stamp for the Ember Inspector
-   * to differentiate between the versions
-   * to be able to support older versions too.
-   *
-   * @public
-   * @property acceptsModelName
+     Ember Data > v1.0.0-beta.18
+     requires string model names to be passed
+     around instead of the actual factories.
+
+     This is a stamp for the Ember Inspector
+     to differentiate between the versions
+     to be able to support older versions too.
+
+     @public
+     @property acceptsModelName
    */
   acceptsModelName: true,
 

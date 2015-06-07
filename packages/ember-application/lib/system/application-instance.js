@@ -30,6 +30,8 @@ import Registry from 'container/registry';
   That state is what the `ApplicationInstance` manages: it is responsible for
   creating the container that contains all application state, and disposing of
   it once the particular test run or FastBoot request has finished.
+
+  @public
 */
 
 export default EmberObject.extend({
@@ -38,6 +40,7 @@ export default EmberObject.extend({
     instance-specific state for this application run.
 
     @property {Ember.Container} container
+    @public
   */
   container: null,
 
@@ -46,6 +49,7 @@ export default EmberObject.extend({
     and other code that makes up the application.
 
     @property {Ember.Registry} registry
+    @private
   */
   applicationRegistry: null,
 
@@ -54,6 +58,7 @@ export default EmberObject.extend({
     `applicationRegistry` as a fallback.
 
     @property {Ember.Registry} registry
+    @private
   */
   registry: null,
 
@@ -156,7 +161,9 @@ export default EmberObject.extend({
     this._didSetupRouter = true;
   },
 
-  /** @private
+  /**
+    @private
+
     Sets up the router, initializing the child router and configuring the
     location before routing begins.
 

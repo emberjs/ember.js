@@ -20,6 +20,7 @@ import EmberLocation from "ember-routing/location/api";
   @class HashLocation
   @namespace Ember
   @extends Ember.Object
+  @private
 */
 export default EmberObject.extend({
   implementation: 'hash',

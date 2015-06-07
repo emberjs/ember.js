@@ -14,6 +14,7 @@
   @param {String} path The path to be lookedup
   @param {Object} options The template's option hash
   @deprecated
+  @public
 */
 export default function handlebarsGet(root, path, options) {
   Ember.deprecate('Usage of Ember.Handlebars.get is deprecated, use a Component or Ember.Handlebars.makeBoundHelper instead.');

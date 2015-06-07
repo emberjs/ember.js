@@ -163,6 +163,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   @param {String} [dependentKeys*]
   @param {Object} options
   @return {Ember.ComputedProperty}
+  @private
 */
 function arrayComputed(options) {
   var args;

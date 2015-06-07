@@ -62,6 +62,7 @@ import { set } from "ember-metal/property_set";
   @class Freezable
   @namespace Ember
   @since Ember 0.9
+  @private
 */
 export var Freezable = Mixin.create({
 
@@ -71,6 +72,7 @@ export var Freezable = Mixin.create({
 
     @property isFrozen
     @type Boolean
+    @private
   */
   isFrozen: false,
 
@@ -80,6 +82,7 @@ export var Freezable = Mixin.create({
 
     @method freeze
     @return {Object} receiver
+    @private
   */
   freeze() {
     if (get(this, 'isFrozen')) {

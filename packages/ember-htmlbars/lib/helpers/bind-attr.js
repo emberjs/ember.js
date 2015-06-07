@@ -126,6 +126,7 @@
   @deprecated
   @param {Object} options
   @return {String} HTML string
+  @public
 */
 
 /**
@@ -137,4 +138,5 @@
   @param {Function} context
   @param {Object} options
   @return {String} HTML string
+  @public
 */

@@ -1,14 +1,15 @@
 /**
  @module ember
  @submodule ember-views
- */
+*/
 
 import { Mixin } from "ember-metal/mixin";
 
 /**
  @class AriaRoleSupport
  @namespace Ember
- */
+ @private
+*/
 export default Mixin.create({
   attributeBindings: ['ariaRole:role'],
 
@@ -24,6 +25,7 @@ export default Mixin.create({
    @property ariaRole
    @type String
    @default null
-   */
+   @public
+  */
   ariaRole: null
 });

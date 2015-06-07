@@ -76,6 +76,7 @@ var NODE_STACK = [];
   @for Ember
   @param {Object} obj  the object to destroy
   @return {void}
+  @private
 */
 export function destroy(obj) {
   var meta = obj['__ember_meta__'];

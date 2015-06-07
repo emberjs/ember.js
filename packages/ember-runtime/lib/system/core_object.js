@@ -225,6 +225,7 @@ function makeCtor() {
 /**
   @class CoreObject
   @namespace Ember
+  @public
 */
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
@@ -261,6 +262,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     application.
 
     @method init
+    @public
   */
   init() {},
   __defineNonEnumerable(property) {
@@ -333,6 +335,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @property concatenatedProperties
     @type Array
     @default null
+    @public
   */
   concatenatedProperties: null,
 
@@ -344,6 +347,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     @property isDestroyed
     @default false
+    @public
   */
   isDestroyed: false,
 
@@ -355,6 +359,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     @property isDestroying
     @default false
+    @public
   */
   isDestroying: false,
 
@@ -370,6 +375,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     @method destroy
     @return {Ember.Object} receiver
+    @public
   */
   destroy() {
     if (this.isDestroying) { return; }
@@ -384,7 +390,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     Override to implement teardown.
 
     @method willDestroy
-   */
+    @public
+  */
   willDestroy: K,
 
   /**
@@ -441,6 +448,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     @method toString
     @return {String} string representation
+    @public
   */
   toString() {
     var hasToStringExtension = typeof this.toStringExtension === 'function';
@@ -549,6 +557,7 @@ var ClassMixinProps = {
 
     @param {Mixin} [mixins]* One or more Mixin classes
     @param {Object} [arguments]* Object containing values to use within the new class
+    @public
   */
   extend() {
     var Class = makeCtor();
@@ -580,6 +589,7 @@ var ClassMixinProps = {
     @method createWithMixins
     @static
     @param [arguments]*
+    @private
   */
   createWithMixins(...args) {
     var C = this;
@@ -625,6 +635,7 @@ var ClassMixinProps = {
     @method create
     @static
     @param [arguments]*
+    @public
   */
   create(...args) {
     var C = this;
@@ -662,6 +673,7 @@ var ClassMixinProps = {
     see `reopenClass`
 
     @method reopen
+    @public
   */
   reopen() {
     this.willReopen();
@@ -723,6 +735,7 @@ var ClassMixinProps = {
     see `reopen`
 
     @method reopenClass
+    @public
   */
   reopenClass() {
     reopen.apply(this.ClassMixin, arguments);
@@ -770,6 +783,7 @@ var ClassMixinProps = {
     @static
     @method metaForProperty
     @param key {String} property name
+    @private
   */
   metaForProperty(key) {
     var proto = this.proto();
@@ -807,6 +821,7 @@ var ClassMixinProps = {
     @method eachComputedProperty
     @param {Function} callback
     @param {Object} binding
+    @private
   */
   eachComputedProperty(callback, binding) {
     var property, name;
@@ -832,7 +847,7 @@ Ember.runInDebug(function() {
 
     @private
     @method _onLookup
-    */
+  */
   ClassMixinProps._onLookup = injectedPropertyAssertion;
 });
 
@@ -842,6 +857,7 @@ Ember.runInDebug(function() {
 
   @method _lazyInjections
   @return {Object} Hash of all lazy injected property keys to container names
+  @private
 */
 ClassMixinProps._lazyInjections = function() {
   var injections = {};

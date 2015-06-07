@@ -226,6 +226,7 @@ ControllerMixin.reopen({
       containing a mapping of query parameters
     @for Ember.ControllerMixin
     @method transitionToRoute
+    @private
   */
   transitionToRoute() {
     // target may be either another controller or a router
@@ -238,6 +239,7 @@ ControllerMixin.reopen({
     @deprecated
     @for Ember.ControllerMixin
     @method transitionTo
+    @private
   */
   transitionTo() {
     Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
@@ -298,6 +300,7 @@ ControllerMixin.reopen({
     while transitioning to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
+    @private
   */
   replaceRoute() {
     // target may be either another controller or a router
@@ -310,6 +313,7 @@ ControllerMixin.reopen({
     @deprecated
     @for Ember.ControllerMixin
     @method replaceWith
+    @private
   */
   replaceWith() {
     Ember.deprecate("replaceWith is deprecated. Please use replaceRoute.");

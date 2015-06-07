@@ -9,6 +9,7 @@ import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_pr
   @for Ember
   @param {Object} obj
   @return {Array} Array containing keys of obj
+  @private
 */
 var keys = Object.keys;
 

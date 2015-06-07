@@ -15,6 +15,7 @@ import Observable from "ember-runtime/mixins/observable";
   @namespace Ember
   @extends Ember.CoreObject
   @uses Ember.Observable
+  @public
 */
 var EmberObject = CoreObject.extend(Observable);
 EmberObject.toString = function() {

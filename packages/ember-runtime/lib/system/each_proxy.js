@@ -103,6 +103,8 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   This is the object instance returned when you get the `@each` property on an
   array. It uses the unknownProperty handler to automatically create
   EachArray instances for property names.
+  @class EachProxy
+  @private
 */
 var EachProxy = EmberObject.extend({
 
@@ -125,6 +127,7 @@ var EachProxy = EmberObject.extend({
     @method unknownProperty
     @param keyName {String}
     @param value {*}
+    @private
   */
   unknownProperty(keyName, value) {
     var ret = new EachArray(this._content, keyName, this);

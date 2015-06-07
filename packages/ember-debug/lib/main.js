@@ -7,8 +7,6 @@ import Logger from "ember-metal/logger";
 import environment from "ember-metal/environment";
 
 /**
-Ember Debug
-
 @module ember
 @submodule ember-debug
 */

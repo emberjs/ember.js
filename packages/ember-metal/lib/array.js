@@ -1,5 +1,6 @@
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 var ArrayPrototype = Array.prototype;
@@ -123,6 +124,7 @@ if (Ember.SHIM_ES5) {
 
   @namespace Ember
   @property ArrayPolyfills
+  @public
 */
 export {
   map,

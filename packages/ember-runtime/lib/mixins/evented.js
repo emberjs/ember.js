@@ -45,6 +45,7 @@ import {
 
   @class Evented
   @namespace Ember
+  @public
  */
 export default Mixin.create({
 
@@ -67,6 +68,7 @@ export default Mixin.create({
    @param {Object} [target] The "this" binding for the callback
    @param {Function} method The callback to execute
    @return this
+   @public
   */
   on(name, target, method) {
     addListener(this, name, target, method);
@@ -87,6 +89,7 @@ export default Mixin.create({
     @param {Object} [target] The "this" binding for the callback
     @param {Function} method The callback to execute
     @return this
+    @public
   */
   one(name, target, method) {
     if (!method) {
@@ -115,6 +118,7 @@ export default Mixin.create({
     @method trigger
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
+    @public
   */
   trigger(name, ...args) {
     sendEvent(this, name, args);
@@ -128,6 +132,7 @@ export default Mixin.create({
     @param {Object} target The target of the subscription
     @param {Function} method The function of the subscription
     @return this
+    @public
   */
   off(name, target, method) {
     removeListener(this, name, target, method);
@@ -140,6 +145,7 @@ export default Mixin.create({
     @method has
     @param {String} name The name of the event
     @return {Boolean} does the object have a subscription for event
+    @public
    */
   has(name) {
     return hasListeners(this, name);
