@@ -24,7 +24,7 @@ QUnit.test('concats provided params', function() {
   component = Component.create({
     container,
 
-    template: compile(`{{concat "foo" " " "bar" " " "baz"}}`)
+    layout: compile(`{{concat "foo" " " "bar" " " "baz"}}`)
   });
 
   runAppend(component);
@@ -39,7 +39,7 @@ QUnit.test('updates for bound params', function() {
     firstParam: 'one',
     secondParam: 'two',
 
-    template: compile(`{{concat firstParam secondParam}}`)
+    layout: compile(`{{concat firstParam secondParam}}`)
   });
 
   runAppend(component);
@@ -72,7 +72,7 @@ QUnit.test('can be used as a sub-expression', function() {
     firstParam: 'one',
     secondParam: 'two',
 
-    template: compile(`{{#if (x-eq (concat firstParam secondParam) "onetwo")}}Truthy!{{else}}False{{/if}}`)
+    layout: compile(`{{#if (x-eq (concat firstParam secondParam) "onetwo")}}Truthy!{{else}}False{{/if}}`)
   });
 
   runAppend(component);
