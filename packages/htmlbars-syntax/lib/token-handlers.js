@@ -99,7 +99,7 @@ var tokenHandlers = {
     } else {
       var program = buildProgram(element.children);
       parseComponentBlockParams(element, program);
-      var component = buildComponent(element.tag, element.attributes, program);
+      var component = buildComponent(element.tag, element.attributes, program, element.loc);
       appendChild(parent, component);
     }
 
