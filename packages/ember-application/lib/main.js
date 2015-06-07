@@ -20,4 +20,5 @@ Ember.Application = Application;
 Ember.Resolver = Resolver;
 Ember.DefaultResolver = DefaultResolver;
 
+
 runLoadHooks('Ember.Application', Application);
