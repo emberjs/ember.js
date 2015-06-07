@@ -358,11 +358,6 @@ Ember.isGlobalPath = isGlobalPath;
 
 Ember.run = run;
 
-/**
- * @class Backburner
- * @for Ember
- * @private
-*/
 Ember.Backburner = Backburner;
 
 Ember.libraries = new Libraries();
