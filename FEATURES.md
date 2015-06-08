@@ -310,3 +310,8 @@ for a detailed explanation.
   for each person.. E.g. a list of all `firstNames`, or `lastNames`, or `ages`.
 
   Addd in [#11196](https://github.com/emberjs/ember.js/pull/11196)
+
+* `ember-htmlbars-helper`
+
+  Implements RFC https://github.com/emberjs/rfcs/pull/53, a public helper
+  api.

@@ -1,7 +1,7 @@
 import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
-import Helper from "ember-htmlbars/helper";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
 
 function generateEnv(helpers, container) {
   return {
@@ -83,7 +83,7 @@ QUnit.test('looks up a shorthand helper in the container', function() {
   function someName() {
     called = true;
   }
-  view.container._registry.register('helper:some-name', Helper.helper(someName));
+  view.container._registry.register('helper:some-name', makeHelper(someName));
 
   var actual = lookupHelper('some-name', view, env);
 

@@ -2,6 +2,7 @@ import "ember";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import Helper from "ember-htmlbars/helper";
 
 var compile, helpers, makeBoundHelper;
 compile = EmberHandlebars.compile;
@@ -133,7 +134,7 @@ QUnit.test("Helpers can receive injections", function() {
         serviceCalled = true;
       }
     }));
-    registry.register('helper:full-name', Ember.Helper.extend({
+    registry.register('helper:full-name', Helper.extend({
       nameBuilder: Ember.inject.service('name-builder'),
       compute() {
         this.get('nameBuilder').build();

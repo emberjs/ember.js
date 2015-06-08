@@ -20,6 +20,4 @@ export function helper(helperFn) {
   };
 }
 
-Helper.helper = helper;
-
 export default Helper;

@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Helper from "ember-htmlbars/helper";
+import { helper } from "ember-htmlbars/helper";
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
@@ -49,5 +49,5 @@ import Helper from "ember-htmlbars/helper";
   @since 1.10.0
 */
 export default function makeBoundHelper(fn) {
-  return Helper.helper(fn);
+  return helper(fn);
 }
