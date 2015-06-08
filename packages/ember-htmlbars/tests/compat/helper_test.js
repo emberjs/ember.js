@@ -11,6 +11,7 @@ import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import Registry from "container/registry";
 import ComponentLookup from 'ember-views/component_lookup';
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
 var view, registry, container;
 
@@ -21,7 +22,6 @@ QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('component-lookup:main', ComponentLookup);
   },
   teardown() {
@@ -102,9 +102,9 @@ QUnit.test('has the correct options.data.view within a components layout', funct
   }));
 
   registry.register('template:components/foo-bar', compile('{{my-thing}}'));
-  registry.register('helper:my-thing', function(options) {
+  registry.register('helper:my-thing', new HandlebarsCompatibleHelper(function(options) {
     equal(options.data.view, component, 'passed in view should match the current component');
-  });
+  }));
 
   view = EmberView.create({
     container,

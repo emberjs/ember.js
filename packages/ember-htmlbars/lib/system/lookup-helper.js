@@ -5,12 +5,19 @@
 
 import Ember from "ember-metal/core";
 import Cache from "ember-metal/cache";
-import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
-export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
-  return key.indexOf('-') === -1;
+export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
+  return key.indexOf('-') !== -1;
 });
+
+export function validateLazyHelperName(helperName, container, keywords) {
+  return container && CONTAINS_DASH_CACHE.get(helperName) && !(helperName in keywords);
+}
+
+function isLegacyBareHelper(helper) {
+  return helper && (!helper.isHelperFactory && !helper.isHelperInstance && !helper.isHTMLBars);
+}
 
 /**
   Used to lookup/resolve handlebars helpers. The lookup order is:
@@ -28,38 +35,19 @@ export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
 */
 export function findHelper(name, view, env) {
   var helper = env.helpers[name];
-  if (helper) {
-    return helper;
-  }
 
-  var container = env.container;
-
-  if (!container || ISNT_HELPER_CACHE.get(name)) {
-    return;
-  }
-
-  if (name in env.hooks.keywords) {
-    return;
-  }
-
-  var helperName = 'helper:' + name;
-  helper = container.lookup(helperName);
   if (!helper) {
-    var componentLookup = container.lookup('component-lookup:main');
-    Ember.assert("Could not find 'component-lookup:main' on the provided container," +
-                 " which is necessary for performing component lookups", componentLookup);
-
-    var Component = componentLookup.lookupFactory(name, container);
-    if (Component) {
-      helper = makeViewHelper(Component);
-      container._registry.register(helperName, helper);
+    var container = env.container;
+    if (validateLazyHelperName(name, container, env.hooks.keywords)) {
+      var helperName = 'helper:' + name;
+      if (container._registry.has(helperName)) {
+        helper = container.lookupFactory(helperName);
+        if (isLegacyBareHelper(helper)) {
+          Ember.deprecate(`The helper "${name}" is a deprecated bare function helper. Please use Ember.Helper.build to wrap helper functions.`);
+          helper = new HandlebarsCompatibleHelper(helper);
+        }
+      }
     }
-  }
-
-  if (helper && !helper.isHTMLBars) {
-    helper = new HandlebarsCompatibleHelper(helper);
-    container._registry.unregister(helperName);
-    container._registry.register(helperName, helper);
   }
 
   return helper;

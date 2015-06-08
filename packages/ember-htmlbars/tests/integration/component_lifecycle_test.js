@@ -17,7 +17,6 @@ QUnit.module('component - lifecycle hooks', {
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('component-lookup:main', ComponentLookup);
 
     hooks = [];

@@ -180,7 +180,7 @@ Stream.prototype = {
 
   revalidate(value) {
     if (value !== this.observedProxy) {
-      this.deactivate();
+      this._clearObservedProxy();
 
       ProxyMixin = ProxyMixin || Ember.__loader.require('ember-runtime/mixins/-proxy').default;
 
@@ -191,11 +191,15 @@ Stream.prototype = {
     }
   },
 
-  deactivate() {
+  _clearObservedProxy() {
     if (this.observedProxy) {
       removeObserver(this.observedProxy, 'content', this, this.notify);
       this.observedProxy = null;
     }
+  },
+
+  deactivate() {
+    this._clearObservedProxy();
   },
 
   compute() {

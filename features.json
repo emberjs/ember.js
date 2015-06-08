@@ -20,7 +20,8 @@
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true,
-    "ember-htmlbars-get-helper": null
+    "ember-htmlbars-get-helper": null,
+    "ember-htmlbars-helper": true
   },
   "debugStatements": [
     "Ember.warn",

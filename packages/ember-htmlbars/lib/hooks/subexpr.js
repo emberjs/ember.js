@@ -4,12 +4,8 @@
 */
 
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
-import merge from "ember-metal/merge";
-import Stream from "ember-metal/streams/stream";
-import create from "ember-metal/platform/create";
+import { buildHelperStream } from "ember-htmlbars/system/invoke-helper";
 import {
-  readArray,
-  readHash,
   labelsFor,
   labelFor
 } from "ember-metal/streams/utils";
@@ -22,15 +18,20 @@ export default function subexpr(env, scope, helperName, params, hash) {
     return keyword(null, env, scope, params, hash, null, null);
   }
 
-  var helper = lookupHelper(helperName, scope.self, env);
-  var invoker = function(params, hash) {
-    return env.hooks.invokeHelper(null, env, scope, null, params, hash, helper, { template: {}, inverse: {} }, undefined).value;
-  };
-
-  //Ember.assert("A helper named '"+helperName+"' could not be found", typeof helper === 'function');
-
   var label = labelForSubexpr(params, hash, helperName);
-  return new SubexprStream(params, hash, invoker, label);
+  var helper = lookupHelper(helperName, scope.self, env);
+
+  var helperStream = buildHelperStream(helper, params, hash, { template: {}, inverse: {} }, env, scope, label);
+
+  for (var i = 0, l = params.length; i < l; i++) {
+    helperStream.addDependency(params[i]);
+  }
+
+  for (var key in hash) {
+    helperStream.addDependency(hash[key]);
+  }
+
+  return helperStream;
 }
 
 function labelForSubexpr(params, hash, helperName) {
@@ -57,26 +58,3 @@ function labelsForHash(hash) {
 
   return out.join(" ");
 }
-
-function SubexprStream(params, hash, helper, label) {
-  this.init(label);
-  this.params = params;
-  this.hash = hash;
-  this.helper = helper;
-
-  for (var i = 0, l = params.length; i < l; i++) {
-    this.addDependency(params[i]);
-  }
-
-  for (var key in hash) {
-    this.addDependency(hash[key]);
-  }
-}
-
-SubexprStream.prototype = create(Stream.prototype);
-
-merge(SubexprStream.prototype, {
-  compute() {
-    return this.helper(readArray(this.params), readHash(this.hash));
-  }
-});

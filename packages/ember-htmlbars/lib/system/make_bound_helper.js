@@ -3,8 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Helper from "ember-htmlbars/system/helper";
-import { readHash, readArray } from "ember-metal/streams/utils";
+import { helper } from "ember-htmlbars/helper";
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
@@ -50,8 +49,5 @@ import { readHash, readArray } from "ember-metal/streams/utils";
   @since 1.10.0
 */
 export default function makeBoundHelper(fn) {
-  return new Helper(function(params, hash, templates) {
-    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !templates.template.meta);
-    return fn(readArray(params), readHash(hash));
-  });
+  return helper(fn);
 }

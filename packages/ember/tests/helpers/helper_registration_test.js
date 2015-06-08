@@ -1,6 +1,8 @@
 import "ember";
 
 import EmberHandlebars from "ember-htmlbars/compat";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import Helper from "ember-htmlbars/helper";
 
 var compile, helpers, makeBoundHelper;
 compile = EmberHandlebars.compile;
@@ -56,13 +58,13 @@ var boot = function(callback) {
 };
 
 QUnit.test("Unbound dashed helpers registered on the container can be late-invoked", function() {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>");
+  let helper = new HandlebarsCompatibleHelper(function(val) {
+    return arguments.length > 1 ? val : "BORF";
+  });
 
-  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf YES}}</div>");
-
-  boot(function() {
-    registry.register('helper:x-borf', function(val) {
-      return arguments.length > 1 ? val : "BORF";
-    });
+  boot(() => {
+    registry.register('helper:x-borf', helper);
   });
 
   equal(Ember.$('#wrapper').text(), "BORF YES", "The helper was invoked from the container");
@@ -120,4 +122,25 @@ QUnit.test("Undashed helpers registered on the container can not (presently) be 
       }));
     });
   }, /A helper named 'omg' could not be found/);
+});
+
+QUnit.test("Helpers can receive injections", function() {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{full-name}}</div>");
+
+  var serviceCalled = false;
+  boot(function() {
+    registry.register('service:name-builder', Ember.Service.extend({
+      build() {
+        serviceCalled = true;
+      }
+    }));
+    registry.register('helper:full-name', Helper.extend({
+      nameBuilder: Ember.inject.service('name-builder'),
+      compute() {
+        this.get('nameBuilder').build();
+      }
+    }));
+  });
+
+  ok(serviceCalled, 'service was injected, method called');
 });
