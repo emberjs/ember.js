@@ -1,6 +1,7 @@
 /*global __fail__*/
 
 import Ember from "ember-metal/core";
+import isEnabled, { FEATURES } from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
@@ -230,14 +231,14 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped)
 
 if (!Ember.testing) {
   // Complain if they're using FEATURE flags in builds other than canary
-  Ember.FEATURES['features-stripped-test'] = true;
+  FEATURES['features-stripped-test'] = true;
   var featuresWereStripped = true;
 
-  if (Ember.FEATURES.isEnabled('features-stripped-test')) {
+  if (isEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }
 
-  delete Ember.FEATURES['features-stripped-test'];
+  delete FEATURES['features-stripped-test'];
   _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.

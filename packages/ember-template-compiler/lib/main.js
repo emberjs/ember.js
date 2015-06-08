@@ -1,4 +1,4 @@
-import _Ember from "ember-metal/core";
+import _Ember from "ember-metal";
 import precompile from "ember-template-compiler/system/precompile";
 import compile from "ember-template-compiler/system/compile";
 import template from "ember-template-compiler/system/template";

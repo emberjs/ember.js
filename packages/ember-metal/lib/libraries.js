@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import {
   forEach,
   indexOf
@@ -67,7 +68,7 @@ Libraries.prototype = {
   }
 };
 
-if (Ember.FEATURES.isEnabled("ember-libraries-isregistered")) {
+if (isEnabled("ember-libraries-isregistered")) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
   };

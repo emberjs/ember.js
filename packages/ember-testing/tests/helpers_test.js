@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import RSVP from "ember-runtime/ext/rsvp";
@@ -58,7 +59,7 @@ function assertHelpers(application, helperContainer, expected) {
   checkHelperPresent('wait', expected);
   checkHelperPresent('triggerEvent', expected);
 
-  if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+  if (isEnabled('ember-testing-checkbox-helpers')) {
     checkHelperPresent('check', expected);
     checkHelperPresent('uncheck', expected);
   }
@@ -581,7 +582,7 @@ QUnit.test("`fillIn` focuses on the element", function() {
   });
 });
 
-if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+if (isEnabled('ember-testing-checkbox-helpers')) {
   QUnit.test("`check` ensures checkboxes are `checked` state for checkboxes", function() {
     expect(2);
     var check, find, visit, andThen;

@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { watch } from "ember-metal/watching";
@@ -16,7 +17,7 @@ function hasMandatorySetter(object, property) {
   return property in meta.values;
 }
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   if (hasPropertyAccessors) {
     QUnit.test('does not assert if property is not being watched', function() {
       var obj = {

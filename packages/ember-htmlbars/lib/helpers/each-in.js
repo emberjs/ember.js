@@ -1,4 +1,6 @@
-if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
+import isEnabled from "ember-metal/features";
+
+if (isEnabled('ember-htmlbars-each-in')) {
   var shouldDisplay = function(object) {
     if (object === undefined || object === null) {
       return false;

@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
@@ -278,7 +279,7 @@ asyncHelper('visit', visit);
 */
 asyncHelper('click', click);
 
-if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+if (isEnabled('ember-testing-checkbox-helpers')) {
   /**
     Checks a checkbox. Ensures the presence of the `checked` attribute
 

@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
+import isEnabled from "ember-metal/features";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -17,7 +18,7 @@ import linkToTemplate from "ember-htmlbars/templates/link-to";
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 var linkViewClassNameBindings = ['active', 'loading', 'disabled'];
-if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+if (isEnabled('ember-routing-transitioning-classes')) {
   linkViewClassNameBindings = ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'];
 }
 

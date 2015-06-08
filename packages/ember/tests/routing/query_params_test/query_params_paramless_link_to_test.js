@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 import { capitalize } from "ember-runtime/system/string";
 
 import EmberHandlebars from "ember-htmlbars/compat";
@@ -132,7 +133,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
   });
 };
 
-if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+if (isEnabled('ember-routing-route-configured-query-params')) {
   testParamlessLinksWithRouteConfig('application');
   testParamlessLinksWithRouteConfig('index');
 } else {

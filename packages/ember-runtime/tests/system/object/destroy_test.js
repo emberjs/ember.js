@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { observer } from "ember-metal/mixin";
@@ -30,7 +31,7 @@ testBoth("should schedule objects to be destroyed at the end of the run loop", f
   ok(get(obj, 'isDestroyed'), "object is destroyed after run loop finishes");
 });
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   if (hasPropertyAccessors) {
     // MANDATORY_SETTER moves value to meta.values
     // a destroyed object removes meta but leaves the accessor

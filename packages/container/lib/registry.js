@@ -1,11 +1,12 @@
 import Ember from 'ember-metal/core'; // Ember.assert
+import isEnabled from "ember-metal/features";
 import dictionary from 'ember-metal/dictionary';
 import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 
 var instanceInitializersFeatureEnabled;
-if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+if (isEnabled('ember-application-instance-initializers')) {
   instanceInitializersFeatureEnabled = true;
 }
 

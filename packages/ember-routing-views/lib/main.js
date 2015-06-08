@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import LinkView from "ember-routing-views/views/link";
 import {
   OutletView,
@@ -12,7 +13,7 @@ import {
 
 Ember.LinkView = LinkView;
 Ember.OutletView = OutletView;
-if (Ember.FEATURES.isEnabled('ember-routing-core-outlet')) {
+if (isEnabled('ember-routing-core-outlet')) {
   Ember.CoreOutletView = CoreOutletView;
 }
 

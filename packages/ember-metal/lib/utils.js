@@ -4,6 +4,7 @@
 "REMOVE_USE_STRICT: true";
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import o_create from 'ember-metal/platform/create';
 import {
   hasPropertyAccessors,
@@ -324,7 +325,7 @@ if (!canDefineNonEnumerableProperties) {
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   if (hasPropertyAccessors) {
     EMPTY_META.values = {};
   }
@@ -365,7 +366,7 @@ function meta(obj, writable) {
 
     ret = new Meta(obj);
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
         ret.values = {};
       }
@@ -385,7 +386,7 @@ function meta(obj, writable) {
     ret.cacheMeta = undefined;
     ret.source    = obj;
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
         ret.values = o_create(ret.values);
       }

@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 
 import {
   precompile,
@@ -47,7 +48,7 @@ registerHelper('with', withHelper);
 registerHelper('loc', locHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
-if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
+if (isEnabled('ember-htmlbars-each-in')) {
   registerHelper('each-in', eachInHelper);
 }
 registerHelper('-bind-attr-class', bindAttrClassHelper);
@@ -56,7 +57,7 @@ registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
 registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);
-if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+if (isEnabled('ember-htmlbars-get-helper')) {
   registerHelper('-get', getHelper);
 }
 registerHelper('-html-safe', htmlSafeHelper);
@@ -72,7 +73,7 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-helper')) {
+if (isEnabled('ember-htmlbars-helper')) {
   Helper.helper = makeHelper;
   Ember.Helper = Helper;
 }

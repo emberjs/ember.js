@@ -11,6 +11,7 @@
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
 import Ember from "ember-metal";
+import isEnabled from "ember-metal/features";
 import merge from "ember-metal/merge";
 // Ember.assert, Ember.config
 
@@ -157,7 +158,7 @@ function makeCtor() {
             if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
             } else {
-              if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+              if (isEnabled('mandatory-setter')) {
                 if (hasPropertyAccessors) {
                   defineProperty(this, keyName, null, value); // setup mandatory setter
                 } else {

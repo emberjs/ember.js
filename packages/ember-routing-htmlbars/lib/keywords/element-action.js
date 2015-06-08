@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // assert
+import isEnabled from "ember-metal/features";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
@@ -18,7 +19,7 @@ export default {
 
     var actionName = read(params[0]);
 
-    if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+    if (isEnabled("ember-routing-htmlbars-improved-actions")) {
       assert("You specified a quoteless path to the {{action}} helper " +
              "which did not resolve to an action name (a string). " +
              "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
@@ -105,7 +106,7 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
       let { target, actionName, actionArgs } = node.state;
 
       run(function runRegisteredAction() {
-        if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+        if (isEnabled("ember-routing-htmlbars-improved-actions")) {
           if (typeof actionName === 'function') {
             actionName.apply(target, actionArgs);
             return;

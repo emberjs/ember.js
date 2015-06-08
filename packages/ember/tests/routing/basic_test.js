@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 import { forEach } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -2733,7 +2734,7 @@ QUnit.test("Route silently fails when cleaning an outlet from an inactive view",
   Ember.run(function() { router.send('hideModal'); });
 });
 
-if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+if (isEnabled('ember-router-willtransition')) {
   QUnit.test("Router `willTransition` hook passes in cancellable transition", function() {
     // Should hit willTransition 3 times, once for the initial route, and then 2 more times
     // for the two handleURL calls below

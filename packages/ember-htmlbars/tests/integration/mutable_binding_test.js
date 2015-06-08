@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 //import jQuery from "ember-views/system/jquery";
@@ -340,7 +341,7 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
 
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+if (isEnabled('ember-htmlbars-component-generation')) {
 
 QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
   var middle;

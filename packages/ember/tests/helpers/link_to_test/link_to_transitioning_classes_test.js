@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -72,7 +73,7 @@ function sharedTeardown() {
   Ember.run(function() { App.destroy(); });
   Ember.TEMPLATES = {};
 }
-if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+if (isEnabled('ember-routing-transitioning-classes')) {
   QUnit.module("The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes", {
     setup() {
       Ember.run(function() {

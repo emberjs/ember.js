@@ -3,6 +3,7 @@
 */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import {
   isGlobal as detectIsGlobal,
@@ -85,7 +86,7 @@ export function get(obj, keyName) {
   if (desc) {
     return desc.get(obj, keyName);
   } else {
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors && meta && meta.watching[keyName] > 0) {
         ret = meta.values[keyName];
       } else {

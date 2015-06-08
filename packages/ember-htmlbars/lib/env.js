@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import environment from "ember-metal/environment";
 
 import { hooks } from "htmlbars-runtime";
@@ -100,7 +101,7 @@ registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
 registerKeyword('each', each);
 registerKeyword('readonly', readonly);
-if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+if (isEnabled('ember-htmlbars-get-helper')) {
   registerKeyword('get', getKeyword);
 }
 

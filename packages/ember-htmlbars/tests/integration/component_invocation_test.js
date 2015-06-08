@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 import jQuery from "ember-views/system/jquery";
@@ -340,7 +341,7 @@ QUnit.test('template specified inline is available from Views looked up as compo
   equal(view.$().text(), 'Whoop, whoop!', 'template inline works properly');
 });
 
-if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
+if (isEnabled('ember-views-component-block-info')) {
   QUnit.test('hasBlock is true when block supplied', function() {
     expect(1);
 
@@ -530,7 +531,7 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
   runAppend(view);
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+if (isEnabled('ember-htmlbars-component-helper')) {
   QUnit.test('{{component}} helper works with positional params', function() {
     registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
     registry.register('component:sample-component', Component.extend({
@@ -870,7 +871,7 @@ QUnit.test('non-block with each rendering child components', function() {
 });
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+if (isEnabled('ember-htmlbars-component-generation')) {
 
 QUnit.module('component - invocation (angle brackets)', {
   setup() {

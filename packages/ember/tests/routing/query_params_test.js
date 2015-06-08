@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 import { computed } from "ember-metal/computed";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 
@@ -119,7 +120,7 @@ QUnit.module("Routing with Query Params", {
   }
 });
 
-if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test("Single query params can be set on the route", function() {
     Router.map(function() {
