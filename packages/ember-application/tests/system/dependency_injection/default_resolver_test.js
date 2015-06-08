@@ -10,7 +10,6 @@ import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
 import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 import makeHandlebarsBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeHTMLBarsBoundHelper from "ember-htmlbars/system/make_bound_helper";
@@ -145,7 +144,7 @@ QUnit.test("the default resolver resolves helpers on the namespace", function() 
 
   equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
   equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
-  ok(resolvedLegacy instanceof HandlebarsCompatibleHelper, 'legacy function helper is wrapped in HandlebarsCompatibleHelper');
+  ok(typeof resolvedLegacy === 'function', 'legacy function helper is resolved');
   equal(resolvedView, ViewHelper, 'resolves view helper');
   equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
   equal(resolvedLegacyHandlebars, LegacyHandlebarsBoundHelper, 'resolves legacy Handlebars bound helper');
