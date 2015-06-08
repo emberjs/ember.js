@@ -496,7 +496,7 @@ export default Mixin.create({
 
     @method toggleProperty
     @param {String} keyName The name of the property to toggle
-    @return {Object} The new property value
+    @return {Boolean} The new property value
     @public
   */
   toggleProperty(keyName) {
