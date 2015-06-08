@@ -17,7 +17,7 @@
     "ember-views-component-block-info": true,
     "ember-routing-core-outlet": false,
     "ember-libraries-isregistered": false,
-    "ember-routing-htmlbars-improved-actions": true
+    "ember-routing-htmlbars-improved-actions": true,
     "ember-htmlbars-helper": true
   },
   "debugStatements": [
