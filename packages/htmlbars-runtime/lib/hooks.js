@@ -4,6 +4,7 @@ import { createChildMorph } from "./render";
 import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 import { RenderState, clearMorph, renderAndCleanup } from "../htmlbars-util/template-utils";
+import { linkParams } from "../htmlbars-util/morph-utils";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -695,13 +696,14 @@ export function inline(morph, env, scope, path, params, hash, visitor) {
     var helper = env.hooks.lookupHelper(env, scope, path);
     var result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
 
+    if (result && result.link) {
+      morph.linkedResult = result.value;
+      linkParams(env, scope, morph, '@content-helper', [morph.linkedResult], null);
+    }
+
     if (result && 'value' in result) {
       value = env.hooks.getValue(result.value);
       hasValue = true;
-    }
-
-    if (result && result.link) {
-      morph.linkedResult = result.value;
     }
   }
 
