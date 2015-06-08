@@ -5,6 +5,7 @@
 
 // BEGIN IMPORTS
 import Ember from "ember-metal/core";
+import isEnabled, { FEATURES } from "ember-metal/features";
 import merge from "ember-metal/merge";
 import {
   instrument,
@@ -378,7 +379,7 @@ Ember.isPresent = isPresent;
 
 Ember.merge = merge;
 
-if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
+if (isEnabled('ember-metal-stream')) {
   Ember.stream = {
     Stream: Stream,
 
@@ -394,6 +395,9 @@ if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
     chain: chain
   };
 }
+
+Ember.FEATURES = FEATURES;
+Ember.FEATURES.isEnabled = isEnabled;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember

@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 
 import EmberHandlebars from "ember-htmlbars/compat";
@@ -107,7 +108,7 @@ function sharedTeardown() {
   });
 }
 
-if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module("Model Dep Query Params with Route-based configuration", {
     setup() {
       sharedSetup();

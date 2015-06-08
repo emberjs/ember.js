@@ -5,7 +5,8 @@
 import DAG from 'dag-map';
 import Registry from 'container/registry';
 
-import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import Ember from "ember-metal"; // Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import isEnabled from "ember-metal/features";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
@@ -293,7 +294,7 @@ var Application = Namespace.extend(DeferredMixin, {
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
-    if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+    if (isEnabled('ember-application-visit')) {
       if (this.autoboot) {
         // Create subclass of Ember.Router for this Application instance.
         // This is to ensure that someone reopening `App.Router` does not
@@ -686,7 +687,7 @@ var Application = Namespace.extend(DeferredMixin, {
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert("No application initializer named '" + name + "'", !!initializer);
 
-      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+      if (isEnabled("ember-application-initializer-context")) {
         initializer.initialize(registry, App);
       } else {
         var ref = initializer.initialize;
@@ -799,7 +800,7 @@ var Application = Namespace.extend(DeferredMixin, {
   }
 });
 
-if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+if (isEnabled('ember-application-instance-initializers')) {
   Application.reopen({
     instanceInitializer(options) {
       this.constructor.instanceInitializer(options);
@@ -811,7 +812,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   });
 }
 
-if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+if (isEnabled('ember-application-visit')) {
   Application.reopen({
     /**
       Creates a new instance of the application and instructs it to route to the

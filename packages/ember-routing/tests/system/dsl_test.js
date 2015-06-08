@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberRouter from "ember-routing/system/router";
 import { forEach } from "ember-metal/enumerable_utils";
 
@@ -79,7 +80,7 @@ QUnit.test("should retain resource namespace if nested with routes", function() 
 });
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+if (isEnabled("ember-routing-named-substates")) {
 
 QUnit.test("should add loading and error routes if _isRouterMapResult is true", function() {
   Router.map(function() {

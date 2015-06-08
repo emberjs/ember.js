@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import { indexOf } from "ember-metal/array";
@@ -333,7 +334,7 @@ QUnit.test("initializers are per-app", function() {
   });
 });
 
-if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+if (isEnabled("ember-application-initializer-context")) {
   QUnit.test("initializers should be executed in their own context", function() {
     expect(1);
     var MyApplication = Application.extend();
@@ -355,7 +356,7 @@ if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
   });
 }
 
-if (Ember.FEATURES.isEnabled("ember-application-instance-initializers")) {
+if (isEnabled("ember-application-instance-initializers")) {
   QUnit.test("initializers should throw a deprecation warning when performing a lookup on the registry", function() {
     expect(1);
 

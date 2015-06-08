@@ -1,10 +1,11 @@
+import isEnabled from "ember-metal/features";
 import Stream from "ember-metal/streams/stream";
 import { labelFor } from "ember-metal/streams/utils";
 import { read, isStream } from "ember-metal/streams/utils";
 import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+if (isEnabled('ember-htmlbars-get-helper')) {
 
   var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
     var objParam = params[0];

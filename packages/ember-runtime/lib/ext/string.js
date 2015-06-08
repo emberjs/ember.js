@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert, Ember.FEATURES
+import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import {
   fmt,
   w,

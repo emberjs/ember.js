@@ -3,6 +3,7 @@
 */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import { meta as metaFor } from "ember-metal/utils";
 import {
   defineProperty as objectDefineProperty,
@@ -105,7 +106,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (desc instanceof Descriptor) {
     value = desc;
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (watching && hasPropertyAccessors) {
         objectDefineProperty(obj, keyName, {
           configurable: true,
@@ -124,7 +125,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (desc == null) {
       value = data;
 
-      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (isEnabled('mandatory-setter')) {
         if (watching && hasPropertyAccessors) {
           meta.values[keyName] = data;
           objectDefineProperty(obj, keyName, {

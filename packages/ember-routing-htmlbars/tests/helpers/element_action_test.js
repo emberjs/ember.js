@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert
+import isEnabled from "ember-metal/features";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
@@ -1000,7 +1001,7 @@ QUnit.test("a quoteless string parameter should resolve actionName, including pa
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+if (isEnabled("ember-routing-htmlbars-improved-actions")) {
 
   QUnit.test("a quoteless function parameter should be called, including arguments", function() {
     expect(2);

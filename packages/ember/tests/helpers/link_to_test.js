@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 
 import { objectControllerDeprecation } from "ember-runtime/controllers/object_controller";
 import EmberHandlebars from "ember-htmlbars/compat";
@@ -621,7 +622,7 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
 
 QUnit.test("The {{link-to}} helper unwraps controllers", function() {
 
-  if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+  if (isEnabled('ember-routing-transitioning-classes')) {
     expect(5);
   } else {
     expect(6);
@@ -1215,7 +1216,7 @@ QUnit.test("{{link-to}} active property respects changing parent route context",
 
 
 QUnit.test("{{link-to}} populates href with default query param values even without query-params object", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -1236,7 +1237,7 @@ QUnit.test("{{link-to}} populates href with default query param values even with
 });
 
 QUnit.test("{{link-to}} populates href with default query param values with empty query-params object", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -1257,7 +1258,7 @@ QUnit.test("{{link-to}} populates href with default query param values with empt
 });
 
 QUnit.test("{{link-to}} populates href with supplied query param values", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -1278,7 +1279,7 @@ QUnit.test("{{link-to}} populates href with supplied query param values", functi
 });
 
 QUnit.test("{{link-to}} populates href with partially supplied query param values", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -1303,7 +1304,7 @@ QUnit.test("{{link-to}} populates href with partially supplied query param value
 });
 
 QUnit.test("{{link-to}} populates href with partially supplied query param values, but omits if value is default value", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -1324,7 +1325,7 @@ QUnit.test("{{link-to}} populates href with partially supplied query param value
 });
 
 QUnit.test("{{link-to}} populates href with fully supplied query param values", function() {
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Ember.Route.extend({
       queryParams: {
         foo: {

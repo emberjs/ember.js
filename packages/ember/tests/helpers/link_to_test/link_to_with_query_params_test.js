@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -61,7 +62,7 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 
-if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module("The {{link-to}} helper: invoking with query params when defined on a route", {
     setup() {
       Ember.run(function() {

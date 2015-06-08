@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.STRINGS, Ember.FEATURES
+import Ember from "ember-metal/core"; // Ember.STRINGS
 import {
   inspect as emberInspect
 } from "ember-metal/utils";

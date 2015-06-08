@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
+import isEnabled from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -522,7 +523,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       emberRouter.didTransition(infos);
     };
 
-    if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+    if (isEnabled('ember-router-willtransition')) {
       router.willTransition = function(oldInfos, newInfos, transition) {
         emberRouter.willTransition(oldInfos, newInfos, transition);
       };
@@ -814,7 +815,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
   var targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
   var namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
-  if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+  if (isEnabled("ember-routing-named-substates")) {
     // First, try a named loading state, e.g. 'foo_loading'
     childName = namespace + targetChildRouteName + '_' + name;
     if (routeHasBeenDefined(router, childName)) {

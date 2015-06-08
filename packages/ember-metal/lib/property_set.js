@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import { _getPath as getPath } from "ember-metal/property_get";
 import {
   PROPERTY_DID_CHANGE,
@@ -85,7 +86,7 @@ export function set(obj, keyName, value, tolerant) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
       if (meta.proto !== obj) {
-        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
             currentValue = meta.values[keyName];
           } else {
@@ -98,7 +99,7 @@ export function set(obj, keyName, value, tolerant) {
       // only trigger a change if the value has changed
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
-        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
             if (
               (currentValue === undefined && !(keyName in obj)) ||

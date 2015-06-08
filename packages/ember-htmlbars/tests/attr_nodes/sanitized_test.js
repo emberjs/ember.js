@@ -1,5 +1,6 @@
 /* jshint scripturl:true */
 
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
@@ -16,7 +17,7 @@ QUnit.module("ember-htmlbars: sanitized attribute", {
 
 // jscs:disable validateIndentation
 // jscs:disable disallowTrailingWhitespace
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
 var badTags = [
   { tag: 'a', attr: 'href',

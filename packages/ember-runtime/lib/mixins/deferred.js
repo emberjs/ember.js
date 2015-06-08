@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.Test
+import Ember from "ember-metal/core"; // Ember.Test
 import { get } from "ember-metal/property_get";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";

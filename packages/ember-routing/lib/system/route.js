@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, A, deprecate, assert, Logger
+import isEnabled from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -119,7 +120,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
 
-      if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+      if (isEnabled('ember-routing-route-configured-query-params')) {
         if (controllerDefinedQueryParameterConfiguration.length) {
           Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
         }
@@ -150,7 +151,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var desc = combinedQueryParameterConfiguration[propName];
 
-      if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+      if (isEnabled('ember-routing-route-configured-query-params')) {
         // apply default values to controllers
         // detect that default value defined on router config
         if (desc.hasOwnProperty('defaultValue')) {
@@ -2214,7 +2215,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   var keysAlreadyMergedOrSkippable;
   var qps = {};
 
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+  if (isEnabled('ember-routing-route-configured-query-params')) {
     keysAlreadyMergedOrSkippable = {};
   } else {
     keysAlreadyMergedOrSkippable = {

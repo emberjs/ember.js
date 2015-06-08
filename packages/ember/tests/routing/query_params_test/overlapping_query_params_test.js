@@ -1,4 +1,5 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -86,7 +87,7 @@ function sharedTeardown() {
 }
 
 
-if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module("Query Params - overlapping query param property names when configured on the route", {
     setup() {
       sharedSetup();
