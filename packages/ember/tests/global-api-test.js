@@ -10,3 +10,7 @@ function confirmExport(property) {
 
 confirmExport('Ember.DefaultResolver');
 confirmExport('Ember.generateController');
+if (Ember.FEATURES.isEnabled('ember-htmlbars-helper')) {
+  confirmExport('Ember.Helper');
+  confirmExport('Ember.Helper.helper');
+}
