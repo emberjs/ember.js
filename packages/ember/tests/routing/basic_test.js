@@ -1164,7 +1164,7 @@ QUnit.asyncTest("Events are triggered on the controller if a matching action nam
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1198,7 +1198,7 @@ QUnit.asyncTest("Events are triggered on the current state when defined in `acti
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1236,7 +1236,7 @@ QUnit.asyncTest("Events defined in `actions` object are triggered on the current
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1271,7 +1271,7 @@ QUnit.asyncTest("Events are triggered on the current state when defined in `even
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1310,7 +1310,7 @@ QUnit.asyncTest("Events defined in `events` object are triggered on the current 
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1392,7 +1392,7 @@ QUnit.asyncTest("Actions are not triggered on the controller if a matching actio
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1431,7 +1431,7 @@ QUnit.asyncTest("actions can be triggered with multiple arguments", function() {
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });

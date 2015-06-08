@@ -461,7 +461,7 @@ QUnit.test("{{render}} helper should link child controllers to the parent contro
 
   var button = jQuery("#parent-action");
   var actionId = button.data('ember-action');
-  var action = ActionManager.registeredActions[actionId];
+  var [ action ] = ActionManager.registeredActions[actionId];
   var handler = action.handler;
 
   equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
