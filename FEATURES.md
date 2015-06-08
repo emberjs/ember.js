@@ -251,3 +251,8 @@ for a detailed explanation.
   compatible with action subexpressions.
 
   Per RFC [#50](https://github.com/emberjs/rfcs/pull/50)
+
+* `ember-htmlbars-helper`
+
+  Implements RFC https://github.com/emberjs/rfcs/pull/53, a public helper
+  api.

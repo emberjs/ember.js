@@ -1,5 +1,5 @@
 import Component from "ember-views/views/component";
-import Helper from "ember-htmlbars/helper";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import Registry from "container/registry";
@@ -24,7 +24,7 @@ QUnit.module('ember-htmlbars: custom app helpers', {
 });
 
 QUnit.test('dashed shorthand helper is resolved from container', function() {
-  var HelloWorld = Helper.helper(function() {
+  var HelloWorld = makeHelper(function() {
     return 'hello world';
   });
   registry.register('helper:hello-world', HelloWorld);
@@ -87,7 +87,7 @@ QUnit.test('dashed helper can recompute a new value', function() {
 
 QUnit.test('dashed shorthand helper is called for param changes', function() {
   var count = 0;
-  var HelloWorld = Helper.helper(function() {
+  var HelloWorld = makeHelper(function() {
     return ++count;
   });
   registry.register('helper:hello-world', HelloWorld);
@@ -137,7 +137,7 @@ QUnit.test('dashed helper compute is called for param changes', function() {
 
 QUnit.test('dashed shorthand helper receives params, hash', function() {
   var params, hash;
-  var HelloWorld = Helper.helper(function(_params, _hash) {
+  var HelloWorld = makeHelper(function(_params, _hash) {
     params = _params;
     hash = _hash;
   });
@@ -201,7 +201,7 @@ QUnit.test('dashed helper usable in subexpressions', function() {
 });
 
 QUnit.test('dashed helper not usable with a block', function() {
-  var SomeHelper = Helper.helper(function() {});
+  var SomeHelper = makeHelper(function() {});
   registry.register('helper:some-helper', SomeHelper);
   component = Component.extend({
     container,
@@ -338,7 +338,7 @@ QUnit.test('dashed helper used in subexpression is destroyed', function() {
       this._super(...arguments);
     }
   });
-  var JoinWords = Helper.helper(function(params) {
+  var JoinWords = makeHelper(function(params) {
     return params.join(' ');
   });
   registry.register('helper:dynamic-segment', DynamicSegment);

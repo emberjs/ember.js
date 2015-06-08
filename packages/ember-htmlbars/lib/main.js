@@ -29,7 +29,7 @@ import legacyEachWithControllerHelper from "ember-htmlbars/helpers/-legacy-each-
 import legacyEachWithKeywordHelper from "ember-htmlbars/helpers/-legacy-each-with-keyword";
 import htmlSafeHelper from "ember-htmlbars/helpers/-html-safe";
 import DOMHelper from "ember-htmlbars/system/dom-helper";
-import Helper from "ember-htmlbars/helper";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -64,4 +64,7 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-Ember.Helper = Helper;
+if (Ember.FEATURES.isEnabled('ember-htmlbars-helpers')) {
+  Helper.helper = makeHelper;
+  Ember.Helper = Helper;
+}

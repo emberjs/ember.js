@@ -9,7 +9,7 @@ import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
-import Helper from "ember-htmlbars/helper";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
 import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 import makeHandlebarsBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
@@ -107,7 +107,7 @@ QUnit.test("the default resolver resolves helpers", function() {
 });
 
 QUnit.test("the default resolver resolves container-registered helpers", function() {
-  let shorthandHelper = Helper.helper(function() {});
+  let shorthandHelper = makeHelper(function() {});
   let helper = Helper.extend();
 
   application.register('helper:shorthand', shorthandHelper);
@@ -122,7 +122,7 @@ QUnit.test("the default resolver resolves container-registered helpers", functio
 });
 
 QUnit.test("the default resolver resolves helpers on the namespace", function() {
-  let ShorthandHelper = Helper.helper(function() {});
+  let ShorthandHelper = makeHelper(function() {});
   let CompleteHelper = Helper.extend();
   let LegacyBareFunctionHelper = function() {};
   let LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
