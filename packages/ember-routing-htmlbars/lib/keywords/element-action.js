@@ -54,7 +54,10 @@ export default {
   },
 
   render: function(node, env, scope, params, hash, template, inverse, visitor) {
-    var actionId = ActionHelper.registerAction({
+    let actionId = env.dom.getAttribute(node.element, 'data-ember-action') || uuid();
+
+    ActionHelper.registerAction({
+      actionId,
       node: node,
       eventName: hash.on || "click",
       bubbles: hash.bubbles,
@@ -77,10 +80,14 @@ export var ActionHelper = {};
 // that were using this undocumented API.
 ActionHelper.registeredActions = ActionManager.registeredActions;
 
-ActionHelper.registerAction = function({ node, eventName, preventDefault, bubbles, allowedKeys }) {
-  var actionId = uuid();
+ActionHelper.registerAction = function({ actionId, node, eventName, preventDefault, bubbles, allowedKeys }) {
+  var actions = ActionManager.registeredActions[actionId];
 
-  ActionManager.registeredActions[actionId] = {
+  if (!actions) {
+    actions = ActionManager.registeredActions[actionId] = [];
+  }
+
+  actions.push({
     eventName,
     handler(event) {
       if (!isAllowedEvent(event, allowedKeys)) {
@@ -116,7 +123,7 @@ ActionHelper.registerAction = function({ node, eventName, preventDefault, bubble
         }
       });
     }
-  };
+  });
 
   return actionId;
 };
