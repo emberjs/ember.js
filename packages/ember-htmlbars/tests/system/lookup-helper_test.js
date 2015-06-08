@@ -2,6 +2,7 @@ import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
 function generateEnv(helpers, container) {
   return {
@@ -95,7 +96,7 @@ QUnit.test('looks up a shorthand helper in the container', function() {
 });
 
 QUnit.test('fails with a useful error when resolving a function', function() {
-  expect(1);
+  expect(2);
   var container = generateContainer();
   var env = generateEnv(null, container);
   var view = {
@@ -105,7 +106,9 @@ QUnit.test('fails with a useful error when resolving a function', function() {
   function someName() {}
   view.container._registry.register('helper:some-name', someName);
 
-  expectAssertion(function() {
-    lookupHelper('some-name', view, env);
-  }, /The factory for "some-name" is not an Ember helper/);
+  var actual;
+  expectDeprecation(function() {
+    actual = lookupHelper('some-name', view, env);
+  }, /helper "some-name" is a deprecated bare function helper/);
+  ok(actual instanceof HandlebarsCompatibleHelper, 'function looks up as compat helper');
 });
