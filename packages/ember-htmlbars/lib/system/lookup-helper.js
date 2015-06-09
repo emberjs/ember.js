@@ -11,8 +11,14 @@ export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;
 });
 
-export function validateLazyHelperName(helperName, container, keywords) {
-  return container && CONTAINS_DASH_CACHE.get(helperName) && !(helperName in keywords);
+export function validateLazyHelperName(helperName, container, keywords, knownHelpers) {
+  if (!container || (helperName in keywords)) {
+    return false;
+  }
+
+  if (knownHelpers[helperName] || CONTAINS_DASH_CACHE.get(helperName)) {
+    return true;
+  }
 }
 
 function isLegacyBareHelper(helper) {
@@ -38,7 +44,7 @@ export function findHelper(name, view, env) {
 
   if (!helper) {
     var container = env.container;
-    if (validateLazyHelperName(name, container, env.hooks.keywords)) {
+    if (validateLazyHelperName(name, container, env.hooks.keywords, env.knownHelpers)) {
       var helperName = 'helper:' + name;
       if (container._registry.has(helperName)) {
         helper = container.lookupFactory(helperName);

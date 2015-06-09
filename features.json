@@ -18,7 +18,9 @@
     "ember-routing-core-outlet": false,
     "ember-libraries-isregistered": false,
     "ember-routing-htmlbars-improved-actions": true,
-    "ember-htmlbars-helper": true
+    "ember-htmlbars-get-helper": false,
+    "ember-htmlbars-helper": true,
+    "ember-htmlbars-dashless-helpers": true
   },
   "debugStatements": [
     "Ember.warn",

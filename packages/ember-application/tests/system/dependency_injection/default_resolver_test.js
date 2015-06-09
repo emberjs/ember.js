@@ -264,3 +264,23 @@ QUnit.test("no deprecation warning for component factories that extend from Embe
   application.FooView = Component.extend();
   registry.resolve('component:foo');
 });
+
+QUnit.test('knownForType returns each item for a given type found', function() {
+  application.FooBarHelper = 'foo';
+  application.BazQuxHelper = 'bar';
+
+  let found = registry.resolver.knownForType('helper');
+
+  deepEqual(found, {
+    'helper:foo-bar': true,
+    'helper:baz-qux': true
+  });
+});
+
+QUnit.test('knownForType is not required to be present on the resolver', function() {
+  delete registry.resolver.__resolver__.knownForType;
+
+  registry.resolver.knownForType('helper', function() { });
+
+  ok(true, 'does not error');
+});
