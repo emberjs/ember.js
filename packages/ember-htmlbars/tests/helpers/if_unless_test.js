@@ -389,7 +389,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
     template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
-    MyView: Ember.View.extend({
+    MyView: EmberView.extend({
       tagName: 'input'
     }),
     display: false

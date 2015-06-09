@@ -4,6 +4,7 @@ import { forEach } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
+import EmberView from "ember-views/views/view";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -316,7 +317,7 @@ QUnit.test("Renders correct view with slash notation", function() {
     }
   });
 
-  App.HomePageView = Ember.View.extend({
+  App.HomePageView = EmberView.extend({
     name: "Home/Page"
   });
 
@@ -338,7 +339,7 @@ QUnit.test("Renders the view given in the view option", function() {
     }
   });
 
-  App.HomePageView = Ember.View.extend({
+  App.HomePageView = EmberView.extend({
     name: "Home/Page"
   });
 
@@ -356,7 +357,7 @@ QUnit.test('render does not replace templateName if user provided', function() {
     "<p>THIS IS THE REAL HOME</p>"
   );
 
-  App.HomeView = Ember.View.extend({
+  App.HomeView = EmberView.extend({
     templateName: 'the_real_home_template'
   });
   App.HomeController = Ember.Controller.extend();
@@ -372,7 +373,7 @@ QUnit.test('render does not replace template if user provided', function () {
     this.route("home", { path: "/" });
   });
 
-  App.HomeView = Ember.View.extend({
+  App.HomeView = EmberView.extend({
     template: compile("<p>THIS IS THE REAL HOME</p>")
   });
   App.HomeController = Ember.Controller.extend();
@@ -459,7 +460,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
     }
   });
 
-  App.HomeView = Ember.View.extend({
+  App.HomeView = EmberView.extend({
     template: compile("<h3>This should not be rendered</h3><p>{{model.home}}</p>")
   });
 
@@ -468,7 +469,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
       home: 'Tinytroll'
     }
   });
-  App.HomepageView = Ember.View.extend({
+  App.HomepageView = EmberView.extend({
     layout: compile(
       "<span>Outer</span>{{yield}}<span>troll</span>"
     ),
@@ -2182,13 +2183,13 @@ QUnit.test("Only use route rendered into main outlet for default into property o
     this.resource("posts", function() {});
   });
 
-  App.PostsMenuView = Ember.View.extend({
+  App.PostsMenuView = EmberView.extend({
     tagName: 'div',
     templateName: 'posts/menu',
     classNames: ['posts-menu']
   });
 
-  App.PostsIndexView = Ember.View.extend({
+  App.PostsIndexView = EmberView.extend({
     tagName: 'p',
     classNames: ['posts-index']
   });
@@ -2335,7 +2336,7 @@ QUnit.test("The template is not re-rendered when the route's context changes", f
   });
 
   var insertionCount = 0;
-  App.PageView = Ember.View.extend({
+  App.PageView = EmberView.extend({
     didInsertElement() {
       insertionCount += 1;
     }
@@ -2395,7 +2396,7 @@ QUnit.test("The template is not re-rendered when two routes present the exact sa
   App.SharedController = Ember.Controller.extend();
 
   var insertionCount = 0;
-  App.SharedView = Ember.View.extend({
+  App.SharedView = EmberView.extend({
     templateName: 'shared',
     didInsertElement() {
       insertionCount += 1;
@@ -2496,18 +2497,18 @@ QUnit.test("Route should tear down multiple outlets", function() {
     this.resource("users", function() {});
   });
 
-  App.PostsMenuView = Ember.View.extend({
+  App.PostsMenuView = EmberView.extend({
     tagName: 'div',
     templateName: 'posts/menu',
     classNames: ['posts-menu']
   });
 
-  App.PostsIndexView = Ember.View.extend({
+  App.PostsIndexView = EmberView.extend({
     tagName: 'p',
     classNames: ['posts-index']
   });
 
-  App.PostsFooterView = Ember.View.extend({
+  App.PostsFooterView = EmberView.extend({
     tagName: 'div',
     templateName: 'posts/footer',
     classNames: ['posts-footer']
@@ -2575,16 +2576,16 @@ QUnit.test("Route supports clearing outlet explicitly", function() {
     this.resource("users", function() {});
   });
 
-  App.PostsIndexView = Ember.View.extend({
+  App.PostsIndexView = EmberView.extend({
     classNames: ['posts-index']
   });
 
-  App.PostsModalView = Ember.View.extend({
+  App.PostsModalView = EmberView.extend({
     templateName: 'posts/modal',
     classNames: ['posts-modal']
   });
 
-  App.PostsExtraView = Ember.View.extend({
+  App.PostsExtraView = EmberView.extend({
     templateName: 'posts/extra',
     classNames: ['posts-extra']
   });
@@ -2657,11 +2658,11 @@ QUnit.test("Route supports clearing outlet using string parameter", function() {
     this.resource("users", function() {});
   });
 
-  App.PostsIndexView = Ember.View.extend({
+  App.PostsIndexView = EmberView.extend({
     classNames: ['posts-index']
   });
 
-  App.PostsModalView = Ember.View.extend({
+  App.PostsModalView = EmberView.extend({
     templateName: 'posts/modal',
     classNames: ['posts-modal']
   });
@@ -3486,7 +3487,7 @@ QUnit.test("Can rerender application view multiple times when it contains an out
   Ember.TEMPLATES.application = compile("App{{outlet}}");
   Ember.TEMPLATES.index = compile("Hello world");
 
-  registry.register('view:application', Ember.View.extend({
+  registry.register('view:application', EmberView.extend({
     elementId: 'im-special'
   }));
 
@@ -3495,13 +3496,13 @@ QUnit.test("Can rerender application view multiple times when it contains an out
   equal(Ember.$('#qunit-fixture').text(), "AppHello world", "initial render");
 
   Ember.run(function() {
-    Ember.View.views['im-special'].rerender();
+    EmberView.views['im-special'].rerender();
   });
 
   equal(Ember.$('#qunit-fixture').text(), "AppHello world", "second render");
 
   Ember.run(function() {
-    Ember.View.views['im-special'].rerender();
+    EmberView.views['im-special'].rerender();
   });
 
   equal(Ember.$('#qunit-fixture').text(), "AppHello world", "third render");
@@ -3908,7 +3909,7 @@ QUnit.test("Can render with layout", function() {
   Ember.TEMPLATES.index = compile('index-template');
   Ember.TEMPLATES['my-layout'] = compile('my-layout [{{yield}}]');
 
-  App.IndexView = Ember.View.extend({
+  App.IndexView = EmberView.extend({
     layoutName: 'my-layout'
   });
 
