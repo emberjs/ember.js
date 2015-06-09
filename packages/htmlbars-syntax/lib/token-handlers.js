@@ -23,6 +23,7 @@ var tokenHandlers = {
   StartTag: function(tag) {
     var element = buildElement(tag.tagName, tag.attributes, tag.modifiers || [], []);
     element.loc = {
+      source: null,
       start: { line: tag.loc.start.line, column: tag.loc.start.column},
       end: { line: null, column: null}
     };
@@ -90,12 +91,15 @@ var tokenHandlers = {
 
     validateEndTag(tag, element, selfClosing);
 
+    element.loc.end.line = tag.loc.end.line;
+    element.loc.end.column = tag.loc.end.column;
+
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
     } else {
       var program = buildProgram(element.children);
       parseComponentBlockParams(element, program);
-      var component = buildComponent(element.tag, element.attributes, program);
+      var component = buildComponent(element.tag, element.attributes, program, element.loc);
       appendChild(parent, component);
     }
 

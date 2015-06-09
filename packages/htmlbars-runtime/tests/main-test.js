@@ -1,6 +1,7 @@
 /*globals SVGElement, SVGLinearGradientElement */
 import { hooks } from "../htmlbars-runtime";
-import render, { manualElement, attachAttributes } from "../htmlbars-runtime/render";
+import render from "../htmlbars-runtime/render";
+import { manualElement, attachAttributes } from "../htmlbars-runtime/render";
 import { compile } from "../htmlbars-compiler/compiler";
 import { hostBlock, wrap } from "../htmlbars-runtime/hooks";
 import { equalTokens } from "../htmlbars-test-helpers";
