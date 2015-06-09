@@ -293,7 +293,7 @@ for a detailed explanation.
     displayedPropertyTitle: 'First Name',
     displayedPropertyKey: 'firstName'
   };
-  ```  
+  ```
 
   ```hbs
   <h2>{{displayedPropertyTitle}}</h2>
@@ -315,3 +315,8 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/53, a public helper
   api.
+
+* `ember-htmlbars-dashless-helpers`
+
+  Implements RFC https://github.com/emberjs/rfcs/pull/58, adding support for
+  dashless helpers.

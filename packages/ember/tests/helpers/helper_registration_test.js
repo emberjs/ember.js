@@ -1,5 +1,6 @@
 import "ember";
 
+import isEnabled from "ember-metal/features";
 import EmberHandlebars from "ember-htmlbars/compat";
 import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 import Helper from "ember-htmlbars/helper";
@@ -102,27 +103,45 @@ QUnit.test("Bound `makeViewHelper` helpers registered on the container can be us
   equal(Ember.$('#wrapper').text(), "woot!! woot!!alex", "The helper was invoked from the container");
 });
 
-// we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
-// and we are not going to recreate the handlebars helperMissing concept
-QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
+if (isEnabled('ember-htmlbars-dashless-helpers')) {
+  QUnit.test("Undashed helpers registered on the container can be invoked", function() {
+    Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>");
 
-  // Note: the reason we're not allowing undashed helpers is to avoid
-  // a possible perf hit in hot code paths, i.e. _triageMustache.
-  // We only presently perform container lookups if prop.indexOf('-') >= 0
+    expectDeprecation(function() {
+      boot(function() {
+        registry.register('helper:omg', function([value]) {
+          return "OMG";
+        });
 
-  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{omg 'GRRR'}}|{{yorp}}|{{yorp 'ahh'}}</div>");
-
-  expectAssertion(function() {
-    boot(function() {
-      registry.register('helper:omg', function() {
-        return "OMG";
-      });
-      registry.register('helper:yorp', makeBoundHelper(function() {
-        return "YORP";
-      }));
+        registry.register('helper:yorp', makeBoundHelper(function(value) {
+          return value;
+        }));
+      }, /Please use Ember.Helper.build to wrap helper functions./);
     });
-  }, /A helper named 'omg' could not be found/);
-});
+
+    equal(Ember.$('#wrapper').text(), "OMG|boo|ya", "The helper was invoked from the container");
+  });
+} else {
+  QUnit.test("Undashed helpers registered on the container can not (presently) be invoked", function() {
+
+    // Note: the reason we're not allowing undashed helpers is to avoid
+    // a possible perf hit in hot code paths, i.e. _triageMustache.
+    // We only presently perform container lookups if prop.indexOf('-') >= 0
+
+    Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{omg 'GRRR'}}|{{yorp}}|{{yorp 'ahh'}}</div>");
+
+    expectAssertion(function() {
+      boot(function() {
+        registry.register('helper:omg', function() {
+          return "OMG";
+        });
+        registry.register('helper:yorp', makeBoundHelper(function() {
+          return "YORP";
+        }));
+      });
+    }, /A helper named 'omg' could not be found/);
+  });
+}
 
 QUnit.test("Helpers can receive injections", function() {
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{full-name}}</div>");

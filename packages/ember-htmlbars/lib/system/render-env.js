@@ -1,4 +1,5 @@
 import defaultEnv from "ember-htmlbars/env";
+import discoverKnownHelpers from "ember-htmlbars/system/discover-known-helpers";
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];
@@ -11,6 +12,7 @@ export default function RenderEnv(options) {
   this.container = options.container;
   this.renderer = options.renderer;
   this.dom = options.dom;
+  this.knownHelpers = options.knownHelpers || discoverKnownHelpers(options.container);
 
   this.hooks = defaultEnv.hooks;
   this.helpers = defaultEnv.helpers;
@@ -37,7 +39,8 @@ RenderEnv.prototype.childWithView = function(view) {
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: this.hasParentOutlet
+    hasParentOutlet: this.hasParentOutlet,
+    knownHelpers: this.knownHelpers
   });
 };
 
@@ -51,6 +54,7 @@ RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: hasParentOutlet
+    hasParentOutlet: hasParentOutlet,
+    knownHelpers: this.knownHelpers
   });
 };
