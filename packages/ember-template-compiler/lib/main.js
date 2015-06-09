@@ -16,6 +16,7 @@ import TransformComponentAttrsIntoMut from "ember-template-compiler/plugins/tran
 import TransformComponentCurlyToReadonly from "ember-template-compiler/plugins/transform-component-curly-to-readonly";
 import TransformAngleBracketComponents from "ember-template-compiler/plugins/transform-angle-bracket-components";
 import TransformInputOnToOnEvent from "ember-template-compiler/plugins/transform-input-on-to-onEvent";
+import DeprecateViewAndControllerPaths from "ember-template-compiler/plugins/deprecate-view-and-controller-paths";
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import "ember-template-compiler/compat";
@@ -32,6 +33,7 @@ registerPlugin('ast', TransformComponentAttrsIntoMut);
 registerPlugin('ast', TransformComponentCurlyToReadonly);
 registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
+registerPlugin('ast', DeprecateViewAndControllerPaths);
 
 export {
   _Ember,
