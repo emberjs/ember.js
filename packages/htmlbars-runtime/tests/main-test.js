@@ -145,11 +145,11 @@ test("attachAttributes function attaches attributes to an existing element", fun
 });
 
 test("the 'attributes' statement attaches an attributes template to a parent", function() {
-  env.hooks.attributes = function(morph, env, scope, template, parentNode, visitor) {
+  env.hooks.attributes = function(morph, env, scope, template, fragment, visitor) {
     let block = morph.state.block;
 
     if (!block) {
-      let element = parentNode.firstNode;
+      let element = fragment.firstChild;
       template.element = element;
       block = morph.state.block = blockFor(render, template, { scope: scope });
     }
