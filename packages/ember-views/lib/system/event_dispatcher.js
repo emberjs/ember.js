@@ -192,12 +192,16 @@ export default EmberObject.extend({
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
       var actions   = ActionManager.registeredActions[actionId];
 
+      // We have to check for actions here since in some cases, jQuery will trigger
+      // an event on `removeChild` (i.e. focusout) after we've already torn down the
+      // action handlers for the view.
+      if (!actions) {
+        return;
+      }
+
       for (let index = 0, length = actions.length; index < length; index++) {
         let action = actions[index];
 
-        // We have to check for action here since in some cases, jQuery will trigger
-        // an event on `removeChild` (i.e. focusout) after we've already torn down the
-        // action handlers for the view.
         if (action && action.eventName === eventName) {
           return action.handler(evt);
         }
