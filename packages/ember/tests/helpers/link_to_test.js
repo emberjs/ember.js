@@ -2,6 +2,7 @@ import "ember";
 
 import { objectControllerDeprecation } from "ember-runtime/controllers/object_controller";
 import EmberHandlebars from "ember-htmlbars/compat";
+import EmberView from "ember-views/views/view";
 
 var compile = EmberHandlebars.compile;
 
@@ -77,7 +78,7 @@ QUnit.module("The {{link-to}} helper", {
       Ember.TEMPLATES.about = compile("<h3>About</h3>{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'about' id='self-link'}}Self{{/link-to}}");
       Ember.TEMPLATES.item = compile("<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
-      AppView = Ember.View.extend({
+      AppView = EmberView.extend({
         templateName: 'app'
       });
 
@@ -663,7 +664,7 @@ QUnit.test("The {{link-to}} helper unwraps controllers", function() {
 });
 
 QUnit.test("The {{link-to}} helper doesn't change view context", function() {
-  App.IndexView = Ember.View.extend({
+  App.IndexView = EmberView.extend({
     elementId: 'index',
     name: 'test',
     isTrue: true
@@ -689,7 +690,7 @@ QUnit.test("Quoteless route param performs property lookup", function() {
     equal(normalizeUrl(Ember.$('#view-link', '#qunit-fixture').attr('href')), href);
   }
 
-  App.IndexView = Ember.View.extend({
+  App.IndexView = EmberView.extend({
     foo: 'index',
     elementId: 'index-view'
   });
@@ -709,7 +710,7 @@ QUnit.test("Quoteless route param performs property lookup", function() {
   assertEquality('/');
 
   var controller = container.lookup('controller:index');
-  var view = Ember.View.views['index-view'];
+  var view = EmberView.views['index-view'];
   Ember.run(function() {
     controller.set('foo', 'about');
     view.set('foo', 'about');
@@ -1075,7 +1076,7 @@ QUnit.test("The non-block form {{link-to}} performs property lookup", function()
     equal(normalizeUrl(Ember.$('#view-link', '#qunit-fixture').attr('href')), href);
   }
 
-  App.IndexView = Ember.View.extend({
+  App.IndexView = EmberView.extend({
     foo: 'index',
     elementId: 'index-view'
   });
@@ -1095,7 +1096,7 @@ QUnit.test("The non-block form {{link-to}} performs property lookup", function()
   assertEquality('/');
 
   var controller = container.lookup('controller:index');
-  var view = Ember.View.views['index-view'];
+  var view = EmberView.views['index-view'];
   Ember.run(function() {
     controller.set('foo', 'about');
     view.set('foo', 'about');
