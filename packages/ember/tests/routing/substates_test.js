@@ -2,6 +2,7 @@ import "ember";
 import isEnabled from "ember-metal/features";
 
 import EmberHandlebars from "ember-htmlbars/compat";
+import EmberView from "ember-views/views/view";
 
 var compile = EmberHandlebars.compile;
 
@@ -468,7 +469,7 @@ if (isEnabled("ember-routing-named-substates")) {
       }
     });
 
-    App.ApplicationLoadingView = Ember.View.extend({
+    App.ApplicationLoadingView = EmberView.extend({
       elementId: 'toplevel-loading'
     });
 

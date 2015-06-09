@@ -1,5 +1,6 @@
 import "ember";
 import EmberHandlebars from "ember-htmlbars/compat";
+import EmberView from "ember-views/views/view";
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -78,7 +79,7 @@ QUnit.test('the controller property is provided to route driven views', function
     }
   });
 
-  App.ApplicationView = Ember.View.extend({
+  App.ApplicationView = EmberView.extend({
     init: function() {
       this._super(...arguments);
       applicationViewController = this.get('controller');

@@ -20,7 +20,7 @@ import {
 
 import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from "ember-views/views/core_view";
-import View from "ember-views/views/view";
+import { DeprecatedView } from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
 import Component from "ember-views/views/component";
@@ -63,7 +63,7 @@ ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
 Ember.CoreView = DeprecatedCoreView;
-Ember.View = View;
+Ember.View = DeprecatedView;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 Ember.View._Renderer = Renderer;

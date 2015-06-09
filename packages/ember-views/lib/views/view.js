@@ -659,6 +659,7 @@ Ember.TEMPLATES = {};
   @class View
   @namespace Ember
   @extends Ember.CoreView
+  @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
   @uses Ember.ViewContextSupport
   @uses Ember.ViewChildViewsSupport
   @uses Ember.TemplateRenderingSupport
@@ -1542,7 +1543,13 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+var DeprecatedView = View.extend({
+  init() {
+    this._super(...arguments);
+    Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' });
+  }
+});
 
 export default View;
 
-export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
+export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, DeprecatedView };
