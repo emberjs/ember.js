@@ -68,7 +68,9 @@
         // Don't worry about jQuery version
         ENV['FORCE_JQUERY'] = true;
 
-        ENV['RAISE_ON_DEPRECATION'] = true;
+        // FIXME Many tests need to be ported to not use "{{view}}" before this
+        // can be re-enabled
+        ENV['RAISE_ON_DEPRECATION'] = false;
       })();
     </script>
 
