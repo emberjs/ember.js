@@ -28,7 +28,7 @@ export default function render(template, env, scope, options) {
   return renderResult;
 }
 
-function RenderResult(env, scope, options, rootNode, nodes, fragment, template, shouldSetContent) {
+function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent) {
   this.root = rootNode;
   this.fragment = fragment;
 
@@ -48,6 +48,8 @@ function RenderResult(env, scope, options, rootNode, nodes, fragment, template, 
 
   if (options.self !== undefined) { this.bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
+
+  this.initializeNodes(ownerNode);
 }
 
 RenderResult.build = function(env, scope, template, options, contextualElement) {
@@ -75,12 +77,7 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
   }
 
   rootNode.childNodes = nodes;
-
-  forEach(nodes, function(node) {
-    initializeNode(node, ownerNode);
-  });
-
-  return new RenderResult(env, scope, options, rootNode, nodes, fragment, template, shouldSetContent);
+  return new RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent);
 };
 
 export function manualElement(tagName, attributes) {
@@ -182,6 +179,12 @@ export function attachAttributes(attributes) {
   return template;
 }
 
+RenderResult.prototype.initializeNodes = function(ownerNode) {
+  forEach(this.root.childNodes, function(node) {
+    initializeNode(node, ownerNode);
+  });
+};
+
 RenderResult.prototype.render = function() {
   this.root.lastResult = this;
   this.root.rendered = true;
@@ -243,7 +246,7 @@ RenderResult.prototype.populateNodes = function(visitor) {
       case 'element': visitor.element(statement, morph, env, scope, template, visitor); break;
       case 'attribute': visitor.attribute(statement, morph, env, scope); break;
       case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
-      case 'attributes': visitor.attributes(statement, morph, env, scope, this.root, visitor); break;
+      case 'attributes': visitor.attributes(statement, morph, env, scope, this.fragment, visitor); break;
     }
 
     if (env.hooks.didRenderNode) {
