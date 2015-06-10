@@ -153,7 +153,7 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
   implementing the action.
 
   ```handlebars
-  {{#each person in people}}
+  {{#each people as |person|}}
     <div {{action "edit" person}}>
       click me
     </div>
