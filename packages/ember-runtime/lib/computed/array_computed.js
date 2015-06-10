@@ -12,6 +12,7 @@ var a_slice = [].slice;
 function ArrayComputedProperty() {
   var cp = this;
 
+  this._isArrayComputed = true;
   ReduceComputedProperty.apply(this, arguments);
 
   this._getter = (function(reduceFunc) {
@@ -163,6 +164,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   @param {String} [dependentKeys*]
   @param {Object} options
   @return {Ember.ComputedProperty}
+  @deprecated
   @private
 */
 function arrayComputed(options) {

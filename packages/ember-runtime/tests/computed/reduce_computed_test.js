@@ -83,6 +83,15 @@ QUnit.module('arrayComputed', {
   }
 });
 
+QUnit.test("reduceComputed is deprecated", function() {
+  expectDeprecation(/Ember.reduceComputed is deprecated/);
+  reduceComputed({ initialValue: 0 });
+});
+
+QUnit.test("arrayComputed is deprecated", function() {
+  expectDeprecation(/Ember.arrayComputed is deprecated/);
+  arrayComputed({});
+});
 
 QUnit.test("array computed properties are instances of ComputedProperty", function() {
   ok(arrayComputed({}) instanceof ComputedProperty);

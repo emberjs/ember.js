@@ -478,6 +478,12 @@ export { ReduceComputedProperty }; // TODO: default export
 function ReduceComputedProperty(options) {
   var cp = this;
 
+  if (this._isArrayComputed) {
+    Ember.deprecate('Ember.arrayComputed is deprecated. Replace it with plain array methods');
+  } else {
+    Ember.deprecate('Ember.reduceComputed is deprecated. Replace it with plain array methods');
+  }
+
   this.options = options;
   this._dependentKeys = null;
   this._cacheable = true;
@@ -841,6 +847,7 @@ ReduceComputedProperty.prototype.property = function () {
   @param {String} [dependentKeys*]
   @param {Object} options
   @return {Ember.ComputedProperty}
+  @deprecated
   @public
 */
 export function reduceComputed(options) {
