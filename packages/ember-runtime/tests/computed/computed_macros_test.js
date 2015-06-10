@@ -12,11 +12,9 @@ import {
   lte,
   oneWay,
   readOnly,
-  defaultTo,
   deprecatingAlias,
   and,
   or,
-  any,
   collect
 } from "ember-metal/computed_macros";
 import alias from 'ember-metal/alias';
@@ -155,34 +153,6 @@ testBoth('computed.alias set', function(get, set) {
   equal(get(obj, 'aliased'), constantValue);
 });
 
-testBoth('computed.defaultTo', function(get, set) {
-  expect(6);
-
-  var obj = { source: 'original source value' };
-  defineProperty(obj, 'copy', defaultTo('source'));
-
-  ignoreDeprecation(function() {
-    equal(get(obj, 'copy'), 'original source value');
-
-    set(obj, 'copy', 'new copy value');
-    equal(get(obj, 'source'), 'original source value');
-    equal(get(obj, 'copy'), 'new copy value');
-
-    set(obj, 'source', 'new source value');
-    equal(get(obj, 'copy'), 'new copy value');
-
-    set(obj, 'copy', null);
-    equal(get(obj, 'copy'), 'new source value');
-  });
-
-  expectDeprecation(function() {
-    var obj = { source: 'original source value' };
-    defineProperty(obj, 'copy', defaultTo('source'));
-
-    get(obj, 'copy');
-  }, 'Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
-});
-
 testBoth('computed.match', function(get, set) {
   var obj = { name: 'Paul' };
   defineProperty(obj, 'isPaul', match('name', /Paul/));
@@ -313,18 +283,6 @@ testBoth('computed.or', function(get, set) {
   set(obj, 'one', 1);
 
   equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
-});
-
-testBoth('computed.any (Deprecated)', function(get, set) {
-  expectDeprecation(/Usage of Ember.computed.any is deprecated, use `Ember.computed.or` instead/);
-  var obj = { one: 'foo', two: 'bar' };
-  defineProperty(obj, 'anyOf', any('one', 'two'));
-
-  equal(get(obj, 'anyOf'), 'foo', 'is foo');
-
-  set(obj, 'one', false);
-
-  equal(get(obj, 'anyOf'), 'bar', 'is bar');
 });
 
 testBoth('computed.collect', function(get, set) {
