@@ -315,7 +315,8 @@ testBoth('computed.or', function(get, set) {
   equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
 });
 
-testBoth('computed.any', function(get, set) {
+testBoth('computed.any (Deprecated)', function(get, set) {
+  expectDeprecation(/Usage of Ember.computed.any is deprecated, use `Ember.computed.or` instead/);
   var obj = { one: 'foo', two: 'bar' };
   defineProperty(obj, 'anyOf', any('one', 'two'));
 

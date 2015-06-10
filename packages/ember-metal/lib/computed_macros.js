@@ -502,6 +502,7 @@ export var or = generateComputedWithProperties(function(properties) {
   @public
 */
 export var any = generateComputedWithProperties(function(properties) {
+  Ember.deprecate('Usage of Ember.computed.any is deprecated, use `Ember.computed.or` instead.');
   for (var key in properties) {
     if (properties.hasOwnProperty(key) && properties[key]) {
       return properties[key];
