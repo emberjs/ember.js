@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import { _getPath as getPath } from "ember-metal/property_get";
 import {
   PROPERTY_DID_CHANGE,
@@ -29,6 +30,7 @@ export let UNHANDLED_SET = symbol("UNHANDLED_SET");
   @param {String} keyName The property key to set
   @param {Object} value The value to set
   @return {Object} the passed value.
+  @public
 */
 export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
@@ -84,7 +86,7 @@ export function set(obj, keyName, value, tolerant) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
       if (meta.proto !== obj) {
-        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
             currentValue = meta.values[keyName];
           } else {
@@ -97,7 +99,7 @@ export function set(obj, keyName, value, tolerant) {
       // only trigger a change if the value has changed
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
-        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
             if (
               (currentValue === undefined && !(keyName in obj)) ||
@@ -164,9 +166,10 @@ function setPath(root, path, value, tolerant) {
 
   @method trySet
   @for Ember
-  @param {Object} obj The object to modify.
+  @param {Object} root The object to modify.
   @param {String} path The property path to set
   @param {Object} value The value to set
+  @public
 */
 export function trySet(root, path, value) {
   return set(root, path, value, true);

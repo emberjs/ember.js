@@ -478,7 +478,7 @@ QUnit.test("should allow items to access to the CollectionView's current index i
 });
 
 QUnit.test("should allow declaration of itemViewClass as a string", function() {
-  registry.register('view:simple-view', Ember.View.extend());
+  registry.register('view:simple-view', View.extend());
 
   view = CollectionView.create({
     container: registry.container(),

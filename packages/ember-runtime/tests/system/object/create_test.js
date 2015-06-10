@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";
@@ -45,7 +46,7 @@ QUnit.test("calls computed property setters", function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   QUnit.test("sets up mandatory setters for watched simple properties", function() {
 
     var MyClass = EmberObject.extend({

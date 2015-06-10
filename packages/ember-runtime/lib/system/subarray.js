@@ -1,5 +1,5 @@
 import EmberError from "ember-metal/error";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 
 var RETAIN = 'r';
 var FILTER = 'f';
@@ -18,6 +18,7 @@ export default SubArray;
 
   @class SubArray
   @namespace Ember
+  @private
 */
 function SubArray(length) {
   if (arguments.length < 1) { length = 0; }
@@ -40,6 +41,7 @@ SubArray.prototype = {
     @param {Boolean} match `true` iff the item is included in the subarray.
 
     @return {number} The index of the item in the subarray.
+    @private
   */
   addItem(index, match) {
     var returnValue = -1;
@@ -93,6 +95,7 @@ SubArray.prototype = {
 
     @return {number} The index of the item in the subarray, or `-1` if the item
     was not in the subarray.
+    @private
   */
   removeItem(index) {
     var returnValue = -1;
@@ -168,7 +171,7 @@ SubArray.prototype = {
 
   toString() {
     var str = "";
-    EnumerableUtils.forEach(this._operations, function (operation) {
+    forEach(this._operations, function (operation) {
       str += " " + operation.type + ":" + operation.count;
     });
     return str.substring(1);

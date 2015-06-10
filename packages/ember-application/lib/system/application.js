@@ -5,7 +5,8 @@
 import DAG from 'dag-map';
 import Registry from 'container/registry';
 
-import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import Ember from "ember-metal"; // Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import isEnabled from "ember-metal/features";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
@@ -16,7 +17,7 @@ import create from "ember-metal/platform/create";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
 import Controller from "ember-runtime/controllers/controller";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { map } from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import Renderer from "ember-metal-views/renderer";
@@ -195,6 +196,7 @@ var librariesRegistered = false;
   @class Application
   @namespace Ember
   @extends Ember.Namespace
+  @public
 */
 
 var Application = Namespace.extend(DeferredMixin, {
@@ -212,6 +214,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property rootElement
     @type DOMElement
     @default 'body'
+    @public
   */
   rootElement: 'body',
 
@@ -228,6 +231,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property eventDispatcher
     @type Ember.EventDispatcher
     @default null
+    @public
   */
   eventDispatcher: null,
 
@@ -256,6 +260,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @property customEvents
     @type Object
     @default null
+    @public
   */
   customEvents: null,
 
@@ -289,18 +294,20 @@ var Application = Namespace.extend(DeferredMixin, {
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
-    if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+    if (isEnabled('ember-application-visit')) {
       if (this.autoboot) {
         // Create subclass of Ember.Router for this Application instance.
         // This is to ensure that someone reopening `App.Router` does not
         // tamper with the default `Ember.Router`.
         // 2.0TODO: Can we move this into a globals-mode-only library?
         this.Router = (this.Router || Router).extend();
-        this.waitForDOMReady(this.buildDefaultInstance());
+        this.buildDefaultInstance();
+        this.waitForDOMReady();
       }
     } else {
       this.Router = (this.Router || Router).extend();
-      this.waitForDOMReady(this.buildDefaultInstance());
+      this.buildDefaultInstance();
+      this.waitForDOMReady();
     }
   },
 
@@ -362,13 +369,13 @@ var Application = Namespace.extend(DeferredMixin, {
     loading.
 
     @private
-    @method scheduleInitialize
+    @method waitForDOMReady
   */
-  waitForDOMReady(_instance) {
+  waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady', _instance);
+      run.schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, 'domReady', _instance));
+      this.$().ready(run.bind(this, 'domReady'));
     }
   },
 
@@ -396,6 +403,7 @@ var Application = Namespace.extend(DeferredMixin, {
     to use the router for this purpose.
 
     @method deferReadiness
+    @public
   */
   deferReadiness() {
     Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Application);
@@ -410,6 +418,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     @method advanceReadiness
     @see {Ember.Application#deferReadiness}
+    @public
   */
   advanceReadiness() {
     Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Application);
@@ -477,6 +486,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  fullName {String} type:name (e.g., 'model:user')
     @param  factory {Function} (e.g., App.Person)
     @param  options {Object} (optional) disable instantiation or singleton usage
+    @public
   **/
   register() {
     this.registry.register(...arguments);
@@ -530,6 +540,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @param  factoryNameOrType {String}
     @param  property {String}
     @param  injectionName {String}
+    @public
   **/
   inject() {
     this.registry.injection(...arguments);
@@ -557,16 +568,12 @@ var Application = Namespace.extend(DeferredMixin, {
     to defer readiness until the auth token has been retrieved.
 
     @private
-    @method _initialize
+    @method domReady
   */
-  domReady(_instance) {
+  domReady() {
     if (this.isDestroyed) { return; }
 
-    var app = this;
-
-    this.boot().then(function() {
-      app.runInstanceInitializers(_instance);
-    });
+    this.boot();
 
     return this;
   },
@@ -653,6 +660,7 @@ var Application = Namespace.extend(DeferredMixin, {
     ```
 
     @method reset
+    @public
   **/
   reset() {
     var instance = this.__deprecatedInstance__;
@@ -664,9 +672,7 @@ var Application = Namespace.extend(DeferredMixin, {
     function handleReset() {
       run(instance, 'destroy');
 
-      this.buildDefaultInstance();
-
-      run.schedule('actions', this, 'domReady');
+      run.schedule('actions', this, 'domReady', this.buildDefaultInstance());
     }
 
     run.join(this, handleReset);
@@ -681,7 +687,7 @@ var Application = Namespace.extend(DeferredMixin, {
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert("No application initializer named '" + name + "'", !!initializer);
 
-      if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+      if (isEnabled("ember-application-initializer-context")) {
         initializer.initialize(registry, App);
       } else {
         var ref = initializer.initialize;
@@ -723,6 +729,7 @@ var Application = Namespace.extend(DeferredMixin, {
         this.__deprecatedInstance__.setupEventDispatcher();
       }
 
+      this.runInstanceInitializers(this.__deprecatedInstance__);
       this.ready(); // user hook
       this.__deprecatedInstance__.startRouting();
 
@@ -739,19 +746,21 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    Called when the Application has become ready.
-    The call will be delayed until the DOM has become ready.
+    Called when the Application has become ready, immediately before routing
+    begins. The call will be delayed until the DOM has become ready.
 
     @event ready
+    @public
   */
   ready() { return this; },
 
   /**
-    @deprecated Use 'Resolver' instead
     Set this to provide an alternate class to `Ember.DefaultResolver`
 
 
+    @deprecated Use 'Resolver' instead
     @property resolver
+    @public
   */
   resolver: null,
 
@@ -759,6 +768,7 @@ var Application = Namespace.extend(DeferredMixin, {
     Set this to provide an alternate class to `Ember.DefaultResolver`
 
     @property resolver
+    @public
   */
   Resolver: null,
 
@@ -768,7 +778,10 @@ var Application = Namespace.extend(DeferredMixin, {
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
-    this.__deprecatedInstance__.destroy();
+
+    if (this.__deprecatedInstance__) {
+      this.__deprecatedInstance__.destroy();
+    }
   },
 
   initializer(options) {
@@ -787,7 +800,7 @@ var Application = Namespace.extend(DeferredMixin, {
   }
 });
 
-if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+if (isEnabled('ember-application-instance-initializers')) {
   Application.reopen({
     instanceInitializer(options) {
       this.constructor.instanceInitializer(options);
@@ -799,7 +812,7 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
   });
 }
 
-if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+if (isEnabled('ember-application-visit')) {
   Application.reopen({
     /**
       Creates a new instance of the application and instructs it to route to the
@@ -962,6 +975,7 @@ Application.reopenClass({
 
     @method initializer
     @param initializer {Object}
+    @public
    */
   initializer: buildInitializerMethod('initializers', 'initializer'),
 
@@ -989,6 +1003,7 @@ Application.reopenClass({
     @param {Ember.Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
+    @public
   */
   buildRegistry(namespace) {
     var registry = new Registry();
@@ -1002,7 +1017,6 @@ Application.reopenClass({
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
 
     registry.register('application:main', namespace, { instantiate: false });
 
@@ -1111,6 +1125,8 @@ function resolverFor(namespace) {
     }
   };
 
+  resolve.moduleBasedResolver = resolver.moduleBasedResolver;
+
   resolve.__resolver__ = resolver;
 
   return resolve;
@@ -1132,7 +1148,7 @@ function logLibraryVersions() {
     Ember.LOG_VERSION = false;
     var libs = Ember.libraries._registry;
 
-    var nameLengths = EnumerableUtils.map(libs, function(item) {
+    var nameLengths = map(libs, function(item) {
       return get(item, 'name.length');
     });
 

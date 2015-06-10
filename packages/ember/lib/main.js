@@ -26,8 +26,6 @@ if (Ember.__loader.registry['ember-testing']) {
 runLoadHooks('Ember');
 
 /**
-Ember
-
 @module ember
 */
 

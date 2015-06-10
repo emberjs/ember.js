@@ -1,9 +1,10 @@
 /* jshint scripturl:true */
 
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runDestroy } from "ember-runtime/tests/utils";
 import environment from "ember-metal/environment";
 
 var view;
@@ -16,7 +17,7 @@ QUnit.module("ember-htmlbars: sanitized attribute", {
 
 // jscs:disable validateIndentation
 // jscs:disable disallowTrailingWhitespace
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
 var badTags = [
   { tag: 'a', attr: 'href',
@@ -71,7 +72,8 @@ for (var i=0, l=badTags.length; i<l; i++) {
         context: { url: 'javascript://example.com' },
         template: subject.unquotedTemplate
       });
-      runAppend(view);
+
+      view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",
@@ -83,7 +85,8 @@ for (var i=0, l=badTags.length; i<l; i++) {
         context: { url: 'javascript://example.com' },
         template: subject.quotedTemplate
       });
-      runAppend(view);
+
+      view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",
@@ -97,7 +100,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
       });
 
       try {
-        runAppend(view);
+        view.createElement();
 
         equal(view.element.firstChild.getAttribute(subject.attr),
                "javascript://example.com",
@@ -113,7 +116,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
         context: { protocol: 'javascript:', path: '//example.com' },
         template: subject.multipartTemplate
       });
-      runAppend(view);
+      view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
              "unsafe:javascript://example.com",

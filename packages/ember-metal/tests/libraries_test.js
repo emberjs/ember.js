@@ -1,4 +1,5 @@
 /* globals EmberDev */
+import isEnabled from "ember-metal/features";
 import Libraries from "ember-metal/libraries";
 
 var libs, registry;
@@ -36,7 +37,7 @@ QUnit.test('only the first registration of a library is stored', function() {
   equal(registry.length, 1);
 });
 
-if (Ember.FEATURES.isEnabled('ember-libraries-isregistered')) {
+if (isEnabled('ember-libraries-isregistered')) {
   QUnit.test('isRegistered returns correct value', function() {
     expect(3);
 

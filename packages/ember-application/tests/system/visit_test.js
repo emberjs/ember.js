@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import ApplicationInstance from "ember-application/system/application-instance";
@@ -18,7 +19,7 @@ function createApplication() {
   return App;
 }
 
-if (Ember.FEATURES.isEnabled('ember-application-visit')) {
+if (isEnabled('ember-application-visit')) {
   QUnit.module("Ember.Application - visit()");
 
   // This tests whether the application is "autobooted" by registering an

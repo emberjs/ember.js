@@ -1,26 +1,31 @@
 import Ember from 'ember-metal/core';
+import isEnabled, { FEATURES } from 'ember-metal/features';
+import merge from "ember-metal/merge";
 
-var isEnabled = Ember.FEATURES.isEnabled;
 var origFeatures, origEnableAll, origEnableOptional;
 
-QUnit.module("Ember.FEATURES.isEnabled", {
+QUnit.module("isEnabled", {
   setup() {
-    origFeatures       = Ember.FEATURES;
-    origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;
+    origFeatures = merge({}, FEATURES);
+    origEnableAll = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
   teardown() {
-    Ember.FEATURES                     = origFeatures;
-    Ember.ENV.ENABLE_ALL_FEATURES      = origEnableAll;
+    for (var feature in FEATURES) {
+      delete FEATURES[feature];
+    }
+    merge(FEATURES, origFeatures);
+
+    Ember.ENV.ENABLE_ALL_FEATURES = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;
   }
 });
 
 QUnit.test("ENV.ENABLE_ALL_FEATURES", function() {
   Ember.ENV.ENABLE_ALL_FEATURES = true;
-  Ember.FEATURES['fred'] = false;
-  Ember.FEATURES['wilma'] = null;
+  FEATURES['fred'] = false;
+  FEATURES['wilma'] = null;
 
   equal(isEnabled('fred'), true, "overrides features set to false");
   equal(isEnabled('wilma'), true, "enables optional features");
@@ -29,9 +34,9 @@ QUnit.test("ENV.ENABLE_ALL_FEATURES", function() {
 
 QUnit.test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = true;
-  Ember.FEATURES['fred'] = false;
-  Ember.FEATURES['barney'] = true;
-  Ember.FEATURES['wilma'] = null;
+  FEATURES['fred'] = false;
+  FEATURES['barney'] = true;
+  FEATURES['wilma'] = null;
 
   equal(isEnabled('fred'), false, "returns flag value if false");
   equal(isEnabled('barney'), true, "returns flag value if true");
@@ -43,9 +48,9 @@ QUnit.test("isEnabled without ENV options", function() {
   Ember.ENV.ENABLE_ALL_FEATURES = false;
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
 
-  Ember.FEATURES['fred'] = false;
-  Ember.FEATURES['barney'] = true;
-  Ember.FEATURES['wilma'] = null;
+  FEATURES['fred'] = false;
+  FEATURES['barney'] = true;
+  FEATURES['wilma'] = null;
 
   equal(isEnabled('fred'), false, "returns flag value if false");
   equal(isEnabled('barney'), true, "returns flag value if true");

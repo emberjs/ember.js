@@ -1,5 +1,6 @@
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 /*
@@ -79,6 +80,7 @@ function OrderedSet() {
   @method create
   @static
   @return {Ember.OrderedSet}
+  @private
 */
 OrderedSet.create = function() {
   var Constructor = this;
@@ -90,6 +92,7 @@ OrderedSet.prototype = {
   constructor: OrderedSet,
   /**
     @method clear
+    @private
   */
   clear() {
     this.presenceSet = create(null);
@@ -102,6 +105,7 @@ OrderedSet.prototype = {
     @param obj
     @param guid (optional, and for internal use)
     @return {Ember.OrderedSet}
+    @private
   */
   add(obj, _guid) {
     var guid = _guid || guidFor(obj);
@@ -123,6 +127,7 @@ OrderedSet.prototype = {
     @param obj
     @param _guid (optional and for internal use only)
     @return {Boolean}
+    @private
   */
   remove(obj, _guid) {
     Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
@@ -136,6 +141,7 @@ OrderedSet.prototype = {
     @param obj
     @param _guid (optional and for internal use only)
     @return {Boolean}
+    @private
   */
   delete(obj, _guid) {
     var guid = _guid || guidFor(obj);
@@ -158,6 +164,7 @@ OrderedSet.prototype = {
   /**
     @method isEmpty
     @return {Boolean}
+    @private
   */
   isEmpty() {
     return this.size === 0;
@@ -167,6 +174,7 @@ OrderedSet.prototype = {
     @method has
     @param obj
     @return {Boolean}
+    @private
   */
   has(obj) {
     if (this.size === 0) { return false; }
@@ -181,6 +189,7 @@ OrderedSet.prototype = {
     @method forEach
     @param {Function} fn
     @param self
+    @private
   */
   forEach(fn /*, ...thisArg*/) {
     if (typeof fn !== 'function') {
@@ -207,6 +216,7 @@ OrderedSet.prototype = {
   /**
     @method toArray
     @return {Array}
+    @private
   */
   toArray() {
     return this.list.slice();
@@ -215,6 +225,7 @@ OrderedSet.prototype = {
   /**
     @method copy
     @return {Ember.OrderedSet}
+    @private
   */
   copy() {
     var Constructor = this.constructor;
@@ -267,6 +278,7 @@ Ember.Map = Map;
 /**
   @method create
   @static
+  @private
 */
 Map.create = function() {
   var Constructor = this;
@@ -283,6 +295,7 @@ Map.prototype = {
     @property size
     @type number
     @default 0
+    @private
   */
   size: 0,
 
@@ -292,6 +305,7 @@ Map.prototype = {
     @method get
     @param {*} key
     @return {*} the value associated with the key, or `undefined`
+    @private
   */
   get(key) {
     if (this.size === 0) { return; }
@@ -310,6 +324,7 @@ Map.prototype = {
     @param {*} key
     @param {*} value
     @return {Ember.Map}
+    @private
   */
   set(key, value) {
     var keys = this._keys;
@@ -335,6 +350,7 @@ Map.prototype = {
     @method remove
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
+    @private
   */
   remove(key) {
     Ember.deprecate('Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
@@ -349,6 +365,7 @@ Map.prototype = {
     @method delete
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
+    @private
   */
   delete(key) {
     if (this.size === 0) { return false; }
@@ -373,6 +390,7 @@ Map.prototype = {
     @method has
     @param {*} key
     @return {Boolean} true if the item was present, false otherwise
+    @private
   */
   has(key) {
     return this._keys.has(key);
@@ -389,6 +407,7 @@ Map.prototype = {
     @param {Function} callback
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
+    @private
   */
   forEach(callback/*, ...thisArg*/) {
     if (typeof callback !== 'function') {
@@ -417,6 +436,7 @@ Map.prototype = {
 
   /**
     @method clear
+    @private
   */
   clear() {
     this._keys.clear();
@@ -427,6 +447,7 @@ Map.prototype = {
   /**
     @method copy
     @return {Ember.Map}
+    @private
   */
   copy() {
     return copyMap(this, new Map());
@@ -456,6 +477,7 @@ function MapWithDefault(options) {
     @param {*} [options.defaultValue]
   @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
     `Ember.MapWithDefault` otherwise returns `Ember.Map`
+  @private
 */
 MapWithDefault.create = function(options) {
   if (options) {
@@ -476,6 +498,7 @@ MapWithDefault.prototype._super$get = Map.prototype.get;
   @method get
   @param {*} key
   @return {*} the value associated with the key, or the default value
+  @private
 */
 MapWithDefault.prototype.get = function(key) {
   var hasValue = this.has(key);
@@ -492,6 +515,7 @@ MapWithDefault.prototype.get = function(key) {
 /**
   @method copy
   @return {Ember.MapWithDefault}
+  @private
 */
 MapWithDefault.prototype.copy = function() {
   var Constructor = this.constructor;

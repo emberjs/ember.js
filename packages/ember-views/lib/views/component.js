@@ -10,6 +10,18 @@ import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
 
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+
+function validateAction(component, actionName) {
+  if (actionName && actionName[MUTABLE_CELL]) {
+    actionName = actionName.value;
+  }
+  Ember.assert("The default action was triggered on the component " + component.toString() +
+               ", but the action name (" + actionName + ") was not a string.",
+               isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
+  return actionName;
+}
+
 /**
 @module ember
 @submodule ember-views
@@ -99,8 +111,10 @@ import { computed } from "ember-metal/computed";
   @class Component
   @namespace Ember
   @extends Ember.View
+  @public
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+  isComponent: true,
   /*
     This is set so that the proto inspection in appendTemplatedView does not
     think that it should set the components `context` to that of the parent view.
@@ -139,9 +153,25 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property template
+  @public
   */
-  template: computed('templateName', {
+  template: computed('_template', {
     get() {
+      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`);
+
+      return get(this, '_template');
+    },
+
+    set(key, value) {
+      return set(this, '_template', value);
+    }
+  }),
+
+  _template: computed('templateName', {
+    get() {
+      if (get(this, '_deprecatedFlagForBlockProvided')) {
+        return true;
+      }
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
 
@@ -159,6 +189,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property templateName
+  @public
   */
   templateName: null,
 
@@ -169,6 +200,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @property targetObject
     @type Ember.Controller
     @default null
+    @private
   */
   targetObject: computed('controller', function(key) {
     if (this._targetObject) { return this._targetObject; }
@@ -256,23 +288,17 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @method sendAction
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
+    @public
   */
   sendAction(action, ...contexts) {
     var actionName;
 
     // Send the default action
     if (action === undefined) {
-      actionName = get(this, 'action');
-      Ember.assert("The default action was triggered on the component " + this.toString() +
-                   ", but the action name (" + actionName + ") was not a string.",
-                   isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
-    } else {
-      actionName = get(this, 'attrs.' + action) || get(this, action);
-      Ember.assert("The " + action + " action was triggered on the component " +
-                   this.toString() + ", but the action name (" + actionName +
-                   ") was not a string.",
-                   isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
+      action = 'action';
     }
+    actionName = get(this, 'attrs.' + action) || get(this, action);
+    actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
@@ -383,6 +409,10 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @property hasBlockParams
     @returns Boolean
   */
+});
+
+Component.reopenClass({
+  isComponentFactory: true
 });
 
 export default Component;

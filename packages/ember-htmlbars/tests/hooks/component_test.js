@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
@@ -6,7 +7,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, registry, container;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.module("ember-htmlbars: component hook", {
     setup() {
       registry = new Registry();

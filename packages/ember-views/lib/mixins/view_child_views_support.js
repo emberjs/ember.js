@@ -47,6 +47,7 @@ var ViewChildViewsSupport = Mixin.create({
     @method removeChild
     @param {Ember.View} view
     @return {Ember.View} receiver
+    @private
   */
   removeChild(view) {
     // If we're destroying, the entire subtree will be
@@ -74,8 +75,9 @@ var ViewChildViewsSupport = Mixin.create({
 
     @method createChildView
     @param {Class|String} viewClass
-    @param {Hash} [attrs] Attributes to add
+    @param {Object} [attrs] Attributes to add
     @return {Ember.View} new instance
+    @private
   */
   createChildView(maybeViewClass, _attrs) {
     if (!maybeViewClass) {
@@ -89,8 +91,9 @@ var ViewChildViewsSupport = Mixin.create({
     var attrs = _attrs || {};
     var view;
     attrs.renderer = this.renderer;
+    attrs._viewRegistry = this._viewRegistry;
 
-    if (maybeViewClass.isViewClass) {
+    if (maybeViewClass.isViewFactory) {
       attrs.container = this.container;
 
       view = maybeViewClass.create(attrs);

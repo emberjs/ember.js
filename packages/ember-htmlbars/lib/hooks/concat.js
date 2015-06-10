@@ -10,4 +10,3 @@ import {
 export default function concat(env, parts) {
   return streamConcat(parts, '');
 }
-

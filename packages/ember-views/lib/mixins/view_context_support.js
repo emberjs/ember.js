@@ -22,6 +22,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
 
     @property context
     @type Object
+    @private
   */
   context: computed({
     get() {
@@ -78,6 +79,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
 
     @property controller
     @type Object
+    @private
   */
   controller: computed({
     get() {

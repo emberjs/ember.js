@@ -3,6 +3,7 @@ import EmberView from "ember-views/views/view";
 import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 import { Registry } from "ember-runtime/system/container";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -17,7 +18,6 @@ QUnit.module("ember-htmlbars: compat - Ember.Handlebars.get", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('view:toplevel', EmberView.extend());
   },
 
@@ -34,13 +34,13 @@ QUnit.module("ember-htmlbars: compat - Ember.Handlebars.get", {
 QUnit.test('it can lookup a path from the current context', function() {
   expect(1);
 
-  registry.register('helper:handlebars-get', function(path, options) {
+  registry.register('helper:handlebars-get', new HandlebarsCompatibleHelper(function(path, options) {
     var context = options.contexts && options.contexts[0] || this;
 
     ignoreDeprecation(function() {
       equal(handlebarsGet(context, path, options), 'bar');
     });
-  });
+  }));
 
   view = EmberView.create({
     container: container,
@@ -56,13 +56,13 @@ QUnit.test('it can lookup a path from the current context', function() {
 QUnit.test('it can lookup a path from the current keywords', function() {
   expect(1);
 
-  registry.register('helper:handlebars-get', function(path, options) {
+  registry.register('helper:handlebars-get', new HandlebarsCompatibleHelper(function(path, options) {
     var context = options.contexts && options.contexts[0] || this;
 
     ignoreDeprecation(function() {
       equal(handlebarsGet(context, path, options), 'bar');
     });
-  });
+  }));
 
   view = EmberView.create({
     container: container,
@@ -80,13 +80,13 @@ QUnit.test('it can lookup a path from globals', function() {
 
   lookup.Blammo = { foo: 'blah' };
 
-  registry.register('helper:handlebars-get', function(path, options) {
+  registry.register('helper:handlebars-get', new HandlebarsCompatibleHelper(function(path, options) {
     var context = options.contexts && options.contexts[0] || this;
 
     ignoreDeprecation(function() {
       equal(handlebarsGet(context, path, options), lookup.Blammo.foo);
     });
-  });
+  }));
 
   view = EmberView.create({
     container: container,
@@ -100,13 +100,13 @@ QUnit.test('it can lookup a path from globals', function() {
 QUnit.test('it raises a deprecation warning on use', function() {
   expect(1);
 
-  registry.register('helper:handlebars-get', function(path, options) {
+  registry.register('helper:handlebars-get', new HandlebarsCompatibleHelper(function(path, options) {
     var context = options.contexts && options.contexts[0] || this;
 
     expectDeprecation(function() {
       handlebarsGet(context, path, options);
     }, 'Usage of Ember.Handlebars.get is deprecated, use a Component or Ember.Handlebars.makeBoundHelper instead.');
-  });
+  }));
 
   view = EmberView.create({
     container: container,

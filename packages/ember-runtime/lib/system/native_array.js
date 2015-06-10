@@ -35,6 +35,7 @@ import copy from "ember-runtime/copy";
   @uses Ember.MutableArray
   @uses Ember.Observable
   @uses Ember.Copyable
+  @public
 */
 var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
@@ -137,6 +138,7 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
   @method A
   @for Ember
   @return {Ember.NativeArray}
+  @public
 */
 var A = function(arr) {
   if (arr === undefined) { arr = []; }
@@ -161,6 +163,7 @@ var A = function(arr) {
   @for Ember.NativeArray
   @static
   @return {void}
+  @private
 */
 NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);

@@ -117,6 +117,33 @@ for a detailed explanation.
 
   Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
 
+* `ember-htmlbars-each-in`
+
+  Adds a helper for enumerating over the properties of an object in a
+  Handlebars templates. For example, given this data:
+
+  ```javascript
+  {
+    "Item 1": 1234,
+    "Item 2": 3456
+  }
+  ```
+
+  And this template:
+
+  ```handlebars
+  {{#each-in items as |key value|}}
+    <p>{{key}}: {{value}}</p>
+  {{/each-in}}
+  ```
+
+  The following output would be produced:
+
+  ```html
+  <p>Item 1: 1234</p>
+  <p>Item 2: 3456</p>
+  ```
+
 * `ember-routing-transitioning-classes`
 
   Disables eager URL updates during slow transitions in favor of new CSS
@@ -251,3 +278,40 @@ for a detailed explanation.
   compatible with action subexpressions.
 
   Per RFC [#50](https://github.com/emberjs/rfcs/pull/50)
+
+* `ember-htmlbars-get-helper`
+
+  The Syntax: `{{get object path}}`
+
+  A new keyword/helper that can be used to allow your object and/or key
+  values to be dynamic.
+
+  Example:
+  ```js
+
+  context = {
+    displayedPropertyTitle: 'First Name',
+    displayedPropertyKey: 'firstName'
+  };
+  ```  
+
+  ```hbs
+  <h2>{{displayedPropertyTitle}}</h2>
+
+  <ul>
+  {{#each people as |person|}}
+    <li>{{get person displayedPropertyKey}}</li>
+  {{/each}}
+  </ul>
+  ```
+
+  This allows the template to provide `displayedPropertyTitle`
+  and `displayedPropertyKey` to render a list for a single property
+  for each person.. E.g. a list of all `firstNames`, or `lastNames`, or `ages`.
+
+  Addd in [#11196](https://github.com/emberjs/ember.js/pull/11196)
+
+* `ember-htmlbars-helper`
+
+  Implements RFC https://github.com/emberjs/rfcs/pull/53, a public helper
+  api.

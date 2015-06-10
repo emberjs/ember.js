@@ -1,9 +1,6 @@
 /**
-Ember Routing HTMLBars Helpers
-
 @module ember
 @submodule ember-routing-htmlbars
-@requires ember-routing
 */
 
 import Ember from "ember-metal/core";

@@ -9,10 +9,21 @@ import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import Registry from "container/registry";
+import ComponentLookup from 'ember-views/component_lookup';
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
-var view;
+var view, registry, container;
 
 QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
+  setup() {
+    registry = new Registry();
+    container = registry.container();
+    registry.optionsForType('component', { singleton: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('component-lookup:main', ComponentLookup);
+  },
   teardown() {
     runDestroy(view);
 
@@ -55,6 +66,49 @@ QUnit.test('combines `env` and `options` for the wrapped helper', function() {
       value: 'foo'
     },
     template: compile('{{test}}')
+  });
+
+  runAppend(view);
+});
+
+QUnit.test('combines `env` and `options` for the wrapped helper', function() {
+  expect(1);
+
+  function someHelper(options) {
+    equal(options.data.view, view);
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      value: 'foo'
+    },
+    template: compile('{{test}}')
+  });
+
+  runAppend(view);
+});
+
+QUnit.test('has the correct options.data.view within a components layout', function() {
+  expect(1);
+  var component;
+
+  registry.register('component:foo-bar', Component.extend({
+    init() {
+      this._super(...arguments);
+      component = this;
+    }
+  }));
+
+  registry.register('template:components/foo-bar', compile('{{my-thing}}'));
+  registry.register('helper:my-thing', new HandlebarsCompatibleHelper(function(options) {
+    equal(options.data.view, component, 'passed in view should match the current component');
+  }));
+
+  view = EmberView.create({
+    container,
+    template: compile('{{foo-bar}}')
   });
 
   runAppend(view);

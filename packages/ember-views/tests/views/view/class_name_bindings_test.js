@@ -113,6 +113,16 @@ QUnit.test(":: class name syntax works with an empty true class", function() {
   equal(view.$().attr('class'), 'ember-view', "no class is added when property is true and the class is empty");
 });
 
+QUnit.test("uses all provided static class names (issue #11193)", function() {
+  view = EmberView.create({
+    classNameBindings: [':class-one', ':class-two']
+  });
+
+  run(function() { view.createElement(); });
+
+  equal(view.$().attr('class'), 'ember-view class-one class-two', "both classes are added");
+});
+
 QUnit.test("classNames should not be duplicated on rerender", function() {
   run(function() {
     view = EmberView.create({

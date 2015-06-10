@@ -1,7 +1,6 @@
-import Ember from 'ember-metal/core';
-
-export default function TransformOldClassBindingSyntax() {
+export default function TransformOldClassBindingSyntax(options) {
   this.syntax = null;
+  this.options = options;
 }
 
 TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassBindingSyntax_transform(ast) {
@@ -32,6 +31,7 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 
     if (classPair) {
       classValue.push(classPair.value);
+      classValue.push(b.string(' '));
     } else {
       classPair = b.pair('class', null);
       node.hash.pairs.push(classPair);
@@ -43,16 +43,8 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 
     each(allOfTheMicrosyntaxes, ({ value, loc }) => {
       let sexprs = [];
-
-      let sourceInformation = "";
-      if (loc) {
-        let { start, source } = loc;
-
-        sourceInformation = `@ ${start.line}:${start.column} in ${source || '(inline)'}`;
-      }
-
-      // TODO: Parse the microsyntax and offer the correct information
-      Ember.deprecate(`You're using legacy class binding syntax: classBinding=${exprToString(value)} ${sourceInformation}. Please replace with class=""`);
+      // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
+      // be removed.
 
       if (value.type === 'StringLiteral') {
         let microsyntax = parseMicrosyntax(value.original);
@@ -63,8 +55,8 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
       }
     });
 
-    let hash = b.hash([b.pair('separator', b.string(' '))]);
-    classPair.value = b.sexpr(b.string('-concat'), classValue, hash);
+    let hash = b.hash();
+    classPair.value = b.sexpr(b.string('concat'), classValue, hash);
   });
 
   return ast;
@@ -106,6 +98,7 @@ function buildSexprs(microsyntax, sexprs, b) {
     }
 
     sexprs.push(sexpr);
+    sexprs.push(b.string(' '));
   }
 }
 
@@ -128,11 +121,3 @@ function parseMicrosyntax(string) {
 
   return segments;
 }
-
-function exprToString(expr) {
-  switch (expr.type) {
-    case 'StringLiteral': return `"${expr.original}"`;
-    case 'PathExpression': return expr.original;
-  }
-}
-

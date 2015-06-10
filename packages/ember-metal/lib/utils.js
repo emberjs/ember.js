@@ -4,6 +4,7 @@
 "REMOVE_USE_STRICT: true";
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import o_create from 'ember-metal/platform/create';
 import {
   hasPropertyAccessors,
@@ -324,7 +325,7 @@ if (!canDefineNonEnumerableProperties) {
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   if (hasPropertyAccessors) {
     EMPTY_META.values = {};
   }
@@ -365,7 +366,7 @@ function meta(obj, writable) {
 
     ret = new Meta(obj);
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
         ret.values = {};
       }
@@ -385,7 +386,7 @@ function meta(obj, writable) {
     ret.cacheMeta = undefined;
     ret.source    = obj;
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
         ret.values = o_create(ret.values);
       }
@@ -532,6 +533,7 @@ export function wrap(func, superFunc) {
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
   @return {Boolean}
+  @private
 */
 function canInvoke(obj, methodName) {
   return !!(obj && typeof obj[methodName] === 'function');
@@ -555,6 +557,7 @@ function canInvoke(obj, methodName) {
   @param {String} methodName The method name to check for
   @param {Array} [args] The arguments to pass to the method
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
+  @public
 */
 export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
@@ -604,6 +607,7 @@ var needsFinallyFix = (function() {
   @return {*} The return value is the that of the finalizer,
   unless that value is undefined, in which case it is the return value
   of the tryable
+  @private
 */
 
 var tryFinally;
@@ -687,6 +691,7 @@ var deprecatedTryFinally = function() {
   @return {*} The return value is the that of the finalizer,
   unless that value is undefined, in which case it is the return value
   of the tryable.
+  @private
 */
 var tryCatchFinally;
 if (needsFinallyFix) {
@@ -769,6 +774,7 @@ var isArray = Array.isArray || function(value) {
   @for Ember
   @param {Object} obj the object
   @return {Array}
+  @private
 */
 export function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
@@ -787,6 +793,7 @@ export function makeArray(obj) {
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
   @since 1.4.0
+  @private
 */
 export function inspect(obj) {
   if (obj === null) {
@@ -799,7 +806,8 @@ export function inspect(obj) {
     return '[' + obj + ']';
   }
   // for non objects
-  if (typeof obj !== 'object') {
+  var type = typeof obj;
+  if (type !== 'object' && type !== 'symbol') {
     return ''+obj;
   }
   // overridden toString
@@ -829,9 +837,10 @@ export function inspect(obj) {
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
 /**
-  @param {Object} target
-  @param {Function} method
-  @param {Array} args
+  @param {Object} t target
+  @param {Function} m method
+  @param {Array} a args
+  @private
 */
 export function apply(t, m, a) {
   var l = a && a.length;
@@ -847,9 +856,10 @@ export function apply(t, m, a) {
 }
 
 /**
-  @param {Object} target
-  @param {String} method
-  @param {Array} args
+  @param {Object} t target
+  @param {String} m method
+  @param {Array} a args
+  @private
 */
 export function applyStr(t, m, a) {
   var l = a && a.length;

@@ -1,6 +1,29 @@
 import Ember from 'ember-metal/core';
 
-QUnit.module('ember-debug');
+let originalEnvValue;
+
+QUnit.module('ember-debug', {
+  setup() {
+    originalEnvValue = Ember.ENV.RAISE_ON_DEPRECATION;
+    Ember.ENV.RAISE_ON_DEPRECATION = true;
+  },
+
+  teardown() {
+    Ember.ENV.RAISE_ON_DEPRECATION = originalEnvValue;
+  }
+});
+
+QUnit.test('Ember.deprecate does not throw if RAISE_ON_DEPRECATION env value is false', function(assert) {
+  assert.expect(1);
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
+
+  try {
+    Ember.deprecate('Should not throw', false);
+    assert.ok(true, 'Ember.deprecate did not throw');
+  } catch(e) {
+    assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
+  }
+});
 
 QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
   expect(3);

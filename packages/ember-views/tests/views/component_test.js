@@ -9,6 +9,8 @@ import { get } from "ember-metal/property_get";
 import EmberView from "ember-views/views/view";
 import Component from "ember-views/views/component";
 
+import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+
 var a_slice = Array.prototype.slice;
 
 var component, controller, actionCounts, sendCount, actionArguments;
@@ -155,6 +157,20 @@ QUnit.test("Calling sendAction on a component with a function calls the function
   component.sendAction('action', argument);
 });
 
+QUnit.test("Calling sendAction on a component with a mut attr calls the function with arguments", function() {
+  var mut = {
+    value: 'didStartPlaying',
+    [MUTABLE_CELL]: true
+  };
+  set(component, 'playing', null);
+  set(component, 'attrs', { playing: mut });
+
+  component.sendAction('playing');
+
+  equal(sendCount, 1, "send was called once");
+  equal(actionCounts['didStartPlaying'], 1, "named action was sent");
+});
+
 QUnit.test("Calling sendAction with a named action uses the component's property as the action name", function() {
   set(component, 'playing', "didStartPlaying");
   set(component, 'action', "didDoSomeBusiness");
@@ -263,24 +279,3 @@ QUnit.test('component with target', function() {
 
   appComponent.send('foo', 'baz');
 });
-
-if (Ember.FEATURES.isEnabled('ember-views-component-has-block')) {
-  QUnit.test('component with a template will report hasBlock: true', function() {
-    expect(1);
-
-    var appComponent = Component.create({
-      template: 'some-thing-yolo'
-    });
-
-    equal(get(appComponent, 'hasBlock'), true);
-  });
-
-  QUnit.test('component without a template will report hasBlock: false', function() {
-    expect(1);
-
-    var appComponent = Component.create({
-    });
-
-    equal(get(appComponent, 'hasBlock'), false);
-  });
-}

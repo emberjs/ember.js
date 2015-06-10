@@ -22,7 +22,8 @@ import isBlank from 'ember-metal/is_blank';
   @param {Object} obj Value to test
   @return {Boolean}
   @since 1.8.0
-  */
+  @public
+*/
 export default function isPresent(obj) {
   return !isBlank(obj);
 }

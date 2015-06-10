@@ -16,9 +16,8 @@
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
+  @public
 */
-function isNone(obj) {
+export default function isNone(obj) {
   return obj === null || obj === undefined;
 }
-
-export default isNone;

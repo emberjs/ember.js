@@ -2,9 +2,17 @@ import Ember from "ember-metal/core"; // Ember.TEMPLATES
 import run from "ember-metal/run_loop";
 import Logger from "ember-metal/logger";
 import Controller from "ember-runtime/controllers/controller";
+import Route from "ember-routing/system/route";
+import Component from "ember-views/views/component";
+import View from "ember-views/views/view";
+import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
+import makeHandlebarsBoundHelper from "ember-htmlbars/compat/make-bound-helper";
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import makeHTMLBarsBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import {
   registerHelper
 } from "ember-htmlbars/helpers";
@@ -98,12 +106,48 @@ QUnit.test("the default resolver resolves helpers", function() {
 });
 
 QUnit.test("the default resolver resolves container-registered helpers", function() {
-  function gooresolvertestHelper() { return 'GOO'; }
-  function gooGazResolverTestHelper() { return 'GAZ'; }
-  application.register('helper:gooresolvertest', gooresolvertestHelper);
-  application.register('helper:goo-baz-resolver-test', gooGazResolverTestHelper);
-  equal(gooresolvertestHelper, locator.lookup('helper:gooresolvertest'), "looks up gooresolvertest helper");
-  equal(gooGazResolverTestHelper, locator.lookup('helper:goo-baz-resolver-test'), "looks up gooGazResolverTestHelper helper");
+  let shorthandHelper = makeHelper(function() {});
+  let helper = Helper.extend();
+
+  application.register('helper:shorthand', shorthandHelper);
+  application.register('helper:complete', helper);
+
+  let lookedUpShorthandHelper = locator.lookupFactory('helper:shorthand');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+
+  let lookedUpHelper = locator.lookupFactory('helper:complete');
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), "looked up complete helper");
+});
+
+QUnit.test("the default resolver resolves helpers on the namespace", function() {
+  let ShorthandHelper = makeHelper(function() {});
+  let CompleteHelper = Helper.extend();
+  let LegacyBareFunctionHelper = function() {};
+  let LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
+  let LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
+  let ViewHelper = makeViewHelper(function() {});
+
+  application.ShorthandHelper = ShorthandHelper;
+  application.CompleteHelper = CompleteHelper;
+  application.LegacyBareFunctionHelper = LegacyBareFunctionHelper;
+  application.LegacyHandlebarsBoundHelper = LegacyHandlebarsBoundHelper;
+  application.LegacyHtmlBarsBoundHelper = LegacyHTMLBarsBoundHelper; // Must use lowered "tml" in "HTMLBars" for resolver to find this
+  application.ViewHelper = ViewHelper;
+
+  let resolvedShorthand = registry.resolve('helper:shorthand');
+  let resolvedComplete = registry.resolve('helper:complete');
+  let resolvedLegacy = registry.resolve('helper:legacy-bare-function');
+  let resolvedLegacyHandlebars = registry.resolve('helper:legacy-handlebars-bound');
+  let resolvedLegacyHTMLBars = registry.resolve('helper:legacy-html-bars-bound');
+  let resolvedView = registry.resolve('helper:view');
+
+  equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
+  equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
+  ok(typeof resolvedLegacy === 'function', 'legacy function helper is resolved');
+  equal(resolvedView, ViewHelper, 'resolves view helper');
+  equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
+  equal(resolvedLegacyHandlebars, LegacyHandlebarsBoundHelper, 'resolves legacy Handlebars bound helper');
 });
 
 QUnit.test("the default resolver throws an error if the fullName to resolve is invalid", function() {
@@ -169,4 +213,54 @@ QUnit.test("lookup description", function() {
   equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
   equal(registry.describe('model:foo'), 'App.Foo', "models don't get appended at the end");
 
+});
+
+QUnit.test("assertion for routes without isRouteFactory property", function() {
+  application.FooRoute = Component.extend();
+
+  expectAssertion(function() {
+    registry.resolve(`route:foo`);
+  }, /to resolve to an Ember.Route/, 'Should assert');
+});
+
+QUnit.test("no assertion for routes that extend from Ember.Route", function() {
+  expect(0);
+  application.FooRoute = Route.extend();
+  registry.resolve(`route:foo`);
+});
+
+QUnit.test("deprecation warning for service factories without isServiceFactory property", function() {
+  expectDeprecation(/service factories must have an `isServiceFactory` property/);
+  application.FooService = EmberObject.extend();
+  registry.resolve('service:foo');
+});
+
+QUnit.test("no deprecation warning for service factories that extend from Ember.Service", function() {
+  expectNoDeprecation();
+  application.FooService = Service.extend();
+  registry.resolve('service:foo');
+});
+
+QUnit.test("deprecation warning for view factories without isViewFactory property", function() {
+  expectDeprecation(/view factories must have an `isViewFactory` property/);
+  application.FooView = EmberObject.extend();
+  registry.resolve('view:foo');
+});
+
+QUnit.test("no deprecation warning for view factories that extend from Ember.View", function() {
+  expectNoDeprecation();
+  application.FooView = View.extend();
+  registry.resolve('view:foo');
+});
+
+QUnit.test("deprecation warning for component factories without isComponentFactory property", function() {
+  expectDeprecation(/component factories must have an `isComponentFactory` property/);
+  application.FooComponent = View.extend();
+  registry.resolve('component:foo');
+});
+
+QUnit.test("no deprecation warning for component factories that extend from Ember.Component", function() {
+  expectNoDeprecation();
+  application.FooView = Component.extend();
+  registry.resolve('component:foo');
 });

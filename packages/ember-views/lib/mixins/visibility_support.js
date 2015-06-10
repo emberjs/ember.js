@@ -1,6 +1,6 @@
 /**
-@module ember
-@submodule ember-views
+ @module ember
+ @submodule ember-views
 */
 import {
   Mixin,
@@ -12,8 +12,9 @@ import run from "ember-metal/run_loop";
 function K() { return this; }
 
 /**
-  @class VisibilitySupport
-  @namespace Ember
+ @class VisibilitySupport
+ @namespace Ember
+ @public
 */
 var VisibilitySupport = Mixin.create({
   /**
@@ -22,6 +23,7 @@ var VisibilitySupport = Mixin.create({
     @property isVisible
     @type Boolean
     @default null
+    @public
   */
   isVisible: true,
 

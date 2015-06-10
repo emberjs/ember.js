@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import environment from "ember-metal/environment";
 
 import { hooks } from "htmlbars-runtime";
@@ -80,6 +81,7 @@ import legacyYield from "ember-htmlbars/keywords/legacy-yield";
 import mut, { privateMut } from "ember-htmlbars/keywords/mut";
 import each from "ember-htmlbars/keywords/each";
 import readonly from "ember-htmlbars/keywords/readonly";
+import getKeyword from "ember-htmlbars/keywords/get";
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -99,6 +101,9 @@ registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
 registerKeyword('each', each);
 registerKeyword('readonly', readonly);
+if (isEnabled('ember-htmlbars-get-helper')) {
+  registerKeyword('get', getKeyword);
+}
 
 export default {
   hooks: emberHooks,

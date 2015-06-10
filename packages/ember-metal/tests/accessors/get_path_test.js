@@ -17,6 +17,7 @@ var moduleOpts = {
         }
       },
       falseValue: false,
+      emptyString: '',
       Wuz: {
         nar: 'foo'
       }
@@ -77,6 +78,10 @@ QUnit.test('[obj, this.Foo.bar] -> (undefined)', function() {
 
 QUnit.test('[obj, falseValue.notDefined] -> (undefined)', function() {
   equal(get(obj, 'falseValue.notDefined'), undefined);
+});
+
+QUnit.test('[obj, emptyString.length] -> 0', function() {
+  equal(get(obj, 'emptyString.length'), 0);
 });
 
 // ..........................................................

@@ -14,6 +14,7 @@ import { Mixin } from "ember-metal/mixin";
   @class Comparable
   @namespace Ember
   @since Ember 0.9
+  @private
 */
 export default Mixin.create({
 
@@ -32,7 +33,8 @@ export default Mixin.create({
     @method compare
     @param a {Object} the first object to compare
     @param b {Object} the second object to compare
-    @return {Integer} the result of the comparison
+    @return {Number} the result of the comparison
+    @private
   */
   compare: null
 });

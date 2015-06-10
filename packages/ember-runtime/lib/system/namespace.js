@@ -31,6 +31,7 @@ import EmberObject from "ember-runtime/system/object";
   @class Namespace
   @namespace Ember
   @extends Ember.Object
+  @public
 */
 var Namespace = EmberObject.extend({
   isNamespace: true,

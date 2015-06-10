@@ -45,18 +45,22 @@ Container.prototype = {
   _registry: null,
 
   /**
+   @private
+
    @property cache
    @type InheritingDict
    */
   cache: null,
 
   /**
+   @private
    @property factoryCache
    @type InheritingDict
    */
   factoryCache: null,
 
   /**
+   @private
    @property validationCache
    @type InheritingDict
    */
@@ -100,6 +104,7 @@ Container.prototype = {
    twitter === twitter2; //=> false
    ```
 
+   @private
    @method lookup
    @param {String} fullName
    @param {Object} options
@@ -113,6 +118,7 @@ Container.prototype = {
   /**
    Given a fullName return the corresponding factory.
 
+   @private
    @method lookupFactory
    @param {String} fullName
    @return {any}
@@ -126,6 +132,7 @@ Container.prototype = {
    A depth first traversal, destroying the container, its descendant containers and all
    their managed objects.
 
+   @private
    @method destroy
    */
   destroy() {
@@ -141,6 +148,7 @@ Container.prototype = {
   /**
    Clear either the entire cache or just the cache for a particular key.
 
+   @private
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
    */

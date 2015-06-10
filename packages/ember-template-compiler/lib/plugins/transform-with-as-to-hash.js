@@ -3,6 +3,8 @@
 @submodule ember-htmlbars
 */
 
+import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
+
 /**
   An HTMLBars AST transformation that replaces all instances of
 
@@ -30,7 +32,7 @@ function TransformWithAsToHash(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_transform(ast) {
   var pluginContext = this;
@@ -44,10 +46,11 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
         throw new Error('You cannot use keyword (`{{with foo as bar}}`) and block params (`{{with foo as |bar|}}`) at the same time.');
       }
 
+      let moduleInfo = calculateLocationDisplay(moduleName, node.program.loc);
+
       Ember.deprecate(
-        "Using {{with}} without block syntax is deprecated. " +
+        "Using {{with}} without block syntax " + moduleInfo + "is deprecated. " +
         "Please use standard block form (`{{#with foo as |bar|}}`) " +
-        (moduleName ? " in `" + moduleName + "` " : "") +
         "instead.",
         false,
         { url: "http://emberjs.com/deprecations/v1.x/#toc_code-as-code-sytnax-for-code-with-code" }

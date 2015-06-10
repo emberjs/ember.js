@@ -88,7 +88,7 @@ function HandlebarsCompatibleHelper(fn) {
     };
 
     handlebarsOptions.data = {
-      view: env.view
+      view: scope.view
     };
 
     args.push(handlebarsOptions);

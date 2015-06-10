@@ -1,4 +1,4 @@
-import _Ember from "ember-metal/core";
+import _Ember from "ember-metal";
 import precompile from "ember-template-compiler/system/precompile";
 import compile from "ember-template-compiler/system/compile";
 import template from "ember-template-compiler/system/template";
@@ -15,6 +15,7 @@ import TransformItemClass from "ember-template-compiler/plugins/transform-item-c
 import TransformComponentAttrsIntoMut from "ember-template-compiler/plugins/transform-component-attrs-into-mut";
 import TransformComponentCurlyToReadonly from "ember-template-compiler/plugins/transform-component-curly-to-readonly";
 import TransformAngleBracketComponents from "ember-template-compiler/plugins/transform-angle-bracket-components";
+import TransformInputOnToOnEvent from "ember-template-compiler/plugins/transform-input-on-to-onEvent";
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import "ember-template-compiler/compat";
@@ -30,6 +31,7 @@ registerPlugin('ast', TransformItemClass);
 registerPlugin('ast', TransformComponentAttrsIntoMut);
 registerPlugin('ast', TransformComponentCurlyToReadonly);
 registerPlugin('ast', TransformAngleBracketComponents);
+registerPlugin('ast', TransformInputOnToOnEvent);
 
 export {
   _Ember,

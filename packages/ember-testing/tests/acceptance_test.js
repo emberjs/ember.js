@@ -12,7 +12,7 @@ import RSVP from "ember-runtime/ext/rsvp";
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 import "ember-routing"; //ES6TODO: fixme?
 
-var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
+var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
 QUnit.module("ember-testing Acceptance", {
   setup() {
@@ -30,6 +30,8 @@ QUnit.module("ember-testing Acceptance", {
         this.route('comments');
 
         this.route('abort_transition');
+
+        this.route('redirect');
       });
 
       App.IndexRoute = EmberRoute.extend({
@@ -67,6 +69,12 @@ QUnit.module("ember-testing Acceptance", {
         }
       });
 
+      App.RedirectRoute = EmberRoute.extend({
+        beforeModel() {
+          this.transitionTo('comments');
+        }
+      });
+
       App.setupForTesting();
     });
 
@@ -83,6 +91,7 @@ QUnit.module("ember-testing Acceptance", {
     fillIn = window.fillIn;
     visit = window.visit;
     andThen = window.andThen;
+    currentURL = window.currentURL;
 
     originalAdapter = Test.adapter;
   },
@@ -99,12 +108,13 @@ QUnit.module("ember-testing Acceptance", {
 });
 
 QUnit.test("helpers can be chained with then", function() {
-  expect(5);
+  expect(6);
 
   currentRoute = 'index';
 
   visit('/posts').then(function() {
     equal(currentRoute, 'posts', "Successfully visited posts route");
+    equal(currentURL(), '/posts', "posts URL is correct");
     return click('a:contains("Comments")');
   }).then(function() {
     equal(currentRoute, 'comments', "visit chained with click");
@@ -125,7 +135,7 @@ QUnit.test("helpers can be chained with then", function() {
 // Keep this for backwards compatibility
 
 QUnit.test("helpers can be chained to each other", function() {
-  expect(5);
+  expect(7);
 
   currentRoute = 'index';
 
@@ -134,6 +144,7 @@ QUnit.test("helpers can be chained to each other", function() {
   .fillIn('.ember-text-field', "hello")
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
+    equal(currentURL(), '/comments', "Comments URL is correct");
     equal(jQuery('.ember-text-field').val(), 'hello', "Fillin successfully works");
     find('.ember-text-field').one('keypress', function(e) {
       equal(e.keyCode, 13, "keyevent chained with correct keyCode.");
@@ -144,11 +155,12 @@ QUnit.test("helpers can be chained to each other", function() {
   .visit('/posts')
   .then(function() {
     equal(currentRoute, 'posts', "Thens can also be chained to helpers");
+    equal(currentURL(), '/posts', "URL is set correct on chained helpers");
   });
 });
 
 QUnit.test("helpers don't need to be chained", function() {
-  expect(3);
+  expect(5);
 
   currentRoute = 'index';
 
@@ -160,6 +172,7 @@ QUnit.test("helpers don't need to be chained", function() {
 
   andThen(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
+    equal(currentURL(), '/comments', "Comments URL is correct");
     equal(find('.ember-text-field').val(), 'hello', "Fillin successfully works");
   });
 
@@ -167,11 +180,12 @@ QUnit.test("helpers don't need to be chained", function() {
 
   andThen(function() {
     equal(currentRoute, 'posts');
+    equal(currentURL(), '/posts');
   });
 });
 
 QUnit.test("Nested async helpers", function() {
-  expect(3);
+  expect(5);
 
   currentRoute = 'index';
 
@@ -185,6 +199,7 @@ QUnit.test("Nested async helpers", function() {
 
   andThen(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
+    equal(currentURL(), '/comments', "Comments URL is correct");
     equal(find('.ember-text-field').val(), 'hello', "Fillin successfully works");
   });
 
@@ -192,11 +207,12 @@ QUnit.test("Nested async helpers", function() {
 
   andThen(function() {
     equal(currentRoute, 'posts');
+    equal(currentURL(), '/posts');
   });
 });
 
 QUnit.test("Multiple nested async helpers", function() {
-  expect(2);
+  expect(3);
 
   visit('/posts');
 
@@ -210,11 +226,12 @@ QUnit.test("Multiple nested async helpers", function() {
   andThen(function() {
     equal(find('.ember-text-field').val(), 'goodbye', "Fillin successfully works");
     equal(currentRoute, 'comments', "Successfully visited comments route");
+    equal(currentURL(), '/comments', "Comments URL is correct");
   });
 });
 
 QUnit.test("Helpers nested in thens", function() {
-  expect(3);
+  expect(5);
 
   currentRoute = 'index';
 
@@ -228,6 +245,7 @@ QUnit.test("Helpers nested in thens", function() {
 
   andThen(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
+    equal(currentURL(), '/comments', "Comments URL is correct");
     equal(find('.ember-text-field').val(), 'hello', "Fillin successfully works");
   });
 
@@ -235,6 +253,7 @@ QUnit.test("Helpers nested in thens", function() {
 
   andThen(function() {
     equal(currentRoute, 'posts');
+    equal(currentURL(), '/posts', "Posts URL is correct");
   });
 });
 
@@ -287,16 +306,21 @@ QUnit.test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#
 });
 
 QUnit.test("should not start routing on the root URL when visiting another", function() {
+  expect(4);
+
   visit('/posts');
 
   andThen(function() {
     ok(find('#comments-link'), 'found comments-link');
     equal(currentRoute, 'posts', "Successfully visited posts route");
+    equal(currentURL(), '/posts', "Posts URL is correct");
     equal(indexHitCount, 0, 'should not hit index route when visiting another route');
   });
 });
 
 QUnit.test("only enters the index route once when visiting /", function() {
+  expect(1);
+
   visit('/');
 
   andThen(function() {
@@ -305,6 +329,8 @@ QUnit.test("only enters the index route once when visiting /", function() {
 });
 
 QUnit.test("test must not finish while asyncHelpers are pending", function () {
+  expect(2);
+
   var async = 0;
   var innerRan = false;
 
@@ -336,4 +362,20 @@ QUnit.test("test must not finish while asyncHelpers are pending", function () {
       Test.adapter.asyncEnd();
     });
   }
+});
+
+QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+  expect(2);
+
+  visit('/posts');
+
+  andThen(function () {
+    equal(currentURL(), '/posts', 'First visited URL is correct');
+  });
+
+  visit('/redirect');
+
+  andThen(function () {
+    equal(currentURL(), '/comments', 'Redirected to Comments URL');
+  });
 });

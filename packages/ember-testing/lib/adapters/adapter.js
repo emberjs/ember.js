@@ -13,6 +13,7 @@ function K() { return this; }
 
   @class Adapter
   @namespace Ember.Test
+  @public
 */
 var Adapter = EmberObject.extend({
   /**

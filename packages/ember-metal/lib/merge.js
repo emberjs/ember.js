@@ -15,6 +15,7 @@ import keys from 'ember-metal/keys';
   @param {Object} original The object to merge into
   @param {Object} updates The object to copy properties from
   @return {Object}
+  @private
 */
 export default function merge(original, updates) {
   if (!updates || typeof updates !== 'object') {
@@ -38,8 +39,11 @@ export function assign(original, ...args) {
     let arg = args[i];
     if (!arg) { continue; }
 
-    for (let prop in arg) {
-      if (arg.hasOwnProperty(prop)) { original[prop] = arg[prop]; }
+    let updates = keys(arg);
+
+    for (let i=0, l=updates.length; i<l; i++) {
+      let prop = updates[i];
+      original[prop] = arg[prop];
     }
   }
 

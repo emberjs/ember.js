@@ -43,3 +43,17 @@ QUnit.test("decamelizes strings with numbers", function() {
     deepEqual('size160Url'.decamelize(), 'size160_url');
   }
 });
+
+QUnit.test("decamelize namespaced classified string", function() {
+  deepEqual(decamelize('PrivateDocs/OwnerInvoice'), 'private_docs/owner_invoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('PrivateDocs/OwnerInvoice'.decamelize(), 'private_docs/owner_invoice');
+  }
+});
+
+QUnit.test("decamelize namespaced camelized string", function() {
+  deepEqual(decamelize('privateDocs/ownerInvoice'), 'private_docs/owner_invoice');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('privateDocs/ownerInvoice'.decamelize(), 'private_docs/owner_invoice');
+  }
+});

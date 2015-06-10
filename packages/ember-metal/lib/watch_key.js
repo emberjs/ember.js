@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import {
   meta as metaFor,
   isArray
@@ -31,7 +31,7 @@ export function watchKey(obj, keyName, meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
         handleMandatorySetter(m, obj, keyName);
       }
@@ -42,7 +42,7 @@ export function watchKey(obj, keyName, meta) {
 }
 
 
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+if (isEnabled('mandatory-setter')) {
   var handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     var descriptor = Object.getOwnPropertyDescriptor && Object.getOwnPropertyDescriptor(obj, keyName);
     var configurable = descriptor ? descriptor.configurable : true;
@@ -85,7 +85,7 @@ export function unwatchKey(obj, keyName, meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (!desc && hasPropertyAccessors && keyName in obj) {
         o_defineProperty(obj, keyName, {
           configurable: true,

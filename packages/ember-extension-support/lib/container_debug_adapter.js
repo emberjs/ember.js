@@ -46,6 +46,7 @@ import EmberObject from "ember-runtime/system/object";
   @namespace Ember
   @extends Ember.Object
   @since 1.5.0
+  @public
 */
 export default EmberObject.extend({
   /**
@@ -55,6 +56,7 @@ export default EmberObject.extend({
 
     @property container
     @default null
+    @public
   */
   container: null,
 
@@ -65,6 +67,7 @@ export default EmberObject.extend({
 
     @property resolver
     @default null
+    @public
   */
   resolver: null,
 
@@ -75,6 +78,7 @@ export default EmberObject.extend({
     @method canCatalogEntriesByType
     @param {String} type The type. e.g. "model", "controller", "route"
     @return {boolean} whether a list is available for this type.
+    @public
   */
   canCatalogEntriesByType(type) {
     if (type === 'model' || type === 'template') {
@@ -90,6 +94,7 @@ export default EmberObject.extend({
     @method catalogEntriesByType
     @param {String} type The type. e.g. "model", "controller", "route"
     @return {Array} An array of strings.
+    @public
   */
   catalogEntriesByType(type) {
     var namespaces = emberA(Namespace.NAMESPACES);

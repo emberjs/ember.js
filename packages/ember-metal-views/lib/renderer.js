@@ -1,6 +1,8 @@
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import { assign } from "ember-metal/merge";
+import setProperties from "ember-metal/set_properties";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 import { indexOf } from "ember-metal/enumerable_utils";
 //import { deprecation } from "ember-views/compat/attrs-proxy";
@@ -18,7 +20,7 @@ Renderer.prototype.prerenderTopLevelView =
     view._renderNode = renderNode;
 
     var layout = get(view, 'layout');
-    var template = get(view, 'template');
+    var template = view.isComponent ? get(view, '_template') : get(view, 'template');
 
     var componentInfo = { component: view, layout: layout };
 
@@ -117,9 +119,6 @@ Renderer.prototype.createElement =
     this.prerenderTopLevelView(view, morph);
   };
 
-// inBuffer
-Renderer.prototype.willCreateElement = function (/*view*/) {};
-
 Renderer.prototype.didCreateElement = function (view, element) {
   if (element) {
     view.element = element;
@@ -161,23 +160,26 @@ Renderer.prototype.didRender = function (view) {
 };
 
 Renderer.prototype.updateAttrs = function (view, attrs) {
-  if (view.willReceiveAttrs) {
-    view.willReceiveAttrs(attrs);
-  }
-
   this.setAttrs(view, attrs);
 }; // setting new attrs
 
-Renderer.prototype.componentUpdateAttrs = function (component, oldAttrs, newAttrs) {
-  set(component, 'attrs', newAttrs);
+Renderer.prototype.componentUpdateAttrs = function (component, newAttrs) {
+  let oldAttrs = null;
+
+  if (component.attrs) {
+    oldAttrs = assign({}, component.attrs);
+    setProperties(component.attrs, newAttrs);
+  } else {
+    set(component, 'attrs', newAttrs);
+  }
 
   component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
   component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
 };
 
 Renderer.prototype.willUpdate = function (view, attrs) {
-  if (view.willUpdate) {
-    view.willUpdate(attrs);
+  if (view._willUpdate) {
+    view._willUpdate(attrs);
   }
 };
 
@@ -186,8 +188,8 @@ Renderer.prototype.componentWillUpdate = function (component) {
 };
 
 Renderer.prototype.willRender = function (view) {
-  if (view.willRender) {
-    view.willRender();
+  if (view._willRender) {
+    view._willRender();
   }
 };
 
@@ -228,7 +230,9 @@ Renderer.prototype.willDestroyElement = function (view) {
     view.trigger('willClearRender');
   }
 
-  view._transitionTo('destroying', false);
+  if (view._transitionTo) {
+    view._transitionTo('destroying', false);
+  }
 
   var childViews = view.childViews;
   if (childViews) {
@@ -245,7 +249,7 @@ Renderer.prototype.didDestroyElement = function (view) {
   // However if we're just destroying an element on a view (as is the case when
   // using View#remove) then the view should go to a preRender state so that
   // it can be rendered again later.
-  if (view._state !== 'destroying') {
+  if (view._state !== 'destroying' && view._transitionTo) {
     view._transitionTo('preRender');
   }
 

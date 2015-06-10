@@ -1,1 +1,21 @@
-{{~#each view._arrangedContent as |item|}}{{#if attrs.itemViewClass}}{{#view attrs.itemViewClass controller=item tagName=view._itemTagName}}{{legacy-yield item}}{{/view}}{{else}}{{legacy-yield item controller=item}}{{/if}}{{else if attrs.emptyViewClass}}{{view attrs.emptyViewClass tagName=view._itemTagName}}{{/each~}}
+{{~#each view._arrangedContent -legacy-keyword=keyword as |item|~}}
+  {{~#if keyword}}
+    {{~#if attrs.itemViewClass~}}
+      {{~#view attrs.itemViewClass _defaultTagName=view._itemTagName~}}
+        {{~legacy-yield item~}}
+      {{~/view~}}
+    {{~else~}}
+      {{~legacy-yield item~}}
+    {{~/if~}}
+  {{~else~}}
+    {{~#if attrs.itemViewClass~}}
+      {{~#view attrs.itemViewClass controller=item _defaultTagName=view._itemTagName~}}
+        {{~legacy-yield item~}}
+      {{~/view~}}
+    {{~else~}}
+      {{~legacy-yield item controller=item~}}
+    {{~/if~}}
+  {{~/if~}}
+{{~else if view._emptyView~}}
+  {{~view view._emptyView _defaultTagName=view._itemTagName~}}
+{{~/each~}}

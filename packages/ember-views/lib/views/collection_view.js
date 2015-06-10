@@ -1,4 +1,3 @@
-
 /**
 @module ember
 @submodule ember-views
@@ -17,6 +16,7 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
+import EmptyViewSupport from "ember-views/mixins/empty_view_support";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -179,9 +179,11 @@ import { readViewFactory } from "ember-views/streams/utils";
   @class CollectionView
   @namespace Ember
   @extends Ember.ContainerView
+  @uses Ember.EmptyViewSupport
   @since Ember 0.9
+  @private
 */
-var CollectionView = ContainerView.extend({
+var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
   /**
     A list of items to be displayed by the `Ember.CollectionView`.
@@ -189,32 +191,15 @@ var CollectionView = ContainerView.extend({
     @property content
     @type Ember.Array
     @default null
+    @private
   */
   content: null,
-
-  /**
-    This provides metadata about what kind of empty view class this
-    collection would like if it is being instantiated from another
-    system (like Handlebars)
-
-    @private
-    @property emptyViewClass
-  */
-  emptyViewClass: View,
-
-  /**
-    An optional view to display if content is set to an empty array.
-
-    @property emptyView
-    @type Ember.View
-    @default null
-  */
-  emptyView: null,
 
   /**
     @property itemViewClass
     @type Ember.View
     @default Ember.View
+    @private
   */
   itemViewClass: View,
 
@@ -222,6 +207,7 @@ var CollectionView = ContainerView.extend({
     Setup a CollectionView
 
     @method init
+    @private
   */
   init() {
     var ret = this._super(...arguments);
@@ -279,6 +265,7 @@ var CollectionView = ContainerView.extend({
     Removes the content and content observers.
 
     @method destroy
+    @private
   */
   destroy() {
     if (!this._super(...arguments)) { return; }
@@ -305,6 +292,7 @@ var CollectionView = ContainerView.extend({
     @param {Array} content the managed collection of objects
     @param {Number} start the index at which the changes will occur
     @param {Number} removed number of object to be removed from content
+    @private
   */
   arrayWillChange(content, start, removedCount) {
     this.replace(start, removedCount, []);
@@ -323,6 +311,7 @@ var CollectionView = ContainerView.extend({
     @param {Number} start the index at which the changes occurred
     @param {Number} removed number of object removed from content
     @param {Number} added number of object added to content
+    @private
   */
   arrayDidChange(content, start, removed, added) {
     var addedViews = [];
@@ -344,32 +333,10 @@ var CollectionView = ContainerView.extend({
 
         view = this.createChildView(itemViewClass, itemViewProps);
 
-        if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
-          if (this.blockParams > 1) {
-            view._blockArguments = [item, view.getStream('_view.contentIndex')];
-          } else if (this.blockParams === 1) {
-            view._blockArguments = [item];
-          }
-        } else {
-          if (this.blockParams > 0) {
-            view._blockArguments = [item];
-          }
-        }
-
         addedViews.push(view);
       }
 
       this.replace(start, 0, addedViews);
-
-      if (Ember.FEATURES.isEnabled('ember-htmlbars-each-with-index')) {
-        if (this.blockParams > 1) {
-          var childViews = this.childViews;
-          for (idx = start+added; idx < len; idx++) {
-            view = childViews[idx];
-            set(view, 'contentIndex', idx);
-          }
-        }
-      }
     }
   },
 
@@ -385,8 +352,9 @@ var CollectionView = ContainerView.extend({
 
     @method createChildView
     @param {Class} viewClass
-    @param {Hash} [attrs] Attributes to add
+    @param {Object} [attrs] Attributes to add
     @return {Ember.View} new instance
+    @private
   */
   createChildView(_view, attrs) {
     var view = this._super(_view, attrs);
@@ -401,7 +369,7 @@ var CollectionView = ContainerView.extend({
     return view;
   },
 
-  willRender: function() {
+  _willRender: function() {
     var attrs = this.attrs;
     var itemProps = buildItemViewProps(this._itemViewTemplate, attrs);
     this._itemViewProps = itemProps;
@@ -420,33 +388,6 @@ var CollectionView = ContainerView.extend({
     }
   },
 
-  _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {
-    var emptyView = get(this, 'emptyView');
-    var attrsEmptyViewClass = this.getAttr('emptyViewClass');
-    var emptyViewClass = get(this, 'emptyViewClass');
-    var inverse = get(this, '_itemViewInverse');
-    var actualEmpty = emptyView || attrsEmptyViewClass;
-
-    // Somehow, our previous semantics differed depending on whether the
-    // `emptyViewClass` was provided on the JavaScript class or via the
-    // Handlebars template.
-    // In Glimmer, we disambiguate between the two by checking first (and
-    // preferring) the attrs-supplied class.
-    // If not present, we fall back to the class's `emptyViewClass`, but only
-    // if an inverse has been provided via an `{{else}}`.
-    if (inverse && actualEmpty) {
-      if (actualEmpty.extend) {
-        return actualEmpty.extend({ template: inverse });
-      } else {
-        set(actualEmpty, 'template', inverse);
-      }
-    } else if (inverse && emptyViewClass) {
-      return emptyViewClass.extend({ template: inverse });
-    }
-
-    return actualEmpty;
-  }),
-
   _emptyViewTagName: computed('tagName', function() {
     var tagName = get(this, 'tagName');
     return CollectionView.CONTAINER_MAP[tagName] || 'div';
@@ -459,9 +400,10 @@ var CollectionView = ContainerView.extend({
   a particular parent tag to default to a child tag.
 
   @property CONTAINER_MAP
-  @type Hash
+  @type Object
   @static
   @final
+  @private
 */
 CollectionView.CONTAINER_MAP = {
   ul: 'li',

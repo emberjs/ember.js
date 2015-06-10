@@ -92,6 +92,7 @@ import isNone from "ember-metal/is_none";
 
   @class Observable
   @namespace Ember
+  @public
 */
 export default Mixin.create({
 
@@ -132,6 +133,7 @@ export default Mixin.create({
     @method get
     @param {String} keyName The property to retrieve
     @return {Object} The property value or undefined.
+    @public
   */
   get(keyName) {
     return get(this, keyName);
@@ -155,7 +157,8 @@ export default Mixin.create({
 
     @method getProperties
     @param {String...|Array} list of keys to get
-    @return {Hash}
+    @return {Object}
+    @public
   */
   getProperties(...args) {
     return getProperties.apply(null, [this].concat(args));
@@ -208,6 +211,7 @@ export default Mixin.create({
     @param {String} keyName The property to set
     @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
+    @public
   */
   set(keyName, value) {
     set(this, keyName, value);
@@ -225,8 +229,9 @@ export default Mixin.create({
     ```
 
     @method setProperties
-    @param {Hash} hash the hash of keys and values to set
+    @param {Object} hash the hash of keys and values to set
     @return {Ember.Observable}
+    @public
   */
   setProperties(hash) {
     return setProperties(this, hash);
@@ -245,6 +250,7 @@ export default Mixin.create({
 
     @method beginPropertyChanges
     @return {Ember.Observable}
+    @private
   */
   beginPropertyChanges() {
     beginPropertyChanges();
@@ -263,6 +269,7 @@ export default Mixin.create({
 
     @method endPropertyChanges
     @return {Ember.Observable}
+    @private
   */
   endPropertyChanges() {
     endPropertyChanges();
@@ -286,6 +293,7 @@ export default Mixin.create({
     @method propertyWillChange
     @param {String} keyName The property key that is about to change.
     @return {Ember.Observable}
+    @private
   */
   propertyWillChange(keyName) {
     propertyWillChange(this, keyName);
@@ -309,6 +317,7 @@ export default Mixin.create({
     @method propertyDidChange
     @param {String} keyName The property key that has just changed.
     @return {Ember.Observable}
+    @private
   */
   propertyDidChange(keyName) {
     propertyDidChange(this, keyName);
@@ -322,6 +331,7 @@ export default Mixin.create({
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
     @return {Ember.Observable}
+    @private
   */
   notifyPropertyChange(keyName) {
     this.propertyWillChange(keyName);
@@ -380,6 +390,7 @@ export default Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
+    @public
   */
   addObserver(key, target, method) {
     addObserver(this, key, target, method);
@@ -394,6 +405,7 @@ export default Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
+    @public
   */
   removeObserver(key, target, method) {
     removeObserver(this, key, target, method);
@@ -408,6 +420,7 @@ export default Mixin.create({
     @method hasObserverFor
     @param {String} key Key to check
     @return {Boolean}
+    @private
   */
   hasObserverFor(key) {
     return hasListeners(this, key+':change');
@@ -425,6 +438,7 @@ export default Mixin.create({
     @param {String} keyName The name of the property to retrieve
     @param {Object} defaultValue The value to return if the property value is undefined
     @return {Object} The property value or the defaultValue.
+    @public
   */
   getWithDefault(keyName, defaultValue) {
     return getWithDefault(this, keyName, defaultValue);
@@ -442,6 +456,7 @@ export default Mixin.create({
     @param {String} keyName The name of the property to increment
     @param {Number} increment The amount to increment by. Defaults to 1
     @return {Number} The new property value
+    @public
   */
   incrementProperty(keyName, increment) {
     if (isNone(increment)) { increment = 1; }
@@ -462,6 +477,7 @@ export default Mixin.create({
     @param {String} keyName The name of the property to decrement
     @param {Number} decrement The amount to decrement by. Defaults to 1
     @return {Number} The new property value
+    @public
   */
   decrementProperty(keyName, decrement) {
     if (isNone(decrement)) { decrement = 1; }
@@ -481,6 +497,7 @@ export default Mixin.create({
     @method toggleProperty
     @param {String} keyName The name of the property to toggle
     @return {Object} The new property value
+    @public
   */
   toggleProperty(keyName) {
     set(this, keyName, !get(this, keyName));
@@ -496,6 +513,7 @@ export default Mixin.create({
     @method cacheFor
     @param {String} keyName
     @return {Object} The cached value of the computed property, if any
+    @public
   */
   cacheFor(keyName) {
     return cacheFor(this, keyName);

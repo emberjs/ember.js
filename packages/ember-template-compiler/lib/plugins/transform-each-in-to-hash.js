@@ -31,7 +31,7 @@ function TransformEachInToHash(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformEachInToHash.prototype.transform = function TransformEachInToHash_transform(ast) {
   var pluginContext = this;

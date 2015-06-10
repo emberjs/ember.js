@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.Test
+import Ember from "ember-metal/core"; // Ember.Test
 import { get } from "ember-metal/property_get";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
@@ -13,7 +13,8 @@ import RSVP from "ember-runtime/ext/rsvp";
 /**
   @class Deferred
   @namespace Ember
- */
+  @private
+*/
 export default Mixin.create({
   /**
     Add handlers to be called when the Deferred object is resolved or rejected.
@@ -21,6 +22,7 @@ export default Mixin.create({
     @method then
     @param {Function} resolve a callback function to be called when done
     @param {Function} reject  a callback function to be called when failed
+    @private
   */
   then(resolve, reject, label) {
     var deferred, promise, entity;
@@ -44,6 +46,7 @@ export default Mixin.create({
     Resolve a Deferred object and call any `doneCallbacks` with the given args.
 
     @method resolve
+    @private
   */
   resolve(value) {
     var deferred, promise;
@@ -62,6 +65,7 @@ export default Mixin.create({
     Reject a Deferred object and call any `failCallbacks` with the given args.
 
     @method reject
+    @private
   */
   reject(value) {
     get(this, '_deferred').reject(value);

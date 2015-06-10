@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import ApplicationInstance from "ember-application/system/application-instance";
@@ -6,11 +7,11 @@ import jQuery from "ember-views/system/jquery";
 
 var app, initializeContextFeatureEnabled;
 
-if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+if (isEnabled("ember-application-initializer-context")) {
   initializeContextFeatureEnabled = true;
 }
 
-if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+if (isEnabled('ember-application-instance-initializers')) {
   QUnit.module("Ember.Application instance initializers", {
     setup() {
     },
@@ -340,6 +341,33 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
     });
   });
 
+  QUnit.test("initializers are run before ready hook", function() {
+    expect(2);
+
+    var readyWasCalled = false;
+
+    var MyApplication = Application.extend({
+      ready() {
+        ok(true, 'ready is called');
+        readyWasCalled = true;
+      }
+    });
+
+    MyApplication.instanceInitializer({
+      name: 'initializer',
+      initialize() {
+        ok(!readyWasCalled, 'ready is not yet called');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  });
+
   if (initializeContextFeatureEnabled) {
     QUnit.test("initializers should be executed in their own context", function() {
       expect(1);
@@ -362,4 +390,26 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
       });
     });
   }
+
+  QUnit.test("Initializers get an instance on app reset", function() {
+    expect(2);
+
+    var MyApplication = Application.extend();
+
+    MyApplication.instanceInitializer({
+      name: 'giveMeAnInstance',
+      initialize(instance) {
+        ok(!!instance, 'Initializer got an instance');
+      }
+    });
+
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+
+    run(app, 'reset');
+  });
 }

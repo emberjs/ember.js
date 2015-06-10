@@ -3,6 +3,7 @@
 */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import { meta as metaFor } from "ember-metal/utils";
 import {
   defineProperty as objectDefineProperty,
@@ -16,6 +17,9 @@ import { overrideChains } from "ember-metal/property_events";
 /**
   Objects of this type can implement an interface to respond to requests to
   get and set. The default implementation handles simple properties.
+
+  @class Descriptor
+  @private
 */
 export function Descriptor() {
   this.isDescriptor = true;
@@ -102,7 +106,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (desc instanceof Descriptor) {
     value = desc;
 
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (watching && hasPropertyAccessors) {
         objectDefineProperty(obj, keyName, {
           configurable: true,
@@ -121,7 +125,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (desc == null) {
       value = data;
 
-      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (isEnabled('mandatory-setter')) {
         if (watching && hasPropertyAccessors) {
           meta.values[keyName] = data;
           objectDefineProperty(obj, keyName, {

@@ -13,6 +13,7 @@ import create from "ember-metal/platform/create";
   @param {String} type The container type the property will lookup
   @param {String} name (optional) The name the property will lookup, defaults
          to the property's name
+  @private
 */
 function InjectedProperty(type, name) {
   this.type = type;

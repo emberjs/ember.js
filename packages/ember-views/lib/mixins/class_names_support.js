@@ -14,6 +14,7 @@ var EMPTY_ARRAY = [];
 /**
   @class ClassNamesSupport
   @namespace Ember
+  @private
 */
 var ClassNamesSupport = Mixin.create({
   concatenatedProperties: ['classNames', 'classNameBindings'],
@@ -36,6 +37,7 @@ var ClassNamesSupport = Mixin.create({
     @property classNames
     @type Array
     @default ['ember-view']
+    @private
   */
   classNames: ['ember-view'],
 
@@ -79,6 +81,7 @@ var ClassNamesSupport = Mixin.create({
     @property classNameBindings
     @type Array
     @default []
+    @private
   */
   classNameBindings: EMPTY_ARRAY
 });

@@ -10,7 +10,7 @@ var or = computed.or;
 /**
   @module ember
   @submodule ember-runtime
- */
+*/
 
 function tap(proxy, promise) {
   setProperties(proxy, {
@@ -97,6 +97,7 @@ function tap(proxy, promise) {
   {{/if}}
   ```
   @class Ember.PromiseProxyMixin
+  @public
 */
 export default Mixin.create({
   /**
@@ -105,6 +106,7 @@ export default Mixin.create({
 
     @property reason
     @default null
+    @public
   */
   reason:  null,
 
@@ -113,6 +115,7 @@ export default Mixin.create({
 
     @property isPending
     @default true
+    @public
   */
   isPending:  not('isSettled').readOnly(),
 
@@ -121,6 +124,7 @@ export default Mixin.create({
 
     @property isSettled
     @default false
+    @public
   */
   isSettled:  or('isRejected', 'isFulfilled').readOnly(),
 
@@ -129,6 +133,7 @@ export default Mixin.create({
 
     @property isRejected
     @default false
+    @public
   */
   isRejected:  false,
 
@@ -137,6 +142,7 @@ export default Mixin.create({
 
     @property isFulfilled
     @default false
+    @public
   */
   isFulfilled: false,
 
@@ -155,6 +161,7 @@ export default Mixin.create({
     ```
 
     @property promise
+    @public
   */
   promise: computed({
     get() {
@@ -173,6 +180,7 @@ export default Mixin.create({
     @method then
     @param {Function} callback
     @return {RSVP.Promise}
+    @public
   */
   then: promiseAlias('then'),
 
@@ -185,6 +193,7 @@ export default Mixin.create({
     @param {Function} callback
     @return {RSVP.Promise}
     @since 1.3.0
+    @public
   */
   'catch': promiseAlias('catch'),
 
@@ -197,6 +206,7 @@ export default Mixin.create({
     @param {Function} callback
     @return {RSVP.Promise}
     @since 1.3.0
+    @public
   */
   'finally': promiseAlias('finally')
 

@@ -20,6 +20,7 @@ import { get } from "ember-metal/property_get";
 
   @class ActionHandler
   @namespace Ember
+  @private
 */
 var ActionHandler = Mixin.create({
   mergedProperties: ['_actions'],
@@ -140,8 +141,9 @@ var ActionHandler = Mixin.create({
     ```
 
     @property actions
-    @type Hash
+    @type Object
     @default null
+    @public
   */
 
   /**
@@ -202,6 +204,7 @@ var ActionHandler = Mixin.create({
     @method send
     @param {String} actionName The action to trigger
     @param {*} context a context to send with the action
+    @public
   */
   send(actionName, ...args) {
     var target;

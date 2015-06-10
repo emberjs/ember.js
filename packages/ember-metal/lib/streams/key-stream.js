@@ -59,7 +59,7 @@ merge(KeyStream.prototype, {
 
     var object = this.sourceDep.getValue();
     if (object !== this.observedObject) {
-      this.deactivate();
+      this._clearObservedObject();
 
       if (object && typeof object === 'object') {
         addObserver(object, this.key, this, this.notify);
@@ -70,13 +70,16 @@ merge(KeyStream.prototype, {
 
   _super$deactivate: Stream.prototype.deactivate,
 
-  deactivate() {
-    this._super$deactivate();
-
+  _clearObservedObject() {
     if (this.observedObject) {
       removeObserver(this.observedObject, this.key, this, this.notify);
       this.observedObject = null;
     }
+  },
+
+  deactivate() {
+    this._super$deactivate();
+    this._clearObservedObject();
   }
 });
 

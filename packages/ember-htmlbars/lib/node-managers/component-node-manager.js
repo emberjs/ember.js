@@ -10,6 +10,8 @@ import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 import SafeString from "htmlbars-util/safe-string";
 import { instrument } from "ember-htmlbars/system/instrumentation-support";
 import EmberComponent from "ember-views/views/component";
+import Stream from 'ember-metal/streams/stream';
+import { readArray } from 'ember-metal/streams/utils';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -65,6 +67,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     createOptions._controller = getValue(parentScope.locals.controller);
   }
 
+  // this flag is set when a block was provided so that components can see if
+  // `this.get('template')` is truthy.  this is added for backwards compat only
+  // and accessing `template` prop on a component will trigger a deprecation
+  // 2.0TODO: remove
+  if (templates.default) {
+    createOptions._deprecatedFlagForBlockProvided = true;
+  }
+
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
@@ -89,10 +99,26 @@ function extractPositionalParams(renderNode, component, params, attrs) {
     // if the component is rendered via {{component}} helper, the first
     // element of `params` is the name of the component, so we need to
     // skip that when the positional parameters are constructed
-    let paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
-    let pp = component.positionalParams;
-    for (let i=0; i<pp.length; i++) {
-      attrs[pp[i]] = params[paramsStartIndex + i];
+    const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
+    const positionalParams = component.positionalParams;
+    const isNamed = typeof positionalParams === 'string';
+    let paramsStream;
+
+    if (isNamed) {
+      paramsStream = new Stream(() => {
+        return readArray(params.slice(paramsStartIndex));
+      }, 'params');
+
+      attrs[positionalParams] = paramsStream;
+    }
+
+    for (let i=0; i < positionalParams.length; i++) {
+      let param = params[paramsStartIndex + i];
+      if (isNamed) {
+        paramsStream.addDependency(param);
+      } else {
+        attrs[positionalParams[i]] = param;
+      }
     }
   }
 }
@@ -103,8 +129,15 @@ function extractComponentTemplates(component, _templates) {
   // The component may also provide a `template` property we should
   // respect (though this behavior is deprecated).
   let componentLayout = get(component, 'layout');
-  let componentTemplate = get(component, 'template');
-  let layout, templates;
+  let hasBlock = _templates && _templates.default;
+  let layout, templates, componentTemplate;
+  if (hasBlock) {
+    componentTemplate = null;
+  } else if (component.isComponent) {
+    componentTemplate = get(component, '_template');
+  } else {
+    componentTemplate = get(component, 'template');
+  }
 
   if (componentLayout) {
     layout = componentLayout;
@@ -126,7 +159,7 @@ function extractLegacyTemplate(_templates, componentTemplate) {
 
   // There is no block template provided but the component has a
   // `template` property.
-  if ((!templates || !templates.default) && componentTemplate) {
+  if ((!_templates || !_templates.default) && componentTemplate) {
     Ember.deprecate("Using deprecated `template` property on a Component.");
     templates = { default: componentTemplate.raw };
   } else {
@@ -157,9 +190,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
   var { component, attrs } = this;
 
   return instrument(component, function() {
-    let env = _env;
-
-    env = assign({ view: component }, env);
+    let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
     env.renderer.componentInitAttrs(this.component, snapshot);
@@ -203,14 +234,12 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   var component = this.component;
 
   return instrument(component, function() {
-    let env = _env;
-
-    env = assign({ view: component }, env);
+    let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
-      env.renderer.componentUpdateAttrs(component, component.attrs, snapshot);
+      env.renderer.componentUpdateAttrs(component, snapshot);
 
       if (!component._isAngleBracket) {
         setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
@@ -251,6 +280,9 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   } else {
     props._isAngleBracket = true;
   }
+
+  props.renderer = props.parentView ? props.parentView.renderer : env.container.lookup('renderer:-dom');
+  props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.container.lookup('-view-registry:main');
 
   let component = _component.create(props);
 

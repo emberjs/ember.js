@@ -26,7 +26,7 @@ function testWithAs(moduleName, templateString, deprecated) {
       if (deprecated) {
         expectDeprecation(function() {
           template = compile(templateString);
-        }, "Using {{with}} without block syntax is deprecated. Please use standard block form (`{{#with foo as |bar|}}`) instead.");
+        }, "Using {{with}} without block syntax (L1:C0) is deprecated. Please use standard block form (`{{#with foo as |bar|}}`) instead.");
       } else {
         template = compile(templateString);
       }

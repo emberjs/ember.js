@@ -15,7 +15,8 @@ import {
 
 // ES6TODO: where is Ember.lookup defined?
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 // ..........................................................
@@ -31,6 +32,7 @@ import {
   @for Ember
   @type Boolean
   @default false
+  @public
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
@@ -62,8 +64,9 @@ function Binding(toPath, fromPath) {
 }
 
 /**
-@class Binding
-@namespace Ember
+  @class Binding
+  @namespace Ember
+  @public
 */
 
 Binding.prototype = {
@@ -72,6 +75,7 @@ Binding.prototype = {
 
     @method copy
     @return {Ember.Binding} `this`
+    @public
   */
   copy() {
     var copy = new Binding(this._to, this._from);
@@ -95,6 +99,7 @@ Binding.prototype = {
     @method from
     @param {String} path the property path to connect to
     @return {Ember.Binding} `this`
+    @public
   */
   from(path) {
     this._from = path;
@@ -113,6 +118,7 @@ Binding.prototype = {
     @method to
     @param {String|Tuple} path A property path or tuple
     @return {Ember.Binding} `this`
+    @public
   */
   to(path) {
     this._to = path;
@@ -127,6 +133,7 @@ Binding.prototype = {
 
     @method oneWay
     @return {Ember.Binding} `this`
+    @public
   */
   oneWay() {
     this._oneWay = true;
@@ -136,6 +143,7 @@ Binding.prototype = {
   /**
     @method toString
     @return {String} string representation of binding
+    @public
   */
   toString() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
@@ -154,6 +162,7 @@ Binding.prototype = {
     @method connect
     @param {Object} obj The root object for this binding.
     @return {Ember.Binding} `this`
+    @public
   */
   connect(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
@@ -182,6 +191,7 @@ Binding.prototype = {
     @method disconnect
     @param {Object} obj The root object you passed when connecting the binding.
     @return {Ember.Binding} `this`
+    @public
   */
   disconnect(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
@@ -320,6 +330,7 @@ mixinProperties(Binding, {
       binding `oneWay`. You can instead pass `false` to disable `oneWay`, making the
       binding two way again.
     @return {Ember.Binding} `this`
+    @public
   */
   oneWay(from, flag) {
     var C = this;
@@ -455,6 +466,7 @@ mixinProperties(Binding, {
   @class Binding
   @namespace Ember
   @since Ember 0.9
+  @public
 */
 // Ember.Binding = Binding; ES6TODO: where to put this?
 
@@ -471,6 +483,7 @@ mixinProperties(Binding, {
   @param {String} from The path to the 'from' side of the binding.
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
+  @public
 */
 export function bind(obj, to, from) {
   return new Binding(to, from).connect(obj);
@@ -485,6 +498,7 @@ export function bind(obj, to, from) {
   @param {String} from The path to the 'from' side of the binding.
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
+  @public
 */
 export function oneWay(obj, to, from) {
   return new Binding(to, from).oneWay().connect(obj);

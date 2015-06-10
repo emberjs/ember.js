@@ -175,12 +175,12 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
     normalized.class = normalizedClass;
   }
 
-  if (component.isVisible === false) {
-    var hiddenStyle = ['value', "display: none;"];
+  if (get(component, 'isVisible') === false) {
+    var hiddenStyle = ['subexpr', '-html-safe', ['display: none;'], []];
     var existingStyle = normalized.style;
 
     if (existingStyle) {
-      normalized.style = ['subexpr', '-concat', [existingStyle, hiddenStyle], ['separator', ' ']];
+      normalized.style = ['subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]];
     } else {
       normalized.style = hiddenStyle;
     }
@@ -238,7 +238,7 @@ function normalizeClasses(classes, output) {
     // Legacy :class microsyntax for static class names
     if (propName === '') {
       output.push(activeClass);
-      return;
+      continue;
     }
 
     // 2.0TODO: Remove deprecated global path

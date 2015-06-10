@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Namespace from 'ember-runtime/system/namespace';
 import { Registry } from "ember-runtime/system/container";
@@ -154,6 +155,30 @@ QUnit.test("The `if` helper updates if an array is empty or not", function() {
 
 QUnit.test("The `if` helper updates if an array-like object is empty or not", function() {
   testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
+});
+
+QUnit.test("The `unless` helper updates if an array-like object is empty or not", function() {
+  view = EmberView.create({
+    array: ArrayProxy.create({ content: Ember.A([]) }),
+
+    template: compile('{{#unless view.array}}Yep{{/unless}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Yep');
+
+  run(function() {
+    view.get('array').pushObject(1);
+  });
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.get('array').removeObject(1);
+  });
+
+  equal(view.$().text(), 'Yep');
 });
 
 QUnit.test("The `if` helper updates when the value changes", function() {
@@ -364,7 +389,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
     template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
-    MyView: Ember.View.extend({
+    MyView: EmberView.extend({
       tagName: 'input'
     }),
     display: false
@@ -595,7 +620,7 @@ QUnit.test('edge case: rerender appearance of inner virtual view', function() {
   equal(Ember.$('#qunit-fixture').text(), 'test');
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
+if (isEnabled('ember-htmlbars-inline-if-helper')) {
   QUnit.test("`if` helper with inline form: renders the second argument when conditional is truthy", function() {
     view = EmberView.create({
       conditional: true,
@@ -865,4 +890,26 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
+  QUnit.test("`if` helper with inline form: updates when given a falsey second argument", function() {
+    view = EmberView.create({
+      conditional: false,
+      template: compile('{{if view.conditional "" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', true);
+    });
+
+    equal(view.$().text(), '');
+
+    run(function() {
+      view.set('conditional', false);
+    });
+
+    equal(view.$().text(), 'falsy');
+  });
 }

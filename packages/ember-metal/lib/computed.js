@@ -19,7 +19,8 @@ import {
 } from "ember-metal/dependent_keys";
 
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 var metaFor = meta;
@@ -109,6 +110,7 @@ function UNDEFINED() { }
   @class ComputedProperty
   @namespace Ember
   @constructor
+  @public
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
@@ -159,6 +161,7 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
   @return {Ember.ComputedProperty} this
   @chainable
   @deprecated All computed properties are cacheble by default. Use `volatile()` instead to opt-out to caching.
+  @public
 */
 ComputedPropertyPrototype.cacheable = function(aFlag) {
   Ember.deprecate('ComputedProperty.cacheable() is deprecated. All computed properties are cacheable by default.');
@@ -181,6 +184,7 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   @method volatile
   @return {Ember.ComputedProperty} this
   @chainable
+  @public
 */
 ComputedPropertyPrototype.volatile = function() {
   this._cacheable = false;
@@ -206,6 +210,7 @@ ComputedPropertyPrototype.volatile = function() {
   @method readOnly
   @return {Ember.ComputedProperty} this
   @chainable
+  @public
 */
 ComputedPropertyPrototype.readOnly = function(readOnly) {
   Ember.deprecate('Passing arguments to ComputedProperty.readOnly() is deprecated.', arguments.length === 0);
@@ -240,6 +245,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @param {String} path* zero or more property paths
   @return {Ember.ComputedProperty} this
   @chainable
+  @public
 */
 ComputedPropertyPrototype.property = function() {
   var args;
@@ -278,8 +284,9 @@ ComputedPropertyPrototype.property = function() {
   via the `metaForProperty()` function.
 
   @method meta
-  @param {Hash} meta
+  @param {Object} meta
   @chainable
+  @public
 */
 
 ComputedPropertyPrototype.meta = function(meta) {
@@ -335,6 +342,7 @@ function finishChains(chainNodes) {
   @method get
   @param {String} keyName The key being accessed.
   @return {Object} The return value of the function backing the CP.
+  @public
 */
 ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta, chainNodes;
@@ -419,6 +427,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   @param {Object} newValue The new value being assigned.
   @param {String} oldValue The old value being replaced.
   @return {Object} The return value of the function backing the CP.
+  @public
 */
 ComputedPropertyPrototype.set = function computedPropertySetWithSuspend(obj, keyName, value) {
   var oldSuspended = this._suspended;
@@ -565,6 +574,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
   @return {Ember.ComputedProperty} property descriptor instance
+  @public
 */
 function computed(func) {
   var args;
@@ -595,6 +605,7 @@ function computed(func) {
   @param {String} key the name of the property whose cached value you want
     to return
   @return {Object} the cached value
+  @public
 */
 function cacheFor(obj, key) {
   var meta = obj['__ember_meta__'];

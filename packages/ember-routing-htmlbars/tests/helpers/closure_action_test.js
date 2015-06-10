@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import compile from "ember-template-compiler/system/compile";
 import EmberComponent from "ember-views/views/component";
@@ -10,7 +11,7 @@ import {
 
 var innerComponent, outerComponent;
 
-if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+if (isEnabled("ember-routing-htmlbars-improved-actions")) {
 
   QUnit.module("ember-routing-htmlbars: action helper", {
     setup() {
@@ -164,6 +165,42 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     innerComponent.fireAction();
   });
 
+  QUnit.test("array arguments are passed correctly to action", function(assert) {
+    assert.expect(3);
+
+    const first = 'foo';
+    const second = [3, 5];
+    const third = [4, 9];
+
+    innerComponent = EmberComponent.extend({
+      fireAction() {
+        this.attrs.submit(second, third);
+      }
+    }).create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action outerSubmit first)}}
+      `),
+      innerComponent,
+      value: '',
+      outerSubmit(actualFirst, actualSecond, actualThird) {
+        assert.equal(actualFirst, first, 'action has the correct first arg');
+        assert.equal(actualSecond, second, 'action has the correct second arg');
+        assert.equal(actualThird, third, 'action has the correct third arg');
+      }
+    }).create();
+
+    runAppend(outerComponent);
+
+    run(function() {
+      outerComponent.set('first', first);
+      outerComponent.set('second', second);
+    });
+
+    innerComponent.fireAction();
+  });
+
   QUnit.test("mut values can be wrapped in actions, are settable", function(assert) {
     assert.expect(1);
 
@@ -251,6 +288,47 @@ if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
     run(function() {
       innerComponent.fireAction();
     });
+  });
+
+  QUnit.test("provides a helpful error if an action is not present", function(assert) {
+    assert.expect(1);
+
+    innerComponent = EmberComponent.create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action 'doesNotExist')}}
+      `),
+      innerComponent,
+      actions: {
+        something() {
+          // this is present to ensure `actions` hash is present
+          // a different error is triggered if `actions` is missing
+          // completely
+        }
+      }
+    }).create();
+
+    throws(function() {
+      runAppend(outerComponent);
+    }, /An action named 'doesNotExist' was not found in /);
+  });
+
+  QUnit.test("provides a helpful error if actions hash is not present", function(assert) {
+    assert.expect(1);
+
+    innerComponent = EmberComponent.create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile(`
+        {{view innerComponent submit=(action 'doesNotExist')}}
+      `),
+      innerComponent
+    }).create();
+
+    throws(function() {
+      runAppend(outerComponent);
+    }, /An action named 'doesNotExist' was not found in /);
   });
 
   QUnit.test("action can create closures over actions with target", function(assert) {

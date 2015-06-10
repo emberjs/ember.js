@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import isEnabled from "ember-metal/features";
 import { keyword } from "htmlbars-runtime/hooks";
 import closureAction from "ember-routing-htmlbars/keywords/closure-action";
 
@@ -153,7 +154,7 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
   implementing the action.
 
   ```handlebars
-  {{#each person in people}}
+  {{#each people as |person|}}
     <div {{action "edit" person}}>
       click me
     </div>
@@ -165,12 +166,10 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
 
   @method action
   @for Ember.Handlebars.helpers
-  @param {String} actionName
-  @param {Object} [context]*
-  @param {Hash} options
+  @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
-  if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+  if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     if (morph) {
       keyword('@element_action', morph, env, scope, params, hash, template, inverse, visitor);
       return true;

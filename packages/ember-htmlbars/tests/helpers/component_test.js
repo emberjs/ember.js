@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
@@ -10,7 +11,7 @@ import Component from "ember-views/views/component";
 
 var view, registry, container;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+if (isEnabled('ember-htmlbars-component-helper')) {
   QUnit.module("ember-htmlbars: {{#component}} helper", {
     setup() {
       registry = new Registry();
@@ -216,5 +217,20 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
       ]);
     });
     equal(view.$().text(), 'Max - Max|James - James|', 'component was updated and re-rendered');
+  });
+
+  QUnit.test('dashless components should not be found', function() {
+    expect(1);
+
+    registry.register('template:components/dashless', compile('Do not render me!'));
+
+    view = EmberView.extend({
+      template: compile('{{component "dashless"}}'),
+      container: container
+    }).create();
+
+    expectAssertion(function() {
+      runAppend(view);
+    }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
   });
 }

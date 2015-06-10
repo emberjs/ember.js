@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert
+import isEnabled from "ember-metal/features";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
@@ -450,7 +451,7 @@ QUnit.test("should work properly in an #each block", function() {
   view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: compile('{{#each item in view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: compile('{{#each view.items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   runAppend(view);
@@ -537,7 +538,7 @@ QUnit.test("should unregister event handlers on inside virtual views", function(
     }
   ]);
   view = EmberView.create({
-    template: compile('{{#each thing in view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: compile('{{#each view.things as |thing|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 
@@ -632,7 +633,6 @@ QUnit.test("should allow 'send' as action name (#594)", function() {
 
   ok(eventHandlerWasCalled, "The view's send method was called");
 });
-
 
 QUnit.test("should send the view, event and current context to the action", function() {
   var passedTarget;
@@ -1001,7 +1001,7 @@ QUnit.test("a quoteless string parameter should resolve actionName, including pa
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+if (isEnabled("ember-routing-htmlbars-improved-actions")) {
 
   QUnit.test("a quoteless function parameter should be called, including arguments", function() {
     expect(2);
@@ -1051,6 +1051,47 @@ QUnit.test("a quoteless parameter that does not resolve to a value asserts", fun
   }, "You specified a quoteless path to the {{action}} helper " +
      "which did not resolve to an action name (a string). " +
      "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).");
+});
+
+QUnit.test('allows multiple actions on a single element', function() {
+  var clickActionWasCalled = false;
+  var doubleClickActionWasCalled = false;
+
+  var controller = EmberController.extend({
+    actions: {
+      clicked() {
+        clickActionWasCalled = true;
+      },
+
+      doubleClicked() {
+        doubleClickActionWasCalled = true;
+      }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile(`
+      <a href="#"
+        {{action "clicked" on="click"}}
+        {{action "doubleClicked" on="doubleClick"}}
+      >click me</a>
+    `)
+  });
+
+  runAppend(view);
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(ActionManager.registeredActions[actionId], "The action was registered");
+
+  view.$('a').trigger('click');
+
+  ok(clickActionWasCalled, "The clicked action was called");
+
+  view.$('a').trigger('dblclick');
+
+  ok(doubleClickActionWasCalled, "The double click handler was called");
 });
 
 QUnit.module("ember-routing-htmlbars: action helper - deprecated invoking directly on target", {

@@ -37,7 +37,7 @@ var SelectOption = View.extend({
 
   content: null,
 
-  willRender() {
+  _willRender() {
     this.labelPathDidChange();
     this.valuePathDidChange();
   },
@@ -312,6 +312,7 @@ var SelectOptgroup = View.extend({
   @class Select
   @namespace Ember
   @extends Ember.View
+  @public
 */
 var Select = View.extend({
   instrumentDisplay: 'Ember.Select',
@@ -338,6 +339,7 @@ var Select = View.extend({
     @property multiple
     @type Boolean
     @default false
+    @public
   */
   multiple: false,
 
@@ -348,6 +350,7 @@ var Select = View.extend({
     @property disabled
     @type Boolean
     @default false
+    @public
   */
   disabled: false,
 
@@ -359,6 +362,7 @@ var Select = View.extend({
     @type Boolean
     @default false
     @since 1.5.0
+    @public
   */
   required: false,
 
@@ -385,6 +389,7 @@ var Select = View.extend({
     @property content
     @type Array
     @default null
+    @public
   */
   content: null,
 
@@ -397,6 +402,7 @@ var Select = View.extend({
     @property selection
     @type Object or Array
     @default null
+    @public
   */
   selection: null,
 
@@ -409,6 +415,7 @@ var Select = View.extend({
     @property value
     @type String
     @default null
+    @public
   */
   value: computed({
     get(key) {
@@ -427,6 +434,7 @@ var Select = View.extend({
     @property prompt
     @type String
     @default null
+    @public
   */
   prompt: null,
 
@@ -436,6 +444,7 @@ var Select = View.extend({
     @property optionLabelPath
     @type String
     @default 'content'
+    @public
   */
   optionLabelPath: 'content',
 
@@ -445,6 +454,7 @@ var Select = View.extend({
     @property optionValuePath
     @type String
     @default 'content'
+    @public
   */
   optionValuePath: 'content',
 
@@ -455,6 +465,7 @@ var Select = View.extend({
     @property optionGroupPath
     @type String
     @default null
+    @public
   */
   optionGroupPath: null,
 
@@ -464,6 +475,7 @@ var Select = View.extend({
     @property groupView
     @type Ember.View
     @default Ember.SelectOptgroup
+    @public
   */
   groupView: SelectOptgroup,
 
@@ -494,6 +506,7 @@ var Select = View.extend({
     @property optionView
     @type Ember.View
     @default Ember.SelectOption
+    @private
   */
   optionView: SelectOption,
 
@@ -651,7 +664,7 @@ var Select = View.extend({
     }
   },
 
-  willRender() {
+  _willRender() {
     this._setDefaults();
   },
 

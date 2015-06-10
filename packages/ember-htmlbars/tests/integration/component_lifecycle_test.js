@@ -17,7 +17,6 @@ QUnit.module('component - lifecycle hooks', {
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('component-lookup:main', ComponentLookup);
 
     hooks = [];
@@ -176,7 +175,7 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
 
   // Because the `twitter` attr is only used by the topmost component,
   // and not passed down, we do not expect to see lifecycle hooks
-  // called for child components. If the `willReceiveAttrs` hook used
+  // called for child components. If the `didReceiveAttrs` hook used
   // the new attribute to rerender itself imperatively, that would result
   // in lifecycle hooks being invoked for the child.
 

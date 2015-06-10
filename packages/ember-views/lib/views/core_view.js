@@ -36,6 +36,7 @@ var renderer;
   @deprecated Use `Ember.View` instead.
   @uses Ember.Evented
   @uses Ember.ActionHandler
+  @private
 */
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
@@ -67,6 +68,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @property parentView
     @type Ember.View
     @default null
+    @private
   */
   parentView: null,
 
@@ -132,7 +134,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 });
 
 CoreView.reopenClass({
-  isViewClass: true
+  isViewFactory: true
 });
 
 export var DeprecatedCoreView = CoreView.extend({

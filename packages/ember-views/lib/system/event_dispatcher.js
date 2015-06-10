@@ -15,9 +15,6 @@ import ActionManager from "ember-views/system/action_manager";
 import View from "ember-views/views/view";
 import merge from "ember-metal/merge";
 
-//ES6TODO:
-// find a better way to do Ember.View.views without global state
-
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
@@ -41,6 +38,7 @@ export default EmberObject.extend({
 
     @property events
     @type Object
+    @private
   */
   events: {
     touchstart  : 'touchStart',
@@ -114,6 +112,7 @@ export default EmberObject.extend({
     @type boolean
     @default 'true'
     @since 1.7.0
+    @private
   */
   canDispatchToEventManager: true,
 
@@ -127,7 +126,7 @@ export default EmberObject.extend({
 
     @private
     @method setup
-    @param addedEvents {Hash}
+    @param addedEvents {Object}
   */
   setup(addedEvents, rootElement) {
     var event;
@@ -172,9 +171,10 @@ export default EmberObject.extend({
   */
   setupHandler(rootElement, event, eventName) {
     var self = this;
+    var viewRegistry = this.container && this.container.lookup('-view-registry:main') || View.views;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = View.views[this.id];
+      var view = viewRegistry[this.id];
       var result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
@@ -190,13 +190,21 @@ export default EmberObject.extend({
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
-      var action   = ActionManager.registeredActions[actionId];
+      var actions   = ActionManager.registeredActions[actionId];
 
-      // We have to check for action here since in some cases, jQuery will trigger
+      // We have to check for actions here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the
       // action handlers for the view.
-      if (action && action.eventName === eventName) {
-        return action.handler(evt);
+      if (!actions) {
+        return;
+      }
+
+      for (let index = 0, length = actions.length; index < length; index++) {
+        let action = actions[index];
+
+        if (action && action.eventName === eventName) {
+          return action.handler(evt);
+        }
       }
     });
   },

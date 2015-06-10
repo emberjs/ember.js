@@ -1,7 +1,8 @@
 import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
-import Component from "ember-views/views/component";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
 function generateEnv(helpers, container) {
   return {
@@ -15,7 +16,6 @@ function generateContainer() {
   var registry = new Registry();
   var container = registry.container();
 
-  registry.optionsForType('helper', { instantiate: false });
   registry.register('component-lookup:main', ComponentLookup);
 
   return container;
@@ -64,16 +64,15 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
     container: container
   };
 
-  function someName() {}
-  someName.isHTMLBars = true;
+  var someName = Helper.extend();
   view.container._registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
-  equal(actual, someName, 'does not wrap provided function if `isHTMLBars` is truthy');
+  ok(someName.detect(actual), 'helper is an instance of the helper class');
 });
 
-QUnit.test('wraps helper from container in a Handlebars compat helper', function() {
+QUnit.test('looks up a shorthand helper in the container', function() {
   expect(2);
   var container = generateContainer();
   var env = generateEnv(null, container);
@@ -85,53 +84,31 @@ QUnit.test('wraps helper from container in a Handlebars compat helper', function
   function someName() {
     called = true;
   }
-  view.container._registry.register('helper:some-name', someName);
+  view.container._registry.register('helper:some-name', makeHelper(someName));
 
   var actual = lookupHelper('some-name', view, env);
 
-  ok(actual.isHTMLBars, 'wraps provided helper in an HTMLBars compatible helper');
+  ok(actual.isHelperInstance, 'is a helper');
 
-  var fakeParams = [];
-  var fakeHash = {};
-  var fakeOptions = {
-    morph: { update() { } },
-    template: {},
-    inverse: {}
-  };
-  var fakeEnv = {
-    data: {
-      view: { }
-    }
-  };
-  actual.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  actual.compute([], {});
 
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });
 
-QUnit.test('asserts if component-lookup:main cannot be found', function() {
+QUnit.test('fails with a useful error when resolving a function', function() {
+  expect(2);
   var container = generateContainer();
   var env = generateEnv(null, container);
   var view = {
     container: container
   };
 
-  view.container._registry.unregister('component-lookup:main');
+  function someName() {}
+  view.container._registry.register('helper:some-name', someName);
 
-  expectAssertion(function() {
-    lookupHelper('some-name', view, env);
-  }, 'Could not find \'component-lookup:main\' on the provided container, which is necessary for performing component lookups');
-});
-
-QUnit.test('registers a helper in the container if component is found', function() {
-  var container = generateContainer();
-  var env = generateEnv(null, container);
-  var view = {
-    container: container
-  };
-
-  view.container._registry.register('component:some-name', Component);
-
-  lookupHelper('some-name', view, env);
-
-  ok(view.container.lookup('helper:some-name'), 'new helper was registered');
+  var actual;
+  expectDeprecation(function() {
+    actual = lookupHelper('some-name', view, env);
+  }, /helper "some-name" is a deprecated bare function helper/);
+  ok(actual instanceof HandlebarsCompatibleHelper, 'function looks up as compat helper');
 });
