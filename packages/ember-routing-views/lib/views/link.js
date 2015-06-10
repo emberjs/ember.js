@@ -32,7 +32,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
 
   @class LinkComponent
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
   @see {Handlebars.helpers.link-to}
   @private
 **/
