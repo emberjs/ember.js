@@ -8,15 +8,15 @@ import { Registry } from "ember-runtime/system/container";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import EmberObject from "ember-runtime/system/object";
 import ComponentLookup from "ember-views/component_lookup";
-import LinkView from "ember-routing-views/views/link";
+import LinkComponent from "ember-routing-views/views/link";
 
 var view;
 var container;
 var registry = new Registry();
 
-// These tests don't rely on the routing service, but LinkView makes
+// These tests don't rely on the routing service, but LinkComponent makes
 // some assumptions that it will exist. This small stub service ensures
-// that the LinkView can render without raising an exception.
+// that the LinkComponent can render without raising an exception.
 //
 // TODO: Add tests that test actual behavior. Currently, all behavior
 // is tested integration-style in the `ember` package.
@@ -28,7 +28,7 @@ registry.register('service:-routing', EmberObject.extend({
 }));
 
 registry.register('component-lookup:main', ComponentLookup);
-registry.register('component:-link-to', LinkView);
+registry.register('component:-link-to', LinkComponent);
 
 QUnit.module("ember-routing-htmlbars: link-to helper", {
   setup() {
