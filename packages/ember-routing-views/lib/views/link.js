@@ -504,11 +504,20 @@ function getResolvedQueryParams(queryParamsObject, targetRouteName) {
   return resolvedQueryParams;
 }
 
-export var DeprecatedLinkView = LinkComponent.extend({
+/* DeprecatedLinkView - Start: TODO: Delete in Ember 2.0 */
+var DeprecatedLinkView = LinkComponent.extend({
   init() {
     Ember.deprecate('Ember.LinkView is deprecated. Please use Ember.LinkComponent.', false);
     this._super.apply(this, arguments);
   }
 });
+var originalReopen = DeprecatedLinkView.reopen;
+
+DeprecatedLinkView.reopen = function reopenWithDeprecation() {
+  Ember.deprecate('Ember.LinkView is deprecated. Please use Ember.LinkComponent.', false);
+  originalReopen.apply(this, arguments);
+};
+export { DeprecatedLinkView };
+/* DeprecatedLinkView - End*/
 
 export default LinkComponent;
