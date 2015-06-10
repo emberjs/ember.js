@@ -4,13 +4,14 @@
 */
 
 import Ember from "ember-metal/core";
-import LinkView from "ember-routing-views/views/link";
+import LinkComponent, { DeprecatedLinkView } from "ember-routing-views/views/link";
 import {
   OutletView,
   CoreOutletView
 } from "ember-routing-views/views/outlet";
 
-Ember.LinkView = LinkView;
+Ember.LinkView = DeprecatedLinkView;
+Ember.LinkComponent = LinkComponent;
 Ember.OutletView = OutletView;
 if (Ember.FEATURES.isEnabled('ember-routing-core-outlet')) {
   Ember.CoreOutletView = CoreOutletView;

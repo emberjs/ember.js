@@ -12,7 +12,7 @@ import keys from "ember-metal/keys";
 import merge from "ember-metal/merge";
 
 /**
-  The Routing service is used by LinkView, and provides facilities for
+  The Routing service is used by LinkComponent, and provides facilities for
   the component/view layer to interact with the router.
 
   While still private, this service can eventually be opened up, and provides

@@ -753,10 +753,10 @@ QUnit.test("link-to with null/undefined dynamic parameters are put in a loading 
   function assertLinkStatus($link, url) {
     if (url) {
       equal(normalizeUrl($link.attr('href')), url, "loaded link-to has expected href");
-      ok(!$link.hasClass('i-am-loading'), "loaded linkView has no loadingClass");
+      ok(!$link.hasClass('i-am-loading'), "loaded linkComponent has no loadingClass");
     } else {
       equal(normalizeUrl($link.attr('href')), '#', "unloaded link-to has href='#'");
-      ok($link.hasClass('i-am-loading'), "loading linkView has loadingClass");
+      ok($link.hasClass('i-am-loading'), "loading linkComponent has loadingClass");
     }
   }
 
