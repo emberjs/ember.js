@@ -260,7 +260,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Allow for bound property {{input}} type.
 * [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
 * [BUGFIX] instrument should still call block even without subscribers.
-* [BUGFIX] Remove uneeded normalization in query param controller lookup.
+* [BUGFIX] Remove unneeded normalization in query param controller lookup.
 * [BUGFIX] Do not use defineProperty on each View instance.
 * [PERF] Speedup `watchKey` by preventing for in related deopt.
 * [PERF] Change `ENV.MANDATORY_SETTER` to FEATURES so it can be compiled out of production builds.
