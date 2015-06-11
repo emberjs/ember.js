@@ -35,6 +35,12 @@ function selectedOptions() {
   return select.get('childViews').mapBy('selected');
 }
 
+QUnit.test('using the Ember.Select global is deprecated', function(assert) {
+  expectDeprecation(function() {
+    Ember.Select.create();
+  }, /Ember.Select is deprecated./);
+});
+
 QUnit.test("has 'ember-view' and 'ember-select' CSS classes", function() {
   deepEqual(select.get('classNames'), ['ember-view', 'ember-select']);
 });

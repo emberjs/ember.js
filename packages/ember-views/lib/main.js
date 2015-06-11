@@ -34,7 +34,7 @@ import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
 
 import {
-  Select,
+  DeprecatedSelect,
   SelectOption,
   SelectOptgroup
 } from "ember-views/views/select";
@@ -48,7 +48,7 @@ import LegacyEachView from "ember-views/views/legacy_each_view";
 
   @method $
   @for Ember
-  @public
+ @public
 */
 
 // BEGIN EXPORTS
@@ -71,7 +71,7 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
-Ember.Select = Select;
+Ember.Select = DeprecatedSelect;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
 
