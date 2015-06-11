@@ -94,7 +94,7 @@
 * [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
 * [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
 * [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
-* [BUGFIX] Ensure that calling the `wait` testing helpe without routing works properly.
+* [BUGFIX] Ensure that calling the `wait` testing helper without routing works properly.
 * [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
 * [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
 * [BUGFIX] Allow unbound helpers to add attributes.
@@ -978,7 +978,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update route-recognizer - Fixes #2559
 * Revert "Use isNone to check tag name"
 * Support for redirection from ApplicationRoute
-* Improving Ember.Select's null-content regresion test
+* Improving Ember.Select's null-content regression test
 * Prevent another exception on empty Ember.Select.content
 * prevent exception on empty Em.Select content
 * deprecate the defaultContainer (see: http://git.io/EKPpnA)
@@ -1337,7 +1337,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Replaced getPath/setPath with get/set
 * Remove LEGACY_HANDLEBARS_TAG flag
 * Add two new core methods to allow invoking possibly unknown methods on objects
-* Change ternary syntax to double colon sytax
+* Change ternary syntax to double colon syntax
 * Add tests for ternary operator in class bindings
 * Test for defined Router lacking App(View|Controller)
 * Allow alternate clicks for href handling - Fixes #1096
