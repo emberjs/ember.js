@@ -893,7 +893,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update backburner to fix IE8 failing test
 * Update Backburner.js fixing the performance regression introduce in rc4
 * maintain ruby'esq version string for gems
-* remove starter_kit upload task (we just use the github tarbals)
+* remove starter_kit upload task (we just use the github tarballs)
 
 
 ### Ember 1.0.0-rc.4 _(May 27, 2013)_
