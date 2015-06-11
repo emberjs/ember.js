@@ -588,7 +588,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Fix evaluateUnboundHelper properties
 * Use Ember.Error consistently.
 * [BUGFIX] Make Component.sendAction behave the same as {{action}} helper.
-* [BUGFIX] uniq reduceComputed dependent keys.
+* [BUGFIX] Unique reduceComputed dependent keys.
 * Don't allow registration of undefined factories.
 * Decamelize handles strings with numbers
 * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
