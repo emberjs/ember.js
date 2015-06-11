@@ -893,7 +893,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update backburner to fix IE8 failing test
 * Update Backburner.js fixing the performance regression introduce in rc4
 * maintain ruby'esq version string for gems
-* remove starter_kit upload task (we just use the github tarballs)
+* remove starter_kit upload task (we just use the github tarbals)
 
 
 ### Ember 1.0.0-rc.4 _(May 27, 2013)_
@@ -958,7 +958,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Don't add disabled class if disabledWhen not provided
 * More accurate, helpful error message for handlebars version errors.
 * Adds disabledWhen option to {{linkTo}} helper
-* Clean up pendingDisconnections propertly
+* Clean up pendingDisconnections property
 * Make router's render idempotent
 * Switch from bind to on for routing handlers.
 * Switch from delegate/undelegate to on/off for EventDispatcher.
