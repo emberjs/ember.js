@@ -313,6 +313,7 @@ var SelectOptgroup = View.extend({
   @namespace Ember
   @extends Ember.View
   @public
+  @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-select
 */
 var Select = View.extend({
   instrumentDisplay: 'Ember.Select',
@@ -674,9 +675,17 @@ var Select = View.extend({
   }
 });
 
+var DeprecatedSelect = Select.extend({
+  init() {
+    this._super(...arguments);
+    Ember.deprecate(`Ember.Select is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-select' });
+  }
+});
+
 export default Select;
 export {
   Select,
+  DeprecatedSelect,
   SelectOption,
   SelectOptgroup
 };
