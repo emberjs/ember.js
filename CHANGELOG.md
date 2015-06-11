@@ -958,7 +958,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Don't add disabled class if disabledWhen not provided
 * More accurate, helpful error message for handlebars version errors.
 * Adds disabledWhen option to {{linkTo}} helper
-* Clean up pendingDisconnections property
+* Clean up pendingDisconnections properly
 * Make router's render idempotent
 * Switch from bind to on for routing handlers.
 * Switch from delegate/undelegate to on/off for EventDispatcher.
