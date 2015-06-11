@@ -482,7 +482,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Use imported handlebars before global Handlebars
 * Update router.js
 * Update RSVP.js
-* Improved a handeful of error messages
+* Improved a handful of error messages
 * Provide more information for debugging
 * Added more assertions and deprecation warnings
 * [BUGFIX] Add preventDefault option to link-to and action.
