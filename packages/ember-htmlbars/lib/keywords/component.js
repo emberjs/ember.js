@@ -7,6 +7,10 @@ export default {
   },
 
   render(morph, ...rest) {
+    if (morph.state.manager) {
+      morph.state.manager.destroy();
+    }
+
     // Force the component hook to treat this as a first-time render,
     // because normal components (`<foo-bar>`) cannot change at runtime,
     // but the `{{component}}` helper can.
