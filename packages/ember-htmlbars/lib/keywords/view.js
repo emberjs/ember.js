@@ -70,6 +70,11 @@ export default {
       options.createOptions._targetObject = node.state.targetObject;
     }
 
+    if (state.manager) {
+      state.manager.destroy();
+      state.manager = null;
+    }
+
     var nodeManager = ViewNodeManager.create(node, env, hash, options, parentView, null, scope, template);
     state.manager = nodeManager;
 

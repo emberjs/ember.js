@@ -264,6 +264,15 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   }, this);
 };
 
+ComponentNodeManager.prototype.destroy = function() {
+  let component = this.component;
+
+  // Clear component's render node. Normally this gets cleared
+  // during view destruction, but in this case we're re-assigning the
+  // node to a different view and it will get cleaned up automatically.
+  component._renderNode = null;
+  component.destroy();
+};
 
 export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}) {
   let props = assign({}, _props);
@@ -298,9 +307,6 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   }
 
   component._renderNode = renderNode;
-  if (renderNode.emberView && renderNode.emberView !== component) {
-    throw new Error('Need to clean up this view before blindly reassigning.');
-  }
   renderNode.emberView = component;
   return component;
 }
