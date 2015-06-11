@@ -322,7 +322,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
 * [BUGFIX] Fix `{{#with view.foo as bar}}`.
 * [BUGFIX] Force remove `required` attribute for IE8.
-* [BUGFIX] Controller precendence for `Ember.Route.prototype.render` updated.
+* [BUGFIX] Controller precedence for `Ember.Route.prototype.render` updated.
 * [BUGFIX] fixes variable argument passing to triggerEvent helper.
 * [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
 * [BUGFIX] Do not throw uncaught errors mid-transition.
