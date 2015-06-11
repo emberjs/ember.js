@@ -777,7 +777,7 @@ QUnit.test("it can move to and from {{else}} properly when the backing array gai
   var items = A(['one', 'two']);
   runDestroy(view);
   view = EmberView.create({
-    template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
+    template: compile("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
     items
   });
 
