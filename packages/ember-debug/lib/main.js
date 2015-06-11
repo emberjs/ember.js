@@ -3,6 +3,7 @@
 import Ember from "ember-metal/core";
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
+import deprecationManager, { deprecationLevels } from "ember-debug/deprecation-manager";
 
 import environment from "ember-metal/environment";
 
@@ -106,6 +107,10 @@ Ember.debug = function(message) {
   @public
 */
 Ember.deprecate = function(message, test, options) {
+  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.SILENCE) {
+    return;
+  }
+
   var noDeprecation;
 
   if (isPlainFunction(test)) {
@@ -116,7 +121,9 @@ Ember.deprecate = function(message, test, options) {
 
   if (noDeprecation) { return; }
 
-  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
+  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.RAISE) {
+    throw new EmberError(message);
+  }
 
   var error;
 
@@ -260,6 +267,16 @@ if (!Ember.testing) {
     }, false);
   }
 }
+
+if (Ember.ENV.RAISE_ON_DEPRECATION) {
+  deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
+}
+Ember.Debug = {
+  _addDeprecationLevel(id, level) {
+    deprecationManager.setLevel(id, level);
+  },
+  _deprecationLevels: deprecationLevels
+};
 
 /*
   We are transitioning away from `ember.js` to `ember.debug.js` to make
