@@ -773,6 +773,40 @@ QUnit.test("it uses {{else}} when removing all items in an array", function() {
   assertHTML(view, "Nothing");
 });
 
+QUnit.test("it can move to and from {{else}} properly when the backing array gains and looses items (#11140)", function() {
+  var items = A(['one', 'two']);
+  runDestroy(view);
+  view = EmberView.create({
+    template: compile("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
+    items
+  });
+
+  runAppend(view);
+
+  assertHTML(view, "onetwo");
+
+  run(function() {
+    items.shiftObject();
+    items.shiftObject();
+  });
+
+  assertHTML(view, "Nothing");
+
+  run(function() {
+    items.pushObject('three');
+    items.pushObject('four');
+  });
+
+  assertHTML(view, "threefour");
+
+  run(function() {
+    items.shiftObject();
+    items.shiftObject();
+  });
+
+  assertHTML(view, "Nothing");
+});
+
 QUnit.test("it works with the controller keyword", function() {
   runDestroy(view);
 
