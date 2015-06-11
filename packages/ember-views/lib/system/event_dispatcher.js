@@ -38,6 +38,7 @@ export default EmberObject.extend({
 
     @property events
     @type Object
+    @private
   */
   events: {
     touchstart  : 'touchStart',
@@ -111,6 +112,7 @@ export default EmberObject.extend({
     @type boolean
     @default 'true'
     @since 1.7.0
+    @private
   */
   canDispatchToEventManager: true,
 
@@ -124,7 +126,7 @@ export default EmberObject.extend({
 
     @private
     @method setup
-    @param addedEvents {Hash}
+    @param addedEvents {Object}
   */
   setup(addedEvents, rootElement) {
     var event;
@@ -188,13 +190,21 @@ export default EmberObject.extend({
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
-      var action   = ActionManager.registeredActions[actionId];
+      var actions   = ActionManager.registeredActions[actionId];
 
-      // We have to check for action here since in some cases, jQuery will trigger
+      // We have to check for actions here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the
       // action handlers for the view.
-      if (action && action.eventName === eventName) {
-        return action.handler(evt);
+      if (!actions) {
+        return;
+      }
+
+      for (let index = 0, length = actions.length; index < length; index++) {
+        let action = actions[index];
+
+        if (action && action.eventName === eventName) {
+          return action.handler(evt);
+        }
       }
     });
   },

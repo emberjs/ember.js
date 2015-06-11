@@ -16,6 +16,7 @@ import EmberObject from "ember-runtime/system/object";
   @class NoneLocation
   @namespace Ember
   @extends Ember.Object
+  @private
 */
 export default EmberObject.extend({
   implementation: 'none',

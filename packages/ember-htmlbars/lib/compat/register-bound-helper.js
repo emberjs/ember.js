@@ -114,8 +114,9 @@ var slice = [].slice;
   @method registerBoundHelper
   @for Ember.Handlebars
   @param {String} name
-  @param {Function} function
+  @param {Function} fn
   @param {String} dependentKeys*
+  @private
 */
 export default function registerBoundHelper(name, fn) {
   var boundHelperArgs = slice.call(arguments, 1);

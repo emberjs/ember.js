@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
@@ -9,7 +10,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, originalSetAttribute, setAttributeCalls, renderer;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   QUnit.module("ember-htmlbars: data attribute", {
     teardown() {

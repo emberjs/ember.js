@@ -2,7 +2,7 @@ import { Suite } from 'ember-runtime/tests/suites/suite';
 
 var CopyableTests = Suite.extend({
 
-  /**
+  /*
     __Required.__ You must implement this method to apply this mixin.
 
     Must be able to create a new object for testing.
@@ -11,7 +11,7 @@ var CopyableTests = Suite.extend({
   */
   newObject: null,
 
-  /**
+  /*
     __Required.__ You must implement this method to apply this mixin.
 
     Compares the two passed in objects.  Returns true if the two objects
@@ -27,7 +27,7 @@ var CopyableTests = Suite.extend({
   */
   isEqual: null,
 
-  /**
+  /*
     Set this to true if you expect the objects you test to be freezable.
     The suite will verify that your objects actually match this.  (i.e. if
     you say you can't test freezable it will verify that your objects really

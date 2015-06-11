@@ -1,6 +1,7 @@
 /* globals EmberDev */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import compile from "ember-template-compiler/system/compile";
 import { SafeString } from "ember-htmlbars/utils/string";
@@ -27,7 +28,7 @@ QUnit.module("ember-htmlbars: style attribute", {
 });
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
 if (!EmberDev.runningProdBuild) {
   QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {

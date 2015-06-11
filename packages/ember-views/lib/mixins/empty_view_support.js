@@ -1,7 +1,7 @@
 /**
  @module ember
  @submodule ember-views
- */
+*/
 
 import { Mixin } from "ember-metal/mixin";
 import View from "ember-views/views/view";
@@ -12,7 +12,8 @@ import { computed } from "ember-metal/computed";
 /**
  @class EmptyViewSupport
  @namespace Ember
- */
+ @private
+*/
 export default Mixin.create({
   /**
    This provides metadata about what kind of empty view class this
@@ -21,7 +22,7 @@ export default Mixin.create({
 
    @private
    @property emptyViewClass
-   */
+  */
   emptyViewClass: View,
 
   /**
@@ -30,7 +31,8 @@ export default Mixin.create({
    @property emptyView
    @type Ember.View
    @default null
-   */
+   @private
+  */
   emptyView: null,
 
   _emptyView: computed('emptyView', 'attrs.emptyViewClass', 'emptyViewClass', function() {

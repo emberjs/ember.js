@@ -1,7 +1,7 @@
-import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
+import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -15,7 +15,7 @@ import shouldDisplay from "ember-views/streams/should_display";
   ```
 
   ```handlebars
-  {{#each developers as |person|}}
+  {{#each developers key="name" as |person|}}
     {{person.name}}
     {{! `this` is whatever it was outside the #each }}
   {{/each}}
@@ -28,10 +28,35 @@ import shouldDisplay from "ember-views/streams/should_display";
   ```
 
   ```handlebars
-  {{#each developerNames as |name|}}
+  {{#each developerNames key="@index" as |name|}}
     {{name}}
   {{/each}}
   ```
+
+  ### Specifying Keys
+
+  The `key` option is used to tell Ember how to determine if the array being
+  iterated over with `{{#each}}` has changed between renders. By helping Ember
+  detect that some elements in the array are the same, DOM elements can be
+  re-used, significantly improving rendering speed.
+
+  For example, here's the `{{#each}}` helper with its `key` set to `id`:
+
+  ```handlebars
+  {{#each model key="id" as |item|}}
+  {{/each}}
+  ```
+
+  When this `{{#each}}` re-renders, Ember will match up the previously rendered
+  items (and reorder the generated DOM elements) based on each item's `id`
+  property.
+
+  There are a few special values for `key`:
+
+    * `@index` - The index of the item in the array.
+    * `@item` - The item in the array itself.  This can only be used for arrays of strings
+      or numbers.
+    * `@guid` - Generate a unique identifier for each object (uses `Ember.guidFor`).
 
   ### {{else}} condition
 
@@ -48,9 +73,7 @@ import shouldDisplay from "ember-views/streams/should_display";
 
   @method each
   @for Ember.Handlebars.helpers
-  @param [name] {String} name for item (used with `as`)
-  @param [path] {String} path
-  @param [options] {Object} Handlebars key/value pairs of options
+  @public
 */
 export default function eachHelper(params, hash, blocks) {
   var list = params[0];
@@ -67,7 +90,7 @@ export default function eachHelper(params, hash, blocks) {
         self = normalizeSelf(item);
       }
 
-      var key = keyPath ? get(item, keyPath) : String(i);
+      var key = decodeEachKey(item, keyPath, i);
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {

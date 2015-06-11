@@ -10,6 +10,7 @@ var _renderView;
 /**
   @class TemplateRenderingSupport
   @namespace Ember
+  @private
 */
 var TemplateRenderingSupport = Mixin.create({
   /**
@@ -21,8 +22,9 @@ var TemplateRenderingSupport = Mixin.create({
     property and invoke it with the value of `context`. The value of
     `context` will be the view's controller unless you override it.
 
-    @method render
+    @method renderBlock
     @param {Ember.RenderBuffer} buffer The render buffer
+    @private
   */
 
   renderBlock(block, renderNode) {

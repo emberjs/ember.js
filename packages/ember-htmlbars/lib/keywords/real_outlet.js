@@ -27,8 +27,8 @@ export default {
     return { outletState: selectedOutletState, hasParentOutlet: env.hasParentOutlet };
   },
 
-  childEnv(state) {
-    return { outletState: state.outletState && state.outletState.outlets, hasParentOutlet: true };
+  childEnv(state, env) {
+    return env.childWithOutletState(state.outletState && state.outletState.outlets, true);
   },
 
   isStable(lastState, nextState) {

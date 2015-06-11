@@ -1,6 +1,6 @@
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import View from "ember-views/views/view";
+import EmberComponent from "ember-views/views/component";
 
 /**
 @module ember
@@ -29,10 +29,10 @@ import View from "ember-views/views/view";
 
   @class Checkbox
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
+  @public
 */
-// 2.0TODO: Subclass Component rather than View
-export default View.extend({
+export default EmberComponent.extend({
   instrumentDisplay: '{{input type="checkbox"}}',
 
   classNames: ['ember-checkbox'],

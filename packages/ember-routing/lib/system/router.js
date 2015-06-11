@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
+import isEnabled from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -6,7 +7,6 @@ import { defineProperty } from "ember-metal/properties";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
@@ -15,10 +15,10 @@ import EmberLocation from "ember-routing/location/api";
 import {
   routeArgs,
   getActiveTargetName,
-  stashParamNames
+  stashParamNames,
+  calculateCacheKey
 } from "ember-routing/utils";
 import create from 'ember-metal/platform/create';
-
 import RouterState from "./router_state";
 
 /**
@@ -41,6 +41,7 @@ var slice = [].slice;
   @namespace Ember
   @extends Ember.Object
   @uses Ember.Evented
+  @public
 */
 var EmberRouter = EmberObject.extend(Evented, {
   /**
@@ -57,6 +58,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @property location
     @default 'hash'
     @see {Ember.Location}
+    @public
   */
   location: 'hash',
 
@@ -66,6 +68,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
    @property rootURL
    @default '/'
+   @public
   */
   rootURL: '/',
 
@@ -101,6 +104,15 @@ var EmberRouter = EmberObject.extend(Evented, {
   init() {
     this._activeViews = {};
     this._qpCache = {};
+    this._resetQueuedQueryParameterChanges();
+  },
+
+  /*
+    Resets all pending query paramter changes.
+    Called after transitioning to a new route
+    based on query parameter changes.
+  */
+  _resetQueuedQueryParameterChanges() {
     this._queuedQPChanges = {};
   },
 
@@ -109,6 +121,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method url
     @return {String} The current URL.
+    @private
   */
   url: computed(function() {
     return get(this, 'location').getURL();
@@ -361,6 +374,45 @@ var EmberRouter = EmberObject.extend(Evented, {
     return this._activeViews[templateName];
   },
 
+  /*
+    Called when an active route's query parameter has changed.
+    These changes are batched into a runloop run and trigger
+    a single transition.
+  */
+  _activeQPChanged(queryParameterName, newValue) {
+    this._queuedQPChanges[queryParameterName] = newValue;
+    run.once(this, this._fireQueryParamTransition);
+  },
+
+  _updatingQPChanged(queryParameterName) {
+    if (!this._qpUpdates) {
+      this._qpUpdates = {};
+    }
+    this._qpUpdates[queryParameterName] = true;
+  },
+
+  /*
+    Triggers a transition to a route based on query parameter changes.
+    This is called once per runloop, to batch changes.
+
+    e.g.
+
+    if these methods are called in succession:
+    this._activeQPChanged('foo', '10');
+      // results in _queuedQPChanges = {foo: '10'}
+    this._activeQPChanged('bar', false);
+      // results in _queuedQPChanges = {foo: '10', bar: false}
+
+
+    _queuedQPChanges will represent both of these changes
+    and the transition using `transitionTo` will be triggered
+    once.
+  */
+  _fireQueryParamTransition() {
+    this.transitionTo({ queryParams: this._queuedQPChanges });
+    this._resetQueuedQueryParameterChanges();
+  },
+
   _connectActiveComponentNode(templateName, componentNode) {
     Ember.assert('cannot connect an activeView that already exists', !this._activeViews[templateName]);
 
@@ -471,7 +523,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       emberRouter.didTransition(infos);
     };
 
-    if (Ember.FEATURES.isEnabled('ember-router-willtransition')) {
+    if (isEnabled('ember-router-willtransition')) {
       router.willTransition = function(oldInfos, newInfos, transition) {
         emberRouter.willTransition(oldInfos, newInfos, transition);
       };
@@ -500,7 +552,7 @@ var EmberRouter = EmberObject.extend(Evented, {
                        "`%@` and `%@` map to `%@`. You can fix this by mapping " +
                        "one of the controller properties to a different query " +
                        "param key via the `as` config option, e.g. `%@: { as: 'other-%@' }`",
-                       [qps[0].qp.fprop, qps[1] ? qps[1].qp.fprop : "", qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
+                       [qps[0].qp.scopedPropertyName, qps[1] ? qps[1].qp.scopedPropertyName : "", qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
       var qp = qps[0].qp;
       queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
     }
@@ -517,7 +569,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var qps = this._queryParamsFor(targetRouteName);
     for (var key in queryParams) {
       var qp = qps.map[key];
-      if (qp && qp.sdef === queryParams[key]) {
+      if (qp && qp.serializedDefaultValue === queryParams[key]) {
         delete queryParams[key];
       }
     }
@@ -548,6 +600,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   /**
     Returns a merged query params meta object for a given route.
     Useful for asking a route what its known query params are.
+
+    @private
    */
   _queryParamsFor(leafRouteName) {
     if (this._qpCache[leafRouteName]) {
@@ -581,30 +635,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
-  /*
-    becomeResolved: function(payload, resolvedContext) {
-      var params = this.serialize(resolvedContext);
-
-      if (payload) {
-        this.stashResolvedModel(payload, resolvedContext);
-        payload.params = payload.params || {};
-        payload.params[this.name] = params;
-      }
-
-      return this.factory('resolved', {
-        context: resolvedContext,
-        name: this.name,
-        handler: this.handler,
-        params: params
-      });
-    },
-  */
-
   _hydrateUnsuppliedQueryParams(leafRouteName, contexts, queryParams) {
     var state = calculatePostTransitionState(this, leafRouteName, contexts);
     var handlerInfos = state.handlerInfos;
     var appCache = this._bucketCache;
-
     stashParamNames(this, handlerInfos);
 
     for (var i = 0, len = handlerInfos.length; i < len; ++i) {
@@ -613,20 +647,18 @@ var EmberRouter = EmberObject.extend(Evented, {
 
       for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         var qp = qpMeta.qps[j];
+
         var presentProp = qp.prop in queryParams  && qp.prop ||
-                          qp.fprop in queryParams && qp.fprop;
+                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName;
 
         if (presentProp) {
-          if (presentProp !== qp.fprop) {
-            queryParams[qp.fprop] = queryParams[presentProp];
+          if (presentProp !== qp.scopedPropertyName) {
+            queryParams[qp.scopedPropertyName] = queryParams[presentProp];
             delete queryParams[presentProp];
           }
         } else {
-          var controllerProto = qp.cProto;
-          var cacheMeta = get(controllerProto, '_cacheMeta');
-
-          var cacheKey = controllerProto._calculateCacheKey(qp.ctrl, cacheMeta[qp.prop].parts, state.params);
-          queryParams[qp.fprop] = appCache.lookup(cacheKey, qp.prop, qp.def);
+          var cacheKey = calculateCacheKey(qp.ctrl, qp.parts, state.params);
+          queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
       }
     }
@@ -783,7 +815,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
   var targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
   var namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
-  if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+  if (isEnabled("ember-routing-named-substates")) {
     // First, try a named loading state, e.g. 'foo_loading'
     childName = namespace + targetChildRouteName + '_' + name;
     if (routeHasBeenDefined(router, childName)) {
@@ -902,6 +934,7 @@ EmberRouter.reopenClass({
 
     @method map
     @param callback
+    @public
   */
   map(callback) {
 

@@ -10,7 +10,8 @@ import {
 } from "ember-metal/watching";
 
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 // ..........................................................

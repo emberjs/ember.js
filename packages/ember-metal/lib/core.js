@@ -21,6 +21,7 @@
   @class Ember
   @static
   @version VERSION_STRING_PLACEHOLDER
+  @public
 */
 
 if ('undefined' === typeof Ember) {
@@ -52,6 +53,7 @@ Ember.toString = function() { return 'Ember'; };
   @type String
   @default 'VERSION_STRING_PLACEHOLDER'
   @static
+  @public
 */
 Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
@@ -63,7 +65,8 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
   hash must be created before loading Ember.
 
   @property ENV
-  @type Hash
+  @type Object
+  @public
 */
 
 if (Ember.ENV) {
@@ -83,59 +86,6 @@ Ember.config = Ember.config || {};
 if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
   Ember.ENV.DISABLE_RANGE_API = true;
 }
-
-/**
-  The hash of enabled Canary features. Add to this, any canary features
-  before creating your application.
-
-  Alternatively (and recommended), you can also define `EmberENV.FEATURES`
-  if you need to enable features flagged at runtime.
-
-  @class FEATURES
-  @namespace Ember
-  @static
-  @since 1.1.0
-*/
-Ember.FEATURES = DEFAULT_FEATURES; //jshint ignore:line
-
-if (Ember.ENV.FEATURES) {
-  for (var feature in Ember.ENV.FEATURES) {
-    if (Ember.ENV.FEATURES.hasOwnProperty(feature)) {
-      Ember.FEATURES[feature] = Ember.ENV.FEATURES[feature];
-    }
-  }
-}
-
-/**
-  Determine whether the specified `feature` is enabled. Used by Ember's
-  build tools to exclude experimental features from beta/stable builds.
-
-  You can define the following configuration options:
-
-  * `EmberENV.ENABLE_ALL_FEATURES` - force all features to be enabled.
-  * `EmberENV.ENABLE_OPTIONAL_FEATURES` - enable any features that have not been explicitly
-    enabled/disabled.
-
-  @method isEnabled
-  @param {String} feature The feature to check
-  @return {Boolean}
-  @for Ember.FEATURES
-  @since 1.1.0
-*/
-
-Ember.FEATURES.isEnabled = function(feature) {
-  var featureValue = Ember.FEATURES[feature];
-
-  if (Ember.ENV.ENABLE_ALL_FEATURES) {
-    return true;
-  } else if (featureValue === true || featureValue === false || featureValue === undefined) {
-    return featureValue;
-  } else if (Ember.ENV.ENABLE_OPTIONAL_FEATURES) {
-    return true;
-  } else {
-    return false;
-  }
-};
 
 // ..........................................................
 // BOOTSTRAP
@@ -158,6 +108,7 @@ Ember.FEATURES.isEnabled = function(feature) {
   @type Boolean
   @default true
   @for Ember
+  @public
 */
 Ember.EXTEND_PROTOTYPES = Ember.ENV.EXTEND_PROTOTYPES;
 
@@ -172,6 +123,7 @@ if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
   @property LOG_STACKTRACE_ON_DEPRECATION
   @type Boolean
   @default true
+  @public
 */
 Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
 
@@ -182,6 +134,7 @@ Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !
   @property SHIM_ES5
   @type Boolean
   @default Ember.EXTEND_PROTOTYPES
+  @public
 */
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
@@ -192,6 +145,7 @@ Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPE
   @property LOG_VERSION
   @type Boolean
   @default true
+  @public
 */
 Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
 
@@ -201,6 +155,7 @@ Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
   @method K
   @private
   @return {Object}
+  @public
 */
 function K() { return this; }
 export { K };

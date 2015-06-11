@@ -2,6 +2,7 @@ import "ember";
 
 import compile from "ember-template-compiler/system/compile";
 import helpers from "ember-htmlbars/helpers";
+import { OutletView } from "ember-routing-views/views/outlet";
 
 var App, registry, container;
 var originalHelpers;
@@ -40,7 +41,7 @@ QUnit.module("Application Lifecycle - Component Registration", {
   teardown: cleanup
 });
 
-function boot(callback) {
+function boot(callback, startURL="/") {
   Ember.run(function() {
     App = Ember.Application.create({
       name: 'App',
@@ -63,7 +64,7 @@ function boot(callback) {
 
   Ember.run(App, 'advanceReadiness');
   Ember.run(function() {
-    router.handleURL('/');
+    router.handleURL(startURL);
   });
 }
 
@@ -347,4 +348,31 @@ QUnit.test("Components trigger actions in the components context when called fro
   });
 
   Ember.$('#fizzbuzz', "#wrapper").click();
+});
+
+QUnit.test("Components receive the top-level view as their ownerView", function(assert) {
+  Ember.TEMPLATES.application = compile("{{outlet}}");
+  Ember.TEMPLATES.index = compile("{{my-component}}");
+  Ember.TEMPLATES['components/my-component'] = compile('<div></div>');
+
+  let component;
+
+  boot(function() {
+    registry.register('component:my-component', Ember.Component.extend({
+      init() {
+        this._super();
+        component = this;
+      }
+    }));
+  });
+
+  // Theses tests are intended to catch a regression where the owner view was
+  // not configured properly. Future refactors may break these tests, which
+  // should not be considered a breaking change to public APIs.
+  let ownerView = component.ownerView;
+  assert.ok(ownerView, "owner view was set");
+  assert.ok(ownerView instanceof OutletView, "owner view has no parent view");
+  assert.notStrictEqual(component, ownerView, "owner view is not itself");
+
+  assert.ok(ownerView._outlets, "owner view has an internal array of outlets");
 });

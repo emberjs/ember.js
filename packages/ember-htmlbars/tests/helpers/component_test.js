@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import ComponentLookup from "ember-views/component_lookup";
 import Registry from "container/registry";
 import EmberView from "ember-views/views/view";
@@ -10,7 +11,7 @@ import Component from "ember-views/views/component";
 
 var view, registry, container;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+if (isEnabled('ember-htmlbars-component-helper')) {
   QUnit.module("ember-htmlbars: {{#component}} helper", {
     setup() {
       registry = new Registry();

@@ -181,6 +181,7 @@ import EmptyViewSupport from "ember-views/mixins/empty_view_support";
   @extends Ember.ContainerView
   @uses Ember.EmptyViewSupport
   @since Ember 0.9
+  @private
 */
 var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
@@ -190,6 +191,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @property content
     @type Ember.Array
     @default null
+    @private
   */
   content: null,
 
@@ -197,6 +199,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @property itemViewClass
     @type Ember.View
     @default Ember.View
+    @private
   */
   itemViewClass: View,
 
@@ -204,6 +207,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     Setup a CollectionView
 
     @method init
+    @private
   */
   init() {
     var ret = this._super(...arguments);
@@ -261,6 +265,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     Removes the content and content observers.
 
     @method destroy
+    @private
   */
   destroy() {
     if (!this._super(...arguments)) { return; }
@@ -287,6 +292,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @param {Array} content the managed collection of objects
     @param {Number} start the index at which the changes will occur
     @param {Number} removed number of object to be removed from content
+    @private
   */
   arrayWillChange(content, start, removedCount) {
     this.replace(start, removedCount, []);
@@ -305,6 +311,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @param {Number} start the index at which the changes occurred
     @param {Number} removed number of object removed from content
     @param {Number} added number of object added to content
+    @private
   */
   arrayDidChange(content, start, removed, added) {
     var addedViews = [];
@@ -345,8 +352,9 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
     @method createChildView
     @param {Class} viewClass
-    @param {Hash} [attrs] Attributes to add
+    @param {Object} [attrs] Attributes to add
     @return {Ember.View} new instance
+    @private
   */
   createChildView(_view, attrs) {
     var view = this._super(_view, attrs);
@@ -392,9 +400,10 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
   a particular parent tag to default to a child tag.
 
   @property CONTAINER_MAP
-  @type Hash
+  @type Object
   @static
   @final
+  @private
 */
 CollectionView.CONTAINER_MAP = {
   ul: 'li',

@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 
 import {
   precompile,
@@ -31,6 +32,7 @@ import legacyEachWithKeywordHelper from "ember-htmlbars/helpers/-legacy-each-wit
 import getHelper from "ember-htmlbars/helpers/-get";
 import htmlSafeHelper from "ember-htmlbars/helpers/-html-safe";
 import DOMHelper from "ember-htmlbars/system/dom-helper";
+import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -46,16 +48,16 @@ registerHelper('with', withHelper);
 registerHelper('loc', locHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
-if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
+if (isEnabled('ember-htmlbars-each-in')) {
   registerHelper('each-in', eachInHelper);
 }
 registerHelper('-bind-attr-class', bindAttrClassHelper);
 registerHelper('-normalize-class', normalizeClassHelper);
-registerHelper('-concat', concatHelper);
+registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
 registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);
-if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+if (isEnabled('ember-htmlbars-get-helper')) {
   registerHelper('-get', getHelper);
 }
 registerHelper('-html-safe', htmlSafeHelper);
@@ -70,3 +72,8 @@ Ember.HTMLBars = {
   registerPlugin: registerPlugin,
   DOMHelper
 };
+
+if (isEnabled('ember-htmlbars-helper')) {
+  Helper.helper = makeHelper;
+  Ember.Helper = Helper;
+}

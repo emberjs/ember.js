@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import compile from "ember-template-compiler/system/compile";
@@ -10,12 +11,12 @@ function appendView(view) {
 }
 
 var isInlineIfEnabled = false;
-if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
+if (isEnabled('ember-htmlbars-inline-if-helper')) {
   isInlineIfEnabled = true;
 }
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: class attribute", {
   teardown() {

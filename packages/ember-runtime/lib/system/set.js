@@ -122,6 +122,7 @@ import { computed } from "ember-metal/computed";
   @uses Ember.Freezable
   @since Ember 0.9
   @deprecated
+  @private
 */
 export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
@@ -135,6 +136,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @property length
     @type number
     @default 0
+    @private
   */
   length: 0,
 
@@ -151,6 +153,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
     @method clear
     @return {Ember.Set} An empty Set
+    @private
   */
   clear() {
     if (this.isFrozen) { throw new EmberError(FROZEN_ERROR); }
@@ -194,6 +197,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method isEqual
     @param {Ember.Set} obj the other object.
     @return {Boolean}
+    @private
   */
   isEqual(obj) {
     // fail fast
@@ -234,6 +238,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method add
     @param {Object} obj The object to add.
     @return {Ember.Set} The set itself.
+    @private
   */
   add: aliasMethod('addObject'),
 
@@ -252,6 +257,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method remove
     @param {Object} obj The object to remove
     @return {Ember.Set} The set itself.
+    @private
   */
   remove: aliasMethod('removeObject'),
 
@@ -267,6 +273,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
     @method pop
     @return {Object} The removed object from the set or null.
+    @private
   */
   pop() {
     if (get(this, 'isFrozen')) {
@@ -293,6 +300,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
     @method push
     @return {Ember.Set} The set itself.
+    @private
   */
   push: aliasMethod('addObject'),
 
@@ -310,6 +318,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
     @method shift
     @return {Object} The removed object from the set or null.
+    @private
   */
   shift: aliasMethod('pop'),
 
@@ -328,6 +337,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
     @method unshift
     @return {Ember.Set} The set itself.
+    @private
   */
   unshift: aliasMethod('push'),
 
@@ -344,6 +354,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method addEach
     @param {Ember.Enumerable} objects the objects to add.
     @return {Ember.Set} The set itself.
+    @private
   */
   addEach: aliasMethod('addObjects'),
 
@@ -360,6 +371,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     @method removeEach
     @param {Ember.Enumerable} objects the objects to remove.
     @return {Ember.Set} The set itself.
+    @private
   */
   removeEach: aliasMethod('removeObjects'),
 

@@ -33,7 +33,7 @@ function TransformEachInToBlockParams(options) {
 /**
   @private
   @method transform
-  @param {AST} The AST to be transformed.
+  @param {AST} ast The AST to be transformed.
 */
 TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlockParams_transform(ast) {
   var b = this.syntax.builders;

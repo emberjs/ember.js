@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // assert
+import isEnabled from "ember-metal/features";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
@@ -18,7 +19,7 @@ export default {
 
     var actionName = read(params[0]);
 
-    if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+    if (isEnabled("ember-routing-htmlbars-improved-actions")) {
       assert("You specified a quoteless path to the {{action}} helper " +
              "which did not resolve to an action name (a string). " +
              "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
@@ -54,7 +55,10 @@ export default {
   },
 
   render: function(node, env, scope, params, hash, template, inverse, visitor) {
-    var actionId = ActionHelper.registerAction({
+    let actionId = env.dom.getAttribute(node.element, 'data-ember-action') || uuid();
+
+    ActionHelper.registerAction({
+      actionId,
       node: node,
       eventName: hash.on || "click",
       bubbles: hash.bubbles,
@@ -77,10 +81,14 @@ export var ActionHelper = {};
 // that were using this undocumented API.
 ActionHelper.registeredActions = ActionManager.registeredActions;
 
-ActionHelper.registerAction = function({ node, eventName, preventDefault, bubbles, allowedKeys }) {
-  var actionId = uuid();
+ActionHelper.registerAction = function({ actionId, node, eventName, preventDefault, bubbles, allowedKeys }) {
+  var actions = ActionManager.registeredActions[actionId];
 
-  ActionManager.registeredActions[actionId] = {
+  if (!actions) {
+    actions = ActionManager.registeredActions[actionId] = [];
+  }
+
+  actions.push({
     eventName,
     handler(event) {
       if (!isAllowedEvent(event, allowedKeys)) {
@@ -98,7 +106,7 @@ ActionHelper.registerAction = function({ node, eventName, preventDefault, bubble
       let { target, actionName, actionArgs } = node.state;
 
       run(function runRegisteredAction() {
-        if (Ember.FEATURES.isEnabled("ember-routing-htmlbars-improved-actions")) {
+        if (isEnabled("ember-routing-htmlbars-improved-actions")) {
           if (typeof actionName === 'function') {
             actionName.apply(target, actionArgs);
             return;
@@ -116,7 +124,7 @@ ActionHelper.registerAction = function({ node, eventName, preventDefault, bubble
         }
       });
     }
-  };
+  });
 
   return actionId;
 };

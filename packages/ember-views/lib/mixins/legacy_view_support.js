@@ -9,6 +9,7 @@ import { get } from "ember-metal/property_get";
 /**
   @class LegacyViewSupport
   @namespace Ember
+  @private
 */
 var LegacyViewSupport = Mixin.create({
   beforeRender(buffer) {},
@@ -43,6 +44,7 @@ var LegacyViewSupport = Mixin.create({
 
     @method removeAllChildren
     @return {Ember.View} receiver
+    @private
   */
   removeAllChildren() {
     return this.mutateChildViews(function(parentView, view) {
@@ -64,6 +66,7 @@ var LegacyViewSupport = Mixin.create({
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @return Ember.View
     @deprecated
+    @private
   */
   nearestChildOf(klass) {
     Ember.deprecate("nearestChildOf has been deprecated.");
@@ -84,6 +87,7 @@ var LegacyViewSupport = Mixin.create({
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @return Ember.View
     @deprecated
+    @private
   */
   nearestInstanceOf(klass) {
     Ember.deprecate("nearestInstanceOf is deprecated and will be removed from future releases. Use nearestOfType.");

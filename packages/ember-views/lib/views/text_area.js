@@ -21,6 +21,7 @@ import TextSupport from "ember-views/mixins/text_support";
   @namespace Ember
   @extends Ember.Component
   @uses Ember.TextSupport
+  @public
 */
 export default Component.extend(TextSupport, {
   instrumentDisplay: '{{textarea}}',

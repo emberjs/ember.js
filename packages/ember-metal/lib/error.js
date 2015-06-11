@@ -17,6 +17,7 @@ var errorProps = [
   @namespace Ember
   @extends Error
   @constructor
+  @public
 */
 function EmberError() {
   var tmp = Error.apply(this, arguments);

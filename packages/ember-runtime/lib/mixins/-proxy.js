@@ -40,6 +40,7 @@ function contentPropertyDidChange(content, contentKey) {
 
   @class ProxyMixin
   @namespace Ember
+  @private
 */
 export default Mixin.create({
   /**
@@ -48,6 +49,7 @@ export default Mixin.create({
     @property content
     @type Ember.Object
     @default null
+    @private
   */
   content: null,
   _contentDidChange: observer('content', function() {

@@ -51,6 +51,7 @@ function canSetTypeOfInput(type) {
   @namespace Ember
   @extends Ember.Component
   @uses Ember.TextSupport
+  @public
 */
 export default Component.extend(TextSupport, {
   instrumentDisplay: '{{input type="text"}}',
@@ -92,6 +93,7 @@ export default Component.extend(TextSupport, {
     @property value
     @type String
     @default ""
+    @public
   */
   value: "",
 
@@ -101,6 +103,7 @@ export default Component.extend(TextSupport, {
     @property type
     @type String
     @default "text"
+    @public
   */
   type: computed({
     get() {
@@ -124,6 +127,7 @@ export default Component.extend(TextSupport, {
     @property size
     @type String
     @default null
+    @public
   */
   size: null,
 
@@ -133,6 +137,7 @@ export default Component.extend(TextSupport, {
     @property pattern
     @type String
     @default null
+    @public
   */
   pattern: null,
 
@@ -143,6 +148,7 @@ export default Component.extend(TextSupport, {
     @type String
     @default null
     @since 1.4.0
+    @public
   */
   min: null,
 
@@ -153,6 +159,7 @@ export default Component.extend(TextSupport, {
     @type String
     @default null
     @since 1.4.0
+    @public
   */
   max: null
 });

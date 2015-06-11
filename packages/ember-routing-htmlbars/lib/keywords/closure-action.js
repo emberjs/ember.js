@@ -7,6 +7,7 @@ import {
 import keys from 'ember-metal/keys';
 import { symbol } from "ember-metal/utils";
 import { get } from "ember-metal/property_get";
+import EmberError from "ember-metal/error";
 
 export const INVOKE = symbol("INVOKE");
 export const ACTION = symbol('ACTION');
@@ -33,15 +34,21 @@ export default function closureAction(morph, env, scope, params, hash, template,
       target = read(scope.self);
       action = read(rawAction);
       if (typeof action === 'string') {
+        let actionName = action;
+        action = null;
         // on-change={{action 'setName'}}
         if (hash.target) {
           // on-change={{action 'setName' target=alternativeComponent}}
           target = read(hash.target);
         }
         if (target.actions) {
-          action = target.actions[action];
-        } else {
-          action = target._actions[action];
+          action = target.actions[actionName];
+        } else if (target._actions) {
+          action = target._actions[actionName];
+        }
+
+        if (!action) {
+          throw new EmberError(`An action named '${actionName}' was not found in ${target}.`);
         }
       }
     }

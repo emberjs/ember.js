@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, assert
+import isEnabled from "ember-metal/features";
 import { indexOf } from "ember-metal/array";
 
 /**
@@ -35,7 +36,7 @@ DSL.prototype = {
       })()
     );
 
-    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+    if (isEnabled("ember-routing-named-substates")) {
       if (this.enableLoadingSubstates) {
         createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
         createRoute(this, `${name}_error`, { path: dummyErrorRoute });

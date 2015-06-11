@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import { Registry } from "ember-runtime/system/container";
 import compile from "ember-template-compiler/system/compile";
@@ -7,7 +8,7 @@ import EmberView from "ember-views/views/view";
 var view, registry, container;
 
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-get-helper')) {
+if (isEnabled('ember-htmlbars-get-helper')) {
 
 QUnit.module("ember-htmlbars: {{get}} helper", {
   setup() {

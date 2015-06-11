@@ -3,6 +3,7 @@
 */
 
 import Ember from "ember-metal/core";
+import isEnabled from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import {
   isGlobal as detectIsGlobal,
@@ -48,6 +49,7 @@ export let UNHANDLED_GET = symbol("UNHANDLED_GET");
   @param {Object} obj The object to retrieve from.
   @param {String} keyName The property key to retrieve
   @return {Object} the property value or `null`.
+  @public
 */
 export function get(obj, keyName) {
   // Helpers that operate with 'this' within an #each
@@ -84,7 +86,7 @@ export function get(obj, keyName) {
   if (desc) {
     return desc.get(obj, keyName);
   } else {
-    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+    if (isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors && meta && meta.watching[keyName] > 0) {
         ret = meta.values[keyName];
       } else {

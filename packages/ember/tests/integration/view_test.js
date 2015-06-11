@@ -1,5 +1,6 @@
 import compile from "ember-template-compiler/system/compile";
 import run from "ember-metal/run_loop";
+import EmberView from "ember-views/views/view";
 
 var App, registry;
 
@@ -49,7 +50,7 @@ QUnit.test("invoking `{{view}} from a non-view backed (aka only template) templa
 
   Ember.TEMPLATES.index = compile('{{view "my-foo"}}', { moduleName: 'my-foo' });
 
-  registry.register('view:my-foo', Ember.View.extend({
+  registry.register('view:my-foo', EmberView.extend({
     init() {
       this._super(...arguments);
 

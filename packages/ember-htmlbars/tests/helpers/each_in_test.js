@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import Component from "ember-views/views/component";
 import compile from "ember-template-compiler/system/compile";
 import run from "ember-metal/run_loop";
@@ -23,7 +24,7 @@ function renderTemplate(_template, props) {
   runAppend(component);
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-each-in')) {
+if (isEnabled('ember-htmlbars-each-in')) {
   QUnit.test("it renders the template for each item in a hash", function(assert) {
     let categories = {
       "Smartphones": 8203,

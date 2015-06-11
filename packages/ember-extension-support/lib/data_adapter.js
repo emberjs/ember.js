@@ -51,6 +51,7 @@ import Application from "ember-application/system/application";
   @class DataAdapter
   @namespace Ember
   @extends EmberObject
+  @public
 */
 export default EmberObject.extend({
   init() {
@@ -66,6 +67,7 @@ export default EmberObject.extend({
     @property container
     @default null
     @since 1.3.0
+    @public
   */
   container: null,
 
@@ -77,6 +79,7 @@ export default EmberObject.extend({
     @property containerDebugAdapter
     @default undefined
     @since 1.5.0
+    @public
   **/
   containerDebugAdapter: undefined,
 
@@ -91,6 +94,20 @@ export default EmberObject.extend({
     @since 1.3.0
   */
   attributeLimit: 3,
+
+  /**
+     Ember Data > v1.0.0-beta.18
+     requires string model names to be passed
+     around instead of the actual factories.
+
+     This is a stamp for the Ember Inspector
+     to differentiate between the versions
+     to be able to support older versions too.
+
+     @public
+     @property acceptsModelName
+   */
+  acceptsModelName: true,
 
   /**
     Stores all methods that clear observers.
@@ -138,7 +155,7 @@ export default EmberObject.extend({
     typesToSend = modelTypes.map((type) => {
       var klass = type.klass;
       var wrapped = this.wrapModelType(klass, type.name);
-      releaseMethods.push(this.observeModelType(klass, typesUpdated));
+      releaseMethods.push(this.observeModelType(type.name, typesUpdated));
       return wrapped;
     });
 
@@ -165,6 +182,8 @@ export default EmberObject.extend({
     @public
     @method watchRecords
 
+    @param {String} modelName The model name
+
     @param {Function} recordsAdded Callback to call to add records.
     Takes an array of objects containing wrapped records.
     The object should have the following properties:
@@ -181,9 +200,10 @@ export default EmberObject.extend({
 
     @return {Function} Method to call to remove all observers
   */
-  watchRecords(type, recordsAdded, recordsUpdated, recordsRemoved) {
+  watchRecords(modelName, recordsAdded, recordsUpdated, recordsRemoved) {
     var releaseMethods = emberA();
-    var records = this.getRecords(type);
+    var klass = this._nameToClass(modelName);
+    var records = this.getRecords(klass, modelName);
     var release;
 
     var recordUpdated = function(updatedRecord) {
@@ -270,16 +290,17 @@ export default EmberObject.extend({
 
     @private
     @method observeModelType
-    @param {Class} type The model type class
+    @param {String} modelName The model type name
     @param {Function} typesUpdated Called when a type is modified.
     @return {Function} The function to call to remove observers
   */
 
-  observeModelType(type, typesUpdated) {
-    var records = this.getRecords(type);
+  observeModelType(modelName, typesUpdated) {
+    var klass = this._nameToClass(modelName);
+    var records = this.getRecords(klass, modelName);
 
     var onChange = () => {
-      typesUpdated([this.wrapModelType(type)]);
+      typesUpdated([this.wrapModelType(klass, modelName)]);
     };
     var observer = {
       didChange() {
@@ -303,8 +324,8 @@ export default EmberObject.extend({
 
     @private
     @method wrapModelType
-    @param {Class} type A model class
-    @param {String}  Optional name of the class
+    @param {Class} klass A model class
+    @param {String} modelName Name of the class
     @return {Object} contains the wrapped type and the function to remove observers
     Format:
       type: {Object} the wrapped type
@@ -315,15 +336,15 @@ export default EmberObject.extend({
           object: {Class} the actual Model type class
       release: {Function} The function to remove observers
   */
-  wrapModelType(type, name) {
-    var records = this.getRecords(type);
+  wrapModelType(klass, name) {
+    var records = this.getRecords(klass, name);
     var typeToSend;
 
     typeToSend = {
-      name: name || type.toString(),
+      name,
       count: get(records, 'length'),
-      columns: this.columnsForType(type),
-      object: type
+      columns: this.columnsForType(klass),
+      object: klass
     };
 
 
@@ -378,7 +399,7 @@ export default EmberObject.extend({
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
         // Even though we will filter again in `getModelTypes`,
-        // we should not call `lookupContainer` on non-models
+        // we should not call `lookupFactory` on non-models
         // (especially when `Ember.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         var name = dasherize(key);

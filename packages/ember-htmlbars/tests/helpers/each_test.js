@@ -773,6 +773,40 @@ QUnit.test("it uses {{else}} when removing all items in an array", function() {
   assertHTML(view, "Nothing");
 });
 
+QUnit.test("it can move to and from {{else}} properly when the backing array gains and looses items (#11140)", function() {
+  var items = A(['one', 'two']);
+  runDestroy(view);
+  view = EmberView.create({
+    template: compile("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
+    items
+  });
+
+  runAppend(view);
+
+  assertHTML(view, "onetwo");
+
+  run(function() {
+    items.shiftObject();
+    items.shiftObject();
+  });
+
+  assertHTML(view, "Nothing");
+
+  run(function() {
+    items.pushObject('three');
+    items.pushObject('four');
+  });
+
+  assertHTML(view, "threefour");
+
+  run(function() {
+    items.shiftObject();
+    items.shiftObject();
+  });
+
+  assertHTML(view, "Nothing");
+});
+
 QUnit.test("it works with the controller keyword", function() {
   runDestroy(view);
 
@@ -1142,6 +1176,88 @@ QUnit.test("context switching deprecation is printed when no items are present",
   }, /Using the context switching form of \{\{each\}\} is deprecated/);
 
   assertHTML(view, "Nothing");
+});
+
+QUnit.test('a string key can be used with {{each}}', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 'foo' },
+      { id: 'bar' },
+      { id: 'baz' }
+    ],
+    template: compile("{{#each view.items key='id' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'foobarbaz');
+});
+
+QUnit.test('a numeric key can be used with {{each}}', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='id' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@index` to represent the items index in the array being iterated', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='@index' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@guid` to represent the items GUID', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [
+      { id: 1 },
+      { id: 2 },
+      { id: 3 }
+    ],
+    template: compile("{{#each view.items key='@guid' as |item|}}{{item.id}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+});
+
+QUnit.test('can specify `@item` to represent primitive items', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [1, 2, 3],
+    template: compile("{{#each view.items key='@item' as |item|}}{{item}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+
+  run(function() {
+    set(view, 'items', ['foo', 'bar', 'baz']);
+  });
+
+  equal(view.$().text(), 'foobarbaz');
 });
 
 testEachWithItem("{{#each foo in bar}}", false);

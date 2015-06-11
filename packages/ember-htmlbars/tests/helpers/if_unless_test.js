@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Namespace from 'ember-runtime/system/namespace';
 import { Registry } from "ember-runtime/system/container";
@@ -388,7 +389,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
     template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
-    MyView: Ember.View.extend({
+    MyView: EmberView.extend({
       tagName: 'input'
     }),
     display: false
@@ -619,7 +620,7 @@ QUnit.test('edge case: rerender appearance of inner virtual view', function() {
   equal(Ember.$('#qunit-fixture').text(), 'test');
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
+if (isEnabled('ember-htmlbars-inline-if-helper')) {
   QUnit.test("`if` helper with inline form: renders the second argument when conditional is truthy", function() {
     view = EmberView.create({
       conditional: true,

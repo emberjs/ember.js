@@ -32,10 +32,11 @@ import {
 
   @method makeBoundHelper
   @for Ember.Handlebars
-  @param {Function} function
+  @param {Function} fn
   @param {String} dependentKeys*
   @since 1.2.0
   @deprecated
+  @private
 */
 export default function makeBoundHelper(fn, ...dependentKeys) {
   return {

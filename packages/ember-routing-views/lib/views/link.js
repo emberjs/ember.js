@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
+import isEnabled from "ember-metal/features";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -16,24 +17,25 @@ import ControllerMixin from "ember-runtime/mixins/controller";
 import linkToTemplate from "ember-htmlbars/templates/link-to";
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
-var linkViewClassNameBindings = ['active', 'loading', 'disabled'];
-if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
-  linkViewClassNameBindings = ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'];
+var linkComponentClassNameBindings = ['active', 'loading', 'disabled'];
+if (isEnabled('ember-routing-transitioning-classes')) {
+  linkComponentClassNameBindings = ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'];
 }
 
 /**
-  `Ember.LinkView` renders an element whose `click` event triggers a
+  `Ember.LinkComponent` renders an element whose `click` event triggers a
   transition of the application's instance of `Ember.Router` to
   a supplied route by name.
 
-  Instances of `LinkView` will most likely be created through
+  Instances of `LinkComponent` will most likely be created through
   the `link-to` Handlebars helper, but properties of this class
   can be overridden to customize application-wide behavior.
 
-  @class LinkView
+  @class LinkComponent
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
   @see {Handlebars.helpers.link-to}
+  @private
 **/
 var LinkComponent = EmberComponent.extend({
   defaultLayout: linkToTemplate,
@@ -43,87 +45,97 @@ var LinkComponent = EmberComponent.extend({
   /**
     @deprecated Use current-when instead.
     @property currentWhen
+    @private
   */
   currentWhen: null,
 
   /**
-    Used to determine when this LinkView is active.
+    Used to determine when this LinkComponent is active.
 
     @property currentWhen
+    @private
   */
   'current-when': null,
 
   /**
-    Sets the `title` attribute of the `LinkView`'s HTML element.
+    Sets the `title` attribute of the `LinkComponent`'s HTML element.
 
     @property title
     @default null
+    @private
   **/
   title: null,
 
   /**
-    Sets the `rel` attribute of the `LinkView`'s HTML element.
+    Sets the `rel` attribute of the `LinkComponent`'s HTML element.
 
     @property rel
     @default null
+    @private
   **/
   rel: null,
 
   /**
-    Sets the `tabindex` attribute of the `LinkView`'s HTML element.
+    Sets the `tabindex` attribute of the `LinkComponent`'s HTML element.
 
     @property tabindex
     @default null
+    @private
   **/
   tabindex: null,
 
   /**
-    Sets the `target` attribute of the `LinkView`'s HTML element.
+    Sets the `target` attribute of the `LinkComponent`'s HTML element.
 
     @since 1.8.0
     @property target
     @default null
+    @private
   **/
   target: null,
 
   /**
-    The CSS class to apply to `LinkView`'s element when its `active`
+    The CSS class to apply to `LinkComponent`'s element when its `active`
     property is `true`.
 
     @property activeClass
     @type String
     @default active
+    @private
   **/
   activeClass: 'active',
 
   /**
-    The CSS class to apply to `LinkView`'s element when its `loading`
+    The CSS class to apply to `LinkComponent`'s element when its `loading`
     property is `true`.
 
     @property loadingClass
     @type String
     @default loading
+    @private
   **/
   loadingClass: 'loading',
 
   /**
-    The CSS class to apply to a `LinkView`'s element when its `disabled`
+    The CSS class to apply to a `LinkComponent`'s element when its `disabled`
     property is `true`.
 
     @property disabledClass
     @type String
     @default disabled
+    @private
   **/
   disabledClass: 'disabled',
   _isDisabled: false,
 
   /**
-    Determines whether the `LinkView` will trigger routing via
+    Determines whether the `LinkComponent` will trigger routing via
     the `replaceWith` routing strategy.
 
     @property replace
     @type Boolean
     @default false
+    @private
   **/
   replace: false,
 
@@ -135,7 +147,8 @@ var LinkComponent = EmberComponent.extend({
     @property attributeBindings
     @type Array | String
     @default ['title', 'rel', 'tabindex', 'target']
-   **/
+     @private
+  */
   attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
   /**
@@ -145,8 +158,9 @@ var LinkComponent = EmberComponent.extend({
     @property classNameBindings
     @type Array
     @default ['active', 'loading', 'disabled']
-   **/
-  classNameBindings: linkViewClassNameBindings,
+     @private
+  */
+  classNameBindings: linkComponentClassNameBindings,
 
   /**
     By default the `{{link-to}}` helper responds to the `click` event. You
@@ -159,6 +173,7 @@ var LinkComponent = EmberComponent.extend({
     @property eventName
     @type String
     @default click
+    @private
   */
   eventName: 'click',
 
@@ -166,21 +181,22 @@ var LinkComponent = EmberComponent.extend({
   // section of the API documentation, which is where
   // people will likely go looking for it.
   /**
-    Triggers the `LinkView`'s routing behavior. If
+    Triggers the `LinkComponent`'s routing behavior. If
     `eventName` is changed to a value other than `click`
     the routing behavior will trigger on that custom event
     instead.
 
     @event click
-  **/
+    @private
+  */
 
   /**
-    An overridable method called when LinkView objects are instantiated.
+    An overridable method called when LinkComponent objects are instantiated.
 
     Example:
 
     ```javascript
-    App.MyLinkView = Ember.LinkView.extend({
+    App.MyLinkComponent = Ember.LinkComponent.extend({
       init: function() {
         this._super.apply(this, arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
@@ -195,6 +211,7 @@ var LinkComponent = EmberComponent.extend({
     application.
 
     @method init
+    @private
   */
   init() {
     this._super(...arguments);
@@ -209,11 +226,12 @@ var LinkComponent = EmberComponent.extend({
   _routing: inject.service('-routing'),
 
   /**
-    Accessed as a classname binding to apply the `LinkView`'s `disabledClass`
+    Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`
     CSS `class` to the element when the link is disabled.
 
     When `true` interactions with the element will not trigger route changes.
     @property disabled
+    @private
   */
   disabled: computed({
     get(key, value) {
@@ -227,19 +245,20 @@ var LinkComponent = EmberComponent.extend({
   }),
 
   /**
-    Accessed as a classname binding to apply the `LinkView`'s `activeClass`
+    Accessed as a classname binding to apply the `LinkComponent`'s `activeClass`
     CSS `class` to the element when the link is active.
 
-    A `LinkView` is considered active when its `currentWhen` property is `true`
-    or the application's current route is the route the `LinkView` would trigger
+    A `LinkComponent` is considered active when its `currentWhen` property is `true`
+    or the application's current route is the route the `LinkComponent` would trigger
     transitions into.
 
     The `currentWhen` property can match against multiple routes by separating
     route names using the ` ` (space) character.
 
     @property active
-  **/
-  active: computed('attrs.params', '_routing.currentState', function computeLinkViewActive() {
+    @private
+  */
+  active: computed('attrs.params', '_routing.currentState', function computeLinkComponentActive() {
     var currentState = get(this, '_routing.currentState');
     return computeActive(this, currentState);
   }),
@@ -272,6 +291,7 @@ var LinkComponent = EmberComponent.extend({
     @private
     @method _invoke
     @param {Event} event
+    @private
   */
   _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
@@ -297,21 +317,29 @@ var LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    get(this, '_routing').transitionTo(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams.values'), get(this, 'attrs.replace'));
+    var routing = get(this, '_routing');
+    var targetRouteName = get(this, 'targetRouteName');
+    var models = get(this, 'models');
+    var queryParamValues = get(this, 'queryParams.values');
+    var shouldReplace = get(this, 'attrs.replace');
+
+    routing.transitionTo(targetRouteName, models, queryParamValues, shouldReplace);
   },
 
   queryParams: null,
 
   /**
     Sets the element's `href` attribute to the url for
-    the `LinkView`'s targeted route.
+    the `LinkComponent`'s targeted route.
 
-    If the `LinkView`'s `tagName` is changed to a value other
+    If the `LinkComponent`'s `tagName` is changed to a value other
     than `a`, this property will be ignored.
 
     @property href
-  **/
-  href: computed('models', 'targetRouteName', '_routing.currentState', function computeLinkViewHref() {
+    @private
+  */
+  href: computed('models', 'targetRouteName', '_routing.currentState', function computeLinkComponentHref() {
+
     if (get(this, 'tagName') !== 'a') { return; }
 
     var targetRouteName = get(this, 'targetRouteName');
@@ -320,7 +348,8 @@ var LinkComponent = EmberComponent.extend({
     if (get(this, 'loading')) { return get(this, 'loadingHref'); }
 
     var routing = get(this, '_routing');
-    return routing.generateURL(targetRouteName, models, get(this, 'queryParams.values'));
+    var queryParams = get(this, 'queryParams.values');
+    return routing.generateURL(targetRouteName, models, queryParams);
   }),
 
   loading: computed('models', 'targetRouteName', function() {
@@ -339,6 +368,7 @@ var LinkComponent = EmberComponent.extend({
     @property loadingHref
     @type String
     @default #
+    @private
   */
   loadingHref: '#',
 
@@ -473,5 +503,21 @@ function getResolvedQueryParams(queryParamsObject, targetRouteName) {
 
   return resolvedQueryParams;
 }
+
+/* DeprecatedLinkView - Start: TODO: Delete in Ember 2.0 */
+var DeprecatedLinkView = LinkComponent.extend({
+  init() {
+    Ember.deprecate('Ember.LinkView is deprecated. Please use Ember.LinkComponent.', false);
+    this._super.apply(this, arguments);
+  }
+});
+var originalReopen = DeprecatedLinkView.reopen;
+
+DeprecatedLinkView.reopen = function reopenWithDeprecation() {
+  Ember.deprecate('Ember.LinkView is deprecated. Please use Ember.LinkComponent.', false);
+  originalReopen.apply(this, arguments);
+};
+export { DeprecatedLinkView };
+/* DeprecatedLinkView - End*/
 
 export default LinkComponent;

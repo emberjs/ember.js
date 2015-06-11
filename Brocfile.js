@@ -5,14 +5,40 @@
 //
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
+var fs = require('fs');
+
 var EmberBuild = require('emberjs-build');
 var packages   = require('./lib/packages');
+
+var applyFeatureFlags = require('babel-plugin-feature-flags');
 
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 
+var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
+
+function babelConfigFor(environment) {
+  var isDevelopment = (environment === 'development');
+
+  var features = JSON.parse(featuresJson).features;
+  features["mandatory-setter"] = isDevelopment;
+
+  return {
+    plugins: [
+      applyFeatureFlags({
+        import: { module: 'ember-metal/features' },
+        features: features
+      })
+    ]
+  };
+}
+
 var emberBuild = new EmberBuild({
+  babel: {
+    development: babelConfigFor('development'),
+    production: babelConfigFor('production')
+  },
   htmlbars: require('htmlbars'),
   packages: packages,
   vendoredPackages: {

@@ -2,7 +2,6 @@
   "features": {
     "features-stripped-test": null,
     "ember-routing-named-substates": true,
-    "mandatory-setter": "development-only",
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-component-helper": true,
     "ember-htmlbars-inline-if-helper": true,
@@ -17,9 +16,11 @@
     "ember-application-visit": null,
     "ember-views-component-block-info": true,
     "ember-routing-core-outlet": null,
+    "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true,
-    "ember-htmlbars-get-helper": null
+    "ember-htmlbars-get-helper": null,
+    "ember-htmlbars-helper": true
   },
   "debugStatements": [
     "Ember.warn",

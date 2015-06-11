@@ -1,6 +1,8 @@
 import "ember";
+import isEnabled from "ember-metal/features";
 
 import EmberHandlebars from "ember-htmlbars/compat";
+import EmberView from "ember-views/views/view";
 
 var compile = EmberHandlebars.compile;
 
@@ -418,7 +420,7 @@ QUnit.test("Default error event moves into nested route", function() {
   equal(appController.get('currentPath'), 'grandma.error', "Initial route fully loaded");
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+if (isEnabled("ember-routing-named-substates")) {
 
   QUnit.test("Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present", function() {
 
@@ -467,7 +469,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       }
     });
 
-    App.ApplicationLoadingView = Ember.View.extend({
+    App.ApplicationLoadingView = EmberView.extend({
       elementId: 'toplevel-loading'
     });
 

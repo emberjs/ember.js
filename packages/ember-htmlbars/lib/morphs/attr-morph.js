@@ -12,6 +12,8 @@ export var styleWarning = '' +
 
 function EmberAttrMorph(element, attrName, domHelper, namespace) {
   HTMLBarsAttrMorph.call(this, element, attrName, domHelper, namespace);
+
+  this.streamUnsubscribers = null;
 }
 
 var proto = EmberAttrMorph.prototype = o_create(HTMLBarsAttrMorph.prototype);

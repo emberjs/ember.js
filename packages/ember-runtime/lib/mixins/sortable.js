@@ -72,6 +72,7 @@ import {
   @class SortableMixin
   @namespace Ember
   @uses Ember.MutableEnumerable
+  @private
 */
 export default Mixin.create(MutableEnumerable, {
 
@@ -82,6 +83,7 @@ export default Mixin.create(MutableEnumerable, {
     from the `sortProperties` array prioritized from first to last.
 
     @property {Array} sortProperties
+    @private
   */
   sortProperties: null,
 
@@ -92,6 +94,7 @@ export default Mixin.create(MutableEnumerable, {
 
     @property {Boolean} sortAscending
     @default true
+    @private
   */
   sortAscending: true,
 
@@ -115,6 +118,7 @@ export default Mixin.create(MutableEnumerable, {
     @property sortFunction
     @type {Function}
     @default Ember.compare
+    @private
   */
   sortFunction: compare,
 
@@ -160,6 +164,7 @@ export default Mixin.create(MutableEnumerable, {
     Also sets up observers for each `sortProperty` on each item in the content Array.
 
     @property arrangedContent
+    @private
   */
   arrangedContent: computed('content', 'sortProperties.@each', {
     get(key) {

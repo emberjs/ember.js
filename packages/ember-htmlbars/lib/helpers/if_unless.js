@@ -60,6 +60,7 @@ import shouldDisplay from "ember-views/streams/should_display";
 
   @method if
   @for Ember.Handlebars.helpers
+  @public
 */
 function ifHelper(params, hash, options) {
   return ifUnless(params, hash, options, shouldDisplay(params[0]));
@@ -72,6 +73,7 @@ function ifHelper(params, hash, options) {
 
   @method unless
   @for Ember.Handlebars.helpers
+  @public
 */
 function unlessHelper(params, hash, options) {
   return ifUnless(params, hash, options, !shouldDisplay(params[0]));

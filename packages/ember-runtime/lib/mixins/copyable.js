@@ -3,13 +3,11 @@
 @submodule ember-runtime
 */
 
-
 import { get } from "ember-metal/property_get";
 import { Mixin } from "ember-metal/mixin";
 import { Freezable } from "ember-runtime/mixins/freezable";
 import { fmt } from "ember-runtime/system/string";
 import EmberError from 'ember-metal/error';
-
 
 /**
   Implements some standard methods for copying an object. Add this mixin to
@@ -25,6 +23,7 @@ import EmberError from 'ember-metal/error';
   @class Copyable
   @namespace Ember
   @since Ember 0.9
+  @private
 */
 export default Mixin.create({
   /**
@@ -36,6 +35,7 @@ export default Mixin.create({
     @method copy
     @param {Boolean} deep if `true`, a deep copy of the object should be made
     @return {Object} copy of receiver
+    @private
   */
   copy: null,
 
@@ -52,6 +52,7 @@ export default Mixin.create({
 
     @method frozenCopy
     @return {Object} copy of receiver or receiver
+    @private
   */
   frozenCopy() {
     if (Freezable && Freezable.detect(this)) {

@@ -49,7 +49,6 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { instantiate: false });
     registry.register('view:toplevel', EmberView.extend());
     registry.register('component-lookup:main', ComponentLookup);
   },
@@ -142,6 +141,21 @@ QUnit.test("View lookup - App.FuView (DEPRECATED)", function() {
   }, /Global lookup of App from a Handlebars template is deprecated./);
 
   equal(jQuery('#fu').text(), 'bro');
+});
+
+QUnit.test("View lookup in a template using 'view' helper is deprecated", function() {
+  var FuView = viewClass({});
+
+  registry.register('view:fu', FuView);
+
+  view = EmberView.extend({
+    template: compile("{{view 'fu'}}"),
+    container: container
+  }).create();
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, `Using the "view" helper is deprecated.`);
 });
 
 QUnit.test("View lookup - 'fu'", function() {

@@ -111,10 +111,10 @@ function validateAction(component, actionName) {
   @class Component
   @namespace Ember
   @extends Ember.View
+  @public
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   isComponent: true,
-
   /*
     This is set so that the proto inspection in appendTemplatedView does not
     think that it should set the components `context` to that of the parent view.
@@ -153,9 +153,25 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property template
+  @public
   */
-  template: computed('templateName', {
+  template: computed('_template', {
     get() {
+      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`);
+
+      return get(this, '_template');
+    },
+
+    set(key, value) {
+      return set(this, '_template', value);
+    }
+  }),
+
+  _template: computed('templateName', {
+    get() {
+      if (get(this, '_deprecatedFlagForBlockProvided')) {
+        return true;
+      }
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
 
@@ -173,6 +189,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   @deprecated
   @property templateName
+  @public
   */
   templateName: null,
 
@@ -183,6 +200,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @property targetObject
     @type Ember.Controller
     @default null
+    @private
   */
   targetObject: computed('controller', function(key) {
     if (this._targetObject) { return this._targetObject; }
@@ -270,6 +288,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @method sendAction
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
+    @public
   */
   sendAction(action, ...contexts) {
     var actionName;

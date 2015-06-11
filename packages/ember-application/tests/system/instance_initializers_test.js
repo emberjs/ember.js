@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import ApplicationInstance from "ember-application/system/application-instance";
@@ -6,11 +7,11 @@ import jQuery from "ember-views/system/jquery";
 
 var app, initializeContextFeatureEnabled;
 
-if (Ember.FEATURES.isEnabled("ember-application-initializer-context")) {
+if (isEnabled("ember-application-initializer-context")) {
   initializeContextFeatureEnabled = true;
 }
 
-if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
+if (isEnabled('ember-application-instance-initializers')) {
   QUnit.module("Ember.Application instance initializers", {
     setup() {
     },

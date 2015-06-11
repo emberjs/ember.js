@@ -56,5 +56,6 @@
   "requireSpacesAfterClosingParenthesisInFunctionDeclaration": {
     "beforeOpeningRoundBrace": false,
     "beforeOpeningCurlyBrace": true
-  }
+  },
+  "requireCommentsToIncludeAccess": true
 }

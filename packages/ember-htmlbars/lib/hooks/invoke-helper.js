@@ -1,43 +1,24 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-import getValue from "ember-htmlbars/hooks/get-value";
+import { buildHelperStream } from "ember-htmlbars/system/invoke-helper";
 
+export default function invokeHelper(morph, env, scope, visitor, params, hash, helper, templates, context) {
 
-
-export default function invokeHelper(morph, env, scope, visitor, _params, _hash, helper, templates, context) {
-  var params, hash;
-
-  if (typeof helper === 'function') {
-    params = getArrayValues(_params);
-    hash = getHashValues(_hash);
-    return { value: helper.call(context, params, hash, templates) };
-  } else if (helper.isLegacyViewHelper) {
+  if (helper.isLegacyViewHelper) {
     Ember.assert("You can only pass attributes (such as name=value) not bare " +
-                 "values to a helper for a View found in '" + helper.viewClass + "'", _params.length === 0);
+                 "values to a helper for a View found in '" + helper.viewClass + "'", params.length === 0);
 
-    env.hooks.keyword('view', morph, env, scope, [helper.viewClass], _hash, templates.template.raw, null, visitor);
+    env.hooks.keyword('view', morph, env, scope, [helper.viewClass], hash, templates.template.raw, null, visitor);
+    // Opts into a special mode for view helpers
     return { handled: true };
-  } else if (helper && helper.helperFunction) {
-    var helperFunc = helper.helperFunction;
-    return { value: helperFunc.call({}, _params, _hash, templates, env, scope) };
-  }
-}
-
-// We don't want to leak mutable cells into helpers, which
-// are pure functions that can only work with values.
-function getArrayValues(params) {
-  let out = [];
-  for (let i=0, l=params.length; i<l; i++) {
-    out.push(getValue(params[i]));
   }
 
-  return out;
-}
+  var helperStream = buildHelperStream(helper, params, hash, templates, env, scope, context);
 
-function getHashValues(hash) {
-  let out = {};
-  for (let prop in hash) {
-    out[prop] = getValue(hash[prop]);
+  // Ember.Helper helpers are pure values, thus linkable
+  if (helperStream.linkable) {
+    return { link: true, value: helperStream };
   }
 
-  return out;
+  // Legacy helpers are not linkable, they must run every rerender
+  return { value: helperStream.value() };
 }

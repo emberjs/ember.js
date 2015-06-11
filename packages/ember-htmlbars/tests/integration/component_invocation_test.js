@@ -1,3 +1,4 @@
+import isEnabled from "ember-metal/features";
 import EmberView from "ember-views/views/view";
 import Registry from "container/registry";
 import jQuery from "ember-views/system/jquery";
@@ -6,6 +7,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 var registry, container, view;
@@ -16,7 +18,6 @@ function commonSetup() {
   registry.optionsForType('component', { singleton: false });
   registry.optionsForType('view', { singleton: false });
   registry.optionsForType('template', { instantiate: false });
-  registry.optionsForType('helper', { instantiate: false });
   registry.register('component-lookup:main', ComponentLookup);
 }
 
@@ -248,7 +249,99 @@ QUnit.test('with ariaRole specified', function() {
   equal(view.$('#aria-test').attr('role'), 'main', 'role attribute is applied');
 });
 
-if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
+QUnit.test('`template` is true when block supplied', function() {
+  expect(3);
+
+  let innerComponent;
+  registry.register('component:with-block', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerComponent = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#with-block}}In template{{/with-block}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In template');
+
+  let template;
+  expectDeprecation(function() {
+    template = get(innerComponent, 'template');
+  }, /Accessing 'template' in .+ is deprecated. To determine if a block was specified to .+ please use '{{#if hasBlock}}' in the components layout./);
+
+
+  ok(template, 'template property is truthy when a block was provided');
+});
+
+QUnit.test('`template` is false when no block supplied', function() {
+  expect(2);
+
+  let innerComponent;
+  registry.register('component:without-block', Component.extend({
+    init() {
+      this._super(...arguments);
+      innerComponent = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{without-block}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  let template;
+  expectDeprecation(function() {
+    template = get(innerComponent, 'template');
+  }, /Accessing 'template' in .+ is deprecated. To determine if a block was specified to .+ please use '{{#if hasBlock}}' in the components layout./);
+
+  ok(!template, 'template property is falsey when a block was not provided');
+});
+
+QUnit.test('`template` specified in a component is overridden by block', function() {
+  expect(1);
+
+  registry.register('component:with-block', Component.extend({
+    layout: compile('{{yield}}'),
+    template: compile('Oh, noes!')
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#with-block}}Whoop, whoop!{{/with-block}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Whoop, whoop!', 'block provided always overrides template property');
+});
+
+QUnit.test('template specified inline is available from Views looked up as components', function() {
+  expect(2);
+
+  registry.register('component:without-block', EmberView.extend({
+    template: compile('Whoop, whoop!')
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{without-block}}'),
+    container: container
+  }).create();
+
+  expectDeprecation(function() {
+    runAppend(view);
+  }, 'Using deprecated `template` property on a Component.');
+
+  equal(view.$().text(), 'Whoop, whoop!', 'template inline works properly');
+});
+
+if (isEnabled('ember-views-component-block-info')) {
   QUnit.test('hasBlock is true when block supplied', function() {
     expect(1);
 
@@ -310,7 +403,7 @@ if (Ember.FEATURES.isEnabled('ember-views-component-block-info')) {
   });
 }
 
-QUnit.test('static positional parameters', function() {
+QUnit.test('static named positional parameters', function() {
   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
   registry.register('component:sample-component', Component.extend({
     positionalParams: ['name', 'age']
@@ -326,7 +419,7 @@ QUnit.test('static positional parameters', function() {
   equal(jQuery('#qunit-fixture').text(), 'Quint4');
 });
 
-QUnit.test('dynamic positional parameters', function() {
+QUnit.test('dynamic named positional parameters', function() {
   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
   registry.register('component:sample-component', Component.extend({
     positionalParams: ['name', 'age']
@@ -344,11 +437,56 @@ QUnit.test('dynamic positional parameters', function() {
   runAppend(view);
   equal(jQuery('#qunit-fixture').text(), 'Quint4');
   run(function() {
-    Ember.set(view.context, 'myName', 'Edward');
-    Ember.set(view.context, 'myAge', '5');
+    set(view.context, 'myName', 'Edward');
+    set(view.context, 'myAge', '5');
   });
 
   equal(jQuery('#qunit-fixture').text(), 'Edward5');
+});
+
+QUnit.test('static arbitrary number of positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: 'names'
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#args-3').text(), 'Foo4Bar');
+  equal(view.$('#args-5').text(), 'Foo4Bar5Baz');
+  equal(view.$('#helper').text(), 'Foo4Bar5Baz');
+});
+
+QUnit.test('dynamic arbitrary number of positional parameters', function() {
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', Component.extend({
+    positionalParams: 'names'
+  }));
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component user1 user2 id="direct"}}{{component "sample-component" user1 user2 id="helper"}}'),
+    container: container,
+    context: {
+      user1: 'Foo',
+      user2: 4
+    }
+  }).create();
+
+  runAppend(view);
+  equal(view.$('#direct').text(), 'Foo4');
+  equal(view.$('#helper').text(), 'Foo4');
+  run(function() {
+    set(view.context, 'user1', 'Bar');
+    set(view.context, 'user2', '5');
+  });
+
+  equal(view.$('#direct').text(), 'Bar5');
+  equal(view.$('#helper').text(), 'Bar5');
 });
 
 QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
@@ -393,7 +531,7 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
   runAppend(view);
 });
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
+if (isEnabled('ember-htmlbars-component-helper')) {
   QUnit.test('{{component}} helper works with positional params', function() {
     registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
     registry.register('component:sample-component', Component.extend({
@@ -412,8 +550,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-component-helper')) {
     runAppend(view);
     equal(jQuery('#qunit-fixture').text(), 'Quint4');
     run(function() {
-      Ember.set(view.context, 'myName', 'Edward');
-      Ember.set(view.context, 'myAge', '5');
+      set(view.context, 'myName', 'Edward');
+      set(view.context, 'myAge', '5');
     });
 
     equal(jQuery('#qunit-fixture').text(), 'Edward5');
@@ -434,7 +572,7 @@ QUnit.test('yield to inverse', function() {
   runAppend(view);
   equal(jQuery('#qunit-fixture').text(), 'Yes:Hello42');
   run(function() {
-    Ember.set(view.context, 'activated', false);
+    set(view.context, 'activated', false);
   });
 
   equal(jQuery('#qunit-fixture').text(), 'No:Goodbye');
@@ -707,8 +845,33 @@ QUnit.test("comopnent should rerender when a property (with a default) is change
 
 });
 
+QUnit.test('non-block with each rendering child components', function() {
+  expect(2);
+
+  registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
+  registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
+
+  var items = Ember.A(['Tom', 'Dick', 'Harry']);
+
+  view = EmberView.extend({
+    template: compile('{{non-block items=view.items}}'),
+    container: container,
+    items: items
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+
+  run(function() {
+    items.pushObject('James');
+  });
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
+});
+
 // jscs:disable validateIndentation
-if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
+if (isEnabled('ember-htmlbars-component-generation')) {
 
 QUnit.module('component - invocation (angle brackets)', {
   setup() {

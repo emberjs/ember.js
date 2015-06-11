@@ -1,20 +1,20 @@
 /*global __fail__*/
 
 import Ember from "ember-metal/core";
+import isEnabled, { FEATURES } from "ember-metal/features";
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
 import environment from "ember-metal/environment";
 
 /**
-Ember Debug
-
 @module ember
 @submodule ember-debug
 */
 
 /**
 @class Ember
+@public
 */
 
 function isPlainFunction(test) {
@@ -40,6 +40,7 @@ function isPlainFunction(test) {
   @param {Boolean|Function} test Must be truthy for the assertion to pass. If
     falsy, an exception will be thrown. If this is a function, it will be executed and
     its return value will be used as condition.
+  @public
 */
 Ember.assert = function(desc, test) {
   var throwAssertion;
@@ -64,6 +65,7 @@ Ember.assert = function(desc, test) {
   @param {String} message A warning to display.
   @param {Boolean} test An optional boolean. If falsy, the warning
     will be displayed.
+  @public
 */
 Ember.warn = function(message, test) {
   if (!test) {
@@ -84,6 +86,7 @@ Ember.warn = function(message, test) {
 
   @method debug
   @param {String} message A debug message to display.
+  @public
 */
 Ember.debug = function(message) {
   Logger.debug("DEBUG: "+message);
@@ -101,6 +104,7 @@ Ember.debug = function(message) {
     value will be used as condition.
   @param {Object} options An optional object that can be used to pass
     in a `url` to the transition guide on the emberjs.com website.
+  @public
 */
 Ember.deprecate = function(message, test, options) {
   var noDeprecation;
@@ -169,6 +173,7 @@ Ember.deprecate = function(message, test, options) {
   @param {String} message A description of the deprecation.
   @param {Function} func The new function called to replace its deprecated counterpart.
   @return {Function} a new function that wrapped the original function with a deprecation warning
+  @private
 */
 Ember.deprecateFunc = function(message, func) {
   return function() {
@@ -195,6 +200,7 @@ Ember.deprecateFunc = function(message, func) {
   @method runInDebug
   @param {Function} func The function to be executed.
   @since 1.5.0
+  @public
 */
 Ember.runInDebug = function(func) {
   func();
@@ -225,14 +231,14 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped)
 
 if (!Ember.testing) {
   // Complain if they're using FEATURE flags in builds other than canary
-  Ember.FEATURES['features-stripped-test'] = true;
+  FEATURES['features-stripped-test'] = true;
   var featuresWereStripped = true;
 
-  if (Ember.FEATURES.isEnabled('features-stripped-test')) {
+  if (isEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }
 
-  delete Ember.FEATURES['features-stripped-test'];
+  delete FEATURES['features-stripped-test'];
   _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.

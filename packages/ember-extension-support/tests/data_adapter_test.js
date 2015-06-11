@@ -65,6 +65,20 @@ QUnit.test("Model types added with DefaultResolver", function() {
   adapter.watchModelTypes(modelTypesAdded);
 });
 
+QUnit.test("getRecords gets a model name as second argument", function() {
+  App.Post = Model.extend();
+
+  adapter = App.__container__.lookup('data-adapter:main');
+  adapter.reopen({
+    getRecords(klass, name) {
+      equal(name, 'post');
+      return Ember.A([]);
+    }
+  });
+
+  adapter.watchModelTypes(function() { });
+});
+
 QUnit.test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend();
   var StubContainerDebugAdapter = DefaultResolver.extend({

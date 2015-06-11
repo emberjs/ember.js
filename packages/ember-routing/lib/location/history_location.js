@@ -20,6 +20,7 @@ var popstateFired = false;
   @class HistoryLocation
   @namespace Ember
   @extends Ember.Object
+  @private
 */
 export default EmberObject.extend({
   implementation: 'history',
@@ -52,6 +53,7 @@ export default EmberObject.extend({
 
     @property rootURL
     @default '/'
+    @private
   */
   rootURL: '/',
 

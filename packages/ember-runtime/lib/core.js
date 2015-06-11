@@ -20,6 +20,7 @@
   @param {Object} a first object to compare
   @param {Object} b second object to compare
   @return {Boolean}
+  @public
 */
 export function isEqual(a, b) {
   if (a && typeof a.isEqual === 'function') {

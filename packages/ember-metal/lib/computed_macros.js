@@ -7,7 +7,8 @@ import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
 
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 function getProperties(self, propertyNames) {
@@ -54,6 +55,7 @@ function generateComputedWithProperties(macro) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which negate
   the original value for property
+  @public
 */
 export function empty(dependentKey) {
   return computed(dependentKey + '.length', function() {
@@ -84,6 +86,7 @@ export function empty(dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
+  @public
 */
 export function notEmpty(dependentKey) {
   return computed(dependentKey + '.length', function() {
@@ -117,6 +120,7 @@ export function notEmpty(dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which
   returns true if original value for property is null or undefined.
+  @public
 */
 export function none(dependentKey) {
   return computed(dependentKey, function() {
@@ -147,6 +151,7 @@ export function none(dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which returns
   inverse of the original value for property
+  @public
 */
 export function not(dependentKey) {
   return computed(dependentKey, function() {
@@ -179,6 +184,7 @@ export function not(dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which converts
   to boolean the original value for property
+  @public
 */
 export function bool(dependentKey) {
   return computed(dependentKey, function() {
@@ -213,6 +219,7 @@ export function bool(dependentKey) {
   @param {RegExp} regexp
   @return {Ember.ComputedProperty} computed property which match
   the original value for property against a given RegExp
+  @public
 */
 export function match(dependentKey, regexp) {
   return computed(dependentKey, function() {
@@ -248,6 +255,7 @@ export function match(dependentKey, regexp) {
   @param {String|Number|Object} value
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is equal to the given value.
+  @public
 */
 export function equal(dependentKey, value) {
   return computed(dependentKey, function() {
@@ -281,6 +289,7 @@ export function equal(dependentKey, value) {
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater than given value.
+  @public
 */
 export function gt(dependentKey, value) {
   return computed(dependentKey, function() {
@@ -314,6 +323,7 @@ export function gt(dependentKey, value) {
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater or equal then given value.
+  @public
 */
 export function gte(dependentKey, value) {
   return computed(dependentKey, function() {
@@ -347,6 +357,7 @@ export function gte(dependentKey, value) {
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less then given value.
+  @public
 */
 export function lt(dependentKey, value) {
   return computed(dependentKey, function() {
@@ -380,6 +391,7 @@ export function lt(dependentKey, value) {
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less or equal than given value.
+  @public
 */
 export function lte(dependentKey, value) {
   return computed(dependentKey, function() {
@@ -414,6 +426,7 @@ export function lte(dependentKey, value) {
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
+  @public
 */
 export var and = generateComputedWithProperties(function(properties) {
   var value;
@@ -451,6 +464,7 @@ export var and = generateComputedWithProperties(function(properties) {
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
+  @public
 */
 export var or = generateComputedWithProperties(function(properties) {
   for (var key in properties) {
@@ -485,8 +499,10 @@ export var or = generateComputedWithProperties(function(properties) {
   @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
   @deprecated Use `Ember.computed.or` instead.
+  @public
 */
 export var any = generateComputedWithProperties(function(properties) {
+  Ember.deprecate('Usage of Ember.computed.any is deprecated, use `Ember.computed.or` instead.');
   for (var key in properties) {
     if (properties.hasOwnProperty(key) && properties[key]) {
       return properties[key];
@@ -519,6 +535,7 @@ export var any = generateComputedWithProperties(function(properties) {
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed in properties to an array.
+  @public
 */
 export var collect = generateComputedWithProperties(function(properties) {
   var res = Ember.A();
@@ -559,6 +576,7 @@ export var collect = generateComputedWithProperties(function(properties) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates an
   alias to the original value for property.
+  @public
 */
 
 /**
@@ -592,6 +610,7 @@ export var collect = generateComputedWithProperties(function(properties) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
+  @public
 */
 export function oneWay(dependentKey) {
   return alias(dependentKey).oneWay();
@@ -606,6 +625,7 @@ export function oneWay(dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates a
     one way computed property to the original value for property.
+  @public
  */
 
 /**
@@ -641,6 +661,7 @@ export function oneWay(dependentKey) {
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
   @since 1.5.0
+  @public
 */
 export function readOnly(dependentKey) {
   return alias(dependentKey).readOnly();
@@ -672,6 +693,7 @@ export function readOnly(dependentKey) {
   @return {Ember.ComputedProperty} computed property which acts like
   a standard getter and setter, but defaults to the value from `defaultPath`.
   @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
+  @public
 */
 export function defaultTo(defaultPath) {
   return computed({
@@ -699,6 +721,7 @@ export function defaultTo(defaultPath) {
   @return {Ember.ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0
+  @public
 */
 export function deprecatingAlias(dependentKey) {
   return computed(dependentKey, {

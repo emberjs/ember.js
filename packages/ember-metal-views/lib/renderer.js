@@ -1,6 +1,8 @@
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import { assign } from "ember-metal/merge";
+import setProperties from "ember-metal/set_properties";
 import buildComponentTemplate from "ember-views/system/build-component-template";
 import { indexOf } from "ember-metal/enumerable_utils";
 //import { deprecation } from "ember-views/compat/attrs-proxy";
@@ -18,7 +20,7 @@ Renderer.prototype.prerenderTopLevelView =
     view._renderNode = renderNode;
 
     var layout = get(view, 'layout');
-    var template = get(view, 'template');
+    var template = view.isComponent ? get(view, '_template') : get(view, 'template');
 
     var componentInfo = { component: view, layout: layout };
 
@@ -161,8 +163,15 @@ Renderer.prototype.updateAttrs = function (view, attrs) {
   this.setAttrs(view, attrs);
 }; // setting new attrs
 
-Renderer.prototype.componentUpdateAttrs = function (component, oldAttrs, newAttrs) {
-  set(component, 'attrs', newAttrs);
+Renderer.prototype.componentUpdateAttrs = function (component, newAttrs) {
+  let oldAttrs = null;
+
+  if (component.attrs) {
+    oldAttrs = assign({}, component.attrs);
+    setProperties(component.attrs, newAttrs);
+  } else {
+    set(component, 'attrs', newAttrs);
+  }
 
   component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
   component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });

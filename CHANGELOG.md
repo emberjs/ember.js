@@ -57,7 +57,7 @@
 - [#10372](https://github.com/emberjs/ember.js/pull/10372) / [#10431](https://github.com/emberjs/ember.js/pull/10431) / [#10439](https://github.com/emberjs/ember.js/pull/10439) / [#10442](https://github.com/emberjs/ember.js/pull/10442) Decouple route transition from view creation.
 - [#10436](https://github.com/emberjs/ember.js/pull/10436) [BUGFIX] Ensure `instrument.{subscribe,unsubscribe,reset}` aren’t accidentally clobbered.
 - [#10462](https://github.com/emberjs/ember.js/pull/10462) [BUGFIX] Fix incorrect export of `Ember.OutletView`.
-- [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr shoud remove attributes.
+- [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr should remove attributes.
 - [#10413](https://github.com/emberjs/ember.js/pull/10413) Update to use inclusive `morph-range` (via HTMLBars v0.11.1).
 - [#10464](https://github.com/emberjs/ember.js/pull/10464) Add helpful assertion if templates are compiled with a different template compiler revision.
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
@@ -322,7 +322,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
 * [BUGFIX] Fix `{{#with view.foo as bar}}`.
 * [BUGFIX] Force remove `required` attribute for IE8.
-* [BUGFIX] Controller precendence for `Ember.Route.prototype.render` updated.
+* [BUGFIX] Controller precedence for `Ember.Route.prototype.render` updated.
 * [BUGFIX] fixes variable argument passing to triggerEvent helper.
 * [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
 * [BUGFIX] Do not throw uncaught errors mid-transition.
@@ -482,7 +482,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Use imported handlebars before global Handlebars
 * Update router.js
 * Update RSVP.js
-* Improved a handeful of error messages
+* Improved a handful of error messages
 * Provide more information for debugging
 * Added more assertions and deprecation warnings
 * [BUGFIX] Add preventDefault option to link-to and action.
@@ -588,7 +588,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Fix evaluateUnboundHelper properties
 * Use Ember.Error consistently.
 * [BUGFIX] Make Component.sendAction behave the same as {{action}} helper.
-* [BUGFIX] uniq reduceComputed dependent keys.
+* [BUGFIX] Unique reduceComputed dependent keys.
 * Don't allow registration of undefined factories.
 * Decamelize handles strings with numbers
 * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
@@ -599,7 +599,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Remove Route#redirect soft deprecation
 * [BUGFIX] link-to, bound helper issues with arrays of primitives
 * [BUGFIX] Don't use incompatible array methods
-* [BUGFIX] `Ember.Object.extend` should allow any prorerty
+* [BUGFIX] `Ember.Object.extend` should allow any property
 * [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
 * [BUGFIX] `Ember.keys` should return own property
 * [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
@@ -748,7 +748,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Fix indeterminate checkbox that is set on insert
 * Add jQuery 1.9 to testing rake task
 * Support object with `Ember.String.fmt`
-* Add 'date', 'regexp' and 'error' supprot to `Ember.inspect`
+* Add 'date', 'regexp' and 'error' support to `Ember.inspect`
 * Improve `Ember.inspect` for array
 * Fix replacement for `Ember.String.fmt` to be parsed as decimal digit
 * Upgrade to latest router.js
@@ -893,7 +893,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update backburner to fix IE8 failing test
 * Update Backburner.js fixing the performance regression introduce in rc4
 * maintain ruby'esq version string for gems
-* remove starter_kit upload task (we just use the github tarbals)
+* remove starter_kit upload task (we just use the github tarballs)
 
 
 ### Ember 1.0.0-rc.4 _(May 27, 2013)_

@@ -53,6 +53,7 @@ function assertPolyfill(test, message) {
 
   @class Logger
   @namespace Ember
+  @private
 */
 export default {
   /**
@@ -68,6 +69,7 @@ export default {
    @method log
    @for Ember.Logger
    @param {*} arguments
+   @private
   */
   log:   consoleMethod('log')   || K,
 
@@ -83,6 +85,7 @@ export default {
    @method warn
    @for Ember.Logger
    @param {*} arguments
+   @private
   */
   warn:  consoleMethod('warn')  || K,
 
@@ -98,6 +101,7 @@ export default {
    @method error
    @for Ember.Logger
    @param {*} arguments
+   @private
   */
   error: consoleMethod('error') || K,
 
@@ -114,6 +118,7 @@ export default {
    @method info
    @for Ember.Logger
    @param {*} arguments
+   @private
   */
   info:  consoleMethod('info')  || K,
 
@@ -130,6 +135,7 @@ export default {
    @method debug
    @for Ember.Logger
    @param {*} arguments
+   @private
   */
   debug: consoleMethod('debug') || consoleMethod('info') || K,
 
@@ -144,6 +150,7 @@ export default {
    @method assert
    @for Ember.Logger
    @param {Boolean} bool Value to test
+   @private
   */
   assert: consoleMethod('assert') || assertPolyfill
 };

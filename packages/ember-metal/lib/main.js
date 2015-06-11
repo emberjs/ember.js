@@ -1,12 +1,11 @@
 /**
-Ember Metal
-
 @module ember
 @submodule ember-metal
 */
 
 // BEGIN IMPORTS
 import Ember from "ember-metal/core";
+import isEnabled, { FEATURES } from "ember-metal/features";
 import merge from "ember-metal/merge";
 import {
   instrument,
@@ -361,11 +360,14 @@ Ember.isGlobalPath = isGlobalPath;
 Ember.run = run;
 
 /**
- * @class Backburner
- * @for Ember
- * @private
+@class Backburner
+@for Ember
+@private
 */
 Ember.Backburner = Backburner;
+// this is the new go forward, once Ember Data updates to using `_Backburner` we
+// can remove the non-underscored version.
+Ember._Backburner = Backburner;
 
 Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
@@ -377,7 +379,7 @@ Ember.isPresent = isPresent;
 
 Ember.merge = merge;
 
-if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
+if (isEnabled('ember-metal-stream')) {
   Ember.stream = {
     Stream: Stream,
 
@@ -393,6 +395,9 @@ if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
     chain: chain
   };
 }
+
+Ember.FEATURES = FEATURES;
+Ember.FEATURES.isEnabled = isEnabled;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
@@ -413,6 +418,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-stream')) {
   @event onerror
   @for Ember
   @param {Exception} error the error object
+  @public
 */
 Ember.onerror = null;
 // END EXPORTS

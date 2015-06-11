@@ -1,9 +1,6 @@
 /**
-Ember Extension Support
-
 @module ember
 @submodule ember-extension-support
-@requires ember-application
 */
 
 import Ember from "ember-metal/core";
