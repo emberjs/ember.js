@@ -748,7 +748,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Fix indeterminate checkbox that is set on insert
 * Add jQuery 1.9 to testing rake task
 * Support object with `Ember.String.fmt`
-* Add 'date', 'regexp' and 'error' supprot to `Ember.inspect`
+* Add 'date', 'regexp' and 'error' support to `Ember.inspect`
 * Improve `Ember.inspect` for array
 * Fix replacement for `Ember.String.fmt` to be parsed as decimal digit
 * Upgrade to latest router.js
