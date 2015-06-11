@@ -1,7 +1,7 @@
 # Ember Changelog
 
 ### 1.12.0 (May 13, 2015)
-
+prorerty
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
 - [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsey values.
 - [#10883](https://github.com/emberjs/ember.js/pull/10883) [BUGFIX] Fix `View.prototype.replaceIn` functionality.
@@ -599,7 +599,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Remove Route#redirect soft deprecation
 * [BUGFIX] link-to, bound helper issues with arrays of primitives
 * [BUGFIX] Don't use incompatible array methods
-* [BUGFIX] `Ember.Object.extend` should allow any prorerty
+* [BUGFIX] `Ember.Object.extend` should allow any property
 * [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
 * [BUGFIX] `Ember.keys` should return own property
 * [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
