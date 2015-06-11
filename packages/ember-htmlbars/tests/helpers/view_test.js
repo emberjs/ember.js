@@ -143,21 +143,6 @@ QUnit.test("View lookup - App.FuView (DEPRECATED)", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-QUnit.test("View lookup in a template using 'view' helper is deprecated", function() {
-  var FuView = viewClass({});
-
-  registry.register('view:fu', FuView);
-
-  view = EmberView.extend({
-    template: compile("{{view 'fu'}}"),
-    container: container
-  }).create();
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, `Using the "view" helper is deprecated.`);
-});
-
 QUnit.test("View lookup - 'fu'", function() {
   var FuView = viewClass({
     elementId: "fu",

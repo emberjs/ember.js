@@ -103,7 +103,10 @@ Ember.debug = function(message) {
     will be displayed. If this is a function, it will be executed and its return
     value will be used as condition.
   @param {Object} options An optional object that can be used to pass
-    in a `url` to the transition guide on the emberjs.com website.
+    in a `url` to the transition guide on the emberjs.com website, and a unique
+    `id` for this deprecation. The `id` can be used by Ember debugging tools
+    to change the behavior (raise, log or silence) for that specific deprecation.
+    The `id` should be namespaced by dots, e.g. "view.helper.select".
   @public
 */
 Ember.deprecate = function(message, test, options) {
@@ -120,6 +123,10 @@ Ember.deprecate = function(message, test, options) {
   }
 
   if (noDeprecation) { return; }
+
+  if (options && options.id) {
+    message = message + ` [deprecation id: ${options.id}]`;
+  }
 
   if (deprecationManager.getLevel(options && options.id) === deprecationLevels.RAISE) {
     throw new EmberError(message);
