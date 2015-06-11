@@ -599,7 +599,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Remove Route#redirect soft deprecation
 * [BUGFIX] link-to, bound helper issues with arrays of primitives
 * [BUGFIX] Don't use incompatible array methods
-* [BUGFIX] `Ember.Object.extend` should allow any prorerty
+* [BUGFIX] `Ember.Object.extend` should allow any property
 * [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
 * [BUGFIX] `Ember.keys` should return own property
 * [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
