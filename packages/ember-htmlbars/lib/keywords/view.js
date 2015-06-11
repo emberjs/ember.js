@@ -10,7 +10,7 @@ import objectKeys from "ember-metal/keys";
 
 export default {
   setupState(state, env, scope, params, hash) {
-    Ember.deprecate(`Using the "view" helper is deprecated.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' });
+    Ember.deprecate(`Using the "view" helper is deprecated.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view', id: 'view-helper' });
     var read = env.hooks.getValue;
     var targetObject = read(scope.self);
     var viewClassOrInstance = state.viewClassOrInstance;

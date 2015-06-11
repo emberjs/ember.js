@@ -68,9 +68,7 @@
         // Don't worry about jQuery version
         ENV['FORCE_JQUERY'] = true;
 
-        // FIXME Many tests need to be ported to not use "{{view}}" before this
-        // can be re-enabled
-        ENV['RAISE_ON_DEPRECATION'] = false;
+        ENV['RAISE_ON_DEPRECATION'] = true;
       })();
     </script>
 
@@ -148,6 +146,10 @@
         QUnit.config.urlConfig.push('nojshint');
         QUnit.config.urlConfig.push('forceskip');
       })();
+    </script>
+
+    <script>
+      Ember.Debug._addDeprecationLevel('view-helper', Ember.Debug._deprecationLevels.SILENCE);
     </script>
 
     <script>
