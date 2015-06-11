@@ -1,11 +1,26 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import { isArray } from "./array-utils";
 
-export function RenderState(renderNode) {
-  this.morphListStart = null;
-  this.deletionCandidates = {};
+export function RenderState(renderNode, morphList) {
+  // The morph list that is no longer needed and can be
+  // destroyed.
+  this.morphListToClear = morphList;
+
+  // The morph list that needs to be pruned of any items
+  // that were not yielded on a subsequent render.
+  this.morphListToPrune = null;
+
+  // A map of morphs for each item yielded in during this
+  // rendering pass. Any morphs in the DOM but not in this map
+  // will be pruned during cleanup.
   this.handledMorphs = {};
-  this.clearMorph = renderNode;
+
+  // The morph to clear once rendering is complete. By
+  // default, we set this to the previous morph (to catch
+  // the case where nothing is yielded; in that case, we
+  // should just clear the morph). Otherwise this gets set
+  // to null if anything is rendered.
+  this.morphToClear = renderNode;
+
   this.shadowOptions = null;
 }
 
@@ -31,7 +46,7 @@ export function blockFor(render, template, blockOptions) {
       bindBlocks(env, shadowScope, blockOptions.yieldTo);
 
       renderAndCleanup(renderNode, env, options, null, function() {
-        options.renderState.clearMorph = null;
+        options.renderState.morphToClear = null;
         render(template, env, shadowScope, { renderNode, blockArguments, attributes });
       });
     }
@@ -58,24 +73,37 @@ function bindBlocks(env, shadowScope, blocks) {
 }
 
 export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
-  options.renderState.shadowOptions = shadowOptions;
+  // The RenderState object is used to collect information about what the
+  // helper or hook being invoked has yielded. Once it has finished either
+  // yielding multiple items (via yieldItem) or a single template (via
+  // yieldTemplate), we detect what was rendered and how it differs from
+  // the previous render, cleaning up old state in DOM as appropriate.
+  var renderState = options.renderState;
+  renderState.shadowOptions = shadowOptions;
+
+  // Invoke the callback, instructing it to save information about what it
+  // renders into RenderState.
   var result = callback(options);
 
+  // The hook can opt-out of cleanup if it handled cleanup itself.
   if (result && result.handled) {
     return;
   }
 
-  var toClear = options.renderState.clearMorph;
-  var handledMorphs = options.renderState.handledMorphs;
   var morphMap = morph.morphMap;
-  var morphList = morph.morphList;
 
+  // Walk the morph list, clearing any items that were yielded in a previous
+  // render but were not yielded during this render.
+  let morphList = renderState.morphListToPrune;
   if (morphList) {
+    let handledMorphs = renderState.handledMorphs;
     let item = morphList.firstChildMorph;
 
     while (item) {
       let next = item.nextMorph;
 
+      // If we don't see the key in handledMorphs, it wasn't
+      // yielded in and we can safely remove it from DOM.
       if (!(item.key in handledMorphs)) {
         delete morphMap[item.key];
         clearMorph(item, env, true);
@@ -86,14 +114,14 @@ export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
     }
   }
 
+  morphList = renderState.morphListToClear;
+  if (morphList) {
+    clearMorphList(morphList, morph, env);
+  }
+
+  let toClear = renderState.morphToClear;
   if (toClear) {
-    if (isArray(toClear)) {
-      for (var i=0, l=toClear.length; i<l; i++) {
-        clearMorph(toClear[i], env);
-      }
-    } else {
-      clearMorph(toClear, env);
-    }
+    clearMorph(toClear, env);
   }
 }
 
@@ -121,4 +149,21 @@ export function clearMorph(morph, env, destroySelf) {
   morph.lastResult = null;
   morph.lastYielded = null;
   morph.childNodes = null;
+}
+
+export function clearMorphList(morphList, morph, env) {
+  let item = morphList.firstChildMorph;
+
+  while (item) {
+    let next = item.nextMorph;
+    delete morph.morphMap[item.key];
+    clearMorph(item, env, true);
+    item.destroy();
+
+    item = next;
+  }
+
+  // Remove the MorphList from the morph.
+  morphList.clear();
+  morph.morphList = null;
 }
