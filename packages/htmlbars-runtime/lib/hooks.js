@@ -3,7 +3,7 @@ import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
-import { RenderState, clearMorph, renderAndCleanup } from "../htmlbars-util/template-utils";
+import { RenderState, clearMorph, clearMorphList, renderAndCleanup } from "../htmlbars-util/template-utils";
 import { linkParams } from "../htmlbars-util/morph-utils";
 
 /**
@@ -120,13 +120,27 @@ export function wrapForHelper(template, env, scope, morph, renderState, visitor)
   };
 }
 
+// Called by a user-land helper to render a template.
 function yieldTemplate(template, env, parentScope, morph, renderState, visitor) {
   return function(blockArguments, self) {
-    renderState.clearMorph = null;
+    // Render state is used to track the progress of the helper (since it
+    // may call into us multiple times). As the user-land helper calls
+    // into library code, we track what needs to be cleaned up after the
+    // helper has returned.
+    //
+    // Here, we remember that a template has been yielded and so we do not
+    // need to remove the previous template. (If no template is yielded
+    // this render by the helper, we assume nothing should be shown and
+    // remove any previous rendered templates.)
+    renderState.morphToClear = null;
 
+    // In this conditional is true, it means that on the previous rendering pass
+    // the helper yielded multiple items via `yieldItem()`, but this time they
+    // are yielding a single template. In that case, we mark the morph list for
+    // cleanup so it is removed from the DOM.
     if (morph.morphList) {
-      renderState.morphList = morph.morphList.firstChildMorph;
-      renderState.morphList = null;
+      clearMorphList(morph.morphList, morph, env);
+      renderState.morphListToClear = null;
     }
 
     var scope = parentScope;
@@ -151,20 +165,33 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
 }
 
 function yieldItem(template, env, parentScope, morph, renderState, visitor) {
+  // Initialize state that tracks multiple items being
+  // yielded in.
   var currentMorph = null;
+
+  // Candidate morphs for deletion.
+  var candidates = {};
+
+  // Reuse existing MorphList if this is not a first-time
+  // render.
   var morphList = morph.morphList;
   if (morphList) {
     currentMorph = morphList.firstChildMorph;
-    renderState.morphListStart = currentMorph;
   }
 
-  // This helper function assumes that the morph was already rendered; if this is
-  // called and the morph does not exist, it will result in an infinite loop
+  // Advances the currentMorph pointer to the morph in the previously-rendered
+  // list that matches the yielded key. While doing so, it marks any morphs
+  // that it advances past as candidates for deletion. Assuming those morphs
+  // are not yielded in later, they will be removed in the prune step during
+  // cleanup.
+  // Note that this helper function assumes that the morph being seeked to is
+  // guaranteed to exist in the previous MorphList; if this is called and the
+  // morph does not exist, it will result in an infinite loop
   function advanceToKey(key) {
     let seek = currentMorph;
 
     while (seek.key !== key) {
-      renderState.deletionCandidates[seek.key] = seek;
+      candidates[seek.key] = seek;
       seek = seek.nextMorph;
     }
 
@@ -177,6 +204,11 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
       throw new Error("You must provide a string key when calling `yieldItem`; you provided " + key);
     }
 
+    // At least one item has been yielded, so we do not wholesale
+    // clear the last MorphList but instead apply a prune operation.
+    renderState.morphListToClear = null;
+    morph.lastYielded = null;
+
     var morphList, morphMap;
 
     if (!morph.morphList) {
@@ -188,7 +220,10 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     morphList = morph.morphList;
     morphMap = morph.morphMap;
 
-    var candidates = renderState.deletionCandidates;
+    // A map of morphs that have been yielded in on this
+    // rendering pass. Any morphs that do not make it into
+    // this list will be pruned from the MorphList during the cleanup
+    // process.
     var handledMorphs = renderState.handledMorphs;
 
     if (currentMorph && currentMorph.key === key) {
@@ -216,7 +251,7 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
       yieldTemplate(template, env, parentScope, childMorph, renderState, visitor)(blockArguments, self);
     }
 
-    renderState.clearMorph = morph.childNodes;
+    renderState.morphListToPrune = morphList;
     morph.childNodes = null;
   };
 }
@@ -235,7 +270,7 @@ function yieldInShadowTemplate(template, env, parentScope, morph, renderState, v
 
 export function hostYieldWithShadowTemplate(template, env, parentScope, morph, renderState, visitor) {
   return function(shadowTemplate, env, self, blockArguments) {
-    renderState.clearMorph = null;
+    renderState.morphToClear = null;
 
     if (morph.lastYielded && isStableShadowRoot(template, shadowTemplate, morph.lastYielded)) {
       return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
@@ -274,10 +309,10 @@ function isStableShadowRoot(template, shadowTemplate, lastYielded) {
 }
 
 function optionsFor(template, inverse, env, scope, morph, visitor) {
-  // If there was a template yielded last time, set clearMorph so it will be cleared
+  // If there was a template yielded last time, set morphToClear so it will be cleared
   // if no template is yielded on this render.
-  var clearMorph = morph.lastResult ? morph : null;
-  var renderState = new RenderState(clearMorph);
+  var morphToClear = morph.lastResult ? morph : null;
+  var renderState = new RenderState(morphToClear, morph.morphList || null);
 
   return {
     templates: {
