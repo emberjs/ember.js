@@ -13,9 +13,6 @@ function DeprecateViewAndControllerPaths(options) {
   @param {AST} ast The AST to be transformed.
 */
 DeprecateViewAndControllerPaths.prototype.transform = function DeprecateViewAndControllerPaths_transform(ast) {
-  if (!!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-    return;
-  }
   var walker = new this.syntax.Walker();
   var moduleName = this.options && this.options.moduleName;
 
@@ -55,7 +52,18 @@ function deprecatePaths(moduleName, node, paths) {
 }
 
 function deprecatePath(moduleName, node, path) {
-  Ember.deprecate(`Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been deprecated.`, !(path && path.type === 'PathExpression' && (path.parts[0] === 'view' || path.parts[0] === 'controller')), { url: 'http://emberjs.com/deprecations/v1.x#toc_view-and-controller-template-keywords', id: 'view-controller-keyword' });
+  Ember.deprecate(`Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been deprecated.`, function deprecatePath_test() {
+    let noDeprecate = true;
+
+    const viewKeyword = path && path.type === 'PathExpression' && path.parts && path.parts[0];
+    if (viewKeyword === 'view') {
+      noDeprecate = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    } else if (viewKeyword === 'controller') {
+      noDeprecate = false;
+    }
+
+    return noDeprecate;
+  }, { url: 'http://emberjs.com/deprecations/v1.x#toc_view-and-controller-template-keywords', id: (path.parts && path.parts[0] === 'view' ? 'view.keyword.view' : 'view.keyword.controller') });
 }
 
 function validate(node) {
