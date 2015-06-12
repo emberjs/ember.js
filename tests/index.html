@@ -149,8 +149,11 @@
     </script>
 
     <script>
-      Ember.Debug._addDeprecationLevel('view-helper', Ember.Debug._deprecationLevels.SILENCE);
-      Ember.Debug._addDeprecationLevel('view-controller-keyword', Ember.Debug._deprecationLevels.SILENCE);
+      // Silence view-related deprecations in tests to avoid overflowing travis ci's log
+      Ember.Debug._addDeprecationLevel('view.helper', Ember.Debug._deprecationLevels.SILENCE);
+      Ember.Debug._addDeprecationLevel('view.helper.select', Ember.Debug._deprecationLevels.SILENCE);
+      Ember.Debug._addDeprecationLevel('view.keyword.view', Ember.Debug._deprecationLevels.SILENCE);
+      Ember.Debug._addDeprecationLevel('view.keyword.controller', Ember.Debug._deprecationLevels.SILENCE);
     </script>
 
     <script>
