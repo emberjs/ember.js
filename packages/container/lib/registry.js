@@ -1,6 +1,8 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import isEnabled from "ember-metal/features";
 import dictionary from 'ember-metal/dictionary';
+import keys from 'ember-metal/keys';
+import { assign } from 'ember-metal/merge';
 import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
@@ -689,6 +691,36 @@ Registry.prototype = {
       property: property,
       fullName: normalizedInjectionName
     });
+  },
+
+  /**
+   @method knownForType
+   @param {String} type the type to iterate over
+   @private
+  */
+  knownForType(type) {
+    let fallbackKnown, resolverKnown;
+
+    let localKnown = dictionary(null);
+    let registeredNames = keys(this.registrations);
+    for (let index = 0, length = registeredNames.length; index < length; index++) {
+      let fullName = registeredNames[index];
+      let itemType = fullName.split(':')[0];
+
+      if (itemType === type) {
+        localKnown[fullName] = true;
+      }
+    }
+
+    if (this.fallback) {
+      fallbackKnown = this.fallback.knownForType(type);
+    }
+
+    if (this.resolver.knownForType) {
+      resolverKnown = this.resolver.knownForType(type);
+    }
+
+    return assign({}, fallbackKnown, localKnown, resolverKnown);
   },
 
   validateFullName(fullName) {

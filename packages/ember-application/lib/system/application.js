@@ -1125,6 +1125,12 @@ function resolverFor(namespace) {
     }
   };
 
+  resolve.knownForType = function knownForType(type) {
+    if (resolver.knownForType) {
+      return resolver.knownForType(type);
+    }
+  };
+
   resolve.moduleBasedResolver = resolver.moduleBasedResolver;
 
   resolve.__resolver__ = resolver;

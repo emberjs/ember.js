@@ -345,3 +345,58 @@ QUnit.test("`getFactoryTypeInjections` includes factory type injections from a f
 
   equal(registry.getFactoryTypeInjections('model').length, 1, "Factory type injections from the fallback registry are merged");
 });
+
+QUnit.test("`knownForType` contains keys for each item of a given type", function() {
+  let registry = new Registry();
+
+  registry.register('foo:bar-baz', 'baz');
+  registry.register('foo:qux-fez', 'fez');
+
+  let found = registry.knownForType('foo');
+
+  deepEqual(found, {
+    'foo:bar-baz': true,
+    'foo:qux-fez': true
+  });
+});
+
+QUnit.test("`knownForType` includes fallback registry results", function() {
+  var fallback = new Registry();
+  var registry = new Registry({ fallback: fallback });
+
+  registry.register('foo:bar-baz', 'baz');
+  registry.register('foo:qux-fez', 'fez');
+  fallback.register('foo:zurp-zorp', 'zorp');
+
+  let found = registry.knownForType('foo');
+
+  deepEqual(found, {
+    'foo:bar-baz': true,
+    'foo:qux-fez': true,
+    'foo:zurp-zorp': true
+  });
+});
+
+QUnit.test("`knownForType` is called on the resolver if present", function() {
+  expect(3);
+
+  function resolver() { }
+  resolver.knownForType = function(type) {
+    ok(true, 'knownForType called on the resolver');
+    equal(type, 'foo', 'the type was passed through');
+
+    return { 'foo:yorp': true };
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+  registry.register('foo:bar-baz', 'baz');
+
+  let found = registry.knownForType('foo');
+
+  deepEqual(found, {
+    'foo:yorp': true,
+    'foo:bar-baz': true
+  });
+});

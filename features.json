@@ -20,7 +20,8 @@
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true,
     "ember-htmlbars-get-helper": null,
-    "ember-htmlbars-helper": true
+    "ember-htmlbars-helper": true,
+    "ember-htmlbars-dashless-helpers": true
   },
   "debugStatements": [
     "Ember.warn",
