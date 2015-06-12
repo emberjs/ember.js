@@ -10,6 +10,7 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { on } from "ember-metal/events";
+import { indexOf } from "ember-metal/array";
 
 import containerViewTemplate from "ember-htmlbars/templates/container-view";
 containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -178,6 +179,8 @@ var ContainerView = View.extend(MutableArray, {
     );
   },
 
+  childViews: [],
+
   init() {
     this._super(...arguments);
 
@@ -187,7 +190,7 @@ var ContainerView = View.extend(MutableArray, {
     // redefine view's childViews property that was obliterated
     // 2.0TODO: Don't Ember.A() this so users disabling prototype extensions
     // don't pay a penalty.
-    var childViews = this.childViews = Ember.A([]);
+    var childViews = this.childViews = [];
 
     forEach(userChildViews, function(viewName, idx) {
       var view;
@@ -205,7 +208,7 @@ var ContainerView = View.extend(MutableArray, {
 
     var currentView = get(this, 'currentView');
     if (currentView) {
-      if (!childViews.length) { childViews = this.childViews = Ember.A(this.childViews.slice()); }
+      if (!childViews.length) { childViews = this.childViews = this.childViews.slice(); }
       childViews.push(this.createChildView(currentView));
     }
 
@@ -242,9 +245,19 @@ var ContainerView = View.extend(MutableArray, {
 
   layout: containerViewTemplate,
 
+  removeChild(childView) {
+    if (!this.isDestroyed) {
+      var idx = indexOf.call(this.childViews, childView);
+      if (idx !== -1) {
+        this.replace(idx, 1);
+      }
+    }
+    return this._super(childView);
+  },
+
   replace(idx, removedCount, addedViews=[]) {
     var addedCount = get(addedViews, 'length');
-    var childViews = get(this, 'childViews');
+    var childViews = this.childViews;
 
     Ember.assert("You can't add a child to a container - the child is already a child of another view", () => {
       for (var i=0, l=addedViews.length; i<l; i++) {

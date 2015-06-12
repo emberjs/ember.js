@@ -27,11 +27,11 @@ var view, originalLookup, registry, container, lookup;
 var trim = jQuery.trim;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return get(get(view, 'childViews')[0], 'childViews')[0];
 }
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return get(view, 'childViews')[nth || 0];
 }
 
 function viewClass(options) {
@@ -715,7 +715,7 @@ QUnit.test('Template views add an elementId to child views created using the vie
 
   runAppend(view);
 
-  var childView = get(view, 'childViews.firstObject');
+  var childView = get(view, 'childViews')[0];
   equal(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
 
@@ -1157,7 +1157,7 @@ QUnit.test('should expose a controller keyword that persists through Ember.Conta
 
   runAppend(view);
 
-  var containerView = get(view, 'childViews.firstObject');
+  var containerView = get(view, 'childViews')[0];
   var viewInstanceToBeInserted = EmberView.create({
     template: compile('{{controller.foo}}')
   });

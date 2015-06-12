@@ -30,7 +30,7 @@ QUnit.test("returns null if the view has no element and parent view has no eleme
   parentView = ContainerView.create({
     childViews: [EmberView.extend()]
   });
-  view = get(parentView, 'childViews').objectAt(0);
+  view = get(parentView, 'childViews')[0];
 
   equal(get(view, 'parentView'), parentView, 'precond - has parent view');
   equal(get(parentView, 'element'), null, 'parentView has no element');

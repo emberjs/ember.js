@@ -15,7 +15,7 @@ QUnit.module("View#removeChild", {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
     parentView = ContainerView.create({ childViews: [View] });
-    child = get(parentView, 'childViews').objectAt(0);
+    child = get(parentView, 'childViews')[0];
   },
   teardown() {
     run(function() {
@@ -90,7 +90,7 @@ QUnit.test("removes view from parent view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
-  child = get(parentView, 'childViews').objectAt(0);
+  child = get(parentView, 'childViews')[0];
   ok(get(child, 'parentView'), 'precond - has parentView');
 
   run(function() {
@@ -112,7 +112,7 @@ QUnit.test("returns receiver", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
-  child = get(parentView, 'childViews').objectAt(0);
+  child = get(parentView, 'childViews')[0];
   var removed = run(function() {
     return child.removeFromParent();
   });

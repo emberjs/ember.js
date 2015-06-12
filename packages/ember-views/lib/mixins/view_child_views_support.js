@@ -4,8 +4,6 @@
 */
 import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
-import { removeObject } from "ember-metal/enumerable_utils";
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import { computed } from "ember-metal/computed";
@@ -48,7 +46,7 @@ var ViewChildViewsSupport = Mixin.create({
       }
     }
 
-    return Ember.A(childViews);
+    return childViews;
   }),
 
   init() {

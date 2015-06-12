@@ -24,13 +24,13 @@ var TemplateTests, registry, container, lookup;
 
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return get(view, 'childViews')[nth || 0];
 }
 
 var firstChild = nthChild;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return get(get(view, 'childViews')[0], 'childViews')[0];
 }
 
 QUnit.module("collection helper", {

@@ -32,7 +32,7 @@ function append() {
 }
 
 function selectedOptions() {
-  return select.get('childViews').mapBy('selected');
+  return Ember.A(select.get('childViews')).mapBy('selected');
 }
 
 QUnit.test('using the Ember.Select global is deprecated', function(assert) {
