@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-views
 */
-import { computed  } from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import environment from "ember-metal/environment";
 import create from "ember-metal/platform/create";
 import Component from "ember-views/views/component";
