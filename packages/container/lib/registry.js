@@ -12,8 +12,7 @@ var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
  A `Registry` stores the factory and option information needed by a
  `Container` to instantiate and cache objects.
 
- The public API for `Registry` is still in flux and should not be considered
- stable.
+ The API for `Registry` is still in flux and should not be considered stable.
 
  @private
  @class Registry
@@ -276,7 +275,7 @@ Registry.prototype = {
   },
 
   /**
-   normalize a fullName based on the applications conventions
+   Normalize a fullName based on the application's conventions
 
    @private
    @method normalize
@@ -624,9 +623,9 @@ Registry.prototype = {
   },
 
   /**
+   @private
    @method knownForType
    @param {String} type the type to iterate over
-   @private
   */
   knownForType(type) {
     let fallbackKnown, resolverKnown;
