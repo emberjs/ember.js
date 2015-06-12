@@ -153,7 +153,7 @@ var librariesRegistered = false;
   Ember.Application.initializer({
     name: 'api-adapter',
 
-    initialize: function(container, application) {
+    initialize: function(application) {
       application.register('api-adapter:main', ApiAdapter);
     }
   });
@@ -462,7 +462,7 @@ var Application = Namespace.extend(RegistryProxy, {
     this._bootPromise = defer.promise;
     this._bootResolver = defer;
 
-    this.runInitializers(this.__registry__);
+    this.runInitializers();
     runLoadHooks('application', this);
 
     this.advanceReadiness();
@@ -568,11 +568,16 @@ var Application = Namespace.extend(RegistryProxy, {
     @private
     @method runInitializers
   */
-  runInitializers(registry) {
+  runInitializers() {
     var App = this;
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
-      initializer.initialize(registry, App);
+      if (initializer.initialize.length === 2) {
+        Ember.deprecate("The `initialize` method for Application initializer '" + name + "' should take only one argument - `App`, an instance of an `Application`.");
+        initializer.initialize(App.__registry__, App);
+      } else {
+        initializer.initialize(App);
+      }
     });
   },
 
@@ -729,7 +734,7 @@ Application.reopenClass({
     Ember.Application.initializer({
       name: 'namedInitializer',
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         Ember.debug('Running namedInitializer!');
       }
     });
@@ -745,7 +750,7 @@ Application.reopenClass({
     Ember.Application.initializer({
       name: 'first',
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         Ember.debug('First initializer!');
       }
     });
@@ -761,7 +766,7 @@ Application.reopenClass({
       name: 'second',
       after: 'first',
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         Ember.debug('Second initializer!');
       }
     });
@@ -778,7 +783,7 @@ Application.reopenClass({
       name: 'pre',
       before: 'first',
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         Ember.debug('Pre initializer!');
       }
     });
@@ -796,7 +801,7 @@ Application.reopenClass({
       name: 'post',
       after: ['first', 'second'],
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         Ember.debug('Post initializer!');
       }
     });
@@ -807,22 +812,8 @@ Application.reopenClass({
     // DEBUG: Post initializer!
     ```
 
-    * `initialize` is a callback function that receives two arguments, `container`
-    and `application` on which you can operate.
-
-    Example of using `container` to preload data into the store:
-
-    ```javascript
-    Ember.Application.initializer({
-      name: 'preload-data',
-
-      initialize: function(container, application) {
-        var store = container.lookup('store:main');
-
-        store.pushPayload(preloadedData);
-      }
-    });
-    ```
+    * `initialize` is a callback function that receives one argument,
+      `application`, on which you can operate.
 
     Example of using `application` to register an adapter:
 
@@ -830,7 +821,7 @@ Application.reopenClass({
     Ember.Application.initializer({
       name: 'api-adapter',
 
-      initialize: function(container, application) {
+      initialize: function(application) {
         application.register('api-adapter:main', ApiAdapter);
       }
     });

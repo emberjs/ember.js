@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
-import Registry from 'container/registry';
 
 var app;
 
@@ -33,14 +32,13 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
   });
 });
 
-QUnit.test('initializers are passed a registry and App', function() {
+QUnit.test("initializers are passed an App", function() {
   var MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'initializer',
-    initialize(registry, App) {
-      ok(registry instanceof Registry, 'initialize is passed a registry');
-      ok(App instanceof Application, 'initialize is passed an Application');
+    initialize(App) {
+      ok(App instanceof Application, "initialize is passed an Application");
     }
   });
 
@@ -322,13 +320,13 @@ QUnit.test('initializers are per-app', function() {
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'shouldNotCollide',
-    initialize(registry) {}
+    initialize(application) {}
   });
 
   var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'shouldNotCollide',
-    initialize(registry) {}
+    initialize(application) {}
   });
 });
 
@@ -339,7 +337,7 @@ QUnit.test('initializers should be executed in their own context', function() {
   MyApplication.initializer({
     name: 'coolInitializer',
     myProperty: 'cool',
-    initialize(registry, application) {
+    initialize(application) {
       equal(this.myProperty, 'cool', 'should have access to its own context');
     }
   });
@@ -350,4 +348,25 @@ QUnit.test('initializers should be executed in their own context', function() {
       rootElement: '#qunit-fixture'
     });
   });
+});
+
+QUnit.test("initializers should throw a deprecation warning when receiving a second argument", function() {
+  expect(1);
+
+  var MyApplication = Application.extend();
+
+  MyApplication.initializer({
+    name: 'deprecated',
+    initialize(registry, application) {
+    }
+  });
+
+  expectDeprecation(function() {
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
 });

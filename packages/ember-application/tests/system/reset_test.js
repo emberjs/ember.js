@@ -241,10 +241,10 @@ QUnit.test('With ember-data like initializer and constant', function() {
   };
 
   Application.initializer({
-    name: 'store',
-    initialize(registry, application) {
-      registry.unregister('store:main');
-      registry.register('store:main', application.Store);
+    name: "store",
+    initialize(application) {
+      application.unregister('store:main');
+      application.register('store:main', application.Store);
 
       application.__container__.lookup('store:main');
     }
