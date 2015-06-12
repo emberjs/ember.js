@@ -149,6 +149,10 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
   }, this);
 };
 
+ViewNodeManager.prototype.destroy = function() {
+  this.component.destroy();
+};
+
 function getTemplate(componentOrView) {
   return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
 }
@@ -191,6 +195,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   }
 
   component._renderNode = renderNode;
+
   renderNode.emberView = component;
   return component;
 }
