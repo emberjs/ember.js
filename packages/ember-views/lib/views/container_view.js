@@ -9,6 +9,7 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
+import { on } from "ember-metal/events";
 
 import containerViewTemplate from "ember-htmlbars/templates/container-view";
 containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -280,8 +281,26 @@ var ContainerView = View.extend(MutableArray, {
   },
 
   objectAt(idx) {
-    return get(this, 'childViews')[idx];
-  }
+    return this.childViews[idx];
+  },
+
+  _triggerChildWillDestroyElement: on('willDestroyElement', function () {
+    var childViews = this.childViews;
+    if (childViews) {
+      for (var i = 0; i < childViews.length; i++) {
+        this.renderer.willDestroyElement(childViews[i]);
+      }
+    }
+  }),
+
+  _triggerChildDidDestroyElement: on('didDestroyElement', function () {
+    var childViews = this.childViews;
+    if (childViews) {
+      for (var i = 0; i < childViews.length; i++) {
+        this.renderer.didDestroyElement(childViews[i]);
+      }
+    }
+  })
 });
 
 export default ContainerView;
