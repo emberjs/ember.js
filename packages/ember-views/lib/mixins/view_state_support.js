@@ -2,12 +2,12 @@ import Ember from 'ember-metal/core';
 import { Mixin } from "ember-metal/mixin";
 
 var ViewStateSupport = Mixin.create({
-  transitionTo(state, children) {
+  transitionTo(state) {
     Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
-    this._transitionTo(state, children);
+    this._transitionTo(state);
   },
 
-  _transitionTo(state, children) {
+  _transitionTo(state) {
     var priorState = this.currentState;
     var currentState = this.currentState = this._states[state];
     this._state = state;
