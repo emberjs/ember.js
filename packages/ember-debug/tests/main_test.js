@@ -10,7 +10,9 @@ QUnit.module('ember-debug', {
     originalDeprecationDefault = deprecationManager.defaultLevel;
     originalDeprecationLevels = deprecationManager.individualLevels;
     originalEnvValue = Ember.ENV.RAISE_ON_DEPRECATION;
-    Ember.ENV.RAISE_ON_DEPRECATION = true;
+
+    Ember.ENV.RAISE_ON_DEPRECATION = false;
+    deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
   },
 
   teardown() {
@@ -30,6 +32,43 @@ QUnit.test('Ember.deprecate does not throw if default level is silence', functio
   } catch(e) {
     assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
   }
+});
+
+QUnit.test('Ember.deprecate re-sets deprecation level to RAISE if ENV.RAISE_ON_DEPRECATION is set', function(assert) {
+  assert.expect(2);
+
+  deprecationManager.setDefaultLevel(deprecationLevels.SILENCE);
+
+  Ember.ENV.RAISE_ON_DEPRECATION = true;
+
+  assert.throws(function() {
+    Ember.deprecate('Should throw', false);
+  }, /Should throw/);
+
+  assert.equal(deprecationManager.defaultLevel, deprecationLevels.RAISE,
+               'default level re-set to RAISE');
+});
+
+QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silence a deprecation by id', function(assert) {
+  assert.expect(3);
+
+  Ember.ENV.RAISE_ON_DEPRECATION = true;
+  deprecationManager.setLevel('my-deprecation', deprecationLevels.SILENCE);
+
+  try {
+    Ember.deprecate('should be silenced with matching id', false, { id: 'my-deprecation' });
+    assert.ok(true, 'Did not throw when level is set by id');
+  } catch(e) {
+    assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
+  }
+
+  assert.throws(function() {
+    Ember.deprecate('Should throw with no id', false);
+  }, /Should throw with no id/);
+
+  assert.throws(function() {
+    Ember.deprecate('Should throw with non-matching id', false, { id: 'other-id' });
+  }, /Should throw with non-matching id/);
 });
 
 QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
