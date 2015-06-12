@@ -46,13 +46,12 @@ export default EmberObject.extend(RegistryProxy, {
   container: null,
 
   /**
-    The application's registry. The registry contains the classes, templates,
-    and other code that makes up the application.
+    The `Application` for which this is an instance.
 
-    @property {Ember.Registry} registry
+    @property {Ember.Application} application
     @private
   */
-  applicationRegistry: null,
+  application: null,
 
   /**
     The DOM events for which the event dispatcher should listen.
@@ -80,14 +79,20 @@ export default EmberObject.extend(RegistryProxy, {
   init() {
     this._super(...arguments);
 
+    var application = get(this, 'application');
+
+    set(this, 'customEvents', get(application, 'customEvents'));
+    set(this, 'rootElement', get(application, 'rootElement'));
+
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
+    var applicationRegistry = get(application, 'registry');
     var registry = this.registry = new Registry({
-      fallback: this.applicationRegistry,
-      resolver: this.applicationRegistry.resolver
+      fallback: applicationRegistry,
+      resolver: applicationRegistry.resolver
     });
-    registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
-    registry.makeToString = this.applicationRegistry.makeToString;
+    registry.normalizeFullName = applicationRegistry.normalizeFullName;
+    registry.makeToString = applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
     this.container = registry.container();
@@ -99,7 +104,7 @@ export default EmberObject.extend(RegistryProxy, {
     // to notify us when it has created the root-most view. That view is then
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
-    this.registry.register('-application-instance:main', this, { instantiate: false });
+    this.register('-application-instance:main', this, { instantiate: false });
   },
 
   router: computed(function() {

@@ -329,9 +329,7 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   buildInstance() {
     return ApplicationInstance.create({
-      customEvents: get(this, 'customEvents'),
-      rootElement: get(this, 'rootElement'),
-      applicationRegistry: this.registry
+      application: this
     });
   },
 
