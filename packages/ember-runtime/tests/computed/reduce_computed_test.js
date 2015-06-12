@@ -21,59 +21,64 @@ import SubArray from "ember-runtime/system/subarray";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
-QUnit.module('arrayComputed', {
+QUnit.module('arrayComputed - [DEPRECATED]', {
   setup() {
     addCalls = removeCalls = 0;
 
-    obj = EmberObject.createWithMixins({
-      numbers:  Ember.A([1, 2, 3, 4, 5, 6]),
-      otherNumbers: Ember.A([7, 8, 9]),
+    expectDeprecation(function() {
 
-      // Users would obviously just use `Ember.computed.map`
-      // This implementation is fine for these tests, but doesn't properly work as
-      // it's not index based.
-      evenNumbers: arrayComputed('numbers', {
-        addedItem(array, item) {
-          addCalls++;
-          if (item % 2 === 0) {
-            array.pushObject(item);
+      obj = EmberObject.createWithMixins({
+        numbers:  Ember.A([1, 2, 3, 4, 5, 6]),
+        otherNumbers: Ember.A([7, 8, 9]),
+
+        // Users would obviously just use `Ember.computed.map`
+        // This implementation is fine for these tests, but doesn't properly work as
+        // it's not index based.
+        evenNumbers: arrayComputed('numbers', {
+          addedItem(array, item) {
+            addCalls++;
+            if (item % 2 === 0) {
+              array.pushObject(item);
+            }
+            return array;
+          },
+          removedItem(array, item) {
+            removeCalls++;
+            array.removeObject(item);
+            return array;
           }
-          return array;
-        },
-        removedItem(array, item) {
-          removeCalls++;
-          array.removeObject(item);
-          return array;
-        }
-      }),
+        }),
 
-      evenNumbersMultiDep: arrayComputed('numbers', 'otherNumbers', {
-        addedItem(array, item) {
-          if (item % 2 === 0) {
-            array.pushObject(item);
+        evenNumbersMultiDep: arrayComputed('numbers', 'otherNumbers', {
+          addedItem(array, item) {
+            if (item % 2 === 0) {
+              array.pushObject(item);
+            }
+            return array;
           }
-          return array;
-        }
-      }),
+        }),
 
-      nestedNumbers:  Ember.A(map([1,2,3,4,5,6], function (n) {
-                        return EmberObject.create({ p: 'otherProperty', v: n });
-                      })),
+        nestedNumbers:  Ember.A(map([1,2,3,4,5,6], function (n) {
+          return EmberObject.create({ p: 'otherProperty', v: n });
+        })),
 
-      evenNestedNumbers: arrayComputed({
-        addedItem(array, item, keyName) {
-          var value = item.get('v');
-          if (value % 2 === 0) {
-            array.pushObject(value);
+        evenNestedNumbers: arrayComputed({
+          addedItem(array, item, keyName) {
+            var value = item.get('v');
+            if (value % 2 === 0) {
+              array.pushObject(value);
+            }
+            return array;
+          },
+          removedItem(array, item, keyName) {
+            array.removeObject(item.get('v'));
+            return array;
           }
-          return array;
-        },
-        removedItem(array, item, keyName) {
-          array.removeObject(item.get('v'));
-          return array;
-        }
-      }).property('nestedNumbers.@each.v')
-    });
+        }).property('nestedNumbers.@each.v')
+      });
+
+    }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
+
   },
 
   teardown() {
@@ -94,10 +99,14 @@ QUnit.test("arrayComputed is deprecated", function() {
 });
 
 QUnit.test("array computed properties are instances of ComputedProperty", function() {
+  expectDeprecation(/Ember.arrayComputed is deprecated/);
+
   ok(arrayComputed({}) instanceof ComputedProperty);
 });
 
 QUnit.test("when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned", function() {
+  expectDeprecation(/Ember.arrayComputed is deprecated/);
+
   obj = EmberObject.createWithMixins({
     numbers: null,
     doubledNumbers: arrayComputed('numbers', {
@@ -532,22 +541,26 @@ QUnit.test("removedItem is not erroneously called for dependent arrays during a 
 
 QUnit.module('arrayComputed - recomputation DKs', {
   setup() {
-    obj = EmberObject.extend({
-      people: Ember.A([{
-        name: 'Jaime Lannister',
-        title: 'Kingsguard'
-      }, {
-        name: 'Cersei Lannister',
-        title: 'Queen'
-      }]),
+    expectDeprecation(function() {
 
-      titles: arrayComputed('people', {
-        addedItem(acc, person) {
-          acc.pushObject(get(person, 'title'));
-          return acc;
-        }
-      })
-    }).create();
+      obj = EmberObject.extend({
+        people: Ember.A([{
+          name: 'Jaime Lannister',
+          title: 'Kingsguard'
+        }, {
+          name: 'Cersei Lannister',
+          title: 'Queen'
+        }]),
+
+        titles: arrayComputed('people', {
+          addedItem(acc, person) {
+            acc.pushObject(get(person, 'title'));
+            return acc;
+          }
+        })
+      }).create();
+    }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
+
   },
   teardown() {
     run(function() {
@@ -592,20 +605,23 @@ QUnit.module('Ember.arryComputed - self chains', {
     var a = EmberObject.create({ name: 'a' });
     var b = EmberObject.create({ name: 'b' });
 
-    obj = ArrayProxy.createWithMixins({
-      content: Ember.A([a, b]),
-      names: arrayComputed('@this.@each.name', {
-        addedItem(array, item, changeMeta, instanceMeta) {
-          var mapped = get(item, 'name');
-          array.insertAt(changeMeta.index, mapped);
-          return array;
-        },
-        removedItem(array, item, changeMeta, instanceMeta) {
-          array.removeAt(changeMeta.index, 1);
-          return array;
-        }
-      })
-    });
+    expectDeprecation(function() {
+
+      obj = ArrayProxy.createWithMixins({
+        content: Ember.A([a, b]),
+        names: arrayComputed('@this.@each.name', {
+          addedItem(array, item, changeMeta, instanceMeta) {
+            var mapped = get(item, 'name');
+            array.insertAt(changeMeta.index, mapped);
+            return array;
+          },
+          removedItem(array, item, changeMeta, instanceMeta) {
+            array.removeAt(changeMeta.index, 1);
+            return array;
+          }
+        })
+      });
+    }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
   },
   teardown() {
     run(function() {
@@ -636,17 +652,20 @@ QUnit.module('arrayComputed - changeMeta property observers', {
   setup() {
     callbackItems = [];
     run(function() {
-      obj = EmberObject.createWithMixins({
-        items: Ember.A([EmberObject.create({ n: 'zero' }), EmberObject.create({ n: 'one' })]),
-        itemsN: arrayComputed('items.@each.n', {
-          addedItem(array, item, changeMeta, instanceMeta) {
-            callbackItems.push('add:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
-          },
-          removedItem(array, item, changeMeta, instanceMeta) {
-            callbackItems.push('remove:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
-          }
-        })
-      });
+      expectDeprecation(function() {
+
+        obj = EmberObject.createWithMixins({
+          items: Ember.A([EmberObject.create({ n: 'zero' }), EmberObject.create({ n: 'one' })]),
+          itemsN: arrayComputed('items.@each.n', {
+            addedItem(array, item, changeMeta, instanceMeta) {
+              callbackItems.push('add:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
+            },
+            removedItem(array, item, changeMeta, instanceMeta) {
+              callbackItems.push('remove:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
+            }
+          })
+        });
+      }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
     });
   },
   teardown() {
@@ -853,6 +872,8 @@ QUnit.module('arrayComputed - completely invalidating dependencies', {
 QUnit.test("non-array dependencies completely invalidate a reduceComputed CP", function() {
   var dependentArray = Ember.A();
 
+  expectDeprecation(/Ember.arrayComputed is deprecated/);
+
   obj = EmberObject.extend({
     nonArray: 'v0',
     dependentArray: dependentArray,
@@ -889,6 +910,8 @@ QUnit.test("non-array dependencies completely invalidate a reduceComputed CP", f
 });
 
 QUnit.test("array dependencies specified with `.[]` completely invalidate a reduceComputed CP", function() {
+  expectDeprecation(/Ember.arrayComputed is deprecated/);
+
   var dependentArray = Ember.A();
   var totallyInvalidatingDependentArray = Ember.A();
 
@@ -930,6 +953,8 @@ QUnit.test("array dependencies specified with `.[]` completely invalidate a redu
 });
 
 QUnit.test("returning undefined in addedItem/removedItem completely invalidates a reduceComputed CP", function() {
+  expectDeprecation(/Ember.reduceComputed is deprecated/);
+
   var dependentArray = Ember.A([3,2,1]);
   var counter = 0;
 
@@ -974,6 +999,8 @@ QUnit.test("returning undefined in addedItem/removedItem completely invalidates 
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
   QUnit.test("reduceComputed complains about array dependencies that are not `Ember.Array`s", function() {
+    expectDeprecation(/Ember.reduceComputed is deprecated/);
+
     var Type = EmberObject.extend({
       rc: reduceComputed('array', {
         initialValue: 0,
@@ -1008,23 +1035,25 @@ QUnit.module('arrayComputed - misc', {
       })
     });
 
-    obj = Ember.Object.extend({
-      upstream: Ember.A([
-        Item.create(),
-        Item.create()
-      ]),
-      arrayCP: arrayComputed('upstream.@each.flag', {
-        addedItem(array, item) {
-          callbackItems.push('add:' + item.get('flag'));
-          return array;
-        },
+    expectDeprecation(function() {
+      obj = Ember.Object.extend({
+        upstream: Ember.A([
+          Item.create(),
+          Item.create()
+        ]),
+        arrayCP: arrayComputed('upstream.@each.flag', {
+          addedItem(array, item) {
+            callbackItems.push('add:' + item.get('flag'));
+            return array;
+          },
 
-        removedItem(array, item) {
-          callbackItems.push('remove:' + item.get('flag'));
-          return array;
-        }
-      })
-    }).create();
+          removedItem(array, item) {
+            callbackItems.push('remove:' + item.get('flag'));
+            return array;
+          }
+        })
+      }).create();
+    }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
   },
 
   teardown() {
