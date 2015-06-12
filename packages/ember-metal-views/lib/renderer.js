@@ -230,13 +230,8 @@ Renderer.prototype.willDestroyElement = function (view) {
     view.trigger('willClearRender');
   }
 
-  view._transitionTo('destroying', false);
-
-  var childViews = view.childViews;
-  if (childViews) {
-    for (var i = 0; i < childViews.length; i++) {
-      this.willDestroyElement(childViews[i]);
-    }
+  if (view._transitionTo) {
+    view._transitionTo('destroying');
   }
 };
 
@@ -251,11 +246,8 @@ Renderer.prototype.didDestroyElement = function (view) {
     view._transitionTo('preRender');
   }
 
-  var childViews = view.childViews;
-  if (childViews) {
-    for (var i = 0; i < childViews.length; i++) {
-      this.didDestroyElement(childViews[i]);
-    }
+  if (view.trigger) {
+    view.trigger('didDestroyElement');
   }
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 
