@@ -14,7 +14,6 @@ QUnit.module('ember-htmlbars: destroy-element-hook tests', {
 });
 
 QUnit.test('willDestroyElement is only called once when a component leaves scope', function(assert) {
-  var done = assert.async();
   var innerChild, innerChildDestroyed;
 
   component = Component.create({
@@ -47,14 +46,12 @@ QUnit.test('willDestroyElement is only called once when a component leaves scope
   assert.equal(component.$().text(), 'Truthy', 'precond - truthy template is displayed');
   assert.equal(component.get('childViews.length'), 1);
 
-  run.later(function() {
+  run(function() {
     set(component, 'switch', false);
+  });
 
-    run.later(function() {
-      assert.equal(innerChild.get('isDestroyed'), true, 'the innerChild has been destroyed');
-      assert.equal(component.$().text(), '', 'truthy template is removed');
-
-      done();
-    });
+  run(function() {
+    assert.equal(innerChild.get('isDestroyed'), true, 'the innerChild has been destroyed');
+    assert.equal(component.$().text(), '', 'truthy template is removed');
   });
 });
