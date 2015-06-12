@@ -10,6 +10,7 @@ import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
+import RegistryProxy from "ember-runtime/mixins/registry_proxy";
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -34,7 +35,7 @@ import Registry from 'container/registry';
   @public
 */
 
-export default EmberObject.extend({
+export default EmberObject.extend(RegistryProxy, {
   /**
     The application instance's container. The container stores all of the
     instance-specific state for this application run.
@@ -52,15 +53,6 @@ export default EmberObject.extend({
     @private
   */
   applicationRegistry: null,
-
-  /**
-    The registry for this application instance. It should use the
-    `applicationRegistry` as a fallback.
-
-    @property {Ember.Registry} registry
-    @private
-  */
-  registry: null,
 
   /**
     The DOM events for which the event dispatcher should listen.
@@ -90,15 +82,15 @@ export default EmberObject.extend({
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
-    this.registry = new Registry({
+    var registry = this.registry = new Registry({
       fallback: this.applicationRegistry,
       resolver: this.applicationRegistry.resolver
     });
-    this.registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
-    this.registry.makeToString = this.applicationRegistry.makeToString;
+    registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
+    registry.makeToString = this.applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
-    this.container = this.registry.container();
+    this.container = registry.container();
 
     // Register this instance in the per-instance registry.
     //
