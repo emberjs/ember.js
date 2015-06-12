@@ -478,10 +478,20 @@ export { ReduceComputedProperty }; // TODO: default export
 function ReduceComputedProperty(options) {
   var cp = this;
 
+  // use options._suppressDeprecation to allow us to deprecate
+  // arrayComputed and reduceComputed themselves, but not the
+  // default internal macros which will be reimplemented as plain
+  // array methods
   if (this._isArrayComputed) {
-    Ember.deprecate('Ember.arrayComputed is deprecated. Replace it with plain array methods');
+    Ember.deprecate(
+      'Ember.arrayComputed is deprecated. Replace it with plain array methods',
+      options._suppressDeprecation
+    );
   } else {
-    Ember.deprecate('Ember.reduceComputed is deprecated. Replace it with plain array methods');
+    Ember.deprecate(
+      'Ember.reduceComputed is deprecated. Replace it with plain array methods',
+      options._suppressDeprecation
+    );
   }
 
   this.options = options;

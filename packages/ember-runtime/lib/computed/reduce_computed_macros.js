@@ -36,6 +36,7 @@ var a_slice = [].slice;
 */
 export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
     initialValue: 0,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -84,6 +85,7 @@ export function sum(dependentKey) {
 */
 export function max(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
     initialValue: -Infinity,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -134,6 +136,8 @@ export function max(dependentKey) {
 */
 export function min(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
+
     initialValue: Infinity,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -184,6 +188,8 @@ export function min(dependentKey) {
 */
 export function map(dependentKey, callback) {
   var options = {
+    _suppressDeprecation: true,
+
     addedItem(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item, changeMeta.index);
       array.insertAt(changeMeta.index, mapped);
@@ -282,6 +288,8 @@ export var mapProperty = mapBy;
 */
 export function filter(dependentKey, callback) {
   var options = {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new SubArray();
     },
@@ -399,6 +407,8 @@ export function uniq() {
   var args = a_slice.call(arguments);
 
   args.push({
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
@@ -469,6 +479,8 @@ export function intersect() {
   var args = a_slice.call(arguments);
 
   args.push({
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
@@ -561,6 +573,8 @@ export function setDiff(setAProperty, setBProperty) {
   }
 
   return arrayComputed(setAProperty, setBProperty, {
+    _suppressDeprecation: true,
+
     addedItem(array, item, changeMeta, instanceMeta) {
       var setA = get(this, setAProperty);
       var setB = get(this, setBProperty);
@@ -713,6 +727,8 @@ export function sort(itemsKey, sortDefinition) {
 
 function customSort(itemsKey, comparator) {
   return arrayComputed(itemsKey, {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.order = comparator;
       instanceMeta.binarySearch = binarySearch;
@@ -750,6 +766,8 @@ function customSort(itemsKey, comparator) {
 
 function propertySort(itemsKey, sortPropertiesKey) {
   return arrayComputed(itemsKey, {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey);
