@@ -27,7 +27,7 @@ QUnit.module('Ember.Application Dependency Injection', {
     application.register('communication:main', application.Email, { singleton: false });
     application.register('controller:postIndex', application.PostIndexController, { singleton: true });
 
-    registry = application.registry;
+    registry = application.__registry__;
     locator = application.__container__;
 
     lookup = Ember.lookup = {};

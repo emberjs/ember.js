@@ -7,7 +7,7 @@ import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
-var Router, App, router, registry, container;
+var Router, App, router, container;
 var get = Ember.get;
 
 function bootApplication() {
@@ -71,10 +71,9 @@ function sharedSetup() {
 
     App.deferReadiness();
 
-    registry = App.registry;
     container = App.__container__;
 
-    registry.register('location:test', TestLocation);
+    App.register('location:test', TestLocation);
 
     startingURL = expectedReplaceURL = expectedPushURL = '';
 

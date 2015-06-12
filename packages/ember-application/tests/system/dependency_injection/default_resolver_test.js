@@ -24,7 +24,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
     originalLookup = Ember.lookup;
     application = run(Application, 'create');
 
-    registry = application.registry;
+    registry = application.__registry__;
     locator = application.__container__;
     originalLoggerInfo = Logger.info;
   },

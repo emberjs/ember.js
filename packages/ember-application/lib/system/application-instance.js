@@ -86,8 +86,8 @@ export default EmberObject.extend(RegistryProxy, {
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
-    var applicationRegistry = get(application, 'registry');
-    var registry = this.registry = new Registry({
+    var applicationRegistry = get(application, '__registry__');
+    var registry = this.__registry__ = new Registry({
       fallback: applicationRegistry,
       resolver: applicationRegistry.resolver
     });
@@ -152,7 +152,7 @@ export default EmberObject.extend(RegistryProxy, {
   */
   startRouting() {
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
+    var isModuleBasedResolver = !!this.__registry__.resolver.moduleBasedResolver;
 
     router.startRouting(isModuleBasedResolver);
     this._didSetupRouter = true;
@@ -172,7 +172,7 @@ export default EmberObject.extend(RegistryProxy, {
     this._didSetupRouter = true;
 
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
+    var isModuleBasedResolver = !!this.__registry__.resolver.moduleBasedResolver;
     router.setupRouter(isModuleBasedResolver);
   },
 

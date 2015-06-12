@@ -6,7 +6,7 @@ var application, registry;
 QUnit.module('Ember.Application Dependency Injection – normalization', {
   setup() {
     application = run(Application, 'create');
-    registry = application.registry;
+    registry = application.__registry__;
   },
 
   teardown() {

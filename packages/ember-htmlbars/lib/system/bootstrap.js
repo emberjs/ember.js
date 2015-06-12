@@ -75,7 +75,7 @@ function _bootstrap() {
 }
 
 function registerComponentLookup(app) {
-  app.registry.register('component-lookup:main', ComponentLookup);
+  app.register('component-lookup:main', ComponentLookup);
 }
 
 /*

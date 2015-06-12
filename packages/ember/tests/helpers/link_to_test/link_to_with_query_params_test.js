@@ -54,7 +54,7 @@ function sharedSetup() {
   });
 
   Router = App.Router;
-  registry = App.registry;
+  registry = App.__registry__;
   container = App.__container__;
 }
 

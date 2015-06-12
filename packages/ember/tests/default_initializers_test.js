@@ -26,10 +26,8 @@ QUnit.test('Default objects are registered', function(assert) {
   App.instanceInitializer({
     name: 'test',
     initialize(instance) {
-      var registry = instance.registry;
-
-      assert.strictEqual(registry.resolve('component:-text-field'), TextField, 'TextField was registered');
-      assert.strictEqual(registry.resolve('component:-checkbox'), Checkbox, 'Checkbox was registered');
+      assert.strictEqual(instance.resolveRegistration("component:-text-field"), TextField, "TextField was registered");
+      assert.strictEqual(instance.resolveRegistration("component:-checkbox"), Checkbox, "Checkbox was registered");
     }
   });
 

@@ -2,7 +2,7 @@ import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
 
 export default Mixin.create({
-  registry: null,
+  __registry__: null,
 
   /**
    Given a fullName return the corresponding factory.
@@ -244,7 +244,7 @@ export default Mixin.create({
 
 function registryAlias(name) {
   return function () {
-    var registry = get(this, 'registry');
+    var registry = get(this, '__registry__');
     return registry[name](...arguments);
   };
 }

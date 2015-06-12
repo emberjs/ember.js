@@ -315,7 +315,7 @@ var Application = Namespace.extend(RegistryProxy, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    var registry = this.registry = Application.buildRegistry(this);
+    var registry = this.__registry__ = Application.buildRegistry(this);
 
     return registry;
   },
@@ -462,7 +462,7 @@ var Application = Namespace.extend(RegistryProxy, {
     this._bootPromise = defer.promise;
     this._bootResolver = defer;
 
-    this.runInitializers(this.registry);
+    this.runInitializers(this.__registry__);
     runLoadHooks('application', this);
 
     this.advanceReadiness();
