@@ -108,6 +108,9 @@ Ember.debug = function(message) {
   @public
 */
 Ember.deprecate = function(message, test, options) {
+  if (Ember.ENV.RAISE_ON_DEPRECATION) {
+    deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
+  }
   if (deprecationManager.getLevel(options && options.id) === deprecationLevels.SILENCE) {
     return;
   }
@@ -269,9 +272,6 @@ if (!Ember.testing) {
   }
 }
 
-if (Ember.ENV.RAISE_ON_DEPRECATION) {
-  deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
-}
 Ember.Debug = {
   _addDeprecationLevel(id, level) {
     deprecationManager.setLevel(id, level);
