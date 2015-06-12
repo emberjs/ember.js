@@ -444,7 +444,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 * Performance improvements.
-* [BUGFIX] Templete-less components properties should not collide with internal properties.
+* [BUGFIX] Template-less components properties should not collide with internal properties.
 * Unbound helper supports bound helper static strings.
 * Preserve `<base>` URL when using history location for routing.
 * Begin adding names for anonymous functions to aid in debugging.
