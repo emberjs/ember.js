@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 2.0.0-beta.1 (June 12, 2015)
+
+- [#10701](https://github.com/emberjs/ember.js/pull/10701) Refactor `lazyGet`.
+- [#11262](https://github.com/emberjs/ember.js/pull/11262) Fix basic Fastboot usage.
+- [#11375](https://github.com/emberjs/ember.js/pull/11375) Transition feature flag infrastructure to modules.
+- [#11383](https://github.com/emberjs/ember.js/pull/11383) Update {{each-in}} to use ember-metal/should-display.
+- [#11396](https://github.com/emberjs/ember.js/pull/11396) Make Ember.Checkbox extend from Ember.Component.
+
+
 ### 1.13.0 (June 12, 2015)
 
 - [#11270](https://github.com/emberjs/ember.js/pull/11270) [BUGFIX] Ensure view registry is propagated to components.
