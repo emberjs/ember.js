@@ -1,6 +1,5 @@
 import "ember";
 
-import isEnabled from "ember-metal/features";
 import EmberHandlebars from "ember-htmlbars/compat";
 import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 import Helper from "ember-htmlbars/helper";
@@ -103,7 +102,7 @@ QUnit.test("Bound `makeViewHelper` helpers registered on the container can be us
   equal(Ember.$('#wrapper').text(), "woot!! woot!!alex", "The helper was invoked from the container");
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-dashless-helpers')) {
   QUnit.test("Undashed helpers registered on the container can be invoked", function() {
     Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>");
 

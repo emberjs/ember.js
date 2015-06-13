@@ -1,4 +1,4 @@
-import isEnabled from "ember-metal/features";
+import Ember from "ember-metal/core";
 import Registry from "container/registry";
 import compile from "ember-template-compiler/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
@@ -26,7 +26,7 @@ QUnit.module('component - invocation', {
   }
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-dashless-helpers')) {
   QUnit.test('non-dashed helpers are found', function() {
     expect(1);
 

@@ -1,4 +1,4 @@
-import isEnabled from "ember-metal/features";
+import Ember from "ember-metal/core";
 import Registry from "container/registry";
 import keys from "ember-metal/keys";
 import Helper from "ember-htmlbars/helper";
@@ -27,7 +27,7 @@ QUnit.test('returns an empty hash when no helpers are known', function() {
   deepEqual(result, {}, 'no helpers were known');
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-dashless-helpers')) {
   QUnit.test('includes helpers in the registry', function() {
     registry.register('helper:t', Helper);
     let result = discoverKnownHelpers(container);

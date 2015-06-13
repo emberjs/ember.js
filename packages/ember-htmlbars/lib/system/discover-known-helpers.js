@@ -1,4 +1,4 @@
-import isEnabled from "ember-metal/features";
+import Ember from "ember-metal/core";
 import dictionary from 'ember-metal/dictionary';
 import keys from 'ember-metal/keys';
 
@@ -6,7 +6,7 @@ export default function discoverKnownHelpers(container) {
   let registry = container && container._registry;
   let helpers = dictionary(null);
 
-  if (isEnabled('ember-htmlbars-dashless-helpers')) {
+  if (Ember.FEATURES.isEnabled('ember-htmlbars-dashless-helpers')) {
     if (!registry) {
       return helpers;
     }
