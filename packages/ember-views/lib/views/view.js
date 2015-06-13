@@ -4,8 +4,6 @@
 // Ember.ENV
 import Ember from 'ember-metal/core';
 
-import Evented from "ember-runtime/mixins/evented";
-import EmberObject from "ember-runtime/system/object";
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
@@ -1511,20 +1509,6 @@ deprecateProperty(View.prototype, 'states', '_states');
 
 // once the view has been inserted into the DOM, legal manipulations
 // are done on the DOM element.
-
-var mutation = EmberObject.extend(Evented).create();
-// TODO MOVE TO RENDERER HOOKS
-View.addMutationListener = function(callback) {
-  mutation.on('change', callback);
-};
-
-View.removeMutationListener = function(callback) {
-  mutation.off('change', callback);
-};
-
-View.notifyMutationListeners = function() {
-  mutation.trigger('change');
-};
 
 /**
   Global views hash
