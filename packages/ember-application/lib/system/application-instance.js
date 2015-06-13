@@ -10,7 +10,8 @@ import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
-import RegistryProxy from "ember-runtime/mixins/registry_proxy";
+import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -35,16 +36,7 @@ import RegistryProxy from "ember-runtime/mixins/registry_proxy";
   @public
 */
 
-export default EmberObject.extend(RegistryProxy, {
-  /**
-    The application instance's container. The container stores all of the
-    instance-specific state for this application run.
-
-    @property {Ember.Container} container
-    @public
-  */
-  container: null,
-
+export default EmberObject.extend(RegistryProxy, ContainerProxy, {
   /**
     The `Application` for which this is an instance.
 
@@ -95,7 +87,7 @@ export default EmberObject.extend(RegistryProxy, {
     registry.makeToString = applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
-    this.container = registry.container();
+    this.__container__ = registry.container();
 
     // Register this instance in the per-instance registry.
     //
@@ -108,7 +100,7 @@ export default EmberObject.extend(RegistryProxy, {
   },
 
   router: computed(function() {
-    return this.container.lookup('router:main');
+    return this.lookup('router:main');
   }).readOnly(),
 
   /**
@@ -195,7 +187,7 @@ export default EmberObject.extend(RegistryProxy, {
     @private
   */
   setupEventDispatcher() {
-    var dispatcher = this.container.lookup('event_dispatcher:main');
+    var dispatcher = this.lookup('event_dispatcher:main');
     dispatcher.setup(this.customEvents, this.rootElement);
 
     return dispatcher;
@@ -206,6 +198,6 @@ export default EmberObject.extend(RegistryProxy, {
   */
   willDestroy() {
     this._super(...arguments);
-    run(this.container, 'destroy');
+    run(this.__container__, 'destroy');
   }
 });

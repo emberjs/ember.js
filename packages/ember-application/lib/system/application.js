@@ -338,13 +338,13 @@ var Application = Namespace.extend(RegistryProxy, {
 
     // For the default instance only, set the view registry to the global
     // Ember.View.views hash for backwards-compatibility.
-    EmberView.views = instance.container.lookup('-view-registry:main');
+    EmberView.views = instance.lookup('-view-registry:main');
 
     // TODO2.0: Legacy support for App.__container__
     // and global methods on App that rely on a single,
     // default instance.
     this.__deprecatedInstance__ = instance;
-    this.__container__ = instance.container;
+    this.__container__ = instance.__container__;
 
     return instance;
   },
