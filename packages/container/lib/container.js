@@ -15,7 +15,7 @@ import dictionary from 'ember-metal/dictionary';
  @class Container
  */
 function Container(registry, options) {
-  this._registry       = registry;
+  this.registry        = registry;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
@@ -24,11 +24,11 @@ function Container(registry, options) {
 Container.prototype = {
   /**
    @private
-   @property _registry
+   @property registry
    @type Registry
    @since 1.11.0
    */
-  _registry: null,
+  registry: null,
 
   /**
    @private
@@ -96,8 +96,8 @@ Container.prototype = {
    @return {any}
    */
   lookup(fullName, options) {
-    Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
-    return lookup(this, this._registry.normalize(fullName), options);
+    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    return lookup(this, this.registry.normalize(fullName), options);
   },
 
   /**
@@ -109,8 +109,8 @@ Container.prototype = {
    @return {any}
    */
   lookupFactory(fullName) {
-    Ember.assert('fullName must be a proper full name', this._registry.validateFullName(fullName));
-    return factoryFor(this, this._registry.normalize(fullName));
+    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    return factoryFor(this, this.registry.normalize(fullName));
   },
 
   /**
@@ -139,7 +139,7 @@ Container.prototype = {
    */
   reset(fullName) {
     if (arguments.length > 0) {
-      resetMember(this, this._registry.normalize(fullName));
+      resetMember(this, this.registry.normalize(fullName));
     } else {
       resetCache(this);
     }
@@ -157,7 +157,7 @@ function lookup(container, fullName, options) {
 
   if (value === undefined) { return; }
 
-  if (container._registry.getOption(fullName, 'singleton') !== false && options.singleton !== false) {
+  if (container.registry.getOption(fullName, 'singleton') !== false && options.singleton !== false) {
     container.cache[fullName] = value;
   }
 
@@ -178,7 +178,7 @@ function buildInjections(container) {
       }
     }
 
-    container._registry.validateInjections(injections);
+    container.registry.validateInjections(injections);
 
     for (i = 0, l = injections.length; i < l; i++) {
       injection = injections[i];
@@ -194,7 +194,7 @@ function factoryFor(container, fullName) {
   if (cache[fullName]) {
     return cache[fullName];
   }
-  var registry = container._registry;
+  var registry = container.registry;
   var factory = registry.resolve(fullName);
   if (factory === undefined) { return; }
 
@@ -228,7 +228,7 @@ function factoryFor(container, fullName) {
 }
 
 function injectionsFor(container, fullName) {
-  var registry = container._registry;
+  var registry = container.registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
 
@@ -242,7 +242,7 @@ function injectionsFor(container, fullName) {
 }
 
 function factoryInjectionsFor(container, fullName) {
-  var registry = container._registry;
+  var registry = container.registry;
   var splitName = fullName.split(':');
   var type = splitName[0];
 
@@ -258,7 +258,7 @@ function instantiate(container, fullName) {
   var factory = factoryFor(container, fullName);
   var lazyInjections, validationCache;
 
-  if (container._registry.getOption(fullName, 'instantiate') === false) {
+  if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
   }
 
@@ -273,9 +273,9 @@ function instantiate(container, fullName) {
     // Ensure that all lazy injections are valid at instantiation time
     if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
       lazyInjections = factory._lazyInjections();
-      lazyInjections = container._registry.normalizeInjectionsHash(lazyInjections);
+      lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
 
-      container._registry.validateInjections(lazyInjections);
+      container.registry.validateInjections(lazyInjections);
     }
 
     validationCache[fullName] = true;
@@ -301,7 +301,7 @@ function eachDestroyable(container, callback) {
     key = keys[i];
     value = cache[key];
 
-    if (container._registry.getOption(key, 'instantiate') !== false) {
+    if (container.registry.getOption(key, 'instantiate') !== false) {
       callback(value);
     }
   }

@@ -77,7 +77,7 @@ export default {
     Ember.assert(
       'You used `{{render \'' + name + '\'}}`, but \'' + name + '\' can not be ' +
       'found as either a template or a view.',
-      container._registry.has('view:' + name) || container._registry.has(templateName) || !!template
+      container.registry.has('view:' + name) || container.registry.has(templateName) || !!template
     );
 
     var view = container.lookup('view:' + name);
@@ -105,7 +105,7 @@ export default {
       Ember.assert(
         'The controller name you supplied \'' + controllerName + '\' ' +
         'did not resolve to a controller.',
-        container._registry.has(controllerFullName)
+        container.registry.has(controllerFullName)
       );
     } else {
       controllerName = name;

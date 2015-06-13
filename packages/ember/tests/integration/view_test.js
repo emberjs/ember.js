@@ -37,7 +37,7 @@ QUnit.module('View Integration', {
         location: 'none'
       });
 
-      registry = App.__container__._registry;
+      registry = App.__registry__;
     });
 
     setupExample();

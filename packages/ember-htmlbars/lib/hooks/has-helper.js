@@ -8,7 +8,7 @@ export default function hasHelperHook(env, scope, helperName) {
   var container = env.container;
   if (validateLazyHelperName(helperName, container, env.hooks.keywords, env.knownHelpers)) {
     var containerName = 'helper:' + helperName;
-    if (container._registry.has(containerName)) {
+    if (container.registry.has(containerName)) {
       return true;
     }
   }

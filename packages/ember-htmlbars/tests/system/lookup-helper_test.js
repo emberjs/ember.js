@@ -66,7 +66,7 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
   };
 
   var someName = Helper.extend();
-  view.container._registry.register('helper:some-name', someName);
+  view.container.registry.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -82,7 +82,7 @@ QUnit.test('does a lookup in the container if the name is found in knownHelpers'
 
   env.knownHelpers['t'] = true;
   var t = Helper.extend();
-  view.container._registry.register('helper:t', t);
+  view.container.registry.register('helper:t', t);
 
   var actual = lookupHelper('t', view, env);
 
@@ -101,7 +101,7 @@ QUnit.test('looks up a shorthand helper in the container', function() {
   function someName() {
     called = true;
   }
-  view.container._registry.register('helper:some-name', makeHelper(someName));
+  view.container.registry.register('helper:some-name', makeHelper(someName));
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -121,7 +121,7 @@ QUnit.test('fails with a useful error when resolving a function', function() {
   };
 
   function someName() {}
-  view.container._registry.register('helper:some-name', someName);
+  view.container.registry.register('helper:some-name', someName);
 
   var actual;
   expectDeprecation(function() {

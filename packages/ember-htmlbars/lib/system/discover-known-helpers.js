@@ -2,7 +2,7 @@ import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
 
 export default function discoverKnownHelpers(container) {
-  let registry = container && container._registry;
+  let registry = container && container.registry;
   let helpers = dictionary(null);
 
   if (isEnabled('ember-htmlbars-dashless-helpers')) {
