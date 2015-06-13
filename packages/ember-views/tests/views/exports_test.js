@@ -30,3 +30,7 @@ QUnit.test('when legacy view support is enabled, Ember.View does not have deprec
     Ember.View.create();
   });
 });
+
+QUnit.test('Ember.View.views is accessible', function() {
+  ok(!!Ember.View.views);
+});
