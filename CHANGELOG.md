@@ -1,7 +1,33 @@
 # Ember Changelog
 
-### 1.13.0-beta.2 (May 25, 2015)
+### 1.13.0 (June 12, 2015)
 
+- [#11270](https://github.com/emberjs/ember.js/pull/11270) [BUGFIX] Ensure view registry is propagated to components.
+- [#11273](https://github.com/emberjs/ember.js/pull/11273) [BUGFIX] Downgrade Ember.Service without proper inheritance to a deprecation (instead of an assertion).
+- [#11274](https://github.com/emberjs/ember.js/pull/11274) [BUGFIX] Unify template compiler deprecations so that they can report the proper location of the deprecation.
+- [#11279](https://github.com/emberjs/ember.js/pull/11279) [DEPRECATION] Deprecate `{{#each foo in bar}}{{/each}}`.
+- [#11229](https://github.com/emberjs/ember.js/pull/11229) [BUGFIX] Prevent views from having access to component lifecycle hooks.
+- [#11286](https://github.com/emberjs/ember.js/pull/11286) [DEPRECATION] Deprecate `Ember.EnumerableUtils`.
+- [#11338](https://github.com/emberjs/ember.js/pull/11338) [BUGFIX] Ensure `parentView` is available properly.
+- [#11313](https://github.com/emberjs/ember.js/pull/11313) [DEPRECATION] Allow deprecated access to `template` in component to determine if a block was provided.
+- [#11339](https://github.com/emberjs/ember.js/pull/11339) Add special values (`@index` or `@guid`) to `{{each}}`'s keyPath.
+- [#11360](https://github.com/emberjs/ember.js/pull/11360) Add warning message when using `{{each}}` without specifying `key`.
+- [#11348](https://github.com/emberjs/ember.js/pull/11348) [BUGFIX] Provide useful errors when a closure action is not found.
+- [#11264](https://github.com/emberjs/ember.js/pull/11264) Add `{{concat}}` helper.
+- [#11362](https://github.com/emberjs/ember.js/pull/11362) / [#11365](https://github.com/emberjs/ember.js/pull/11365) [DOC] Ensure all documentation comments include `@public` or `@private`.
+- [#11278](https://github.com/emberjs/ember.js/pull/11278) Implement Ember.Helper. Read [emberjs/rfcs#53](https://github.com/emberjs/rfcs/pull/53) for more details.
+- [#11373](https://github.com/emberjs/ember.js/pull/11373) [BUGFIX] Fix issue with multiple actions in a single element.
+- [#11387](https://github.com/emberjs/ember.js/pull/11387) [DEPRECATION] Deprecate `Ember.View`.
+- [#11389](https://github.com/emberjs/ember.js/pull/11389) [DEPRECATION] Deprecate `{{view}}` helper.
+- [#11394](https://github.com/emberjs/ember.js/pull/11394) [DEPRECATION] Add `Ember.LinkComponent` and deprecate `Ember.LinkView`.
+- [#11400](https://github.com/emberjs/ember.js/pull/11400) [DEPRECATION] Deprecate `Ember.computed.any`.
+- [#11330](https://github.com/emberjs/ember.js/pull/11330) [BUGFIX] Ensure that `{{each}}` can properly transition into and out of its inverse state.
+- [#11416](https://github.com/emberjs/ember.js/pull/11416) [DEPRECATION] Deprecate `Ember.Select`.
+- [#11403](https://github.com/emberjs/ember.js/pull/11403) [DEPRECATION] Deprecate `Ember.arrayComputed`, `Ember.ReduceComputedProperty`, `Ember.ArrayComputedProperty`, and  `Ember.reduceComputed`.
+- [#11401](https://github.com/emberjs/ember.js/pull/11401) [DEPRECATION] Deprecate `{{view` and `{{controller` template local keywords.
+- [#11329](https://github.com/emberjs/ember.js/pull/11329) [BUGFIX] Fix issue with `{{component}}` helper not properly cleaning up components after they have been replaced.
+- [#11393](https://github.com/emberjs/ember.js/pull/11393) Implement support for automatic registration of all helpers (with or without a dash). Requires ember-resolver@0.1.17 or higher if using ember-cli. Read [emberjs/rfcs#58](https://github.com/emberjs/rfcs/pull/58) for more details.
+- [#11425](https://github.com/emberjs/ember.js/pull/11425) [BUGFIX] Prevent `willDestroyElement` from being called multiple times on the same component.
 - [#11138](https://github.com/emberjs/ember.js/pull/11138) Add a better deprecation for `{{bind-attr}}`.
 - [#11201](https://github.com/emberjs/ember.js/pull/11201) [BUGFIX] Fix `currentURL` test helper.
 - [#11161](https://github.com/emberjs/ember.js/pull/11161) [BUGFIX] Fix initial selection for select with optgroup.
@@ -24,11 +50,6 @@
 - [#11261](https://github.com/emberjs/ember.js/pull/11261) Add helpful assertion when exporting the wrong type of factory (for Routes, Components, Services, and Views).
 - [#11266](https://github.com/emberjs/ember.js/pull/11266) [BUGFIX] Ensure `parentView` includes yielding component.
 - [#11267](https://github.com/emberjs/ember.js/pull/11267) Disable angle bracket components. See [#11267](https://github.com/emberjs/ember.js/pull/11267) and [emberjs/rfcs#60](https://github.com/emberjs/rfcs/pull/60) for more details.
-
-
-
-### 1.13.0-beta.1
-
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
 - [#10501](https://github.com/emberjs/ember.js/pull/10501) Implement Glimmer Engine.
 - [#11029](https://github.com/emberjs/ember.js/pull/11029) Allow bound outlet names.
