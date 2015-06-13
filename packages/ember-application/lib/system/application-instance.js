@@ -80,8 +80,7 @@ export default EmberObject.extend(RegistryProxy, ContainerProxy, {
     // as a fallback for resolving registrations.
     var applicationRegistry = get(application, '__registry__');
     var registry = this.__registry__ = new Registry({
-      fallback: applicationRegistry,
-      resolver: applicationRegistry.resolver
+      fallback: applicationRegistry
     });
     registry.normalizeFullName = applicationRegistry.normalizeFullName;
     registry.makeToString = applicationRegistry.makeToString;
@@ -144,9 +143,7 @@ export default EmberObject.extend(RegistryProxy, ContainerProxy, {
   */
   startRouting() {
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.__registry__.resolver.moduleBasedResolver;
-
-    router.startRouting(isModuleBasedResolver);
+    router.startRouting(isResolverModuleBased(this));
     this._didSetupRouter = true;
   },
 
@@ -164,8 +161,7 @@ export default EmberObject.extend(RegistryProxy, ContainerProxy, {
     this._didSetupRouter = true;
 
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.__registry__.resolver.moduleBasedResolver;
-    router.setupRouter(isModuleBasedResolver);
+    router.setupRouter(isResolverModuleBased(this));
   },
 
   /**
@@ -201,3 +197,7 @@ export default EmberObject.extend(RegistryProxy, ContainerProxy, {
     run(this.__container__, 'destroy');
   }
 });
+
+function isResolverModuleBased(applicationInstance) {
+  return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
+}
