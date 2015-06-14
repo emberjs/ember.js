@@ -11,7 +11,6 @@ import { symbol } from "ember-metal/utils";
 
 export let PROPERTY_DID_CHANGE = symbol("PROPERTY_DID_CHANGE");
 
-var beforeObserverSet = new ObserverSet();
 var observerSet = new ObserverSet();
 var deferred = 0;
 
@@ -56,7 +55,6 @@ function propertyWillChange(obj, keyName) {
 
   dependentKeysWillChange(obj, keyName, m);
   chainsWillChange(obj, keyName, m);
-  notifyBeforeObservers(obj, keyName);
 }
 
 /**
@@ -253,7 +251,6 @@ function beginPropertyChanges() {
 function endPropertyChanges() {
   deferred--;
   if (deferred<=0) {
-    beforeObserverSet.clear();
     observerSet.flush();
   }
 }
@@ -277,20 +274,6 @@ function endPropertyChanges() {
 function changeProperties(callback, binding) {
   beginPropertyChanges();
   tryFinally(callback, endPropertyChanges, binding);
-}
-
-function notifyBeforeObservers(obj, keyName) {
-  if (obj.isDestroying) { return; }
-
-  var eventName = keyName + ':before';
-  var listeners, added;
-  if (deferred) {
-    listeners = beforeObserverSet.add(obj, keyName, eventName);
-    added = accumulateListeners(obj, eventName, listeners);
-    sendEvent(obj, eventName, [obj, keyName], added);
-  } else {
-    sendEvent(obj, eventName, [obj, keyName]);
-  }
 }
 
 function notifyObservers(obj, keyName) {
