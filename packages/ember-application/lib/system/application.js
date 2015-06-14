@@ -11,7 +11,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import Namespace from "ember-runtime/system/namespace";
-import DeferredMixin from "ember-runtime/mixins/deferred";
 import DefaultResolver from "ember-application/system/resolver";
 import create from "ember-metal/platform/create";
 import run from "ember-metal/run_loop";
@@ -199,7 +198,7 @@ var librariesRegistered = false;
   @public
 */
 
-var Application = Namespace.extend(DeferredMixin, {
+var Application = Namespace.extend({
   _suppressDeferredDeprecation: true,
 
   /**
@@ -738,8 +737,6 @@ var Application = Namespace.extend(DeferredMixin, {
         Ember.Namespace.processAll();
         Ember.BOOTED = true;
       }
-
-      this.resolve(this);
     }
 
     this._bootResolver.resolve();
