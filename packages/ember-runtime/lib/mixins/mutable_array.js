@@ -361,14 +361,11 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   removeObject(obj) {
-    var loc = get(this, 'length') || 0;
-    while (--loc >= 0) {
-      var curObject = this.objectAt(loc);
-
-      if (curObject === obj) {
-        this.removeAt(loc);
+    this.forEach((currentObject, index) => {
+      if (currentObject === obj) {
+        this.removeAt(index);
       }
-    }
+    });
     return this;
   },
 
