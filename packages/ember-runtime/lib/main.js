@@ -20,9 +20,7 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
 
 import NativeArray from 'ember-runtime/system/native_array';
-import Set from 'ember-runtime/system/set';
 import EmberStringUtils from 'ember-runtime/system/string';
-import Deferred from 'ember-runtime/system/deferred';
 import {
   onLoad,
   runLoadHooks
@@ -40,7 +38,6 @@ import _ProxyMixin from 'ember-runtime/mixins/-proxy';
 
 import Observable from 'ember-runtime/mixins/observable';
 import ActionHandler from 'ember-runtime/mixins/action_handler';
-import DeferredMixin from 'ember-runtime/mixins/deferred';
 import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
@@ -105,8 +102,6 @@ Ember.SortableMixin = SortableMixin;
 Ember.Freezable = Freezable;
 Ember.FROZEN_ERROR = FROZEN_ERROR;
 
-Ember.DeferredMixin = DeferredMixin;
-
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 
@@ -158,8 +153,6 @@ Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
 // ES6TODO: Currently we must rely on the global from ember-metal/core to avoid circular deps
 // Ember.A = A;
-Ember.Set = Set;
-Ember.Deferred = Deferred;
 Ember.onLoad = onLoad;
 Ember.runLoadHooks = runLoadHooks;
 
