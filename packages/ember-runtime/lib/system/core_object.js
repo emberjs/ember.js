@@ -67,6 +67,11 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
+
+    if (arguments.length > 0) {
+      initProperties = [arguments[0]];
+    }
+
     this.__defineNonEnumerable(GUID_KEY_PROPERTY);
     this.__defineNonEnumerable(NEXT_SUPER_PROPERTY);
     var m = meta(this);
