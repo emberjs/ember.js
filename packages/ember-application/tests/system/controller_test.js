@@ -5,7 +5,7 @@ import "ember-application/ext/controller";
 
 import { Registry } from "ember-runtime/system/container";
 import { A } from "ember-runtime/system/native_array";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import { computed } from "ember-metal/computed";
 
 QUnit.module("Controller dependencies");
@@ -58,6 +58,7 @@ QUnit.test("If a controller specifies an unavailable dependency, it raises", fun
 });
 
 QUnit.test("Mixin sets up controllers if there is needs before calling super", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var registry = new Registry();
   var container = registry.container();
 

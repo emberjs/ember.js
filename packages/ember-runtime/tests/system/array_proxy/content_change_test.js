@@ -2,7 +2,7 @@ import Ember from "ember-metal/core";
 import {set} from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import ArrayProxy from "ember-runtime/system/array_proxy";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 QUnit.module("ArrayProxy - content change");
 
@@ -69,6 +69,7 @@ QUnit.test("The `arrangedContentDidChange` method is invoked after `content` is 
 });
 
 QUnit.test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var arrayController = ArrayController.create();
   var proxy = ArrayProxy.create();
 

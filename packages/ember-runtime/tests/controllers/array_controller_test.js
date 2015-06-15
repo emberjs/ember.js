@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 
@@ -11,6 +11,7 @@ MutableArrayTests.extend({
 
   newObject(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
+    expectDeprecation(arrayControllerDeprecation);
     return ArrayController.create({
       model: Ember.A(ret)
     });
@@ -28,6 +29,7 @@ MutableArrayTests.extend({
 QUnit.module("ember-runtime: array_controller");
 
 QUnit.test("defaults its `model` to an empty array", function () {
+  expectDeprecation(arrayControllerDeprecation);
   var Controller = ArrayController.extend();
   deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults its model to an empty array");
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
@@ -35,12 +37,14 @@ QUnit.test("defaults its `model` to an empty array", function () {
 });
 
 QUnit.test("Ember.ArrayController length property works even if model was not set initially", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
   controller.pushObject('item');
   equal(controller.get('length'), 1);
 });
 
 QUnit.test('works properly when model is set to an Ember.A()', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
 
   set(controller, 'model', Ember.A(['red', 'green']));
@@ -49,6 +53,7 @@ QUnit.test('works properly when model is set to an Ember.A()', function() {
 });
 
 QUnit.test('works properly when model is set to a plain array', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
 
   if (Ember.EXTEND_PROTOTYPES) {
@@ -63,6 +68,7 @@ QUnit.test('works properly when model is set to a plain array', function() {
 });
 
 QUnit.test('works properly when model is set to `null`', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
 
   set(controller, 'model', null);

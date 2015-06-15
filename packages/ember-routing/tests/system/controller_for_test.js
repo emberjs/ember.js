@@ -8,7 +8,7 @@ import Namespace from "ember-runtime/system/namespace";
 import { classify } from "ember-runtime/system/string";
 import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
 import generateController from "ember-routing/system/generate_controller";
 import {
@@ -103,6 +103,7 @@ QUnit.test("generateController should create Ember.ObjectController [DEPRECATED]
 });
 
 QUnit.test("generateController should create Ember.ArrayController", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var context = Ember.A();
   var controller = generateController(container, 'home', context);
 
@@ -130,6 +131,7 @@ QUnit.test("generateController should create App.ObjectController if provided", 
 });
 
 QUnit.test("generateController should create App.ArrayController if provided", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var context = Ember.A();
   var controller;
   namespace.ArrayController = ArrayController.extend();
