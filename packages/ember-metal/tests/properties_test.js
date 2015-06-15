@@ -24,7 +24,7 @@ QUnit.test("for data properties, didDefineProperty hook should be called if impl
   defineProperty(obj, 'foo', undefined, "bar");
 });
 
-QUnit.test("for descriptor properties, didDefineProperty hook should be called if implemented", function() {
+QUnit.test("for computed properties, didDefineProperty hook should be called if implemented", function() {
   expect(2);
 
   var computedProperty = computed(function() { return this; });
@@ -32,11 +32,31 @@ QUnit.test("for descriptor properties, didDefineProperty hook should be called i
   var obj = {
     didDefineProperty(obj, keyName, value) {
       equal(keyName, 'foo', "key name should be foo");
-      strictEqual(value, computedProperty, "value should be passed descriptor");
+      strictEqual(value, computedProperty, "value should be passed as computed property");
     }
   };
 
   defineProperty(obj, 'foo', computedProperty);
+});
+
+QUnit.test("for descriptor properties, didDefineProperty hook should be called if implemented", function() {
+  expect(2);
+
+  var descriptor = {
+    writable: true,
+    configurable: false,
+    enumerable: true,
+    value: 42
+  };
+
+  var obj = {
+    didDefineProperty(obj, keyName, value) {
+      equal(keyName, 'answer', "key name should be answer");
+      strictEqual(value, descriptor, "value should be passed as descriptor");
+    }
+  };
+
+  defineProperty(obj, 'answer', descriptor);
 });
 
 QUnit.module('Ember.deprecateProperty');

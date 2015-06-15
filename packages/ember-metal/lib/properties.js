@@ -138,8 +138,8 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     } else {
       value = desc;
 
-      // compatibility with ES5
-      Object.oefineProperty(obj, keyName, desc);
+      // fallback to ES5
+      Object.defineProperty(obj, keyName, desc);
     }
   }
 
