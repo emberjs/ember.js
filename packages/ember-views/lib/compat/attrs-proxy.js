@@ -1,11 +1,8 @@
 import { get } from 'ember-metal/property_get';
-//import { set } from "ember-metal/property_set";
 import { Mixin } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
 import { symbol } from 'ember-metal/utils';
-import objectKeys from 'ember-metal/keys';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
-//import run from "ember-metal/run_loop";
 
 import {
   addObserver,
@@ -78,7 +75,7 @@ let AttrsProxyMixin = {
   legacyDidReceiveAttrs: on('didReceiveAttrs', function() {
     if (this._isAngleBracket) { return; }
 
-    var keys = objectKeys(this.attrs);
+    var keys = Object.keys(this.attrs);
 
     for (var i=0, l=keys.length; i<l; i++) {
       // Only issue the deprecation if it wasn't already issued when

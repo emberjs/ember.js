@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
-import keys from 'ember-metal/keys';
 import { assign } from 'ember-metal/merge';
 import Container from './container';
 
@@ -702,7 +701,7 @@ Registry.prototype = {
     let fallbackKnown, resolverKnown;
 
     let localKnown = dictionary(null);
-    let registeredNames = keys(this.registrations);
+    let registeredNames = Object.keys(this.registrations);
     for (let index = 0, length = registeredNames.length; index < length; index++) {
       let fullName = registeredNames[index];
       let itemType = fullName.split(':')[0];

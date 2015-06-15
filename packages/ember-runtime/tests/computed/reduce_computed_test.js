@@ -7,7 +7,6 @@ import { set } from 'ember-metal/property_set';
 import { meta as metaFor } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
-import keys from 'ember-metal/keys';
 import EmberObject from 'ember-runtime/system/object';
 import {
   ComputedProperty,
@@ -57,9 +56,7 @@ QUnit.module('arrayComputed - [DEPRECATED]', {
           }
         }),
 
-        nestedNumbers:  Ember.A([1,2,3,4,5,6].map((n) => {
-          return EmberObject.create({ p: 'otherProperty', v: n });
-        })),
+        nestedNumbers:  Ember.A([1,2,3,4,5,6].map((n) => mberObject.create({ p: 'otherProperty', v: n }))),
 
         evenNestedNumbers: arrayComputed({
           addedItem(array, item, keyName) {
@@ -580,10 +577,17 @@ QUnit.test('recomputations from `arrayComputed` observers add back dependent key
 
   deepEqual(titles, ['Kingsguard', 'Queen'], 'precond - value is correct');
 
+<<<<<<< HEAD
   ok(meta.deps.people !== undefined, 'people has dependencies');
   deepEqual(keys(meta.deps.people), ['titles'], 'only titles depends on people');
   equal(meta.deps.people.titles, 1, 'titles depends on people exactly once');
   equal(meta.watching.people, 2, 'people has two watchers: the array listener and titles');
+=======
+  ok(meta.deps.people !== undefined, "people has dependencies");
+  deepEqual(Object.keys(meta.deps.people), ["titles"], "only titles depends on people");
+  equal(meta.deps.people.titles, 1, "titles depends on people exactly once");
+  equal(meta.watching.people, 2, "people has two watchers: the array listener and titles");
+>>>>>>> [CLEANUP Beta] Remove EmberKeys (internally) continue to expose Ember.keys but as 1:1 with Object.keys [ES5-only]
 
   run(function() {
     set(obj, 'people', Ember.A());
@@ -591,12 +595,21 @@ QUnit.test('recomputations from `arrayComputed` observers add back dependent key
 
   // Regular CPs are invalidated when their dependent keys change, but array
   // computeds keep refs up to date
+<<<<<<< HEAD
   deepEqual(titles, [], 'value is correct');
   equal(meta.cache.titles, titles, 'value remains cached');
   ok(meta.deps.people !== undefined, 'people has dependencies');
   deepEqual(keys(meta.deps.people), ['titles'], 'meta.deps.people is unchanged');
   equal(meta.deps.people.titles, 1, 'deps.people.titles is unchanged');
   equal(meta.watching.people, 2, 'watching.people is unchanged');
+=======
+  deepEqual(titles, [], "value is correct");
+  equal(meta.cache.titles, titles, "value remains cached");
+  ok(meta.deps.people !== undefined, "people has dependencies");
+  deepEqual(Object.keys(meta.deps.people), ["titles"], "meta.deps.people is unchanged");
+  equal(meta.deps.people.titles, 1, "deps.people.titles is unchanged");
+  equal(meta.watching.people, 2, "watching.people is unchanged");
+>>>>>>> [CLEANUP Beta] Remove EmberKeys (internally) continue to expose Ember.keys but as 1:1 with Object.keys [ES5-only]
 });
 
 QUnit.module('Ember.arryComputed - self chains', {
