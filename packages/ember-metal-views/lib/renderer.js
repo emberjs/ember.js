@@ -4,8 +4,6 @@ import { set } from "ember-metal/property_set";
 import { assign } from "ember-metal/merge";
 import setProperties from "ember-metal/set_properties";
 import buildComponentTemplate from "ember-views/system/build-component-template";
-import { indexOf } from "ember-metal/enumerable_utils";
-//import { deprecation } from "ember-views/compat/attrs-proxy";
 
 function Renderer(_helper) {
   this._dom = _helper;
@@ -84,7 +82,7 @@ Renderer.prototype.dispatchLifecycleHooks =
 Renderer.prototype.ensureViewNotRendering =
   function Renderer_ensureViewNotRendering(view) {
     var env = view.ownerView.env;
-    if (env && indexOf(env.renderedViews, view.elementId) !== -1) {
+    if (env && env.renderedViews.indexOf(view.elementId) !== -1) {
       throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
     }
   };

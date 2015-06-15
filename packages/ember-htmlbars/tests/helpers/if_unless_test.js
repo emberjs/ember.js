@@ -11,7 +11,6 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-runtime/utils';
-import { forEach } from 'ember-metal/enumerable_utils';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var originalLookup = Ember.lookup;
@@ -282,7 +281,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'onDrugs', val);
     });
@@ -336,7 +335,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -371,7 +370,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -447,7 +446,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'onDrugs', val);
     });
@@ -502,7 +501,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -537,7 +536,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });

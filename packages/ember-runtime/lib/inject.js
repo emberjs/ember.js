@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.assert
-import { indexOf } from "ember-metal/enumerable_utils";
 import InjectedProperty from "ember-metal/injected_property";
 import keys from "ember-metal/keys";
 
@@ -56,7 +55,7 @@ export function validatePropertyInjections(factory) {
 
   for (key in proto) {
     desc = proto[key];
-    if (desc instanceof InjectedProperty && indexOf(types, desc.type) === -1) {
+    if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }
   }

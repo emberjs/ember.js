@@ -1,5 +1,4 @@
 import { get } from 'ember-metal/property_get';
-import { forEach } from 'ember-metal/enumerable_utils';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
@@ -429,17 +428,17 @@ QUnit.test("getting values should call function return value", function() {
   // get each property twice. Verify return.
   var keys = w('computed computedCached dependent dependentFront dependentCached');
 
-  forEach(keys, function(key) {
+  keys.forEach(function(key) {
     equal(object.get(key), key, fmt('Try #1: object.get(%@) should run function', [key]));
     equal(object.get(key), key, fmt('Try #2: object.get(%@) should run function', [key]));
   });
 
   // verify each call count.  cached should only be called once
-  forEach(w('computedCalls dependentFrontCalls dependentCalls'), function(key) {
+  w('computedCalls dependentFrontCalls dependentCalls').forEach((key) => {
     equal(object[key].length, 2, fmt('non-cached property %@ should be called 2x', [key]));
   });
 
-  forEach(w('computedCachedCalls dependentCachedCalls'), function(key) {
+  w('computedCachedCalls dependentCachedCalls').forEach((key) => {
     equal(object[key].length, 1, fmt('non-cached property %@ should be called 1x', [key]));
   });
 
@@ -451,7 +450,7 @@ QUnit.test("setting values should call function return value", function() {
   var keys = w('computed dependent dependentFront computedCached dependentCached');
   var values = w('value1 value2');
 
-  forEach(keys, function(key) {
+  keys.forEach((key) => {
 
     equal(object.set(key, values[0]), object, fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
@@ -461,9 +460,8 @@ QUnit.test("setting values should call function return value", function() {
 
   });
 
-
   // verify each call count.  cached should only be called once
-  forEach(keys, function(key) {
+  keys.forEach((key) => {
     var calls = object[key + 'Calls'];
     var idx, expectedLength;
 

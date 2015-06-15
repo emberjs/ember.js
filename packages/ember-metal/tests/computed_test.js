@@ -18,7 +18,6 @@ import {
   addObserver,
   addBeforeObserver
 } from "ember-metal/observer";
-import { indexOf } from 'ember-metal/enumerable_utils';
 
 var originalLookup = Ember.lookup;
 var obj, count, Global, lookup;
@@ -671,7 +670,7 @@ QUnit.test('adding a computed property should show up in key iteration', functio
   for (var key in obj) {
     found.push(key);
   }
-  ok(indexOf(found, 'foo')>=0, 'should find computed property in iteration found=' + found);
+  ok(found.indexOf('foo')>=0, 'should find computed property in iteration found=' + found);
   ok('foo' in obj, 'foo in obj should pass');
 });
 

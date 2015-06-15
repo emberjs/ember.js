@@ -1,4 +1,3 @@
-import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
 import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
@@ -84,7 +83,7 @@ export default function eachHelper(params, hash, blocks) {
   }
 
   if (shouldDisplay(list)) {
-    forEach(list, function(item, i) {
+    forEach(list, (item, i) => {
       var self;
       if (blocks.template.arity === 0) {
         self = normalizeSelf(item);
@@ -96,6 +95,10 @@ export default function eachHelper(params, hash, blocks) {
   } else if (blocks.inverse.yield) {
     blocks.inverse.yield();
   }
+}
+
+function forEach(iterable, cb) {
+  return iterable.forEach ? iterable.forEach(cb) : Array.prototype.forEach.call(iterable, cb);
 }
 
 export var deprecation = "Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.";

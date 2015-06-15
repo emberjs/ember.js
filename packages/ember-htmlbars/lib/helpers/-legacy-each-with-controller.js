@@ -1,5 +1,4 @@
 import { get } from "ember-metal/property_get";
-import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
@@ -13,7 +12,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
     return;
   }
 
-  forEach(list, function(item, i) {
+  list.forEach(function(item, i) {
     var self;
 
     if (blocks.template.arity === 0) {

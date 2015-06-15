@@ -1,9 +1,5 @@
 import Ember from "ember-metal/core";
 import isEnabled from "ember-metal/features";
-import {
-  forEach,
-  indexOf
-} from "ember-metal/enumerable_utils";
 
 /**
   Helper class that allows you to register your library with Ember.
@@ -55,14 +51,14 @@ Libraries.prototype = {
     var index;
 
     if (lib) {
-      index = indexOf(this._registry, lib);
+      index = this._registry.indexOf(lib);
       this._registry.splice(index, 1);
     }
   },
 
   each(callback) {
     Ember.deprecate('Using Ember.libraries.each() is deprecated. Access to a list of registered libraries is currently a private API. If you are not knowingly accessing this method, your out-of-date Ember Inspector may be doing so.');
-    forEach(this._registry, (lib) => {
+    this._registry.forEach((lib) => {
       callback(lib.name, lib.version);
     });
   }

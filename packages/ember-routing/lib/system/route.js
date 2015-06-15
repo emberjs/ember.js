@@ -4,7 +4,6 @@ import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
-import { forEach } from "ember-metal/enumerable_utils";
 import isNone from "ember-metal/is_none";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
@@ -826,7 +825,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         transition.method('replace');
       }
 
-      forEach(qpMeta.qps, function(qp) {
+      qpMeta.qps.forEach(function(qp) {
         var routeQpMeta = get(qp.route, '_qp');
         var finalizedController = qp.route.controller;
         finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
@@ -1195,7 +1194,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         var allParams = queryParams.propertyNames;
         var cache = this._bucketCache;
 
-        forEach(allParams, function(prop) {
+        allParams.forEach(function(prop) {
           var aQp = queryParams.map[prop];
 
           aQp.values = params;
@@ -2254,7 +2253,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
 }
 
 function addQueryParamsObservers(controller, propNames) {
-  forEach(propNames, function(prop) {
+  propNames.forEach(function(prop) {
     controller.addObserver(prop + '.[]', controller, controller._qpChanged);
   });
 }

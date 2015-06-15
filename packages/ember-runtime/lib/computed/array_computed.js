@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import {
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
-import { forEach } from 'ember-metal/enumerable_utils';
 import o_create from 'ember-metal/platform/create';
 import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
@@ -21,7 +20,7 @@ function ArrayComputedProperty() {
         // When we recompute an array computed property, we need already
         // retrieved arrays to be updated; we can't simply empty the cache and
         // hope the array is re-retrieved.
-        forEach(cp._dependentKeys, function(dependentKey) {
+        cp._dependentKeys.forEach(function(dependentKey) {
           addObserver(this, dependentKey, function() {
             cp.recomputeOnce.call(this, propertyName);
           });

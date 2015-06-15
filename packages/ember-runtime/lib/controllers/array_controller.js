@@ -5,17 +5,13 @@
 
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import {
-  forEach,
-  replace
-} from 'ember-metal/enumerable_utils';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import SortableMixin from 'ember-runtime/mixins/sortable';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
 import EmberArray from 'ember-runtime/mixins/array';
-
+import replace from 'ember-metal/replace';
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
@@ -187,7 +183,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     if (subControllers.length) {
       var subControllersToRemove = subControllers.slice(idx, idx + removedCnt);
 
-      forEach(subControllersToRemove, function(subController) {
+      subControllersToRemove.forEach(function(subController) {
         if (subController) {
           subController.destroy();
         }

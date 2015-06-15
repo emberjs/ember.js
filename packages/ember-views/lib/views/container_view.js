@@ -4,7 +4,6 @@ import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { forEach } from "ember-metal/enumerable_utils";
 import {
   observer,
   beforeObserver
@@ -189,7 +188,7 @@ var ContainerView = View.extend(MutableArray, {
     // don't pay a penalty.
     var childViews = this.childViews = Ember.A([]);
 
-    forEach(userChildViews, function(viewName, idx) {
+    userChildViews.forEach((viewName, idx) => {
       var view;
 
       if ('string' === typeof viewName) {
@@ -201,7 +200,7 @@ var ContainerView = View.extend(MutableArray, {
       }
 
       childViews[idx] = view;
-    }, this);
+    });
 
     var currentView = get(this, 'currentView');
     if (currentView) {
@@ -265,8 +264,8 @@ var ContainerView = View.extend(MutableArray, {
     // as soon as views are added or removed, despite the fact that this will
     // happen automatically when we render.
     var removedViews = childViews.slice(idx, idx+removedCount);
-    forEach(removedViews, view => this.unlinkChild(view));
-    forEach(addedViews, view => this.linkChild(view));
+    removedViews.forEach(view => this.unlinkChild(view));
+    addedViews.forEach(view => this.linkChild(view));
 
     childViews.splice(idx, removedCount, ...addedViews);
 

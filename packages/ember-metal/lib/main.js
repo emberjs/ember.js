@@ -35,7 +35,6 @@ import {
   wrap
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-import EnumerableUtils from "ember-metal/enumerable_utils";
 import Cache from "ember-metal/cache";
 import {
   hasPropertyAccessors
@@ -274,8 +273,6 @@ Ember.get            = get;
 Ember.getWithDefault = getWithDefault;
 Ember.normalizeTuple = normalizeTuple;
 Ember._getPath       = _getPath;
-
-Ember.EnumerableUtils = EnumerableUtils;
 
 Ember.on                  = on;
 Ember.addListener         = addListener;
