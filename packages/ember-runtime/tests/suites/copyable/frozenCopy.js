@@ -11,6 +11,8 @@ suite.test('frozen objects should return same instance', function() {
 
   obj = this.newObject();
   if (get(this, 'shouldBeFreezable')) {
+    expectDeprecation('`frozenCopy` is deprecated, use Object.freeze instead.');
+
     ok(!Freezable || Freezable.detect(obj), 'object should be freezable');
 
     copy = obj.frozenCopy();
