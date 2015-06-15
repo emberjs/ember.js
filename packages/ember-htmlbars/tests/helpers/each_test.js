@@ -1226,7 +1226,9 @@ QUnit.test('can specify `@index` to represent the items index in the array being
   equal(view.$().text(), '123');
 });
 
-QUnit.test('can specify `@guid` to represent the items GUID', function() {
+QUnit.test('can specify `@guid` to represent the items GUID [DEPRECATED]', function() {
+  expectDeprecation(`Using '@guid' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`);
+
   runDestroy(view);
   view = EmberView.create({
     items: [
@@ -1243,6 +1245,8 @@ QUnit.test('can specify `@guid` to represent the items GUID', function() {
 });
 
 QUnit.test('can specify `@item` to represent primitive items', function() {
+  expectDeprecation(`Using '@item' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`);
+
   runDestroy(view);
   view = EmberView.create({
     items: [1, 2, 3],
@@ -1255,6 +1259,42 @@ QUnit.test('can specify `@item` to represent primitive items', function() {
 
   run(function() {
     set(view, 'items', ['foo', 'bar', 'baz']);
+  });
+
+  equal(view.$().text(), 'foobarbaz');
+});
+
+QUnit.test('can specify `@identity` to represent primitive items', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [1, 2, 3],
+    template: compile("{{#each view.items key='@identity' as |item|}}{{item}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+
+  run(function() {
+    set(view, 'items', ['foo', 'bar', 'baz']);
+  });
+
+  equal(view.$().text(), 'foobarbaz');
+});
+
+QUnit.test('can specify `@identity` to represent mixed object and primitive items', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: [1, { id: 2 }, 3],
+    template: compile("{{#each view.items key='@identity' as |item|}}{{#if item.id}}{{item.id}}{{else}}{{item}}{{/if}}{{/each}}")
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '123');
+
+  run(function() {
+    set(view, 'items', ['foo', { id: 'bar' }, 'baz']);
   });
 
   equal(view.$().text(), 'foobarbaz');
