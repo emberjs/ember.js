@@ -7,7 +7,6 @@ import {
   beginPropertyChanges,
   endPropertyChanges
 } from 'ember-metal/property_events';
-import objectKeys from 'ember-metal/keys';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
 
@@ -136,7 +135,7 @@ QUnit.test('destroyed objects should not see each others changes during teardown
   new LongLivedObject();
 
   run(function () {
-    var keys = objectKeys(objs);
+    var keys = Object.keys(objs);
     for (var i = 0, l = keys.length; i < l; i++) {
       objs[keys[i]].destroy();
     }

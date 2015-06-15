@@ -12,7 +12,6 @@ import {
   typeOf
 } from 'ember-runtime/utils';
 import run from 'ember-metal/run_loop';
-import keys from 'ember-metal/keys';
 import copy from 'ember-runtime/copy';
 import {
   classify
@@ -106,7 +105,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var controllerName = this.controllerName || this.routeName;
     var definedControllerClass = this.container.lookupFactory(`controller:${controllerName}`);
     var queryParameterConfiguraton = get(this, 'queryParams');
-    var hasRouterDefinedQueryParams = !!keys(queryParameterConfiguraton).length;
+    var hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
     if (definedControllerClass) {
       // the developer has authored a controller class in their application for this route
@@ -739,7 +738,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     queryParamsDidChange(changed, totalPresent, removed) {
       var qpMap = get(this, '_qp').map;
 
-      var totalChanged = keys(changed).concat(keys(removed));
+      var totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (var i = 0, len = totalChanged.length; i < len; ++i) {
         var qp = qpMap[totalChanged[i]];
         if (qp && get(this._optionsForQueryParam(qp), 'refreshModel')) {

@@ -1,6 +1,5 @@
 import isEnabled from 'ember-metal/features';
 import Registry from 'container/registry';
-import keys from 'ember-metal/keys';
 import Helper from 'ember-htmlbars/helper';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import discoverKnownHelpers from 'ember-htmlbars/system/discover-known-helpers';
@@ -31,7 +30,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
   QUnit.test('includes helpers in the registry', function() {
     registry.register('helper:t', Helper);
     let result = discoverKnownHelpers(container);
-    let helpers = keys(result);
+    let helpers = Object.keys(result);
 
     deepEqual(helpers, ['t'], 'helpers from the registry were known');
   });
@@ -45,7 +44,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
 
     registry.register('helper:t', Helper);
     let result = discoverKnownHelpers(container);
-    let helpers = keys(result);
+    let helpers = Object.keys(result);
 
     deepEqual(helpers, ['t', 'f'], 'helpers from the registry were known');
   });
@@ -54,7 +53,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
     registry.register('helper:t', Helper);
 
     let result = discoverKnownHelpers(container);
-    let helpers = keys(result);
+    let helpers = Object.keys(result);
 
     deepEqual(helpers, [], 'helpers from the registry were known');
   });

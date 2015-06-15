@@ -8,7 +8,6 @@ import Service from 'ember-runtime/system/service';
 import { get } from 'ember-metal/property_get';
 import { readOnly } from 'ember-metal/computed_macros';
 import { routeArgs } from 'ember-routing/utils';
-import keys from 'ember-metal/keys';
 import merge from 'ember-metal/merge';
 
 /**
@@ -22,7 +21,7 @@ import merge from 'ember-metal/merge';
   @private
   @class RoutingService
 */
-var RoutingService = Service.extend({
+export default Service.extend({
   router: null,
 
   targetState: readOnly('router.targetState'),
@@ -30,7 +29,7 @@ var RoutingService = Service.extend({
   currentRouteName: readOnly('router.currentRouteName'),
 
   availableRoutes() {
-    return keys(get(this, 'router').router.recognizer.names);
+    return Object.keys(get(this, 'router').router.recognizer.names);
   },
 
   hasRoute(routeName) {
@@ -89,7 +88,7 @@ var RoutingService = Service.extend({
   }
 });
 
-var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
+function numberOfContextsAcceptedByHandler(handler, handlerInfos) {
   var req = 0;
   for (var i = 0, l = handlerInfos.length; i < l; i++) {
     req = req + handlerInfos[i].names.length;
@@ -99,6 +98,4 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   }
 
   return req;
-};
-
-export default RoutingService;
+}

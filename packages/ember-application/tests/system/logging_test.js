@@ -1,5 +1,3 @@
-/*globals EmberDev */
-
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
@@ -7,10 +5,7 @@ import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
-import keys from 'ember-metal/keys';
 import compile from 'ember-template-compiler/system/compile';
-
-import 'ember-routing';
 
 var App, logs, originalLogger;
 
@@ -88,7 +83,7 @@ QUnit.test('log class generation if logging enabled', function() {
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(Ember.keys(logs).length, 6, 'expected logs');
+    equal(Object.keys(logs).length, 6, 'expected logs');
   });
 });
 
@@ -100,7 +95,7 @@ QUnit.test('do NOT log class generation if logging disabled', function() {
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(keys(logs).length, 0, 'expected no logs');
+    equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });
 
@@ -202,7 +197,7 @@ QUnit.test('do not log when template and view are missing when flag is not true'
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(keys(logs).length, 0, 'expected no logs');
+    equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });
 
@@ -232,6 +227,6 @@ QUnit.test('do not log which views are used with templates when flag is not true
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(keys(logs).length, 0, 'expected no logs');
+    equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });

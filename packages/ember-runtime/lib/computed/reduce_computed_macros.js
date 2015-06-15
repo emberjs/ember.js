@@ -15,7 +15,6 @@ import { addObserver } from 'ember-metal/observer';
 import { arrayComputed } from 'ember-runtime/computed/array_computed';
 import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
-import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
 
 var a_slice = [].slice;
@@ -497,7 +496,7 @@ export function intersect() {
       }
 
       if (++itemCounts[itemGuid][dependentGuid] === 1 &&
-          numberOfDependentArrays === keys(itemCounts[itemGuid]).length) {
+          numberOfDependentArrays === Object.keys(itemCounts[itemGuid]).length) {
         array.addObject(item);
       }
 
@@ -516,7 +515,7 @@ export function intersect() {
 
       if (--itemCounts[itemGuid][dependentGuid] === 0) {
         delete itemCounts[itemGuid][dependentGuid];
-        numberOfArraysItemAppearsIn = keys(itemCounts[itemGuid]).length;
+        numberOfArraysItemAppearsIn = Object.keys(itemCounts[itemGuid]).length;
 
         if (numberOfArraysItemAppearsIn === 0) {
           delete itemCounts[itemGuid];
