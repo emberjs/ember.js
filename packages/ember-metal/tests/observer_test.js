@@ -1051,9 +1051,10 @@ testBoth('setting a cached computed property whose value has changed should trig
   equal(get(obj, 'foo'), 'bar');
 });
 
-QUnit.module("Ember.immediateObserver");
+QUnit.module("Ember.immediateObserver (Deprecated)");
 
 testBoth("immediate observers should fire synchronously", function(get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   var obj = {};
   var observerCalled = 0;
   var mixin;
@@ -1119,6 +1120,7 @@ if (Ember.EXTEND_PROTOTYPES) {
 }
 
 testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   var obj = {};
   var observerCalled = 0;
   var mixin;
@@ -1150,6 +1152,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 });
 
 testBoth("immediate observers are for internal properties only", function(get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   expectAssertion(function() {
     immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
