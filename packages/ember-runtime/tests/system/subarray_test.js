@@ -1,4 +1,3 @@
-import { forEach } from "ember-metal/enumerable_utils";
 import SubArray from "ember-runtime/system/subarray";
 
 var subarray;
@@ -11,7 +10,7 @@ QUnit.module('SubArray', {
 
 function operationsString() {
   var str = "";
-  forEach(subarray._operations, function (operation) {
+  subarray._operations.forEach((operation) => {
     str += " " + operation.type + ":" + operation.count;
   });
   return str.substring(1);

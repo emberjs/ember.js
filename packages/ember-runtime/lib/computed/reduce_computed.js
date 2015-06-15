@@ -22,7 +22,6 @@ import {
   cacheFor
 } from 'ember-metal/computed';
 import o_create from 'ember-metal/platform/create';
-import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
@@ -147,11 +146,11 @@ DependentArraysObserver.prototype = {
 
     this.resetTransformations(dependentKey, observerContexts);
 
-    forEach(dependentArray, function (item, index) {
+    dependentArray.forEach(function (item, index) {
       var observerContext = this.createPropertyObserverContext(dependentArray, index, this.trackedArraysByGuid[dependentKey]);
       observerContexts[index] = observerContext;
 
-      forEach(itemPropertyKeys, function (propertyKey) {
+      itemPropertyKeys.forEach(function (propertyKey) {
         addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
         addObserver(item, propertyKey, this, observerContext.observer);
       }, this);
@@ -168,13 +167,13 @@ DependentArraysObserver.prototype = {
     trackedArray.apply(function (observerContexts, offset, operation) {
       if (operation === TrackedArray.DELETE) { return; }
 
-      forEach(observerContexts, function (observerContext) {
+      observerContexts.forEach(function (observerContext) {
         observerContext.destroyed = true;
         beforeObserver = observerContext.beforeObserver;
         observer = observerContext.observer;
         item = observerContext.item;
 
-        forEach(itemPropertyKeys, function (propertyKey) {
+        itemPropertyKeys.forEach(function (propertyKey) {
           removeBeforeObserver(item, propertyKey, dependentArrayObserver, beforeObserver);
           removeObserver(item, propertyKey, dependentArrayObserver, observer);
         });
@@ -238,7 +237,7 @@ DependentArraysObserver.prototype = {
         return;
       }
 
-      forEach(observerContexts, function (context, index) {
+      observerContexts.forEach(function (context, index) {
         context.index = index + offset;
       });
     });
@@ -271,7 +270,7 @@ DependentArraysObserver.prototype = {
 
       item = dependentArray.objectAt(itemIndex);
 
-      forEach(itemPropertyKeys, removeObservers, this);
+      itemPropertyKeys.forEach(removeObservers, this);
 
       changeMeta = new ChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp, normalizedRemoveCount);
       this.setValue(removedItem.call(
@@ -293,13 +292,13 @@ DependentArraysObserver.prototype = {
     var endIndex = normalizedIndex + addedCount;
     var changeMeta, observerContext;
 
-    forEach(dependentArray.slice(normalizedIndex, endIndex), function (item, sliceIndex) {
+    dependentArray.slice(normalizedIndex, endIndex).forEach(function (item, sliceIndex) {
       if (itemPropertyKeys) {
         observerContext = this.createPropertyObserverContext(dependentArray, normalizedIndex + sliceIndex,
           this.trackedArraysByGuid[dependentKey]);
         observerContexts[sliceIndex] = observerContext;
 
-        forEach(itemPropertyKeys, function (propertyKey) {
+        itemPropertyKeys.forEach(function (propertyKey) {
           addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
           addObserver(item, propertyKey, this, observerContext.observer);
         }, this);
@@ -386,7 +385,7 @@ function ChangeMeta(dependentArray, item, index, propertyName, property, changed
 }
 
 function addItems(dependentArray, callbacks, cp, propertyName, meta) {
-  forEach(dependentArray, function (item, index) {
+  dependentArray.forEach(function (item, index) {
     meta.setValue(callbacks.addedItem.call(
       this, meta.getValue(), item, new ChangeMeta(dependentArray, item, index, propertyName, cp, dependentArray.length), meta.sugarMeta));
   }, this);
@@ -518,7 +517,7 @@ function ReduceComputedProperty(options) {
     reset.call(this, cp, propertyName);
 
     meta.dependentArraysObserver.suspendArrayObservers(function () {
-      forEach(cp._dependentKeys, function (dependentKey) {
+      cp._dependentKeys.forEach(function (dependentKey) {
         Ember.assert(
           'dependent array ' + dependentKey + ' must be an `Ember.Array`.  ' +
           'If you are not extending arrays, you will need to wrap native arrays with `Ember.A`',
@@ -554,7 +553,7 @@ function ReduceComputedProperty(options) {
       }, this);
     }, this);
 
-    forEach(cp._dependentKeys, function(dependentKey) {
+    cp._dependentKeys.forEach(function(dependentKey) {
       if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
       var dependentArray = get(this, dependentKey);
@@ -647,7 +646,7 @@ ReduceComputedProperty.prototype.property = function () {
   var propertyArgs = {};
   var match, dependentArrayKey;
 
-  forEach(args, function (dependentKey) {
+  args.forEach(function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {
       throw new EmberError('Nested @each properties not supported: ' + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {

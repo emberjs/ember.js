@@ -6,7 +6,6 @@
 import Ember from "ember-metal/core"; // Ember.assert, Ember.A
 
 import { get } from "ember-metal/property_get";
-import { forEach } from "ember-metal/enumerable_utils";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import compare from "ember-runtime/compare";
 import {
@@ -130,14 +129,14 @@ export default Mixin.create(MutableEnumerable, {
 
     Ember.assert("you need to define `sortProperties`", !!sortProperties);
 
-    forEach(sortProperties, function(propertyName) {
+    sortProperties.forEach((propertyName) => {
       if (result === 0) {
         result = sortFunction.call(this, get(item1, propertyName), get(item2, propertyName));
         if ((result !== 0) && !sortAscending) {
           result = (-1) * result;
         }
       }
-    }, this);
+    });
 
     return result;
   },
@@ -147,11 +146,11 @@ export default Mixin.create(MutableEnumerable, {
     var sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
+      content.forEach((item) => {
+        sortProperties.forEach((sortProperty) => {
           removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
+        });
+      });
     }
 
     return this._super(...arguments);
@@ -171,18 +170,17 @@ export default Mixin.create(MutableEnumerable, {
       var content = get(this, 'content');
       var isSorted = get(this, 'isSorted');
       var sortProperties = get(this, 'sortProperties');
-      var self = this;
 
       if (content && isSorted) {
         content = content.slice();
-        content.sort(function(item1, item2) {
-          return self.orderBy(item1, item2);
-        });
-        forEach(content, function(item) {
-          forEach(sortProperties, function(sortProperty) {
+        content.sort((item1, item2) => this.orderBy(item1, item2));
+
+        content.forEach((item) => {
+          sortProperties.forEach((sortProperty) => {
             addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-          }, this);
-        }, this);
+          });
+        });
+
         return Ember.A(content);
       }
 
@@ -195,11 +193,11 @@ export default Mixin.create(MutableEnumerable, {
     var sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
+      content.forEach((item) => {
+        sortProperties.forEach((sortProperty) => {
           removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
+        });
+      });
     }
 
     this._super(...arguments);
@@ -232,10 +230,10 @@ export default Mixin.create(MutableEnumerable, {
       var removedObjects = array.slice(idx, idx+removedCount);
       var sortProperties = get(this, 'sortProperties');
 
-      forEach(removedObjects, function(item) {
+      removedObjects.forEach((item) => {
         arrangedContent.removeObject(item);
 
-        forEach(sortProperties, function(sortProperty) {
+        sortProperties.forEach((sortProperty) => {
           removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
         }, this);
       }, this);
@@ -251,13 +249,13 @@ export default Mixin.create(MutableEnumerable, {
     if (isSorted) {
       var addedObjects = array.slice(idx, idx+addedCount);
 
-      forEach(addedObjects, function(item) {
+      addedObjects.forEach((item) => {
         this.insertItemSorted(item);
 
-        forEach(sortProperties, function(sortProperty) {
+        sortProperties.forEach((sortProperty) => {
           addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
+        });
+      });
     }
 
     return this._super(array, idx, removedCount, addedCount);

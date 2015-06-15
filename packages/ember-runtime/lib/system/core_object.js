@@ -37,7 +37,6 @@ import {
   Mixin,
   REQUIRED
 } from "ember-metal/mixin";
-import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
 import { defineProperty as o_defineProperty } from "ember-metal/platform/define_property";
 import keys from "ember-metal/keys";
@@ -130,7 +129,7 @@ function makeCtor() {
 
           if (concatenatedProperties &&
               concatenatedProperties.length > 0 &&
-              indexOf(concatenatedProperties, keyName) >= 0) {
+              concatenatedProperties.indexOf(keyName) >= 0) {
             var baseValue = this[keyName];
 
             if (baseValue) {
@@ -146,7 +145,7 @@ function makeCtor() {
 
           if (mergedProperties &&
               mergedProperties.length &&
-              indexOf(mergedProperties, keyName) >= 0) {
+              mergedProperties.indexOf(keyName) >= 0) {
             var originalValue = this[keyName];
 
             value = merge(originalValue, value);

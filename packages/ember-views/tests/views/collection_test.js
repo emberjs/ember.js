@@ -1,7 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.A
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { forEach } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import ArrayProxy from "ember-runtime/system/array_proxy";
@@ -130,9 +129,7 @@ QUnit.test("should allow custom item views by setting itemViewClass", function()
     view.append();
   });
 
-  forEach(content, function(item) {
-    equal(view.$(':contains("'+item+'")').length, 1);
-  });
+  content.forEach((item) => equal(view.$(':contains("'+item+'")').length, 1));
 });
 
 QUnit.test("should insert a new item in DOM when an item is added to the content array", function() {
@@ -150,7 +147,7 @@ QUnit.test("should insert a new item in DOM when an item is added to the content
     view.append();
   });
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
@@ -172,19 +169,15 @@ QUnit.test("should remove an item from DOM when an item is removed from the cont
     })
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  run(function() {
-    content.removeAt(1);
-  });
+  run(() => content.removeAt(1));
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
   });
 });
@@ -203,7 +196,7 @@ QUnit.test("it updates the view if an item is replaced", function() {
     view.append();
   });
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
@@ -212,7 +205,7 @@ QUnit.test("it updates the view if an item is replaced", function() {
     content.insertAt(1, "Kazuki");
   });
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
@@ -227,21 +220,19 @@ QUnit.test("can add and replace in the same runloop", function() {
     })
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  run(function() {
+  run(() => {
     content.pushObject("Tom Dale");
     content.removeAt(0);
     content.insertAt(0, "Kazuki");
   });
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 
@@ -257,21 +248,19 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
     })
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  run(function() {
+  run(() => {
     content.pushObject("Tom Dale");
     content.removeAt(1);
     content.insertAt(1, "Kazuki");
   });
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
@@ -286,15 +275,13 @@ QUnit.test("can add and replace complicatedly", function() {
     })
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  run(function() {
+  run(() => {
     content.pushObject("Tom Dale");
     content.removeAt(1);
     content.insertAt(1, "Kazuki");
@@ -302,7 +289,7 @@ QUnit.test("can add and replace complicatedly", function() {
     content.pushObject("McMunch");
   });
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(fmt(':nth-child(%@)', [String(idx+1)])).text());
   });
 });
@@ -321,7 +308,7 @@ QUnit.test("can add and replace complicatedly harder", function() {
     view.append();
   });
 
-  forEach(content, function(item) {
+  content.forEach((item) => {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
@@ -334,7 +321,7 @@ QUnit.test("can add and replace complicatedly harder", function() {
     content.removeAt(2);
   });
 
-  forEach(content, function(item, idx) {
+  content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });

@@ -1,6 +1,5 @@
 import "ember";
 import isEnabled from "ember-metal/features";
-import { forEach } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
@@ -1483,7 +1482,7 @@ QUnit.test('navigating away triggers a url property change', function() {
     });
   });
 
-  forEach(['foo', 'bar', '/foo'], function(destination) {
+  ['foo', 'bar', '/foo'].forEach(function(destination) {
     Ember.run(router, 'transitionTo', destination);
   });
 });

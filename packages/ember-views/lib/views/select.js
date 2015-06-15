@@ -3,13 +3,7 @@
 @submodule ember-views
 */
 
-import {
-  forEach,
-  indexOf,
-  indexesOf,
-  replace,
-  map
-} from "ember-metal/enumerable_utils";
+import replace from "ember-metal/replace";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -42,17 +36,17 @@ var SelectOption = View.extend({
     this.valuePathDidChange();
   },
 
-  selected: computed(function() {
+  selected: computed('attrs.content', 'attrs.selection', function() {
     var value = get(this, 'value');
     var selection = get(this, 'attrs.selection');
     if (get(this, 'attrs.multiple')) {
-      return selection && indexOf(selection, value) > -1;
+      return selection && selection.indexOf(value) > -1;
     } else {
       // Primitives get passed through bindings as objects... since
       // `new Number(4) !== 4`, we use `==` below
       return value == get(this, 'attrs.parentValue'); // jshint ignore:line
     }
-  }).property('attrs.content', 'attrs.selection'),
+  }),
 
   labelPathDidChange: observer('attrs.optionLabelPath', function() {
     var labelPath = get(this, 'attrs.optionLabelPath');
@@ -418,7 +412,7 @@ var Select = View.extend({
     @default null
     @public
   */
-  value: computed({
+  value: computed('_valuePath', 'selection', {
     get(key) {
       var valuePath = get(this, '_valuePath');
       return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
@@ -426,7 +420,7 @@ var Select = View.extend({
     set(key, value) {
       return value;
     }
-  }).property('_valuePath', 'selection'),
+  }),
 
   /**
     If given, a top-most dummy option will be rendered to serve as a user
@@ -480,12 +474,12 @@ var Select = View.extend({
   */
   groupView: SelectOptgroup,
 
-  groupedContent: computed(function() {
+  groupedContent: computed('optionGroupPath', 'content.@each', function() {
     var groupPath = get(this, 'optionGroupPath');
     var groupedContent = emberA();
     var content = get(this, 'content') || [];
 
-    forEach(content, function(item) {
+    content.forEach((item) => {
       var label = get(item, groupPath);
 
       if (get(groupedContent, 'lastObject.label') !== label) {
@@ -499,7 +493,7 @@ var Select = View.extend({
     });
 
     return groupedContent;
-  }).property('optionGroupPath', 'content.@each'),
+  }),
 
   /**
     The view class for option.
@@ -578,7 +572,7 @@ var Select = View.extend({
   _selectedIndex(value, defaultIndex = 0) {
     var content = get(this, 'contentValues');
 
-    var selectionIndex = indexOf(content, value);
+    var selectionIndex = content.indexOf(value);
 
     var prompt = get(this, 'prompt');
     if (prompt) { selectionIndex += 1; }
@@ -642,9 +636,9 @@ var Select = View.extend({
     var content = get(this, 'content') || [];
 
     if (valuePath) {
-      return map(content, function (el) { return get(el, valuePath); });
+      return content.map((el) => get(el, valuePath));
     } else {
-      return map(content, function (el) { return el; });
+      return content.slice();
     }
   }),
 
@@ -660,7 +654,7 @@ var Select = View.extend({
     if (options) {
       options.each(function() {
         adjusted = this.index > -1 ? this.index - offset : -1;
-        this.selected = indexOf(selectedIndexes, adjusted) > -1;
+        this.selected = selectedIndexes.indexOf(adjusted) > -1;
       });
     }
   },
@@ -671,7 +665,7 @@ var Select = View.extend({
 
   init() {
     this._super(...arguments);
-    this.on("change", this, this._change);
+    this.on('change', this, this._change);
   }
 });
 
@@ -681,6 +675,11 @@ var DeprecatedSelect = Select.extend({
     Ember.deprecate(`Ember.Select is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-select' });
   }
 });
+
+
+function indexesOf(iterable, elements) {
+  return elements === undefined ? [] : elements.map((item) => iterable.indexOf(item));
+}
 
 export default Select;
 export {

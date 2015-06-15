@@ -3,9 +3,10 @@ import getValue from "ember-htmlbars/hooks/get-value";
 // We don't want to leak mutable cells into helpers, which
 // are pure functions that can only work with values.
 export function getArrayValues(params) {
-  let out = [];
-  for (let i=0, l=params.length; i<l; i++) {
-    out.push(getValue(params[i]));
+  let l = params.length;
+  let out = new Array(l);
+  for (let i=0; i<l; i++) {
+    out[i] = getValue(params[i]);
   }
 
   return out;

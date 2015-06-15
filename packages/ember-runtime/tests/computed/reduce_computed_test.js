@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import { map } from 'ember-metal/enumerable_utils';
 import {
   get,
   getWithDefault
@@ -58,7 +57,7 @@ QUnit.module('arrayComputed - [DEPRECATED]', {
           }
         }),
 
-        nestedNumbers:  Ember.A(map([1,2,3,4,5,6], function (n) {
+        nestedNumbers:  Ember.A([1,2,3,4,5,6].map((n) => {
           return EmberObject.create({ p: 'otherProperty', v: n });
         })),
 
