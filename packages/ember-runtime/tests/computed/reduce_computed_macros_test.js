@@ -10,7 +10,6 @@ import {
   beginPropertyChanges,
   endPropertyChanges
 } from "ember-metal/property_events";
-import { forEach } from "ember-metal/array";
 import { observer, Mixin } from 'ember-metal/mixin';
 import {
   sum as computedSum,
@@ -467,7 +466,7 @@ QUnit.test("properties values can be replaced", function() {
   deepEqual(a1bs.mapBy('name'), ['item1'], "properties can be filtered by matching value");
 });
 
-forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple) {
+[['uniq', computedUniq], ['union', computedUnion]].forEach(function (tuple) {
   var alias  = tuple[0];
   var testedFunc = tuple[1];
 

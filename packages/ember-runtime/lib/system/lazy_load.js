@@ -1,7 +1,6 @@
 /*globals CustomEvent */
 
 import Ember from "ember-metal/core"; // Ember.ENV.EMBER_LOAD_HOOKS
-import { forEach } from "ember-metal/array";
 import "ember-runtime/system/native_array"; // make sure Ember.A is setup.
 
 /**
@@ -61,8 +60,6 @@ export function runLoadHooks(name, object) {
   }
 
   if (loadHooks[name]) {
-    forEach.call(loadHooks[name], function(callback) {
-      callback(object);
-    });
+    loadHooks[name].forEach((callback) => callback(object));
   }
 }

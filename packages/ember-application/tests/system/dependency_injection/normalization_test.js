@@ -1,5 +1,4 @@
 import run from "ember-metal/run_loop";
-import { forEach } from "ember-metal/array";
 import Application from "ember-application/system/application";
 
 var application, registry;
@@ -38,7 +37,7 @@ QUnit.test('normalization', function() {
 QUnit.test('normalization is indempotent', function() {
   var examples = ['controller:posts', 'controller:posts.post.index', 'controller:blog/posts.post_index', 'template:foo_bar'];
 
-  forEach.call(examples, function (example) {
+  examples.forEach((example) => {
     equal(registry.normalize(registry.normalize(example)), registry.normalize(example));
   });
 });

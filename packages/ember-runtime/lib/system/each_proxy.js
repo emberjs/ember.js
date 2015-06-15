@@ -8,7 +8,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import { guidFor } from "ember-metal/utils";
 import { typeOf } from "ember-runtime/utils";
-import { indexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
 import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
@@ -93,7 +92,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 
       guid = guidFor(item);
       indices = objects[guid];
-      indices[indexOf.call(indices, loc)] = null;
+      indices[indices.indexOf(loc)] = null;
     }
   }
 }
