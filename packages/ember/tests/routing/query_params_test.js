@@ -1,7 +1,6 @@
 import "ember";
 import isEnabled from "ember-metal/features";
 import { computed } from "ember-metal/computed";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -9,15 +8,6 @@ var compile = EmberHandlebars.compile;
 
 var Router, App, router, registry, container;
 var get = Ember.get;
-
-function withoutMeta(object) {
-  if (canDefineNonEnumerableProperties) {
-    return object;
-  }
-  var newObject = Ember.$.extend(true, {}, object);
-  delete newObject['__ember_meta__'];
-  return newObject;
-}
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -836,7 +826,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.IndexRoute = Ember.Route.extend({
       setupController(controller, model) {
-        deepEqual(withoutMeta(model), { woot: true }, "index route inherited model route from parent route");
+        deepEqual(model, { woot: true }, "index route inherited model route from parent route");
       }
     });
 
@@ -1850,7 +1840,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
         }
       },
       setupController(controller, model) {
-        deepEqual(withoutMeta(model), { woot: true }, "index route inherited model route from parent route");
+        deepEqual(model, { woot: true }, "index route inherited model route from parent route");
       }
     });
 
@@ -2980,7 +2970,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.IndexRoute = Ember.Route.extend({
       setupController(controller, model) {
-        deepEqual(withoutMeta(model), { woot: true }, "index route inherited model route from parent route");
+        deepEqual(model, { woot: true }, "index route inherited model route from parent route");
       }
     });
 
