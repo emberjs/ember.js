@@ -1,6 +1,5 @@
 import Ember from "ember-metal/core"; // FEATURES, assert
 import isEnabled from "ember-metal/features";
-import { indexOf } from "ember-metal/array";
 
 /**
 @module ember
@@ -32,7 +31,7 @@ DSL.prototype = {
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
 
-        return indexOf.call(['array', 'basic', 'object', 'application'], name) === -1;
+        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
       })()
     );
 

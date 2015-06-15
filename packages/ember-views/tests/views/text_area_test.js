@@ -1,5 +1,4 @@
 import EmberObject from "ember-runtime/system/object";
-import { forEach } from "ember-metal/array";
 import run from "ember-metal/run_loop";
 import TextArea from "ember-views/views/text_area";
 import { get } from "ember-metal/property_get";
@@ -178,7 +177,7 @@ QUnit.test("value binding works properly for inputs that haven't been created", 
   equal(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
-forEach.call(['cut', 'paste', 'input'], function(eventName) {
+['cut', 'paste', 'input'].forEach(function(eventName) {
   QUnit.test("should update the value on " + eventName + " events", function() {
 
     run(function() {

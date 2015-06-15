@@ -6,7 +6,6 @@
 // Ember.lookup, Ember.BOOTED, Ember.deprecate, Ember.NAME_KEY, Ember.anyUnprocessedMixins
 import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
-import { indexOf } from "ember-metal/array";
 import {
   GUID_KEY,
   guidFor
@@ -61,7 +60,7 @@ var Namespace = EmberObject.extend({
       Ember.lookup[toString] = undefined;
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
-    namespaces.splice(indexOf.call(namespaces, this), 1);
+    namespaces.splice(namespaces.indexOf(this), 1);
     this._super(...arguments);
   }
 });

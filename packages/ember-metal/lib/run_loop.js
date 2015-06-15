@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import {
   GUID_KEY
 } from 'ember-metal/utils';
-import { indexOf } from 'ember-metal/array';
 import {
   beginPropertyChanges,
   endPropertyChanges
@@ -654,7 +653,7 @@ function checkAutoRun() {
   @private
 */
 run._addQueue = function(name, after) {
-  if (indexOf.call(run.queues, name) === -1) {
-    run.queues.splice(indexOf.call(run.queues, after)+1, 0, name);
+  if (run.queues.indexOf(name) === -1) {
+    run.queues.splice(run.queues.indexOf(after)+1, 0, name);
   }
 };
