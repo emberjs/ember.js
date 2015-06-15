@@ -2,8 +2,7 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import { get as e_get } from 'ember-metal/property_get';
 import {
   guidFor,
-  meta as metaFor,
-  isArray
+  meta as metaFor
 } from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
 import {
@@ -520,7 +519,7 @@ function ReduceComputedProperty(options) {
         Ember.assert(
           'dependent array ' + dependentKey + ' must be an `Ember.Array`.  ' +
           'If you are not extending arrays, you will need to wrap native arrays with `Ember.A`',
-          !(isArray(get(this, dependentKey)) && !EmberArray.detect(get(this, dependentKey))));
+          !(Array.isArray(get(this, dependentKey)) && !EmberArray.detect(get(this, dependentKey))));
 
         if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 

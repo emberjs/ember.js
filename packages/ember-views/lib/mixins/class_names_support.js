@@ -5,9 +5,6 @@
 import Ember from 'ember-metal/core';
 import { Mixin } from 'ember-metal/mixin';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import {
-  isArray
-} from 'ember-metal/utils';
 
 var EMPTY_ARRAY = [];
 
@@ -22,10 +19,10 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
-    Ember.assert('Only arrays are allowed for \'classNameBindings\'', isArray(this.classNameBindings));
+    Ember.assert(`Only arrays are allowed for 'classNameBindings'`, Array.isArray(this.classNameBindings));
     this.classNameBindings = emberA(this.classNameBindings.slice());
 
-    Ember.assert('Only arrays of static class strings are allowed for \'classNames\'. For dynamic classes, use \'classNameBindings\'.', isArray(this.classNames));
+    Ember.assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, Array.isArray(this.classNames));
     this.classNames = emberA(this.classNames.slice());
   },
 

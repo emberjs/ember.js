@@ -6,7 +6,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
 import {
-  isArray,
   guidFor
 } from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
@@ -772,7 +771,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
         var sortProperty, idx, asc;
 
         Ember.assert('Cannot sort: \'' + sortPropertiesKey + '\' is not an array.',
-                     isArray(sortPropertyDefinitions));
+                     Array.isArray(sortPropertyDefinitions));
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 

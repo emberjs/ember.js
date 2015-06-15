@@ -4,12 +4,11 @@
 */
 
 import { get } from 'ember-metal/property_get';
-import { isArray } from 'ember-metal/utils';
 
 export default function bindAttrClassHelper(params) {
   var value = params[0];
 
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     value = get(value, 'length') !== 0;
   }
 

@@ -8,7 +8,6 @@ import isNone from 'ember-metal/is_none';
 import { computed } from 'ember-metal/computed';
 import merge from 'ember-metal/merge';
 import {
-  isArray,
   typeOf
 } from 'ember-runtime/utils';
 import run from 'ember-metal/run_loop';
@@ -172,7 +171,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var urlKey = desc.as || this.serializeQueryParamKey(propName);
       var defaultValue = get(controllerProto, propName);
 
-      if (isArray(defaultValue)) {
+      if (Array.isArray(defaultValue)) {
         defaultValue = Ember.A(defaultValue.slice());
       }
 
@@ -2198,7 +2197,7 @@ function getQueryParamsFor(route, state) {
 }
 
 function copyDefaultValue(value) {
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     return Ember.A(value.slice());
   }
   return value;

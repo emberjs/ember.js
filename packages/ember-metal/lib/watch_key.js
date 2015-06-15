@@ -1,7 +1,6 @@
 import isEnabled from 'ember-metal/features';
 import {
-  meta as metaFor,
-  isArray
+  meta as metaFor
 } from 'ember-metal/utils';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -10,7 +9,7 @@ import {
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && isArray(obj)) { return; }
+  if (keyName === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
   var watching = m.watching;
