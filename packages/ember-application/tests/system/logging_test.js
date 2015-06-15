@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
@@ -6,6 +8,8 @@ import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
 import compile from 'ember-template-compiler/system/compile';
+
+import 'ember-routing';
 
 var App, logs, originalLogger;
 
