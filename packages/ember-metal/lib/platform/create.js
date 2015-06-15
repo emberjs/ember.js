@@ -3,7 +3,6 @@
 //
 "REMOVE_USE_STRICT: true";
 
-import defineProperties from 'ember-metal/platform/define_properties';
 
 /**
 @class platform
@@ -91,7 +90,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
     }
 
     if (properties !== undefined) {
-      defineProperties(object, properties);
+      Object.defineProperties(object, properties);
     }
 
     return object;

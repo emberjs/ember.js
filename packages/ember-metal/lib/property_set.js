@@ -12,7 +12,6 @@ import {
   isPath,
   isGlobalPath
 } from "ember-metal/path_cache";
-import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 
 import { symbol } from "ember-metal/utils";
 export let INTERCEPT_SET = symbol("INTERCEPT_SET");
@@ -87,11 +86,7 @@ export function set(obj, keyName, value, tolerant) {
     } else if (meta && meta.watching[keyName] > 0) {
       if (meta.proto !== obj) {
         if (isEnabled('mandatory-setter')) {
-          if (hasPropertyAccessors) {
-            currentValue = meta.values[keyName];
-          } else {
-            currentValue = obj[keyName];
-          }
+          currentValue = meta.values[keyName];
         } else {
           currentValue = obj[keyName];
         }
@@ -100,17 +95,13 @@ export function set(obj, keyName, value, tolerant) {
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
         if (isEnabled('mandatory-setter')) {
-          if (hasPropertyAccessors) {
-            if (
-              (currentValue === undefined && !(keyName in obj)) ||
-              !Object.prototype.propertyIsEnumerable.call(obj, keyName)
-            ) {
-              defineProperty(obj, keyName, null, value); // setup mandatory setter
-            } else {
-              meta.values[keyName] = value;
-            }
+          if (
+            (currentValue === undefined && !(keyName in obj)) ||
+            !Object.prototype.propertyIsEnumerable.call(obj, keyName)
+          ) {
+            defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
-            obj[keyName] = value;
+            meta.values[keyName] = value;
           }
         } else {
           obj[keyName] = value;

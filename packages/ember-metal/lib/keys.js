@@ -1,5 +1,3 @@
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
-
 /**
   Returns all of the keys defined on an object or hash. This is useful
   when inspecting objects for debugging. On browsers that support it, this
@@ -13,7 +11,7 @@ import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_pr
 */
 var keys = Object.keys;
 
-if (!keys || !canDefineNonEnumerableProperties) {
+if (!keys) {
   // modified from
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
   keys = (function() {

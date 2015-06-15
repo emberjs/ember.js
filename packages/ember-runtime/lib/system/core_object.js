@@ -38,7 +38,6 @@ import {
   REQUIRED
 } from "ember-metal/mixin";
 import EmberError from "ember-metal/error";
-import { defineProperty as o_defineProperty } from "ember-metal/platform/define_property";
 import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import { defineProperty } from "ember-metal/properties";
@@ -50,7 +49,6 @@ import { destroy } from "ember-metal/watching";
 import {
   K
 } from 'ember-metal/core';
-import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { validatePropertyInjections } from "ember-runtime/inject";
 
 var schedule = run.schedule;
@@ -158,11 +156,7 @@ function makeCtor() {
               this.setUnknownProperty(keyName, value);
             } else {
               if (isEnabled('mandatory-setter')) {
-                if (hasPropertyAccessors) {
-                  defineProperty(this, keyName, null, value); // setup mandatory setter
-                } else {
-                  this[keyName] = value;
-                }
+                defineProperty(this, keyName, null, value); // setup mandatory setter
               } else {
                 this[keyName] = value;
               }
@@ -266,7 +260,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   init() {},
   __defineNonEnumerable(property) {
-    o_defineProperty(this, property.name, property.descriptor);
+    Object.defineProperty(this, property.name, property.descriptor);
     //this[property.name] = property.descriptor.value;
   },
 

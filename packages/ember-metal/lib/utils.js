@@ -6,11 +6,6 @@
 import Ember from "ember-metal/core";
 import isEnabled from "ember-metal/features";
 import o_create from 'ember-metal/platform/create';
-import {
-  hasPropertyAccessors,
-  defineProperty as o_defineProperty,
-  canDefineNonEnumerableProperties
-} from 'ember-metal/platform/define_property';
 
 /**
 @module ember-metal
@@ -201,7 +196,7 @@ export function generateGuid(obj, prefix) {
       if (obj.__defineNonEnumerable) {
         obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
       } else {
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
       }
     }
   }
@@ -282,7 +277,7 @@ export function guidFor(obj) {
         if (obj.__defineNonEnumerable) {
           obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
         } else {
-          o_defineProperty(obj, GUID_KEY, GUID_DESC);
+          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
         }
       }
       return ret;
@@ -310,25 +305,11 @@ Meta.prototype = {
   chainWatchers: null // FIXME
 };
 
-if (!canDefineNonEnumerableProperties) {
-  // on platforms that don't support enumerable false
-  // make meta fail jQuery.isPlainObject() to hide from
-  // jQuery.extend() by having a property that fails
-  // hasOwnProperty check.
-  Meta.prototype.__preventPlainObject__ = true;
-
-  // Without non-enumerable properties, meta objects will be output in JSON
-  // unless explicitly suppressed
-  Meta.prototype.toJSON = function() { };
-}
-
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
 
 if (isEnabled('mandatory-setter')) {
-  if (hasPropertyAccessors) {
-    EMPTY_META.values = {};
-  }
+  EMPTY_META.values = {};
 }
 
 /**
@@ -356,20 +337,16 @@ function meta(obj, writable) {
   }
 
   if (!ret) {
-    if (canDefineNonEnumerableProperties) {
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-      } else {
-        o_defineProperty(obj, '__ember_meta__', META_DESC);
-      }
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
 
     ret = new Meta(obj);
 
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = {};
-      }
+      ret.values = {};
     }
 
     obj.__ember_meta__ = ret;
@@ -377,7 +354,7 @@ function meta(obj, writable) {
     if (obj.__defineNonEnumerable) {
       obj.__defineNonEnumerable(EMBER_META_PROPERTY);
     } else {
-      o_defineProperty(obj, '__ember_meta__', META_DESC);
+      Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
 
     ret = o_create(ret);
@@ -387,9 +364,7 @@ function meta(obj, writable) {
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = o_create(ret.values);
-      }
+      ret.values = o_create(ret.values);
     }
 
     obj['__ember_meta__'] = ret;
