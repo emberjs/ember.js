@@ -11,6 +11,7 @@ QUnit.module("RenderBuffer");
 var domHelper = new DOMHelper();
 
 function createRenderBuffer(tagName, contextualElement) {
+  expectDeprecation('`Ember.RenderBuffer` is deprecated.');
   var buffer = new RenderBuffer(domHelper);
   buffer.reset(tagName, contextualElement);
 
