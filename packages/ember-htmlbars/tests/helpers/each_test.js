@@ -5,7 +5,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import LegacyEachView from "ember-views/views/legacy_each_view";
 import { computed } from "ember-metal/computed";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
 import EmberController from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
@@ -968,6 +968,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   }
 
   QUnit.test("controller is assignable inside an #each", function() {
+    expectDeprecation(arrayControllerDeprecation);
     var controller = ArrayController.create({
       model: A([{ name: "Adam" }, { name: "Steve" }])
     });
@@ -1048,6 +1049,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   });
 
   QUnit.test("itemController specified in ArrayController with name binding does not change context", function() {
+    expectDeprecation(arrayControllerDeprecation);
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     var PersonController = EmberController.extend({

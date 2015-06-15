@@ -5,7 +5,7 @@ import { forEach } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import ArrayProxy from "ember-runtime/system/array_proxy";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
 import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
@@ -519,7 +519,7 @@ QUnit.test("should not render the emptyView if content is emptied and refilled i
 });
 
 QUnit.test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
-
+  expectDeprecation(arrayControllerDeprecation);
   var array = Ember.A([{ name: "Other Katz" }]);
   var arrayProxy = ArrayProxy.create({ content: array });
 

@@ -3,6 +3,7 @@ import "ember";
 import { objectControllerDeprecation } from "ember-runtime/controllers/object_controller";
 import EmberHandlebars from "ember-htmlbars/compat";
 import EmberView from "ember-views/views/view";
+import { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 var compile = EmberHandlebars.compile;
 
@@ -439,6 +440,7 @@ QUnit.test("The {{link-to}} helper supports bubbles=false", function() {
 });
 
 QUnit.test("The {{link-to}} helper moves into the named route with context", function() {
+  expectDeprecation(arrayControllerDeprecation);
   Router.map(function(match) {
     this.route("about");
     this.resource("item", { path: "/item/:id" });
@@ -1026,7 +1028,8 @@ QUnit.test("The non-block form {{link-to}} helper updates the link text when it 
 });
 
 QUnit.test("The non-block form {{link-to}} helper moves into the named route with context", function() {
-  expect(5);
+  expect(6);
+  expectDeprecation(arrayControllerDeprecation);
   Router.map(function(match) {
     this.route("item", { path: "/item/:id" });
   });

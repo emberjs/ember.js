@@ -3,7 +3,7 @@
 import Controller from "ember-runtime/controllers/controller";
 import Service from "ember-runtime/system/service";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import {
   objectControllerDeprecation
 } from "ember-runtime/controllers/object_controller";
@@ -243,6 +243,7 @@ QUnit.test("controllers can be injected into ObjectControllers", function() {
 });
 
 QUnit.test("controllers can be injected into ArrayControllers", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var registry = new Registry();
   var container = registry.container();
 

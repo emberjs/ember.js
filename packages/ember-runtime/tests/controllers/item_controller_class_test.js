@@ -5,7 +5,7 @@ import {get} from "ember-metal/property_get";
 import {computed} from "ember-metal/computed";
 import compare from "ember-runtime/compare";
 import EmberObject from "ember-runtime/system/object";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import Controller from "ember-runtime/controllers/controller";
 import {sort} from "ember-runtime/computed/reduce_computed_macros";
 import Registry from "container/registry";
@@ -54,6 +54,7 @@ QUnit.module("Ember.ArrayController - itemController", {
 });
 
 function createUnwrappedArrayController() {
+  expectDeprecation(arrayControllerDeprecation);
   arrayController = ArrayController.create({
     container: container,
     model: lannisters
@@ -61,6 +62,7 @@ function createUnwrappedArrayController() {
 }
 
 function createArrayController() {
+  expectDeprecation(arrayControllerDeprecation);
   arrayController = ArrayController.create({
     container: container,
     itemController: 'Item',
@@ -69,6 +71,7 @@ function createArrayController() {
 }
 
 function createDynamicArrayController() {
+  expectDeprecation(arrayControllerDeprecation);
   arrayController = ArrayController.create({
     container: container,
     lookupItemController(object) {
@@ -238,6 +241,7 @@ QUnit.test("`itemController` can be dynamic by overwriting `lookupItemController
 });
 
 QUnit.test("when `idx` is out of range, `lookupItemController` is not called", function() {
+  expectDeprecation(arrayControllerDeprecation);
   arrayController = ArrayController.create({
     container: container,
     lookupItemController(object) {
@@ -251,6 +255,7 @@ QUnit.test("when `idx` is out of range, `lookupItemController` is not called", f
 });
 
 QUnit.test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
+  expectDeprecation(arrayControllerDeprecation);
   arrayController = ArrayController.create({
     container: container,
     lookupItemController(object) {
@@ -267,6 +272,7 @@ QUnit.test("if `lookupItemController` returns a string, it must be resolvable by
 });
 
 QUnit.test("target and parentController are set to the concrete parentController", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var parent = ArrayController.create({
 
   });

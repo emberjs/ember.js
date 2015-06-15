@@ -7,7 +7,7 @@ import ActionManager from "ember-views/system/action_manager";
 import { Registry } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import EmberController from "ember-runtime/controllers/controller";
-import EmberArrayController from "ember-runtime/controllers/array_controller";
+import EmberArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 import compile from "ember-template-compiler/system/compile";
 import EmberView from "ember-views/views/view";
@@ -131,6 +131,7 @@ QUnit.test("Inside a yield, the target points at the original target", function(
 });
 
 QUnit.test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var registeredTarget;
 
   ActionHelper.registerAction = function({ node }) {
@@ -195,6 +196,7 @@ QUnit.test("should target the with-controller inside an {{#with controller='pers
 QUnit.skip("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
   expectDeprecation(eachDeprecation);
   expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
+  expectDeprecation(arrayControllerDeprecation);
 
   var eventsCalled = [];
 

@@ -4,6 +4,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 import EmberView from "ember-views/views/view";
+import { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -626,6 +627,8 @@ QUnit.test("The Homepage with a `setupController` hook modifying other controlle
 });
 
 QUnit.test("The Homepage with a computed context that does not get overridden", function() {
+  expectDeprecation(arrayControllerDeprecation);
+
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -650,6 +653,8 @@ QUnit.test("The Homepage with a computed context that does not get overridden", 
 });
 
 QUnit.test("The Homepage getting its controller context via model", function() {
+  expectDeprecation(arrayControllerDeprecation);
+
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -2283,6 +2288,8 @@ QUnit.test("Nested index route is not overriden by parent's implicit index route
 });
 
 QUnit.test("Application template does not duplicate when re-rendered", function() {
+  expectDeprecation(arrayControllerDeprecation);
+
   Ember.TEMPLATES.application = compile("<h3>I Render Once</h3>{{outlet}}");
 
   Router.map(function() {

@@ -5,7 +5,7 @@ import EventDispatcher from "ember-views/system/event_dispatcher";
 
 import { computed } from "ember-metal/computed";
 import Namespace from "ember-runtime/system/namespace";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SelectView from "ember-views/views/select";
 import compile from 'ember-template-compiler/system/compile';
@@ -26,6 +26,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
 });
 
 QUnit.test("works from a template with bindings [DEPRECATED]", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -88,6 +89,7 @@ QUnit.test("works from a template with bindings [DEPRECATED]", function() {
 });
 
 QUnit.test("works from a template", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
     firstName: null,

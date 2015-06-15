@@ -17,6 +17,8 @@ import EmberError from 'ember-metal/error';
 import EmberArray from 'ember-runtime/mixins/array';
 
 
+export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
+
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
   objects so that you can easily bind to the collection from a Handlebars
@@ -101,6 +103,7 @@ import EmberArray from 'ember-runtime/mixins/array';
   @extends Ember.ArrayProxy
   @uses Ember.SortableMixin
   @uses Ember.ControllerMixin
+  @deprecated
   @public
 */
 
@@ -203,6 +206,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init() {
+    Ember.deprecate(arrayControllerDeprecation);
     this._super(...arguments);
     this._subControllers = [];
   },
