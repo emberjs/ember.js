@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core";
 import isEnabled from "ember-metal/features";
-import o_create from 'ember-metal/platform/create';
 
 /**
 @module ember-metal
@@ -357,14 +356,14 @@ function meta(obj, writable) {
       Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
 
-    ret = o_create(ret);
-    ret.watching  = o_create(ret.watching);
+    ret = Object.create(ret);
+    ret.watching  = Object.create(ret.watching);
     ret.cache     = undefined;
     ret.cacheMeta = undefined;
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {
-      ret.values = o_create(ret.values);
+      ret.values = Object.create(ret.values);
     }
 
     obj['__ember_meta__'] = ret;
@@ -430,7 +429,7 @@ export function metaPath(obj, path, writable) {
       value = _meta[keyName] = { __ember_source__: obj };
     } else if (value.__ember_source__ !== obj) {
       if (!writable) { return undefined; }
-      value = _meta[keyName] = o_create(value);
+      value = _meta[keyName] = Object.create(value);
       value.__ember_source__ = obj;
     }
 

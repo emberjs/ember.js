@@ -10,7 +10,6 @@
 
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import merge from "ember-metal/merge";
-import o_create from "ember-metal/platform/create";
 import { get } from "ember-metal/property_get";
 import { set, trySet } from "ember-metal/property_set";
 import {
@@ -81,7 +80,7 @@ function mixinsMeta(obj) {
   if (!ret) {
     ret = m.mixins = {};
   } else if (!m.hasOwnProperty('mixins')) {
-    ret = m.mixins = o_create(ret);
+    ret = m.mixins = Object.create(ret);
   }
   return ret;
 }
@@ -149,7 +148,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // Since multiple mixins may inherit from the same parent, we need
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
-  property = o_create(property);
+  property = Object.create(property);
   property._getter = wrap(property._getter, superProperty._getter);
   if (superProperty._setter) {
     if (property._setter) {
@@ -322,7 +321,7 @@ function detectBinding(obj, key, value, m) {
     if (!bindings) {
       bindings = m.bindings = {};
     } else if (!m.hasOwnProperty('bindings')) {
-      bindings = m.bindings = o_create(m.bindings);
+      bindings = m.bindings = Object.create(m.bindings);
     }
     bindings[key] = value;
   }
@@ -347,7 +346,7 @@ function connectStreamBinding(obj, key, stream) {
   stream.subscribe(onNotify);
 
   if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = o_create(null);
+    obj._streamBindingSubscriptions = Object.create(null);
   }
 
   obj._streamBindingSubscriptions[key] = onNotify;

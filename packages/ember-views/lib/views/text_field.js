@@ -4,12 +4,11 @@
 */
 import { computed } from "ember-metal/computed";
 import environment from "ember-metal/environment";
-import create from "ember-metal/platform/create";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-views/mixins/text_support";
 
 var inputTypeTestElement;
-var inputTypes = create(null);
+var inputTypes = Object.create(null);
 function canSetTypeOfInput(type) {
   if (type in inputTypes) {
     return inputTypes[type];

@@ -1,5 +1,3 @@
-import create from "ember-metal/platform/create";
-
 var errorProps = [
   'description',
   'fileName',
@@ -19,7 +17,7 @@ var errorProps = [
   @constructor
   @public
 */
-function EmberError() {
+export default function EmberError() {
   var tmp = Error.apply(this, arguments);
 
   // Adds a `stack` property to the given error object that will yield the
@@ -38,6 +36,4 @@ function EmberError() {
   }
 }
 
-EmberError.prototype = create(Error.prototype);
-
-export default EmberError;
+EmberError.prototype = Object.create(Error.prototype);

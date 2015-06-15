@@ -1,5 +1,4 @@
 import { inspect } from "ember-metal/utils";
-import create from 'ember-metal/platform/create';
 
 QUnit.module("Ember.inspect");
 
@@ -34,7 +33,7 @@ QUnit.test("object", function() {
 });
 
 QUnit.test("objects without a prototype", function() {
-  var prototypelessObj = create(null);
+  var prototypelessObj = Object.create(null);
   equal(inspect({ foo: prototypelessObj }), "{foo: [object Object]}");
 });
 

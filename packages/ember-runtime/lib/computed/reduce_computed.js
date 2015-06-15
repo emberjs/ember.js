@@ -21,7 +21,6 @@ import {
   ComputedProperty,
   cacheFor
 } from 'ember-metal/computed';
-import o_create from 'ember-metal/platform/create';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
@@ -574,7 +573,7 @@ function ReduceComputedProperty(options) {
   };
 }
 
-ReduceComputedProperty.prototype = o_create(ComputedProperty.prototype);
+ReduceComputedProperty.prototype = Object.create(ComputedProperty.prototype);
 
 function defaultCallback(computedValue) {
   return computedValue;

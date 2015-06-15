@@ -5,7 +5,6 @@
 
 import jQuery from "ember-views/system/jquery";
 import Ember from "ember-metal/core";
-import o_create from 'ember-metal/platform/create';
 import { normalizeProperty } from "dom-helper/prop";
 import { canSetNameOnInputs } from "ember-views/system/platform";
 
@@ -57,7 +56,7 @@ function detectOmittedStartTag(dom, string, contextualElement) {
 }
 
 function ClassSet() {
-  this.seen = o_create(null);
+  this.seen = Object.create(null);
   this.list = [];
 }
 

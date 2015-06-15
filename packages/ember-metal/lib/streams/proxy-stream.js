@@ -1,13 +1,12 @@
 import merge from "ember-metal/merge";
 import Stream from "ember-metal/streams/stream";
-import create from "ember-metal/platform/create";
 
 function ProxyStream(source, label) {
   this.init(label);
   this.sourceDep = this.addMutableDependency(source);
 }
 
-ProxyStream.prototype = create(Stream.prototype);
+ProxyStream.prototype = Object.create(Stream.prototype);
 
 merge(ProxyStream.prototype, {
   compute() {

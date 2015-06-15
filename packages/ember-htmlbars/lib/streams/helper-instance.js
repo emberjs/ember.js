@@ -1,5 +1,4 @@
 import Stream from "ember-metal/streams/stream";
-import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 import {
   getArrayValues,
@@ -14,7 +13,7 @@ export default function HelperInstanceStream(helper, params, hash, label) {
   this.linkable = true;
 }
 
-HelperInstanceStream.prototype = create(Stream.prototype);
+HelperInstanceStream.prototype = Object.create(Stream.prototype);
 
 merge(HelperInstanceStream.prototype, {
   compute() {

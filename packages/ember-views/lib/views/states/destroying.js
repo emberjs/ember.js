@@ -1,5 +1,4 @@
 import merge from "ember-metal/merge";
-import create from 'ember-metal/platform/create';
 import {fmt} from "ember-runtime/system/string";
 import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";
@@ -10,7 +9,7 @@ import EmberError from "ember-metal/error";
 
 var destroyingError = "You can't call %@ on a view being destroyed";
 
-var destroying = create(_default);
+var destroying = Object.create(_default);
 
 merge(destroying, {
   appendChild() {

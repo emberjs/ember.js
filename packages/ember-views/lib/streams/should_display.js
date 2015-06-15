@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-runtime/utils";
@@ -34,7 +33,7 @@ function ShouldDisplayStream(predicate) {
   this.addDependency(isTruthy);
 }
 
-ShouldDisplayStream.prototype = create(Stream.prototype);
+ShouldDisplayStream.prototype = Object.create(Stream.prototype);
 
 merge(ShouldDisplayStream.prototype, {
   compute() {

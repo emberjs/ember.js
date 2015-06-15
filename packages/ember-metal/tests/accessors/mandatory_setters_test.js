@@ -2,7 +2,6 @@ import isEnabled from "ember-metal/features";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { watch } from "ember-metal/watching";
-import create from 'ember-metal/platform/create';
 import { meta as metaFor } from "ember-metal/utils";
 
 QUnit.module('mandatory-setters');
@@ -128,7 +127,7 @@ if (isEnabled('mandatory-setter')) {
         return 'custom-object';
       }
     };
-    var obj2 = create(obj);
+    var obj2 = Object.create(obj);
 
     watch(obj2, 'someProp');
     var meta = metaFor(obj2);

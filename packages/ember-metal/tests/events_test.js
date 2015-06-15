@@ -1,5 +1,4 @@
 import { Mixin } from 'ember-metal/mixin';
-import create from 'ember-metal/platform/create';
 import { meta } from 'ember-metal/utils';
 
 import {
@@ -39,7 +38,7 @@ QUnit.test('listeners should be inherited', function() {
 
   addListener(obj, 'event!', F);
 
-  var obj2 = create(obj);
+  var obj2 = Object.create(obj);
 
   equal(count, 0, 'nothing yet');
 

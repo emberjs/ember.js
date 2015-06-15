@@ -22,7 +22,6 @@ import {
   guidFor,
   apply
 } from "ember-metal/utils";
-import o_create from 'ember-metal/platform/create';
 import {
   generateGuid,
   GUID_KEY_PROPERTY,
@@ -111,7 +110,7 @@ function makeCtor() {
             if (!bindings) {
               bindings = m.bindings = {};
             } else if (!m.hasOwnProperty('bindings')) {
-              bindings = m.bindings = o_create(m.bindings);
+              bindings = m.bindings = Object.create(m.bindings);
             }
             bindings[keyName] = value;
           }
@@ -567,7 +566,7 @@ var ClassMixinProps = {
     Class.superclass = this;
     Class.__super__  = this.prototype;
 
-    proto = Class.prototype = o_create(this.prototype);
+    proto = Class.prototype = Object.create(this.prototype);
     proto.constructor = Class;
     generateGuid(proto);
     meta(proto).proto = proto; // this will disable observers on prototype

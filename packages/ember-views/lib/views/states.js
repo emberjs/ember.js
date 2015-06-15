@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import _default from "ember-views/views/states/default";
 import preRender from "ember-views/views/states/pre_render";
@@ -10,10 +9,10 @@ export function cloneStates(from) {
   var into = {};
 
   into._default = {};
-  into.preRender = create(into._default);
-  into.destroying = create(into._default);
-  into.hasElement = create(into._default);
-  into.inDOM = create(into.hasElement);
+  into.preRender = Object.create(into._default);
+  into.destroying = Object.create(into._default);
+  into.hasElement = Object.create(into._default);
+  into.inDOM = Object.create(into.hasElement);
 
   for (var stateName in from) {
     if (!from.hasOwnProperty(stateName)) { continue; }
