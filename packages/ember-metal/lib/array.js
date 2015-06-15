@@ -111,12 +111,55 @@ var filter = defineNativeShim(ArrayPrototype.filter, function(fn, context) {
   return result;
 });
 
+var contains = defineNativeShim(ArrayPrototype.contains, function (searchElement /*, fromIndex */) {
+  var l = this.length;
+
+  if (l=== 0) {
+    return false;
+  }
+
+  var n = arguments.length === 2 ? arguments[1] : 0;
+
+  // 8. If n ≥ len, return false.
+  if (n >= l) {
+    return false;
+  }
+
+  var k;
+
+  if (n >= 0) {
+    k = n;
+  } else {
+    k = l - Math.abs(n);
+    if (k < 0) {
+      k = 0;
+    }
+  }
+
+  var nan = searchElement !== searchElement;
+
+  while (k < l) {
+    var elementK = this[k];
+
+    if (nan && elementK !== elementK ||
+        searchElement === elementK) {
+      return true;
+    }
+
+    k++;
+  }
+
+  return false;
+});
+
+
 if (Ember.SHIM_ES5) {
   ArrayPrototype.map = ArrayPrototype.map || map;
   ArrayPrototype.forEach = ArrayPrototype.forEach || forEach;
   ArrayPrototype.filter = ArrayPrototype.filter || filter;
   ArrayPrototype.indexOf = ArrayPrototype.indexOf || indexOf;
   ArrayPrototype.lastIndexOf = ArrayPrototype.lastIndexOf || lastIndexOf;
+  ArrayPrototype.contains = ArrayPrototype.contains || contains;
 }
 
 /**
@@ -131,5 +174,6 @@ export {
   forEach,
   filter,
   indexOf,
-  lastIndexOf
+  lastIndexOf,
+  contains
 };

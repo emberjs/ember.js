@@ -99,7 +99,10 @@ export default Mixin.create(Enumerable, {
   */
   removeObject: null,
 
-
+  contains: function(searchElement/*, fromIndex*/) {
+    // TODO:
+    throw new Error("not done yet");
+  },
   /**
     Removes each object in the passed enumerable from the receiver.
 
