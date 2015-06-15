@@ -220,7 +220,7 @@ export default Mixin.create({
 
     @method setProperties
     @param {Object} hash the hash of keys and values to set
-    @return {Ember.Observable}
+    @return {Object} The passed in hash
     @public
   */
   setProperties(hash) {
