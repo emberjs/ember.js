@@ -198,19 +198,10 @@ export default Mixin.create({
     another object) will be placed in a queue and called at a later time in a
     coalesced manner.
 
-    ### Chaining
-
-    In addition to property changes, `set()` returns the value of the object
-    itself so you can do chaining like this:
-
-    ```javascript
-    record.set('firstName', 'Charles').set('lastName', 'Jolley');
-    ```
-
     @method set
     @param {String} keyName The property to set
     @param {Object} value The value to set or `null`.
-    @return {Ember.Observable}
+    @return {Object} The passed value
     @public
   */
   set(keyName, value) {
@@ -229,7 +220,7 @@ export default Mixin.create({
 
     @method setProperties
     @param {Object} hash the hash of keys and values to set
-    @return {Ember.Observable}
+    @return {Object} The passed in hash
     @public
   */
   setProperties(hash) {
