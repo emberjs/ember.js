@@ -793,9 +793,6 @@ export function aliasMethod(methodName) {
   });
   ```
 
-  In the future this method may become asynchronous. If you want to ensure
-  synchronous behavior, use `immediateObserver`.
-
   Also available as `Function.prototype.observes` if prototype extensions are
   enabled.
 
@@ -855,10 +852,13 @@ export function observer(...args) {
   @for Ember
   @param {String} propertyNames*
   @param {Function} func
+  @deprecated Use `Ember.observer` instead.
   @return func
   @private
 */
 export function immediateObserver() {
+  Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.');
+
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
     Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.",
