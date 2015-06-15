@@ -16,7 +16,6 @@ import {
   Mixin,
   observer
 } from "ember-metal/mixin";
-import { deprecateProperty } from "ember-metal/deprecate_property";
 
 import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
@@ -1481,9 +1480,6 @@ var View = CoreView.extend(
   }
 });
 // jscs:enable validateIndentation
-
-deprecateProperty(View.prototype, 'state', '_state');
-deprecateProperty(View.prototype, 'states', '_states');
 
 /*
   Describe how the specified actions should behave in the various
