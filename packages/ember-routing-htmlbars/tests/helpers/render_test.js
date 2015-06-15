@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
 import { observer } from 'ember-metal/mixin';
 
 import Namespace from "ember-runtime/system/namespace";
@@ -162,11 +161,7 @@ QUnit.test("{{render}} helper should render given template with a supplied model
   runSet(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HIRails is unagi');
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController.get('model'), { title: "Rails is unagi" });
-  } else {
-    equal(postController.get('model').title, "Rails is unagi");
-  }
+  deepEqual(postController.get('model'), { title: "Rails is unagi" });
 });
 
 QUnit.test("{{render}} helper with a supplied model should not fire observers on the controller", function () {
@@ -305,11 +300,7 @@ QUnit.test("{{render}} helper should render templates with models multiple times
   runSet(controller, 'post1', { title: "I am new" });
 
   ok(view.$().text().match(/^HI ?I am new ?Then me$/));
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController1.get('model'), { title: "I am new" });
-  } else {
-    equal(postController1.get('model').title, "I am new");
-  }
+  deepEqual(postController1.get('model'), { title: "I am new" });
 });
 
 QUnit.test("{{render}} helper should not leak controllers", function() {
@@ -426,11 +417,7 @@ QUnit.test("{{render}} helper should render templates both with and without mode
   runSet(controller, 'post', { title: "Rails is unagi" });
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController2.get('model'), { title: "Rails is unagi" });
-  } else {
-    equal(postController2.get('model').title, "Rails is unagi");
-  }
+  deepEqual(postController2.get('model'), { title: "Rails is unagi" });
 });
 
 QUnit.test("{{render}} helper should link child controllers to the parent controller", function() {

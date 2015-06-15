@@ -36,9 +36,6 @@ import {
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import Cache from "ember-metal/cache";
-import {
-  hasPropertyAccessors
-} from 'ember-metal/platform/define_property';
 import create from 'ember-metal/platform/create';
 import Logger from "ember-metal/logger";
 
@@ -231,8 +228,8 @@ Ember.GUID_KEY        = GUID_KEY;
 Ember.create          = create;
 Ember.keys            = keys;
 Ember.platform        = {
-  defineProperty: defineProperty,
-  hasPropertyAccessors: hasPropertyAccessors
+  defineProperty: true,
+  hasPropertyAccessors: true
 };
 
 Ember.Error           = EmberError;

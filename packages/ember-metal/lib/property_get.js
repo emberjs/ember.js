@@ -10,7 +10,6 @@ import {
   isPath,
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
-import { hasPropertyAccessors } from "ember-metal/platform/define_property";
 import { symbol } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
 
@@ -87,7 +86,7 @@ export function get(obj, keyName) {
     return desc.get(obj, keyName);
   } else {
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors && meta && meta.watching[keyName] > 0) {
+      if (meta && meta.watching[keyName] > 0) {
         ret = meta.values[keyName];
       } else {
         ret = obj[keyName];
