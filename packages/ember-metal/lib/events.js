@@ -14,7 +14,6 @@ import {
   apply,
   applyStr
 } from "ember-metal/utils";
-import create from "ember-metal/platform/create";
 
 /* listener flags */
 var ONCE = 1;
@@ -59,11 +58,11 @@ function actionsFor(obj, eventName) {
   var listeners = meta.listeners;
 
   if (!listeners) {
-    listeners = meta.listeners = create(null);
+    listeners = meta.listeners = Object.create(null);
     listeners.__source__ = obj;
   } else if (listeners.__source__ !== obj) {
     // setup inherited copy of the listeners object
-    listeners = meta.listeners = create(listeners);
+    listeners = meta.listeners = Object.create(listeners);
     listeners.__source__ = obj;
   }
 

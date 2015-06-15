@@ -1,6 +1,5 @@
 import _default from "ember-views/views/states/default";
 import merge from "ember-metal/merge";
-import create from 'ember-metal/platform/create';
 import jQuery from "ember-views/system/jquery";
 
 /**
@@ -11,7 +10,7 @@ import jQuery from "ember-views/system/jquery";
 import { get } from "ember-metal/property_get";
 import { internal } from "htmlbars-runtime";
 
-var hasElement = create(_default);
+var hasElement = Object.create(_default);
 
 merge(hasElement, {
   $(view, sel) {

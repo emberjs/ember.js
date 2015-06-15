@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import {
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
-import o_create from 'ember-metal/platform/create';
 import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
 
@@ -34,7 +33,7 @@ function ArrayComputedProperty() {
   return this;
 }
 
-ArrayComputedProperty.prototype = o_create(ReduceComputedProperty.prototype);
+ArrayComputedProperty.prototype = Object.create(ReduceComputedProperty.prototype);
 
 ArrayComputedProperty.prototype.initialValue = function () {
   return Ember.A();

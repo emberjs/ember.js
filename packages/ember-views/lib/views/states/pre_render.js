@@ -1,5 +1,4 @@
 import _default from "ember-views/views/states/default";
-import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 
 /**
@@ -7,7 +6,7 @@ import merge from "ember-metal/merge";
 @submodule ember-views
 */
 
-let preRender = create(_default);
+let preRender = Object.create(_default);
 
 merge(preRender, {
   legacyAttrWillChange(view, key) {},

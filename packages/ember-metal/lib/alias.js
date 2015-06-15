@@ -7,7 +7,6 @@ import {
   defineProperty
 } from "ember-metal/properties";
 import { ComputedProperty } from "ember-metal/computed";
-import create from "ember-metal/platform/create";
 import {
   meta,
   inspect
@@ -27,7 +26,7 @@ export function AliasedProperty(altKey) {
   this._dependentKeys = [altKey];
 }
 
-AliasedProperty.prototype = create(Descriptor.prototype);
+AliasedProperty.prototype = Object.create(Descriptor.prototype);
 
 AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
   return get(obj, this.altKey);

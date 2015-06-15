@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import copy from "ember-runtime/copy";
 
 QUnit.module("Ember Copy Method");
@@ -17,7 +16,7 @@ QUnit.test("Ember.copy date", function() {
 });
 
 QUnit.test("Ember.copy null prototype object", function() {
-  var obj = create(null);
+  var obj = Object.create(null);
 
   obj.foo = 'bar';
 

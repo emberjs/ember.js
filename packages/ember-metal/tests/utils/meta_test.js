@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import {
   getMeta,
   setMeta,
@@ -53,7 +52,28 @@ QUnit.test("meta is not enumerable", function () {
   var proto, obj, props, prop;
   proto = { foo: 'bar' };
   meta(proto);
-  obj = create(proto);
+  obj = Object.create(proto);
+  meta(obj);
+  obj.bar = 'baz';
+  props = [];
+  for (prop in obj) {
+    props.push(prop);
+  }
+  deepEqual(props.sort(), ['bar', 'foo']);
+  if (typeof JSON !== 'undefined' && 'stringify' in JSON) {
+    try {
+      JSON.stringify(obj);
+    } catch (e) {
+      ok(false, 'meta should not fail JSON.stringify');
+    }
+  }
+});
+
+QUnit.test("meta is not enumerable", function () {
+  var proto, obj, props, prop;
+  proto = { foo: 'bar' };
+  meta(proto);
+  obj = Object.create(proto);
   meta(obj);
   obj.bar = 'baz';
   props = [];

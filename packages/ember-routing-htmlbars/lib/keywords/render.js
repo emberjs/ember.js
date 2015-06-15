@@ -1,7 +1,6 @@
 import Ember from "ember-metal/core"; // assert
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
-import create from 'ember-metal/platform/create';
 import { isStream, read } from "ember-metal/streams/utils";
 import { camelize } from "ember-runtime/system/string";
 import generateController from "ember-routing/system/generate_controller";
@@ -191,7 +190,7 @@ function childOutletState(name, env) {
   if (!selectedOutletState) { return; }
   var matched = selectedOutletState.outlets[name];
   if (matched) {
-    var childState = create(null);
+    var childState = Object.create(null);
     childState[matched.render.outlet] = matched;
     matched.wasUsed = true;
     return childState;

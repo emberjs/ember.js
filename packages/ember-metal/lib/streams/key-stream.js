@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 
 import merge from "ember-metal/merge";
-import create from 'ember-metal/platform/create';
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import {
@@ -30,7 +29,7 @@ function labelFor(source, key) {
   return source.label ? source.label + '.' + key : key;
 }
 
-KeyStream.prototype = create(Stream.prototype);
+KeyStream.prototype = Object.create(Stream.prototype);
 
 merge(KeyStream.prototype, {
   compute() {

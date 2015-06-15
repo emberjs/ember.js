@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
 import { addBeforeObserver } from 'ember-metal/observer';
@@ -9,7 +8,7 @@ import hasElement from "ember-views/views/states/has_element";
 @submodule ember-views
 */
 
-var inDOM = create(hasElement);
+var inDOM = Object.create(hasElement);
 
 merge(inDOM, {
   enter(view) {

@@ -18,7 +18,6 @@ import {
   stashParamNames,
   calculateCacheKey
 } from "ember-routing/utils";
-import create from 'ember-metal/platform/create';
 import RouterState from "./router_state";
 
 /**
@@ -465,7 +464,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction() {
-    var seen = create(null);
+    var seen = Object.create(null);
     var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
 
@@ -1042,7 +1041,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   var target;
   var myState = {
     render: renderOptions,
-    outlets: create(null)
+    outlets: Object.create(null)
   };
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
@@ -1076,7 +1075,7 @@ function appendOrphan(liveRoutes, into, myState) {
       render: {
         name: '__ember_orphans__'
       },
-      outlets: create(null)
+      outlets: Object.create(null)
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;

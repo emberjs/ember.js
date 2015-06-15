@@ -12,7 +12,6 @@ import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import Namespace from "ember-runtime/system/namespace";
 import DefaultResolver from "ember-application/system/resolver";
-import create from "ember-metal/platform/create";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
 import Controller from "ember-runtime/controllers/controller";
@@ -846,8 +845,8 @@ if (isEnabled('ember-application-visit')) {
 }
 
 Application.reopenClass({
-  initializers: create(null),
-  instanceInitializers: create(null),
+  initializers: Object.create(null),
+  instanceInitializers: Object.create(null),
 
   /**
     Initializer receives an object which has the following attributes:
@@ -1174,7 +1173,7 @@ function buildInitializerMethod(bucketName, humanName) {
     // pollute the parent class as well as other subclasses.
     if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
       var attrs = {};
-      attrs[bucketName] = create(this[bucketName]);
+      attrs[bucketName] = Object.create(this[bucketName]);
       this.reopenClass(attrs);
     }
 

@@ -3,7 +3,6 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
 import { set } from 'ember-metal/property_set';
-import o_create from 'ember-metal/platform/create';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
@@ -64,7 +63,7 @@ QUnit.test('should read an escaped number value', function() {
 
 QUnit.test('should read from an Object.create(null)', function() {
   // Use ember's polyfill for Object.create
-  var nullObject = o_create(null);
+  var nullObject = Object.create(null);
   nullObject['foo'] = 'bar';
   view = EmberView.create({
     context: { nullObject: nullObject },

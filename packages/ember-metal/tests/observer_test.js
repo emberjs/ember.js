@@ -12,7 +12,6 @@ import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import create from 'ember-metal/platform/create';
 import { defineProperty } from 'ember-metal/properties';
 import {
   computed,
@@ -511,7 +510,7 @@ testBoth('addObserver should propagate through prototype', function(get, set) {
   var obj2;
 
   addObserver(obj, 'foo', function() { this.count++; });
-  obj2 = create(obj);
+  obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
 
@@ -812,7 +811,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get, s
   var obj2;
 
   addBeforeObserver(obj, 'foo', function() { this.count++; });
-  obj2 = create(obj);
+  obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
   equal(obj2.count, 1, 'should have invoked observer on inherited');

@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import ObjectProxy from "ember-runtime/system/object_proxy";
@@ -186,7 +185,7 @@ QUnit.test("should work with promise inheritance", function() {
     RSVP.Promise.apply(this, arguments);
   }
 
-  PromiseSubclass.prototype = create(RSVP.Promise.prototype);
+  PromiseSubclass.prototype = Object.create(RSVP.Promise.prototype);
   PromiseSubclass.prototype.constructor = PromiseSubclass;
   PromiseSubclass.cast = RSVP.Promise.cast;
 
