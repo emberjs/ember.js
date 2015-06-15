@@ -19,6 +19,8 @@ import EmberArray from 'ember-runtime/mixins/array';
 
 export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
 
+export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
+
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
   objects so that you can easily bind to the collection from a Handlebars
