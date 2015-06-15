@@ -483,6 +483,10 @@ prototype.insertBoundary = function(fragment, index) {
   this.insertBefore(fragment, this.createTextNode(''), child);
 };
 
+prototype.setMorphHTML = function(morph, html) {
+  morph.setHTML(html);
+};
+
 prototype.parseHTML = function(html, contextualElement) {
   var childNodes;
 
