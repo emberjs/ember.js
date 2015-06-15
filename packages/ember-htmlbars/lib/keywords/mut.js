@@ -1,4 +1,3 @@
-import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 import { symbol } from "ember-metal/utils";
 import ProxyStream from "ember-metal/streams/proxy-stream";
@@ -57,7 +56,7 @@ function MutStream(stream) {
   this[MUTABLE_REFERENCE] = true;
 }
 
-MutStream.prototype = create(ProxyStream.prototype);
+MutStream.prototype = Object.create(ProxyStream.prototype);
 
 merge(MutStream.prototype, {
   cell() {

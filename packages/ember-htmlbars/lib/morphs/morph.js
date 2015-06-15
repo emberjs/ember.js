@@ -1,5 +1,4 @@
 import DOMHelper from "dom-helper";
-import o_create from 'ember-metal/platform/create';
 
 var HTMLBarsMorph = DOMHelper.prototype.MorphClass;
 let guid = 1;
@@ -22,7 +21,7 @@ function EmberMorph(DOMHelper, contextualElement) {
   this.shouldReceiveAttrs = false;
 }
 
-var proto = EmberMorph.prototype = o_create(HTMLBarsMorph.prototype);
+var proto = EmberMorph.prototype = Object.create(HTMLBarsMorph.prototype);
 proto.HTMLBarsMorph$constructor = HTMLBarsMorph;
 proto.HTMLBarsMorph$clear = HTMLBarsMorph.prototype.clear;
 

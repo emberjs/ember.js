@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core";
-import create from "ember-metal/platform/create";
 import { getFirstKey, getTailPath } from "ember-metal/path_cache";
 import { addObserver, removeObserver } from "ember-metal/observer";
 import { isStream } from 'ember-metal/streams/utils';
@@ -52,7 +51,7 @@ Stream.prototype = {
 
   getKey(key) {
     if (this.children === undefined) {
-      this.children = create(null);
+      this.children = Object.create(null);
     }
 
     var keyStream = this.children[key];
@@ -70,7 +69,7 @@ Stream.prototype = {
     var tailPath = getTailPath(path);
 
     if (this.children === undefined) {
-      this.children = create(null);
+      this.children = Object.create(null);
     }
 
     var keyStream = this.children[firstKey];

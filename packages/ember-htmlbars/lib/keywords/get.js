@@ -2,7 +2,6 @@ import isEnabled from "ember-metal/features";
 import Stream from "ember-metal/streams/stream";
 import { labelFor } from "ember-metal/streams/utils";
 import { read, isStream } from "ember-metal/streams/utils";
-import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 
 if (isEnabled('ember-htmlbars-get-helper')) {
@@ -41,7 +40,7 @@ if (isEnabled('ember-htmlbars-get-helper')) {
     this.addDependency(obj);
   };
 
-  GetStream.prototype = create(Stream.prototype);
+  GetStream.prototype = Object.create(Stream.prototype);
 
   merge(GetStream.prototype, {
     updateValueDependency() {

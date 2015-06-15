@@ -1,5 +1,4 @@
 import Stream from "ember-metal/streams/stream";
-import create from "ember-metal/platform/create";
 import merge from "ember-metal/merge";
 
 export default function CompatHelperStream(helper, params, hash, templates, env, scope, label) {
@@ -12,7 +11,7 @@ export default function CompatHelperStream(helper, params, hash, templates, env,
   this.hash = hash;
 }
 
-CompatHelperStream.prototype = create(Stream.prototype);
+CompatHelperStream.prototype = Object.create(Stream.prototype);
 
 merge(CompatHelperStream.prototype, {
   compute() {

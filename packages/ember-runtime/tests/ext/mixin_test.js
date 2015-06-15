@@ -1,7 +1,6 @@
 import {set} from "ember-metal/property_set";
 import {get} from "ember-metal/property_get";
 import {Mixin} from "ember-metal/mixin";
-import create from 'ember-metal/platform/create';
 import { Binding } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 
@@ -40,7 +39,7 @@ QUnit.test('Defining a property ending in Binding should apply to prototype chil
   });
 
 
-  obj2 = create(obj);
+  obj2 = Object.create(obj);
   run(function() {
     set(get(obj2, 'bar'), 'baz', 'BARG');
   });

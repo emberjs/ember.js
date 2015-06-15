@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import { testBoth } from 'ember-metal/tests/props_helper';
-import create from 'ember-metal/platform/create';
 import {
   ComputedProperty,
   computed,
@@ -72,7 +71,7 @@ QUnit.module('computed should inherit through prototype', {
       }
     }));
 
-    objB = create(objA);
+    objB = Object.create(objA);
     objB.__foo = 'FOO'; // make a copy;
   },
 
@@ -111,7 +110,7 @@ QUnit.module('redefining computed property to normal', {
       }
     }));
 
-    objB = create(objA);
+    objB = Object.create(objA);
     defineProperty(objB, 'foo'); // make this just a normal property.
   },
 
@@ -150,7 +149,7 @@ QUnit.module('redefining computed property to another property', {
       }
     }));
 
-    objB = create(objA);
+    objB = Object.create(objA);
     objB.__foo = 'FOO';
     defineProperty(objB, 'foo', computed({
       get: function(key) { return this['__'+key]; },
@@ -233,7 +232,7 @@ testBoth('modifying a cacheable property should update cache', function(get, set
 });
 
 testBoth('inherited property should not pick up cache', function(get, set) {
-  var objB = create(obj);
+  var objB = Object.create(obj);
 
   equal(get(obj, 'foo'), 'bar 1', 'obj first get');
   equal(get(objB, 'foo'), 'bar 2', 'objB first get');

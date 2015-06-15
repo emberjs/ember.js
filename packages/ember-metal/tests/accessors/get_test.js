@@ -10,7 +10,6 @@ import {
   observer
 } from 'ember-metal/mixin';
 import { addObserver } from "ember-metal/observer";
-import create from 'ember-metal/platform/create';
 
 QUnit.module('Ember.get');
 
@@ -148,7 +147,7 @@ QUnit.test('(regression) watched properties on unmodified inherited objects shou
   });
 
   var baseObject = MyMixin.apply({});
-  var theRealObject = create(baseObject);
+  var theRealObject = Object.create(baseObject);
 
   equal(get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');
 });
@@ -229,7 +228,7 @@ QUnit.test('(regression) watched properties on unmodified inherited objects shou
   });
 
   var baseObject = MyMixin.apply({});
-  var theRealObject = create(baseObject);
+  var theRealObject = Object.create(baseObject);
 
   equal(getWithDefault(theRealObject, 'someProperty', "fail"), 'foo', 'should return the set value, not false');
 });

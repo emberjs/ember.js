@@ -2,7 +2,6 @@ import isEnabled from "ember-metal/features";
 import Component from "ember-views/views/component";
 import compile from "ember-template-compiler/system/compile";
 import run from "ember-metal/run_loop";
-import create from "ember-metal/platform/create";
 
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
@@ -88,7 +87,7 @@ if (isEnabled('ember-htmlbars-each-in')) {
       "JavaScript Frameworks": Infinity
     };
 
-    let categories = create(protoCategories);
+    let categories = Object.create(protoCategories);
     categories["Televisions"] = 183;
     categories["Alarm Clocks"] = 999;
 
