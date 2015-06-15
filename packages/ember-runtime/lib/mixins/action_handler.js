@@ -13,8 +13,7 @@ import { get } from 'ember-metal/property_get';
   to the object's mergedProperties list.
 
   `Ember.ActionHandler` is available on some familiar classes including
-  `Ember.Route`, `Ember.View`, `Ember.Component`, and controllers such as
-  `Ember.Controller` and `Ember.ObjectController`.
+  `Ember.Route`, `Ember.View`, `Ember.Component`, and `Ember.Controller`.
   (Internally the mixin is used by `Ember.CoreView`, `Ember.ControllerMixin`,
   and `Ember.Route` and available to the above classes through
   inheritance.)

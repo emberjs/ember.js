@@ -100,14 +100,14 @@ ControllerMixin.reopen({
     Given that you have a nested controller (nested routes):
 
     ```javascript
-    App.CommentsNewController = Ember.ObjectController.extend({
+    App.CommentsNewController = Ember.Controller.extend({
     });
     ```
 
     When you define a controller that requires access to a nested one:
 
     ```javascript
-    App.IndexController = Ember.ObjectController.extend({
+    App.IndexController = Ember.Controller.extend({
       needs: ['commentsNew']
     });
     ```

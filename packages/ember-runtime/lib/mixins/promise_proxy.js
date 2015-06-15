@@ -34,44 +34,44 @@ function tap(proxy, promise) {
 }
 
 /**
-  A low level mixin making ObjectProxy, ObjectController or ArrayControllers promise-aware.
+  A low level mixin making ObjectProxy or ArrayControllers promise-aware.
 
   ```javascript
-  var ObjectPromiseController = Ember.ObjectController.extend(Ember.PromiseProxyMixin);
+  var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
 
-  var controller = ObjectPromiseController.create({
+  var proxy = ObjectPromiseProxy.create({
     promise: $.getJSON('/some/remote/data.json')
   });
 
-  controller.then(function(json){
+  proxy.then(function(json){
      // the json
   }, function(reason) {
      // the reason why you have no json
   });
   ```
 
-  the controller has bindable attributes which
+  the proxy has bindable attributes which
   track the promises life cycle
 
   ```javascript
-  controller.get('isPending')   //=> true
-  controller.get('isSettled')  //=> false
-  controller.get('isRejected')  //=> false
-  controller.get('isFulfilled') //=> false
+  proxy.get('isPending')   //=> true
+  proxy.get('isSettled')  //=> false
+  proxy.get('isRejected')  //=> false
+  proxy.get('isFulfilled') //=> false
   ```
 
   When the the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
 
   ```javascript
-  controller.get('isPending')   //=> false
-  controller.get('isSettled')   //=> true
-  controller.get('isRejected')  //=> false
-  controller.get('isFulfilled') //=> true
+  proxy.get('isPending')   //=> false
+  proxy.get('isSettled')   //=> true
+  proxy.get('isRejected')  //=> false
+  proxy.get('isFulfilled') //=> true
   ```
 
-  As the controller is an ObjectController, and the json now its content,
-  all the json properties will be available directly from the controller.
+  As the proxy is an ObjectProxy, and the json now its content,
+  all the json properties will be available directly from the proxy.
 
   ```javascript
   // Assuming the following json:
@@ -80,22 +80,11 @@ function tap(proxy, promise) {
     lastName: 'Penner'
   }
 
-  // both properties will accessible on the controller
-  controller.get('firstName') //=> 'Stefan'
-  controller.get('lastName')  //=> 'Penner'
+  // both properties will accessible on the proxy
+  proxy.get('firstName') //=> 'Stefan'
+  proxy.get('lastName')  //=> 'Penner'
   ```
 
-  If the controller is backing a template, the attributes are
-  bindable from within that template
-
-  ```handlebars
-  {{#if isPending}}
-    loading...
-  {{else}}
-    firstName: {{firstName}}
-    lastName: {{lastName}}
-  {{/if}}
-  ```
   @class Ember.PromiseProxyMixin
   @public
 */
@@ -155,7 +144,7 @@ export default Mixin.create({
     Example:
 
     ```javascript
-    Ember.ObjectController.extend(Ember.PromiseProxyMixin).create({
+    Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create({
       promise: <thenable>
     });
     ```
