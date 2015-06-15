@@ -3,10 +3,11 @@
 @submodule ember-runtime
 */
 
-import { get } from "ember-metal/property_get";
-import { Mixin } from "ember-metal/mixin";
-import { Freezable } from "ember-runtime/mixins/freezable";
-import { fmt } from "ember-runtime/system/string";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { Mixin } from 'ember-metal/mixin';
+import { Freezable } from 'ember-runtime/mixins/freezable';
+import { fmt } from 'ember-runtime/system/string';
 import EmberError from 'ember-metal/error';
 
 /**
@@ -52,9 +53,11 @@ export default Mixin.create({
 
     @method frozenCopy
     @return {Object} copy of receiver or receiver
+    @deprecated Use `Object.freeze` instead.
     @private
   */
   frozenCopy() {
+    Ember.deprecate('`frozenCopy` is deprecated, use Object.freeze instead.');
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
