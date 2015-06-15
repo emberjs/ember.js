@@ -4,12 +4,8 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
-
+import { _replace as replace } from "ember-metal/replace";
 import { get } from "ember-metal/property_get";
-import {
-  _replace as replace,
-  forEach
-} from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import { indexOf, lastIndexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array";
@@ -94,7 +90,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   copy(deep) {
     if (deep) {
-      return this.map(function(item) { return copy(item, true); });
+      return this.map((item) => copy(item, true));
     }
 
     return this.slice();
@@ -103,7 +99,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
-forEach(NativeArray.keys(), function(methodName) {
+NativeArray.keys().forEach((methodName) => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
   }

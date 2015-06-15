@@ -1,5 +1,4 @@
 import EmberError from "ember-metal/error";
-import { forEach } from "ember-metal/enumerable_utils";
 
 var RETAIN = 'r';
 var FILTER = 'f';
@@ -171,7 +170,7 @@ SubArray.prototype = {
 
   toString() {
     var str = "";
-    forEach(this._operations, function (operation) {
+    this._operations.forEach((operation) => {
       str += " " + operation.type + ":" + operation.count;
     });
     return str.substring(1);

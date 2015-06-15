@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 
 // ES6TODO: the functions on EnumerableUtils need their own exports
-import { forEach } from 'ember-metal/enumerable_utils';
 import environment from 'ember-metal/environment';
 
 var jQuery;
@@ -31,7 +30,7 @@ if (environment.hasDOM) {
 
     // Copies the `dataTransfer` property from a browser event object onto the
     // jQuery event object for the specified events
-    forEach(dragEvents, function(eventName) {
+    dragEvents.forEach(function(eventName) {
       jQuery.event.fixHooks[eventName] = {
         props: ['dataTransfer']
       };

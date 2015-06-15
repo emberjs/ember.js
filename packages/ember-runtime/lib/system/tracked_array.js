@@ -1,5 +1,4 @@
 import { get } from "ember-metal/property_get";
-import { forEach } from "ember-metal/enumerable_utils";
 
 var RETAIN = 'r';
 var INSERT = 'i';
@@ -123,7 +122,7 @@ TrackedArray.prototype = {
     var items = [];
     var offset = 0;
 
-    forEach(this._operations, function (arrayOperation, operationIndex) {
+    this._operations.forEach((arrayOperation, operationIndex) => {
       callback(arrayOperation.items, offset, arrayOperation.type, operationIndex);
 
       if (arrayOperation.type !== DELETE) {
@@ -284,7 +283,7 @@ TrackedArray.prototype = {
 
   toString() {
     var str = "";
-    forEach(this._operations, function (operation) {
+    this._operations.forEach((operation) => {
       str += " " + operation.type + ":" + operation.count;
     });
     return str.substring(1);

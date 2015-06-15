@@ -1,4 +1,3 @@
-import { indexOf } from 'ember-metal/enumerable_utils';
 import { isArray } from 'ember-metal/utils';
 import EmberObject from 'ember-runtime/system/object';
 import Copyable from 'ember-runtime/mixins/copyable';
@@ -12,7 +11,7 @@ function _copy(obj, deep, seen, copies) {
   }
 
   // avoid cyclical loops
-  if (deep && (loc = indexOf(seen, obj)) >= 0) {
+  if (deep && (loc = seen.indexOf(obj)) >= 0) {
     return copies[loc];
   }
 

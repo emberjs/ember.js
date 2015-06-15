@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // for Ember.A
 import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
-import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import EmberArray from 'ember-runtime/mixins/array';
@@ -25,7 +24,7 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
   },
 
   addObject(obj) {
-    if (indexOf(this._content, obj)>=0) {
+    if (this._content.indexOf(obj)>=0) {
       return this;
     }
 

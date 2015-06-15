@@ -1,5 +1,4 @@
 import merge from "ember-metal/merge";
-import { map } from "ember-metal/enumerable_utils";
 import Registry from "container/registry";
 import HashLocation from "ember-routing/location/hash_location";
 import HistoryLocation from "ember-routing/location/history_location";
@@ -110,7 +109,7 @@ QUnit.test("Ember.Router._routePath should consume identical prefixes", function
   expect(8);
 
   function routePath(s1, s2, s3) {
-    var handlerInfos = map(arguments, function(s) {
+    var handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
       return { name: s };
     });
     handlerInfos.unshift({ name: 'ignored' });

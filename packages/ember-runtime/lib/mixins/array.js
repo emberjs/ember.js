@@ -15,7 +15,6 @@ import {
 } from 'ember-metal/computed';
 import isNone from 'ember-metal/is_none';
 import Enumerable from 'ember-runtime/mixins/enumerable';
-import { map } from 'ember-metal/enumerable_utils';
 import { Mixin } from 'ember-metal/mixin';
 import {
   propertyWillChange,
@@ -151,7 +150,7 @@ export default Mixin.create(Enumerable, {
   objectsAt(indexes) {
     var self = this;
 
-    return map(indexes, function(idx) {
+    return indexes.map(function(idx) {
       return self.objectAt(idx);
     });
   },

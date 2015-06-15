@@ -10,9 +10,6 @@ import {
   guidFor
 } from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
-import {
-  forEach
-} from 'ember-metal/enumerable_utils';
 import run from 'ember-metal/run_loop';
 import { addObserver } from 'ember-metal/observer';
 import { arrayComputed } from 'ember-runtime/computed/array_computed';
@@ -780,7 +777,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 
-        forEach(sortPropertyDefinitions, function (sortPropertyDefinition) {
+        sortPropertyDefinitions.forEach(function (sortPropertyDefinition) {
           if ((idx = sortPropertyDefinition.indexOf(':')) !== -1) {
             sortProperty = sortPropertyDefinition.substring(0, idx);
             asc = sortPropertyDefinition.substring(idx+1).toLowerCase() !== 'desc';

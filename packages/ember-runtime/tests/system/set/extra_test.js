@@ -1,4 +1,3 @@
-import { indexOf } from "ember-metal/enumerable_utils";
 import {get} from "ember-metal/property_get";
 import {addObserver} from "ember-metal/observer";
 import Set from "ember-runtime/system/set";
@@ -16,8 +15,8 @@ QUnit.test('passing an array to new Set() should instantiate w/ items', function
   });
 
   equal(get(aSet, 'length'), 3, 'should have three items');
-  aSet.forEach(function(x) {
-    ok(indexOf(ary, x)>=0, 'should find passed item in array');
+  aSet.forEach((x) => {
+    ok(ary.indexOf(x)>=0, 'should find passed item in array');
     count++;
   });
   equal(count, 3, 'iterating should have returned three objects');

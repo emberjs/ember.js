@@ -1,6 +1,5 @@
 import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerable';
 import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
-import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
@@ -14,7 +13,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   _content: null,
 
   addObject(obj) {
-    if (indexOf(this._content, obj)>=0) {
+    if (this._content.indexOf(obj)>=0) {
       return this;
     }
 
@@ -24,7 +23,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   },
 
   removeObject(obj) {
-    var idx = indexOf(this._content, obj);
+    var idx = this._content.indexOf(obj);
     if (idx<0) {
       return this;
     }

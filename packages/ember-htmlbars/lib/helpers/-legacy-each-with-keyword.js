@@ -1,4 +1,3 @@
-import { forEach } from "ember-metal/enumerable_utils";
 import shouldDisplay from "ember-views/streams/should_display";
 import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
 
@@ -8,7 +7,7 @@ export default function legacyEachWithKeywordHelper(params, hash, blocks) {
   var legacyKeyword = hash['-legacy-keyword'];
 
   if (shouldDisplay(list)) {
-    forEach(list, function(item, i) {
+    list.forEach(function(item, i) {
       var self;
       if (legacyKeyword) {
         self = bindKeyword(self, legacyKeyword, item);

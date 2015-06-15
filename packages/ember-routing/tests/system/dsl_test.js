@@ -1,6 +1,5 @@
 import isEnabled from "ember-metal/features";
 import EmberRouter from "ember-routing/system/router";
-import { forEach } from "ember-metal/enumerable_utils";
 
 var Router;
 
@@ -18,8 +17,7 @@ QUnit.test("should fail when using a reserved route name", function() {
 
   expect(reservedNames.length * 2);
 
-  forEach(reservedNames, function(reservedName) {
-
+  reservedNames.forEach(function(reservedName) {
     expectAssertion(function() {
       Router = EmberRouter.extend();
 
