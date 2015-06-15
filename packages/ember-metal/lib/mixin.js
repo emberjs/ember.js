@@ -10,10 +10,6 @@
 
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import merge from "ember-metal/merge";
-import {
-  indexOf as a_indexOf,
-  forEach as a_forEach
-} from "ember-metal/array";
 import o_create from "ember-metal/platform/create";
 import { get } from "ember-metal/property_get";
 import { set, trySet } from "ember-metal/property_set";
@@ -266,11 +262,11 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     descs[key]  = value;
     values[key] = undefined;
   } else {
-    if ((concats && a_indexOf.call(concats, key) >= 0) ||
+    if ((concats && concats.indexOf(key) >= 0) ||
                 key === 'concatenatedProperties' ||
                 key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
-    } else if ((mergings && a_indexOf.call(mergings, key) >= 0)) {
+    } else if ((mergings && mergings.indexOf(key) >= 0)) {
       value = applyMergedProperties(base, key, value, values);
     } else if (isMethod(value)) {
       value = giveMethodSuper(base, key, value, values, descs);
@@ -313,7 +309,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
     } else if (currentMixin.mixins) {
       mergeMixins(currentMixin.mixins, m, descs, values, base, keys);
-      if (currentMixin._without) { a_forEach.call(currentMixin._without, removeKeys); }
+      if (currentMixin._without) { currentMixin._without.forEach(removeKeys); }
     }
   }
 }
@@ -698,9 +694,7 @@ function _keys(ret, mixin, seen) {
       if (props.hasOwnProperty(key)) { ret[key] = true; }
     }
   } else if (mixin.mixins) {
-    a_forEach.call(mixin.mixins, (x) => {
-      _keys(ret, x, seen);
-    });
+    mixin.mixins.forEach((x) => _keys(ret, x, seen));
   }
 }
 

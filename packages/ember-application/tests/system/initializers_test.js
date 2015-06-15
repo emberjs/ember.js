@@ -1,7 +1,6 @@
 import isEnabled from "ember-metal/features";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
-import { indexOf } from "ember-metal/array";
 import jQuery from "ember-views/system/jquery";
 import Registry from "container/registry";
 
@@ -228,10 +227,10 @@ QUnit.test("initializers can have multiple dependencies", function () {
     });
   });
 
-  ok(indexOf.call(order, a.name) < indexOf.call(order, b.name), 'a < b');
-  ok(indexOf.call(order, b.name) < indexOf.call(order, c.name), 'b < c');
-  ok(indexOf.call(order, b.name) < indexOf.call(order, afterB.name), 'b < afterB');
-  ok(indexOf.call(order, c.name) < indexOf.call(order, afterC.name), 'c < afterC');
+  ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
+  ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
+  ok(order.indexOf(b.name) < order.indexOf(afterB.name), 'b < afterB');
+  ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
 });
 
 QUnit.test("initializers set on Application subclasses should not be shared between apps", function() {

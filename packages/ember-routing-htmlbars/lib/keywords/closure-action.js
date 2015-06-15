@@ -1,5 +1,4 @@
 import Stream from "ember-metal/streams/stream";
-import { map } from "ember-metal/array";
 import {
   read,
   readArray
@@ -14,10 +13,8 @@ export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
   return new Stream(function() {
-    map.call(params, this.addDependency, this);
-    map.call(keys(hash), (item) => {
-      this.addDependency(item);
-    });
+    params.map(this.addDependency, this);
+    keys(hash).map((item) => this.addDependency(item));
 
     var rawAction = params[0];
     var actionArguments = readArray(params.slice(1, params.length));

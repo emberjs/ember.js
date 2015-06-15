@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
 import { _replace as replace } from "ember-metal/replace";
 import { get } from "ember-metal/property_get";
 import { Mixin } from "ember-metal/mixin";
-import { indexOf, lastIndexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array";
 import MutableArray from "ember-runtime/mixins/mutable_array";
 import Observable from "ember-runtime/mixins/observable";
@@ -84,9 +83,8 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     return ret;
   },
 
-  indexOf: indexOf,
-
-  lastIndexOf: lastIndexOf,
+  indexOf: Array.prototype.indexOf,
+  lastIndexOf: Array.prototype.lastIndexOf,
 
   copy(deep) {
     if (deep) {

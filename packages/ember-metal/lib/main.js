@@ -40,12 +40,6 @@ import {
   hasPropertyAccessors
 } from 'ember-metal/platform/define_property';
 import create from 'ember-metal/platform/create';
-import {
-  filter,
-  forEach,
-  indexOf,
-  map
-} from "ember-metal/array";
 import Logger from "ember-metal/logger";
 
 import {
@@ -240,13 +234,6 @@ Ember.platform        = {
   defineProperty: defineProperty,
   hasPropertyAccessors: hasPropertyAccessors
 };
-
-var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
-
-EmberArrayPolyfills.map = map;
-EmberArrayPolyfills.forEach = forEach;
-EmberArrayPolyfills.filter = filter;
-EmberArrayPolyfills.indexOf = indexOf;
 
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
