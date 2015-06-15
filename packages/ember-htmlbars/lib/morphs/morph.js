@@ -7,6 +7,7 @@ let guid = 1;
 function EmberMorph(DOMHelper, contextualElement) {
   this.HTMLBarsMorph$constructor(DOMHelper, contextualElement);
 
+  this.isElementMorph = true;
   this.emberView = null;
   this.emberToDestroy = null;
   this.streamUnsubscribers = null;

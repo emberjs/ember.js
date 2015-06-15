@@ -57,7 +57,7 @@ QUnit.test("if it has a element, calls willDestroyElement on receiver and child 
   equal(parentCount, 1, 'invoked destroy element on the parent');
   equal(childCount, 1, 'invoked destroy element on the child');
   ok(!get(view, 'element'), 'view no longer has element');
-  ok(!get(get(view, 'childViews').objectAt(0), 'element'), 'child no longer has an element');
+  ok(!get(get(view, 'childViews')[0], 'element'), 'child no longer has an element');
 });
 
 QUnit.test("returns receiver", function() {

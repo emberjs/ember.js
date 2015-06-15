@@ -200,7 +200,6 @@ QUnit.test("view should be notified after isVisible is set to false and the elem
 
 QUnit.test("view should be notified after isVisible is set to false and the element has been hidden", function() {
   view = View.create({ isVisible: true });
-  //var childView = view.get('childViews').objectAt(0);
 
   run(function() {
     view.append();
@@ -237,7 +236,7 @@ QUnit.test("view should be notified after isVisible is set to true and the eleme
 
 QUnit.test("if a view descends from a hidden view, making isVisible true should not trigger becameVisible", function() {
   view = View.create({ isVisible: true });
-  var childView = view.get('childViews').objectAt(0);
+  var childView = view.get('childViews')[0];
 
   run(function() {
     view.append();
@@ -266,7 +265,7 @@ QUnit.test("if a view descends from a hidden view, making isVisible true should 
 
 QUnit.test("if a child view becomes visible while its parent is hidden, if its parent later becomes visible, it receives a becameVisible callback", function() {
   view = View.create({ isVisible: false });
-  var childView = view.get('childViews').objectAt(0);
+  var childView = view.get('childViews')[0];
 
   run(function() {
     view.append();

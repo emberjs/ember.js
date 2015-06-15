@@ -44,7 +44,6 @@ QUnit.test('willDestroyElement is only called once when a component leaves scope
   runAppend(component);
 
   assert.equal(component.$().text(), 'Truthy', 'precond - truthy template is displayed');
-  assert.equal(component.get('childViews.length'), 1);
 
   run(function() {
     set(component, 'switch', false);
