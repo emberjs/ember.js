@@ -8,7 +8,6 @@ import { computed } from 'ember-metal/computed';
 import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { A } from 'ember-runtime/system/native_array';
 import EmberController from 'ember-runtime/controllers/controller';
-import ObjectController from 'ember-runtime/controllers/object_controller';
 import { Registry } from 'ember-runtime/system/container';
 
 import { get } from 'ember-metal/property_get';
@@ -404,97 +403,6 @@ QUnit.test('itemController should not affect the DOM structure', function() {
   runAppend(view);
 
   equal(view.$('#a').html(), view.$('#b').html());
-});
-
-QUnit.test('itemController specified in template gets a parentController property', function() {
-  // using an ObjectController for this test to verify that parentController does accidentally get set
-  // on the proxied model.
-  var Controller = ObjectController.extend({
-        controllerName: computed(function() {
-          return 'controller:' + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
-        })
-      });
-  var parentController = {
-        container: container,
-        company: 'Yapp'
-      };
-
-  registry.register('controller:array', ArrayController.extend());
-  runDestroy(view);
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
-    people: people,
-    controller: parentController
-  });
-
-  registry.register('controller:person', Controller);
-
-  runAppend(view);
-
-  equal(view.$().text(), 'controller:Steve Holt of Yappcontroller:Annabelle of Yapp');
-});
-
-QUnit.test('itemController specified in ArrayController gets a parentController property', function() {
-  var PersonController = ObjectController.extend({
-        controllerName: computed(function() {
-          return 'controller:' + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
-        })
-      });
-  var PeopleController = ArrayController.extend({
-        model: people,
-        itemController: 'person',
-        company: 'Yapp'
-      });
-
-  registry.register('controller:people', PeopleController);
-  registry.register('controller:person', PersonController);
-  runDestroy(view);
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#each}}{{controllerName}}{{/each}}'),
-    controller: container.lookup('controller:people')
-  });
-
-
-  runAppend(view);
-
-  equal(view.$().text(), 'controller:Steve Holt of Yappcontroller:Annabelle of Yapp');
-});
-
-QUnit.test('itemController\'s parentController property, when the ArrayController has a parentController', function() {
-  var PersonController = ObjectController.extend({
-        controllerName: computed(function() {
-          return 'controller:' + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
-        })
-      });
-  var PeopleController = ArrayController.extend({
-        model: people,
-        itemController: 'person',
-        parentController: computed(function() {
-          return this.container.lookup('controller:company');
-        }),
-        company: 'Yapp'
-      });
-  var CompanyController = EmberController.extend();
-
-  registry.register('controller:company', CompanyController);
-  registry.register('controller:people', PeopleController);
-  registry.register('controller:person', PersonController);
-
-  runDestroy(view);
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#each}}{{controllerName}}{{/each}}'),
-    controller: container.lookup('controller:people')
-  });
-
-
-  runAppend(view);
-
-  equal(view.$().text(), 'controller:Steve Holt of Yappcontroller:Annabelle of Yapp');
 });
 
 

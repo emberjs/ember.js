@@ -50,7 +50,7 @@ export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.'
   Sometimes you want to display computed properties within the body of an
   `#each` helper that depend on the underlying items in `model`, but are not
   present on those items.   To do this, set `itemController` to the name of a
-  controller (probably an `ObjectController`) that will wrap each individual item.
+  controller that will wrap each individual item.
 
   For example:
 
@@ -65,7 +65,7 @@ export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.'
     itemController: 'post'
   });
 
-  App.PostController = Ember.ObjectController.extend({
+  App.PostController = Ember.Controller.extend({
     // the `title` property will be proxied to the underlying post.
     titleLength: function() {
       return this.get('title').length;

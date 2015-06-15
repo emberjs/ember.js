@@ -12,11 +12,9 @@ import { isArray } from 'ember-runtime/utils';
 
   The type of the generated controller factory is derived
   from the context. If the context is an array an array controller
-  is generated, if an object, an object controller otherwise, a basic
-  controller is generated.
+  is generated, otherwise, a basic controller is generated.
 
-  You can customize your generated controllers by defining
-  `App.ObjectController` or `App.ArrayController`.
+  You can customize your generated controllers by defining `App.ArrayController`.
 
   @for Ember
   @method generateControllerFactory
@@ -28,8 +26,6 @@ export function generateControllerFactory(container, controllerName, context) {
 
   if (context && isArray(context)) {
     controllerType = 'array';
-  } else if (context) {
-    controllerType = 'object';
   } else {
     controllerType = 'basic';
   }

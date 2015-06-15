@@ -1960,30 +1960,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'foo'), '456');
   });
 } else {
-  QUnit.test('Single query params can be set on ObjectController [DEPRECATED]', function() {
-    expectDeprecation('Ember.ObjectController is deprecated, please use Ember.Controller and use `model.propertyName`.');
-
-    Router.map(function() {
-      this.route('home', { path: '/' });
-    });
-
-    App.HomeController = Ember.ObjectController.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-
-    bootApplication();
-
-    var controller = container.lookup('controller:home');
-
-    setAndFlush(controller, 'foo', '456');
-
-    equal(router.get('location.path'), '/?foo=456');
-
-    setAndFlush(controller, 'foo', '987');
-    equal(router.get('location.path'), '/?foo=987');
-  });
-
   QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
     Router.map(function() {
       this.route('home', { path: '/' });
