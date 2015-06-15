@@ -168,22 +168,16 @@ computed.any = any;
 computed.collect = collect;
 
 import {
-  _suspendBeforeObserver,
-  _suspendBeforeObservers,
   _suspendObserver,
   _suspendObservers,
-  addBeforeObserver,
   addObserver,
-  beforeObserversFor,
   observersFor,
-  removeBeforeObserver,
   removeObserver
 } from "ember-metal/observer";
 import {
   IS_BINDING,
   Mixin,
   aliasMethod,
-  beforeObserver,
   immediateObserver,
   mixin,
   observer,
@@ -332,20 +326,14 @@ Ember.cacheFor = cacheFor;
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
 Ember.removeObserver = removeObserver;
-Ember.addBeforeObserver = addBeforeObserver;
-Ember._suspendBeforeObserver = _suspendBeforeObserver;
-Ember._suspendBeforeObservers = _suspendBeforeObservers;
 Ember._suspendObserver = _suspendObserver;
 Ember._suspendObservers = _suspendObservers;
-Ember.beforeObserversFor = beforeObserversFor;
-Ember.removeBeforeObserver = removeBeforeObserver;
 
 Ember.IS_BINDING = IS_BINDING;
 Ember.required = required;
 Ember.aliasMethod = aliasMethod;
 Ember.observer = observer;
 Ember.immediateObserver = immediateObserver;
-Ember.beforeObserver = beforeObserver;
 Ember.mixin = mixin;
 Ember.Mixin = Mixin;
 

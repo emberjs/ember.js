@@ -257,7 +257,6 @@ var EnumerableTests = Suite.extend({
   */
   run() {},
 
-
   /*
     Creates a new observer object for testing.  You can add this object as an
     observer on an array and it will record results anytime it is invoked.
