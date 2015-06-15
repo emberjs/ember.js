@@ -7,7 +7,7 @@ import { observer } from 'ember-metal/mixin';
 import Namespace from "ember-runtime/system/namespace";
 
 import EmberController from "ember-runtime/controllers/controller";
-import EmberArrayController from "ember-runtime/controllers/array_controller";
+import EmberArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 import compile from "ember-template-compiler/system/compile";
 
@@ -218,6 +218,7 @@ QUnit.test("{{render}} helper should raise an error when a given controller name
 });
 
 QUnit.test("{{render}} helper should render with given controller", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var template = '{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
   var id = 0;
@@ -434,6 +435,7 @@ QUnit.test("{{render}} helper should render templates both with and without mode
 });
 
 QUnit.test("{{render}} helper should link child controllers to the parent controller", function() {
+  expectDeprecation(arrayControllerDeprecation);
   var parentTriggered = 0;
 
   var template = '<h1>HI</h1>{{render "posts"}}';

@@ -6,7 +6,7 @@ import {listenersFor} from "ember-metal/events";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
 import EmberObject from "ember-runtime/system/object";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
 var unsortedArray, sortedArrayController;
 
@@ -159,6 +159,7 @@ QUnit.module("Ember.Sortable with content and sortProperties", {
 
       unsortedArray = Ember.A(Ember.A(array).copy());
 
+      expectDeprecation(arrayControllerDeprecation);
       sortedArrayController = ArrayController.create({
         content: unsortedArray,
         sortProperties: ['name']
@@ -281,6 +282,7 @@ QUnit.test("sortProperties observers removed on content removal", function() {
 QUnit.module("Ember.Sortable with sortProperties", {
   setup() {
     run(function() {
+      expectDeprecation(arrayControllerDeprecation);
       sortedArrayController = ArrayController.create({
         sortProperties: ['name']
       });
@@ -310,6 +312,7 @@ QUnit.test("you can set content later and it will be sorted", function() {
 QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
   setup() {
     run(function() {
+      expectDeprecation(arrayControllerDeprecation);
       sortedArrayController = ArrayController.create({
         sortProperties: ['name'],
         sortFunction(v, w) {

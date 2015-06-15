@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import ArrayController from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import Test from "ember-testing/test";
@@ -86,6 +86,7 @@ QUnit.test("template is bound to empty array of people", function() {
 });
 
 QUnit.test("template is bound to array of 2 people", function() {
+  expectDeprecation(arrayControllerDeprecation);
   App.Person.find = function() {
     var people = Ember.A();
     var first = App.Person.create({ firstName: "x" });
