@@ -51,12 +51,7 @@ import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
   items (and reorder the generated DOM elements) based on each item's `id`
   property.
 
-  There are a few special values for `key`:
-
-    * `@index` - The index of the item in the array.
-    * `@item` - The item in the array itself.  This can only be used for arrays of strings
-      or numbers.
-    * `@guid` - Generate a unique identifier for each object (uses `Ember.guidFor`).
+  By default the item's own reference is used.
 
   ### {{else}} condition
 
