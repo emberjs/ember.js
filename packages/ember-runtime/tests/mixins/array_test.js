@@ -1,13 +1,13 @@
-import Ember from "ember-metal/core"; // Ember.A
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { addObserver } from "ember-metal/observer";
-import { observer as emberObserver } from "ember-metal/mixin";
-import { computed } from "ember-metal/computed";
-import { testBoth } from "ember-metal/tests/props_helper";
-import { ArrayTests } from "ember-runtime/tests/suites/array";
-import EmberObject from "ember-runtime/system/object";
-import EmberArray from "ember-runtime/mixins/array";
+import Ember from 'ember-metal/core'; // Ember.A
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { addObserver } from 'ember-metal/observer';
+import { observer as emberObserver } from 'ember-metal/mixin';
+import { computed } from 'ember-metal/computed';
+import { testBoth } from 'ember-metal/tests/props_helper';
+import { ArrayTests } from 'ember-runtime/tests/suites/array';
+import EmberObject from 'ember-runtime/system/object';
+import EmberArray from 'ember-runtime/mixins/array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -67,15 +67,15 @@ ArrayTests.extend({
 
 }).run();
 
-QUnit.test("the return value of slice has Ember.Array applied", function() {
+QUnit.test('the return value of slice has Ember.Array applied', function() {
   var x = EmberObject.createWithMixins(EmberArray, {
     length: 0
   });
   var y = x.slice(1);
-  equal(EmberArray.detect(y), true, "mixin should be applied");
+  equal(EmberArray.detect(y), true, 'mixin should be applied');
 });
 
-QUnit.test("slice supports negative index arguments", function() {
+QUnit.test('slice supports negative index arguments', function() {
   var testArray = new TestArray([1,2,3,4]);
 
   deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
@@ -343,11 +343,11 @@ QUnit.test('adding an object should notify (@each)', function() {
   addObserver(ary, '@each', observerObject, 'wasCalled');
 
   ary.addObject(EmberObject.create({
-    desc: "foo",
+    desc: 'foo',
     isDone: false
   }));
 
-  equal(called, 1, "calls observer when object is pushed");
+  equal(called, 1, 'calls observer when object is pushed');
 
 });
 
@@ -364,11 +364,11 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
   addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
   ary.addObject(EmberObject.create({
-    desc: "foo",
+    desc: 'foo',
     isDone: false
   }));
 
-  equal(called, 1, "calls observer when object is pushed");
+  equal(called, 1, 'calls observer when object is pushed');
 
 });
 
@@ -392,7 +392,7 @@ QUnit.test('using @each to observe arrays that does not return objects raise err
 
   expectAssertion(function() {
     ary.addObject(EmberObject.create({
-      desc: "foo",
+      desc: 'foo',
       isDone: false
     }));
   }, /When using @each to observe the array/);
@@ -418,7 +418,7 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
 });
 
 
-testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
+testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
   var obj = EmberObject.createWithMixins({
     init() {
       set(this, 'resources', Ember.A());
@@ -429,14 +429,14 @@ testBoth("should be clear caches for computed properties that have dependent key
     }).property('resources.@each.common')
   });
 
-  get(obj, 'resources').pushObject(EmberObject.create({ common: "HI!" }));
-  equal("HI!", get(obj, 'common'));
+  get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+  equal('HI!', get(obj, 'common'));
 
-  set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
-  equal("BYE!", get(obj, 'common'));
+  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
+  equal('BYE!', get(obj, 'common'));
 });
 
-testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
+testBoth('observers that contain @each in the path should fire only once the first time they are accessed', function(get, set) {
   var count = 0;
 
   var obj = EmberObject.createWithMixins({
@@ -451,9 +451,9 @@ testBoth("observers that contain @each in the path should fire only once the fir
   });
 
   // Observer fires second time when new object is added
-  get(obj, 'resources').pushObject(EmberObject.create({ common: "HI!" }));
+  get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   // Observer fires third time when property on an object is changed
-  set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
+  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
 
-  equal(count, 2, "observers should only be called once");
+  equal(count, 2, 'observers should only be called once');
 });

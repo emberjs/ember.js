@@ -1,5 +1,5 @@
-import { dasherize } from "ember-runtime/system/string";
-import { isPath } from "ember-metal/path_cache";
+import { dasherize } from 'ember-runtime/system/string';
+import { isPath } from 'ember-metal/path_cache';
 
 /*
   This private helper is used by ComponentNode to convert the classNameBindings

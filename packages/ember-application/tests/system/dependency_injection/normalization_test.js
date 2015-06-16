@@ -1,9 +1,9 @@
-import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
+import run from 'ember-metal/run_loop';
+import Application from 'ember-application/system/application';
 
 var application, registry;
 
-QUnit.module("Ember.Application Dependency Injection – normalization", {
+QUnit.module('Ember.Application Dependency Injection – normalization', {
   setup() {
     application = run(Application, 'create');
     registry = application.registry;

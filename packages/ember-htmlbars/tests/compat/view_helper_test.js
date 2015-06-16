@@ -1,9 +1,9 @@
-import EmberComponent from "ember-views/views/component";
-import EmberView from "ember-views/views/view";
-import EmberSelectView from "ember-views/views/select";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
-import Registry from "container/registry";
+import EmberComponent from 'ember-views/views/component';
+import EmberView from 'ember-views/views/view';
+import EmberSelectView from 'ember-views/views/select';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
+import Registry from 'container/registry';
 
 let component, registry, container;
 
@@ -27,7 +27,7 @@ QUnit.test('using the view helper with a string (inline form) is deprecated [DEP
 
   expectDeprecation(function() {
     component = EmberComponent.extend({
-      layout: compile("{{view 'foo'}}"),
+      layout: compile('{{view \'foo\'}}'),
       container
     }).create();
 
@@ -45,7 +45,7 @@ QUnit.test('using the view helper with a string (block form) is deprecated [DEPR
 
   expectDeprecation(function() {
     component = EmberComponent.extend({
-      layout: compile("{{#view 'foo'}}I am foo{{/view}}"),
+      layout: compile('{{#view \'foo\'}}I am foo{{/view}}'),
       container
     }).create();
 
@@ -60,7 +60,7 @@ QUnit.test('using the view helper with string "select" has its own deprecation m
 
   expectDeprecation(function() {
     component = EmberComponent.extend({
-      layout: compile("{{view 'select'}}"),
+      layout: compile('{{view \'select\'}}'),
       container
     }).create();
 

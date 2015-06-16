@@ -1,11 +1,11 @@
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import ContainerView from 'ember-views/views/container_view';
 
 var view;
 
-QUnit.module("EmberView#destroyElement", {
+QUnit.module('EmberView#destroyElement', {
   teardown() {
     run(function() {
       view.destroy();
@@ -13,7 +13,7 @@ QUnit.module("EmberView#destroyElement", {
   }
 });
 
-QUnit.test("if it has no element, does nothing", function() {
+QUnit.test('if it has no element, does nothing', function() {
   var callCount = 0;
   view = EmberView.create({
     willDestroyElement() { callCount++; }
@@ -28,8 +28,8 @@ QUnit.test("if it has no element, does nothing", function() {
   equal(callCount, 0, 'did not invoke callback');
 });
 
-QUnit.test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('if it has a element, calls willDestroyElement on receiver and child views then deletes the element', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   var parentCount = 0;
   var childCount = 0;
@@ -60,7 +60,7 @@ QUnit.test("if it has a element, calls willDestroyElement on receiver and child 
   ok(!get(get(view, 'childViews').objectAt(0), 'element'), 'child no longer has an element');
 });
 
-QUnit.test("returns receiver", function() {
+QUnit.test('returns receiver', function() {
   var ret;
   view = EmberView.create();
 
@@ -72,7 +72,7 @@ QUnit.test("returns receiver", function() {
   equal(ret, view, 'returns receiver');
 });
 
-QUnit.test("removes element from parentNode if in DOM", function() {
+QUnit.test('removes element from parentNode if in DOM', function() {
   view = EmberView.create();
 
   run(function() {

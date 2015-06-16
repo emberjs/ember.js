@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-views
 */
-import Component from "ember-views/views/component";
-import TextSupport from "ember-views/mixins/text_support";
+import Component from 'ember-views/views/component';
+import TextSupport from 'ember-views/mixins/text_support';
 
 /**
   The internal class used to create textarea element when the `{{textarea}}`
@@ -28,7 +28,7 @@ export default Component.extend(TextSupport, {
 
   classNames: ['ember-text-area'],
 
-  tagName: "textarea",
+  tagName: 'textarea',
   attributeBindings: [
     'rows',
     'cols',

@@ -1,9 +1,9 @@
-import run from "ember-metal/run_loop";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { assign } from "ember-metal/merge";
-import setProperties from "ember-metal/set_properties";
-import buildComponentTemplate from "ember-views/system/build-component-template";
+import run from 'ember-metal/run_loop';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { assign } from 'ember-metal/merge';
+import setProperties from 'ember-metal/set_properties';
+import buildComponentTemplate from 'ember-views/system/build-component-template';
 
 function Renderer(_helper) {
   this._dom = _helper;
@@ -12,7 +12,7 @@ function Renderer(_helper) {
 Renderer.prototype.prerenderTopLevelView =
   function Renderer_prerenderTopLevelView(view, renderNode) {
     if (view._state === 'inDOM') {
-      throw new Error("You cannot insert a View that has already been rendered");
+      throw new Error('You cannot insert a View that has already been rendered');
     }
     view.ownerView = renderNode.emberView = view;
     view._renderNode = renderNode;

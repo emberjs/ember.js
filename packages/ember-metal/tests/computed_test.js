@@ -4,19 +4,19 @@ import {
   ComputedProperty,
   computed,
   cacheFor
-} from "ember-metal/computed";
+} from 'ember-metal/computed';
 
 import {
   Descriptor,
   defineProperty
-} from "ember-metal/properties";
+} from 'ember-metal/properties';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { isWatching } from "ember-metal/watching";
+import { isWatching } from 'ember-metal/watching';
 import {
   addObserver,
   addBeforeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 
 var originalLookup = Ember.lookup;
 var obj, count, Global, lookup;
@@ -184,16 +184,16 @@ testBoth('using get() and set()', function(get, set) {
 
 QUnit.module('computed - metadata');
 
-QUnit.test("can set metadata on a computed property", function() {
+QUnit.test('can set metadata on a computed property', function() {
   var computedProperty = computed(function() { });
   computedProperty.meta({ key: 'keyValue' });
 
-  equal(computedProperty.meta().key, 'keyValue', "saves passed meta hash to the _meta property");
+  equal(computedProperty.meta().key, 'keyValue', 'saves passed meta hash to the _meta property');
 });
 
-QUnit.test("meta should return an empty hash if no meta is set", function() {
+QUnit.test('meta should return an empty hash if no meta is set', function() {
   var computedProperty = computed(function() { });
-  deepEqual(computedProperty.meta(), {}, "returned value is an empty hash");
+  deepEqual(computedProperty.meta(), {}, 'returned value is an empty hash');
 });
 
 // ..........................................................
@@ -246,11 +246,11 @@ testBoth('inherited property should not pick up cache', function(get, set) {
 });
 
 testBoth('cacheFor should return the cached value', function(get, set) {
-  equal(cacheFor(obj, 'foo'), undefined, "should not yet be a cached value");
+  equal(cacheFor(obj, 'foo'), undefined, 'should not yet be a cached value');
 
   get(obj, 'foo');
 
-  equal(cacheFor(obj, 'foo'), "bar 1", "should retrieve cached value");
+  equal(cacheFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
 });
 
 testBoth('cacheFor should return falsy cached values', function(get, set) {
@@ -259,14 +259,14 @@ testBoth('cacheFor should return falsy cached values', function(get, set) {
     return false;
   }));
 
-  equal(cacheFor(obj, 'falsy'), undefined, "should not yet be a cached value");
+  equal(cacheFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
 
   get(obj, 'falsy');
 
-  equal(cacheFor(obj, 'falsy'), false, "should retrieve cached value");
+  equal(cacheFor(obj, 'falsy'), false, 'should retrieve cached value');
 });
 
-testBoth("setting a cached computed property passes the old value as the third argument", function(get, set) {
+testBoth('setting a cached computed property passes the old value as the third argument', function(get, set) {
   var obj = {
     foo: 0
   };
@@ -282,13 +282,13 @@ testBoth("setting a cached computed property passes the old value as the third a
   );
 
   set(obj, 'plusOne', 1);
-  strictEqual(receivedOldValue, undefined, "oldValue should be undefined");
+  strictEqual(receivedOldValue, undefined, 'oldValue should be undefined');
 
   set(obj, 'plusOne', 2);
-  strictEqual(receivedOldValue, 1, "oldValue should be 1");
+  strictEqual(receivedOldValue, 1, 'oldValue should be 1');
 
   set(obj, 'plusOne', 3);
-  strictEqual(receivedOldValue, 2, "oldValue should be 2");
+  strictEqual(receivedOldValue, 2, 'oldValue should be 2');
 });
 
 // ..........................................................
@@ -413,21 +413,21 @@ testBoth('can watch multiple dependent keys specified declaratively via brace ex
     return 'foo '+count;
   }).property('qux.{bar,baz}'));
 
-  equal(get(obj, 'foo'), 'foo 1', "get once");
-  equal(get(obj, 'foo'), 'foo 1', "cached retrieve");
+  equal(get(obj, 'foo'), 'foo 1', 'get once');
+  equal(get(obj, 'foo'), 'foo 1', 'cached retrieve');
 
   set(obj, 'qux', {});
   set(obj, 'qux.bar', 'bar'); // invalidate foo
 
-  equal(get(obj, 'foo'), 'foo 2', "foo invalidated from bar");
+  equal(get(obj, 'foo'), 'foo 2', 'foo invalidated from bar');
 
   set(obj, 'qux.baz', 'baz'); // invalidate foo
 
-  equal(get(obj, 'foo'), 'foo 3', "foo invalidated from baz");
+  equal(get(obj, 'foo'), 'foo 3', 'foo invalidated from baz');
 
   set(obj, 'qux.quux', 'quux'); // do not invalidate foo
 
-  equal(get(obj, 'foo'), 'foo 3', "foo not invalidated by quux");
+  equal(get(obj, 'foo'), 'foo 3', 'foo not invalidated by quux');
 });
 
 testBoth('throws assertion if brace expansion notation has spaces', function (get, set) {
@@ -454,7 +454,7 @@ var moduleOpts = {
       foo: {
         bar: {
           baz: {
-            biff: "BIFF"
+            biff: 'BIFF'
           }
         }
       }
@@ -464,7 +464,7 @@ var moduleOpts = {
       foo: {
         bar: {
           baz: {
-            biff: "BIFF"
+            biff: 'BIFF'
           }
         }
       }
@@ -606,7 +606,7 @@ QUnit.test('setter and getters are passed using an object', function() {
         equal(keyName, 'aInt', 'setter receives the keyName');
         equal(value, 123, 'setter receives the new value');
         equal(oldValue, 1, 'setter receives the old value');
-        this.set('a', ""+value); // side effect
+        this.set('a', ''+value); // side effect
         return parseInt(this.get('a'));
       }
     })
@@ -641,7 +641,7 @@ QUnit.test('the return value of the setter gets cached', function() {
     a: '1',
     sampleCP: computed('a', {
       get(keyName) {
-        ok(false, "The getter should not be invoked");
+        ok(false, 'The getter should not be invoked');
         return 'get-value';
       },
       set(keyName, value, oldValue) {
@@ -673,7 +673,7 @@ QUnit.test('adding a computed property should show up in key iteration', functio
   ok('foo' in obj, 'foo in obj should pass');
 });
 
-testBoth("when setting a value after it had been retrieved empty don't pass function UNDEFINED as oldValue", function(get, set) {
+testBoth('when setting a value after it had been retrieved empty don\'t pass function UNDEFINED as oldValue', function(get, set) {
   var obj = {};
   var oldValueIsNoFunction = true;
 
@@ -792,7 +792,7 @@ testBoth('setting a cached computed property that modifies the value you give it
 
 QUnit.module('computed - default setter');
 
-testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
+testBoth('when setting a value on a computed property that doesn\'t handle sets', function(get, set) {
   var obj = {};
   var observerFired = false;
 

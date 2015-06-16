@@ -3,18 +3,18 @@
 @submodule ember-routing-views
 */
 
-import Ember from "ember-metal/core"; // FEATURES, Logger, assert
-import isEnabled from "ember-metal/features";
+import Ember from 'ember-metal/core'; // FEATURES, Logger, assert
+import isEnabled from 'ember-metal/features';
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { computed } from "ember-metal/computed";
-import { isSimpleClick } from "ember-views/system/utils";
-import EmberComponent from "ember-views/views/component";
-import inject from "ember-runtime/inject";
-import ControllerMixin from "ember-runtime/mixins/controller";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
+import { isSimpleClick } from 'ember-views/system/utils';
+import EmberComponent from 'ember-views/views/component';
+import inject from 'ember-runtime/inject';
+import ControllerMixin from 'ember-runtime/mixins/controller';
 
-import linkToTemplate from "ember-htmlbars/templates/link-to";
+import linkToTemplate from 'ember-htmlbars/templates/link-to';
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 var linkComponentClassNameBindings = ['active', 'loading', 'disabled'];
@@ -308,7 +308,7 @@ var LinkComponent = EmberComponent.extend({
     if (get(this, '_isDisabled')) { return false; }
 
     if (get(this, 'loading')) {
-      Ember.Logger.warn("This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.");
+      Ember.Logger.warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.');
       return false;
     }
 
@@ -380,7 +380,7 @@ var LinkComponent = EmberComponent.extend({
     // Do not mutate params in place
     var params = attrs.params.slice();
 
-    Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
+    Ember.assert('You must provide one or more parameters to the link-to helper.', params.length);
 
     var lastParam = params[params.length - 1];
 
@@ -459,7 +459,7 @@ var LinkComponent = EmberComponent.extend({
   }
 });
 
-LinkComponent.toString = function() { return "LinkComponent"; };
+LinkComponent.toString = function() { return 'LinkComponent'; };
 
 function computeActive(view, routerState) {
   if (get(view, 'loading')) { return false; }

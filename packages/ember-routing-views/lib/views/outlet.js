@@ -3,8 +3,8 @@
 @submodule ember-routing-views
 */
 
-import View from "ember-views/views/view";
-import topLevelViewTemplate from "ember-htmlbars/templates/top-level-view";
+import View from 'ember-views/views/view';
+import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 export var CoreOutletView = View.extend({

@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
-import ArrayProxy from "ember-runtime/system/array_proxy";
-import {get} from "ember-metal/property_get";
+import ArrayProxy from 'ember-runtime/system/array_proxy';
+import {get} from 'ember-metal/property_get';
 
 MutableArrayTests.extend({
 

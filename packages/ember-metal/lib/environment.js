@@ -38,7 +38,7 @@ if (hasDOM) {
     isFirefox: false,
     location: null,
     history: null,
-    userAgent: "Lynx (textmode)",
+    userAgent: 'Lynx (textmode)',
     global: null
   };
 }

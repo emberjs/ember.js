@@ -1,8 +1,8 @@
-import { computed } from "ember-metal/computed";
-import { get as emberGet } from "ember-metal/property_get";
-import { observer } from "ember-metal/mixin";
-import { testWithDefault } from "ember-metal/tests/props_helper";
-import EmberObject from "ember-runtime/system/object";
+import { computed } from 'ember-metal/computed';
+import { get as emberGet } from 'ember-metal/property_get';
+import { observer } from 'ember-metal/mixin';
+import { testWithDefault } from 'ember-metal/tests/props_helper';
+import EmberObject from 'ember-runtime/system/object';
 
 function K() { return this; }
 
@@ -131,13 +131,13 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
   equal(get(obj2, 'foo'), 'BLARG 2', 'should invalidate property');
 });
 
-QUnit.test("can retrieve metadata for a computed property", function() {
+QUnit.test('can retrieve metadata for a computed property', function() {
   var MyClass = EmberObject.extend({
     computedProperty: computed(function() {
     }).meta({ key: 'keyValue' })
   });
 
-  equal(emberGet(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', "metadata saved on the computed property can be retrieved");
+  equal(emberGet(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', 'metadata saved on the computed property can be retrieved');
 
   var ClassWithNoMetadata = EmberObject.extend({
     computedProperty: computed(function() {
@@ -146,18 +146,18 @@ QUnit.test("can retrieve metadata for a computed property", function() {
     staticProperty: 12
   });
 
-  equal(typeof ClassWithNoMetadata.metaForProperty('computedProperty'), "object", "returns empty hash if no metadata has been saved");
+  equal(typeof ClassWithNoMetadata.metaForProperty('computedProperty'), 'object', 'returns empty hash if no metadata has been saved');
 
   expectAssertion(function() {
     ClassWithNoMetadata.metaForProperty('nonexistentProperty');
-  }, "metaForProperty() could not find a computed property with key 'nonexistentProperty'.");
+  }, 'metaForProperty() could not find a computed property with key \'nonexistentProperty\'.');
 
   expectAssertion(function() {
     ClassWithNoMetadata.metaForProperty('staticProperty');
-  }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
+  }, 'metaForProperty() could not find a computed property with key \'staticProperty\'.');
 });
 
-QUnit.test("can iterate over a list of computed properties for a class", function() {
+QUnit.test('can iterate over a list of computed properties for a class', function() {
   var MyClass = EmberObject.extend({
     foo: computed(function() {
 
@@ -190,7 +190,7 @@ QUnit.test("can iterate over a list of computed properties for a class", functio
     list.push(name);
   });
 
-  deepEqual(list.sort(), ['bar', 'foo'], "watched and unwatched computed properties are iterated");
+  deepEqual(list.sort(), ['bar', 'foo'], 'watched and unwatched computed properties are iterated');
 
   list = [];
 
@@ -204,10 +204,10 @@ QUnit.test("can iterate over a list of computed properties for a class", functio
     }
   });
 
-  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], "all inherited properties are included");
+  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], 'all inherited properties are included');
 });
 
-QUnit.test("list of properties updates when an additional property is added (such cache busting)", function() {
+QUnit.test('list of properties updates when an additional property is added (such cache busting)', function() {
   var MyClass = EmberObject.extend({
     foo: computed(K),
 

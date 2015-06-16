@@ -1,14 +1,14 @@
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
-import {computed} from "ember-metal/computed";
-import {Mixin, observer} from "ember-metal/mixin";
-import run from "ember-metal/run_loop";
-import {on} from "ember-metal/events";
-import EmberObject from "ember-runtime/system/object";
-import keys from "ember-metal/keys";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import {guidFor} from 'ember-metal/utils';
+import {computed} from 'ember-metal/computed';
+import {Mixin, observer} from 'ember-metal/mixin';
+import run from 'ember-metal/run_loop';
+import {on} from 'ember-metal/events';
+import EmberObject from 'ember-runtime/system/object';
+import keys from 'ember-metal/keys';
 
 var moduleOptions, originalLookup;
 
@@ -25,16 +25,16 @@ moduleOptions = {
 
 QUnit.module('EmberObject.create', moduleOptions);
 
-QUnit.test("simple properties are set", function() {
+QUnit.test('simple properties are set', function() {
   var o = EmberObject.create({ ohai: 'there' });
   equal(o.get('ohai'), 'there');
 });
 
-QUnit.test("calls computed property setters", function() {
+QUnit.test('calls computed property setters', function() {
   var MyClass = EmberObject.extend({
     foo: computed({
       get: function() {
-        return "this is not the value you're looking for";
+        return 'this is not the value you\'re looking for';
       },
       set: function(key, value) {
         return value;
@@ -47,7 +47,7 @@ QUnit.test("calls computed property setters", function() {
 });
 
 if (isEnabled('mandatory-setter')) {
-  QUnit.test("sets up mandatory setters for watched simple properties", function() {
+  QUnit.test('sets up mandatory setters for watched simple properties', function() {
 
     var MyClass = EmberObject.extend({
       foo: null,
@@ -73,7 +73,7 @@ if (isEnabled('mandatory-setter')) {
   });
 }
 
-QUnit.test("allows bindings to be defined", function() {
+QUnit.test('allows bindings to be defined', function() {
   var obj = EmberObject.create({
     foo: 'foo',
     barBinding: 'foo'
@@ -82,7 +82,7 @@ QUnit.test("allows bindings to be defined", function() {
   equal(obj.get('bar'), 'foo', 'The binding value is correct');
 });
 
-QUnit.test("calls setUnknownProperty if defined", function() {
+QUnit.test('calls setUnknownProperty if defined', function() {
   var setUnknownPropertyCalled = false;
 
   var MyClass = EmberObject.extend({
@@ -95,7 +95,7 @@ QUnit.test("calls setUnknownProperty if defined", function() {
   ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
 });
 
-QUnit.test("throws if you try to define a computed property", function() {
+QUnit.test('throws if you try to define a computed property', function() {
   expectAssertion(function() {
     EmberObject.create({
       foo: computed(function() {})
@@ -103,7 +103,7 @@ QUnit.test("throws if you try to define a computed property", function() {
   }, 'Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
 });
 
-QUnit.test("throws if you try to call _super in a method", function() {
+QUnit.test('throws if you try to call _super in a method', function() {
   expectAssertion(function() {
     EmberObject.create({
       foo() {
@@ -113,7 +113,7 @@ QUnit.test("throws if you try to call _super in a method", function() {
   }, 'Ember.Object.create no longer supports defining methods that call _super.');
 });
 
-QUnit.test("throws if you try to 'mixin' a definition", function() {
+QUnit.test('throws if you try to \'mixin\' a definition', function() {
   var myMixin = Mixin.create({
     adder(arg1, arg2) {
       return arg1 + arg2;
@@ -122,46 +122,46 @@ QUnit.test("throws if you try to 'mixin' a definition", function() {
 
   expectAssertion(function() {
     EmberObject.create(myMixin);
-  }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
+  }, 'Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.');
 });
 
 // This test is for IE8.
-QUnit.test("property name is the same as own prototype property", function() {
+QUnit.test('property name is the same as own prototype property', function() {
   var MyClass = EmberObject.extend({
     toString() { return 'MyClass'; }
   });
 
-  equal(MyClass.create().toString(), 'MyClass', "should inherit property from the arguments of `EmberObject.create`");
+  equal(MyClass.create().toString(), 'MyClass', 'should inherit property from the arguments of `EmberObject.create`');
 });
 
-QUnit.test("inherits properties from passed in EmberObject", function() {
+QUnit.test('inherits properties from passed in EmberObject', function() {
   var baseObj = EmberObject.create({ foo: 'bar' });
   var secondaryObj = EmberObject.create(baseObj);
 
-  equal(secondaryObj.foo, baseObj.foo, "Em.O.create inherits properties from EmberObject parameter");
+  equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
 });
 
-QUnit.test("throws if you try to pass anything a string as a parameter", function() {
-  var expected = "EmberObject.create only accepts an objects.";
+QUnit.test('throws if you try to pass anything a string as a parameter', function() {
+  var expected = 'EmberObject.create only accepts an objects.';
 
   throws(function() {
-    EmberObject.create("some-string");
+    EmberObject.create('some-string');
   }, expected);
 });
 
-QUnit.test("EmberObject.create can take undefined as a parameter", function() {
+QUnit.test('EmberObject.create can take undefined as a parameter', function() {
   var o = EmberObject.create(undefined);
   deepEqual(EmberObject.create(), o);
 });
 
-QUnit.test("EmberObject.create can take null as a parameter", function() {
+QUnit.test('EmberObject.create can take null as a parameter', function() {
   var o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
 });
 
 QUnit.module('EmberObject.createWithMixins', moduleOptions);
 
-QUnit.test("Creates a new object that contains passed properties", function() {
+QUnit.test('Creates a new object that contains passed properties', function() {
 
   var called = false;
   var obj = EmberObject.createWithMixins({
@@ -178,7 +178,7 @@ QUnit.test("Creates a new object that contains passed properties", function() {
 // WORKING WITH MIXINS
 //
 
-QUnit.test("Creates a new object that includes mixins and properties", function() {
+QUnit.test('Creates a new object that includes mixins and properties', function() {
 
   var MixinA = Mixin.create({ mixinA: 'A' });
   var obj = EmberObject.createWithMixins(MixinA, { prop: 'FOO' });
@@ -191,7 +191,7 @@ QUnit.test("Creates a new object that includes mixins and properties", function(
 // LIFECYCLE
 //
 
-QUnit.test("Configures _super() on methods with override", function() {
+QUnit.test('Configures _super() on methods with override', function() {
   var completed = false;
   var MixinA = Mixin.create({ method() {} });
   var obj = EmberObject.createWithMixins(MixinA, {
@@ -205,7 +205,7 @@ QUnit.test("Configures _super() on methods with override", function() {
   ok(completed, 'should have run method without error');
 });
 
-QUnit.test("Calls init if defined", function() {
+QUnit.test('Calls init if defined', function() {
   var completed = false;
   EmberObject.createWithMixins({
     init() {
@@ -217,7 +217,7 @@ QUnit.test("Calls init if defined", function() {
   ok(completed, 'should have run init without error');
 });
 
-QUnit.test("Calls all mixin inits if defined", function() {
+QUnit.test('Calls all mixin inits if defined', function() {
   var completed = 0;
   var Mixin1 = Mixin.create({
     init() {
@@ -237,10 +237,10 @@ QUnit.test("Calls all mixin inits if defined", function() {
   equal(completed, 2, 'should have called init for both mixins.');
 });
 
-QUnit.test("Triggers init", function() {
+QUnit.test('Triggers init', function() {
   var completed = false;
   EmberObject.createWithMixins({
-    markAsCompleted: on("init", function() {
+    markAsCompleted: on('init', function() {
       completed = true;
     })
   });
@@ -341,16 +341,16 @@ QUnit.test('inherited bindings should only sync on instances', function() {
 
 });
 
-QUnit.test("created objects should not share a guid with their superclass", function() {
-  ok(guidFor(EmberObject), "EmberObject has a guid");
+QUnit.test('created objects should not share a guid with their superclass', function() {
+  ok(guidFor(EmberObject), 'EmberObject has a guid');
 
   var objA = EmberObject.createWithMixins();
   var objB = EmberObject.createWithMixins();
 
-  ok(guidFor(objA) !== guidFor(objB), "two instances do not share a guid");
+  ok(guidFor(objA) !== guidFor(objB), 'two instances do not share a guid');
 });
 
-QUnit.test("ensure internal properties do not leak", function() {
+QUnit.test('ensure internal properties do not leak', function() {
   var obj = EmberObject.create({
     firstName: 'Joe',
     lastName:  'Black'

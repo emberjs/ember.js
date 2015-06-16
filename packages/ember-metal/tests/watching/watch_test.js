@@ -1,11 +1,11 @@
 import Ember from 'ember-metal/core';
 import { testBoth } from 'ember-metal/tests/props_helper';
-import { addListener } from "ember-metal/events";
+import { addListener } from 'ember-metal/events';
 import {
   watch,
   unwatch,
   destroy
-} from "ember-metal/watching";
+} from 'ember-metal/watching';
 
 var willCount, didCount,
     willKeys, didKeys,
@@ -104,7 +104,7 @@ testBoth('watches should inherit', function(get, set) {
   equal(didCount, 2, 'should have invoked didCount once only');
 });
 
-QUnit.test("watching an object THEN defining it should work also", function() {
+QUnit.test('watching an object THEN defining it should work also', function() {
   var obj = {};
   addListeners(obj, 'foo');
 
@@ -119,7 +119,7 @@ QUnit.test("watching an object THEN defining it should work also", function() {
 
 });
 
-QUnit.test("watching a chain then defining the property", function () {
+QUnit.test('watching a chain then defining the property', function () {
   var obj = {};
   var foo = { bar: 'bar' };
   addListeners(obj, 'foo.bar');
@@ -136,7 +136,7 @@ QUnit.test("watching a chain then defining the property", function () {
   equal(didCount, 2, 'should have invoked didChange twice');
 });
 
-QUnit.test("watching a chain then defining the nested property", function () {
+QUnit.test('watching a chain then defining the nested property', function () {
   var bar = {};
   var obj = { foo: bar };
   var baz = { baz: 'baz' };

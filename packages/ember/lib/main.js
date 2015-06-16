@@ -1,16 +1,16 @@
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
-import "ember-metal";
-import "ember-runtime";
-import "ember-views";
-import "ember-routing";
-import "ember-application";
-import "ember-extension-support";
-import "ember-htmlbars";
-import "ember-routing-htmlbars";
-import "ember-routing-views";
+import 'ember-metal';
+import 'ember-runtime';
+import 'ember-views';
+import 'ember-routing';
+import 'ember-application';
+import 'ember-extension-support';
+import 'ember-htmlbars';
+import 'ember-routing-htmlbars';
+import 'ember-routing-views';
 
-import environment from "ember-metal/environment";
+import environment from 'ember-metal/environment';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 if (Ember.__loader.registry['ember-template-compiler']) {

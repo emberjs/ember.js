@@ -3,9 +3,9 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core";
-import { isGlobal } from "ember-metal/path_cache";
-import ProxyStream from "ember-metal/streams/proxy-stream";
+import Ember from 'ember-metal/core';
+import { isGlobal } from 'ember-metal/path_cache';
+import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
@@ -40,7 +40,7 @@ function getKey(scope, key) {
 }
 
 function getGlobal(name) {
-  Ember.deprecate("Global lookup of " + name + " from a Handlebars template is deprecated.");
+  Ember.deprecate('Global lookup of ' + name + ' from a Handlebars template is deprecated.');
 
   // This stream should be memoized, but this path is deprecated and
   // will be removed soon so it's not worth the trouble.

@@ -1,15 +1,15 @@
-import jQuery from "ember-views/system/jquery";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import { runDestroy } from "ember-runtime/tests/utils";
-import bootstrap from "ember-htmlbars/system/bootstrap";
+import jQuery from 'ember-views/system/jquery';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import { runDestroy } from 'ember-runtime/tests/utils';
+import bootstrap from 'ember-htmlbars/system/bootstrap';
 
 var trim = jQuery.trim;
 
 var originalLookup = Ember.lookup;
 var lookup, App, view;
 
-QUnit.module("ember-htmlbars: bootstrap", {
+QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
   },
@@ -71,7 +71,7 @@ if (typeof Handlebars === 'object') {
     ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
 
     // This won't even work with Ember templates
-    equal(trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), "Tobias");
+    equal(trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), 'Tobias');
   });
 }
 
@@ -82,7 +82,7 @@ QUnit.test('duplicated default application templates should throw exception', fu
     bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
-  "duplicate templates should not be allowed");
+  'duplicate templates should not be allowed');
 });
 
 QUnit.test('default application template and id application template present should throw exception', function() {
@@ -92,7 +92,7 @@ QUnit.test('default application template and id application template present sho
     bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
-  "duplicate templates should not be allowed");
+  'duplicate templates should not be allowed');
 });
 
 QUnit.test('default application template and data-template-name application template present should throw exception', function() {
@@ -102,7 +102,7 @@ QUnit.test('default application template and data-template-name application temp
     bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
-  "duplicate templates should not be allowed");
+  'duplicate templates should not be allowed');
 });
 
 QUnit.test('duplicated template id should throw exception', function() {
@@ -112,7 +112,7 @@ QUnit.test('duplicated template id should throw exception', function() {
     bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
-  "duplicate templates should not be allowed");
+  'duplicate templates should not be allowed');
 });
 
 QUnit.test('duplicated template data-template-name should throw exception', function() {
@@ -122,7 +122,7 @@ QUnit.test('duplicated template data-template-name should throw exception', func
     bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
-  "duplicate templates should not be allowed");
+  'duplicate templates should not be allowed');
 });
 
 if (Ember.component) {

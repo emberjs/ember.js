@@ -1,7 +1,7 @@
 import {
   _instrumentStart,
   subscribers
-} from "ember-metal/instrumentation";
+} from 'ember-metal/instrumentation';
 
 /**
   Provides instrumentation for node managers.

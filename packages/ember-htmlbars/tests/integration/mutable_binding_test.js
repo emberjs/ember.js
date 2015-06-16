@@ -1,13 +1,13 @@
-import isEnabled from "ember-metal/features";
-import EmberView from "ember-views/views/view";
-import Registry from "container/registry";
+import isEnabled from 'ember-metal/features';
+import EmberView from 'ember-views/views/view';
+import Registry from 'container/registry';
 //import jQuery from "ember-views/system/jquery";
-import compile from "ember-template-compiler/system/compile";
+import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from "ember-views/views/component";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import run from "ember-metal/run_loop";
-import { computed } from "ember-metal/computed";
+import Component from 'ember-views/views/component';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import run from 'ember-metal/run_loop';
+import { computed } from 'ember-metal/computed';
 
 var registry, container, view;
 
@@ -52,12 +52,12 @@ QUnit.test('a simple mutable binding propagates properly [DEPRECATED]', function
 
   runAppend(view);
 
-  assert.strictEqual(bottom.get('setMe'), 12, "precond - the data propagated");
+  assert.strictEqual(bottom.get('setMe'), 12, 'precond - the data propagated');
 
   run(() => bottom.set('setMe', 13));
 
-  assert.strictEqual(bottom.get('setMe'), 13, "precond - the set took effect");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(bottom.get('setMe'), 13, 'precond - the set took effect');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 QUnit.test('a simple mutable binding using `mut` propagates properly', function(assert) {
@@ -81,12 +81,12 @@ QUnit.test('a simple mutable binding using `mut` propagates properly', function(
 
   runAppend(view);
 
-  assert.strictEqual(bottom.attrs.setMe.value, 12, "precond - the data propagated");
+  assert.strictEqual(bottom.attrs.setMe.value, 12, 'precond - the data propagated');
 
   run(() => bottom.attrs.setMe.update(13));
 
-  assert.strictEqual(bottom.attrs.setMe.value, 13, "precond - the set took effect");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(bottom.attrs.setMe.value, 13, 'precond - the set took effect');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 QUnit.test('using a string value through middle tier does not trigger assertion', function(assert) {
@@ -111,8 +111,8 @@ QUnit.test('using a string value through middle tier does not trigger assertion'
 
   runAppend(view);
 
-  assert.strictEqual(bottom.attrs.stuff.value, 'foo', "precond - the data propagated");
-  assert.strictEqual(view.$('p.bottom').text(), "foo");
+  assert.strictEqual(bottom.attrs.stuff.value, 'foo', 'precond - the data propagated');
+  assert.strictEqual(view.$('p.bottom').text(), 'foo');
 });
 
 QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function(assert) {
@@ -137,13 +137,13 @@ QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function
 
   runAppend(view);
 
-  assert.strictEqual(view.$('p.bottom').text(), "12");
-  assert.strictEqual(bottom.attrs.setMe.value, 12, "precond - the data propagated");
+  assert.strictEqual(view.$('p.bottom').text(), '12');
+  assert.strictEqual(bottom.attrs.setMe.value, 12, 'precond - the data propagated');
 
   run(() => bottom.attrs.setMe.update(13));
 
-  assert.strictEqual(bottom.attrs.setMe.value, 13, "precond - the set took effect");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(bottom.attrs.setMe.value, 13, 'precond - the set took effect');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding', function(assert) {
@@ -174,14 +174,14 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
 
   runAppend(view);
 
-  assert.strictEqual(view.$('p.bottom').text(), "12");
+  assert.strictEqual(view.$('p.bottom').text(), '12');
 
   run(() => middle.attrs.value.update(13));
 
-  assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
-  assert.strictEqual(bottom.attrs.setMe, 13, "the mutable binding has been converted to an immutable cell");
-  assert.strictEqual(view.$('p.bottom').text(), "13");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(middle.attrs.value.value, 13, 'precond - the set took effect');
+  assert.strictEqual(bottom.attrs.setMe, 13, 'the mutable binding has been converted to an immutable cell');
+  assert.strictEqual(view.$('p.bottom').text(), '13');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 QUnit.test('mutable bindings work inside of yielded content', function(assert) {
@@ -196,12 +196,12 @@ QUnit.test('mutable bindings work inside of yielded content', function(assert) {
   view = EmberView.create({
     container: container,
     template: compile('{{middle-mut model=(mut view.model)}}'),
-    model: { name: "Matthew Beale" }
+    model: { name: 'Matthew Beale' }
   });
 
   runAppend(view);
 
-  assert.strictEqual(view.$('p.bottom').text(), "Matthew Beale");
+  assert.strictEqual(view.$('p.bottom').text(), 'Matthew Beale');
 });
 
 QUnit.test('a simple mutable binding using `mut` is available in hooks', function(assert) {
@@ -231,15 +231,15 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
 
   runAppend(view);
 
-  assert.deepEqual(willRender, [12], "willReceive is [12]");
-  assert.deepEqual(didInsert, [12], "didInsert is [12]");
+  assert.deepEqual(willRender, [12], 'willReceive is [12]');
+  assert.deepEqual(didInsert, [12], 'didInsert is [12]');
 
-  assert.strictEqual(bottom.attrs.setMe.value, 12, "precond - the data propagated");
+  assert.strictEqual(bottom.attrs.setMe.value, 12, 'precond - the data propagated');
 
   run(() => bottom.attrs.setMe.update(13));
 
-  assert.strictEqual(bottom.attrs.setMe.value, 13, "precond - the set took effect");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(bottom.attrs.setMe.value, 13, 'precond - the set took effect');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 QUnit.test('a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023', function(assert) {
@@ -264,13 +264,13 @@ QUnit.test('a mutable binding with a backing computed property and attribute pre
 
   runAppend(view);
 
-  assert.strictEqual(bottom.attrs.thingy.value, 12, "data propagated");
+  assert.strictEqual(bottom.attrs.thingy.value, 12, 'data propagated');
 
   run(() => view.set('baseValue', 13));
-  assert.strictEqual(bottom.attrs.thingy.value, 13, "the set took effect");
+  assert.strictEqual(bottom.attrs.thingy.value, 13, 'the set took effect');
 
   run(() => view.set('baseValue', 14));
-  assert.strictEqual(bottom.attrs.thingy.value, 14, "the set took effect");
+  assert.strictEqual(bottom.attrs.thingy.value, 14, 'the set took effect');
 });
 
 QUnit.test('automatic mutable bindings tolerate undefined non-stream inputs', function(assert) {
@@ -283,7 +283,7 @@ QUnit.test('automatic mutable bindings tolerate undefined non-stream inputs', fu
   });
 
   runAppend(view);
-  assert.strictEqual(view.$().text(), "hello");
+  assert.strictEqual(view.$().text(), 'hello');
 });
 
 QUnit.test('automatic mutable bindings tolerate constant non-stream inputs', function(assert) {
@@ -296,7 +296,7 @@ QUnit.test('automatic mutable bindings tolerate constant non-stream inputs', fun
   });
 
   runAppend(view);
-  assert.strictEqual(view.$().text(), "hellofoo");
+  assert.strictEqual(view.$().text(), 'hellofoo');
 });
 
 QUnit.test('automatic mutable bindings to undefined non-streams tolerate attempts to set them', function(assert) {
@@ -343,7 +343,7 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
 
-QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
+  QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
   var middle;
 
   registry.register('component:middle-mut', Component.extend({
@@ -367,16 +367,16 @@ QUnit.test('mutable bindings work as angle-bracket component attributes', functi
 
   runAppend(view);
 
-  assert.strictEqual(view.$('p.bottom').text(), "12");
+  assert.strictEqual(view.$('p.bottom').text(), '12');
 
   run(() => middle.attrs.value.update(13));
 
-  assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
-  assert.strictEqual(view.$('p.bottom').text(), "13");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(middle.attrs.value.value, 13, 'precond - the set took effect');
+  assert.strictEqual(view.$('p.bottom').text(), '13');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
-QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
+  QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
   var middle, bottom;
 
   registry.register('component:middle-mut', Component.extend({
@@ -404,14 +404,14 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
 
   runAppend(view);
 
-  assert.strictEqual(view.$('p.bottom').text(), "12");
+  assert.strictEqual(view.$('p.bottom').text(), '12');
 
   run(() => middle.attrs.value.update(13));
 
-  assert.strictEqual(middle.attrs.value.value, 13, "precond - the set took effect");
-  assert.strictEqual(bottom.attrs.setMe, 13, "the mutable binding has been converted to an immutable cell");
-  assert.strictEqual(view.$('p.bottom').text(), "13");
-  assert.strictEqual(view.get('val'), 13, "the set propagated back up");
+  assert.strictEqual(middle.attrs.value.value, 13, 'precond - the set took effect');
+  assert.strictEqual(bottom.attrs.setMe, 13, 'the mutable binding has been converted to an immutable cell');
+  assert.strictEqual(view.$('p.bottom').text(), '13');
+  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
 }

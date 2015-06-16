@@ -2,7 +2,7 @@
 
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
-import run from "ember-metal/run_loop";
+import run from 'ember-metal/run_loop';
 import * as RSVP from 'rsvp';
 
 var testModuleName = 'ember-testing/test';

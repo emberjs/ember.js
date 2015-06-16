@@ -3,10 +3,10 @@
 @submodule ember-views
 */
 
-import jQuery from "ember-views/system/jquery";
-import Ember from "ember-metal/core";
-import { normalizeProperty } from "dom-helper/prop";
-import { canSetNameOnInputs } from "ember-views/system/platform";
+import jQuery from 'ember-views/system/jquery';
+import Ember from 'ember-metal/core';
+import { normalizeProperty } from 'dom-helper/prop';
+import { canSetNameOnInputs } from 'ember-views/system/platform';
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -91,15 +91,15 @@ function escapeAttribute(value) {
   // Stolen shamelessly from Handlebars
 
   var escape = {
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "`": "&#x60;"
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#x27;',
+    '`': '&#x60;'
   };
 
   var escapeChar = function(chr) {
-    return escape[chr] || "&amp;";
+    return escape[chr] || '&amp;';
   };
 
   var string = value.toString();
@@ -131,12 +131,12 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
 */
 
 var RenderBuffer = function(domHelper) {
-  Ember.deprecate("`Ember.RenderBuffer` is deprecated.");
+  Ember.deprecate('`Ember.RenderBuffer` is deprecated.');
   this.buffer = null;
   this.childViews = [];
   this.attrNodes = [];
 
-  Ember.assert("RenderBuffer requires a DOM helper to be passed to its constructor.", !!domHelper);
+  Ember.assert('RenderBuffer requires a DOM helper to be passed to its constructor.', !!domHelper);
 
   this.dom = domHelper;
 };
@@ -270,7 +270,7 @@ RenderBuffer.prototype = {
   pushChildView(view) {
     var index = this.childViews.length;
     this.childViews[index] = view;
-    this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
+    this.push('<script id=\'morph-'+index+'\' type=\'text/x-placeholder\'>\x3C/script>');
   },
 
   pushAttrNode(node) {
@@ -314,10 +314,10 @@ RenderBuffer.prototype = {
       if (this.buffer === null) {
         this.buffer = '';
       }
-      Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
+      Ember.assert('A string cannot be pushed into the buffer after a fragment', !this.buffer.nodeType);
       this.buffer += content;
     } else {
-      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      Ember.assert('A fragment cannot be pushed into a buffer that contains content', !this.buffer);
       this.buffer = content;
     }
     return this;
@@ -584,9 +584,9 @@ RenderBuffer.prototype = {
 
   outerContextualElement() {
     if (this._outerContextualElement === undefined) {
-      Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
-                      " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
-                      " Defaulting to document.body, but this will be removed in the future");
+      Ember.deprecate('The render buffer expects an outer contextualElement to exist.' +
+                      ' This ensures DOM that requires context is correctly generated (tr, SVG tags).' +
+                      ' Defaulting to document.body, but this will be removed in the future');
       this.outerContextualElement = document.body;
     }
     return this._outerContextualElement;

@@ -4,34 +4,34 @@
 // Ember.ENV
 import Ember from 'ember-metal/core';
 
-import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import { addObserver, removeObserver } from "ember-metal/observer";
-import { guidFor } from "ember-metal/utils";
-import { computed } from "ember-metal/computed";
+import EmberError from 'ember-metal/error';
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import { addObserver, removeObserver } from 'ember-metal/observer';
+import { guidFor } from 'ember-metal/utils';
+import { computed } from 'ember-metal/computed';
 import {
   Mixin,
   observer
-} from "ember-metal/mixin";
+} from 'ember-metal/mixin';
 
-import jQuery from "ember-views/system/jquery";
-import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
+import jQuery from 'ember-views/system/jquery';
+import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
-import CoreView from "ember-views/views/core_view";
-import ViewContextSupport from "ember-views/mixins/view_context_support";
-import ViewChildViewsSupport from "ember-views/mixins/view_child_views_support";
+import CoreView from 'ember-views/views/core_view';
+import ViewContextSupport from 'ember-views/mixins/view_context_support';
+import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
 import {
   childViewsProperty
-} from "ember-views/mixins/view_child_views_support";
-import ViewStateSupport from "ember-views/mixins/view_state_support";
-import TemplateRenderingSupport from "ember-views/mixins/template_rendering_support";
-import ClassNamesSupport from "ember-views/mixins/class_names_support";
-import LegacyViewSupport from "ember-views/mixins/legacy_view_support";
-import InstrumentationSupport from "ember-views/mixins/instrumentation_support";
-import AriaRoleSupport from "ember-views/mixins/aria_role_support";
-import VisibilitySupport from "ember-views/mixins/visibility_support";
-import CompatAttrsProxy from "ember-views/compat/attrs-proxy";
+} from 'ember-views/mixins/view_child_views_support';
+import ViewStateSupport from 'ember-views/mixins/view_state_support';
+import TemplateRenderingSupport from 'ember-views/mixins/template_rendering_support';
+import ClassNamesSupport from 'ember-views/mixins/class_names_support';
+import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
+import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
+import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
+import VisibilitySupport from 'ember-views/mixins/visibility_support';
+import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 
 function K() { return this; }
 
@@ -40,7 +40,7 @@ function K() { return this; }
 @submodule ember-views
 */
 
-Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.", Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
+Ember.warn('The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.', Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -737,7 +737,7 @@ var View = CoreView.extend(
     get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
-      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
+      Ember.assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
       return template || get(this, 'defaultTemplate');
     },
     set(key, value) {
@@ -766,7 +766,7 @@ var View = CoreView.extend(
       var layoutName = get(this, 'layoutName');
       var layout = this.templateForName(layoutName, 'layout');
 
-      Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
+      Ember.assert('You specified the layoutName ' + layoutName + ' for ' + this + ', but it did not exist.', !layoutName || !!layout);
 
       return layout || get(this, 'defaultLayout');
     },
@@ -778,7 +778,7 @@ var View = CoreView.extend(
 
   templateForName(name, type) {
     if (!name) { return; }
-    Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
+    Ember.assert('templateNames are not allowed to contain periods: '+name, name.indexOf('.') === -1);
 
     if (!this.container) {
       throw new EmberError('Container was not found when looking up a views template. ' +
@@ -960,8 +960,8 @@ var View = CoreView.extend(
   appendTo(selector) {
     var target = jQuery(selector);
 
-    Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
-    Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+    Ember.assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+    Ember.assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.appendTo(this, target[0]);
 
@@ -1038,8 +1038,8 @@ var View = CoreView.extend(
   replaceIn(selector) {
     var target = jQuery(selector);
 
-    Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
-    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+    Ember.assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+    Ember.assert('You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.replaceIn(this, target[0]);
 
@@ -1129,7 +1129,7 @@ var View = CoreView.extend(
     @private
   */
   findElementInParentElement(parentElem) {
-    var id = "#" + this.elementId;
+    var id = '#' + this.elementId;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
@@ -1432,7 +1432,7 @@ var View = CoreView.extend(
     @private
   */
   _register() {
-    Ember.assert("Attempted to register a view with an id already in use: "+this.elementId, !this._viewRegistry[this.elementId]);
+    Ember.assert('Attempted to register a view with an id already in use: '+this.elementId, !this._viewRegistry[this.elementId]);
     this._viewRegistry[this.elementId] = this;
   },
 

@@ -1,10 +1,10 @@
 import Ember from 'ember-metal/core';
 import isEnabled, { FEATURES } from 'ember-metal/features';
-import merge from "ember-metal/merge";
+import merge from 'ember-metal/merge';
 
 var origFeatures, origEnableAll, origEnableOptional;
 
-QUnit.module("isEnabled", {
+QUnit.module('isEnabled', {
   setup() {
     origFeatures = merge({}, FEATURES);
     origEnableAll = Ember.ENV.ENABLE_ALL_FEATURES;
@@ -22,29 +22,29 @@ QUnit.module("isEnabled", {
   }
 });
 
-QUnit.test("ENV.ENABLE_ALL_FEATURES", function() {
+QUnit.test('ENV.ENABLE_ALL_FEATURES', function() {
   Ember.ENV.ENABLE_ALL_FEATURES = true;
   FEATURES['fred'] = false;
   FEATURES['wilma'] = null;
 
-  equal(isEnabled('fred'), true, "overrides features set to false");
-  equal(isEnabled('wilma'), true, "enables optional features");
-  equal(isEnabled('betty'), true, "enables non-specified features");
+  equal(isEnabled('fred'), true, 'overrides features set to false');
+  equal(isEnabled('wilma'), true, 'enables optional features');
+  equal(isEnabled('betty'), true, 'enables non-specified features');
 });
 
-QUnit.test("ENV.ENABLE_OPTIONAL_FEATURES", function() {
+QUnit.test('ENV.ENABLE_OPTIONAL_FEATURES', function() {
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = true;
   FEATURES['fred'] = false;
   FEATURES['barney'] = true;
   FEATURES['wilma'] = null;
 
-  equal(isEnabled('fred'), false, "returns flag value if false");
-  equal(isEnabled('barney'), true, "returns flag value if true");
-  equal(isEnabled('wilma'), true, "returns true if flag is not true|false|undefined");
-  equal(isEnabled('betty'), undefined, "returns flag value if undefined");
+  equal(isEnabled('fred'), false, 'returns flag value if false');
+  equal(isEnabled('barney'), true, 'returns flag value if true');
+  equal(isEnabled('wilma'), true, 'returns true if flag is not true|false|undefined');
+  equal(isEnabled('betty'), undefined, 'returns flag value if undefined');
 });
 
-QUnit.test("isEnabled without ENV options", function() {
+QUnit.test('isEnabled without ENV options', function() {
   Ember.ENV.ENABLE_ALL_FEATURES = false;
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
 
@@ -52,8 +52,8 @@ QUnit.test("isEnabled without ENV options", function() {
   FEATURES['barney'] = true;
   FEATURES['wilma'] = null;
 
-  equal(isEnabled('fred'), false, "returns flag value if false");
-  equal(isEnabled('barney'), true, "returns flag value if true");
-  equal(isEnabled('wilma'), false, "returns false if flag is not set");
-  equal(isEnabled('betty'), undefined, "returns flag value if undefined");
+  equal(isEnabled('fred'), false, 'returns flag value if false');
+  equal(isEnabled('barney'), true, 'returns flag value if true');
+  equal(isEnabled('wilma'), false, 'returns false if flag is not set');
+  equal(isEnabled('betty'), undefined, 'returns flag value if undefined');
 });

@@ -3,9 +3,9 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core";
-import Cache from "ember-metal/cache";
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import Ember from 'ember-metal/core';
+import Cache from 'ember-metal/cache';
+import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;

@@ -5,40 +5,40 @@
 import DAG from 'dag-map';
 import Registry from 'container/registry';
 
-import Ember from "ember-metal"; // Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
-import isEnabled from "ember-metal/features";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { runLoadHooks } from "ember-runtime/system/lazy_load";
-import Namespace from "ember-runtime/system/namespace";
-import DefaultResolver from "ember-application/system/resolver";
-import run from "ember-metal/run_loop";
-import { canInvoke } from "ember-metal/utils";
-import Controller from "ember-runtime/controllers/controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController from "ember-runtime/controllers/array_controller";
-import Renderer from "ember-metal-views/renderer";
-import DOMHelper from "ember-htmlbars/system/dom-helper";
-import SelectView from "ember-views/views/select";
-import { OutletView } from "ember-routing-views/views/outlet";
-import EmberView from "ember-views/views/view";
-import EventDispatcher from "ember-views/system/event_dispatcher";
-import jQuery from "ember-views/system/jquery";
-import Route from "ember-routing/system/route";
-import Router from "ember-routing/system/router";
-import HashLocation from "ember-routing/location/hash_location";
-import HistoryLocation from "ember-routing/location/history_location";
-import AutoLocation from "ember-routing/location/auto_location";
-import NoneLocation from "ember-routing/location/none_location";
-import BucketCache from "ember-routing/system/cache";
-import ApplicationInstance from "ember-application/system/application-instance";
-import TextField from "ember-views/views/text_field";
-import TextArea from "ember-views/views/text_area";
-import Checkbox from "ember-views/views/checkbox";
-import LegacyEachView from "ember-views/views/legacy_each_view";
-import LinkToComponent from "ember-routing-views/views/link";
-import RoutingService from "ember-routing/services/routing";
-import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
+import Ember from 'ember-metal'; // Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import isEnabled from 'ember-metal/features';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { runLoadHooks } from 'ember-runtime/system/lazy_load';
+import Namespace from 'ember-runtime/system/namespace';
+import DefaultResolver from 'ember-application/system/resolver';
+import run from 'ember-metal/run_loop';
+import { canInvoke } from 'ember-metal/utils';
+import Controller from 'ember-runtime/controllers/controller';
+import ObjectController from 'ember-runtime/controllers/object_controller';
+import ArrayController from 'ember-runtime/controllers/array_controller';
+import Renderer from 'ember-metal-views/renderer';
+import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import SelectView from 'ember-views/views/select';
+import { OutletView } from 'ember-routing-views/views/outlet';
+import EmberView from 'ember-views/views/view';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
+import jQuery from 'ember-views/system/jquery';
+import Route from 'ember-routing/system/route';
+import Router from 'ember-routing/system/router';
+import HashLocation from 'ember-routing/location/hash_location';
+import HistoryLocation from 'ember-routing/location/history_location';
+import AutoLocation from 'ember-routing/location/auto_location';
+import NoneLocation from 'ember-routing/location/none_location';
+import BucketCache from 'ember-routing/system/cache';
+import ApplicationInstance from 'ember-application/system/application-instance';
+import TextField from 'ember-views/views/text_field';
+import TextArea from 'ember-views/views/text_area';
+import Checkbox from 'ember-views/views/checkbox';
+import LegacyEachView from 'ember-views/views/legacy_each_view';
+import LinkToComponent from 'ember-routing-views/views/link';
+import RoutingService from 'ember-routing/services/routing';
+import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 
 import environment from 'ember-metal/environment';
 
@@ -403,8 +403,8 @@ var Application = Namespace.extend({
     @public
   */
   deferReadiness() {
-    Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Application);
-    Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
+    Ember.assert('You must call deferReadiness on an instance of Ember.Application', this instanceof Application);
+    Ember.assert('You cannot defer readiness since the `ready()` hook has already been called.', this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
 
@@ -418,7 +418,7 @@ var Application = Namespace.extend({
     @public
   */
   advanceReadiness() {
-    Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Application);
+    Ember.assert('You must call advanceReadiness on an instance of Ember.Application', this instanceof Application);
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
@@ -682,9 +682,9 @@ var Application = Namespace.extend({
   runInitializers(registry) {
     var App = this;
     this._runInitializer('initializers', function(name, initializer) {
-      Ember.assert("No application initializer named '" + name + "'", !!initializer);
+      Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
 
-      if (isEnabled("ember-application-initializer-context")) {
+      if (isEnabled('ember-application-initializer-context')) {
         initializer.initialize(registry, App);
       } else {
         var ref = initializer.initialize;
@@ -695,7 +695,7 @@ var Application = Namespace.extend({
 
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', function(name, initializer) {
-      Ember.assert("No instance initializer named '" + name + "'", !!initializer);
+      Ember.assert('No instance initializer named \'' + name + '\'', !!initializer);
       initializer.initialize(instance);
     });
   },
@@ -1177,9 +1177,9 @@ function buildInitializerMethod(bucketName, humanName) {
       this.reopenClass(attrs);
     }
 
-    Ember.assert("The " + humanName + " '" + initializer.name + "' has already been registered", !this[bucketName][initializer.name]);
-    Ember.assert("An " + humanName + " cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
-    Ember.assert("An " + humanName + " cannot be registered without a name property", initializer.name !== undefined);
+    Ember.assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
+    Ember.assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
+    Ember.assert('An ' + humanName + ' cannot be registered without a name property', initializer.name !== undefined);
 
     this[bucketName][initializer.name] = initializer;
   };

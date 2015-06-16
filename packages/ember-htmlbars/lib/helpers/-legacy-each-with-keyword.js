@@ -1,5 +1,5 @@
-import shouldDisplay from "ember-views/streams/should_display";
-import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
+import shouldDisplay from 'ember-views/streams/should_display';
+import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
 export default function legacyEachWithKeywordHelper(params, hash, blocks) {
   var list = params[0];
@@ -28,4 +28,4 @@ function bindKeyword(self, keyword, item) {
   };
 }
 
-export var deprecation = "Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.";
+export var deprecation = 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.';

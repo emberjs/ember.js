@@ -1,7 +1,7 @@
-import "ember";
-import isEnabled from "ember-metal/features";
+import 'ember';
+import isEnabled from 'ember-metal/features';
 
-import EmberHandlebars from "ember-htmlbars/compat";
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
@@ -14,7 +14,7 @@ function basicEagerURLUpdateTest(setTagName) {
   expect(6);
 
   if (setTagName) {
-    Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link' tagName='span'}}");
+    Ember.TEMPLATES.application = compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\' tagName=\'span\'}}');
   }
 
   bootApplication();
@@ -43,7 +43,7 @@ var updateCount, replaceCount;
 
 function sharedSetup() {
   App = Ember.Application.create({
-    name: "App",
+    name: 'App',
     rootElement: '#qunit-fixture'
   });
 
@@ -74,7 +74,7 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 if (isEnabled('ember-routing-transitioning-classes')) {
-  QUnit.module("The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes", {
+  QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
     setup() {
       Ember.run(function() {
         sharedSetup();
@@ -102,7 +102,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
         });
 
 
-        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}{{link-to 'Other' 'other' id='other-link'}}");
+        Ember.TEMPLATES.application = compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\'}}{{link-to \'Other\' \'other\' id=\'other-link\'}}');
       });
     },
 
@@ -112,7 +112,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     }
   });
 
-  QUnit.test("while a transition is underway", function() {
+  QUnit.test('while a transition is underway', function() {
     expect(18);
     bootApplication();
 
@@ -121,7 +121,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
       while (i < arguments.length) {
         var $a = arguments[i];
         var shouldHaveClass = arguments[i+1];
-        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + " should " + (shouldHaveClass ? '' : "not ") + "have class " + className);
+        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + ' should ' + (shouldHaveClass ? '' : 'not ') + 'have class ' + className);
         i +=2;
       }
     }
@@ -143,7 +143,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 
-  QUnit.test("while a transition is underway with nested link-to's", function() {
+  QUnit.test('while a transition is underway with nested link-to\'s', function() {
     expect(54);
 
     Router.map(function() {
@@ -187,7 +187,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
       while (i < arguments.length) {
         var $a = arguments[i];
         var shouldHaveClass = arguments[i+1];
-        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + " should " + (shouldHaveClass ? '' : "not ") + "have class " + className);
+        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + ' should ' + (shouldHaveClass ? '' : 'not ') + 'have class ' + className);
         i +=2;
       }
     }
@@ -233,7 +233,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 } else {
-  QUnit.module("The {{link-to}} helper: eager URL updating", {
+  QUnit.module('The {{link-to}} helper: eager URL updating', {
     setup() {
       Ember.run(function() {
         sharedSetup();
@@ -252,7 +252,7 @@ if (isEnabled('ember-routing-transitioning-classes')) {
           }
         });
 
-        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
+        Ember.TEMPLATES.application = compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\'}}');
       });
     },
 
@@ -262,11 +262,11 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     }
   });
 
-  QUnit.test("invoking a link-to with a slow promise eager updates url", function() {
+  QUnit.test('invoking a link-to with a slow promise eager updates url', function() {
     basicEagerURLUpdateTest(false);
   });
 
-  QUnit.test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
+  QUnit.test('when link-to eagerly updates url, the path it provides does NOT include the rootURL', function() {
     expect(2);
 
     // HistoryLocation is the only Location class that will cause rootURL to be
@@ -313,11 +313,11 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     equal(router.get('location.path'), '/about');
   });
 
-  QUnit.test("non `a` tags also eagerly update URL", function() {
+  QUnit.test('non `a` tags also eagerly update URL', function() {
     basicEagerURLUpdateTest(true);
   });
 
-  QUnit.test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
+  QUnit.test('invoking a link-to with a promise that rejects on the run loop doesn\'t update url', function() {
     App.AboutRoute = Ember.Route.extend({
       model() {
         return Ember.RSVP.reject();
@@ -332,11 +332,11 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     equal(router.get('location.path'), '', 'url was not updated');
   });
 
-  QUnit.test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
+  QUnit.test('invoking a link-to whose transition gets aborted in will transition doesn\'t update the url', function() {
     App.IndexRoute = Ember.Route.extend({
       actions: {
         willTransition(transition) {
-          ok(true, "aborting transition");
+          ok(true, 'aborting transition');
           transition.abort();
         }
       }

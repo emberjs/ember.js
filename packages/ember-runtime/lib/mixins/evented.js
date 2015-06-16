@@ -1,10 +1,10 @@
-import { Mixin } from "ember-metal/mixin";
+import { Mixin } from 'ember-metal/mixin';
 import {
   addListener,
   removeListener,
   hasListeners,
   sendEvent
-} from "ember-metal/events";
+} from 'ember-metal/events';
 
 /**
 @module ember

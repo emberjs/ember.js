@@ -4,13 +4,13 @@ var suite = SuiteModuleBuilder.create();
 
 suite.module('unshiftObjects');
 
-suite.test("returns receiver", function() {
+suite.test('returns receiver', function() {
   var obj = this.newObject([]);
   var items = this.newFixture(3);
   equal(obj.unshiftObjects(items), obj, 'should return receiver');
 });
 
-suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
+suite.test('[].unshiftObjects([A,B,C]) => [A,B,C] + notify', function() {
   var obj, before, items, observer;
 
   before = [];
@@ -31,7 +31,7 @@ suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
-suite.test("[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify", function() {
+suite.test('[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify', function() {
   var obj, before, items, after, observer;
 
   before = this.newFixture(3);
@@ -54,7 +54,7 @@ suite.test("[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test("[A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify", function() {
+suite.test('[A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify', function() {
   var obj, before, after, items, observer;
 
   before = this.newFixture(3);

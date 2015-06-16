@@ -1,8 +1,8 @@
 /*jshint newcap:false*/
-import Ember from "ember-metal/core"; // Ember.deprecate
+import Ember from 'ember-metal/core'; // Ember.deprecate
 
-import View from "ember-views/views/view";
-import { Mixin } from "ember-metal/mixin";
+import View from 'ember-views/views/view';
+import { Mixin } from 'ember-metal/mixin';
 
 /**
  @module ember

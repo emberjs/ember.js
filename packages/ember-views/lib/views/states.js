@@ -1,9 +1,9 @@
-import merge from "ember-metal/merge";
-import _default from "ember-views/views/states/default";
-import preRender from "ember-views/views/states/pre_render";
-import hasElement from "ember-views/views/states/has_element";
-import inDOM from "ember-views/views/states/in_dom";
-import destroying from "ember-views/views/states/destroying";
+import merge from 'ember-metal/merge';
+import _default from 'ember-views/views/states/default';
+import preRender from 'ember-views/views/states/pre_render';
+import hasElement from 'ember-views/views/states/has_element';
+import inDOM from 'ember-views/views/states/in_dom';
+import destroying from 'ember-views/views/states/destroying';
 
 export function cloneStates(from) {
   var into = {};

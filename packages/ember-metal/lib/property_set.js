@@ -1,21 +1,21 @@
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import { _getPath as getPath } from "ember-metal/property_get";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import { _getPath as getPath } from 'ember-metal/property_get';
 import {
   PROPERTY_DID_CHANGE,
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
-import { defineProperty } from "ember-metal/properties";
-import EmberError from "ember-metal/error";
+} from 'ember-metal/property_events';
+import { defineProperty } from 'ember-metal/properties';
+import EmberError from 'ember-metal/error';
 import {
   isPath,
   isGlobalPath
-} from "ember-metal/path_cache";
+} from 'ember-metal/path_cache';
 
-import { symbol } from "ember-metal/utils";
-export let INTERCEPT_SET = symbol("INTERCEPT_SET");
-export let UNHANDLED_SET = symbol("UNHANDLED_SET");
+import { symbol } from 'ember-metal/utils';
+export let INTERCEPT_SET = symbol('INTERCEPT_SET');
+export let UNHANDLED_SET = symbol('UNHANDLED_SET');
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -65,7 +65,7 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
+  Ember.assert('You need to provide an object and key to `set`.', !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
   if (desc) {

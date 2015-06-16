@@ -1,26 +1,26 @@
-import _Ember from "ember-metal";
-import precompile from "ember-template-compiler/system/precompile";
-import compile from "ember-template-compiler/system/compile";
-import template from "ember-template-compiler/system/template";
-import { registerPlugin } from "ember-template-compiler/plugins";
+import _Ember from 'ember-metal';
+import precompile from 'ember-template-compiler/system/precompile';
+import compile from 'ember-template-compiler/system/compile';
+import template from 'ember-template-compiler/system/template';
+import { registerPlugin } from 'ember-template-compiler/plugins';
 
-import TransformEachInToBlockParams from "ember-template-compiler/plugins/transform-each-in-to-block-params";
-import TransformWithAsToHash from "ember-template-compiler/plugins/transform-with-as-to-hash";
-import TransformBindAttrToAttributes from "ember-template-compiler/plugins/transform-bind-attr-to-attributes";
-import TransformEachIntoCollection from "ember-template-compiler/plugins/transform-each-into-collection";
-import TransformSingleArgEach from "ember-template-compiler/plugins/transform-single-arg-each";
-import TransformOldBindingSyntax from "ember-template-compiler/plugins/transform-old-binding-syntax";
-import TransformOldClassBindingSyntax from "ember-template-compiler/plugins/transform-old-class-binding-syntax";
-import TransformItemClass from "ember-template-compiler/plugins/transform-item-class";
-import TransformComponentAttrsIntoMut from "ember-template-compiler/plugins/transform-component-attrs-into-mut";
-import TransformComponentCurlyToReadonly from "ember-template-compiler/plugins/transform-component-curly-to-readonly";
-import TransformAngleBracketComponents from "ember-template-compiler/plugins/transform-angle-bracket-components";
-import TransformInputOnToOnEvent from "ember-template-compiler/plugins/transform-input-on-to-onEvent";
-import DeprecateViewAndControllerPaths from "ember-template-compiler/plugins/deprecate-view-and-controller-paths";
-import DeprecateViewHelper from "ember-template-compiler/plugins/deprecate-view-helper";
+import TransformEachInToBlockParams from 'ember-template-compiler/plugins/transform-each-in-to-block-params';
+import TransformWithAsToHash from 'ember-template-compiler/plugins/transform-with-as-to-hash';
+import TransformBindAttrToAttributes from 'ember-template-compiler/plugins/transform-bind-attr-to-attributes';
+import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
+import TransformSingleArgEach from 'ember-template-compiler/plugins/transform-single-arg-each';
+import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
+import TransformOldClassBindingSyntax from 'ember-template-compiler/plugins/transform-old-class-binding-syntax';
+import TransformItemClass from 'ember-template-compiler/plugins/transform-item-class';
+import TransformComponentAttrsIntoMut from 'ember-template-compiler/plugins/transform-component-attrs-into-mut';
+import TransformComponentCurlyToReadonly from 'ember-template-compiler/plugins/transform-component-curly-to-readonly';
+import TransformAngleBracketComponents from 'ember-template-compiler/plugins/transform-angle-bracket-components';
+import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
+import DeprecateViewAndControllerPaths from 'ember-template-compiler/plugins/deprecate-view-and-controller-paths';
+import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-helper';
 
 // used for adding Ember.Handlebars.compile for backwards compat
-import "ember-template-compiler/compat";
+import 'ember-template-compiler/compat';
 
 registerPlugin('ast', TransformWithAsToHash);
 registerPlugin('ast', TransformEachInToBlockParams);

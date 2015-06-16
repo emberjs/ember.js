@@ -1,16 +1,16 @@
-import Ember from "ember-metal/core"; // Ember.lookup
-import EmberLogger from "ember-metal/logger";
-import EmberView from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
+import Ember from 'ember-metal/core'; // Ember.lookup
+import EmberLogger from 'ember-metal/logger';
+import EmberView from 'ember-views/views/view';
+import compile from 'ember-template-compiler/system/compile';
 
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var originalLookup = Ember.lookup;
 var lookup;
 var originalLog, logCalls;
 var view;
 
-QUnit.module("Handlebars {{log}} helper", {
+QUnit.module('Handlebars {{log}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -28,7 +28,7 @@ QUnit.module("Handlebars {{log}} helper", {
   }
 });
 
-QUnit.test("should be able to log multiple properties", function() {
+QUnit.test('should be able to log multiple properties', function() {
   var context = {
     value: 'one',
     valueTwo: 'two'
@@ -41,12 +41,12 @@ QUnit.test("should be able to log multiple properties", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), "", "shouldn't render any text");
+  equal(view.$().text(), '', 'shouldn\'t render any text');
   equal(logCalls[0], 'one');
   equal(logCalls[1], 'two');
 });
 
-QUnit.test("should be able to log primitives", function() {
+QUnit.test('should be able to log primitives', function() {
   var context = {
     value: 'one',
     valueTwo: 'two'
@@ -59,7 +59,7 @@ QUnit.test("should be able to log primitives", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), "", "shouldn't render any text");
+  equal(view.$().text(), '', 'shouldn\'t render any text');
   strictEqual(logCalls[0], 'one');
   strictEqual(logCalls[1], 'foo');
   strictEqual(logCalls[2], 0);

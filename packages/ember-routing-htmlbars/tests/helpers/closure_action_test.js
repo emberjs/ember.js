@@ -1,19 +1,19 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
-import compile from "ember-template-compiler/system/compile";
-import EmberComponent from "ember-views/views/component";
-import { computed } from "ember-metal/computed";
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
+import compile from 'ember-template-compiler/system/compile';
+import EmberComponent from 'ember-views/views/component';
+import { computed } from 'ember-metal/computed';
 
 import {
   runAppend,
   runDestroy
-} from "ember-runtime/tests/utils";
+} from 'ember-runtime/tests/utils';
 
 var innerComponent, outerComponent;
 
-if (isEnabled("ember-routing-htmlbars-improved-actions")) {
+if (isEnabled('ember-routing-htmlbars-improved-actions')) {
 
-  QUnit.module("ember-routing-htmlbars: action helper", {
+  QUnit.module('ember-routing-htmlbars: action helper', {
     setup() {
     },
 
@@ -23,7 +23,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }
   });
 
-  QUnit.test("action should be called", function(assert) {
+  QUnit.test('action should be called', function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.extend({
@@ -33,7 +33,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }).create();
 
     outerComponent = EmberComponent.extend({
-      layout: compile("{{view innerComponent submit=(action outerSubmit)}}"),
+      layout: compile('{{view innerComponent submit=(action outerSubmit)}}'),
       innerComponent,
       outerSubmit() {
         assert.ok(true, 'action is called');
@@ -47,7 +47,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action value is returned", function(assert) {
+  QUnit.test('action value is returned', function(assert) {
     assert.expect(1);
 
     var returnedValue = 'terrible tom';
@@ -60,7 +60,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }).create();
 
     outerComponent = EmberComponent.extend({
-      layout: compile("{{view innerComponent submit=(action outerSubmit)}}"),
+      layout: compile('{{view innerComponent submit=(action outerSubmit)}}'),
       innerComponent,
       outerSubmit() {
         return returnedValue;
@@ -74,7 +74,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action should be called on the correct scope", function(assert) {
+  QUnit.test('action should be called on the correct scope', function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.extend({
@@ -84,7 +84,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }).create();
 
     outerComponent = EmberComponent.extend({
-      layout: compile("{{view innerComponent submit=(action outerSubmit)}}"),
+      layout: compile('{{view innerComponent submit=(action outerSubmit)}}'),
       innerComponent,
       isOuterComponent: true,
       outerSubmit() {
@@ -99,7 +99,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("arguments to action are passed, curry", function(assert) {
+  QUnit.test('arguments to action are passed, curry', function(assert) {
     assert.expect(4);
 
     const first = 'mitch';
@@ -134,7 +134,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("arguments to action are bound", function(assert) {
+  QUnit.test('arguments to action are bound', function(assert) {
     assert.expect(1);
 
     const value = 'lazy leah';
@@ -165,7 +165,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     innerComponent.fireAction();
   });
 
-  QUnit.test("array arguments are passed correctly to action", function(assert) {
+  QUnit.test('array arguments are passed correctly to action', function(assert) {
     assert.expect(3);
 
     const first = 'foo';
@@ -201,7 +201,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     innerComponent.fireAction();
   });
 
-  QUnit.test("mut values can be wrapped in actions, are settable", function(assert) {
+  QUnit.test('mut values can be wrapped in actions, are settable', function(assert) {
     assert.expect(1);
 
     var newValue = 'trollin trek';
@@ -228,7 +228,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("mut values can be wrapped in actions, are settable with a curry", function(assert) {
+  QUnit.test('mut values can be wrapped in actions, are settable with a curry', function(assert) {
     assert.expect(1);
 
     var newValue = 'trollin trek';
@@ -255,7 +255,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action can create closures over actions", function(assert) {
+  QUnit.test('action can create closures over actions', function(assert) {
     assert.expect(3);
 
     var first = 'raging robert';
@@ -290,7 +290,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("provides a helpful error if an action is not present", function(assert) {
+  QUnit.test('provides a helpful error if an action is not present', function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.create();
@@ -314,7 +314,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }, /An action named 'doesNotExist' was not found in /);
   });
 
-  QUnit.test("provides a helpful error if actions hash is not present", function(assert) {
+  QUnit.test('provides a helpful error if actions hash is not present', function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.create();
@@ -331,7 +331,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     }, /An action named 'doesNotExist' was not found in /);
   });
 
-  QUnit.test("action can create closures over actions with target", function(assert) {
+  QUnit.test('action can create closures over actions with target', function(assert) {
     assert.expect(1);
 
     innerComponent = EmberComponent.extend({
@@ -363,7 +363,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("value can be used with action over actions", function(assert) {
+  QUnit.test('value can be used with action over actions', function(assert) {
     assert.expect(1);
 
     const newValue = 'yelping yehuda';
@@ -398,7 +398,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action will read the value of a first property", function(assert) {
+  QUnit.test('action will read the value of a first property', function(assert) {
     assert.expect(1);
 
     const newValue = 'irate igor';
@@ -428,7 +428,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action will read the value of a curried first argument property", function(assert) {
+  QUnit.test('action will read the value of a curried first argument property', function(assert) {
     assert.expect(1);
 
     const newValue = 'kissing kris';
@@ -459,7 +459,7 @@ if (isEnabled("ember-routing-htmlbars-improved-actions")) {
     });
   });
 
-  QUnit.test("action closure does not get auto-mut wrapped", function(assert) {
+  QUnit.test('action closure does not get auto-mut wrapped', function(assert) {
     assert.expect(3);
 
     var first = 'raging robert';

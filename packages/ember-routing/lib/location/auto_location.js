@@ -1,10 +1,10 @@
-import Ember from "ember-metal/core"; // FEATURES
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { tryInvoke } from "ember-metal/utils";
+import Ember from 'ember-metal/core'; // FEATURES
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { tryInvoke } from 'ember-metal/utils';
 
-import EmberObject from "ember-runtime/system/object";
-import environment from "ember-metal/environment";
+import EmberObject from 'ember-runtime/system/object';
+import environment from 'ember-metal/environment';
 
 import {
   supportsHashChange,
@@ -14,7 +14,7 @@ import {
   getQuery,
   getFullPath,
   replacePath
-} from "ember-routing/location/util";
+} from 'ember-routing/location/util';
 
 /**
 @module ember
@@ -160,7 +160,7 @@ export default EmberObject.extend({
 function delegateToConcreteImplementation(methodName) {
   return function(...args) {
     var concreteImplementation = get(this, 'concreteImplementation');
-    Ember.assert("AutoLocation's detect() method should be called before calling any other hooks.", !!concreteImplementation);
+    Ember.assert('AutoLocation\'s detect() method should be called before calling any other hooks.', !!concreteImplementation);
     return tryInvoke(concreteImplementation, methodName, args);
   };
 }

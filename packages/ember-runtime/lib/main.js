@@ -14,7 +14,7 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import SubArray from 'ember-runtime/system/subarray';
-import { Container, Registry } from "ember-runtime/system/container";
+import { Container, Registry } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';

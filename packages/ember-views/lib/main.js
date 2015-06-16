@@ -4,42 +4,42 @@
 */
 
 // BEGIN IMPORTS
-import Ember from "ember-runtime";
-import jQuery from "ember-views/system/jquery";
+import Ember from 'ember-runtime';
+import jQuery from 'ember-views/system/jquery';
 import {
   isSimpleClick,
   getViewClientRects,
   getViewBoundingClientRect
-} from "ember-views/system/utils";
-import RenderBuffer from "ember-views/compat/render_buffer";
-import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
+} from 'ember-views/system/utils';
+import RenderBuffer from 'ember-views/compat/render_buffer';
+import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
   states
-} from "ember-views/views/states";
+} from 'ember-views/views/states';
 
 import Renderer from 'ember-metal-views/renderer';
-import { DeprecatedCoreView } from "ember-views/views/core_view";
-import { DeprecatedView } from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
-import CollectionView from "ember-views/views/collection_view";
-import Component from "ember-views/views/component";
+import { DeprecatedCoreView } from 'ember-views/views/core_view';
+import { DeprecatedView } from 'ember-views/views/view';
+import ContainerView from 'ember-views/views/container_view';
+import CollectionView from 'ember-views/views/collection_view';
+import Component from 'ember-views/views/component';
 
-import EventDispatcher from "ember-views/system/event_dispatcher";
-import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
-import ComponentLookup from "ember-views/component_lookup";
-import Checkbox from "ember-views/views/checkbox";
-import TextSupport from "ember-views/mixins/text_support";
-import TextField from "ember-views/views/text_field";
-import TextArea from "ember-views/views/text_area";
+import EventDispatcher from 'ember-views/system/event_dispatcher';
+import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
+import ComponentLookup from 'ember-views/component_lookup';
+import Checkbox from 'ember-views/views/checkbox';
+import TextSupport from 'ember-views/mixins/text_support';
+import TextField from 'ember-views/views/text_field';
+import TextArea from 'ember-views/views/text_area';
 
 import {
   DeprecatedSelect,
   SelectOption,
   SelectOptgroup
-} from "ember-views/views/select";
-import _MetamorphView, { _Metamorph } from "ember-views/compat/metamorph_view";
-import LegacyEachView from "ember-views/views/legacy_each_view";
+} from 'ember-views/views/select';
+import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
+import LegacyEachView from 'ember-views/views/legacy_each_view';
 
 // END IMPORTS
 

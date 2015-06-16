@@ -3,9 +3,9 @@ import {
   subscribe,
   unsubscribe,
   reset
-} from "ember-metal/instrumentation";
+} from 'ember-metal/instrumentation';
 
-QUnit.module("Ember Instrumentation", {
+QUnit.module('Ember Instrumentation', {
   setup() {
 
   },
@@ -14,25 +14,25 @@ QUnit.module("Ember Instrumentation", {
   }
 });
 
-QUnit.test("execute block even if no listeners", function() {
-  var result = instrument("render", {}, function() {
-    return "hello";
+QUnit.test('execute block even if no listeners', function() {
+  var result = instrument('render', {}, function() {
+    return 'hello';
   });
-  equal(result, "hello", 'called block');
+  equal(result, 'hello', 'called block');
 });
 
-QUnit.test("subscribing to a simple path receives the listener", function() {
+QUnit.test('subscribing to a simple path receives the listener', function() {
   expect(12);
 
   var sentPayload = {};
   var count = 0;
 
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       if (count === 0) {
-        strictEqual(name, "render");
+        strictEqual(name, 'render');
       } else {
-        strictEqual(name, "render.handlebars");
+        strictEqual(name, 'render.handlebars');
       }
 
       ok(typeof timestamp === 'number');
@@ -41,9 +41,9 @@ QUnit.test("subscribing to a simple path receives the listener", function() {
 
     after(name, timestamp, payload) {
       if (count === 0) {
-        strictEqual(name, "render");
+        strictEqual(name, 'render');
       } else {
-        strictEqual(name, "render.handlebars");
+        strictEqual(name, 'render.handlebars');
       }
 
       ok(typeof timestamp === 'number');
@@ -53,22 +53,22 @@ QUnit.test("subscribing to a simple path receives the listener", function() {
     }
   });
 
-  instrument("render", sentPayload, function() {
+  instrument('render', sentPayload, function() {
 
   });
 
-  instrument("render.handlebars", sentPayload, function() {
+  instrument('render.handlebars', sentPayload, function() {
 
   });
 });
 
-QUnit.test("returning a value from the before callback passes it to the after callback", function() {
+QUnit.test('returning a value from the before callback passes it to the after callback', function() {
   expect(2);
 
   var passthru1 = {};
   var passthru2 = {};
 
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       return passthru1;
     },
@@ -77,7 +77,7 @@ QUnit.test("returning a value from the before callback passes it to the after ca
     }
   });
 
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       return passthru2;
     },
@@ -86,130 +86,130 @@ QUnit.test("returning a value from the before callback passes it to the after ca
     }
   });
 
-  instrument("render", null, function() {});
+  instrument('render', null, function() {});
 });
 
-QUnit.test("instrument with 2 args (name, callback) no payload", function() {
+QUnit.test('instrument with 2 args (name, callback) no payload', function() {
   expect(1);
 
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, {});
     },
     after() {}
   });
 
-  instrument("render", function() {});
+  instrument('render', function() {});
 });
 
-QUnit.test("instrument with 3 args (name, callback, binding) no payload", function() {
+QUnit.test('instrument with 3 args (name, callback, binding) no payload', function() {
   expect(2);
 
   var binding = {};
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, {});
     },
     after() {}
   });
 
-  instrument("render", function() {
+  instrument('render', function() {
     deepEqual(this, binding);
   }, binding);
 });
 
 
-QUnit.test("instrument with 3 args (name, payload, callback) with payload", function() {
+QUnit.test('instrument with 3 args (name, payload, callback) with payload', function() {
   expect(1);
 
   var expectedPayload = { hi: 1 };
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
     },
     after() {}
   });
 
-  instrument("render", expectedPayload, function() {});
+  instrument('render', expectedPayload, function() {});
 });
 
-QUnit.test("instrument with 4 args (name, payload, callback, binding) with payload", function() {
+QUnit.test('instrument with 4 args (name, payload, callback, binding) with payload', function() {
   expect(2);
 
   var expectedPayload = { hi: 1 };
   var binding = {};
-  subscribe("render", {
+  subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
     },
     after() {}
   });
 
-  instrument("render", expectedPayload, function() {
+  instrument('render', expectedPayload, function() {
     deepEqual(this, binding);
   }, binding);
 });
 
 
-QUnit.test("raising an exception in the instrumentation attaches it to the payload", function() {
+QUnit.test('raising an exception in the instrumentation attaches it to the payload', function() {
   expect(2);
 
-  var error = new Error("Instrumentation");
+  var error = new Error('Instrumentation');
 
-  subscribe("render", {
+  subscribe('render', {
     before() {},
     after(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
 
-  subscribe("render", {
+  subscribe('render', {
     before() {},
     after(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
 
-  instrument("render.handlebars", null, function() {
+  instrument('render.handlebars', null, function() {
     throw error;
   });
 });
 
-QUnit.test("it is possible to add a new subscriber after the first instrument", function() {
-  instrument("render.handlebars", null, function() {});
+QUnit.test('it is possible to add a new subscriber after the first instrument', function() {
+  instrument('render.handlebars', null, function() {});
 
-  subscribe("render", {
+  subscribe('render', {
     before() {
-      ok(true, "Before callback was called");
+      ok(true, 'Before callback was called');
     },
     after() {
-      ok(true, "After callback was called");
+      ok(true, 'After callback was called');
     }
   });
 
-  instrument("render.handlebars", null, function() {});
+  instrument('render.handlebars', null, function() {});
 });
 
-QUnit.test("it is possible to remove a subscriber", function() {
+QUnit.test('it is possible to remove a subscriber', function() {
   expect(4);
 
   var count = 0;
 
-  var subscriber = subscribe("render", {
+  var subscriber = subscribe('render', {
     before() {
       equal(count, 0);
-      ok(true, "Before callback was called");
+      ok(true, 'Before callback was called');
     },
     after() {
       equal(count, 0);
-      ok(true, "After callback was called");
+      ok(true, 'After callback was called');
       count++;
     }
   });
 
-  instrument("render.handlebars", null, function() {});
+  instrument('render.handlebars', null, function() {});
 
   unsubscribe(subscriber);
 
-  instrument("render.handlebars", null, function() {});
+  instrument('render.handlebars', null, function() {});
 });

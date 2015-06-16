@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 
 // From sindresourhus/semver-regex https://github.com/sindresorhus/semver-regex/blob/795b05628d96597ebcbe6d31ef4a432858365582/index.js#L3
 var SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b$/;
@@ -12,11 +12,11 @@ QUnit.test('Ember registers itself', function() {
   equal(lib.version, Ember.VERSION);
 });
 
-QUnit.test("Ember.VERSION is in alignment with SemVer v2.0.0", function () {
+QUnit.test('Ember.VERSION is in alignment with SemVer v2.0.0', function () {
   ok(SEMVER_REGEX.test(Ember.VERSION), `Ember.VERSION (${Ember.VERSION})is valid SemVer v2.0.0`);
 });
 
-QUnit.test("SEMVER_REGEX properly validates and invalidates version numbers", function () {
+QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', function () {
   function validateVersionString(versionString, expectedResult) {
     equal(SEMVER_REGEX.test(versionString), expectedResult);
   }

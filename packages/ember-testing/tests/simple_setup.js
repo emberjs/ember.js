@@ -1,5 +1,5 @@
-import run from "ember-metal/run_loop";
-import jQuery from "ember-views/system/jquery";
+import run from 'ember-metal/run_loop';
+import jQuery from 'ember-views/system/jquery';
 
 var App;
 

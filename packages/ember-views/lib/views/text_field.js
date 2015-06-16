@@ -2,10 +2,10 @@
 @module ember
 @submodule ember-views
 */
-import { computed } from "ember-metal/computed";
-import environment from "ember-metal/environment";
-import Component from "ember-views/views/component";
-import TextSupport from "ember-views/mixins/text_support";
+import { computed } from 'ember-metal/computed';
+import environment from 'ember-metal/environment';
+import Component from 'ember-views/views/component';
+import TextSupport from 'ember-views/mixins/text_support';
 
 var inputTypeTestElement;
 var inputTypes = Object.create(null);
@@ -56,7 +56,7 @@ export default Component.extend(TextSupport, {
   instrumentDisplay: '{{input type="text"}}',
 
   classNames: ['ember-text-field'],
-  tagName: "input",
+  tagName: 'input',
   attributeBindings: [
     'accept',
     'autocomplete',
@@ -94,7 +94,7 @@ export default Component.extend(TextSupport, {
     @default ""
     @public
   */
-  value: "",
+  value: '',
 
   /**
     The `type` attribute of the input element.

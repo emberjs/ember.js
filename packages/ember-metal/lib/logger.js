@@ -1,5 +1,5 @@
-import Ember from "ember-metal/core"; // Ember.imports
-import EmberError from "ember-metal/error";
+import Ember from 'ember-metal/core'; // Ember.imports
+import EmberError from 'ember-metal/error';
 
 function K() { return this; }
 
@@ -38,7 +38,7 @@ function assertPolyfill(test, message) {
   if (!test) {
     try {
       // attempt to preserve the stack
-      throw new EmberError("assertion failed: " + message);
+      throw new EmberError('assertion failed: ' + message);
     } catch(error) {
       setTimeout(() => {
         throw error;

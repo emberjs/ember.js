@@ -1,4 +1,4 @@
-import expandProperties from "ember-metal/expand_properties";
+import expandProperties from 'ember-metal/expand_properties';
 
 var foundProperties = [];
 

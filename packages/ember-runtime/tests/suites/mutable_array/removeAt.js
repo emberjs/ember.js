@@ -1,11 +1,11 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {get} from "ember-metal/property_get";
+import {get} from 'ember-metal/property_get';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('removeAt');
 
-suite.test("[X].removeAt(0) => [] + notify", function() {
+suite.test('[X].removeAt(0) => [] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(1);
@@ -26,14 +26,14 @@ suite.test("[X].removeAt(0) => [] + notify", function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
-suite.test("[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception", function() {
+suite.test('[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception', function() {
   var obj = this.newObject([]);
   throws(function() {
     obj.removeAt(200);
   }, Error);
 });
 
-suite.test("[A,B].removeAt(0) => [B] + notify", function() {
+suite.test('[A,B].removeAt(0) => [B] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(2);
@@ -55,7 +55,7 @@ suite.test("[A,B].removeAt(0) => [B] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test("[A,B].removeAt(1) => [A] + notify", function() {
+suite.test('[A,B].removeAt(1) => [A] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(2);
@@ -77,7 +77,7 @@ suite.test("[A,B].removeAt(1) => [A] + notify", function() {
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
 });
 
-suite.test("[A,B,C].removeAt(1) => [A,C] + notify", function() {
+suite.test('[A,B,C].removeAt(1) => [A,C] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(3);
@@ -99,7 +99,7 @@ suite.test("[A,B,C].removeAt(1) => [A,C] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
 });
 
-suite.test("[A,B,C,D].removeAt(1,2) => [A,D] + notify", function() {
+suite.test('[A,B,C,D].removeAt(1,2) => [A,D] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(4);

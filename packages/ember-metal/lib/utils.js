@@ -1,10 +1,10 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-"REMOVE_USE_STRICT: true";
+'REMOVE_USE_STRICT: true';
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember-metal
@@ -220,11 +220,11 @@ export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
-    return "(undefined)";
+    return '(undefined)';
   }
 
   if (obj === null) {
-    return "(null)";
+    return '(null)';
   }
 
   var ret;
@@ -416,7 +416,7 @@ export function setMeta(obj, property, value) {
     shared with its constructor
 */
 export function metaPath(obj, path, writable) {
-  Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
+  Ember.deprecate('Ember.metaPath is deprecated and will be removed from future releases.');
   var _meta = meta(obj, writable);
   var keyName, value;
 
@@ -622,7 +622,7 @@ if (needsFinallyFix) {
 }
 
 var deprecatedTryFinally = function() {
-  Ember.deprecate("tryFinally is deprecated. Please use JavaScript's native try/finally.", false);
+  Ember.deprecate('tryFinally is deprecated. Please use JavaScript\'s native try/finally.', false);
   return tryFinally.apply(this, arguments);
 };
 
@@ -709,7 +709,7 @@ if (needsFinallyFix) {
 }
 
 var deprecatedTryCatchFinally = function() {
-  Ember.deprecate("tryCatchFinally is deprecated. Please use JavaScript's native try/catch/finally.", false);
+  Ember.deprecate('tryCatchFinally is deprecated. Please use JavaScript\'s native try/catch/finally.', false);
   return tryCatchFinally.apply(this, arguments);
 };
 
@@ -796,16 +796,16 @@ export function inspect(obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (typeof v === 'function') { v = "function() { ... }"; }
+      if (typeof v === 'function') { v = 'function() { ... }'; }
 
       if (v && typeof v.toString !== 'function') {
-        ret.push(key + ": " + toString.call(v));
+        ret.push(key + ': ' + toString.call(v));
       } else {
-        ret.push(key + ": " + v);
+        ret.push(key + ': ' + v);
       }
     }
   }
-  return "{" + ret.join(", ") + "}";
+  return '{' + ret.join(', ') + '}';
 }
 
 // The following functions are intentionally minified to keep the functions

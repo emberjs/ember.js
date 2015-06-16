@@ -1,6 +1,6 @@
-import { get } from "ember-metal/property_get";
-import normalizeSelf from "ember-htmlbars/utils/normalize-self";
-import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
+import { get } from 'ember-metal/property_get';
+import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
+import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
 export default function legacyEachWithControllerHelper(params, hash, blocks) {
   var list = params[0];
@@ -34,5 +34,5 @@ function bindController(controller, isSelf) {
   };
 }
 
-export var deprecation = "Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.";
+export var deprecation = 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.';
 

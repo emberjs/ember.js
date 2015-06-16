@@ -72,7 +72,7 @@ suite.test('should filter on second argument if provided', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], "filterBy('foo', 3)')");
+  deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], 'filterBy(\'foo\', 3)\')');
 });
 
 suite.test('should correctly filter null second argument', function() {
@@ -87,7 +87,7 @@ suite.test('should correctly filter null second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], "filterBy('foo', 3)')");
+  deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], 'filterBy(\'foo\', 3)\')');
 });
 
 suite.test('should not return all objects on undefined second argument', function() {
@@ -100,7 +100,7 @@ suite.test('should not return all objects on undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', undefined), [], "filterBy('foo', 3)')");
+  deepEqual(obj.filterBy('foo', undefined), [], 'filterBy(\'foo\', 3)\')');
 });
 
 suite.test('should correctly filter explicit undefined second argument', function() {
@@ -117,7 +117,7 @@ suite.test('should correctly filter explicit undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', undefined), ary.slice(2), "filterBy('foo', 3)')");
+  deepEqual(obj.filterBy('foo', undefined), ary.slice(2), 'filterBy(\'foo\', 3)\')');
 });
 
 suite.test('should not match undefined properties without second argument', function() {
@@ -134,7 +134,7 @@ suite.test('should not match undefined properties without second argument', func
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo'), ary.slice(0, 2), "filterBy('foo', 3)')");
+  deepEqual(obj.filterBy('foo'), ary.slice(0, 2), 'filterBy(\'foo\', 3)\')');
 });
 
 suite.test('should be aliased to filterProperty', function() {

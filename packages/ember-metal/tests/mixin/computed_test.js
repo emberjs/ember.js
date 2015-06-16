@@ -1,8 +1,8 @@
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { Mixin } from "ember-metal/mixin";
-import { computed } from "ember-metal/computed";
-import { defineProperty } from "ember-metal/properties";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { Mixin } from 'ember-metal/mixin';
+import { computed } from 'ember-metal/computed';
+import { defineProperty } from 'ember-metal/properties';
 
 function K() { return this; }
 
@@ -38,24 +38,24 @@ QUnit.test('overriding computed properties', function() {
 
   obj = {};
   MixinB.apply(obj);
-  equal(get(obj, 'aProp'), 'AB', "should expose super for B");
+  equal(get(obj, 'aProp'), 'AB', 'should expose super for B');
 
   obj = {};
   MixinC.apply(obj);
-  equal(get(obj, 'aProp'), 'AC', "should expose super for C");
+  equal(get(obj, 'aProp'), 'AC', 'should expose super for C');
 
   obj = {};
 
   MixinA.apply(obj);
   MixinD.apply(obj);
-  equal(get(obj, 'aProp'), 'AD', "should define super for D");
+  equal(get(obj, 'aProp'), 'AD', 'should define super for D');
 
   obj = { };
   defineProperty(obj, 'aProp', computed(function(key) {
     return 'obj';
   }));
   MixinD.apply(obj);
-  equal(get(obj, 'aProp'), "objD", "should preserve original computed property");
+  equal(get(obj, 'aProp'), 'objD', 'should preserve original computed property');
 });
 
 QUnit.test('calling set on overridden computed properties', function() {
@@ -128,14 +128,14 @@ QUnit.test('setter behavior works properly when overriding computed properties',
   MixinB.apply(obj);
 
   set(obj, 'cpWithSetter2', 'test');
-  ok(cpWasCalled, "The computed property setter was called when defined with two args");
+  ok(cpWasCalled, 'The computed property setter was called when defined with two args');
   cpWasCalled = false;
 
   set(obj, 'cpWithSetter3', 'test');
-  ok(cpWasCalled, "The computed property setter was called when defined with three args");
+  ok(cpWasCalled, 'The computed property setter was called when defined with three args');
   cpWasCalled = false;
 
   set(obj, 'cpWithoutSetter', 'test');
-  equal(get(obj, 'cpWithoutSetter'), 'test', "The default setter was called, the value is correct");
-  ok(!cpWasCalled, "The default setter was called, not the CP itself");
+  equal(get(obj, 'cpWithoutSetter'), 'test', 'The default setter was called, the value is correct');
+  ok(!cpWasCalled, 'The default setter was called, not the CP itself');
 });

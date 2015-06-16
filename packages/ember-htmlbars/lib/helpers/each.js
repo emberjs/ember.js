@@ -1,6 +1,6 @@
-import normalizeSelf from "ember-htmlbars/utils/normalize-self";
-import shouldDisplay from "ember-views/streams/should_display";
-import decodeEachKey from "ember-htmlbars/utils/decode-each-key";
+import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
+import shouldDisplay from 'ember-views/streams/should_display';
+import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -96,4 +96,4 @@ function forEach(iterable, cb) {
   return iterable.forEach ? iterable.forEach(cb) : Array.prototype.forEach.call(iterable, cb);
 }
 
-export var deprecation = "Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.";
+export var deprecation = 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.';

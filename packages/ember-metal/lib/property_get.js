@@ -2,21 +2,21 @@
 @module ember-metal
 */
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import EmberError from "ember-metal/error";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import EmberError from 'ember-metal/error';
 import {
   isGlobal as detectIsGlobal,
   isPath,
   hasThis as pathHasThis
-} from "ember-metal/path_cache";
-import { symbol } from "ember-metal/utils";
+} from 'ember-metal/path_cache';
+import { symbol } from 'ember-metal/utils';
 import isNone from 'ember-metal/is_none';
 
 var FIRST_KEY = /^([^\.]+)/;
 
-export let INTERCEPT_GET = symbol("INTERCEPT_GET");
-export let UNHANDLED_GET = symbol("UNHANDLED_GET");
+export let INTERCEPT_GET = symbol('INTERCEPT_GET');
+export let UNHANDLED_GET = symbol('UNHANDLED_GET');
 
 // ..........................................................
 // GET AND SET
@@ -166,7 +166,7 @@ export function _getPath(root, path) {
     tuple.length = 0;
   }
 
-  parts = path.split(".");
+  parts = path.split('.');
   len = parts.length;
   for (idx = 0; root != null && idx < len; idx++) {
     root = get(root, parts[idx], true);

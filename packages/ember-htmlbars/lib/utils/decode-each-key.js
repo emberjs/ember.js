@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
-import { get } from "ember-metal/property_get";
-import { guidFor } from "ember-metal/utils";
+import { get } from 'ember-metal/property_get';
+import { guidFor } from 'ember-metal/utils';
 
 function identity(item) {
   let key;

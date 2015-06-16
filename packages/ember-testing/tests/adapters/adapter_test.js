@@ -1,9 +1,9 @@
-import run from "ember-metal/run_loop";
-import Adapter from "ember-testing/adapters/adapter";
+import run from 'ember-metal/run_loop';
+import Adapter from 'ember-testing/adapters/adapter';
 
 var adapter;
 
-QUnit.module("ember-testing Adapter", {
+QUnit.module('ember-testing Adapter', {
   setup() {
     adapter = new Adapter();
   },
@@ -21,8 +21,8 @@ QUnit.module("ember-testing Adapter", {
 //   equal(adapter.asyncEnd, K);
 // });
 
-QUnit.test("exception throws", function() {
-  var error = "Hai";
+QUnit.test('exception throws', function() {
+  var error = 'Hai';
   var thrown;
 
   try {

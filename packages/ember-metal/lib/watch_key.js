@@ -1,12 +1,12 @@
-import isEnabled from "ember-metal/features";
+import isEnabled from 'ember-metal/features';
 import {
   meta as metaFor,
   isArray
-} from "ember-metal/utils";
+} from 'ember-metal/utils';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION
-} from "ember-metal/properties";
+} from 'ember-metal/properties';
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...

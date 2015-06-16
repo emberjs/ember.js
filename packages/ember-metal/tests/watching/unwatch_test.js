@@ -2,9 +2,9 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   watch,
   unwatch
-} from "ember-metal/watching";
+} from 'ember-metal/watching';
 import { defineProperty } from 'ember-metal/properties';
-import { addListener } from "ember-metal/events";
+import { addListener } from 'ember-metal/events';
 import { computed } from 'ember-metal/computed';
 import { set } from 'ember-metal/property_set';
 

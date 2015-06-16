@@ -3,9 +3,9 @@
 @submodule ember-htmlbars
 */
 
-import isEnabled from "ember-metal/features";
-import { keyword } from "htmlbars-runtime/hooks";
-import closureAction from "ember-routing-htmlbars/keywords/closure-action";
+import isEnabled from 'ember-metal/features';
+import { keyword } from 'htmlbars-runtime/hooks';
+import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
 /**
   The `{{action}}` helper provides a useful shortcut for registering an HTML
@@ -169,7 +169,7 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
   @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
-  if (isEnabled("ember-routing-htmlbars-improved-actions")) {
+  if (isEnabled('ember-routing-htmlbars-improved-actions')) {
     if (morph) {
       keyword('@element_action', morph, env, scope, params, hash, template, inverse, visitor);
       return true;

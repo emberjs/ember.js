@@ -3,29 +3,29 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
 
-import { get } from "ember-metal/property_get";
-import { guidFor } from "ember-metal/utils";
-import { typeOf } from "ember-runtime/utils";
-import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
-import EmberObject from "ember-runtime/system/object";
-import { computed } from "ember-metal/computed";
+import { get } from 'ember-metal/property_get';
+import { guidFor } from 'ember-metal/utils';
+import { typeOf } from 'ember-runtime/utils';
+import EmberArray from 'ember-runtime/mixins/array'; // ES6TODO: WAT? Circular dep?
+import EmberObject from 'ember-runtime/system/object';
+import { computed } from 'ember-metal/computed';
 import {
   addObserver,
   addBeforeObserver,
   removeBeforeObserver,
   removeObserver
-} from "ember-metal/observer";
-import { watchedEvents } from "ember-metal/events";
-import { defineProperty } from "ember-metal/properties";
+} from 'ember-metal/observer';
+import { watchedEvents } from 'ember-metal/events';
+import { defineProperty } from 'ember-metal/properties';
 import {
   beginPropertyChanges,
   propertyDidChange,
   propertyWillChange,
   endPropertyChanges,
   changeProperties
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 
 var EachArray = EmberObject.extend(EmberArray, {
 

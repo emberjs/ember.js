@@ -1,10 +1,10 @@
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import { dasherize } from "ember-runtime/system/string";
-import Namespace from "ember-runtime/system/namespace";
-import EmberObject from "ember-runtime/system/object";
-import { A as emberA } from "ember-runtime/system/native_array";
-import Application from "ember-application/system/application";
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import { dasherize } from 'ember-runtime/system/string';
+import Namespace from 'ember-runtime/system/namespace';
+import EmberObject from 'ember-runtime/system/object';
+import { A as emberA } from 'ember-runtime/system/native_array';
+import Application from 'ember-application/system/application';
 
 /**
 @module ember

@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core"; // Logger
-import { get } from "ember-metal/property_get";
-import { isArray } from "ember-runtime/utils";
+import Ember from 'ember-metal/core'; // Logger
+import { get } from 'ember-metal/property_get';
+import { isArray } from 'ember-runtime/utils';
 
 /**
 @module ember
