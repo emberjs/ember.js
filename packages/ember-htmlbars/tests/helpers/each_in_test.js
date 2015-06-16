@@ -159,5 +159,12 @@ if (isEnabled('ember-htmlbars-each-in')) {
 
     assert.equal(component.$('li').length, 1, "one li is rendered");
     assert.equal(component.$('li').text(), "First Category: 123", "the list is rendered after being set");
+
+    run(() => {
+      component.set('categories', null);
+    });
+
+    assert.equal(component.$('li').length, 1, "one li is rendered");
+    assert.equal(component.$('li').text(), "No categories.", "the inverse is rendered when the value becomes falsey again");
   });
 }
