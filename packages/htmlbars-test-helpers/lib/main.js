@@ -56,20 +56,16 @@ export function equalTokens(fragment, html, message) {
 
   function normalizeTokens(token) {
     if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort(function(a,b){
-        if (a.name > b.name) {
-          return 1;
-        }
-        if (a.name < b.name) {
-          return -1;
-        }
-        return 0;
-      });
-    }
-  }
-
-  forEach(fragTokens.tokens, normalizeTokens);
-  forEach(htmlTokens.tokens, normalizeTokens);
+      token.attributes = token.attributes.sort(function(a, b) {
+        if (a[0] > b[0]) { return 1; }
+        if (a[0] < b[0]) { return -1; }
+        return 0;    
+      });    
+    }    
+  }    
+   
+  forEach(fragTokens.tokens, normalizeTokens);   
+  forEach(htmlTokens.tokens, normalizeTokens);   
 
   var msg = "Expected: " + html + "; Actual: " + fragTokens.html;
 

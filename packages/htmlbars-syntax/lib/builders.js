@@ -59,13 +59,14 @@ export function buildConcat(parts) {
 
 // Nodes
 
-export function buildElement(tag, attributes, modifiers, children) {
+export function buildElement(tag, attributes, modifiers, children, loc) {
   return {
     type: "ElementNode",
-    tag: tag,
+    tag: tag || "",
     attributes: attributes || [],
     modifiers: modifiers || [],
-    children: children || []
+    children: children || [],
+    loc: buildLoc(loc)
   };
 }
 
@@ -87,10 +88,11 @@ export function buildAttr(name, value) {
   };
 }
 
-export function buildText(chars) {
+export function buildText(chars, loc) {
   return {
     type: "TextNode",
-    chars: chars
+    chars: chars || "",
+    loc: buildLoc(loc)
   };
 }
 
@@ -179,22 +181,36 @@ export function buildProgram(body, blockParams, loc) {
   };
 }
 
+function buildSource(source) {
+  return source || null;
+}
+
 function buildPosition(line, column) {
   return {
-    line: line,
-    column: column
+    line: (typeof line === 'number') ? line : null,
+    column: (typeof column === 'number') ? column : null
   };
 }
 
-function buildLoc(loc) {
-  if (loc) {
-    return {
-      source: loc.source || null,
-      start: buildPosition(loc.start.line, loc.start.column),
-      end: buildPosition(loc.end.line, loc.end.column)
-    };
+function buildLoc(startLine, startColumn, endLine, endColumn, source) {
+  if (arguments.length === 1) {
+    var loc = startLine;
+
+    if (typeof loc === 'object') {
+      return {
+        source: buildSource(loc.source),
+        start: buildPosition(loc.start.line, loc.start.column),
+        end: buildPosition(loc.end.line, loc.end.column)
+      };
+    } else {
+      return null;
+    }
   } else {
-    return null;
+    return {
+      source: buildSource(source),
+      start: buildPosition(startLine, startColumn),
+      end: buildPosition(endLine, endColumn)
+    }; 
   }
 }
 
