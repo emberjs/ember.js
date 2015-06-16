@@ -164,16 +164,20 @@ QUnit.test("should update bound values after view's parent is removed and then r
 });
 
 QUnit.test('should accept bindings as a string or an Ember.Binding', function() {
-  var ViewWithBindings = EmberView.extend({
-    oneWayBindingTestBinding: Binding.oneWay('context.direction'),
-    twoWayBindingTestBinding: Binding.from('context.direction'),
-    stringBindingTestBinding: 'context.direction',
-    template: compile(
-      "one way: {{view.oneWayBindingTest}}, " +
-      "two way: {{view.twoWayBindingTest}}, " +
-      "string: {{view.stringBindingTest}}"
-    )
-  });
+  var ViewWithBindings;
+
+  expectDeprecation(function() {
+    ViewWithBindings = EmberView.extend({
+      oneWayBindingTestBinding: Binding.oneWay('context.direction'),
+      twoWayBindingTestBinding: Binding.from('context.direction'),
+      stringBindingTestBinding: 'context.direction',
+      template: compile(
+        "one way: {{view.oneWayBindingTest}}, " +
+        "two way: {{view.twoWayBindingTest}}, " +
+        "string: {{view.stringBindingTest}}"
+      )
+    });
+  }, "Ember.oneWay has been deprecated. Please use Ember.computed.oneWay instead.");
 
   view = EmberView.create({
     viewWithBindingsClass: ViewWithBindings,

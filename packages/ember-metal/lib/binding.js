@@ -333,6 +333,7 @@ mixinProperties(Binding, {
     @public
   */
   oneWay(from, flag) {
+    Ember.deprecate('Ember.oneWay has been deprecated. Please use Ember.computed.oneWay instead.', false);
     var C = this;
     return new C(undefined, from).oneWay(flag);
   }
