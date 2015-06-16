@@ -5,7 +5,6 @@ import 'ember-application/ext/controller';
 
 import { Registry } from 'ember-runtime/system/container';
 import { A } from 'ember-runtime/system/native_array';
-import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { computed } from 'ember-metal/computed';
 
 QUnit.module('Controller dependencies');
@@ -58,26 +57,24 @@ QUnit.test('If a controller specifies an unavailable dependency, it raises', fun
 });
 
 QUnit.test('Mixin sets up controllers if there is needs before calling super', function() {
-  expectDeprecation(arrayControllerDeprecation);
   var registry = new Registry();
   var container = registry.container();
 
-  registry.register('controller:other', ArrayController.extend({
+  registry.register('controller:other', Controller.extend({
     needs: 'posts',
     model: computed.alias('controllers.posts')
   }));
 
-  registry.register('controller:another', ArrayController.extend({
+  registry.register('controller:another', Controller.extend({
     needs: 'posts',
     modelBinding: 'controllers.posts'
   }));
 
-  registry.register('controller:posts', ArrayController.extend());
+  registry.register('controller:posts', Controller.extend());
 
   container.lookup('controller:posts').set('model', A(['a', 'b', 'c']));
-
-  deepEqual(['a', 'b', 'c'], container.lookup('controller:other').toArray());
-  deepEqual(['a', 'b', 'c'], container.lookup('controller:another').toArray());
+  deepEqual(['a', 'b', 'c'], container.lookup('controller:other').get('model.model').toArray());
+  deepEqual(['a', 'b', 'c'], container.lookup('controller:another').get('model.model').toArray());
 });
 
 QUnit.test('raises if trying to get a controller that was not pre-defined in `needs`', function() {

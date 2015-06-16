@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
@@ -466,7 +465,7 @@ if (isEnabled('ember-routing-htmlbars-improved-actions')) {
     var second = 'mild machty';
     var returnValue = 'butch brian';
 
-    innerComponent = Ember.Component.extend({
+    innerComponent = EmberComponent.extend({
       middleComponent,
 
       fireAction() {

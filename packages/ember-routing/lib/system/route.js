@@ -1635,12 +1635,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     The provided controller will be one resolved based on the name
     of this route.
 
-    If no explicit controller is defined, Ember will automatically create
-    an appropriate controller for the model.
-
-    * if the model is an `Ember.Array` (including record arrays from Ember
-      Data), the controller is an `Ember.ArrayController`.
-    * otherwise, the controller is basic `Ember.Controller`.
+    If no explicit controller is defined, Ember will automatically create one.
 
     As an example, consider the router:
 
@@ -1716,9 +1711,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
   /**
     Generates a controller for a route.
-
-    If the optional model is passed then the controller type is determined automatically,
-    e.g., an ArrayController for arrays.
 
     Example
 

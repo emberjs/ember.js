@@ -33,27 +33,27 @@ import {
     {trackNumber: 3, title: 'Glass Onion'},
   ];
 
-  songsController = Ember.ArrayController.create({
+  songsProxy = Ember.ArrayProxy.create({
     model: songs,
     sortProperties: ['trackNumber'],
     sortAscending: true
   });
 
-  songsController.get('firstObject');  // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
+  songsProxy.get('firstObject');  // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
 
-  songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
-  songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
+  songsProxy.addObject({trackNumber: 1, title: 'Dear Prudence'});
+  songsProxy.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
 
   If you add or remove the properties to sort by or change the sort direction the model
   sort order will be automatically updated.
 
   ```javascript
-  songsController.set('sortProperties', ['title']);
-  songsController.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
+  songsProxy.set('sortProperties', ['title']);
+  songsProxy.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
 
-  songsController.toggleProperty('sortAscending');
-  songsController.get('firstObject'); // {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'}
+  songsProxy.toggleProperty('sortAscending');
+  songsProxy.get('firstObject'); // {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'}
   ```
 
   `SortableMixin` works by sorting the `arrangedContent` array, which is the array that
@@ -61,8 +61,8 @@ import {
   array will not display the sorted list:
 
    ```javascript
-  songsController.get('content').get('firstObject'); // Returns the unsorted original content
-  songsController.get('firstObject'); // Returns the sorted content.
+  songsProxy.get('content').get('firstObject'); // Returns the unsorted original content
+  songsProxy.get('firstObject'); // Returns the sorted content.
   ```
 
   Although the sorted content can also be accessed through the `arrangedContent` property,
