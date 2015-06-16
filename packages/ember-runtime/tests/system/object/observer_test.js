@@ -118,7 +118,7 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
   if (Ember.assert) {
     expectAssertion(function() {
       set(obj, 'bar', "BAZ");
-    }, "calling set on destroyed object");
+    }, "Tried to set `bar` on destroyed object. This is usually caused by asynchronous code (i.e. Ember.run.later) attempting to change object state after it was destroyed.");
   } else {
     set(obj, 'bar', "BAZ");
   }

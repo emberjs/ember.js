@@ -66,7 +66,7 @@ export function set(obj, keyName, value, tolerant) {
   }
 
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
-  Ember.assert('calling set on destroyed object', !obj.isDestroyed);
+  Ember.assert("Tried to set `" + keyName + "` on destroyed object. This is usually caused by asynchronous code (i.e. Ember.run.later) attempting to change object state after it was destroyed.", !obj.isDestroyed);
 
   if (desc) {
     desc.set(obj, keyName, value);
