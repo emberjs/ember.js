@@ -41,7 +41,7 @@
     "emberjs-build": "0.0.48",
     "git-repo-version": "^0.1.2",
     "handlebars": "^3.0.2",
-    "morph-range": "^0.2.1",
+    "morph-range": "0.2.1",
     "qunit": "^0.7.2",
     "rsvp": "~3.0.6"
   }
