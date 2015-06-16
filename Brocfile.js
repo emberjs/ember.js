@@ -12,6 +12,9 @@ var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 
+var es3recast = require('broccoli-es3-safe-recast');
+
+
 var emberBuild = new EmberBuild({
   htmlbars: require('htmlbars'),
   packages: packages,
@@ -34,4 +37,8 @@ var emberBuild = new EmberBuild({
     }
 });
 
-module.exports = emberBuild.getDistTrees();
+var distTree = emberBuild.getDistTrees();
+if (process.env.EMBER_ENV !== 'development') {
+  distTree = es3recast(distTree);
+}
+module.exports = distTree;
