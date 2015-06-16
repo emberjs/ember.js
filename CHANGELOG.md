@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 1.13.1 (June 16, 2015)
+
+- [#11445](https://github.com/emberjs/ember.js/pull/11445) [BUGFIX] Allow recomputation for `Ember.Helper` with arguments.
+- [#11317](https://github.com/emberjs/ember.js/pull/11317) [BUGFIX] Ensure handleURL called after setURL in visit helper.
+- [#11464](https://github.com/emberjs/ember.js/pull/11464) [DEPRECATION] Deprecate `Ember.immediateObserver`.
+- [#11476](https://github.com/emberjs/ember.js/pull/11476) [DEPRECATION] Deprecate `Ember.ArrayController`.
+- [#11478](https://github.com/emberjs/ember.js/pull/11478) [DEPRECATION] Deprecate `Ember.RenderBuffer`.
+
 ### 1.13.0 (June 12, 2015)
 
 - [#11270](https://github.com/emberjs/ember.js/pull/11270) [BUGFIX] Ensure view registry is propagated to components.
