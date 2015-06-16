@@ -667,7 +667,7 @@ test("Setting up a manual element renders and revalidates", function() {
   var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<span title='Tom Dale' data-bar='baz' href='http://tomdale.net'>Hello world!</span>");
+  equalTokens(result.fragment, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'>Hello world!</span>");
 });
 
 test("It is possible to nest multiple templates into a manual element", function() {
@@ -703,7 +703,7 @@ test("It is possible to nest multiple templates into a manual element", function
   var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
   var result = template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<span title='Tom Dale' data-bar='baz' href='http://tomdale.net'><em>foo. Hello world!</em></span>");
+  equalTokens(result.fragment, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'><em>foo. Hello world!</em></span>");
 });
 
 test("The invoke helper hook can instruct the runtime to link the result", function() {
