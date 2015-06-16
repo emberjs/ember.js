@@ -1,16 +1,16 @@
-import View from "ember-views/views/view";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
-import Registry from "container/registry";
-import run from "ember-metal/run_loop";
-import { set } from "ember-metal/property_set";
-import { get } from "ember-metal/property_get";
-import { observer } from "ember-metal/mixin";
-import { on } from "ember-metal/events";
+import View from 'ember-views/views/view';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
+import Registry from 'container/registry';
+import run from 'ember-metal/run_loop';
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { observer } from 'ember-metal/mixin';
+import { on } from 'ember-metal/events';
 
 var view, registry, container;
 
-QUnit.module("ember-views: attrs-proxy", {
+QUnit.module('ember-views: attrs-proxy', {
   setup() {
     registry = new Registry();
     container = registry.container();

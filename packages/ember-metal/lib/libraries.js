@@ -1,5 +1,5 @@
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
 /**
   Helper class that allows you to register your library with Ember.
@@ -64,7 +64,7 @@ Libraries.prototype = {
   }
 };
 
-if (isEnabled("ember-libraries-isregistered")) {
+if (isEnabled('ember-libraries-isregistered')) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
   };

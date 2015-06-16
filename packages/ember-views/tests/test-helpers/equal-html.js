@@ -20,5 +20,5 @@ export function equalHTML(element, expectedHTML, message) {
   });
   actualHTML = actualHTML.replace(/\r\n/gm, '');
   actualHTML = actualHTML.replace(/ $/, '');
-  equal(actualHTML, expectedHTML, message || "HTML matches");
+  equal(actualHTML, expectedHTML, message || 'HTML matches');
 }

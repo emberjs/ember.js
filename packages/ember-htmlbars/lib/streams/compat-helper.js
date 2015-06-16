@@ -1,5 +1,5 @@
-import Stream from "ember-metal/streams/stream";
-import merge from "ember-metal/merge";
+import Stream from 'ember-metal/streams/stream';
+import merge from 'ember-metal/merge';
 
 export default function CompatHelperStream(helper, params, hash, templates, env, scope, label) {
   this.init(label);

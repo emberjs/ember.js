@@ -3,9 +3,9 @@
 @submodule ember-template-compiler
 */
 
-import isEnabled from "ember-metal/features";
-import { assign } from "ember-metal/merge";
-import defaultPlugins from "ember-template-compiler/plugins";
+import isEnabled from 'ember-metal/features';
+import { assign } from 'ember-metal/merge';
+import defaultPlugins from 'ember-template-compiler/plugins';
 
 /**
   @private

@@ -3,8 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import lookupPartial from "ember-views/system/lookup_partial";
-import { internal } from "htmlbars-runtime";
+import lookupPartial from 'ember-views/system/lookup_partial';
+import { internal } from 'htmlbars-runtime';
 
 export default {
   setupState(state, env, scope, params, hash) {

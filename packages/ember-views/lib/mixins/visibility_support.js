@@ -5,9 +5,9 @@
 import {
   Mixin,
   observer
-} from "ember-metal/mixin";
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
+} from 'ember-metal/mixin';
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
 
 function K() { return this; }
 

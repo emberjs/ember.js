@@ -14,7 +14,7 @@ QUnit.module('Module.required', {
         foo: required(),
         bar: 'BAR'
       });
-    }, "Ember.required is deprecated as its behavior is inconsistent and unreliable.");
+    }, 'Ember.required is deprecated as its behavior is inconsistent and unreliable.');
 
     FinalMixin = Mixin.create({
       foo: 'FOO'

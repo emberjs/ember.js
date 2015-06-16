@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core"; // FEATURES, deprecate
-import { get } from "ember-metal/property_get";
-import ControllerMixin from "ember-runtime/mixins/controller";
+import Ember from 'ember-metal/core'; // FEATURES, deprecate
+import { get } from 'ember-metal/property_get';
+import ControllerMixin from 'ember-runtime/mixins/controller';
 
 /**
 @module ember
@@ -125,7 +125,7 @@ ControllerMixin.reopen({
     @private
   */
   transitionTo() {
-    Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
+    Ember.deprecate('transitionTo is deprecated. Please use transitionToRoute.');
     return this.transitionToRoute(...arguments);
   },
 
@@ -199,7 +199,7 @@ ControllerMixin.reopen({
     @private
   */
   replaceWith() {
-    Ember.deprecate("replaceWith is deprecated. Please use replaceRoute.");
+    Ember.deprecate('replaceWith is deprecated. Please use replaceRoute.');
     return this.replaceRoute(...arguments);
   }
 });

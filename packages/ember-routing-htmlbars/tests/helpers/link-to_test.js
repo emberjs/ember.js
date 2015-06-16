@@ -1,14 +1,14 @@
-import "ember-routing-htmlbars";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
-import { set } from "ember-metal/property_set";
-import Controller from "ember-runtime/controllers/controller";
-import { Registry } from "ember-runtime/system/container";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import EmberObject from "ember-runtime/system/object";
-import ComponentLookup from "ember-views/component_lookup";
-import LinkComponent from "ember-routing-views/views/link";
+import 'ember-routing-htmlbars';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import compile from 'ember-template-compiler/system/compile';
+import { set } from 'ember-metal/property_set';
+import Controller from 'ember-runtime/controllers/controller';
+import { Registry } from 'ember-runtime/system/container';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import EmberObject from 'ember-runtime/system/object';
+import ComponentLookup from 'ember-views/component_lookup';
+import LinkComponent from 'ember-routing-views/views/link';
 
 var view;
 var container;
@@ -24,13 +24,13 @@ registry.register('service:-routing', EmberObject.extend({
   availableRoutes() { return ['index']; },
   hasRoute(name) { return name === 'index'; },
   isActiveForRoute() { return true; },
-  generateURL() { return "/"; }
+  generateURL() { return '/'; }
 }));
 
 registry.register('component-lookup:main', ComponentLookup);
 registry.register('component:-link-to', LinkComponent);
 
-QUnit.module("ember-routing-htmlbars: link-to helper", {
+QUnit.module('ember-routing-htmlbars: link-to helper', {
   setup() {
     container = registry.container();
   },
@@ -41,8 +41,8 @@ QUnit.module("ember-routing-htmlbars: link-to helper", {
 });
 
 
-QUnit.test("should be able to be inserted in DOM when the router is not present", function() {
-  var template = "{{#link-to 'index'}}Go to Index{{/link-to}}";
+QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
+  var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
   view = EmberView.create({
     template: compile(template),
     container: container
@@ -53,8 +53,8 @@ QUnit.test("should be able to be inserted in DOM when the router is not present"
   equal(view.$().text(), 'Go to Index');
 });
 
-QUnit.test("re-renders when title changes", function() {
-  var template = "{{link-to title routeName}}";
+QUnit.test('re-renders when title changes', function() {
+  var template = '{{link-to title routeName}}';
   view = EmberView.create({
     controller: {
       title: 'foo',
@@ -75,8 +75,8 @@ QUnit.test("re-renders when title changes", function() {
   equal(view.$().text(), 'bar');
 });
 
-QUnit.test("can read bound title", function() {
-  var template = "{{link-to title routeName}}";
+QUnit.test('can read bound title', function() {
+  var template = '{{link-to title routeName}}';
   view = EmberView.create({
     controller: {
       title: 'foo',
@@ -91,10 +91,10 @@ QUnit.test("can read bound title", function() {
   equal(view.$().text(), 'foo');
 });
 
-QUnit.test("escaped inline form (double curlies) escapes link title", function() {
+QUnit.test('escaped inline form (double curlies) escapes link title', function() {
   view = EmberView.create({
-    title: "<b>blah</b>",
-    template: compile("{{link-to view.title}}"),
+    title: '<b>blah</b>',
+    template: compile('{{link-to view.title}}'),
     container: container
   });
 
@@ -103,10 +103,10 @@ QUnit.test("escaped inline form (double curlies) escapes link title", function()
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-QUnit.test("unescaped inline form (triple curlies) does not escape link title", function() {
+QUnit.test('unescaped inline form (triple curlies) does not escape link title', function() {
   view = EmberView.create({
-    title: "<b>blah</b>",
-    template: compile("{{{link-to view.title}}}"),
+    title: '<b>blah</b>',
+    template: compile('{{{link-to view.title}}}'),
     container: container
   });
 
@@ -115,8 +115,8 @@ QUnit.test("unescaped inline form (triple curlies) does not escape link title", 
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-QUnit.test("unwraps controllers", function() {
-  var template = "{{#link-to 'index' view.otherController}}Text{{/link-to}}";
+QUnit.test('unwraps controllers', function() {
+  var template = '{{#link-to \'index\' view.otherController}}Text{{/link-to}}';
 
   view = EmberView.create({
     otherController: Controller.create({

@@ -1,5 +1,5 @@
-import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
+import { get } from 'ember-metal/property_get';
+import { isArray } from 'ember-metal/utils';
 
 /**
   To get multiple properties at once, call `Ember.getProperties`

@@ -2,13 +2,13 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.STRINGS
+import Ember from 'ember-metal/core'; // Ember.STRINGS
 import {
   inspect as emberInspect
-} from "ember-metal/utils";
-import { isArray } from "ember-runtime/utils";
+} from 'ember-metal/utils';
+import { isArray } from 'ember-runtime/utils';
 
-import Cache from "ember-metal/cache";
+import Cache from 'ember-metal/cache';
 
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 

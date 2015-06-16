@@ -1,6 +1,6 @@
-import "ember";
-import EmberHandlebars from "ember-htmlbars/compat";
-import EmberView from "ember-views/views/view";
+import 'ember';
+import EmberHandlebars from 'ember-htmlbars/compat';
+import EmberView from 'ember-views/views/view';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -13,12 +13,12 @@ import EmberView from "ember-views/views/view";
 var compile = EmberHandlebars.compile;
 var App, $fixture, templates;
 
-QUnit.module("Template scoping examples", {
+QUnit.module('Template scoping examples', {
   setup() {
     Ember.run(function() {
       templates = Ember.TEMPLATES;
       App = Ember.Application.create({
-        name: "App",
+        name: 'App',
         rootElement: '#qunit-fixture'
       });
       App.deferReadiness();
@@ -44,15 +44,15 @@ QUnit.module("Template scoping examples", {
   }
 });
 
-QUnit.test("Actions inside an outlet go to the associated controller", function() {
+QUnit.test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
 
-  templates.index = compile("{{component-with-action action='componentAction'}}");
+  templates.index = compile('{{component-with-action action=\'componentAction\'}}');
 
   App.IndexController = Ember.Controller.extend({
     actions: {
       componentAction() {
-        ok(true, "received the click");
+        ok(true, 'received the click');
       }
     }
   });
@@ -94,7 +94,7 @@ QUnit.test('the controller property is provided to route driven views', function
 // This test caught a regression where {{#each}}s used directly in a template
 // (i.e., not inside a view or component) did not have access to a container and
 // would raise an exception.
-QUnit.test("{{#each}} inside outlet can have an itemController", function(assert) {
+QUnit.test('{{#each}} inside outlet can have an itemController', function(assert) {
   expectDeprecation(function() {
     templates.index = compile(`
       {{#each model itemController='thing'}}
@@ -111,10 +111,10 @@ QUnit.test("{{#each}} inside outlet can have an itemController", function(assert
 
   bootApp();
 
-  assert.equal($fixture.find('p').length, 3, "the {{#each}} rendered without raising an exception");
+  assert.equal($fixture.find('p').length, 3, 'the {{#each}} rendered without raising an exception');
 });
 
-QUnit.test("actions within a context shifting {{each}} with `itemController` [DEPRECATED]", function(assert) {
+QUnit.test('actions within a context shifting {{each}} with `itemController` [DEPRECATED]', function(assert) {
   expectDeprecation(function() {
     templates.index = compile(`
       {{#each model itemController='thing'}}
@@ -137,7 +137,7 @@ QUnit.test("actions within a context shifting {{each}} with `itemController` [DE
   App.ThingController = Ember.Controller.extend({
     actions: {
       checkController: function(controller) {
-        assert.ok(controller === this, "correct controller was passed as action context");
+        assert.ok(controller === this, 'correct controller was passed as action context');
       }
     }
   });

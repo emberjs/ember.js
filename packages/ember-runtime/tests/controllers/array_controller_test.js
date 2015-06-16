@@ -1,10 +1,10 @@
 import Ember from 'ember-metal/core';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
-import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
+import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 
-QUnit.module("ember-runtime/controllers/array_controller_test");
+QUnit.module('ember-runtime/controllers/array_controller_test');
 
 MutableArrayTests.extend({
   name: 'Ember.ArrayController',
@@ -26,17 +26,17 @@ MutableArrayTests.extend({
   }
 }).run();
 
-QUnit.module("ember-runtime: array_controller");
+QUnit.module('ember-runtime: array_controller');
 
-QUnit.test("defaults its `model` to an empty array", function () {
+QUnit.test('defaults its `model` to an empty array', function () {
   expectDeprecation(arrayControllerDeprecation);
   var Controller = ArrayController.extend();
-  deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults its model to an empty array");
+  deepEqual(Controller.create().get('model'), [], '`ArrayController` defaults its model to an empty array');
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
   equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });
 
-QUnit.test("Ember.ArrayController length property works even if model was not set initially", function() {
+QUnit.test('Ember.ArrayController length property works even if model was not set initially', function() {
   expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
   controller.pushObject('item');
@@ -49,7 +49,7 @@ QUnit.test('works properly when model is set to an Ember.A()', function() {
 
   set(controller, 'model', Ember.A(['red', 'green']));
 
-  deepEqual(get(controller, 'model'), ['red', 'green'], "can set model as an Ember.Array");
+  deepEqual(get(controller, 'model'), ['red', 'green'], 'can set model as an Ember.Array');
 });
 
 QUnit.test('works properly when model is set to a plain array', function() {
@@ -59,7 +59,7 @@ QUnit.test('works properly when model is set to a plain array', function() {
   if (Ember.EXTEND_PROTOTYPES) {
     set(controller, 'model', ['red', 'green']);
 
-    deepEqual(get(controller, 'model'), ['red', 'green'], "can set model as a plain array");
+    deepEqual(get(controller, 'model'), ['red', 'green'], 'can set model as a plain array');
   } else {
     expectAssertion(function() {
       set(controller, 'model', ['red', 'green']);
@@ -72,11 +72,11 @@ QUnit.test('works properly when model is set to `null`', function() {
   var controller = ArrayController.create();
 
   set(controller, 'model', null);
-  equal(get(controller, 'model'), null, "can set model to `null`");
+  equal(get(controller, 'model'), null, 'can set model to `null`');
 
   set(controller, 'model', undefined);
-  equal(get(controller, 'model'), undefined, "can set model to `undefined`");
+  equal(get(controller, 'model'), undefined, 'can set model to `undefined`');
 
   set(controller, 'model', false);
-  equal(get(controller, 'model'), false, "can set model to `undefined`");
+  equal(get(controller, 'model'), false, 'can set model to `undefined`');
 });

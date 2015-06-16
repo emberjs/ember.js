@@ -3,9 +3,9 @@
 @submodule ember-metal
 */
 
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 
 
 /**

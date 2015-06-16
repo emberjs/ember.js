@@ -1,5 +1,5 @@
-import defaultEnv from "ember-htmlbars/env";
-import discoverKnownHelpers from "ember-htmlbars/system/discover-known-helpers";
+import defaultEnv from 'ember-htmlbars/env';
+import discoverKnownHelpers from 'ember-htmlbars/system/discover-known-helpers';
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];

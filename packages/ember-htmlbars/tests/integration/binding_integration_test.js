@@ -6,8 +6,8 @@ import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import { registerHelper } from "ember-htmlbars/helpers";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { registerHelper } from 'ember-htmlbars/helpers';
 
 import { set } from 'ember-metal/property_set';
 
@@ -60,7 +60,7 @@ QUnit.test('should bind to the property if no registered helper found for a must
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });
 
-QUnit.test("should be able to update when bound property updates", function() {
+QUnit.test('should be able to update when bound property updates', function() {
   MyApp.set('controller', EmberObject.create({ name: 'first' }));
 
   var View = EmberView.extend({
@@ -83,8 +83,8 @@ QUnit.test("should be able to update when bound property updates", function() {
     }));
   });
 
-  equal(view.get('computed'), "second - computed", "view computed properties correctly update");
-  equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
+  equal(view.get('computed'), 'second - computed', 'view computed properties correctly update');
+  equal(view.$('i').text(), 'second, second - computed', 'view rerenders when bound properties change');
 });
 
 QUnit.test('should allow rendering of undefined props', function() {
@@ -112,8 +112,8 @@ QUnit.test('should cleanup bound properties on rerender', function() {
   equal(view.$().text(), 'wycats', 'rendered binding');
 });
 
-QUnit.test("should update bound values after view's parent is removed and then re-appended", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('should update bound values after view\'s parent is removed and then re-appended', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   var controller = EmberObject.create();
 
@@ -123,28 +123,28 @@ QUnit.test("should update bound values after view's parent is removed and then r
     controller: controller,
 
     testView: EmberView.create({
-      template: compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}")
+      template: compile('{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}')
     })
   });
 
   controller.setProperties({
     showStuff: true,
-    boundValue: "foo"
+    boundValue: 'foo'
   });
 
   runAppend(parentView);
   view = parentView.get('testView');
 
-  equal(trim(view.$().text()), "foo");
+  equal(trim(view.$().text()), 'foo');
   run(function() {
     set(controller, 'showStuff', false);
   });
-  equal(trim(view.$().text()), "Not true.");
+  equal(trim(view.$().text()), 'Not true.');
 
   run(function() {
     set(controller, 'showStuff', true);
   });
-  equal(trim(view.$().text()), "foo");
+  equal(trim(view.$().text()), 'foo');
 
   run(function() {
     parentView.remove();
@@ -156,9 +156,9 @@ QUnit.test("should update bound values after view's parent is removed and then r
   runAppend(parentView);
 
   run(function() {
-    set(controller, 'boundValue', "bar");
+    set(controller, 'boundValue', 'bar');
   });
-  equal(trim(view.$().text()), "bar");
+  equal(trim(view.$().text()), 'bar');
 
   runDestroy(parentView);
 });
@@ -169,21 +169,21 @@ QUnit.test('should accept bindings as a string or an Ember.Binding', function() 
     twoWayBindingTestBinding: Binding.from('context.direction'),
     stringBindingTestBinding: 'context.direction',
     template: compile(
-      "one way: {{view.oneWayBindingTest}}, " +
-      "two way: {{view.twoWayBindingTest}}, " +
-      "string: {{view.stringBindingTest}}"
+      'one way: {{view.oneWayBindingTest}}, ' +
+      'two way: {{view.twoWayBindingTest}}, ' +
+      'string: {{view.stringBindingTest}}'
     )
   });
 
   view = EmberView.create({
     viewWithBindingsClass: ViewWithBindings,
     context: EmberObject.create({
-      direction: "down"
+      direction: 'down'
     }),
-    template: compile("{{view view.viewWithBindingsClass}}")
+    template: compile('{{view view.viewWithBindingsClass}}')
   });
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "one way: down, two way: down, string: down");
+  equal(trim(view.$().text()), 'one way: down, two way: down, string: down');
 });

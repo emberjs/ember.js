@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 // import Test from "ember-testing/test";  // ES6TODO: fix when cycles are supported
-import QUnitAdapter from "ember-testing/adapters/qunit";
-import jQuery from "ember-views/system/jquery";
+import QUnitAdapter from 'ember-testing/adapters/qunit';
+import jQuery from 'ember-views/system/jquery';
 
 var Test, requests;
 

@@ -1,20 +1,20 @@
-import { set } from "ember-metal/property_set";
-import keys from "ember-metal/keys";
+import { set } from 'ember-metal/property_set';
+import keys from 'ember-metal/keys';
 import {
   addObserver,
   removeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 
 function K() { return this; }
 
-QUnit.module("Fetch Keys ");
+QUnit.module('Fetch Keys ');
 
-QUnit.test("should get a key array for a specified object", function() {
+QUnit.test('should get a key array for a specified object', function() {
   var object1 = {};
 
-  object1.names = "Rahul";
-  object1.age = "23";
-  object1.place = "Mangalore";
+  object1.names = 'Rahul';
+  object1.age = '23';
+  object1.place = 'Mangalore';
 
   var object2 = keys(object1);
 
@@ -22,7 +22,7 @@ QUnit.test("should get a key array for a specified object", function() {
 });
 
 // This test is for IE8.
-QUnit.test("should get a key array for property that is named the same as prototype property", function() {
+QUnit.test('should get a key array for property that is named the same as prototype property', function() {
   var object1 = {
     toString() {}
   };

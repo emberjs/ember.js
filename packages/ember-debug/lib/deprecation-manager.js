@@ -1,5 +1,5 @@
 import dictionary from 'ember-metal/dictionary';
-import { symbol } from "ember-metal/utils";
+import { symbol } from 'ember-metal/utils';
 
 export const deprecationLevels = {
   RAISE: symbol('RAISE'),

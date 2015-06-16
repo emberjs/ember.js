@@ -1,15 +1,15 @@
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import merge from "ember-metal/merge";
-import AutoLocation from "ember-routing/location/auto_location";
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import merge from 'ember-metal/merge';
+import AutoLocation from 'ember-routing/location/auto_location';
 import {
   getHistoryPath,
   getHashPath
-} from "ember-routing/location/auto_location";
-import HistoryLocation from "ember-routing/location/history_location";
-import HashLocation from "ember-routing/location/hash_location";
-import NoneLocation from "ember-routing/location/none_location";
-import Registry from "container/registry";
+} from 'ember-routing/location/auto_location';
+import HistoryLocation from 'ember-routing/location/history_location';
+import HashLocation from 'ember-routing/location/hash_location';
+import NoneLocation from 'ember-routing/location/none_location';
+import Registry from 'container/registry';
 
 
 function mockBrowserLocation(overrides) {
@@ -52,7 +52,7 @@ function createLocation(location, history) {
 
 var location;
 
-QUnit.module("Ember.AutoLocation", {
+QUnit.module('Ember.AutoLocation', {
   teardown() {
     if (location) {
       run(location, 'destroy');
@@ -60,7 +60,7 @@ QUnit.module("Ember.AutoLocation", {
   }
 });
 
-QUnit.test("AutoLocation should return concrete implementation's value for `getURL`", function() {
+QUnit.test('AutoLocation should return concrete implementation\'s value for `getURL`', function() {
   expect(1);
 
   var browserLocation = mockBrowserLocation();
@@ -78,7 +78,7 @@ QUnit.test("AutoLocation should return concrete implementation's value for `getU
   equal(location.getURL(), '/lincoln/park');
 });
 
-QUnit.test("AutoLocation should use a HistoryLocation instance when pushStates is supported", function() {
+QUnit.test('AutoLocation should use a HistoryLocation instance when pushStates is supported', function() {
   expect(1);
 
   var browserLocation = mockBrowserLocation();
@@ -90,7 +90,7 @@ QUnit.test("AutoLocation should use a HistoryLocation instance when pushStates i
   ok(get(location, 'concreteImplementation') instanceof HistoryLocation);
 });
 
-QUnit.test("AutoLocation should use a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format", function() {
+QUnit.test('AutoLocation should use a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format', function() {
   expect(1);
 
   var browserLocation = mockBrowserLocation({
@@ -106,7 +106,7 @@ QUnit.test("AutoLocation should use a HashLocation instance when pushStates are 
   ok(get(location, 'concreteImplementation') instanceof HashLocation);
 });
 
-QUnit.test("AutoLocation should use a NoneLocation instance when neither history nor hashchange are supported.", function() {
+QUnit.test('AutoLocation should use a NoneLocation instance when neither history nor hashchange are supported.', function() {
   expect(1);
 
   location = createLocation(mockBrowserLocation());
@@ -115,7 +115,7 @@ QUnit.test("AutoLocation should use a NoneLocation instance when neither history
   ok(get(location, 'concreteImplementation') instanceof NoneLocation);
 });
 
-QUnit.test("AutoLocation should use an index path (i.e. '/') without any location.hash as OK for HashLocation", function() {
+QUnit.test('AutoLocation should use an index path (i.e. \'/\') without any location.hash as OK for HashLocation', function() {
   expect(1);
 
   var browserLocation = mockBrowserLocation({
@@ -135,10 +135,10 @@ QUnit.test("AutoLocation should use an index path (i.e. '/') without any locatio
 
   location.detect();
 
-  ok(get(location, 'concreteImplementation') instanceof HashLocation, "uses a HashLocation");
+  ok(get(location, 'concreteImplementation') instanceof HashLocation, 'uses a HashLocation');
 });
 
-QUnit.test("AutoLocation should transform the URL for hashchange-only browsers viewing a HistoryLocation-formatted path", function() {
+QUnit.test('AutoLocation should transform the URL for hashchange-only browsers viewing a HistoryLocation-formatted path', function() {
   expect(3);
 
   var browserLocation = mockBrowserLocation({
@@ -166,7 +166,7 @@ QUnit.test("AutoLocation should transform the URL for hashchange-only browsers v
   equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
 });
 
-QUnit.test("AutoLocation should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
+QUnit.test('AutoLocation should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url', function() {
   expect(2);
 
   var browserLocation = mockBrowserLocation({
@@ -191,7 +191,7 @@ QUnit.test("AutoLocation should replace the URL for pushState-supported browsers
   ok(get(location, 'concreteImplementation'), HistoryLocation);
 });
 
-QUnit.test("AutoLocation requires any rootURL given to end in a trailing forward slash", function() {
+QUnit.test('AutoLocation requires any rootURL given to end in a trailing forward slash', function() {
   expect(3);
   var browserLocation = mockBrowserLocation();
   var expectedMsg = /rootURL must end with a trailing forward slash e.g. "\/app\/"/;
@@ -215,7 +215,7 @@ QUnit.test("AutoLocation requires any rootURL given to end in a trailing forward
   }, expectedMsg);
 });
 
-QUnit.test("AutoLocation provides its rootURL to the concreteImplementation", function() {
+QUnit.test('AutoLocation provides its rootURL to the concreteImplementation', function() {
   expect(1);
   var browserLocation = mockBrowserLocation({
     pathname: '/some/subdir/derp'
@@ -231,7 +231,7 @@ QUnit.test("AutoLocation provides its rootURL to the concreteImplementation", fu
   equal(location.rootURL, concreteLocation.rootURL);
 });
 
-QUnit.test("getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
+QUnit.test('getHistoryPath() should return a normalized, HistoryLocation-supported path', function() {
   expect(3);
 
   var browserLocation = mockBrowserLocation({
@@ -260,7 +260,7 @@ QUnit.test("getHistoryPath() should return a normalized, HistoryLocation-support
   equal(getHistoryPath('/app', browserLocation), '/app/#about?foo=bar#foo', 'URLs with a hash not following #/ convention shouldn\'t be normalized as a route');
 });
 
-QUnit.test("getHashPath() should return a normalized, HashLocation-supported path", function() {
+QUnit.test('getHashPath() should return a normalized, HashLocation-supported path', function() {
   expect(3);
 
   var browserLocation = mockBrowserLocation({

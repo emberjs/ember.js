@@ -1,4 +1,4 @@
-import { get } from "ember-metal/property_get";
+import { get } from 'ember-metal/property_get';
 
 var RETAIN = 'r';
 var INSERT = 'i';
@@ -282,9 +282,9 @@ TrackedArray.prototype = {
   },
 
   toString() {
-    var str = "";
+    var str = '';
     this._operations.forEach((operation) => {
-      str += " " + operation.type + ":" + operation.count;
+      str += ' ' + operation.type + ':' + operation.count;
     });
     return str.substring(1);
   }

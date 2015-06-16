@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import { CONTAINS_DASH_CACHE } from "ember-htmlbars/system/lookup-helper";
+import { CONTAINS_DASH_CACHE } from 'ember-htmlbars/system/lookup-helper';
 
 /*
  Given a path name, returns whether or not a component with that

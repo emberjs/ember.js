@@ -153,7 +153,7 @@ QUnit.test('should call setUnknownProperty if defined and value is undefined', f
     }
   };
 
-  equal(set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equal(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
   equal(obj.count, 1, 'should have invoked');
 });
 

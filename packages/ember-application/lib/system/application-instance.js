@@ -4,11 +4,11 @@
 @private
 */
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import EmberObject from "ember-runtime/system/object";
-import run from "ember-metal/run_loop";
-import { computed } from "ember-metal/computed";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import EmberObject from 'ember-runtime/system/object';
+import run from 'ember-metal/run_loop';
+import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
 
 /**

@@ -1,4 +1,4 @@
-import { assign } from "ember-metal/merge";
+import { assign } from 'ember-metal/merge';
 
 export default {
   setupState(lastState, env, scope, params, hash) {

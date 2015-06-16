@@ -1,4 +1,4 @@
-import { isStream, labelFor } from "ember-metal/streams/utils";
+import { isStream, labelFor } from 'ember-metal/streams/utils';
 
 export default function subscribe(node, env, scope, stream) {
   if (!isStream(stream)) { return; }

@@ -9,7 +9,7 @@ import {
   suspendListeners,
   sendEvent,
   hasListeners
-} from "ember-metal/events";
+} from 'ember-metal/events';
 
 QUnit.module('system/props/events_test');
 
@@ -226,7 +226,7 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
   suspendListener(obj, 'event!', target, target.method, callback);
 
   equal(target.count, 1, 'should invoke');
-  equal(meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
+  equal(meta(obj).listeners['event!'].length, 3, 'a duplicate listener wasn\'t added');
 
   // now test suspendListeners...
 
@@ -235,7 +235,7 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
   suspendListeners(obj, ['event!'], target, target.method, callback);
 
   equal(target.count, 2, 'should have invoked again');
-  equal(meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
+  equal(meta(obj).listeners['event!'].length, 3, 'a duplicate listener wasn\'t added');
 });
 
 QUnit.test('a listener can be added as part of a mixin', function() {

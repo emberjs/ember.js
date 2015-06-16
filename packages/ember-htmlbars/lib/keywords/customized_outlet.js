@@ -3,9 +3,9 @@
 @submodule ember-htmlbars
 */
 
-import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
-import { readViewFactory } from "ember-views/streams/utils";
-import { isStream } from "ember-metal/streams/utils";
+import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
+import { readViewFactory } from 'ember-views/streams/utils';
+import { isStream } from 'ember-metal/streams/utils';
 
 export default {
   setupState(state, env, scope, params, hash) {

@@ -1,13 +1,13 @@
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
-import { defineProperty } from "ember-metal/properties";
+import { defineProperty } from 'ember-metal/properties';
 import {
   propertyDidChange,
   beginPropertyChanges,
   endPropertyChanges
-} from "ember-metal/property_events";
-import { addObserver } from "ember-metal/observer";
+} from 'ember-metal/property_events';
+import { addObserver } from 'ember-metal/observer';
 
 /*
   This test file is designed to capture performance regressions related to
@@ -16,9 +16,9 @@ import { addObserver } from "ember-metal/observer";
   bugs that cause them to get evaluated more than necessary should be put here.
 */
 
-QUnit.module("Computed Properties - Number of times evaluated");
+QUnit.module('Computed Properties - Number of times evaluated');
 
-QUnit.test("computed properties that depend on multiple properties should run only once per run loop", function() {
+QUnit.test('computed properties that depend on multiple properties should run only once per run loop', function() {
   var obj = { a: 'a', b: 'b', c: 'c' };
   var cpCount = 0;
   var obsCount = 0;
@@ -44,11 +44,11 @@ QUnit.test("computed properties that depend on multiple properties should run on
 
   get(obj, 'abc');
 
-  equal(cpCount, 1, "The computed property is only invoked once");
-  equal(obsCount, 1, "The observer is only invoked once");
+  equal(cpCount, 1, 'The computed property is only invoked once');
+  equal(obsCount, 1, 'The observer is only invoked once');
 });
 
-QUnit.test("computed properties are not executed if they are the last segment of an observer chain pain", function() {
+QUnit.test('computed properties are not executed if they are the last segment of an observer chain pain', function() {
   var foo = { bar: { baz: { } } };
 
   var count = 0;
@@ -61,5 +61,5 @@ QUnit.test("computed properties are not executed if they are the last segment of
 
   propertyDidChange(get(foo, 'bar.baz'), 'bam');
 
-  equal(count, 0, "should not have recomputed property");
+  equal(count, 0, 'should not have recomputed property');
 });

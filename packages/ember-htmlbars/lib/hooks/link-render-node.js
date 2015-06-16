@@ -3,10 +3,10 @@
 @submodule ember-htmlbars
 */
 
-import subscribe from "ember-htmlbars/utils/subscribe";
-import { isArray } from "ember-runtime/utils";
-import { chain, read, readArray, isStream, addDependency } from "ember-metal/streams/utils";
-import { findHelper } from "ember-htmlbars/system/lookup-helper";
+import subscribe from 'ember-htmlbars/utils/subscribe';
+import { isArray } from 'ember-runtime/utils';
+import { chain, read, readArray, isStream, addDependency } from 'ember-metal/streams/utils';
+import { findHelper } from 'ember-htmlbars/system/lookup-helper';
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.streamUnsubscribers) {

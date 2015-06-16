@@ -1,19 +1,19 @@
 import Ember from 'ember-metal/core';
 
-import merge from "ember-metal/merge";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import merge from 'ember-metal/merge';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import {
   addObserver,
   removeObserver
-} from "ember-metal/observer";
-import Stream from "ember-metal/streams/stream";
-import { isStream  } from "ember-metal/streams/utils";
+} from 'ember-metal/observer';
+import Stream from 'ember-metal/streams/stream';
+import { isStream  } from 'ember-metal/streams/utils';
 
 function KeyStream(source, key) {
-  Ember.assert("KeyStream error: source must be a stream", isStream(source)); // TODO: This isn't necessary.
-  Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);
-  Ember.assert("KeyStream error: key must not have a '.'", key.indexOf('.') === -1);
+  Ember.assert('KeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
+  Ember.assert('KeyStream error: key must be a non-empty string', typeof key === 'string' && key.length > 0);
+  Ember.assert('KeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
 
   // used to get the original path for debugging and legacy purposes
   var label = labelFor(source, key);

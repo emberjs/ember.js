@@ -3,9 +3,9 @@
 @submodule ember-routing-htmlbars
 */
 
-import { readArray, readHash } from "ember-metal/streams/utils";
-import Ember from "ember-metal/core"; // assert
-import merge from "ember-metal/merge";
+import { readArray, readHash } from 'ember-metal/streams/utils';
+import Ember from 'ember-metal/core'; // assert
+import merge from 'ember-metal/merge';
 
 /**
   The `{{link-to}}` helper renders a link to the supplied
@@ -282,7 +282,7 @@ import merge from "ember-metal/merge";
 */
 export default {
   link(state, params, hash) {
-    Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
+    Ember.assert('You must provide one or more parameters to the link-to helper.', params.length);
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {

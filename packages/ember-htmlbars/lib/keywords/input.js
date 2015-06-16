@@ -1,13 +1,13 @@
-import Ember from "ember-metal/core";
-import { assign } from "ember-metal/merge";
+import Ember from 'ember-metal/core';
+import { assign } from 'ember-metal/merge';
 
 export default {
   setupState(lastState, env, scope, params, hash) {
     var type = env.hooks.getValue(hash.type);
     var componentName = componentNameMap[type] || defaultComponentName;
 
-    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
-                 " you must use `checked=someBooleanValue` instead.", !(type === 'checkbox' && hash.hasOwnProperty('value')));
+    Ember.assert('{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`;' +
+                 ' you must use `checked=someBooleanValue` instead.', !(type === 'checkbox' && hash.hasOwnProperty('value')));
 
     return assign({}, lastState, { componentName });
   },
@@ -21,7 +21,7 @@ export default {
   }
 };
 
-var defaultComponentName = "-text-field";
+var defaultComponentName = '-text-field';
 
 var componentNameMap = {
   'checkbox': '-checkbox'

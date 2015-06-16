@@ -1,10 +1,10 @@
-import Ember from "ember-metal/core";
-import {computed} from "ember-metal/computed";
-import ArrayProxy from "ember-runtime/system/array_proxy";
+import Ember from 'ember-metal/core';
+import {computed} from 'ember-metal/computed';
+import ArrayProxy from 'ember-runtime/system/array_proxy';
 
-QUnit.module("Ember.ArrayProxy - content update");
+QUnit.module('Ember.ArrayProxy - content update');
 
-QUnit.test("The `contentArrayDidChange` method is invoked after `content` is updated.", function() {
+QUnit.test('The `contentArrayDidChange` method is invoked after `content` is updated.', function() {
 
   var proxy;
   var observerCalled = false;
@@ -24,5 +24,5 @@ QUnit.test("The `contentArrayDidChange` method is invoked after `content` is upd
 
   proxy.pushObject(1);
 
-  ok(observerCalled, "contentArrayDidChange is invoked");
+  ok(observerCalled, 'contentArrayDidChange is invoked');
 });

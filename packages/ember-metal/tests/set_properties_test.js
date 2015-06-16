@@ -2,7 +2,7 @@ import setProperties from 'ember-metal/set_properties';
 
 QUnit.module('Ember.setProperties');
 
-QUnit.test("supports setting multiple attributes at once", function() {
+QUnit.test('supports setting multiple attributes at once', function() {
   deepEqual(setProperties(null, null), null, 'noop for null properties and null object');
   deepEqual(setProperties(undefined, undefined), undefined, 'noop for undefined properties and undefined object');
 

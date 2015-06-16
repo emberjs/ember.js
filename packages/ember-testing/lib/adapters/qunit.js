@@ -1,5 +1,5 @@
-import Adapter from "ember-testing/adapters/adapter";
-import { inspect } from "ember-metal/utils";
+import Adapter from 'ember-testing/adapters/adapter';
+import { inspect } from 'ember-metal/utils';
 
 /**
   This class implements the methods defined by Ember.Test.Adapter for the

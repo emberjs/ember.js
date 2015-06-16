@@ -1,10 +1,10 @@
-import Stream from "ember-metal/streams/stream";
+import Stream from 'ember-metal/streams/stream';
 import {
   read,
   subscribe,
   unsubscribe,
   isStream
-} from "ember-metal/streams/utils";
+} from 'ember-metal/streams/utils';
 
 export default function conditional(test, consequent, alternate) {
   if (isStream(test)) {

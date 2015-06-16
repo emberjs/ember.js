@@ -1,4 +1,4 @@
-import DOMHelper from "dom-helper";
+import DOMHelper from 'dom-helper';
 
 var HTMLBarsMorph = DOMHelper.prototype.MorphClass;
 let guid = 1;

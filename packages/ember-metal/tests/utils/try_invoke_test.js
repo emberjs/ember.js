@@ -2,7 +2,7 @@ import { tryInvoke } from 'ember-metal/utils';
 
 var obj;
 
-QUnit.module("Ember.tryInvoke", {
+QUnit.module('Ember.tryInvoke', {
   setup() {
     obj = {
       aMethodThatExists() { return true; },
@@ -15,18 +15,18 @@ QUnit.module("Ember.tryInvoke", {
   }
 });
 
-QUnit.test("should return undefined when the object doesn't exist", function() {
+QUnit.test('should return undefined when the object doesn\'t exist', function() {
   equal(tryInvoke(undefined, 'aMethodThatDoesNotExist'), undefined);
 });
 
-QUnit.test("should return undefined when asked to perform a method that doesn't exist on the object", function() {
+QUnit.test('should return undefined when asked to perform a method that doesn\'t exist on the object', function() {
   equal(tryInvoke(obj, 'aMethodThatDoesNotExist'), undefined);
 });
 
-QUnit.test("should return what the method returns when asked to perform a method that exists on the object", function() {
+QUnit.test('should return what the method returns when asked to perform a method that exists on the object', function() {
   equal(tryInvoke(obj, 'aMethodThatExists'), true);
 });
 
-QUnit.test("should return what the method returns when asked to perform a method that takes arguments and exists on the object", function() {
+QUnit.test('should return what the method returns when asked to perform a method that takes arguments and exists on the object', function() {
   equal(tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]), true);
 });

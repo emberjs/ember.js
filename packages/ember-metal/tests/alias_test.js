@@ -1,10 +1,10 @@
-import alias from "ember-metal/alias";
-import { defineProperty } from "ember-metal/properties";
+import alias from 'ember-metal/alias';
+import { defineProperty } from 'ember-metal/properties';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { meta } from 'ember-metal/utils';
-import { isWatching } from "ember-metal/watching";
-import { addObserver, removeObserver } from "ember-metal/observer";
+import { isWatching } from 'ember-metal/watching';
+import { addObserver, removeObserver } from 'ember-metal/observer';
 
 var obj, count;
 
@@ -61,5 +61,5 @@ QUnit.test('immediately sets up dependencies if already being watched', function
 QUnit.test('setting alias on self should fail assertion', function() {
   expectAssertion(function() {
     defineProperty(obj, 'bar', alias('bar'));
-  }, "Setting alias 'bar' on self");
+  }, 'Setting alias \'bar\' on self');
 });

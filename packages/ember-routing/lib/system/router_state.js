@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core";
-import EmberObject from "ember-runtime/system/object";
-import merge from "ember-metal/merge";
+import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
+import merge from 'ember-metal/merge';
 
 var RouterState = EmberObject.extend({
   emberRouter: null,

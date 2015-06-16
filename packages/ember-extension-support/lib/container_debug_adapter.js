@@ -1,12 +1,12 @@
-import Ember from "ember-metal/core";
-import { A as emberA } from "ember-runtime/system/native_array";
-import { typeOf } from "ember-runtime/utils";
+import Ember from 'ember-metal/core';
+import { A as emberA } from 'ember-runtime/system/native_array';
+import { typeOf } from 'ember-runtime/utils';
 import {
   dasherize,
   classify
-} from "ember-runtime/system/string";
-import Namespace from "ember-runtime/system/namespace";
-import EmberObject from "ember-runtime/system/object";
+} from 'ember-runtime/system/string';
+import Namespace from 'ember-runtime/system/namespace';
+import EmberObject from 'ember-runtime/system/object';
 
 /**
 @module ember

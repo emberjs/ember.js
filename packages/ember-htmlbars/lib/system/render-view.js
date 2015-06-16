@@ -1,5 +1,5 @@
-import ViewNodeManager, { createOrUpdateComponent } from "ember-htmlbars/node-managers/view-node-manager";
-import RenderEnv from "ember-htmlbars/system/render-env";
+import ViewNodeManager, { createOrUpdateComponent } from 'ember-htmlbars/node-managers/view-node-manager';
+import RenderEnv from 'ember-htmlbars/system/render-env';
 
 // This function only gets called once per render of a "root view" (`appendTo`). Otherwise,
 // HTMLBars propagates the existing env and renders templates for a given render node.

@@ -1,17 +1,17 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
-import ApplicationInstance from "ember-application/system/application-instance";
-import jQuery from "ember-views/system/jquery";
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
+import Application from 'ember-application/system/application';
+import ApplicationInstance from 'ember-application/system/application-instance';
+import jQuery from 'ember-views/system/jquery';
 
 var app, initializeContextFeatureEnabled;
 
-if (isEnabled("ember-application-initializer-context")) {
+if (isEnabled('ember-application-initializer-context')) {
   initializeContextFeatureEnabled = true;
 }
 
 if (isEnabled('ember-application-instance-initializers')) {
-  QUnit.module("Ember.Application instance initializers", {
+  QUnit.module('Ember.Application instance initializers', {
     setup() {
     },
 
@@ -22,7 +22,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     }
   });
 
-  QUnit.test("initializers require proper 'name' and 'initialize' properties", function() {
+  QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
     var MyApplication = Application.extend();
 
     expectAssertion(function() {
@@ -39,13 +39,13 @@ if (isEnabled('ember-application-instance-initializers')) {
 
   });
 
-  QUnit.test("initializers are passed an app instance", function() {
+  QUnit.test('initializers are passed an app instance', function() {
     var MyApplication = Application.extend();
 
     MyApplication.instanceInitializer({
       name: 'initializer',
       initialize(instance) {
-        ok(instance instanceof ApplicationInstance, "initialize is passed an application instance");
+        ok(instance instanceof ApplicationInstance, 'initialize is passed an application instance');
       }
     });
 
@@ -57,7 +57,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     });
   });
 
-  QUnit.test("initializers can be registered in a specified order", function() {
+  QUnit.test('initializers can be registered in a specified order', function() {
     var order = [];
     var MyApplication = Application.extend();
     MyApplication.instanceInitializer({
@@ -118,7 +118,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
   });
 
-  QUnit.test("initializers can be registered in a specified order as an array", function() {
+  QUnit.test('initializers can be registered in a specified order as an array', function() {
     var order = [];
     var MyApplication = Application.extend();
 
@@ -181,40 +181,40 @@ if (isEnabled('ember-application-instance-initializers')) {
     deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
   });
 
-  QUnit.test("initializers can have multiple dependencies", function () {
+  QUnit.test('initializers can have multiple dependencies', function () {
     var order = [];
     var a = {
-      name: "a",
-      before: "b",
+      name: 'a',
+      before: 'b',
       initialize(registry) {
         order.push('a');
       }
     };
     var b = {
-      name: "b",
+      name: 'b',
       initialize(registry) {
         order.push('b');
       }
     };
     var c = {
-      name: "c",
-      after: "b",
+      name: 'c',
+      after: 'b',
       initialize(registry) {
         order.push('c');
       }
     };
     var afterB = {
-      name: "after b",
-      after: "b",
+      name: 'after b',
+      after: 'b',
       initialize(registry) {
-        order.push("after b");
+        order.push('after b');
       }
     };
     var afterC = {
-      name: "after c",
-      after: "c",
+      name: 'after c',
+      after: 'c',
       initialize(registry) {
-        order.push("after c");
+        order.push('after c');
       }
     };
 
@@ -237,7 +237,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
   });
 
-  QUnit.test("initializers set on Application subclasses should not be shared between apps", function() {
+  QUnit.test('initializers set on Application subclasses should not be shared between apps', function() {
     var firstInitializerRunCount = 0;
     var secondInitializerRunCount = 0;
     var FirstApp = Application.extend();
@@ -280,7 +280,7 @@ if (isEnabled('ember-application-instance-initializers')) {
 
   });
 
-  QUnit.test("initializers are concatenated", function() {
+  QUnit.test('initializers are concatenated', function() {
     var firstInitializerRunCount = 0;
     var secondInitializerRunCount = 0;
     var FirstApp = Application.extend();
@@ -325,7 +325,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     });
   });
 
-  QUnit.test("initializers are per-app", function() {
+  QUnit.test('initializers are per-app', function() {
     expect(0);
     var FirstApp = Application.extend();
     FirstApp.instanceInitializer({
@@ -340,7 +340,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     });
   });
 
-  QUnit.test("initializers are run before ready hook", function() {
+  QUnit.test('initializers are run before ready hook', function() {
     expect(2);
 
     var readyWasCalled = false;
@@ -368,7 +368,7 @@ if (isEnabled('ember-application-instance-initializers')) {
   });
 
   if (initializeContextFeatureEnabled) {
-    QUnit.test("initializers should be executed in their own context", function() {
+    QUnit.test('initializers should be executed in their own context', function() {
       expect(1);
 
       var MyApplication = Application.extend();
@@ -390,7 +390,7 @@ if (isEnabled('ember-application-instance-initializers')) {
     });
   }
 
-  QUnit.test("Initializers get an instance on app reset", function() {
+  QUnit.test('Initializers get an instance on app reset', function() {
     expect(2);
 
     var MyApplication = Application.extend();

@@ -1,10 +1,10 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
-import ApplicationInstance from "ember-application/system/application-instance";
-import Router from "ember-routing/system/router";
-import View from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
+import Application from 'ember-application/system/application';
+import ApplicationInstance from 'ember-application/system/application-instance';
+import Router from 'ember-routing/system/router';
+import View from 'ember-views/views/view';
+import compile from 'ember-template-compiler/system/compile';
 
 function createApplication() {
   var App = Application.extend().create({
@@ -20,7 +20,7 @@ function createApplication() {
 }
 
 if (isEnabled('ember-application-visit')) {
-  QUnit.module("Ember.Application - visit()");
+  QUnit.module('Ember.Application - visit()');
 
   // This tests whether the application is "autobooted" by registering an
   // instance initializer and asserting it never gets run. Since this is
@@ -28,7 +28,7 @@ if (isEnabled('ember-application-visit')) {
   // 500ms timeout to verify that when autoboot is set to false, the
   // instance initializer that would normally get called on DOM ready
   // does not fire.
-  QUnit.test("Applications with autoboot set to false do not autoboot", function(assert) {
+  QUnit.test('Applications with autoboot set to false do not autoboot', function(assert) {
     QUnit.expect(1);
     QUnit.stop();
 
@@ -37,23 +37,23 @@ if (isEnabled('ember-application-visit')) {
 
       // Start the timeout
       var timeout = setTimeout(function() {
-        ok(true, "500ms elapsed without initializers being called");
+        ok(true, '500ms elapsed without initializers being called');
         QUnit.start();
       }, 500);
 
       // Create an instance initializer that should *not* get run.
       app.instanceInitializer({
-        name: "assert-no-autoboot",
+        name: 'assert-no-autoboot',
         initialize() {
           clearTimeout(timeout);
           QUnit.start();
-          assert.ok(false, "instance should not have been created");
+          assert.ok(false, 'instance should not have been created');
         }
       });
     });
   });
 
-  QUnit.test("visit() returns a promise that resolves when the view has rendered", function(assert) {
+  QUnit.test('visit() returns a promise that resolves when the view has rendered', function(assert) {
     QUnit.expect(3);
     QUnit.stop();
 
@@ -69,23 +69,23 @@ if (isEnabled('ember-application-visit')) {
       });
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, "there are no elements in the fixture element");
+    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     app.visit('/').then(function(instance) {
       QUnit.start();
-      assert.ok(instance instanceof ApplicationInstance, "promise is resolved with an ApplicationInstance");
+      assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
       run(instance.view, 'appendTo', '#qunit-fixture');
-      assert.equal(Ember.$("#qunit-fixture > .ember-view h1").text(), "Hello world", "the application was rendered once the promise resolves");
+      assert.equal(Ember.$('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
 
       instance.destroy();
     }, function(error) {
       QUnit.start();
-      assert.ok(false, "The visit() promise was rejected: " + error);
+      assert.ok(false, 'The visit() promise was rejected: ' + error);
     });
   });
 
-  QUnit.test("Views created via visit() are not added to the global views hash", function(assert) {
+  QUnit.test('Views created via visit() are not added to the global views hash', function(assert) {
     QUnit.expect(6);
     QUnit.stop();
 
@@ -107,22 +107,22 @@ if (isEnabled('ember-application-visit')) {
       });
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, "there are no elements in the fixture element");
+    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     app.visit('/').then(function(instance) {
       QUnit.start();
-      assert.ok(instance instanceof ApplicationInstance, "promise is resolved with an ApplicationInstance");
+      assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
       run(instance.view, 'appendTo', '#qunit-fixture');
-      assert.equal(Ember.$("#qunit-fixture > #my-cool-app h1").text(), "Hello world", "the application was rendered once the promise resolves");
-      assert.strictEqual(View.views['my-cool-app'], undefined, "view was not registered globally");
-      ok(instance.container.lookup('-view-registry:main')['my-cool-app'] instanceof View, "view was registered on the instance's view registry");
-      ok(instance.container.lookup('-view-registry:main')['child-view'] instanceof View, "child view was registered on the instance's view registry");
+      assert.equal(Ember.$('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
+      assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
+      ok(instance.container.lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
+      ok(instance.container.lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
 
       instance.destroy();
     }, function(error) {
       QUnit.start();
-      assert.ok(false, "The visit() promise was rejected: " + error);
+      assert.ok(false, 'The visit() promise was rejected: ' + error);
     });
   });
 }

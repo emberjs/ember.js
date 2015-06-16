@@ -1,12 +1,12 @@
-import merge from "ember-metal/merge";
-import { symbol } from "ember-metal/utils";
-import ProxyStream from "ember-metal/streams/proxy-stream";
-import { isStream } from "ember-metal/streams/utils";
-import Stream from "ember-metal/streams/stream";
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
-import { INVOKE, ACTION } from "ember-routing-htmlbars/keywords/closure-action";
+import merge from 'ember-metal/merge';
+import { symbol } from 'ember-metal/utils';
+import ProxyStream from 'ember-metal/streams/proxy-stream';
+import { isStream } from 'ember-metal/streams/utils';
+import Stream from 'ember-metal/streams/stream';
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { INVOKE, ACTION } from 'ember-routing-htmlbars/keywords/closure-action';
 
-export let MUTABLE_REFERENCE = symbol("MUTABLE_REFERENCE");
+export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
 
 export default function mut(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.
@@ -39,7 +39,7 @@ function mutParam(read, stream, internal) {
       };
     }
   } else {
-    Ember.assert("You can only pass a path to mut", isStream(stream));
+    Ember.assert('You can only pass a path to mut', isStream(stream));
   }
 
   if (stream[MUTABLE_REFERENCE]) {

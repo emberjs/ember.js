@@ -1,30 +1,30 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import { get } from "ember-metal/property_get";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { get } from 'ember-metal/property_get';
 import {
   isArray
-} from "ember-runtime/utils";
-import { computed } from "ember-metal/computed";
+} from 'ember-runtime/utils';
+import { computed } from 'ember-metal/computed';
 import {
   beforeObserver,
   observer
-} from "ember-metal/mixin";
+} from 'ember-metal/mixin';
 import {
   beginPropertyChanges,
   endPropertyChanges
-} from "ember-metal/property_events";
-import EmberError from "ember-metal/error";
-import EmberObject from "ember-runtime/system/object";
-import MutableArray from "ember-runtime/mixins/mutable_array";
-import Enumerable from "ember-runtime/mixins/enumerable";
-import { fmt } from "ember-runtime/system/string";
-import alias from "ember-metal/alias";
+} from 'ember-metal/property_events';
+import EmberError from 'ember-metal/error';
+import EmberObject from 'ember-runtime/system/object';
+import MutableArray from 'ember-runtime/mixins/mutable_array';
+import Enumerable from 'ember-runtime/mixins/enumerable';
+import { fmt } from 'ember-runtime/system/string';
+import alias from 'ember-metal/alias';
 
 /**
 @module ember
 @submodule ember-runtime
 */
 
-var OUT_OF_RANGE_EXCEPTION = "Index out of range";
+var OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 var EMPTY = [];
 
 function K() { return this; }
@@ -182,7 +182,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   _contentDidChange: observer('content', function() {
     var content = get(this, 'content');
 
-    Ember.assert("Can't set ArrayProxy's content to itself", content !== this);
+    Ember.assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
 
     this._setupContent();
   }),
@@ -216,7 +216,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var arrangedContent = get(this, 'arrangedContent');
     var len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
-    Ember.assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
+    Ember.assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
 
     this._setupArrangedContent();
 
@@ -277,7 +277,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
       this._replace(...arguments);
     } else {
-      throw new EmberError("Using replace on an arranged ArrayProxy is not allowed.");
+      throw new EmberError('Using replace on an arranged ArrayProxy is not allowed.');
     }
   },
 
@@ -294,7 +294,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
       return this._insertAt(idx, object);
     } else {
-      throw new EmberError("Using insertAt on an arranged ArrayProxy is not allowed.");
+      throw new EmberError('Using insertAt on an arranged ArrayProxy is not allowed.');
     }
   },
 
@@ -339,7 +339,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
   pushObjects(objects) {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
-      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
+      throw new TypeError('Must pass Ember.Enumerable to Ember.MutableArray#pushObjects');
     }
     this._replace(get(this, 'length'), 0, objects);
     return this;

@@ -84,8 +84,8 @@ suite.test('should return first null property match', function() {
 
   obj = this.newObject(ary);
 
-  equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
-  equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
+  equal(obj.findBy('foo', null), ary[0], 'findBy(\'foo\', null)');
+  equal(obj.findBy('bar', null), ary[1], 'findBy(\'bar\', null)');
 });
 
 suite.test('should return first undefined property match', function() {
@@ -98,8 +98,8 @@ suite.test('should return first undefined property match', function() {
 
   obj = this.newObject(ary);
 
-  equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
-  equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
+  equal(obj.findBy('foo', undefined), ary[0], 'findBy(\'foo\', undefined)');
+  equal(obj.findBy('bar', undefined), ary[1], 'findBy(\'bar\', undefined)');
 });
 
 suite.test('should be aliased to findProperty', function() {

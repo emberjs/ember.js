@@ -1,4 +1,4 @@
-import isEnabled from "ember-metal/features";
+import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
 import keys from 'ember-metal/keys';
 

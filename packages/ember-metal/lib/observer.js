@@ -1,14 +1,14 @@
 import {
   watch,
   unwatch
-} from "ember-metal/watching";
+} from 'ember-metal/watching';
 import {
   listenersFor,
   addListener,
   removeListener,
   suspendListeners,
   suspendListener
-} from "ember-metal/events";
+} from 'ember-metal/events';
 /**
 @module ember-metal
 */

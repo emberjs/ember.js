@@ -1,10 +1,10 @@
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
-import View from "ember-views/views/view";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
+import View from 'ember-views/views/view';
 
 var view, parentView;
 
-QUnit.module("ember-views: View#render hook", {
+QUnit.module('ember-views: View#render hook', {
   teardown() {
     runDestroy(view);
     runDestroy(parentView);

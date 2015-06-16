@@ -4,13 +4,13 @@
 @public
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
-import { get } from "ember-metal/property_get";
-import EmberError from "ember-metal/error";
-import { inspect } from "ember-metal/utils";
-import { computed } from "ember-metal/computed";
-import ControllerMixin from "ember-runtime/mixins/controller";
-import controllerFor from "ember-routing/system/controller_for";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { get } from 'ember-metal/property_get';
+import EmberError from 'ember-metal/error';
+import { inspect } from 'ember-metal/utils';
+import { computed } from 'ember-metal/computed';
+import ControllerMixin from 'ember-runtime/mixins/controller';
+import controllerFor from 'ember-routing/system/controller_for';
 
 function verifyNeedsDependencies(controller, container, needs) {
   var dependency, i, l;
@@ -19,11 +19,11 @@ function verifyNeedsDependencies(controller, container, needs) {
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
 
-    Ember.assert(inspect(controller) + "#needs must not specify dependencies with periods in their names (" +
-                 dependency + ")", dependency.indexOf('.') === -1);
+    Ember.assert(inspect(controller) + '#needs must not specify dependencies with periods in their names (' +
+                 dependency + ')', dependency.indexOf('.') === -1);
 
     if (dependency.indexOf(':') === -1) {
-      dependency = "controller:" + dependency;
+      dependency = 'controller:' + dependency;
     }
 
     // Structure assert to still do verification but not string concat in production
@@ -32,8 +32,8 @@ function verifyNeedsDependencies(controller, container, needs) {
     }
   }
   if (missing.length) {
-    throw new EmberError(inspect(controller) + " needs [ " + missing.join(', ') +
-                         " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
+    throw new EmberError(inspect(controller) + ' needs [ ' + missing.join(', ') +
+                         ' ] but ' + (missing.length > 1 ? 'they' : 'it') + ' could not be found');
   }
 }
 
@@ -63,7 +63,7 @@ var defaultControllersComputedProperty = computed(function() {
       throw new ReferenceError(errorMessage);
     },
     setUnknownProperty(key, value) {
-      throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + inspect(controller));
+      throw new Error('You cannot overwrite the value of `controllers.' + key + '` of ' + inspect(controller));
     }
   };
 });
@@ -133,8 +133,8 @@ ControllerMixin.reopen({
 
     if (length > 0) {
       Ember.assert(' `' + inspect(this) + ' specifies `needs`, but does ' +
-                   "not have a container. Please ensure this controller was " +
-                   "instantiated with a container.",
+                   'not have a container. Please ensure this controller was ' +
+                   'instantiated with a container.',
                    this.container || this.controllers !== defaultControllersComputedProperty);
 
       if (this.container) {
@@ -155,7 +155,7 @@ ControllerMixin.reopen({
     @public
   */
   controllerFor(controllerName) {
-    Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
+    Ember.deprecate('Controller#controllerFor is deprecated, please use Controller#needs instead');
     return controllerFor(get(this, 'container'), controllerName);
   },
 

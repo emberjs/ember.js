@@ -1,9 +1,9 @@
 import Ember from 'ember-metal/core';
-import { Mixin } from "ember-metal/mixin";
+import { Mixin } from 'ember-metal/mixin';
 
 var ViewStateSupport = Mixin.create({
   transitionTo(state) {
-    Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
+    Ember.deprecate('Ember.View#transitionTo has been deprecated, it is for internal use only');
     this._transitionTo(state);
   },
 

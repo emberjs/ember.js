@@ -1,4 +1,4 @@
-import ComponentNodeManager from "ember-htmlbars/node-managers/component-node-manager";
+import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.state;

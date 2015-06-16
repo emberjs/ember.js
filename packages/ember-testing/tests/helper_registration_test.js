@@ -1,6 +1,6 @@
-import run from "ember-metal/run_loop";
-import Test from "ember-testing/test";
-import EmberApplication from "ember-application/system/application";
+import run from 'ember-metal/run_loop';
+import Test from 'ember-testing/test';
+import EmberApplication from 'ember-application/system/application';
 
 var App, appBooted, helperContainer;
 
@@ -36,14 +36,14 @@ function destroyApp() {
   }
 }
 
-QUnit.module("Test - registerHelper/unregisterHelper", {
+QUnit.module('Test - registerHelper/unregisterHelper', {
   teardown() {
     Test.adapter = originalAdapter;
     destroyApp();
   }
 });
 
-QUnit.test("Helper gets registered", function() {
+QUnit.test('Helper gets registered', function() {
   expect(2);
 
   registerHelper();
@@ -53,7 +53,7 @@ QUnit.test("Helper gets registered", function() {
   ok(helperContainer.boot);
 });
 
-QUnit.test("Helper is ran when called", function() {
+QUnit.test('Helper is ran when called', function() {
   expect(1);
 
   registerHelper();
@@ -64,7 +64,7 @@ QUnit.test("Helper is ran when called", function() {
   });
 });
 
-QUnit.test("Helper can be unregistered", function() {
+QUnit.test('Helper can be unregistered', function() {
   expect(4);
 
   registerHelper();
@@ -77,7 +77,7 @@ QUnit.test("Helper can be unregistered", function() {
 
   setupApp();
 
-  ok(!App.testHelpers.boot, "once unregistered the helper is not added to App.testHelpers");
-  ok(!helperContainer.boot, "once unregistered the helper is not added to the helperContainer");
+  ok(!App.testHelpers.boot, 'once unregistered the helper is not added to App.testHelpers');
+  ok(!helperContainer.boot, 'once unregistered the helper is not added to the helperContainer');
 });
 

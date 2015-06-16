@@ -1,14 +1,14 @@
-import _default from "ember-views/views/states/default";
-import merge from "ember-metal/merge";
-import jQuery from "ember-views/system/jquery";
+import _default from 'ember-views/views/states/default';
+import merge from 'ember-metal/merge';
+import jQuery from 'ember-views/system/jquery';
 
 /**
 @module ember
 @submodule ember-views
 */
 
-import { get } from "ember-metal/property_get";
-import { internal } from "htmlbars-runtime";
+import { get } from 'ember-metal/property_get';
+import { internal } from 'htmlbars-runtime';
 
 var hasElement = Object.create(_default);
 
@@ -22,7 +22,7 @@ merge(hasElement, {
     var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
-    return jQuery("#" + get(view, 'elementId'))[0];
+    return jQuery('#' + get(view, 'elementId'))[0];
   },
 
   // once the view has been inserted into the DOM, rerendering is
@@ -40,7 +40,7 @@ merge(hasElement, {
       node.isDirty = true;
     });
 
-    renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), "rerendering");
+    renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), 'rerendering');
   },
 
   cleanup(view) {

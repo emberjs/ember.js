@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import { hooks } from "htmlbars-runtime";
+import { hooks } from 'htmlbars-runtime';
 
 /**
  @private

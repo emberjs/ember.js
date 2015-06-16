@@ -1,11 +1,11 @@
-import run from "ember-metal/run_loop";
-import { Mixin as EmberMixin } from "ember-metal/mixin";
-import View from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
+import run from 'ember-metal/run_loop';
+import { Mixin as EmberMixin } from 'ember-metal/mixin';
+import View from 'ember-views/views/view';
+import compile from 'ember-template-compiler/system/compile';
 
 var parentView, view;
 
-QUnit.module("View#nearest*", {
+QUnit.module('View#nearest*', {
   teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
@@ -20,7 +20,7 @@ QUnit.module("View#nearest*", {
     template: compile(`{{view}}`)
   });
 
-  QUnit.test("nearestOfType should find the closest view by view class", function() {
+  QUnit.test('nearestOfType should find the closest view by view class', function() {
     var child;
 
     run(function() {
@@ -29,10 +29,10 @@ QUnit.module("View#nearest*", {
     });
 
     child = parentView.get('childViews')[0];
-    equal(child.nearestOfType(Parent), parentView, "finds closest view in the hierarchy by class");
+    equal(child.nearestOfType(Parent), parentView, 'finds closest view in the hierarchy by class');
   });
 
-  QUnit.test("nearestOfType should find the closest view by mixin", function() {
+  QUnit.test('nearestOfType should find the closest view by mixin', function() {
     var child;
 
     run(function() {
@@ -41,10 +41,10 @@ QUnit.module("View#nearest*", {
     });
 
     child = parentView.get('childViews')[0];
-    equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
+    equal(child.nearestOfType(Mixin), parentView, 'finds closest view in the hierarchy by class');
   });
 
-  QUnit.test("nearestWithProperty should search immediate parent", function() {
+  QUnit.test('nearestWithProperty should search immediate parent', function() {
     var childView;
 
     view = View.create({
@@ -61,7 +61,7 @@ QUnit.module("View#nearest*", {
 
   });
 
-  QUnit.test("nearestChildOf should be deprecated", function() {
+  QUnit.test('nearestChildOf should be deprecated', function() {
     var child;
 
     run(function() {

@@ -1,8 +1,8 @@
 import { Suite } from 'ember-runtime/tests/suites/suite';
-import EmberObject from "ember-runtime/system/object";
-import {guidFor, generateGuid} from "ember-metal/utils";
-import {computed} from "ember-metal/computed";
-import {get} from "ember-metal/property_get";
+import EmberObject from 'ember-runtime/system/object';
+import {guidFor, generateGuid} from 'ember-metal/utils';
+import {computed} from 'ember-metal/computed';
+import {get} from 'ember-metal/property_get';
 import { addBeforeObserver } from 'ember-metal/observer';
 
 var ObserverClass = EmberObject.extend({

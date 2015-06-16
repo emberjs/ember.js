@@ -1,11 +1,11 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {fmt} from "ember-runtime/system/string";
+import {fmt} from 'ember-runtime/system/string';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('indexOf');
 
-suite.test("should return index of object", function() {
+suite.test('should return index of object', function() {
   var expected = this.newFixture(3);
   var obj      = this.newObject(expected);
   var len      = 3;
@@ -17,7 +17,7 @@ suite.test("should return index of object", function() {
 
 });
 
-suite.test("should return -1 when requesting object not in index", function() {
+suite.test('should return -1 when requesting object not in index', function() {
   var obj = this.newObject(this.newFixture(3));
   var foo = {};
 

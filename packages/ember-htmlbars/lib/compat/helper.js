@@ -3,13 +3,13 @@
 @submodule ember-htmlbars
 */
 
-import helpers from "ember-htmlbars/helpers";
-import View from "ember-views/views/view";
-import Component from "ember-views/views/component";
-import makeViewHelper from "ember-htmlbars/system/make-view-helper";
-import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
-import { isStream } from "ember-metal/streams/utils";
-import { registerKeyword } from "ember-htmlbars/keywords";
+import helpers from 'ember-htmlbars/helpers';
+import View from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
+import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
+import makeBoundHelper from 'ember-htmlbars/compat/make-bound-helper';
+import { isStream } from 'ember-metal/streams/utils';
+import { registerKeyword } from 'ember-htmlbars/keywords';
 
 var slice = [].slice;
 
@@ -96,7 +96,7 @@ function HandlebarsCompatibleHelper(fn) {
     fnResult = fn.apply(this, args);
 
     if (options.element) {
-      Ember.deprecate("Returning a string of attributes from a helper inside an element is deprecated.");
+      Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.');
       applyAttributes(env.dom, options.element, fnResult);
     } else if (!options.template.yield) {
       return fnResult;
@@ -113,8 +113,8 @@ HandlebarsCompatibleHelper.prototype = {
 export function registerHandlebarsCompatibleHelper(name, value) {
   if (value && value.isLegacyViewHelper) {
     registerKeyword(name, function(morph, env, scope, params, hash, template, inverse, visitor) {
-      Ember.assert("You can only pass attributes (such as name=value) not bare " +
-             "values to a helper for a View found in '" + value.viewClass + "'", params.length === 0);
+      Ember.assert('You can only pass attributes (such as name=value) not bare ' +
+             'values to a helper for a View found in \'' + value.viewClass + '\'', params.length === 0);
 
       env.hooks.keyword('view', morph, env, scope, [value.viewClass], hash, template, inverse, visitor);
       return true;
@@ -134,8 +134,8 @@ export function registerHandlebarsCompatibleHelper(name, value) {
 }
 
 export function handlebarsHelper(name, value) {
-  Ember.assert("You tried to register a component named '" + name +
-               "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
+  Ember.assert('You tried to register a component named \'' + name +
+               '\', but component names must include a \'-\'', !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
     helpers[name] = makeViewHelper(value);
@@ -148,7 +148,7 @@ export function handlebarsHelper(name, value) {
 }
 
 function applyAttributes(dom, element, innerString) {
-  var string = "<" + element.tagName + " " + innerString + "></div>";
+  var string = '<' + element.tagName + ' ' + innerString + '></div>';
   var fragment = dom.parseHTML(string, dom.createElement(element.tagName));
 
   var attrs = fragment.firstChild.attributes;

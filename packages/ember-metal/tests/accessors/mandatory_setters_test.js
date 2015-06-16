@@ -1,8 +1,8 @@
-import isEnabled from "ember-metal/features";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { watch } from "ember-metal/watching";
-import { meta as metaFor } from "ember-metal/utils";
+import isEnabled from 'ember-metal/features';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { watch } from 'ember-metal/watching';
+import { meta as metaFor } from 'ember-metal/utils';
 
 QUnit.module('mandatory-setters');
 

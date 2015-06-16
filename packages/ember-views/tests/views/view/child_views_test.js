@@ -1,6 +1,6 @@
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import { compile } from "ember-template-compiler";
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import { compile } from 'ember-template-compiler';
 
 var parentView, childView;
 
@@ -28,7 +28,7 @@ QUnit.module('tests/views/view/child_views_tests.js', {
 // parent element
 
 // no parent element, no buffer, no element
-QUnit.test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
+QUnit.test('should render an inserted child view when the child is inserted before a DOM element is created', function() {
   run(function() {
     parentView.append();
   });
@@ -36,7 +36,7 @@ QUnit.test("should render an inserted child view when the child is inserted befo
   equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
 });
 
-QUnit.test("should not duplicate childViews when rerendering", function() {
+QUnit.test('should not duplicate childViews when rerendering', function() {
 
   var InnerView = EmberView.extend();
   var InnerView2 = EmberView.extend();

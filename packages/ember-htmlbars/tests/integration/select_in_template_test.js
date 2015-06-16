@@ -1,19 +1,19 @@
-import EmberObject from "ember-runtime/system/object";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import EventDispatcher from "ember-views/system/event_dispatcher";
+import EmberObject from 'ember-runtime/system/object';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
 
-import { computed } from "ember-metal/computed";
-import Namespace from "ember-runtime/system/namespace";
-import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
-import ArrayProxy from "ember-runtime/system/array_proxy";
-import SelectView from "ember-views/views/select";
+import { computed } from 'ember-metal/computed';
+import Namespace from 'ember-runtime/system/namespace';
+import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
+import ArrayProxy from 'ember-runtime/system/array_proxy';
+import SelectView from 'ember-views/views/select';
 import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var dispatcher, view;
 
-QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
+QUnit.module('ember-htmlbars: Ember.Select - usage inside templates', {
   setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
@@ -25,7 +25,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   }
 });
 
-QUnit.test("works from a template with bindings [DEPRECATED]", function() {
+QUnit.test('works from a template with bindings [DEPRECATED]', function() {
   expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
@@ -33,7 +33,7 @@ QUnit.test("works from a template with bindings [DEPRECATED]", function() {
     lastName: null,
 
     fullName: computed(function() {
-      return this.get('firstName') + " " + this.get('lastName');
+      return this.get('firstName') + ' ' + this.get('lastName');
     }).property('firstName', 'lastName')
   });
 
@@ -70,25 +70,25 @@ QUnit.test("works from a template with bindings [DEPRECATED]", function() {
   runAppend(view);
 
   var select = view.get('select');
-  ok(select.$().length, "Select was rendered");
-  equal(select.$('option').length, 5, "Options were rendered");
-  equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n", "Option values were rendered");
-  equal(select.get('selection'), null, "Nothing has been selected");
+  ok(select.$().length, 'Select was rendered');
+  equal(select.$('option').length, 5, 'Options were rendered');
+  equal(select.$().text(), 'Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n', 'Option values were rendered');
+  equal(select.get('selection'), null, 'Nothing has been selected');
 
   run(function() {
     application.selectedPersonController.set('person', erik);
   });
 
-  equal(select.get('selection'), erik, "Selection was updated through binding");
+  equal(select.get('selection'), erik, 'Selection was updated through binding');
   run(function() {
-    application.peopleController.pushObject(Person.create({ id: 5, firstName: "James", lastName: "Rosen" }));
+    application.peopleController.pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
   });
 
-  equal(select.$('option').length, 6, "New option was added");
-  equal(select.get('selection'), erik, "Selection was maintained after new option was added");
+  equal(select.$('option').length, 6, 'New option was added');
+  equal(select.get('selection'), erik, 'Selection was maintained after new option was added');
 });
 
-QUnit.test("works from a template", function() {
+QUnit.test('works from a template', function() {
   expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
@@ -96,7 +96,7 @@ QUnit.test("works from a template", function() {
     lastName: null,
 
     fullName: computed(function() {
-      return this.get('firstName') + " " + this.get('lastName');
+      return this.get('firstName') + ' ' + this.get('lastName');
     }).property('firstName', 'lastName')
   });
 
@@ -133,25 +133,25 @@ QUnit.test("works from a template", function() {
   runAppend(view);
 
   var select = view.get('select');
-  ok(select.$().length, "Select was rendered");
-  equal(select.$('option').length, 5, "Options were rendered");
-  equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n", "Option values were rendered");
-  equal(select.get('selection'), null, "Nothing has been selected");
+  ok(select.$().length, 'Select was rendered');
+  equal(select.$('option').length, 5, 'Options were rendered');
+  equal(select.$().text(), 'Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n', 'Option values were rendered');
+  equal(select.get('selection'), null, 'Nothing has been selected');
 
   run(function() {
     application.selectedPersonController.set('person', erik);
   });
 
-  equal(select.get('selection'), erik, "Selection was updated through binding");
+  equal(select.get('selection'), erik, 'Selection was updated through binding');
   run(function() {
-    application.peopleController.pushObject(Person.create({ id: 5, firstName: "James", lastName: "Rosen" }));
+    application.peopleController.pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
   });
 
-  equal(select.$('option').length, 6, "New option was added");
-  equal(select.get('selection'), erik, "Selection was maintained after new option was added");
+  equal(select.$('option').length, 6, 'New option was added');
+  equal(select.get('selection'), erik, 'Selection was maintained after new option was added');
 });
 
-QUnit.test("upon content change, the DOM should reflect the selection (#481)", function() {
+QUnit.test('upon content change, the DOM should reflect the selection (#481)', function() {
   var userOne = { name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a' };
   var userTwo = { name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd' };
 
@@ -170,18 +170,18 @@ QUnit.test("upon content change, the DOM should reflect the selection (#481)", f
   var select = view.get('select');
   var selectEl = select.$()[0];
 
-  equal(select.get('selection'), 'a', "Precond: Initial selection is correct");
-  equal(selectEl.selectedIndex, 0, "Precond: The DOM reflects the correct selection");
+  equal(select.get('selection'), 'a', 'Precond: Initial selection is correct');
+  equal(selectEl.selectedIndex, 0, 'Precond: The DOM reflects the correct selection');
 
   run(function() {
     view.set('user', userTwo);
   });
 
-  equal(select.get('selection'), 'd', "Selection was properly set after content change");
-  equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
+  equal(select.get('selection'), 'd', 'Selection was properly set after content change');
+  equal(selectEl.selectedIndex, 1, 'The DOM reflects the correct selection');
 });
 
-QUnit.test("upon content change with Array-like content, the DOM should reflect the selection", function() {
+QUnit.test('upon content change with Array-like content, the DOM should reflect the selection', function() {
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 
@@ -205,14 +205,14 @@ QUnit.test("upon content change with Array-like content, the DOM should reflect 
   var select = view.get('select');
   var selectEl = select.$()[0];
 
-  equal(selectEl.selectedIndex, -1, "Precond: The DOM reflects the lack of selection");
+  equal(selectEl.selectedIndex, -1, 'Precond: The DOM reflects the lack of selection');
 
   run(function() {
     proxy.set('content', Ember.A([tom, sylvain]));
   });
 
-  equal(select.get('selection'), sylvain, "Selection was properly set after content change");
-  equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
+  equal(select.get('selection'), sylvain, 'Selection was properly set after content change');
+  equal(selectEl.selectedIndex, 1, 'The DOM reflects the correct selection');
 });
 
 function testValueBinding(templateString) {
@@ -228,20 +228,20 @@ function testValueBinding(templateString) {
   var select = view.get('select');
   var selectEl = select.$()[0];
 
-  equal(view.get('val'), 'g', "Precond: Initial bound property is correct");
-  equal(select.get('value'), 'g', "Precond: Initial selection is correct");
-  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
+  equal(view.get('val'), 'g', 'Precond: Initial bound property is correct');
+  equal(select.get('value'), 'g', 'Precond: Initial selection is correct');
+  equal(selectEl.selectedIndex, 2, 'Precond: The DOM reflects the correct selection');
 
   select.$('option:eq(2)').removeAttr('selected');
   select.$('option:eq(1)').prop('selected', true);
   select.$().trigger('change');
 
-  equal(view.get('val'), 'w', "Updated bound property is correct");
-  equal(select.get('value'), 'w', "Updated selection is correct");
-  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
+  equal(view.get('val'), 'w', 'Updated bound property is correct');
+  equal(select.get('value'), 'w', 'Updated selection is correct');
+  equal(selectEl.selectedIndex, 1, 'The DOM is updated to reflect the new selection');
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]", function() {
+QUnit.test('select element should correctly initialize and update selectedIndex and bound properties when using valueBinding [DEPRECATED]', function() {
   expectDeprecation(`You're using legacy binding syntax: valueBinding="view.val" (L1:C176) . Please replace with value=view.val`);
 
   testValueBinding(
@@ -254,7 +254,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
+QUnit.test('select element should correctly initialize and update selectedIndex and bound properties when using valueBinding', function() {
   testValueBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -278,22 +278,22 @@ function testSelectionBinding(templateString) {
   var select = view.get('select');
   var selectEl = select.$()[0];
 
-  equal(view.get('selection.value'), 'g', "Precond: Initial bound property is correct");
-  equal(select.get('selection.value'), 'g', "Precond: Initial selection is correct");
-  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
-  equal(select.$('option:eq(2)').prop('selected'), true, "Precond: selected property is set to proper option");
+  equal(view.get('selection.value'), 'g', 'Precond: Initial bound property is correct');
+  equal(select.get('selection.value'), 'g', 'Precond: Initial selection is correct');
+  equal(selectEl.selectedIndex, 2, 'Precond: The DOM reflects the correct selection');
+  equal(select.$('option:eq(2)').prop('selected'), true, 'Precond: selected property is set to proper option');
 
   select.$('option:eq(2)').removeAttr('selected');
   select.$('option:eq(1)').prop('selected', true);
   select.$().trigger('change');
 
-  equal(view.get('selection.value'), 'w', "Updated bound property is correct");
-  equal(select.get('selection.value'), 'w', "Updated selection is correct");
-  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
-  equal(select.$('option:eq(1)').prop('selected'), true, "Selected property is set to proper option");
+  equal(view.get('selection.value'), 'w', 'Updated bound property is correct');
+  equal(select.get('selection.value'), 'w', 'Updated selection is correct');
+  equal(selectEl.selectedIndex, 1, 'The DOM is updated to reflect the new selection');
+  equal(select.$('option:eq(1)').prop('selected'), true, 'Selected property is set to proper option');
 }
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]", function() {
+QUnit.test('select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding [DEPRECATED]', function() {
   expectDeprecation(`You're using legacy binding syntax: contentBinding="view.collection" (L1:C44) . Please replace with content=view.collection`);
 
   testSelectionBinding(
@@ -306,7 +306,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using a bound selection", function() {
+QUnit.test('select element should correctly initialize and update selectedIndex and bound properties when using a bound selection', function() {
   testSelectionBinding(
     '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
@@ -317,7 +317,7 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   );
 });
 
-QUnit.test("select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path", function() {
+QUnit.test('select element should correctly initialize and update selectedIndex and bound properties when using selectionBinding and optionValuePath with custom path', function() {
   var templateString = '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
     '    optionLabelPath="content.name"' +
@@ -339,17 +339,17 @@ QUnit.test("select element should correctly initialize and update selectedIndex 
   var select = view.get('select');
   var selectEl = select.$()[0];
 
-  equal(view.get('selection.val'), 'g', "Precond: Initial bound property is correct");
-  equal(select.get('selection.val'), 'g', "Precond: Initial selection is correct");
-  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
-  equal(select.$('option:eq(1)').prop('selected'), false, "Precond: selected property is set to proper option");
+  equal(view.get('selection.val'), 'g', 'Precond: Initial bound property is correct');
+  equal(select.get('selection.val'), 'g', 'Precond: Initial selection is correct');
+  equal(selectEl.selectedIndex, 2, 'Precond: The DOM reflects the correct selection');
+  equal(select.$('option:eq(1)').prop('selected'), false, 'Precond: selected property is set to proper option');
 
   select.$('option:eq(2)').removeAttr('selected');
   select.$('option:eq(1)').prop('selected', true);
   select.$().trigger('change');
 
-  equal(view.get('selection.val'), 'w', "Updated bound property is correct");
-  equal(select.get('selection.val'), 'w', "Updated selection is correct");
-  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
-  equal(select.$('option:eq(1)').prop('selected'), true, "selected property is set to proper option");
+  equal(view.get('selection.val'), 'w', 'Updated bound property is correct');
+  equal(select.get('selection.val'), 'w', 'Updated selection is correct');
+  equal(selectEl.selectedIndex, 1, 'The DOM is updated to reflect the new selection');
+  equal(select.$('option:eq(1)').prop('selected'), true, 'selected property is set to proper option');
 });

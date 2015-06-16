@@ -1,6 +1,6 @@
 /* globals EmberDev */
-import isEnabled from "ember-metal/features";
-import Libraries from "ember-metal/libraries";
+import isEnabled from 'ember-metal/features';
+import Libraries from 'ember-metal/libraries';
 
 var libs, registry;
 

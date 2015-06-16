@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import { helper } from "ember-htmlbars/helper";
+import { helper } from 'ember-htmlbars/helper';
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
