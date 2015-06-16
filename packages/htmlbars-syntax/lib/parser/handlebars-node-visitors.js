@@ -1,13 +1,11 @@
-import b from "./builders";
-import { buildProgram, buildBlock, buildHash } from "./builders";
-import { forEach } from "../htmlbars-util/array-utils";
-import { appendChild } from "./utils";
+import b from "../builders";
+import { appendChild } from "../utils";
 
-var nodeHandlers = {
+export default {
 
   Program: function(program) {
     var body = [];
-    var node = buildProgram(body, program.blockParams, program.loc);
+    var node = b.program(body, program.blockParams, program.loc);
     var i, l = program.body.length;
 
     this.elementStack.push(node);
@@ -17,8 +15,6 @@ var nodeHandlers = {
     for (i = 0; i < l; i++) {
       this.acceptNode(program.body[i]);
     }
-
-    this.acceptToken(this.tokenizer.tokenizeEOF());
 
     // Ensure that that the element stack is balanced properly.
     var poppedNode = this.elementStack.pop();
@@ -35,34 +31,73 @@ var nodeHandlers = {
     delete block.closeStrip;
 
     if (this.tokenizer.state === 'comment') {
-      this.tokenizer.addChar('{{' + this.sourceForMustache(block) + '}}');
+      this.appendToCommentData('{{' + this.sourceForMustache(block) + '}}');
       return;
     }
 
-    switchToHandlebars(this);
-    this.acceptToken(block);
+    if (this.tokenizer.state !== 'comment' && this.tokenizer.state !== 'data' && this.tokenizer.state !== 'beforeData') {
+      throw new Error("A block may only be used inside an HTML element or another block.");
+    }
 
     block = acceptCommonNodes(this, block);
     var program = block.program ? this.acceptNode(block.program) : null;
     var inverse = block.inverse ? this.acceptNode(block.inverse) : null;
 
-    var node = buildBlock(block.path, block.params, block.hash, program, inverse, block.loc);
+    var node = b.block(block.path, block.params, block.hash, program, inverse, block.loc);
     var parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   },
 
   MustacheStatement: function(rawMustache) {
+    let tokenizer = this.tokenizer;
     let { path, params, hash, escaped, loc } = rawMustache;
     let mustache = b.mustache(path, params, hash, !escaped, loc);
 
-    if (this.tokenizer.state === 'comment') {
-      this.tokenizer.addChar('{{' + this.sourceForMustache(mustache) + '}}');
+    if (tokenizer.state === 'comment') {
+      this.appendToCommentData('{{' + this.sourceForMustache(mustache) + '}}');
       return;
     }
 
     acceptCommonNodes(this, mustache);
-    switchToHandlebars(this);
-    this.acceptToken(mustache);
+
+    switch (tokenizer.state) {
+      // Tag helpers
+      case "tagName":
+        addElementModifier(this.currentNode, mustache);
+        tokenizer.state = "beforeAttributeName";
+        break;
+      case "beforeAttributeName":
+        addElementModifier(this.currentNode, mustache);
+        break;
+      case "attributeName":
+      case "afterAttributeName":
+        this.beginAttributeValue(false);
+        this.finishAttributeValue();
+        addElementModifier(this.currentNode, mustache);
+        tokenizer.state = "beforeAttributeName";
+        break;
+      case "afterAttributeValueQuoted":
+        addElementModifier(this.currentNode, mustache);
+        tokenizer.state = "beforeAttributeName";
+        break;
+
+      // Attribute values
+      case "beforeAttributeValue":
+        appendDynamicAttributeValuePart(this.currentAttribute, mustache);
+        tokenizer.state = 'attributeValueUnquoted';
+        break;
+      case "attributeValueDoubleQuoted":
+      case "attributeValueSingleQuoted":
+      case "attributeValueUnquoted":
+        appendDynamicAttributeValuePart(this.currentAttribute, mustache);
+        break;
+
+      // TODO: Only append child when the tokenizer state makes
+      // sense to do so, otherwise throw an error.
+      default:
+        appendChild(this.currentElement(), mustache);
+    }
+
 
     return mustache;
   },
@@ -74,10 +109,8 @@ var nodeHandlers = {
     }
 
     this.tokenizer.line = this.tokenizer.line + changeLines;
-
-    var tokens = this.tokenizer.tokenizePart(content.value);
-
-    return forEach(tokens, this.acceptToken, this);
+    this.tokenizer.tokenizePart(content.value);
+    this.tokenizer.flushData();
   },
 
   CommentStatement: function(comment) {
@@ -115,15 +148,6 @@ var nodeHandlers = {
   NullLiteral: function() {}
 };
 
-function switchToHandlebars(processor) {
-  var token = processor.tokenizer.token;
-
-  if (token && token.type === 'Chars') {
-    processor.acceptToken(token);
-    processor.tokenizer.token = null;
-  }
-}
-
 function leadingNewlineDifference(original, value) {
   if (value === '') {
     // if it is empty, just return the count of newlines
@@ -153,10 +177,19 @@ function acceptCommonNodes(compiler, node) {
   if (node.hash) {
     compiler.acceptNode(node.hash);
   } else {
-    node.hash = buildHash();
+    node.hash = b.hash();
   }
 
   return node;
 }
 
-export default nodeHandlers;
+function addElementModifier(element, mustache) {
+  let { path, params, hash, loc } = mustache;
+  let modifier = b.elementModifier(path, params, hash, loc);
+  element.modifiers.push(modifier);
+}
+
+function appendDynamicAttributeValuePart(attribute, part) {
+  attribute.isDynamic = true;
+  attribute.parts.push(part);
+}
