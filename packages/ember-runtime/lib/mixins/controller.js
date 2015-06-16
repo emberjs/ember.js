@@ -1,7 +1,7 @@
-import { Mixin } from "ember-metal/mixin";
+import { Mixin } from 'ember-metal/mixin';
 import alias from 'ember-metal/alias';
-import ActionHandler from "ember-runtime/mixins/action_handler";
-import ControllerContentModelAliasDeprecation from "ember-runtime/mixins/controller_content_model_alias_deprecation";
+import ActionHandler from 'ember-runtime/mixins/action_handler';
+import ControllerContentModelAliasDeprecation from 'ember-runtime/mixins/controller_content_model_alias_deprecation';
 
 /**
   `Ember.ControllerMixin` provides a standard interface for all classes that

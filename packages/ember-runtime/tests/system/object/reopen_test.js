@@ -1,5 +1,5 @@
-import {get} from "ember-metal/property_get";
-import EmberObject from "ember-runtime/system/object";
+import {get} from 'ember-metal/property_get';
+import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module('system/core_object/reopen');
 
@@ -39,5 +39,5 @@ QUnit.test('allows reopening already instantiated classes', function() {
     trololol: true
   });
 
-  equal(Subclass.create().get('trololol'), true, "reopen works");
+  equal(Subclass.create().get('trololol'), true, 'reopen works');
 });

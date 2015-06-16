@@ -9,7 +9,7 @@ import {
   Mixin,
   observer
 } from 'ember-metal/mixin';
-import { addObserver } from "ember-metal/observer";
+import { addObserver } from 'ember-metal/observer';
 
 QUnit.module('Ember.get');
 
@@ -79,13 +79,13 @@ QUnit.test('should invoke INTERCEPT_GET and accept a return value', function() {
   }
 });
 
-testBoth("should call unknownProperty on watched values if the value is undefined", function(get, set) {
+testBoth('should call unknownProperty on watched values if the value is undefined', function(get, set) {
   var obj = {
     count: 0,
     unknownProperty(key) {
-      equal(key, 'foo', "should pass key");
+      equal(key, 'foo', 'should pass key');
       this.count++;
-      return "FOO";
+      return 'FOO';
     }
   };
 
@@ -152,7 +152,7 @@ QUnit.test('(regression) watched properties on unmodified inherited objects shou
   equal(get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');
 });
 
-QUnit.module("Ember.getWithDefault");
+QUnit.module('Ember.getWithDefault');
 
 QUnit.test('should get arbitrary properties on an object', function() {
   var obj = {
@@ -167,15 +167,15 @@ QUnit.test('should get arbitrary properties on an object', function() {
     if (!obj.hasOwnProperty(key)) {
       continue;
     }
-    equal(getWithDefault(obj, key, "fail"), obj[key], key);
+    equal(getWithDefault(obj, key, 'fail'), obj[key], key);
   }
 
   obj = {
     undef: undefined
   };
 
-  equal(getWithDefault(obj, "undef", "default"), "default", "explicit undefined retrieves the default");
-  equal(getWithDefault(obj, "not-present", "default"), "default", "non-present key retrieves the default");
+  equal(getWithDefault(obj, 'undef', 'default'), 'default', 'explicit undefined retrieves the default');
+  equal(getWithDefault(obj, 'not-present', 'default'), 'default', 'non-present key retrieves the default');
 });
 
 QUnit.test('should call unknownProperty if defined and value is undefined', function() {
@@ -193,14 +193,14 @@ QUnit.test('should call unknownProperty if defined and value is undefined', func
   equal(obj.count, 1, 'should have invoked');
 });
 
-testBoth("if unknownProperty is present, it is called", function(get, set) {
+testBoth('if unknownProperty is present, it is called', function(get, set) {
   var obj = {
     count: 0,
     unknownProperty(key) {
-      if (key === "foo") {
-        equal(key, 'foo', "should pass key");
+      if (key === 'foo') {
+        equal(key, 'foo', 'should pass key');
         this.count++;
-        return "FOO";
+        return 'FOO';
       }
     }
   };
@@ -210,8 +210,8 @@ testBoth("if unknownProperty is present, it is called", function(get, set) {
     count++;
   });
 
-  equal(getWithDefault(obj, 'foo', "fail"), 'FOO', 'should return value from unknownProperty');
-  equal(getWithDefault(obj, 'bar', "default"), 'default', 'should convert undefined from unknownProperty into default');
+  equal(getWithDefault(obj, 'foo', 'fail'), 'FOO', 'should return value from unknownProperty');
+  equal(getWithDefault(obj, 'bar', 'default'), 'default', 'should convert undefined from unknownProperty into default');
 });
 
 // ..........................................................
@@ -230,6 +230,6 @@ QUnit.test('(regression) watched properties on unmodified inherited objects shou
   var baseObject = MyMixin.apply({});
   var theRealObject = Object.create(baseObject);
 
-  equal(getWithDefault(theRealObject, 'someProperty', "fail"), 'foo', 'should return the set value, not false');
+  equal(getWithDefault(theRealObject, 'someProperty', 'fail'), 'foo', 'should return the set value, not false');
 });
 

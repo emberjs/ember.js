@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Logger from "ember-metal/logger";
+import Logger from 'ember-metal/logger';
 
 /**
   `log` allows you to output the value of variables in the current rendering

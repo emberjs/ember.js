@@ -1,10 +1,10 @@
-import isEnabled from "ember-metal/features";
-import Registry from "container/registry";
-import compile from "ember-template-compiler/system/compile";
+import isEnabled from 'ember-metal/features';
+import Registry from 'container/registry';
+import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from "ember-views/views/component";
-import { helper } from "ember-htmlbars/helper";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import Component from 'ember-views/views/component';
+import { helper } from 'ember-htmlbars/helper';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var registry, container, component;
 

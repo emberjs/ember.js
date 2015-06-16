@@ -1,21 +1,21 @@
-import { set } from "ember-metal/property_set";
-import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
-import Service from "ember-runtime/system/service";
-import { Registry } from "ember-runtime/system/container";
-import inject from "ember-runtime/inject";
-import { get } from "ember-metal/property_get";
+import { set } from 'ember-metal/property_set';
+import run from 'ember-metal/run_loop';
+import EmberObject from 'ember-runtime/system/object';
+import Service from 'ember-runtime/system/service';
+import { Registry } from 'ember-runtime/system/container';
+import inject from 'ember-runtime/inject';
+import { get } from 'ember-metal/property_get';
 
-import EmberView from "ember-views/views/view";
-import Component from "ember-views/views/component";
+import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
 
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 var a_slice = Array.prototype.slice;
 
 var component, controller, actionCounts, sendCount, actionArguments;
 
-QUnit.module("Ember.Component", {
+QUnit.module('Ember.Component', {
   setup() {
     component = Component.create();
   },
@@ -27,33 +27,33 @@ QUnit.module("Ember.Component", {
   }
 });
 
-QUnit.test("The context of an Ember.Component is itself", function() {
-  strictEqual(component, component.get('context'), "A component's context is itself");
+QUnit.test('The context of an Ember.Component is itself', function() {
+  strictEqual(component, component.get('context'), 'A component\'s context is itself');
 });
 
-QUnit.test("The controller (target of `action`) of an Ember.Component is itself", function() {
-  strictEqual(component, component.get('controller'), "A component's controller is itself");
+QUnit.test('The controller (target of `action`) of an Ember.Component is itself', function() {
+  strictEqual(component, component.get('controller'), 'A component\'s controller is itself');
 });
 
-QUnit.test("A templateName specified to a component is moved to the layoutName", function() {
+QUnit.test('A templateName specified to a component is moved to the layoutName', function() {
   expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
   component = Component.extend({
     templateName: 'blah-blah'
   }).create();
 
-  equal(component.get('layoutName'), 'blah-blah', "The layoutName now contains the templateName specified.");
+  equal(component.get('layoutName'), 'blah-blah', 'The layoutName now contains the templateName specified.');
 });
 
-QUnit.test("A template specified to a component is moved to the layout", function() {
+QUnit.test('A template specified to a component is moved to the layout', function() {
   expectDeprecation(/Do not specify template on a Component, use layout instead/);
   component = Component.extend({
     template: 'blah-blah'
   }).create();
 
-  equal(component.get('layout'), 'blah-blah', "The layoutName now contains the templateName specified.");
+  equal(component.get('layout'), 'blah-blah', 'The layoutName now contains the templateName specified.');
 });
 
-QUnit.test("A template specified to a component is deprecated", function() {
+QUnit.test('A template specified to a component is deprecated', function() {
   expectDeprecation(function() {
     component = Component.extend({
       template: 'blah-blah'
@@ -61,7 +61,7 @@ QUnit.test("A template specified to a component is deprecated", function() {
   }, 'Do not specify template on a Component, use layout instead.');
 });
 
-QUnit.test("A templateName specified to a component is deprecated", function() {
+QUnit.test('A templateName specified to a component is deprecated', function() {
   expectDeprecation(function() {
     component = Component.extend({
       templateName: 'blah-blah'
@@ -69,7 +69,7 @@ QUnit.test("A templateName specified to a component is deprecated", function() {
   }, 'Do not specify templateName on a Component, use layoutName instead.');
 });
 
-QUnit.test("Specifying both templateName and layoutName to a component is NOT deprecated", function() {
+QUnit.test('Specifying both templateName and layoutName to a component is NOT deprecated', function() {
   expectNoDeprecation();
   component = Component.extend({
     templateName: 'blah-blah',
@@ -80,7 +80,7 @@ QUnit.test("Specifying both templateName and layoutName to a component is NOT de
   equal(get(component, 'layoutName'), 'hum-drum');
 });
 
-QUnit.test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function() {
+QUnit.test('Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated', function() {
   expectNoDeprecation();
   var Parent = Component.extend({
     layoutName: 'hum-drum'
@@ -94,7 +94,7 @@ QUnit.test("Specifying a templateName on a component with a layoutName specified
   equal(get(component, 'layoutName'), 'hum-drum');
 });
 
-QUnit.module("Ember.Component - Actions", {
+QUnit.module('Ember.Component - Actions', {
   setup() {
     actionCounts = {};
     sendCount = 0;
@@ -124,21 +124,21 @@ QUnit.module("Ember.Component - Actions", {
   }
 });
 
-QUnit.test("Calling sendAction on a component without an action defined does nothing", function() {
+QUnit.test('Calling sendAction on a component without an action defined does nothing', function() {
   component.sendAction();
-  equal(sendCount, 0, "addItem action was not invoked");
+  equal(sendCount, 0, 'addItem action was not invoked');
 });
 
-QUnit.test("Calling sendAction on a component with an action defined calls send on the controller", function() {
-  set(component, 'action', "addItem");
+QUnit.test('Calling sendAction on a component with an action defined calls send on the controller', function() {
+  set(component, 'action', 'addItem');
 
   component.sendAction();
 
-  equal(sendCount, 1, "send was called once");
-  equal(actionCounts['addItem'], 1, "addItem event was sent once");
+  equal(sendCount, 1, 'send was called once');
+  equal(actionCounts['addItem'], 1, 'addItem event was sent once');
 });
 
-QUnit.test("Calling sendAction on a component with a function calls the function", function() {
+QUnit.test('Calling sendAction on a component with a function calls the function', function() {
   expect(1);
   set(component, 'action', function() {
     ok(true, 'function is called');
@@ -147,7 +147,7 @@ QUnit.test("Calling sendAction on a component with a function calls the function
   component.sendAction();
 });
 
-QUnit.test("Calling sendAction on a component with a function calls the function with arguments", function() {
+QUnit.test('Calling sendAction on a component with a function calls the function with arguments', function() {
   expect(1);
   var argument = {};
   set(component, 'action', function(actualArgument) {
@@ -157,7 +157,7 @@ QUnit.test("Calling sendAction on a component with a function calls the function
   component.sendAction('action', argument);
 });
 
-QUnit.test("Calling sendAction on a component with a mut attr calls the function with arguments", function() {
+QUnit.test('Calling sendAction on a component with a mut attr calls the function with arguments', function() {
   var mut = {
     value: 'didStartPlaying',
     [MUTABLE_CELL]: true
@@ -167,31 +167,31 @@ QUnit.test("Calling sendAction on a component with a mut attr calls the function
 
   component.sendAction('playing');
 
-  equal(sendCount, 1, "send was called once");
-  equal(actionCounts['didStartPlaying'], 1, "named action was sent");
+  equal(sendCount, 1, 'send was called once');
+  equal(actionCounts['didStartPlaying'], 1, 'named action was sent');
 });
 
-QUnit.test("Calling sendAction with a named action uses the component's property as the action name", function() {
-  set(component, 'playing', "didStartPlaying");
-  set(component, 'action', "didDoSomeBusiness");
+QUnit.test('Calling sendAction with a named action uses the component\'s property as the action name', function() {
+  set(component, 'playing', 'didStartPlaying');
+  set(component, 'action', 'didDoSomeBusiness');
 
   component.sendAction('playing');
 
-  equal(sendCount, 1, "send was called once");
-  equal(actionCounts['didStartPlaying'], 1, "named action was sent");
+  equal(sendCount, 1, 'send was called once');
+  equal(actionCounts['didStartPlaying'], 1, 'named action was sent');
 
   component.sendAction('playing');
 
-  equal(sendCount, 2, "send was called twice");
-  equal(actionCounts['didStartPlaying'], 2, "named action was sent");
+  equal(sendCount, 2, 'send was called twice');
+  equal(actionCounts['didStartPlaying'], 2, 'named action was sent');
 
   component.sendAction();
 
-  equal(sendCount, 3, "send was called three times");
-  equal(actionCounts['didDoSomeBusiness'], 1, "default action was sent");
+  equal(sendCount, 3, 'send was called three times');
+  equal(actionCounts['didDoSomeBusiness'], 1, 'default action was sent');
 });
 
-QUnit.test("Calling sendAction when the action name is not a string raises an exception", function() {
+QUnit.test('Calling sendAction when the action name is not a string raises an exception', function() {
   set(component, 'action', {});
   set(component, 'playing', {});
 
@@ -204,30 +204,30 @@ QUnit.test("Calling sendAction when the action name is not a string raises an ex
   });
 });
 
-QUnit.test("Calling sendAction on a component with a context", function() {
-  set(component, 'playing', "didStartPlaying");
+QUnit.test('Calling sendAction on a component with a context', function() {
+  set(component, 'playing', 'didStartPlaying');
 
   var testContext = { song: 'She Broke My Ember' };
 
   component.sendAction('playing', testContext);
 
-  deepEqual(actionArguments, [testContext], "context was sent with the action");
+  deepEqual(actionArguments, [testContext], 'context was sent with the action');
 });
 
-QUnit.test("Calling sendAction on a component with multiple parameters", function() {
-  set(component, 'playing', "didStartPlaying");
+QUnit.test('Calling sendAction on a component with multiple parameters', function() {
+  set(component, 'playing', 'didStartPlaying');
 
   var firstContext  = { song: 'She Broke My Ember' };
   var secondContext = { song: 'My Achey Breaky Ember' };
 
   component.sendAction('playing', firstContext, secondContext);
 
-  deepEqual(actionArguments, [firstContext, secondContext], "arguments were sent to the action");
+  deepEqual(actionArguments, [firstContext, secondContext], 'arguments were sent to the action');
 });
 
 QUnit.module('Ember.Component - injected properties');
 
-QUnit.test("services can be injected into components", function() {
+QUnit.test('services can be injected into components', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -240,7 +240,7 @@ QUnit.test("services can be injected into components", function() {
   var appComponent = container.lookup('component:application');
   var profilerService = container.lookup('service:profiler');
 
-  equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
+  equal(profilerService, appComponent.get('profilerService'), 'service.profiler is injected');
 });
 
 QUnit.module('Ember.Component - subscribed and sent actions trigger errors');

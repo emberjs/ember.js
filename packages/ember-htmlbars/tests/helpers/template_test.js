@@ -1,17 +1,17 @@
-import EmberView from "ember-views/views/view";
-import EmberObject from "ember-runtime/system/object";
-import jQuery from "ember-views/system/jquery";
+import EmberView from 'ember-views/views/view';
+import EmberObject from 'ember-runtime/system/object';
+import jQuery from 'ember-views/system/jquery';
 var trim = jQuery.trim;
 
-import { Registry } from "ember-runtime/system/container";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import { deprecation } from "ember-htmlbars/keywords/template";
+import { Registry } from 'ember-runtime/system/container';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { deprecation } from 'ember-htmlbars/keywords/template';
 
 var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
 
-QUnit.module("Support for {{template}} helper", {
+QUnit.module('Support for {{template}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
@@ -27,7 +27,7 @@ QUnit.module("Support for {{template}} helper", {
   }
 });
 
-QUnit.test("should render other templates via the container (DEPRECATED)", function() {
+QUnit.test('should render other templates via the container (DEPRECATED)', function() {
   registry.register('template:sub_template_from_container', compile('sub-template'));
 
   view = EmberView.create({
@@ -39,11 +39,11 @@ QUnit.test("should render other templates via the container (DEPRECATED)", funct
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "This sub-template is pretty great.");
+  equal(trim(view.$().text()), 'This sub-template is pretty great.');
 });
 
-QUnit.test("should use the current view's context (DEPRECATED)", function() {
-  registry.register('template:person_name', compile("{{firstName}} {{lastName}}"));
+QUnit.test('should use the current view\'s context (DEPRECATED)', function() {
+  registry.register('template:person_name', compile('{{firstName}} {{lastName}}'));
 
   view = EmberView.create({
     container: container,
@@ -58,5 +58,5 @@ QUnit.test("should use the current view's context (DEPRECATED)", function() {
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "Who is Kris Selden?");
+  equal(trim(view.$().text()), 'Who is Kris Selden?');
 });

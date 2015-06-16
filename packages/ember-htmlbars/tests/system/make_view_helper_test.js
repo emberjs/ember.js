@@ -1,12 +1,12 @@
-import makeViewHelper from "ember-htmlbars/system/make-view-helper";
-import EmberView from "ember-views/views/view";
-import { compile } from "ember-template-compiler";
-import Registry from "container/registry";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
+import EmberView from 'ember-views/views/view';
+import { compile } from 'ember-template-compiler';
+import Registry from 'container/registry';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var registry, container, view;
 
-QUnit.module("ember-htmlbars: makeViewHelper", {
+QUnit.module('ember-htmlbars: makeViewHelper', {
   setup() {
     registry = new Registry();
     container = registry.container();
@@ -16,9 +16,9 @@ QUnit.module("ember-htmlbars: makeViewHelper", {
   }
 });
 
-QUnit.test("makes helpful assertion when called with invalid arguments", function() {
+QUnit.test('makes helpful assertion when called with invalid arguments', function() {
   var SomeRandom = EmberView.extend({
-    template: compile("Some Random Class")
+    template: compile('Some Random Class')
   });
 
   SomeRandom.toString = function() {
@@ -29,25 +29,25 @@ QUnit.test("makes helpful assertion when called with invalid arguments", functio
   registry.register('helper:some-random', helper);
 
   view = EmberView.create({
-    template: compile("{{some-random 'sending-params-to-view-is-invalid'}}"),
+    template: compile('{{some-random \'sending-params-to-view-is-invalid\'}}'),
     container
   });
 
   expectAssertion(function() {
     runAppend(view);
-  }, "You can only pass attributes (such as name=value) not bare values to a helper for a View found in 'Some Random Class'");
+  }, 'You can only pass attributes (such as name=value) not bare values to a helper for a View found in \'Some Random Class\'');
 });
 
-QUnit.test("can properly yield", function() {
+QUnit.test('can properly yield', function() {
   var SomeRandom = EmberView.extend({
-    layout: compile("Some Random Class - {{yield}}")
+    layout: compile('Some Random Class - {{yield}}')
   });
 
   var helper = makeViewHelper(SomeRandom);
   registry.register('helper:some-random', helper);
 
   view = EmberView.create({
-    template: compile("{{#some-random}}Template{{/some-random}}"),
+    template: compile('{{#some-random}}Template{{/some-random}}'),
     container
   });
 

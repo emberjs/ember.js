@@ -1,5 +1,5 @@
-import Ember from "ember-metal/core";
-import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
+import Ember from 'ember-metal/core';
+import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 /**
  @module ember

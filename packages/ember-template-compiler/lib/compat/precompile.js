@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-template-compiler
 */
-import compileOptions from "ember-template-compiler/system/compile_options";
+import compileOptions from 'ember-template-compiler/system/compile_options';
 
 var compile, compileSpec;
 

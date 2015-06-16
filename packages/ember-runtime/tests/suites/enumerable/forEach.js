@@ -1,6 +1,6 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
-import {guidFor} from "ember-metal/utils";
+import {guidFor} from 'ember-metal/utils';
 
 var suite = SuiteModuleBuilder.create();
 

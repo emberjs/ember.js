@@ -1,8 +1,8 @@
-import "ember";
-import isEnabled from "ember-metal/features";
-import { capitalize } from "ember-runtime/system/string";
+import 'ember';
+import isEnabled from 'ember-metal/features';
+import { capitalize } from 'ember-runtime/system/string';
 
-import EmberHandlebars from "ember-htmlbars/compat";
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
@@ -17,10 +17,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   setURL(path) {
     if (expectedReplaceURL) {
-      ok(false, "pushState occurred but a replaceState was expected");
+      ok(false, 'pushState occurred but a replaceState was expected');
     }
     if (expectedPushURL) {
-      equal(path, expectedPushURL, "an expected pushState occurred");
+      equal(path, expectedPushURL, 'an expected pushState occurred');
       expectedPushURL = null;
     }
     this.set('path', path);
@@ -28,10 +28,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   replaceURL(path) {
     if (expectedPushURL) {
-      ok(false, "replaceState occurred but a pushState was expected");
+      ok(false, 'replaceState occurred but a pushState was expected');
     }
     if (expectedReplaceURL) {
-      equal(path, expectedReplaceURL, "an expected replaceState occurred");
+      equal(path, expectedReplaceURL, 'an expected replaceState occurred');
       expectedReplaceURL = null;
     }
     this.set('path', path);
@@ -46,7 +46,7 @@ function bootApplication() {
 function sharedSetup() {
   Ember.run(function() {
     App = Ember.Application.create({
-      name: "App",
+      name: 'App',
       rootElement: '#qunit-fixture'
     });
 
@@ -68,8 +68,8 @@ function sharedSetup() {
     App.LoadingRoute = Ember.Route.extend({
     });
 
-    Ember.TEMPLATES.application = compile("{{outlet}}");
-    Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
+    Ember.TEMPLATES.application = compile('{{outlet}}');
+    Ember.TEMPLATES.home = compile('<h3>Hours</h3>');
   });
 }
 
@@ -82,7 +82,7 @@ function sharedTeardown() {
   });
 }
 
-QUnit.module("Routing with Query Params", {
+QUnit.module('Routing with Query Params', {
   setup() {
     sharedSetup();
   },
@@ -95,14 +95,14 @@ QUnit.module("Routing with Query Params", {
 var startingURL = '';
 
 var testParamlessLinks = function(routeName) {
-  QUnit.test("param-less links in an app booted with query params in the URL don't reset the query params: " + routeName, function() {
+  QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
-    Ember.TEMPLATES[routeName] = compile("{{link-to 'index' 'index' id='index-link'}}");
+    Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    App[capitalize(routeName) + "Controller"] = Ember.Controller.extend({
+    App[capitalize(routeName) + 'Controller'] = Ember.Controller.extend({
       queryParams: ['foo'],
-      foo: "wat"
+      foo: 'wat'
     });
 
     startingURL = '/?foo=YEAH';
@@ -113,15 +113,15 @@ var testParamlessLinks = function(routeName) {
 };
 
 var testParamlessLinksWithRouteConfig = function(routeName) {
-  QUnit.test("param-less links in an app booted with query params in the URL don't reset the query params: " + routeName, function() {
+  QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
-    Ember.TEMPLATES[routeName] = compile("{{link-to 'index' 'index' id='index-link'}}");
+    Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    App[capitalize(routeName) + "Route"] = Ember.Route.extend({
+    App[capitalize(routeName) + 'Route'] = Ember.Route.extend({
       queryParams: {
         foo: {
-          defaultValue: "wat"
+          defaultValue: 'wat'
         }
       }
     });

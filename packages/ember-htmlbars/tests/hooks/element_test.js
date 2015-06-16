@@ -1,10 +1,10 @@
-import EmberView from "ember-views/views/view";
-import helpers from "ember-htmlbars/helpers";
+import EmberView from 'ember-views/views/view';
+import helpers from 'ember-htmlbars/helpers';
 import {
   registerHelper
-} from "ember-htmlbars/helpers";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
+} from 'ember-htmlbars/helpers';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
 
 var view;
 
@@ -22,7 +22,7 @@ QUnit.test('allows unbound usage within an element', function() {
     equal(params[0], 'blammo');
     equal(params[1], 'blazzico');
 
-    return "class='foo'";
+    return 'class=\'foo\'';
   }
 
   registerHelper('test', someHelper);

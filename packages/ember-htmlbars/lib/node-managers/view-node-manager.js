@@ -1,20 +1,20 @@
-import merge from "ember-metal/merge";
-import Ember from "ember-metal/core";
-import buildComponentTemplate from "ember-views/system/build-component-template";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import setProperties from "ember-metal/set_properties";
-import View from "ember-views/views/view";
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
-import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
-import { instrument } from "ember-htmlbars/system/instrumentation-support";
-import { handleLegacyRender } from "ember-htmlbars/node-managers/component-node-manager";
+import merge from 'ember-metal/merge';
+import Ember from 'ember-metal/core';
+import buildComponentTemplate from 'ember-views/system/build-component-template';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import setProperties from 'ember-metal/set_properties';
+import View from 'ember-views/views/view';
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
+import { instrument } from 'ember-htmlbars/system/instrumentation-support';
+import { handleLegacyRender } from 'ember-htmlbars/node-managers/component-node-manager';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
 // and it gets actively used in addons or other downstream
 // libraries.
-import getValue from "ember-htmlbars/hooks/get-value";
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 function ViewNodeManager(component, scope, renderNode, block, expectElement) {
   this.component = component;
@@ -63,7 +63,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
         let template = getTemplate(component);
 
         if (template) {
-          Ember.deprecate("Using deprecated `template` property on a " + (component.isView ? 'View' : 'Component') + ".");
+          Ember.deprecate('Using deprecated `template` property on a ' + (component.isView ? 'View' : 'Component') + '.');
           contentTemplate = template.raw;
         }
       }
@@ -74,7 +74,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     renderNode.emberView = component;
   }
 
-  Ember.assert("BUG: ViewNodeManager.create can take a scope or a self, but not both", !(contentScope && found.self));
+  Ember.assert('BUG: ViewNodeManager.create can take a scope or a self, but not both', !(contentScope && found.self));
 
   var results = buildComponentTemplate(componentInfo, attrs, {
     templates: { default: contentTemplate },

@@ -1,8 +1,8 @@
-import Ember from "ember-metal/core";
-import { observer } from "ember-metal/mixin";
-import run from "ember-metal/run_loop";
-import { testBoth } from "ember-metal/tests/props_helper";
-import EmberObject from "ember-runtime/system/object";
+import Ember from 'ember-metal/core';
+import { observer } from 'ember-metal/mixin';
+import run from 'ember-metal/run_loop';
+import { testBoth } from 'ember-metal/tests/props_helper';
+import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module('EmberObject observer');
 
@@ -21,7 +21,7 @@ testBoth('observer on class', function(get, set) {
   var obj = new MyClass();
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
@@ -47,10 +47,10 @@ testBoth('observer on subclass', function(get, set) {
   var obj = new Subclass();
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-  set(obj, 'baz', "BAZ");
+  set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
@@ -69,7 +69,7 @@ testBoth('observer on instance', function(get, set) {
 
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
@@ -94,10 +94,10 @@ testBoth('observer on instance overriding class', function(get, set) {
 
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-  set(obj, 'baz', "BAZ");
+  set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
@@ -117,10 +117,10 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   if (Ember.assert) {
     expectAssertion(function() {
-      set(obj, 'bar', "BAZ");
-    }, "calling set on destroyed object");
+      set(obj, 'bar', 'BAZ');
+    }, 'calling set on destroyed object');
   } else {
-    set(obj, 'bar', "BAZ");
+    set(obj, 'bar', 'BAZ');
   }
 
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
@@ -212,7 +212,7 @@ testBoth('chain observer on class that has a reference to an uninitialized objec
 
   var ParentClass = EmberObject.extend({
     one: {
-      two: "old"
+      two: 'old'
     },
     init() {
       this.child = ChildClass.create({

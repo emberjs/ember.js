@@ -1,4 +1,4 @@
-import { wrap } from "htmlbars-runtime/hooks";
+import { wrap } from 'htmlbars-runtime/hooks';
 
 /**
 @module ember

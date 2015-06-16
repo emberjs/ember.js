@@ -22,7 +22,7 @@ QUnit.test('deprecates when calling transitionTo', function() {
   }, '');
 });
 
-QUnit.test("doesn't deprecate when calling _transitionTo", function() {
+QUnit.test('doesn\'t deprecate when calling _transitionTo', function() {
   expect(1);
 
   view = EmberView.create();

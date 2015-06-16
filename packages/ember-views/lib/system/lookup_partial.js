@@ -1,13 +1,13 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import EmberError from "ember-metal/error";
+import Ember from 'ember-metal/core'; // Ember.assert
+import EmberError from 'ember-metal/error';
 
 export default function lookupPartial(env, templateName) {
   if (templateName == null) { return; }
 
-  var nameParts = templateName.split("/");
+  var nameParts = templateName.split('/');
   var lastPart = nameParts[nameParts.length - 1];
 
-  nameParts[nameParts.length - 1] = "_" + lastPart;
+  nameParts[nameParts.length - 1] = '_' + lastPart;
 
   var underscoredName = nameParts.join('/');
   var template = templateFor(env, underscoredName, templateName);
@@ -22,7 +22,7 @@ export default function lookupPartial(env, templateName) {
 
 function templateFor(env, underscored, name) {
   if (!name) { return; }
-  Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
+  Ember.assert('templateNames are not allowed to contain periods: '+name, name.indexOf('.') === -1);
 
   if (!env.container) {
     throw new EmberError('Container was not found when looking up a views template. ' +

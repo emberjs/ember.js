@@ -1,8 +1,8 @@
-import { get } from "ember-metal/property_get";
-import setProperties from "ember-metal/set_properties";
-import { computed } from "ember-metal/computed";
-import { Mixin } from "ember-metal/mixin";
-import EmberError from "ember-metal/error";
+import { get } from 'ember-metal/property_get';
+import setProperties from 'ember-metal/set_properties';
+import { computed } from 'ember-metal/computed';
+import { Mixin } from 'ember-metal/mixin';
+import EmberError from 'ember-metal/error';
 
 var not = computed.not;
 var or = computed.or;
@@ -30,7 +30,7 @@ function tap(proxy, promise) {
       isRejected: true
     });
     throw reason;
-  }, "Ember: PromiseProxy");
+  }, 'Ember: PromiseProxy');
 }
 
 /**
@@ -165,7 +165,7 @@ export default Mixin.create({
   */
   promise: computed({
     get() {
-      throw new EmberError("PromiseProxy's promise must be set");
+      throw new EmberError('PromiseProxy\'s promise must be set');
     },
     set(key, promise) {
       return tap(this, promise);

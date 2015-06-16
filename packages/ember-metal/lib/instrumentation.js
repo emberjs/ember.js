@@ -1,5 +1,5 @@
-import Ember from "ember-metal/core";
-import { tryCatchFinally } from "ember-metal/utils";
+import Ember from 'ember-metal/core';
+import { tryCatchFinally } from 'ember-metal/utils';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -130,7 +130,7 @@ export function _instrumentStart(name, _payload) {
   var STRUCTURED_PROFILE = Ember.STRUCTURED_PROFILE;
   var timeName;
   if (STRUCTURED_PROFILE) {
-    timeName = name + ": " + payload.object;
+    timeName = name + ': ' + payload.object;
     console.time(timeName);
   }
 
@@ -170,25 +170,25 @@ export function _instrumentStart(name, _payload) {
   @private
 */
 export function subscribe(pattern, object) {
-  var paths = pattern.split(".");
+  var paths = pattern.split('.');
   var path;
   var regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
     path = paths[i];
-    if (path === "*") {
-      regex.push("[^\\.]*");
+    if (path === '*') {
+      regex.push('[^\\.]*');
     } else {
       regex.push(path);
     }
   }
 
-  regex = regex.join("\\.");
-  regex = regex + "(\\..*)?";
+  regex = regex.join('\\.');
+  regex = regex + '(\\..*)?';
 
   var subscriber = {
     pattern: pattern,
-    regex: new RegExp("^" + regex + "$"),
+    regex: new RegExp('^' + regex + '$'),
     object: object
   };
 

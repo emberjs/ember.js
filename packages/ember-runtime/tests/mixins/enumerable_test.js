@@ -69,44 +69,44 @@ EnumerableTests.extend({
 
 QUnit.module('Ember.Enumerable');
 
-QUnit.test("should apply Ember.Array to return value of map", function() {
+QUnit.test('should apply Ember.Array to return value of map', function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.map(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of filter", function() {
+QUnit.test('should apply Ember.Array to return value of filter', function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.filter(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of invoke", function() {
+QUnit.test('should apply Ember.Array to return value of invoke', function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.invoke(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of toArray", function() {
+QUnit.test('should apply Ember.Array to return value of toArray', function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.toArray(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of without", function() {
+QUnit.test('should apply Ember.Array to return value of without', function() {
   var x = EmberObject.createWithMixins(Enumerable, {
     contains() {
       return true;
     }
   });
   var y = x.without(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of uniq", function() {
+QUnit.test('should apply Ember.Array to return value of uniq', function() {
   var x = EmberObject.createWithMixins(Enumerable);
   var y = x.uniq(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
 QUnit.test('any', function() {
@@ -131,7 +131,7 @@ QUnit.test('any with NaN', function() {
     return isNaN(n);
   });
 
-  equal(hasNaN, true, "works when matching NaN");
+  equal(hasNaN, true, 'works when matching NaN');
 });
 
 QUnit.test('every', function() {

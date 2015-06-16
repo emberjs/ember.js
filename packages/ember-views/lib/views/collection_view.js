@@ -3,20 +3,20 @@
 @submodule ember-views
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
-import ContainerView from "ember-views/views/container_view";
-import View from "ember-views/views/view";
-import EmberArray from "ember-runtime/mixins/array";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { fmt } from "ember-runtime/system/string";
-import { computed } from "ember-metal/computed";
+import Ember from 'ember-metal/core'; // Ember.assert
+import ContainerView from 'ember-views/views/container_view';
+import View from 'ember-views/views/view';
+import EmberArray from 'ember-runtime/mixins/array';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { fmt } from 'ember-runtime/system/string';
+import { computed } from 'ember-metal/computed';
 import {
   observer,
   beforeObserver
-} from "ember-metal/mixin";
-import { readViewFactory } from "ember-views/streams/utils";
-import EmptyViewSupport from "ember-views/mixins/empty_view_support";
+} from 'ember-metal/mixin';
+import { readViewFactory } from 'ember-views/streams/utils';
+import EmptyViewSupport from 'ember-views/mixins/empty_view_support';
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -258,7 +258,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @method _assertArrayLike
   */
   _assertArrayLike(content) {
-    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), EmberArray.detect(content));
+    Ember.assert(fmt('an Ember.CollectionView\'s content must implement Ember.Array. You passed %@', [content]), EmberArray.detect(content));
   },
 
   /**

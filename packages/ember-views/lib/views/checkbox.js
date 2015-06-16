@@ -1,6 +1,6 @@
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import EmberComponent from "ember-views/views/component";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import EmberComponent from 'ember-views/views/component';
 
 /**
 @module ember

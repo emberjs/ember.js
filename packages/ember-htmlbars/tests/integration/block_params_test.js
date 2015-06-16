@@ -1,11 +1,11 @@
-import Registry from "container/registry";
-import run from "ember-metal/run_loop";
+import Registry from 'container/registry';
+import run from 'ember-metal/run_loop';
 import ComponentLookup from 'ember-views/component_lookup';
-import View from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
-import helpers from "ember-htmlbars/helpers";
-import { registerHelper } from "ember-htmlbars/helpers";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import View from 'ember-views/views/view';
+import compile from 'ember-template-compiler/system/compile';
+import helpers from 'ember-htmlbars/helpers';
+import { registerHelper } from 'ember-htmlbars/helpers';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var registry, container, view;
 
@@ -13,7 +13,7 @@ function aliasHelper(params, hash, options) {
   this.yield(params);
 }
 
-QUnit.module("ember-htmlbars: block params", {
+QUnit.module('ember-htmlbars: block params', {
   setup() {
     registerHelper('alias', aliasHelper);
 
@@ -35,7 +35,7 @@ QUnit.module("ember-htmlbars: block params", {
   }
 });
 
-QUnit.test("should raise error if helper not available", function() {
+QUnit.test('should raise error if helper not available', function() {
   view = View.create({
     container: container,
     template: compile('{{#shouldfail}}{{/shouldfail}}')
@@ -47,28 +47,28 @@ QUnit.test("should raise error if helper not available", function() {
 
 });
 
-QUnit.test("basic block params usage", function() {
+QUnit.test('basic block params usage', function() {
   view = View.create({
-    committer: { name: "rwjblue" },
+    committer: { name: 'rwjblue' },
     template: compile('{{#alias view.committer.name as |name|}}name: {{name}}, length: {{name.length}}{{/alias}}')
   });
 
   runAppend(view);
 
-  equal(view.$().text(), "name: rwjblue, length: 7");
+  equal(view.$().text(), 'name: rwjblue, length: 7');
 
   run(function() {
-    view.set('committer.name', "krisselden");
+    view.set('committer.name', 'krisselden');
   });
 
-  equal(view.$().text(), "name: krisselden, length: 10");
+  equal(view.$().text(), 'name: krisselden, length: 10');
 });
 
-QUnit.test("nested block params shadow correctly", function() {
+QUnit.test('nested block params shadow correctly', function() {
   view = View.create({
-    context: { name: "ebryn" },
-    committer1: { name: "trek" },
-    committer2: { name: "machty" },
+    context: { name: 'ebryn' },
+    committer1: { name: 'trek' },
+    committer2: { name: 'machty' },
     template: compile(
       '{{name}}' +
       '{{#alias view.committer1.name as |name|}}' +
@@ -92,17 +92,17 @@ QUnit.test("nested block params shadow correctly", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
+  equal(view.$().text(), 'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 });
 
-QUnit.test("components can yield values", function() {
+QUnit.test('components can yield values', function() {
   registry.register('template:components/x-alias', compile('{{yield attrs.param.name}}'));
 
   view = View.create({
     container: container,
-    context: { name: "ebryn" },
-    committer1: { name: "trek" },
-    committer2: { name: "machty" },
+    context: { name: 'ebryn' },
+    committer1: { name: 'trek' },
+    committer2: { name: 'machty' },
     template: compile(
       '{{name}}' +
       '{{#x-alias param=view.committer1 as |name|}}' +
@@ -126,5 +126,5 @@ QUnit.test("components can yield values", function() {
 
   runAppend(view);
 
-  equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
+  equal(view.$().text(), 'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 });

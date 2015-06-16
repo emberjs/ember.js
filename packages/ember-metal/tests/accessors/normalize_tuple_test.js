@@ -1,5 +1,5 @@
 /*globals Foo:true, $foo:true */
-import { normalizeTuple } from "ember-metal/property_get";
+import { normalizeTuple } from 'ember-metal/property_get';
 
 var obj;
 var moduleOpts = {
@@ -98,11 +98,11 @@ QUnit.test('[null, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
 });
 
-QUnit.test("[null, foo] -> [undefined, '']", function() {
+QUnit.test('[null, foo] -> [undefined, \'\']', function() {
   deepEqual(normalizeTuple(null, 'foo'), [undefined, '']);
 });
 
-QUnit.test("[null, foo.bar] -> [undefined, '']", function() {
+QUnit.test('[null, foo.bar] -> [undefined, \'\']', function() {
   deepEqual(normalizeTuple(null, 'foo'), [undefined, '']);
 });
 

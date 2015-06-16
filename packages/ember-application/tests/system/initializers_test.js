@@ -1,12 +1,12 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
-import Application from "ember-application/system/application";
-import jQuery from "ember-views/system/jquery";
-import Registry from "container/registry";
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import Registry from 'container/registry';
 
 var app;
 
-QUnit.module("Ember.Application initializers", {
+QUnit.module('Ember.Application initializers', {
   setup() {
   },
 
@@ -17,7 +17,7 @@ QUnit.module("Ember.Application initializers", {
   }
 });
 
-QUnit.test("initializers require proper 'name' and 'initialize' properties", function() {
+QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
   var MyApplication = Application.extend();
 
   expectAssertion(function() {
@@ -34,14 +34,14 @@ QUnit.test("initializers require proper 'name' and 'initialize' properties", fun
 
 });
 
-QUnit.test("initializers are passed a registry and App", function() {
+QUnit.test('initializers are passed a registry and App', function() {
   var MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'initializer',
     initialize(registry, App) {
-      ok(registry instanceof Registry, "initialize is passed a registry");
-      ok(App instanceof Application, "initialize is passed an Application");
+      ok(registry instanceof Registry, 'initialize is passed a registry');
+      ok(App instanceof Application, 'initialize is passed an Application');
     }
   });
 
@@ -53,7 +53,7 @@ QUnit.test("initializers are passed a registry and App", function() {
   });
 });
 
-QUnit.test("initializers can be registered in a specified order", function() {
+QUnit.test('initializers can be registered in a specified order', function() {
   var order = [];
   var MyApplication = Application.extend();
   MyApplication.initializer({
@@ -114,7 +114,7 @@ QUnit.test("initializers can be registered in a specified order", function() {
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
 });
 
-QUnit.test("initializers can be registered in a specified order as an array", function() {
+QUnit.test('initializers can be registered in a specified order as an array', function() {
   var order = [];
   var MyApplication = Application.extend();
 
@@ -177,40 +177,40 @@ QUnit.test("initializers can be registered in a specified order as an array", fu
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
 });
 
-QUnit.test("initializers can have multiple dependencies", function () {
+QUnit.test('initializers can have multiple dependencies', function () {
   var order = [];
   var a = {
-    name: "a",
-    before: "b",
+    name: 'a',
+    before: 'b',
     initialize(registry) {
       order.push('a');
     }
   };
   var b = {
-    name: "b",
+    name: 'b',
     initialize(registry) {
       order.push('b');
     }
   };
   var c = {
-    name: "c",
-    after: "b",
+    name: 'c',
+    after: 'b',
     initialize(registry) {
       order.push('c');
     }
   };
   var afterB = {
-    name: "after b",
-    after: "b",
+    name: 'after b',
+    after: 'b',
     initialize(registry) {
-      order.push("after b");
+      order.push('after b');
     }
   };
   var afterC = {
-    name: "after c",
-    after: "c",
+    name: 'after c',
+    after: 'c',
     initialize(registry) {
-      order.push("after c");
+      order.push('after c');
     }
   };
 
@@ -233,7 +233,7 @@ QUnit.test("initializers can have multiple dependencies", function () {
   ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
 });
 
-QUnit.test("initializers set on Application subclasses should not be shared between apps", function() {
+QUnit.test('initializers set on Application subclasses should not be shared between apps', function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
@@ -274,7 +274,7 @@ QUnit.test("initializers set on Application subclasses should not be shared betw
   });
 });
 
-QUnit.test("initializers are concatenated", function() {
+QUnit.test('initializers are concatenated', function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
@@ -318,7 +318,7 @@ QUnit.test("initializers are concatenated", function() {
   });
 });
 
-QUnit.test("initializers are per-app", function() {
+QUnit.test('initializers are per-app', function() {
   expect(0);
   var FirstApp = Application.extend();
   FirstApp.initializer({
@@ -333,8 +333,8 @@ QUnit.test("initializers are per-app", function() {
   });
 });
 
-if (isEnabled("ember-application-initializer-context")) {
-  QUnit.test("initializers should be executed in their own context", function() {
+if (isEnabled('ember-application-initializer-context')) {
+  QUnit.test('initializers should be executed in their own context', function() {
     expect(1);
     var MyApplication = Application.extend();
 
@@ -355,8 +355,8 @@ if (isEnabled("ember-application-initializer-context")) {
   });
 }
 
-if (isEnabled("ember-application-instance-initializers")) {
-  QUnit.test("initializers should throw a deprecation warning when performing a lookup on the registry", function() {
+if (isEnabled('ember-application-instance-initializers')) {
+  QUnit.test('initializers should throw a deprecation warning when performing a lookup on the registry', function() {
     expect(1);
 
     var MyApplication = Application.extend();
@@ -378,7 +378,7 @@ if (isEnabled("ember-application-instance-initializers")) {
     }, /`lookup` was called on a Registry\. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container\./);
   });
 
-  QUnit.test("initializers should throw a deprecation warning when performing a factory lookup on the registry", function() {
+  QUnit.test('initializers should throw a deprecation warning when performing a factory lookup on the registry', function() {
     expect(1);
 
     var MyApplication = Application.extend();

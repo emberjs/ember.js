@@ -1,8 +1,8 @@
-import isEnabled from "ember-metal/features";
-import Stream from "ember-metal/streams/stream";
-import { labelFor } from "ember-metal/streams/utils";
-import { read, isStream } from "ember-metal/streams/utils";
-import merge from "ember-metal/merge";
+import isEnabled from 'ember-metal/features';
+import Stream from 'ember-metal/streams/stream';
+import { labelFor } from 'ember-metal/streams/utils';
+import { read, isStream } from 'ember-metal/streams/utils';
+import merge from 'ember-metal/merge';
 
 if (isEnabled('ember-htmlbars-get-helper')) {
 
@@ -10,8 +10,8 @@ if (isEnabled('ember-htmlbars-get-helper')) {
     var objParam = params[0];
     var pathParam = params[1];
 
-    Ember.assert("The first argument to {{get}} must be a stream", isStream(objParam));
-    Ember.assert("{{get}} requires at least two arguments", params.length > 1);
+    Ember.assert('The first argument to {{get}} must be a stream', isStream(objParam));
+    Ember.assert('{{get}} requires at least two arguments', params.length > 1);
 
     var getStream = new GetStream(objParam, pathParam);
 

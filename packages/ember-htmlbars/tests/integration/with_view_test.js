@@ -1,10 +1,10 @@
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import { Registry } from "ember-runtime/system/container";
+import { Registry } from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 import { set } from 'ember-metal/property_set';
 
@@ -35,7 +35,7 @@ QUnit.test('View should update when the property used with the #with helper chan
 
     content: EmberObject.create({
       wham: 'bam',
-      thankYou: "ma'am"
+      thankYou: 'ma\'am'
     })
   });
 

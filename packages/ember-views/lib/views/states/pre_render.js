@@ -1,5 +1,5 @@
-import _default from "ember-views/views/states/default";
-import merge from "ember-metal/merge";
+import _default from 'ember-views/views/states/default';
+import merge from 'ember-metal/merge';
 
 /**
 @module ember

@@ -1,14 +1,14 @@
-import Stream from "ember-metal/streams/stream";
+import Stream from 'ember-metal/streams/stream';
 import {
   read,
   readArray
-} from "ember-metal/streams/utils";
+} from 'ember-metal/streams/utils';
 import keys from 'ember-metal/keys';
-import { symbol } from "ember-metal/utils";
-import { get } from "ember-metal/property_get";
-import EmberError from "ember-metal/error";
+import { symbol } from 'ember-metal/utils';
+import { get } from 'ember-metal/property_get';
+import EmberError from 'ember-metal/error';
 
-export const INVOKE = symbol("INVOKE");
+export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {

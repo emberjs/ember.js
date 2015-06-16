@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core"; // warn, assert, etc;
-import { get, normalizeTuple } from "ember-metal/property_get";
-import { meta as metaFor } from "ember-metal/utils";
-import { watchKey, unwatchKey } from "ember-metal/watch_key";
+import Ember from 'ember-metal/core'; // warn, assert, etc;
+import { get, normalizeTuple } from 'ember-metal/property_get';
+import { meta as metaFor } from 'ember-metal/utils';
+import { watchKey, unwatchKey } from 'ember-metal/watch_key';
 
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
@@ -125,7 +125,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (key === "@each" || isVolatile(obj[key])) {
+  if (key === '@each' || isVolatile(obj[key])) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {

@@ -1,34 +1,34 @@
-import Ember from "ember-metal/core"; // FEATURES, A, deprecate, assert, Logger
-import isEnabled from "ember-metal/features";
-import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import getProperties from "ember-metal/get_properties";
-import isNone from "ember-metal/is_none";
-import { computed } from "ember-metal/computed";
-import merge from "ember-metal/merge";
+import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
+import isEnabled from 'ember-metal/features';
+import EmberError from 'ember-metal/error';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import getProperties from 'ember-metal/get_properties';
+import isNone from 'ember-metal/is_none';
+import { computed } from 'ember-metal/computed';
+import merge from 'ember-metal/merge';
 import {
   isArray,
   typeOf
-} from "ember-runtime/utils";
-import run from "ember-metal/run_loop";
-import keys from "ember-metal/keys";
-import copy from "ember-runtime/copy";
+} from 'ember-runtime/utils';
+import run from 'ember-metal/run_loop';
+import keys from 'ember-metal/keys';
+import copy from 'ember-runtime/copy';
 import {
   classify
-} from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import Evented from "ember-runtime/mixins/evented";
-import ActionHandler from "ember-runtime/mixins/action_handler";
-import generateController from "ember-routing/system/generate_controller";
+} from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import Evented from 'ember-runtime/mixins/evented';
+import ActionHandler from 'ember-runtime/mixins/action_handler';
+import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
-} from "ember-routing/system/generate_controller";
+} from 'ember-routing/system/generate_controller';
 import {
   stashParamNames,
   normalizeControllerQueryParams,
   calculateCacheKey
-} from "ember-routing/utils";
+} from 'ember-routing/utils';
 
 var slice = Array.prototype.slice;
 
@@ -196,7 +196,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         parts: parts, // provided later when stashNames is called if 'model' scope
         values: null, // provided later when setup is called. no idea why.
         scope: scope,
-        prefix: ""
+        prefix: ''
       };
 
       map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
@@ -1180,7 +1180,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.setupControllers) {
-      Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
+      Ember.deprecate('Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.');
       this.setupControllers(controller, context);
     } else {
       var queryParams = get(this, '_qp');
@@ -1219,7 +1219,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.renderTemplates) {
-      Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
+      Ember.deprecate('Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.');
       this.renderTemplates(context);
     } else {
       this.renderTemplate(controller, context);
@@ -1234,7 +1234,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    var cacheKey = calculateCacheKey(qp.prefix || "", qp.parts, qp.values);
+    var cacheKey = calculateCacheKey(qp.prefix || '', qp.parts, qp.values);
 
     // Update model-dep cache
     var cache = this._bucketCache;
@@ -1595,7 +1595,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       if (name in model) {
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
-        object[name] = get(model, "id");
+        object[name] = get(model, 'id');
       }
     } else {
       object = getProperties(model, params);
@@ -1949,7 +1949,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   render(_name, options) {
-    Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
+    Ember.assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
     var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
@@ -2014,7 +2014,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   disconnectOutlet(options) {
     var outletName;
     var parentView;
-    if (!options || typeof options === "string") {
+    if (!options || typeof options === 'string') {
       outletName = options;
     } else {
       outletName = options.outlet;

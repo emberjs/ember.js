@@ -2,18 +2,18 @@
 @module ember
 @submodule ember-views
 */
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
-import run from "ember-metal/run_loop";
-import { fmt } from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import jQuery from "ember-views/system/jquery";
-import ActionManager from "ember-views/system/action_manager";
-import View from "ember-views/views/view";
-import merge from "ember-metal/merge";
+import run from 'ember-metal/run_loop';
+import { fmt } from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import jQuery from 'ember-views/system/jquery';
+import ActionManager from 'ember-views/system/action_manager';
+import View from 'ember-views/views/view';
+import merge from 'ember-metal/merge';
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their

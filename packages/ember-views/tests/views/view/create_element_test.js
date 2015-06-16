@@ -1,13 +1,13 @@
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
-import { equalHTML } from "ember-views/tests/test-helpers/equal-html";
-import compile from "ember-template-compiler/system/compile";
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import ContainerView from 'ember-views/views/container_view';
+import { equalHTML } from 'ember-views/tests/test-helpers/equal-html';
+import compile from 'ember-template-compiler/system/compile';
 
 var view;
 
-QUnit.module("Ember.View#createElement", {
+QUnit.module('Ember.View#createElement', {
   teardown() {
     run(function() {
       view.destroy();
@@ -15,7 +15,7 @@ QUnit.module("Ember.View#createElement", {
   }
 });
 
-QUnit.test("returns the receiver", function() {
+QUnit.test('returns the receiver', function() {
   var ret;
 
   view = EmberView.create();
@@ -46,10 +46,10 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
   view._renderNode = null;
 });
 
-QUnit.test("calls render and turns resultant string into element", function() {
+QUnit.test('calls render and turns resultant string into element', function() {
   view = EmberView.create({
     tagName: 'span',
-    template: compile("foo")
+    template: compile('foo')
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
@@ -64,8 +64,8 @@ QUnit.test("calls render and turns resultant string into element", function() {
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
-QUnit.test("renders the child view templates in the right context", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('renders the child view templates in the right context', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   view = ContainerView.create({
     tagName: 'table',
@@ -89,8 +89,8 @@ QUnit.test("renders the child view templates in the right context", function() {
   equalHTML(elem.childNodes, '<tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
-QUnit.test("does not wrap many tr children in tbody elements", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('does not wrap many tr children in tbody elements', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   view = ContainerView.create({
     tagName: 'table',
@@ -118,11 +118,11 @@ QUnit.test("does not wrap many tr children in tbody elements", function() {
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
 });
 
-QUnit.test("generated element include HTML from child views as well", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('generated element include HTML from child views as well', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   view = ContainerView.create({
-    childViews: [EmberView.create({ elementId: "foo" })]
+    childViews: [EmberView.create({ elementId: 'foo' })]
   });
 
   run(function() {

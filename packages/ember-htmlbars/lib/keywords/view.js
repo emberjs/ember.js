@@ -3,10 +3,10 @@
 @submodule ember-htmlbars
 */
 
-import { readViewFactory } from "ember-views/streams/utils";
-import EmberView from "ember-views/views/view";
-import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
-import objectKeys from "ember-metal/keys";
+import { readViewFactory } from 'ember-views/streams/utils';
+import EmberView from 'ember-views/views/view';
+import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
+import objectKeys from 'ember-metal/keys';
 
 export default {
   setupState(state, env, scope, params, hash) {

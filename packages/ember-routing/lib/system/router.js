@@ -1,24 +1,24 @@
-import Ember from "ember-metal/core"; // FEATURES, Logger, assert
-import isEnabled from "ember-metal/features";
-import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { defineProperty } from "ember-metal/properties";
-import { computed } from "ember-metal/computed";
-import merge from "ember-metal/merge";
-import run from "ember-metal/run_loop";
-import { fmt } from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import Evented from "ember-runtime/mixins/evented";
-import EmberRouterDSL from "ember-routing/system/dsl";
-import EmberLocation from "ember-routing/location/api";
+import Ember from 'ember-metal/core'; // FEATURES, Logger, assert
+import isEnabled from 'ember-metal/features';
+import EmberError from 'ember-metal/error';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { defineProperty } from 'ember-metal/properties';
+import { computed } from 'ember-metal/computed';
+import merge from 'ember-metal/merge';
+import run from 'ember-metal/run_loop';
+import { fmt } from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import Evented from 'ember-runtime/mixins/evented';
+import EmberRouterDSL from 'ember-routing/system/dsl';
+import EmberLocation from 'ember-routing/location/api';
 import {
   routeArgs,
   getActiveTargetName,
   stashParamNames,
   calculateCacheKey
-} from "ember-routing/utils";
-import RouterState from "./router_state";
+} from 'ember-routing/utils';
+import RouterState from './router_state';
 
 /**
 @module ember
@@ -84,7 +84,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     });
 
     function generateDSL() {
-      this.resource('application', { path: "/", overrideNameAssertion: true }, function() {
+      this.resource('application', { path: '/', overrideNameAssertion: true }, function() {
         for (var i=0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
@@ -140,7 +140,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var initialURL = get(this, 'initialURL');
 
     if (this.setupRouter(moduleBasedResolver)) {
-      if (typeof initialURL === "undefined") {
+      if (typeof initialURL === 'undefined') {
         initialURL = get(this, 'location').getURL();
       }
       var initialTransition = this.handleURL(initialURL);
@@ -546,12 +546,12 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     for (var key in groupedByUrlKey) {
       var qps = groupedByUrlKey[key];
-      Ember.assert(fmt("You're not allowed to have more than one controller " +
-                       "property map to the same query param key, but both " +
-                       "`%@` and `%@` map to `%@`. You can fix this by mapping " +
-                       "one of the controller properties to a different query " +
-                       "param key via the `as` config option, e.g. `%@: { as: 'other-%@' }`",
-                       [qps[0].qp.scopedPropertyName, qps[1] ? qps[1].qp.scopedPropertyName : "", qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
+      Ember.assert(fmt('You\'re not allowed to have more than one controller ' +
+                       'property map to the same query param key, but both ' +
+                       '`%@` and `%@` map to `%@`. You can fix this by mapping ' +
+                       'one of the controller properties to a different query ' +
+                       'param key via the `as` config option, e.g. `%@: { as: \'other-%@\' }`',
+                       [qps[0].qp.scopedPropertyName, qps[1] ? qps[1].qp.scopedPropertyName : '', qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
       var qp = qps[0].qp;
       queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
     }
@@ -802,7 +802,7 @@ function logError(_error, initialMessage) {
     if (error.message) { errorArgs.push(error.message); }
     if (error.stack) { errorArgs.push(error.stack); }
 
-    if (typeof error === "string") { errorArgs.push(error); }
+    if (typeof error === 'string') { errorArgs.push(error); }
   }
 
   Ember.Logger.error.apply(this, errorArgs);
@@ -814,7 +814,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
   var targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
   var namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
-  if (isEnabled("ember-routing-named-substates")) {
+  if (isEnabled('ember-routing-named-substates')) {
     // First, try a named loading state, e.g. 'foo_loading'
     childName = namespace + targetChildRouteName + '_' + name;
     if (routeHasBeenDefined(router, childName)) {
@@ -966,7 +966,7 @@ EmberRouter.reopenClass({
     var name, nameParts, oldNameParts;
     for (var i=1, l=handlerInfos.length; i<l; i++) {
       name = handlerInfos[i].name;
-      nameParts = name.split(".");
+      nameParts = name.split('.');
       oldNameParts = slice.call(path);
 
       while (oldNameParts.length) {
@@ -979,7 +979,7 @@ EmberRouter.reopenClass({
       path.push.apply(path, nameParts.slice(oldNameParts.length));
     }
 
-    return path.join(".");
+    return path.join('.');
   }
 });
 
@@ -998,7 +998,7 @@ function didBeginTransition(transition, router) {
   transition.then(null, function(error) {
     if (!error || !error.name) { return; }
 
-    Ember.assert(`The URL '${error.message}' did not match any routes in your application`, error.name !== "UnrecognizedURLError");
+    Ember.assert(`The URL '${error.message}' did not match any routes in your application`, error.name !== 'UnrecognizedURLError');
 
     return error;
   }, 'Ember: Process errors from Router');
@@ -1082,7 +1082,7 @@ function appendOrphan(liveRoutes, into, myState) {
   Ember.run.schedule('afterRender', function() {
     // `wasUsed` gets set by the render helper. See the function
     // `impersonateAnOutlet`.
-    Ember.assert("You attempted to render into '" + into + "' but it was not found",
+    Ember.assert('You attempted to render into \'' + into + '\' but it was not found',
                  liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });
 }

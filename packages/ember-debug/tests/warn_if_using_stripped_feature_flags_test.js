@@ -25,7 +25,7 @@ function confirmWarns(expectedMsg) {
   _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped);
 }
 
-QUnit.module("ember-debug - _warnIfUsingStrippedFeatureFlags", {
+QUnit.module('ember-debug - _warnIfUsingStrippedFeatureFlags', {
   setup() {
     oldWarn            = Ember.warn;
     oldRunInDebug      = Ember.runInDebug;
@@ -43,7 +43,7 @@ QUnit.module("ember-debug - _warnIfUsingStrippedFeatureFlags", {
   }
 });
 
-QUnit.test("Setting Ember.ENV.ENABLE_ALL_FEATURES truthy in non-canary, debug build causes a warning", function() {
+QUnit.test('Setting Ember.ENV.ENABLE_ALL_FEATURES truthy in non-canary, debug build causes a warning', function() {
   expect(1);
 
   Ember.ENV.ENABLE_ALL_FEATURES = true;
@@ -53,7 +53,7 @@ QUnit.test("Setting Ember.ENV.ENABLE_ALL_FEATURES truthy in non-canary, debug bu
   confirmWarns('Ember.ENV.ENABLE_ALL_FEATURES is only available in canary builds.');
 });
 
-QUnit.test("Setting Ember.ENV.ENABLE_OPTIONAL_FEATURES truthy in non-canary, debug build causes a warning", function() {
+QUnit.test('Setting Ember.ENV.ENABLE_OPTIONAL_FEATURES truthy in non-canary, debug build causes a warning', function() {
   expect(1);
 
   Ember.ENV.ENABLE_ALL_FEATURES = false;
@@ -63,7 +63,7 @@ QUnit.test("Setting Ember.ENV.ENABLE_OPTIONAL_FEATURES truthy in non-canary, deb
   confirmWarns('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.');
 });
 
-QUnit.test("Enabling a FEATURES flag in non-canary, debug build causes a warning", function() {
+QUnit.test('Enabling a FEATURES flag in non-canary, debug build causes a warning', function() {
   expect(1);
 
   Ember.ENV.ENABLE_ALL_FEATURES = false;

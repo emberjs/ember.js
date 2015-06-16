@@ -3,12 +3,12 @@
 @submodule ember-htmlbars
 */
 
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
-import { buildHelperStream } from "ember-htmlbars/system/invoke-helper";
+import lookupHelper from 'ember-htmlbars/system/lookup-helper';
+import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
 import {
   labelsFor,
   labelFor
-} from "ember-metal/streams/utils";
+} from 'ember-metal/streams/utils';
 
 export default function subexpr(env, scope, helperName, params, hash) {
   // TODO: Keywords and helper invocation should be integrated into
@@ -46,7 +46,7 @@ function labelForSubexpr(params, hash, helperName) {
 }
 
 function labelsForParams(params) {
-  return labelsFor(params).join(" ");
+  return labelsFor(params).join(' ');
 }
 
 function labelsForHash(hash) {
@@ -56,5 +56,5 @@ function labelsForHash(hash) {
     out.push(`${prop}=${labelFor(hash[prop])}`);
   }
 
-  return out.join(" ");
+  return out.join(' ');
 }

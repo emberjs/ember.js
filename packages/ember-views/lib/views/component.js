@@ -1,23 +1,23 @@
-import Ember from "ember-metal/core"; // Ember.assert, Ember.Handlebars
+import Ember from 'ember-metal/core'; // Ember.assert, Ember.Handlebars
 
-import ComponentTemplateDeprecation from "ember-views/mixins/component_template_deprecation";
-import TargetActionSupport from "ember-runtime/mixins/target_action_support";
-import View from "ember-views/views/view";
+import ComponentTemplateDeprecation from 'ember-views/mixins/component_template_deprecation';
+import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
+import View from 'ember-views/views/view';
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
 
-import { computed } from "ember-metal/computed";
+import { computed } from 'ember-metal/computed';
 
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {
     actionName = actionName.value;
   }
-  Ember.assert("The default action was triggered on the component " + component.toString() +
-               ", but the action name (" + actionName + ") was not a string.",
+  Ember.assert('The default action was triggered on the component ' + component.toString() +
+               ', but the action name (' + actionName + ') was not a string.',
                isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
   return actionName;
 }
@@ -175,7 +175,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
 
-      Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
+      Ember.assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
       return template || get(this, 'defaultTemplate');
     },
     set(key, value) {
@@ -323,8 +323,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
 
     if (target = get(this, 'target')) {
-      Ember.assert("The `target` for " + this + " (" + target +
-                   ") does not have a `send` method", typeof target.send === 'function');
+      Ember.assert('The `target` for ' + this + ' (' + target +
+                   ') does not have a `send` method', typeof target.send === 'function');
       target.send(...arguments);
     } else {
       if (!hasAction) {

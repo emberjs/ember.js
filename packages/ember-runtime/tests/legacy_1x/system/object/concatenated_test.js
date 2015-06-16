@@ -18,7 +18,7 @@ function K() { return this; }
 
 var klass;
 
-QUnit.module("EmberObject Concatenated Properties", {
+QUnit.module('EmberObject Concatenated Properties', {
   setup() {
     klass = EmberObject.extend({
       concatenatedProperties: ['values', 'functions'],
@@ -28,7 +28,7 @@ QUnit.module("EmberObject Concatenated Properties", {
   }
 });
 
-QUnit.test("concatenates instances", function() {
+QUnit.test('concatenates instances', function() {
   var obj = klass.create({
     values: ['d', 'e', 'f']
   });
@@ -36,10 +36,10 @@ QUnit.test("concatenates instances", function() {
   var values = get(obj, 'values');
   var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate values property (expected: %@, got: %@)', [expected, values]));
 });
 
-QUnit.test("concatenates subclasses", function() {
+QUnit.test('concatenates subclasses', function() {
   var subKlass = klass.extend({
     values: ['d', 'e', 'f']
   });
@@ -48,10 +48,10 @@ QUnit.test("concatenates subclasses", function() {
   var values = get(obj, 'values');
   var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate values property (expected: %@, got: %@)', [expected, values]));
 });
 
-QUnit.test("concatenates reopen", function() {
+QUnit.test('concatenates reopen', function() {
   klass.reopen({
     values: ['d', 'e', 'f']
   });
@@ -60,10 +60,10 @@ QUnit.test("concatenates reopen", function() {
   var values = get(obj, 'values');
   var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate values property (expected: %@, got: %@)', [expected, values]));
 });
 
-QUnit.test("concatenates mixin", function() {
+QUnit.test('concatenates mixin', function() {
   var mixin = {
     values: ['d', 'e']
   };
@@ -75,10 +75,10 @@ QUnit.test("concatenates mixin", function() {
   var values = get(obj, 'values');
   var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate values property (expected: %@, got: %@)', [expected, values]));
 });
 
-QUnit.test("concatenates reopen, subclass, and instance", function() {
+QUnit.test('concatenates reopen, subclass, and instance', function() {
   klass.reopen({ values: ['d'] });
   var subKlass = klass.extend({ values: ['e'] });
   var obj = subKlass.create({ values: ['f'] });
@@ -86,10 +86,10 @@ QUnit.test("concatenates reopen, subclass, and instance", function() {
   var values = get(obj, 'values');
   var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate values property (expected: %@, got: %@)', [expected, values]));
 });
 
-QUnit.test("concatenates subclasses when the values are functions", function() {
+QUnit.test('concatenates subclasses when the values are functions', function() {
   var subKlass = klass.extend({
     functions: K
   });
@@ -98,7 +98,7 @@ QUnit.test("concatenates subclasses when the values are functions", function() {
   var values = get(obj, 'functions');
   var expected = [K, K];
 
-  deepEqual(values, expected, EmberStringUtils.fmt("should concatenate functions property (expected: %@, got: %@)", [expected, values]));
+  deepEqual(values, expected, EmberStringUtils.fmt('should concatenate functions property (expected: %@, got: %@)', [expected, values]));
 });
 
 

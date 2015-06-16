@@ -1,5 +1,5 @@
-import run from "ember-metal/run_loop";
-import EmberApplication from "ember-application/system/application";
+import run from 'ember-metal/run_loop';
+import EmberApplication from 'ember-application/system/application';
 
 var jQuery, application, Application;
 var readyWasCalled, domReady, readyCallbacks;
@@ -9,7 +9,7 @@ var readyWasCalled, domReady, readyCallbacks;
 // in a more minimal server environment that implements this behavior will be
 // sufficient for Ember's requirements.
 
-QUnit.module("Application readiness", {
+QUnit.module('Application readiness', {
   setup() {
     readyWasCalled = 0;
     readyCallbacks = [];
@@ -58,72 +58,72 @@ QUnit.module("Application readiness", {
 // synchronously during the application's initialization, we get the same behavior as if
 // it was triggered after initialization.
 
-QUnit.test("Ember.Application's ready event is called right away if jQuery is already ready", function() {
+QUnit.test('Ember.Application\'s ready event is called right away if jQuery is already ready', function() {
   jQuery.isReady = true;
 
   run(function() {
     application = Application.create({ router: false });
 
-    equal(readyWasCalled, 0, "ready is not called until later");
+    equal(readyWasCalled, 0, 'ready is not called until later');
   });
 
-  equal(readyWasCalled, 1, "ready was called");
+  equal(readyWasCalled, 1, 'ready was called');
 
   domReady();
 
-  equal(readyWasCalled, 1, "application's ready was not called again");
+  equal(readyWasCalled, 1, 'application\'s ready was not called again');
 });
 
-QUnit.test("Ember.Application's ready event is called after the document becomes ready", function() {
+QUnit.test('Ember.Application\'s ready event is called after the document becomes ready', function() {
   run(function() {
     application = Application.create({ router: false });
   });
 
-  equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(readyWasCalled, 0, 'ready wasn\'t called yet');
 
   domReady();
 
-  equal(readyWasCalled, 1, "ready was called now that DOM is ready");
+  equal(readyWasCalled, 1, 'ready was called now that DOM is ready');
 });
 
-QUnit.test("Ember.Application's ready event can be deferred by other components", function() {
+QUnit.test('Ember.Application\'s ready event can be deferred by other components', function() {
   run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
   });
 
-  equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(readyWasCalled, 0, 'ready wasn\'t called yet');
 
   domReady();
 
-  equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(readyWasCalled, 0, 'ready wasn\'t called yet');
 
   run(function() {
     application.advanceReadiness();
     equal(readyWasCalled, 0);
   });
 
-  equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
+  equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
 });
 
-QUnit.test("Ember.Application's ready event can be deferred by other components", function() {
+QUnit.test('Ember.Application\'s ready event can be deferred by other components', function() {
   jQuery.isReady = false;
 
   run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
-    equal(readyWasCalled, 0, "ready wasn't called yet");
+    equal(readyWasCalled, 0, 'ready wasn\'t called yet');
   });
 
   domReady();
 
-  equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(readyWasCalled, 0, 'ready wasn\'t called yet');
 
   run(function() {
     application.advanceReadiness();
   });
 
-  equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
+  equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
 
   expectAssertion(function() {
     application.deferReadiness();

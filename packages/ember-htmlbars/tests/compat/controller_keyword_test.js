@@ -1,6 +1,6 @@
-import EmberComponent from "ember-views/views/component";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
+import EmberComponent from 'ember-views/views/component';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
 
 let component;
 
@@ -18,7 +18,7 @@ QUnit.test('reading the controller keyword is deprecated [DEPRECATED]', function
   expectDeprecation(function() {
     component = EmberComponent.extend({
       prop: text,
-      layout: compile("{{controller.prop}}")
+      layout: compile('{{controller.prop}}')
     }).create();
 
     runAppend(component);
@@ -30,7 +30,7 @@ QUnit.test('reading the controller keyword for hash is deprecated [DEPRECATED]',
   expectDeprecation(function() {
     component = EmberComponent.extend({
       prop: true,
-      layout: compile("{{if true 'hiho' option=controller.prop}}")
+      layout: compile('{{if true \'hiho\' option=controller.prop}}')
     }).create();
 
     runAppend(component);

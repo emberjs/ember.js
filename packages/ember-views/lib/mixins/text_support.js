@@ -3,10 +3,10 @@
 @submodule ember-views
 */
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { Mixin } from "ember-metal/mixin";
-import TargetActionSupport from "ember-runtime/mixins/target_action_support";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { Mixin } from 'ember-metal/mixin';
+import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 
 /**
   `TextSupport` is a shared mixin used by both `Ember.TextField` and
@@ -107,7 +107,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
   @private
 */
 var TextSupport = Mixin.create(TargetActionSupport, {
-  value: "",
+  value: '',
 
   attributeBindings: [
     'autocapitalize',
@@ -130,9 +130,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
   init() {
     this._super(...arguments);
-    this.on("paste", this, this._elementValueDidChange);
-    this.on("cut", this, this._elementValueDidChange);
-    this.on("input", this, this._elementValueDidChange);
+    this.on('paste', this, this._elementValueDidChange);
+    this.on('cut', this, this._elementValueDidChange);
+    this.on('input', this, this._elementValueDidChange);
   },
 
   /**

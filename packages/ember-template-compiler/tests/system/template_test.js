@@ -1,4 +1,4 @@
-import template from "ember-template-compiler/system/template";
+import template from 'ember-template-compiler/system/template';
 
 QUnit.module('ember-htmlbars: template');
 

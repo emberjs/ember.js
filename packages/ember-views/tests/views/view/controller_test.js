@@ -1,10 +1,10 @@
-import run from "ember-metal/run_loop";
+import run from 'ember-metal/run_loop';
 
-import ContainerView from "ember-views/views/container_view";
+import ContainerView from 'ember-views/views/container_view';
 
-QUnit.module("Ember.View - controller property");
+QUnit.module('Ember.View - controller property');
 
-QUnit.test("controller property should be inherited from nearest ancestor with controller", function() {
+QUnit.test('controller property should be inherited from nearest ancestor with controller', function() {
   var grandparent = ContainerView.create();
   var parent = ContainerView.create();
   var child = ContainerView.create();

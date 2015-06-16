@@ -1,6 +1,6 @@
 import EmberView from 'ember-views/views/view';
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 function buildView(template, context) {
   return EmberView.create({

@@ -4,7 +4,7 @@
 @module ember
 @submodule ember-htmlbars
 */
-import Logger from "ember-metal/logger";
+import Logger from 'ember-metal/logger';
 
 /**
   Execute the `debugger` statement in the current template's context.

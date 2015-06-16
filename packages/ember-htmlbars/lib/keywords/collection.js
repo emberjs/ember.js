@@ -3,11 +3,11 @@
 @submodule ember-htmlbars
 */
 
-import { readViewFactory } from "ember-views/streams/utils";
-import CollectionView from "ember-views/views/collection_view";
-import ViewNodeManager from "ember-htmlbars/node-managers/view-node-manager";
-import objectKeys from "ember-metal/keys";
-import { assign } from "ember-metal/merge";
+import { readViewFactory } from 'ember-views/streams/utils';
+import CollectionView from 'ember-views/views/collection_view';
+import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
+import objectKeys from 'ember-metal/keys';
+import { assign } from 'ember-metal/merge';
 
 export default {
   setupState(state, env, scope, params, hash) {

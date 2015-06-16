@@ -1,4 +1,4 @@
-import getValue from "ember-htmlbars/hooks/get-value";
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 // We don't want to leak mutable cells into helpers, which
 // are pure functions that can only work with values.

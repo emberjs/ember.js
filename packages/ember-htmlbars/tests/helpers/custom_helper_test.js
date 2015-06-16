@@ -1,10 +1,10 @@
-import Component from "ember-views/views/component";
-import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import Registry from "container/registry";
-import run from "ember-metal/run_loop";
-import ComponentLookup from "ember-views/component_lookup";
+import Component from 'ember-views/views/component';
+import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import Registry from 'container/registry';
+import run from 'ember-metal/run_loop';
+import ComponentLookup from 'ember-views/component_lookup';
 
 let registry, container, component;
 

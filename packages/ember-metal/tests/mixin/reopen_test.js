@@ -23,7 +23,7 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
       // Calling the wrapped _super function here
       // used to end in an infinite call loop
       this._super.apply(this, arguments);
-      return "Breakfast!";
+      return 'Breakfast!';
     }
   });
 
@@ -40,10 +40,10 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
     try {
       result = taco.createBreakfast();
     } catch(e) {
-      result = "Your breakfast was interrupted by an infinite stack error.";
+      result = 'Your breakfast was interrupted by an infinite stack error.';
     }
   });
 
-  equal(result, "Breakfast!");
+  equal(result, 'Breakfast!');
 });
 

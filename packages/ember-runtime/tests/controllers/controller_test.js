@@ -1,21 +1,21 @@
 /* global EmberDev */
 
-import Controller from "ember-runtime/controllers/controller";
-import Service from "ember-runtime/system/service";
-import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
+import Controller from 'ember-runtime/controllers/controller';
+import Service from 'ember-runtime/system/service';
+import ObjectController from 'ember-runtime/controllers/object_controller';
+import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import {
   objectControllerDeprecation
-} from "ember-runtime/controllers/object_controller";
-import Mixin from "ember-metal/mixin";
-import Object from "ember-runtime/system/object";
-import { Registry } from "ember-runtime/system/container";
-import inject from "ember-runtime/inject";
-import { get } from "ember-metal/property_get";
+} from 'ember-runtime/controllers/object_controller';
+import Mixin from 'ember-metal/mixin';
+import Object from 'ember-runtime/system/object';
+import { Registry } from 'ember-runtime/system/container';
+import inject from 'ember-runtime/inject';
+import { get } from 'ember-metal/property_get';
 
 QUnit.module('Controller event handling');
 
-QUnit.test("Action can be handled by a function on actions object", function() {
+QUnit.test('Action can be handled by a function on actions object', function() {
   expect(1);
   var TestController = Controller.extend({
     actions: {
@@ -25,7 +25,7 @@ QUnit.test("Action can be handled by a function on actions object", function() {
     }
   });
   var controller = TestController.create({});
-  controller.send("poke");
+  controller.send('poke');
 });
 
 // TODO: Can we support this?
@@ -43,7 +43,7 @@ QUnit.test("Action can be handled by a function on actions object", function() {
 //   controller.send("poke");
 // });
 
-QUnit.test("When `_actions` is provided, `actions` is left alone", function() {
+QUnit.test('When `_actions` is provided, `actions` is left alone', function() {
   expect(2);
   var TestController = Controller.extend({
     actions: ['foo', 'bar'],
@@ -54,11 +54,11 @@ QUnit.test("When `_actions` is provided, `actions` is left alone", function() {
     }
   });
   var controller = TestController.create({});
-  controller.send("poke");
-  equal('foo', controller.get("actions")[0], 'actions property is not untouched');
+  controller.send('poke');
+  equal('foo', controller.get('actions')[0], 'actions property is not untouched');
 });
 
-QUnit.test("Actions object doesn't shadow a proxied object's 'actions' property", function() {
+QUnit.test('Actions object doesn\'t shadow a proxied object\'s \'actions\' property', function() {
   expectDeprecation(objectControllerDeprecation);
 
   var TestController = ObjectController.extend({
@@ -72,10 +72,10 @@ QUnit.test("Actions object doesn't shadow a proxied object's 'actions' property"
     }
   });
   var controller = TestController.create({});
-  equal(controller.get("actions"), 'foo', "doesn't shadow the content's actions property");
+  equal(controller.get('actions'), 'foo', 'doesn\'t shadow the content\'s actions property');
 });
 
-QUnit.test("A handled action can be bubbled to the target for continued processing", function() {
+QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
   expect(2);
   var TestController = Controller.extend({
     actions: {
@@ -95,10 +95,10 @@ QUnit.test("A handled action can be bubbled to the target for continued processi
       }
     }).create()
   });
-  controller.send("poke");
+  controller.send('poke');
 });
 
-QUnit.test("Action can be handled by a superclass' actions object", function() {
+QUnit.test('Action can be handled by a superclass\' actions object', function() {
   expect(4);
 
   var SuperController = Controller.extend({
@@ -107,7 +107,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
         ok(true, 'foo');
       },
       bar(msg) {
-        equal(msg, "HELLO");
+        equal(msg, 'HELLO');
       }
     }
   });
@@ -115,7 +115,7 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
   var BarControllerMixin = Mixin.create({
     actions: {
       bar(msg) {
-        equal(msg, "HELLO");
+        equal(msg, 'HELLO');
         this._super(msg);
       }
     }
@@ -130,16 +130,16 @@ QUnit.test("Action can be handled by a superclass' actions object", function() {
   });
 
   var controller = IndexController.create({});
-  controller.send("foo");
-  controller.send("bar", "HELLO");
-  controller.send("baz");
+  controller.send('foo');
+  controller.send('bar', 'HELLO');
+  controller.send('baz');
 });
 
 QUnit.module('Controller deprecations');
 
 QUnit.module('Controller Content -> Model Alias');
 
-QUnit.test("`model` is aliased as `content`", function() {
+QUnit.test('`model` is aliased as `content`', function() {
   expect(1);
   var controller = Controller.extend({
     model: 'foo-bar'
@@ -148,7 +148,7 @@ QUnit.test("`model` is aliased as `content`", function() {
   equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
 });
 
-QUnit.test("`content` is moved to `model` when `model` is unset", function() {
+QUnit.test('`content` is moved to `model` when `model` is unset', function() {
   expect(2);
   var controller;
 
@@ -162,7 +162,7 @@ QUnit.test("`content` is moved to `model` when `model` is unset", function() {
   equal(controller.get('content'), 'foo-bar', 'content is set properly');
 });
 
-QUnit.test("specifying `content` (without `model` specified) results in deprecation", function() {
+QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
   expect(1);
   var controller;
 
@@ -173,7 +173,7 @@ QUnit.test("specifying `content` (without `model` specified) results in deprecat
   }, 'Do not specify `content` on a Controller, use `model` instead.');
 });
 
-QUnit.test("specifying `content` (with `model` specified) does not result in deprecation", function() {
+QUnit.test('specifying `content` (with `model` specified) does not result in deprecation', function() {
   expect(3);
   expectNoDeprecation();
 
@@ -189,7 +189,7 @@ QUnit.test("specifying `content` (with `model` specified) does not result in dep
 QUnit.module('Controller injected properties');
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test("defining a controller on a non-controller should fail assertion", function() {
+  QUnit.test('defining a controller on a non-controller should fail assertion', function() {
     expectAssertion(function() {
       var registry = new Registry();
       var container = registry.container();
@@ -207,7 +207,7 @@ if (!EmberDev.runningProdBuild) {
   });
 }
 
-QUnit.test("controllers can be injected into controllers", function() {
+QUnit.test('controllers can be injected into controllers', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -220,10 +220,10 @@ QUnit.test("controllers can be injected into controllers", function() {
   var postController = container.lookup('controller:post');
   var postsController = container.lookup('controller:posts');
 
-  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
 
-QUnit.test("controllers can be injected into ObjectControllers", function() {
+QUnit.test('controllers can be injected into ObjectControllers', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -239,10 +239,10 @@ QUnit.test("controllers can be injected into ObjectControllers", function() {
     postsController = container.lookup('controller:posts');
   }, objectControllerDeprecation);
 
-  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
 
-QUnit.test("controllers can be injected into ArrayControllers", function() {
+QUnit.test('controllers can be injected into ArrayControllers', function() {
   expectDeprecation(arrayControllerDeprecation);
   var registry = new Registry();
   var container = registry.container();
@@ -256,11 +256,11 @@ QUnit.test("controllers can be injected into ArrayControllers", function() {
   var postController = container.lookup('controller:post');
   var postsController = container.lookup('controller:posts');
 
-  equal(postsController, postController.get('postsController'), "controller.posts is injected");
+  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
 
 
-QUnit.test("services can be injected into controllers", function() {
+QUnit.test('services can be injected into controllers', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -273,5 +273,5 @@ QUnit.test("services can be injected into controllers", function() {
   var appController = container.lookup('controller:application');
   var authService = container.lookup('service:auth');
 
-  equal(authService, appController.get('authService'), "service.auth is injected");
+  equal(authService, appController.get('authService'), 'service.auth is injected');
 });

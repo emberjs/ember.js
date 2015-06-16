@@ -1,7 +1,7 @@
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
-import { oneWay } from "ember-metal/binding";
+import { oneWay } from 'ember-metal/binding';
 
 var MyApp;
 

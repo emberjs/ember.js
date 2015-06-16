@@ -1,6 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
-import TargetActionSupport from "ember-runtime/mixins/target_action_support";
-import alias from "ember-metal/alias";
+import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
+import alias from 'ember-metal/alias';
 
 /**
 `Ember.ViewTargetActionSupport` is a mixin that can be included in a

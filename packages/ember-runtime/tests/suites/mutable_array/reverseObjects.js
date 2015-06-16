@@ -5,7 +5,7 @@ var suite = SuiteModuleBuilder.create();
 
 suite.module('reverseObjects');
 
-suite.test("[A,B,C].reverseObjects() => [] + notify", function () {
+suite.test('[A,B,C].reverseObjects() => [] + notify', function () {
   var obj, before, after, observer;
 
   before = this.newFixture(3);

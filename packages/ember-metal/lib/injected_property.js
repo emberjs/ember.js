@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import { ComputedProperty } from "ember-metal/computed";
-import { AliasedProperty } from "ember-metal/alias";
-import { Descriptor } from "ember-metal/properties";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { ComputedProperty } from 'ember-metal/computed';
+import { AliasedProperty } from 'ember-metal/alias';
+import { Descriptor } from 'ember-metal/properties';
 
 /**
   Read-only property that returns the result of a container lookup.

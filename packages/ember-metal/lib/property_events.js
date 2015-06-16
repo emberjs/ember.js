@@ -1,15 +1,15 @@
 import {
   guidFor,
   tryFinally
-} from "ember-metal/utils";
+} from 'ember-metal/utils';
 import {
   sendEvent,
   accumulateListeners
-} from "ember-metal/events";
-import ObserverSet from "ember-metal/observer_set";
-import { symbol } from "ember-metal/utils";
+} from 'ember-metal/events';
+import ObserverSet from 'ember-metal/observer_set';
+import { symbol } from 'ember-metal/utils';
 
-export let PROPERTY_DID_CHANGE = symbol("PROPERTY_DID_CHANGE");
+export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 var beforeObserverSet = new ObserverSet();
 var observerSet = new ObserverSet();

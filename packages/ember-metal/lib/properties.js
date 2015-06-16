@@ -2,10 +2,10 @@
 @module ember-metal
 */
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import { meta as metaFor } from "ember-metal/utils";
-import { overrideChains } from "ember-metal/property_events";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import { meta as metaFor } from 'ember-metal/utils';
+import { overrideChains } from 'ember-metal/property_events';
 // ..........................................................
 // DESCRIPTOR
 //

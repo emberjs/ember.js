@@ -6,7 +6,7 @@
 import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import expandProperties from 'ember-metal/expand_properties';
 import { computed } from 'ember-metal/computed';
-import { observer } from "ember-metal/mixin";
+import { observer } from 'ember-metal/mixin';
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;

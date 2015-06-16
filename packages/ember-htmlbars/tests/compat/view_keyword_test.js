@@ -1,6 +1,6 @@
-import EmberComponent from "ember-views/views/component";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import compile from "ember-template-compiler/system/compile";
+import EmberComponent from 'ember-views/views/component';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import compile from 'ember-template-compiler/system/compile';
 
 let component;
 
@@ -18,7 +18,7 @@ QUnit.test('reading the view keyword is deprecated [DEPRECATED]', function() {
   expectDeprecation(function() {
     component = EmberComponent.extend({
       prop: text,
-      layout: compile("{{view.prop}}")
+      layout: compile('{{view.prop}}')
     }).create();
 
     runAppend(component);

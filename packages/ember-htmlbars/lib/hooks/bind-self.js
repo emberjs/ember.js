@@ -3,8 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import ProxyStream from "ember-metal/streams/proxy-stream";
-import subscribe from "ember-htmlbars/utils/subscribe";
+import ProxyStream from 'ember-metal/streams/proxy-stream';
+import subscribe from 'ember-htmlbars/utils/subscribe';
 
 export default function bindSelf(env, scope, _self) {
   let self = _self;

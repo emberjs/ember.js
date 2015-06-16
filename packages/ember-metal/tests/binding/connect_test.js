@@ -3,7 +3,7 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   Binding,
   bind
-} from "ember-metal/binding";
+} from 'ember-metal/binding';
 import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
@@ -37,7 +37,7 @@ function performTest(binding, a, b, get, set, connect) {
 
 var originalLookup, lookup, GlobalB;
 
-QUnit.module("Ember.Binding", {
+QUnit.module('Ember.Binding', {
   setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};

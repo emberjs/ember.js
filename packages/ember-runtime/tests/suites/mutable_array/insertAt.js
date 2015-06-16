@@ -1,11 +1,11 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {get} from "ember-metal/property_get";
+import {get} from 'ember-metal/property_get';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('insertAt');
 
-suite.test("[].insertAt(0, X) => [X] + notify", function() {
+suite.test('[].insertAt(0, X) => [X] + notify', function() {
   var obj, after, observer;
 
   after = this.newFixture(1);
@@ -33,7 +33,7 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject did change once');
 });
 
-suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() {
+suite.test('[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception', function() {
   var obj = this.newObject([]);
   var that = this;
 
@@ -42,7 +42,7 @@ suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() 
   }, Error);
 });
 
-suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
+suite.test('[A].insertAt(0, X) => [X,A] + notify', function() {
   var obj, item, after, before, observer;
 
   item = this.newFixture(1)[0];
@@ -72,7 +72,7 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
+suite.test('[A].insertAt(1, X) => [A,X] + notify', function() {
   var obj, item, after, before, observer;
 
   item = this.newFixture(1)[0];
@@ -102,7 +102,7 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
 });
 
-suite.test("[A].insertAt(200,X) => OUT_OF_RANGE exception", function() {
+suite.test('[A].insertAt(200,X) => OUT_OF_RANGE exception', function() {
   var obj = this.newObject(this.newFixture(1));
   var that = this;
 
@@ -111,7 +111,7 @@ suite.test("[A].insertAt(200,X) => OUT_OF_RANGE exception", function() {
   }, Error);
 });
 
-suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
+suite.test('[A,B,C].insertAt(0,X) => [X,A,B,C] + notify', function() {
   var obj, item, after, before, observer;
 
   item = this.newFixture(1)[0];
@@ -141,7 +141,7 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
+suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function() {
   var obj, item, after, before, observer;
 
   item = this.newFixture(1)[0];
@@ -171,7 +171,7 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
+suite.test('[A,B,C].insertAt(3,X) => [A,B,C,X] + notify', function() {
   var obj, item, after, before, observer;
 
   item = this.newFixture(1)[0];

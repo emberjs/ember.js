@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 import {get} from 'ember-metal/property_get';
 import {set} from 'ember-metal/property_set';
-import {observer as emberObserver} from "ember-metal/mixin";
+import {observer as emberObserver} from 'ember-metal/mixin';
 import EmberObject from 'ember-runtime/system/object';
 
 /*
@@ -29,15 +29,15 @@ import EmberObject from 'ember-runtime/system/object';
 var obj, obj1, don; // global variables
 var TestNamespace, originalLookup, lookup;
 
-QUnit.module("A new EmberObject instance", {
+QUnit.module('A new EmberObject instance', {
 
   setup() {
     obj = EmberObject.create({
-      foo: "bar",
+      foo: 'bar',
       total: 12345,
       aMethodThatExists() {},
       aMethodThatReturnsTrue() { return true; },
-      aMethodThatReturnsFoobar() { return "Foobar"; },
+      aMethodThatReturnsFoobar() { return 'Foobar'; },
       aMethodThatReturnsFalse() { return false; }
     });
   },
@@ -48,12 +48,12 @@ QUnit.module("A new EmberObject instance", {
 
 });
 
-QUnit.test("Should return its properties when requested using EmberObject#get", function() {
+QUnit.test('Should return its properties when requested using EmberObject#get', function() {
   equal(get(obj, 'foo'), 'bar');
   equal(get(obj, 'total'), 12345);
 });
 
-QUnit.test("Should allow changing of those properties by calling EmberObject#set", function() {
+QUnit.test('Should allow changing of those properties by calling EmberObject#set', function() {
   equal(get(obj, 'foo'), 'bar');
   equal(get(obj, 'total'), 12345);
 
@@ -64,7 +64,7 @@ QUnit.test("Should allow changing of those properties by calling EmberObject#set
   equal(get(obj, 'total'), 12);
 });
 
-QUnit.module("EmberObject observers", {
+QUnit.module('EmberObject observers', {
   setup() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
@@ -72,7 +72,7 @@ QUnit.module("EmberObject observers", {
     // create a namespace
     lookup['TestNamespace'] = TestNamespace = {
       obj: EmberObject.create({
-        value: "test"
+        value: 'test'
       })
     };
 
@@ -81,15 +81,15 @@ QUnit.module("EmberObject observers", {
       prop1: null,
 
       // normal observer
-      observer: emberObserver("prop1", function() {
+      observer: emberObserver('prop1', function() {
         this._normal = true;
       }),
 
-      globalObserver: emberObserver("TestNamespace.obj.value", function() {
+      globalObserver: emberObserver('TestNamespace.obj.value', function() {
         this._global = true;
       }),
 
-      bothObserver: emberObserver("prop1", "TestNamespace.obj.value", function() {
+      bothObserver: emberObserver('prop1', 'TestNamespace.obj.value', function() {
         this._both = true;
       })
     });
@@ -101,29 +101,29 @@ QUnit.module("EmberObject observers", {
   }
 });
 
-QUnit.test("Local observers work", function() {
+QUnit.test('Local observers work', function() {
   obj._normal = false;
-  set(obj, "prop1", false);
-  equal(obj._normal, true, "Normal observer did change.");
+  set(obj, 'prop1', false);
+  equal(obj._normal, true, 'Normal observer did change.');
 });
 
-QUnit.test("Global observers work", function() {
+QUnit.test('Global observers work', function() {
   obj._global = false;
-  set(TestNamespace.obj, "value", "test2");
-  equal(obj._global, true, "Global observer did change.");
+  set(TestNamespace.obj, 'value', 'test2');
+  equal(obj._global, true, 'Global observer did change.');
 });
 
-QUnit.test("Global+Local observer works", function() {
+QUnit.test('Global+Local observer works', function() {
   obj._both = false;
-  set(obj, "prop1", false);
-  equal(obj._both, true, "Both observer did change.");
+  set(obj, 'prop1', false);
+  equal(obj._both, true, 'Both observer did change.');
 });
 
-QUnit.module("EmberObject superclass and subclasses", {
+QUnit.module('EmberObject superclass and subclasses', {
   setup() {
     obj = EmberObject.extend({
       method1() {
-        return "hello";
+        return 'hello';
       }
     });
     obj1 = obj.extend();
@@ -141,12 +141,12 @@ QUnit.module("EmberObject superclass and subclasses", {
   }
 });
 
-QUnit.test("Checking the detect() function on an object and its subclass", function() {
+QUnit.test('Checking the detect() function on an object and its subclass', function() {
   equal(obj.detect(obj1), true);
   equal(obj1.detect(obj), false);
 });
 
-QUnit.test("Checking the detectInstance() function on an object and its subclass", function() {
+QUnit.test('Checking the detectInstance() function on an object and its subclass', function() {
   ok(EmberObject.detectInstance(obj.create()));
   ok(obj.detectInstance(obj.create()));
 });

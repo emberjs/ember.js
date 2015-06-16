@@ -1,15 +1,15 @@
-import Ember from "ember-metal/core";
-import { assign } from "ember-metal/merge";
-import buildComponentTemplate from "ember-views/system/build-component-template";
-import lookupComponent from "ember-htmlbars/utils/lookup-component";
-import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import setProperties from "ember-metal/set_properties";
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
-import SafeString from "htmlbars-util/safe-string";
-import { instrument } from "ember-htmlbars/system/instrumentation-support";
-import EmberComponent from "ember-views/views/component";
+import Ember from 'ember-metal/core';
+import { assign } from 'ember-metal/merge';
+import buildComponentTemplate from 'ember-views/system/build-component-template';
+import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import setProperties from 'ember-metal/set_properties';
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import SafeString from 'htmlbars-util/safe-string';
+import { instrument } from 'ember-htmlbars/system/instrumentation-support';
+import EmberComponent from 'ember-views/views/component';
 import Stream from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
 
@@ -17,7 +17,7 @@ import { readArray } from 'ember-metal/streams/utils';
 // be safe to import this until we make the hook system public
 // and it gets actively used in addons or other downstream
 // libraries.
-import getValue from "ember-htmlbars/hooks/get-value";
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attrs, block, expectElement) {
   this.component = component;
@@ -147,7 +147,7 @@ function extractComponentTemplates(component, _templates) {
     // as the layout.
     layout = componentTemplate;
     templates = _templates;
-    Ember.deprecate("Using deprecated `template` property on a Component.");
+    Ember.deprecate('Using deprecated `template` property on a Component.');
   }
 
   return { layout, templates };
@@ -160,7 +160,7 @@ function extractLegacyTemplate(_templates, componentTemplate) {
   // There is no block template provided but the component has a
   // `template` property.
   if ((!_templates || !_templates.default) && componentTemplate) {
-    Ember.deprecate("Using deprecated `template` property on a Component.");
+    Ember.deprecate('Using deprecated `template` property on a Component.');
     templates = { default: componentTemplate.raw };
   } else {
     templates = _templates;
@@ -214,7 +214,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
 export function handleLegacyRender(component, element) {
   if (!component.render) { return; }
 
-  Ember.assert("Legacy render functions are not supported with angle-bracket components", !component._isAngleBracket);
+  Ember.assert('Legacy render functions are not supported with angle-bracket components', !component._isAngleBracket);
 
   var content, node, lastChildIndex;
   var buffer = [];
@@ -279,7 +279,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
 
   if (!isAngleBracket) {
     let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
-    Ember.deprecate("controller= is deprecated", !hasSuppliedController);
+    Ember.deprecate('controller= is deprecated', !hasSuppliedController);
 
     let snapshot = takeSnapshot(attrs);
     props.attrs = snapshot;

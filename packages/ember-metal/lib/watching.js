@@ -4,23 +4,23 @@
 
 import {
   isArray
-} from "ember-metal/utils";
+} from 'ember-metal/utils';
 import {
   removeChainWatcher,
   flushPendingChains
-} from "ember-metal/chains";
+} from 'ember-metal/chains';
 import {
   watchKey,
   unwatchKey
-} from "ember-metal/watch_key";
+} from 'ember-metal/watch_key';
 import {
   watchPath,
   unwatchPath
-} from "ember-metal/watch_path";
+} from 'ember-metal/watch_path';
 
 import {
   isPath
-} from "ember-metal/path_cache";
+} from 'ember-metal/path_cache';
 
 /**
   Starts watching a property on an object. Whenever the property changes,

@@ -1,5 +1,5 @@
-import compile from "ember-template-compiler/system/compile";
-import run from "ember-metal/run_loop";
+import compile from 'ember-template-compiler/system/compile';
+import run from 'ember-metal/run_loop';
 
 var App1, App2, actions;
 
@@ -25,9 +25,9 @@ function startApp(rootElement) {
         }
       }
     }));
-    registry.register('template:application', compile("{{outlet}}", { moduleName: 'application' }));
-    registry.register('template:index', compile("<h1>Node 1</h1>{{special-button}}", { moduleName: 'index' }));
-    registry.register('template:components/special-button', compile("<button class='do-stuff' {{action 'doStuff'}}>Button</button>", { moduleName: 'components/special-button' }));
+    registry.register('template:application', compile('{{outlet}}', { moduleName: 'application' }));
+    registry.register('template:index', compile('<h1>Node 1</h1>{{special-button}}', { moduleName: 'index' }));
+    registry.register('template:components/special-button', compile('<button class=\'do-stuff\' {{action \'doStuff\'}}>Button</button>', { moduleName: 'components/special-button' }));
   });
 
   return application;
@@ -38,7 +38,7 @@ function handleURL(application, path) {
   return run(router, 'handleURL', path);
 }
 
-QUnit.module("View Integration", {
+QUnit.module('View Integration', {
   setup() {
     actions = [];
     Ember.$('#qunit-fixture').html('<div id="app-1"></div><div id="app-2"></div>');
@@ -53,7 +53,7 @@ QUnit.module("View Integration", {
   }
 });
 
-QUnit.test("booting multiple applications can properly handle events", function(assert) {
+QUnit.test('booting multiple applications can properly handle events', function(assert) {
   run(App1, 'advanceReadiness');
   run(App2, 'advanceReadiness');
 

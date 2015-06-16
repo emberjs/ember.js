@@ -1,22 +1,22 @@
-import { set } from "ember-metal/property_set";
+import { set } from 'ember-metal/property_set';
 import {
   meta,
   inspect
-} from "ember-metal/utils";
-import expandProperties from "ember-metal/expand_properties";
-import EmberError from "ember-metal/error";
+} from 'ember-metal/utils';
+import expandProperties from 'ember-metal/expand_properties';
+import EmberError from 'ember-metal/error';
 import {
   Descriptor,
   defineProperty
-} from "ember-metal/properties";
+} from 'ember-metal/properties';
 import {
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 import {
   addDependentKeys,
   removeDependentKeys
-} from "ember-metal/dependent_keys";
+} from 'ember-metal/dependent_keys';
 
 /**
 @module ember
@@ -114,7 +114,7 @@ function UNDEFINED() { }
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
-  if (typeof config === "function") {
+  if (typeof config === 'function') {
     this._getter = config;
   } else {
     this._getter = config.get;
@@ -177,7 +177,7 @@ ComputedPropertyPrototype.volatile = function() {
 */
 ComputedPropertyPrototype.readOnly = function() {
   this._readOnly = true;
-  Ember.assert("Computed properties that define a setter using the new syntax cannot be read-only", !(this._readOnly && this._setter && this._setter !== this._getter));
+  Ember.assert('Computed properties that define a setter using the new syntax cannot be read-only', !(this._readOnly && this._setter && this._setter !== this._getter));
   return this;
 };
 

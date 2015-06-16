@@ -1,8 +1,8 @@
-import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
-import ComponentLookup from "ember-views/component_lookup";
-import Registry from "container/registry";
-import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import lookupHelper, { findHelper } from 'ember-htmlbars/system/lookup-helper';
+import ComponentLookup from 'ember-views/component_lookup';
+import Registry from 'container/registry';
+import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 function generateEnv(helpers, container) {
   return {

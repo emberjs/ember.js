@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import InjectedProperty from "ember-metal/injected_property";
-import keys from "ember-metal/keys";
+import Ember from 'ember-metal/core'; // Ember.assert
+import InjectedProperty from 'ember-metal/injected_property';
+import keys from 'ember-metal/keys';
 
 /**
   Namespace for injection helper methods.
@@ -11,8 +11,8 @@ import keys from "ember-metal/keys";
   @public
 */
 function inject() {
-  Ember.assert("Injected properties must be created through helpers, see `" +
-               keys(inject).join("`, `") + "`");
+  Ember.assert('Injected properties must be created through helpers, see `' +
+               keys(inject).join('`, `') + '`');
 }
 
 // Dictionary of injection validations by type, added to by `createInjectionHelper`

@@ -1,4 +1,4 @@
-import Stream from "./stream";
+import Stream from './stream';
 
 /*
  Check whether an object is a stream or not
@@ -212,7 +212,7 @@ export function labelsForObject(streams) {
     labels.push(`${prop}: ${inspect(streams[prop])}`);
   }
 
-  return labels.length ? `{ ${labels.join(', ')} }` : "{}";
+  return labels.length ? `{ ${labels.join(', ')} }` : '{}';
 }
 
 export function labelFor(maybeStream) {
@@ -227,8 +227,8 @@ export function labelFor(maybeStream) {
 function inspect(value) {
   switch (typeof value) {
     case 'string': return `"${value}"`;
-    case 'object': return "{ ... }";
-    case 'function': return "function() { ... }";
+    case 'object': return '{ ... }';
+    case 'function': return 'function() { ... }';
     default: return String(value);
   }
 }
@@ -247,14 +247,14 @@ export function or(first, second) {
 }
 
 export function addDependency(stream, dependency) {
-  Ember.assert("Cannot add a stream as a dependency to a non-stream", isStream(stream) || !isStream(dependency));
+  Ember.assert('Cannot add a stream as a dependency to a non-stream', isStream(stream) || !isStream(dependency));
   if (isStream(stream)) {
     stream.addDependency(dependency);
   }
 }
 
 export function zip(streams, callback, label) {
-  Ember.assert("Must call zip with a label", !!label);
+  Ember.assert('Must call zip with a label', !!label);
 
   var stream = new Stream(function() {
     var array = readArray(streams);
@@ -271,7 +271,7 @@ export function zip(streams, callback, label) {
 }
 
 export function zipHash(object, callback, label) {
-  Ember.assert("Must call zipHash with a label", !!label);
+  Ember.assert('Must call zipHash with a label', !!label);
 
   var stream = new Stream(function() {
     var hash = readHash(object);
@@ -320,7 +320,7 @@ export function zipHash(object, callback, label) {
                          function `fn`.
  */
 export function chain(value, fn, label) {
-  Ember.assert("Must call chain with a label", !!label);
+  Ember.assert('Must call chain with a label', !!label);
   if (isStream(value)) {
     var stream = new Stream(fn, function() { return `${label}(${labelFor(value)})`; });
     stream.addDependency(value);

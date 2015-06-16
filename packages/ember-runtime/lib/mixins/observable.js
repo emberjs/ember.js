@@ -2,31 +2,31 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
 
 import {
   get,
   getWithDefault
-} from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import getProperties from "ember-metal/get_properties";
-import setProperties from "ember-metal/set_properties";
-import { Mixin } from "ember-metal/mixin";
-import { hasListeners } from "ember-metal/events";
+} from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import getProperties from 'ember-metal/get_properties';
+import setProperties from 'ember-metal/set_properties';
+import { Mixin } from 'ember-metal/mixin';
+import { hasListeners } from 'ember-metal/events';
 import {
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
   endPropertyChanges
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 import {
   addObserver,
   addBeforeObserver,
   removeObserver,
   observersFor
-} from "ember-metal/observer";
-import { cacheFor } from "ember-metal/computed";
-import isNone from "ember-metal/is_none";
+} from 'ember-metal/observer';
+import { cacheFor } from 'ember-metal/computed';
+import isNone from 'ember-metal/is_none';
 
 /**
   ## Overview
@@ -450,7 +450,7 @@ export default Mixin.create({
   */
   incrementProperty(keyName, increment) {
     if (isNone(increment)) { increment = 1; }
-    Ember.assert("Must pass a numeric value to incrementProperty", (!isNaN(parseFloat(increment)) && isFinite(increment)));
+    Ember.assert('Must pass a numeric value to incrementProperty', (!isNaN(parseFloat(increment)) && isFinite(increment)));
     return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
   },
 
@@ -470,7 +470,7 @@ export default Mixin.create({
   */
   decrementProperty(keyName, decrement) {
     if (isNone(decrement)) { decrement = 1; }
-    Ember.assert("Must pass a numeric value to decrementProperty", (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
+    Ember.assert('Must pass a numeric value to decrementProperty', (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
     return set(this, keyName, (get(this, keyName) || 0) - decrement);
   },
 

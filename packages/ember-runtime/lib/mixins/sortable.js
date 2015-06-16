@@ -3,22 +3,22 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.assert, Ember.A
+import Ember from 'ember-metal/core'; // Ember.assert, Ember.A
 
-import { get } from "ember-metal/property_get";
-import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
-import compare from "ember-runtime/compare";
+import { get } from 'ember-metal/property_get';
+import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
+import compare from 'ember-runtime/compare';
 import {
   addObserver,
   removeObserver
-} from "ember-metal/observer";
-import { computed } from "ember-metal/computed";
-import { notEmpty } from "ember-metal/computed_macros";
+} from 'ember-metal/observer';
+import { computed } from 'ember-metal/computed';
+import { notEmpty } from 'ember-metal/computed_macros';
 import {
   Mixin,
   beforeObserver,
   observer
-} from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
+} from 'ember-metal/mixin'; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
 
 /**
   `Ember.SortableMixin` provides a standard interface for array proxies
@@ -127,7 +127,7 @@ export default Mixin.create(MutableEnumerable, {
     var sortAscending = get(this, 'sortAscending');
     var sortFunction = get(this, 'sortFunction');
 
-    Ember.assert("you need to define `sortProperties`", !!sortProperties);
+    Ember.assert('you need to define `sortProperties`', !!sortProperties);
 
     sortProperties.forEach((propertyName) => {
       if (result === 0) {

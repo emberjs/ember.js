@@ -1,13 +1,13 @@
-import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
-import Application from "ember-application/system/application";
+import run from 'ember-metal/run_loop';
+import EmberObject from 'ember-runtime/system/object';
+import Application from 'ember-application/system/application';
 
 var EmberApplication = Application;
 
 var originalLookup = Ember.lookup;
 var registry, locator, lookup, application, originalModelInjections;
 
-QUnit.module("Ember.Application Dependency Injection", {
+QUnit.module('Ember.Application Dependency Injection', {
   setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;

@@ -4,7 +4,7 @@ import {
   mixin,
   Mixin
 } from 'ember-metal/mixin';
-import { isWatching } from "ember-metal/watching";
+import { isWatching } from 'ember-metal/watching';
 
 QUnit.module('Mixin observer');
 
@@ -23,7 +23,7 @@ testBoth('global observer helper', function(get, set) {
   var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -42,8 +42,8 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
-  set(obj, 'baz', "BAZ");
+  set(obj, 'bar', 'BAZ');
+  set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
 
@@ -69,10 +69,10 @@ testBoth('replacing observer should remove old observer', function(get, set) {
   var obj = mixin({}, MyMixin, Mixin2);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj, 'bar', "BAZ");
+  set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-  set(obj, 'baz', "BAZ");
+  set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 10, 'should invoke observer after change');
 
 });
@@ -91,7 +91,7 @@ testBoth('observing chain with property before', function(get, set) {
   var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -109,7 +109,7 @@ testBoth('observing chain with property after', function(get, set) {
   var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -132,7 +132,7 @@ testBoth('observing chain with property in mixin applied later', function(get, s
   MyMixin2.apply(obj);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -149,7 +149,7 @@ testBoth('observing chain with existing property', function(get, set) {
   var obj = mixin({ bar: obj2 }, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -167,7 +167,7 @@ testBoth('observing chain with property in mixin before', function(get, set) {
   var obj = mixin({}, MyMixin2, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -185,7 +185,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   var obj = mixin({}, MyMixin, MyMixin2);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
@@ -208,9 +208,9 @@ testBoth('observing chain with overriden property', function(get, set) {
   equal(isWatching(obj2, 'baz'), false, 'should not be watching baz');
   equal(isWatching(obj3, 'baz'), true, 'should be watching baz');
 
-  set(obj2, 'baz', "BAZ");
+  set(obj2, 'baz', 'BAZ');
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-  set(obj3, 'baz', "BEAR");
+  set(obj3, 'baz', 'BEAR');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });

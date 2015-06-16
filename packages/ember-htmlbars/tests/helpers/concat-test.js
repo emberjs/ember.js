@@ -1,13 +1,13 @@
-import run from "ember-metal/run_loop";
-import { Registry } from "ember-runtime/system/container";
-import Component from "ember-views/views/component";
-import compile from "ember-template-compiler/system/compile";
+import run from 'ember-metal/run_loop';
+import { Registry } from 'ember-runtime/system/container';
+import Component from 'ember-views/views/component';
+import compile from 'ember-template-compiler/system/compile';
 
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var component, registry, container;
 
-QUnit.module("ember-htmlbars: {{concat}} helper", {
+QUnit.module('ember-htmlbars: {{concat}} helper', {
   setup() {
     registry = new Registry();
     container = registry.container();

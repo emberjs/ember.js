@@ -13,7 +13,7 @@ QUnit.test('using apply() should apply properties', function() {
   var obj = {};
   mixin(obj, MixinA);
 
-  equal(get(obj, 'foo'), "FOO", 'should apply foo');
+  equal(get(obj, 'foo'), 'FOO', 'should apply foo');
   equal(get(obj, 'baz'), K, 'should apply foo');
 });
 
@@ -24,7 +24,7 @@ QUnit.test('applying anonymous properties', function() {
     baz: K
   });
 
-  equal(get(obj, 'foo'), "FOO", 'should apply foo');
+  equal(get(obj, 'foo'), 'FOO', 'should apply foo');
   equal(get(obj, 'baz'), K, 'should apply foo');
 });
 

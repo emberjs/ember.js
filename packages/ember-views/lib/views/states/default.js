@@ -1,12 +1,12 @@
-import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
+import EmberError from 'ember-metal/error';
+import { get } from 'ember-metal/property_get';
 
 import {
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 
-import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 /**
 @module ember
@@ -15,7 +15,7 @@ import { MUTABLE_CELL } from "ember-views/compat/attrs-proxy";
 export default {
   // appendChild is only legal while rendering the buffer.
   appendChild() {
-    throw new EmberError("You can't use appendChild outside of the rendering process");
+    throw new EmberError('You can\'t use appendChild outside of the rendering process');
   },
 
   $() {

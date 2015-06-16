@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core";
-import jQuery from "ember-views/system/jquery";
+import Ember from 'ember-metal/core';
+import jQuery from 'ember-views/system/jquery';
 
-import environment from "ember-metal/environment";
+import environment from 'ember-metal/environment';
 
 /**
   @module ember
@@ -42,7 +42,7 @@ if (environment.hasDOM) {
         $.event.special.click = {
           // For checkbox, fire native event so checked state will be right
           trigger() {
-            if ($.nodeName(this, "input") && this.type === "checkbox" && this.click) {
+            if ($.nodeName(this, 'input') && this.type === 'checkbox' && this.click) {
               this.click();
               return false;
             }
@@ -53,7 +53,7 @@ if (environment.hasDOM) {
 
     // Try again to verify that the patch took effect or blow up.
     testCheckboxClick(function() {
-      Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+      Ember.warn('clicked checkboxes should be checked! the jQuery patch didn\'t work', this.checked);
     });
   });
 }

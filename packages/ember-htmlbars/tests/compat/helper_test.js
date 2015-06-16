@@ -1,17 +1,17 @@
 import {
   registerHandlebarsCompatibleHelper
-} from "ember-htmlbars/compat/helper";
+} from 'ember-htmlbars/compat/helper';
 
-import EmberView from "ember-views/views/view";
-import Component from "ember-views/views/component";
+import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
 
-import makeViewHelper from "ember-htmlbars/system/make-view-helper";
-import helpers from "ember-htmlbars/helpers";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import Registry from "container/registry";
+import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
+import helpers from 'ember-htmlbars/helpers';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 var view, registry, container;
 
@@ -180,7 +180,7 @@ QUnit.test('allows unbound usage within an element', function() {
     equal(param1, 'blammo');
     equal(param2, 'blazzico');
 
-    return "class='foo'";
+    return 'class=\'foo\'';
   }
 
   registerHandlebarsCompatibleHelper('test', someHelper);
@@ -218,14 +218,14 @@ QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` 
   equal(view.$().text(), 'woot!');
 });
 
-QUnit.test("makes helpful assertion when called with invalid arguments", function() {
+QUnit.test('makes helpful assertion when called with invalid arguments', function() {
   expect(1);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
   });
 
-  ViewHelperComponent.toString = function() { return "Some Random Class"; };
+  ViewHelperComponent.toString = function() { return 'Some Random Class'; };
 
   var helper = makeViewHelper(ViewHelperComponent);
   registerHandlebarsCompatibleHelper('view-helper', helper);
@@ -236,7 +236,7 @@ QUnit.test("makes helpful assertion when called with invalid arguments", functio
 
   expectAssertion(function() {
     runAppend(view);
-  }, "You can only pass attributes (such as name=value) not bare values to a helper for a View found in 'Some Random Class'");
+  }, 'You can only pass attributes (such as name=value) not bare values to a helper for a View found in \'Some Random Class\'');
 });
 
 QUnit.test('does not add `options.fn` if no block was specified', function() {

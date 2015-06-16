@@ -1,22 +1,22 @@
-import EmberHandlebars from "ember-htmlbars/compat";
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var precompile = EmberHandlebars.precompile;
 var template = 'Hello World';
 var result;
 
-QUnit.module("ember-htmlbars: compat - Ember.Handlebars.precompile");
+QUnit.module('ember-htmlbars: compat - Ember.Handlebars.precompile');
 
-QUnit.test("precompile creates an object when asObject isn't defined", function() {
+QUnit.test('precompile creates an object when asObject isn\'t defined', function() {
   result = precompile(template);
-  equal(typeof(result), "object");
+  equal(typeof(result), 'object');
 });
 
-QUnit.test("precompile creates an object when asObject is true", function() {
+QUnit.test('precompile creates an object when asObject is true', function() {
   result = precompile(template, true);
-  equal(typeof(result), "object");
+  equal(typeof(result), 'object');
 });
 
-QUnit.test("precompile creates a string when asObject is false", function() {
+QUnit.test('precompile creates a string when asObject is false', function() {
   result = precompile(template, false);
-  equal(typeof(result), "string");
+  equal(typeof(result), 'string');
 });

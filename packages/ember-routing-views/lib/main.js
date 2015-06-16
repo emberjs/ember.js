@@ -3,13 +3,13 @@
 @submodule ember-routing-views
 */
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import LinkComponent from "ember-routing-views/views/link";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import LinkComponent from 'ember-routing-views/views/link';
 import {
   OutletView,
   CoreOutletView
-} from "ember-routing-views/views/outlet";
+} from 'ember-routing-views/views/outlet';
 
 Ember.LinkComponent = LinkComponent;
 Ember.OutletView = OutletView;

@@ -1,6 +1,6 @@
-import isEnabled from "ember-metal/features";
-import keys from "ember-metal/keys";
-import shouldDisplay from "ember-views/streams/should_display";
+import isEnabled from 'ember-metal/features';
+import keys from 'ember-metal/keys';
+import shouldDisplay from 'ember-views/streams/should_display';
 
 if (isEnabled('ember-htmlbars-each-in')) {
   var eachInHelper = function([ object ], hash, blocks) {

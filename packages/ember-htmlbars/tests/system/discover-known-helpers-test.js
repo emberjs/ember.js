@@ -1,9 +1,9 @@
-import isEnabled from "ember-metal/features";
-import Registry from "container/registry";
-import keys from "ember-metal/keys";
-import Helper from "ember-htmlbars/helper";
-import { runDestroy } from "ember-runtime/tests/utils";
-import discoverKnownHelpers from "ember-htmlbars/system/discover-known-helpers";
+import isEnabled from 'ember-metal/features';
+import Registry from 'container/registry';
+import keys from 'ember-metal/keys';
+import Helper from 'ember-htmlbars/helper';
+import { runDestroy } from 'ember-runtime/tests/utils';
+import discoverKnownHelpers from 'ember-htmlbars/system/discover-known-helpers';
 
 var resolver, registry, container;
 
