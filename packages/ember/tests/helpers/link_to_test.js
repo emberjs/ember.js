@@ -1037,7 +1037,7 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
     }
   });
 
-  Ember.TEMPLATES.index = compile('<h3>Home</h3><ul>{{#each controller as |person|}}<li>{{link-to person.name \'item\' person}}</li>{{/each}}</ul>');
+  Ember.TEMPLATES.index = compile('<h3>Home</h3><ul>{{#each model as |person|}}<li>{{link-to person.name \'item\' person}}</li>{{/each}}</ul>');
   Ember.TEMPLATES.item = compile('<h3>Item</h3><p>{{model.name}}</p>{{#link-to \'index\' id=\'home-link\'}}Home{{/link-to}}');
 
   bootApplication();

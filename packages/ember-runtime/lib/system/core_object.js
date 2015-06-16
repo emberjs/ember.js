@@ -247,8 +247,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     // alerts 'Name is Steve'.
     ```
 
-    NOTE: If you do override `init` for a framework class like `Ember.View` or
-    `Ember.ArrayController`, be sure to call `this._super.apply(this, arguments)` in your
+    NOTE: If you do override `init` for a framework class like `Ember.View`,
+    be sure to call `this._super.apply(this, arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.

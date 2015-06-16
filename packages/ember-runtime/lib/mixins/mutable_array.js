@@ -29,7 +29,7 @@ import Enumerable from 'ember-runtime/mixins/enumerable';
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
   It builds upon the Array mixin and adds methods to modify the array.
-  Concrete implementations of this class include ArrayProxy and ArrayController.
+  One concrete implementations of this class include ArrayProxy.
 
   It is important to use the methods in this class to modify arrays so that
   changes are observable. This allows the binding system in Ember to function

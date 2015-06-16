@@ -7,7 +7,6 @@ import ActionManager from 'ember-views/system/action_manager';
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
-import EmberArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';

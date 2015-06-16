@@ -55,7 +55,7 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   concrete implementation, but it can be used up by other classes that want
   to appear like arrays.
 
-  For example, ArrayProxy and ArrayController are both concrete classes that can
+  For example, ArrayProxy is a concrete classes that can
   be instantiated to implement array-like behavior. Both of these classes use
   the Array Mixin by way of the MutableArray mixin, which allows observable
   changes to be made to the underlying array.
