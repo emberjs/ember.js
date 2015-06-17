@@ -23,13 +23,6 @@ export function equalHTML(node, html) {
   equalInnerHTML(div, html);
 }
 
-// IE8 removes comments and does other unspeakable things with innerHTML
-var ie8GenerateTokensNeeded = (function() {
-  var div = document.createElement("div");
-  div.innerHTML = "<!-- foobar -->";
-  return div.innerHTML === "";
-})();
-
 function generateTokens(fragmentOrHtml) {
   var div = document.createElement("div");
   if (typeof fragmentOrHtml === 'string') {
@@ -37,13 +30,7 @@ function generateTokens(fragmentOrHtml) {
   } else {
     div.appendChild(fragmentOrHtml.cloneNode(true));
   }
-  if (ie8GenerateTokensNeeded) {
-    // IE8 drops comments and does other unspeakable things on `innerHTML`.
-    // So in that case we do it to both the expected and actual so that they match.
-    var div2 = document.createElement("div");
-    div2.innerHTML = div.innerHTML;
-    div.innerHTML = div2.innerHTML;
-  }
+
   return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
 }
 
@@ -74,11 +61,6 @@ export function equalTokens(fragment, html, message) {
   deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
-// detect weird IE8 html strings
-var ie8InnerHTMLTestElement = document.createElement('div');
-ie8InnerHTMLTestElement.setAttribute('id', 'womp');
-var ie8InnerHTML = (ie8InnerHTMLTestElement.outerHTML.indexOf('id=womp') > -1);
-
 // detect side-effects of cloning svg elements in IE9-11
 var ieSVGInnerHTML = (function () {
   if (!document.createElementNS) {
@@ -92,29 +74,6 @@ var ieSVGInnerHTML = (function () {
 })();
 
 export function normalizeInnerHTML(actualHTML) {
-  if (ie8InnerHTML) {
-    // drop newlines in IE8
-    actualHTML = actualHTML.replace(/\r\n/gm, '');
-    // downcase ALLCAPS tags in IE8
-    actualHTML = actualHTML.replace(/<\/?[A-Z\-]+/gi, function(tag){
-      return tag.toLowerCase();
-    });
-    // quote ids in IE8
-    actualHTML = actualHTML.replace(/id=([^ >]+)/gi, function(match, id){
-      return 'id="'+id+'"';
-    });
-    // IE8 adds ':' to some tags
-    // <keygen> becomes <:keygen>
-    actualHTML = actualHTML.replace(/<(\/?):([^ >]+)/gi, function(match, slash, tag){
-      return '<'+slash+tag;
-    });
-
-    // Normalize the style attribute
-    actualHTML = actualHTML.replace(/style="(.+?)"/gi, function(match, val){
-      return 'style="'+val.toLowerCase()+';"';
-    });
-
-  }
   if (ieSVGInnerHTML) {
     // Replace `<svg xmlns="http://www.w3.org/2000/svg" height="50%" />` with `<svg height="50%"></svg>`, etc.
     // drop namespace attribute
