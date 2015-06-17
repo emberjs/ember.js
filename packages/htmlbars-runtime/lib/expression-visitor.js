@@ -1,4 +1,4 @@
-import { merge, createObject } from "../htmlbars-util/object-utils";
+import { merge } from "../htmlbars-util/object-utils";
 import { validateChildMorphs, linkParams } from "../htmlbars-util/morph-utils";
 
 /**
@@ -104,7 +104,7 @@ var base = {
   }
 };
 
-export var AlwaysDirtyVisitor = merge(createObject(base), {
+export var AlwaysDirtyVisitor = merge(Object.create(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template, visitor) {
     var path = node[1], params = node[2], hash = node[3], templateId = node[4], inverseId = node[5];
@@ -190,7 +190,7 @@ export var AlwaysDirtyVisitor = merge(createObject(base), {
   }
 });
 
-export default merge(createObject(base), {
+export default merge(Object.create(base), {
   // [ 'block', path, params, hash, templateId, inverseId ]
   block: function(node, morph, env, scope, template, visitor) {
     dirtyCheck(env, morph, visitor, function(visitor) {
