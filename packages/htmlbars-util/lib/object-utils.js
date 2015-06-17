@@ -6,28 +6,8 @@ export function merge(options, defaults) {
   return options;
 }
 
-export function objectKeys(obj) {
-  if (typeof Object.keys === 'function') {
-    return Object.keys(obj);
-  } else {
-    return legacyKeys(obj);
-  }
-}
-
 export function shallowCopy(obj) {
   return merge({}, obj);
-}
-
-function legacyKeys(obj) {
-  var keys = [];
-
-  for (var prop in obj)  {
-    if (obj.hasOwnProperty(prop)) {
-      keys.push(prop);
-    }
-  }
-
-  return keys;
 }
 
 export function keySet(obj) {
