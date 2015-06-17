@@ -1,5 +1,4 @@
 import MorphBase from "../morph-range";
-import { createObject } from "../htmlbars-util/object-utils";
 
 var guid = 1;
 
@@ -42,7 +41,7 @@ HTMLBarsMorph.attach = function (domHelper, contextualElement, firstNode, lastNo
   return morph;
 };
 
-var prototype = HTMLBarsMorph.prototype = createObject(MorphBase.prototype);
+var prototype = HTMLBarsMorph.prototype = Object.create(MorphBase.prototype);
 prototype.constructor = HTMLBarsMorph;
 prototype.super$constructor = MorphBase;
 
