@@ -534,7 +534,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @return {Ember.ComputedProperty} property descriptor instance
   @public
 */
-function computed(func) {
+export default function computed(func) {
   var args;
 
   if (arguments.length > 1) {
