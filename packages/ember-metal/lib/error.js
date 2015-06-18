@@ -1,3 +1,5 @@
+import Ember from 'ember-metal/core';
+
 var errorProps = [
   'description',
   'fileName',

@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';

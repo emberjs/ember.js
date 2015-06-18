@@ -1,12 +1,8 @@
-import {
-  chain,
-  read
-} from 'ember-metal/streams/utils';
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
+import { isArray } from 'ember-metal/utils';
+import { chain, read } from 'ember-metal/streams/utils';
 import { dasherize } from 'ember-runtime/system/string';
-import {
-  isArray
-} from 'ember-metal/utils';
 
 /**
   Parse a path and return an object which holds the parsed properties.

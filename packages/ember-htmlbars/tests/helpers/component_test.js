@@ -1,13 +1,14 @@
+import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-import ComponentLookup from 'ember-views/component_lookup';
-import Registry from 'container/registry';
-import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import Registry from 'container/registry';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import ComponentLookup from 'ember-views/component_lookup';
+import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/views/component';
+import compile from 'ember-template-compiler/system/compile';
 
 var view, registry, container;
 

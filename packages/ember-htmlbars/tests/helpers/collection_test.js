@@ -1,17 +1,18 @@
 /*jshint newcap:false*/
-import CollectionView from 'ember-views/views/collection_view';
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import run from 'ember-metal/run_loop';
+import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
-import EmberView from 'ember-views/views/view';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import Namespace from 'ember-runtime/system/namespace';
 import { Registry } from 'ember-runtime/system/container';
 import { A } from 'ember-runtime/system/native_array';
-import run from 'ember-metal/run_loop';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import jQuery from 'ember-views/system/jquery';
-import { computed } from 'ember-metal/computed';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import CollectionView from 'ember-views/views/collection_view';
+import EmberView from 'ember-views/views/view';
+import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 
 var trim = jQuery.trim;

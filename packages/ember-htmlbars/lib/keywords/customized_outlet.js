@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import { readViewFactory } from 'ember-views/streams/utils';
 import { isStream } from 'ember-metal/streams/utils';

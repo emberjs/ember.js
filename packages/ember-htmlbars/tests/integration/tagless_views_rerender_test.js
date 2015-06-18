@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-htmlbars/compat';

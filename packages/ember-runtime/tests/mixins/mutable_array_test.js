@@ -1,7 +1,8 @@
+import Ember from 'ember-metal/core';
+import { computed } from 'ember-metal/computed';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import EmberObject from 'ember-runtime/system/object';
-import {computed} from 'ember-metal/computed';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native

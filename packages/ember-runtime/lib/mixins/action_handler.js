@@ -2,6 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
+import Ember from 'ember-metal/core';
 import merge from 'ember-metal/merge';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';

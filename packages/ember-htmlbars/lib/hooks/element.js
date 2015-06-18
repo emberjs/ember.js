@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import { findHelper } from 'ember-htmlbars/system/lookup-helper';
 import { handleRedirect } from 'htmlbars-runtime/hooks';
 import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';

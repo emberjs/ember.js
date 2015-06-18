@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';

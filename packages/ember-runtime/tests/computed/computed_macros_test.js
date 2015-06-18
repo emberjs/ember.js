@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { computed } from 'ember-metal/computed';
 import {
   empty,

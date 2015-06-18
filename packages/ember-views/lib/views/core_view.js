@@ -1,16 +1,13 @@
-import Renderer from 'ember-metal-views/renderer';
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
 
-import {
-  cloneStates,
-  states
-} from 'ember-views/views/states';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler from 'ember-runtime/mixins/action_handler';
-
-import { get } from 'ember-metal/property_get';
-
 import { typeOf } from 'ember-runtime/utils';
+
+import Renderer from 'ember-metal-views/renderer';
+import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
 
 function K() { return this; }
