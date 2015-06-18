@@ -34,6 +34,16 @@
     "Ember.Logger.info",
     "Ember.default.Logger.info",
     "Ember.runInDebug",
-    "Ember.default.runInDebug"
+    "Ember.default.runInDebug",
+    "_emberMetalCore.default.deprecate",
+    "_emberMetalCore.default.warn",
+    "_emberMetalCore.default.assert",
+    "_emberMetalCore.default.debug",
+    "_emberMetalCore.default.runInDebug",
+    "_emberMetal.default.deprecate",
+    "_emberMetal.default.warn",
+    "_emberMetal.default.assert",
+    "_emberMetal.default.debug",
+    "_emberMetal.default.runInDebug"
   ]
 }
