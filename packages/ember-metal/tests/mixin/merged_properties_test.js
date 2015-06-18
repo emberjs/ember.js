@@ -1,8 +1,6 @@
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import {
-  mixin,
-  Mixin
-} from 'ember-metal/mixin';
+import { mixin, Mixin } from 'ember-metal/mixin';
 
 QUnit.module('Mixin mergedProperties');
 

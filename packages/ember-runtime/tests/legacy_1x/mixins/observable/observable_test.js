@@ -1,11 +1,9 @@
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
-import {
-  fmt,
-  w
-} from 'ember-runtime/system/string';
+import { fmt, w } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
 

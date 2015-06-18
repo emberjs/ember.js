@@ -3,6 +3,8 @@
 @submodule ember-application
 */
 
+import Ember from 'ember-metal/core';
+
 let VALIDATED_TYPES = {
   route:     ['assert',    'isRouteFactory',     'Ember.Route'],
   component: ['deprecate', 'isComponentFactory', 'Ember.Component'],

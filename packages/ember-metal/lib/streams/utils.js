@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import Stream from './stream';
 
 /*

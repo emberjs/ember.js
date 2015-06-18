@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import merge from 'ember-metal/merge';
 import { symbol } from 'ember-metal/utils';
 import ProxyStream from 'ember-metal/streams/proxy-stream';

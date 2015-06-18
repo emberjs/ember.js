@@ -1,4 +1,5 @@
 import 'ember';
+import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';

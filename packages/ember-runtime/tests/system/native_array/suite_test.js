@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
 
 MutableArrayTests.extend({

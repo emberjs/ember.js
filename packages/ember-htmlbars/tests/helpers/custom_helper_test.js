@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import Component from 'ember-views/views/component';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import compile from 'ember-template-compiler/system/compile';

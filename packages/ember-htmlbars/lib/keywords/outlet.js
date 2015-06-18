@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import { keyword } from 'htmlbars-runtime/hooks';
 
 /*

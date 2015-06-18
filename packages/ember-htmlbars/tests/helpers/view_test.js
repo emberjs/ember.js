@@ -1,4 +1,5 @@
 /*globals EmberDev */
+import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/views/component';
 import Registry from 'container/registry';

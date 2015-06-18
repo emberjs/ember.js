@@ -1,4 +1,5 @@
 /*globals Foo:true, $foo:true */
+import Ember from 'ember-metal/core';
 import { normalizeTuple } from 'ember-metal/property_get';
 
 var obj;

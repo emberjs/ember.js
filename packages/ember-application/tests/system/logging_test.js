@@ -1,5 +1,6 @@
 /*globals EmberDev */
 
+import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import View from 'ember-views/views/view';

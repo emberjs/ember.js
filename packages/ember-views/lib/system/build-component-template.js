@@ -1,7 +1,8 @@
-import { internal, render } from 'htmlbars-runtime';
-import getValue from 'ember-htmlbars/hooks/get-value';
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { isGlobal } from 'ember-metal/path_cache';
+import { internal, render } from 'htmlbars-runtime';
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 export default function buildComponentTemplate({ component, layout, isAngleBracket}, attrs, content) {
   var blockToRender, tagName, meta;

@@ -1,4 +1,5 @@
 import 'ember';
+import Ember from 'ember-metal/core';
 
 var App, container, router;
 

@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';

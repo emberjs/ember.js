@@ -3,9 +3,11 @@
 @submodule ember-template-compiler
 */
 
-var compile;
+import Ember from 'ember-metal/core';
 import compileOptions from 'ember-template-compiler/system/compile_options';
 import template from 'ember-template-compiler/system/template';
+
+var compile;
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.

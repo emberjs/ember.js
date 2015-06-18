@@ -21,6 +21,7 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
+import Ember from 'ember-metal/core';
 import { guidFor } from 'ember-metal/utils';
 import { deprecateProperty } from 'ember-metal/deprecate_property';
 

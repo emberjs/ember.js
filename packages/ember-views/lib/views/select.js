@@ -3,8 +3,8 @@
 @submodule ember-views
 */
 
+import Ember from 'ember-metal/core';
 import replace from 'ember-metal/replace';
-
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import View from 'ember-views/views/view';
