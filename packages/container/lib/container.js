@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-import emberKeys from 'ember-metal/keys';
 import dictionary from 'ember-metal/dictionary';
 
 // TODO - Temporary workaround for v0.4.0 of the ES6 transpiler, which lacks support for circular dependencies.
@@ -337,7 +336,7 @@ function instantiate(container, fullName) {
 
 function eachDestroyable(container, callback) {
   var cache = container.cache;
-  var keys = emberKeys(cache);
+  var keys = Object.keys(cache);
   var key, value;
 
   for (var i = 0, l = keys.length; i < l; i++) {

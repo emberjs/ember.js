@@ -1,6 +1,5 @@
 import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
-import keys from 'ember-metal/keys';
 
 export default function discoverKnownHelpers(container) {
   let registry = container && container._registry;
@@ -12,7 +11,7 @@ export default function discoverKnownHelpers(container) {
     }
 
     let known = registry.knownForType('helper');
-    let knownContainerKeys = keys(known);
+    let knownContainerKeys = Object.keys(known);
 
     for (let index = 0, length = knownContainerKeys.length; index < length; index++) {
       let fullName = knownContainerKeys[index];

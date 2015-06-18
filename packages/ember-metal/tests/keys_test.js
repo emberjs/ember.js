@@ -1,5 +1,4 @@
 import { set } from 'ember-metal/property_set';
-import keys from 'ember-metal/keys';
 import {
   addObserver,
   removeObserver
@@ -16,7 +15,7 @@ QUnit.test('should get a key array for a specified object', function() {
   object1.age = '23';
   object1.place = 'Mangalore';
 
-  var object2 = keys(object1);
+  var object2 = Object.keys(object1);
 
   deepEqual(object2, ['names','age','place']);
 });
@@ -27,7 +26,7 @@ QUnit.test('should get a key array for property that is named the same as protot
     toString() {}
   };
 
-  var object2 = keys(object1);
+  var object2 = Object.keys(object1);
 
   deepEqual(object2, ['toString']);
 });
@@ -38,7 +37,7 @@ QUnit.test('should not contain properties declared in the prototype', function (
 
   var beer = new Beer();
 
-  deepEqual(keys(beer), []);
+  deepEqual(Object.keys(beer), []);
 });
 
 QUnit.test('should return properties that were set after object creation', function () {
@@ -49,7 +48,7 @@ QUnit.test('should return properties that were set after object creation', funct
 
   set(beer, 'brand', 'big daddy');
 
-  deepEqual(keys(beer), ['brand']);
+  deepEqual(Object.keys(beer), ['brand']);
 });
 
 QUnit.module('Keys behavior with observers');
@@ -61,7 +60,7 @@ QUnit.test('should not leak properties on the prototype', function () {
   var beer = new Beer();
 
   addObserver(beer, 'type', K);
-  deepEqual(keys(beer), []);
+  deepEqual(Object.keys(beer), []);
   removeObserver(beer, 'type', K);
 });
 
@@ -73,10 +72,10 @@ QUnit.test('observing a non existent property', function () {
 
   addObserver(beer, 'brand', K);
 
-  deepEqual(keys(beer), []);
+  deepEqual(Object.keys(beer), []);
 
   set(beer, 'brand', 'Corona');
-  deepEqual(keys(beer), ['brand']);
+  deepEqual(Object.keys(beer), ['brand']);
 
   removeObserver(beer, 'brand', K);
 });
@@ -90,7 +89,7 @@ QUnit.test('with observers switched on and off', function () {
   addObserver(beer, 'type', K);
   removeObserver(beer, 'type', K);
 
-  deepEqual(keys(beer), []);
+  deepEqual(Object.keys(beer), []);
 });
 
 QUnit.test('observers switched on and off with setter in between', function () {
@@ -103,7 +102,7 @@ QUnit.test('observers switched on and off with setter in between', function () {
   set(beer, 'type', 'ale');
   removeObserver(beer, 'type', K);
 
-  deepEqual(keys(beer), ['type']);
+  deepEqual(Object.keys(beer), ['type']);
 });
 
 QUnit.test('observer switched on and off and then setter', function () {
@@ -116,5 +115,5 @@ QUnit.test('observer switched on and off and then setter', function () {
   removeObserver(beer, 'type', K);
   set(beer, 'type', 'ale');
 
-  deepEqual(keys(beer), ['type']);
+  deepEqual(Object.keys(beer), ['type']);
 });

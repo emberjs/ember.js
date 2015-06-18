@@ -114,7 +114,6 @@ if (isEnabled('mandatory-setter')) {
     });
 
     watch(obj, 'someProp');
-
     ok(!('someProp' in meta.values), 'blastix');
   });
 

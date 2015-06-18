@@ -8,7 +8,6 @@ import {Mixin, observer} from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
 import {on} from 'ember-metal/events';
 import EmberObject from 'ember-runtime/system/object';
-import keys from 'ember-metal/keys';
 
 var moduleOptions, originalLookup;
 
@@ -357,7 +356,7 @@ QUnit.test('ensure internal properties do not leak', function() {
   });
 
   var expectedProperties = ['firstName', 'lastName'];
-  var actualProperties   = keys(obj);
+  var actualProperties   = Object.keys(obj);
 
   deepEqual(actualProperties, expectedProperties, 'internal properties do not leak');
 });

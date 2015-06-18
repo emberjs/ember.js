@@ -6,7 +6,6 @@
 import Ember from 'ember-metal/core'; // Ember.TEMPLATES, Ember.assert
 import { get } from 'ember-metal/property_get';
 import Logger from 'ember-metal/logger';
-import keys from 'ember-metal/keys';
 import {
   classify,
   capitalize,
@@ -436,7 +435,7 @@ export default EmberObject.extend({
     let typeRegexp = new RegExp(`${suffix}$`);
 
     let known = dictionary(null);
-    let knownKeys = keys(namespace);
+    let knownKeys = Object.keys(namespace);
     for (let index = 0, length = knownKeys.length; index < length; index++) {
       let name = knownKeys[index];
 

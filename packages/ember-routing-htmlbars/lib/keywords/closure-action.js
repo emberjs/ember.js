@@ -3,7 +3,6 @@ import {
   read,
   readArray
 } from 'ember-metal/streams/utils';
-import keys from 'ember-metal/keys';
 import { symbol } from 'ember-metal/utils';
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
@@ -14,7 +13,7 @@ export const ACTION = symbol('ACTION');
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
   return new Stream(function() {
     params.map(this.addDependency, this);
-    keys(hash).map((item) => this.addDependency(item));
+    Object.keys(hash).map((item) => this.addDependency(item));
 
     var rawAction = params[0];
     var actionArguments = readArray(params.slice(1, params.length));

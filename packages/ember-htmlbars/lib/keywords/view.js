@@ -6,7 +6,6 @@
 import { readViewFactory } from 'ember-views/streams/utils';
 import EmberView from 'ember-views/views/view';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
-import objectKeys from 'ember-metal/keys';
 
 export default {
   setupState(state, env, scope, params, hash) {
@@ -34,7 +33,7 @@ export default {
     // If the hash is empty, the component cannot have extracted a part
     // of a mutable param and used it in its layout, because there are
     // no params at all.
-    if (objectKeys(hash).length) {
+    if (Object.keys(hash).length) {
       return morph.state.manager.rerender(env, hash, visitor, true);
     }
   },

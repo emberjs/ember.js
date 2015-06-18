@@ -37,7 +37,6 @@ import {
   REQUIRED
 } from 'ember-metal/mixin';
 import EmberError from 'ember-metal/error';
-import keys from 'ember-metal/keys';
 import ActionHandler from 'ember-runtime/mixins/action_handler';
 import { defineProperty } from 'ember-metal/properties';
 import { Binding } from 'ember-metal/binding';
@@ -99,7 +98,7 @@ function makeCtor() {
 
         if (!properties) { continue; }
 
-        var keyNames = keys(properties);
+        var keyNames = Object.keys(properties);
 
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
