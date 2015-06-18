@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 1.13.2 (June 17, 2015)
+
+- [#11461](https://github.com/emberjs/ember.js/pull/11461) Remove `{{each}}` without `key=` warning. Deprecates `@guid` and `@item` in favor of the new default `@identity`.
+- [#11495](https://github.com/emberjs/ember.js/pull/11495) [PERFORMANCE] Remove debug statements from production builds.
+
 ### 1.13.1 (June 16, 2015)
 
 - [#11445](https://github.com/emberjs/ember.js/pull/11445) [BUGFIX] Allow recomputation for `Ember.Helper` with arguments.
