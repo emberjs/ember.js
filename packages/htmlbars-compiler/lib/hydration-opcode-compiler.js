@@ -136,7 +136,11 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   this.opcode(opcode, meta(mustache));
 };
 
-function meta({ loc: { source, start, end }}) {
+function meta(node) {
+  let loc = node.loc;
+  if (!loc) { return []; }
+
+  let { source, start, end } = loc;
   return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
 }
 
