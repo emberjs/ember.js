@@ -165,7 +165,7 @@ QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() 
   Ember.$(window).trigger('hashchange');
 });
 
-QUnit.test('HashLocation.onUpdateURL doesnt execute callback if lastSetURL === path', function() {
+QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL === path', function() {
   expect(0);
 
   createLocation({
