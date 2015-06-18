@@ -1,4 +1,5 @@
 import 'ember';
+import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 
 import { objectControllerDeprecation } from 'ember-runtime/controllers/object_controller';

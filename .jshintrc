@@ -3,7 +3,6 @@
         "QUnit",
         "define",
         "console",
-        "Ember",
         "DS",
         "Handlebars",
         "RSVP",

@@ -1,8 +1,6 @@
-import {
-  factory
-} from 'container/tests/container_helper';
-
+import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
+import { factory } from 'container/tests/container_helper';
 
 var originalModelInjections;
 

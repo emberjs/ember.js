@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Namespace from 'ember-runtime/system/namespace';

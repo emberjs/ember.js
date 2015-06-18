@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
 import shouldDisplay from 'ember-views/streams/should_display';
 import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';

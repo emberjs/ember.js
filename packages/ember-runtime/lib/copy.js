@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { isArray } from 'ember-metal/utils';
 import EmberObject from 'ember-runtime/system/object';
 import Copyable from 'ember-runtime/mixins/copyable';

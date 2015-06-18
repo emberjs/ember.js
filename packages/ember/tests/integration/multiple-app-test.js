@@ -1,5 +1,6 @@
-import compile from 'ember-template-compiler/system/compile';
+import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
+import compile from 'ember-template-compiler/system/compile';
 
 var App1, App2, actions;
 

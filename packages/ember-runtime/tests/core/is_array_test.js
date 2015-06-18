@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { isArray } from 'ember-runtime/utils';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 

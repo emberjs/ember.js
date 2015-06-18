@@ -3,6 +3,8 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
+
 /**
   Lookup both on root and on window. If the path starts with
   a keyword, the corresponding object will be looked up in the

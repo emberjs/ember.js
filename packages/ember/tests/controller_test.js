@@ -1,4 +1,5 @@
 import 'ember';
+import Ember from 'ember-metal/core';
 import EmberHandlebars from 'ember-htmlbars/compat';
 import EmberView from 'ember-views/views/view';
 

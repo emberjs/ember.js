@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import EmberHandlebars from 'ember-htmlbars/compat';
 import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';

@@ -1,5 +1,6 @@
+import Ember from 'ember-metal/core';
+import { generateGuid } from 'ember-metal/utils';
 import CopyableTests from 'ember-runtime/tests/suites/copyable';
-import {generateGuid} from 'ember-metal/utils';
 
 CopyableTests.extend({
   name: 'NativeArray Copyable',

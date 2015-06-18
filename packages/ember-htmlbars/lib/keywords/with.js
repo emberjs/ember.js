@@ -1,5 +1,6 @@
-import { internal } from 'htmlbars-runtime';
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
+import { internal } from 'htmlbars-runtime';
 
 export default {
   setupState(state, env, scope, params, hash) {
