@@ -719,14 +719,6 @@ var deprecatedTryCatchFinally = function() {
 
 var toString = Object.prototype.toString;
 
-var isArray = Array.isArray || function(value) {
-  return value !== null &&
-         value !== undefined &&
-         typeof value === 'object' &&
-         typeof value.length === 'number' &&
-         toString.call(value) === '[object Array]';
-};
-
 /**
   Forces the passed object to be part of an array. If the object is already
   an array, it will return the object. Otherwise, it will add the object to
@@ -752,7 +744,7 @@ var isArray = Array.isArray || function(value) {
 */
 export function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
-  return isArray(obj) ? obj : [obj];
+  return Array.isArray(obj) ? obj : [obj];
 }
 
 /**
@@ -776,7 +768,7 @@ export function inspect(obj) {
   if (obj === undefined) {
     return 'undefined';
   }
-  if (isArray(obj)) {
+  if (Array.isArray(obj)) {
     return '[' + obj + ']';
   }
   // for non objects
@@ -853,7 +845,6 @@ export {
   META_DESC,
   EMPTY_META,
   meta,
-  isArray,
   makeArray,
   tryCatchFinally,
   deprecatedTryCatchFinally,

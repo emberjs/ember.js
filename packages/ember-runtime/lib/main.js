@@ -82,7 +82,7 @@ import RSVP from 'ember-runtime/ext/rsvp';     // just for side effect of extend
 import 'ember-runtime/ext/string';   // just for side effect of extending String.prototype
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
 
-import { typeOf, isArray } from 'ember-runtime/utils';
+import { typeOf } from 'ember-runtime/utils';
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -117,8 +117,8 @@ Ember.ArrayComputedProperty = ArrayComputedProperty;
 Ember.reduceComputed = reduceComputed;
 Ember.ReduceComputedProperty = ReduceComputedProperty;
 
-Ember.typeOf    = typeOf;
-Ember.isArray   = isArray;
+Ember.typeOf = typeOf;
+Ember.isArray = Array.isArray;
 
 // ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
 var EmComputed = Ember.computed;
