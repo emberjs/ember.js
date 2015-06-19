@@ -10,8 +10,16 @@ export default function shouldDisplay(predicate) {
     return new ShouldDisplayStream(predicate);
   }
 
-  var truthy = predicate && get(predicate, 'isTruthy');
-  if (typeof truthy === 'boolean') { return truthy; }
+  var type = typeof predicate;
+
+  if (type === 'boolean') { return predicate; }
+
+  if (type && type === 'object') {
+    var isTruthy = get(predicate, 'isTruthy');
+    if (typeof isTruthy === 'boolean') {
+      return isTruthy;
+    }
+  }
 
   if (isArray(predicate)) {
     return get(predicate, 'length') !== 0;
