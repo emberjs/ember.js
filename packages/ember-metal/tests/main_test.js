@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal';
 
 // From sindresourhus/semver-regex https://github.com/sindresorhus/semver-regex/blob/795b05628d96597ebcbe6d31ef4a432858365582/index.js#L3
 var SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b$/;
@@ -32,3 +32,9 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
   validateVersionString('1.11', false);
 });
 
+
+QUnit.test('Ember.create is deprecated', function() {
+  expectDeprecation(function() {
+    Ember.create(null);
+  }, 'Ember.create is deprecated in-favour of Object.create');
+});
