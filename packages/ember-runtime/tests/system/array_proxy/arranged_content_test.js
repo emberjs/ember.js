@@ -8,16 +8,17 @@ var array;
 QUnit.module('ArrayProxy - arrangedContent', {
   setup() {
     run(function() {
-      array = ArrayProxy.createWithMixins({
-        content: Ember.A([1,2,4,5]),
-        arrangedContent: computed(function() {
+      array = ArrayProxy.extend({
+        arrangedContent: computed('content.[]', function() {
           var content = this.get('content');
           return content && Ember.A(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
           }));
-        }).property('content.[]')
+        })
+      }).create({
+        content: Ember.A([1,2,4,5])
       });
     });
   },
@@ -175,7 +176,7 @@ QUnit.test('firstObject - returns first arranged object', function() {
 QUnit.module('ArrayProxy - arrangedContent matching content', {
   setup() {
     run(function() {
-      array = ArrayProxy.createWithMixins({
+      array = ArrayProxy.create({
         content: Ember.A([1,2,4,5])
       });
     });
@@ -205,9 +206,7 @@ QUnit.test('reverseObjects - reverses content', function() {
 QUnit.module('ArrayProxy - arrangedContent with transforms', {
   setup() {
     run(function() {
-      array = ArrayProxy.createWithMixins({
-        content: Ember.A([1,2,4,5]),
-
+      array = ArrayProxy.extend({
         arrangedContent: computed(function() {
           var content = this.get('content');
           return content && Ember.A(content.slice().sort(function(a, b) {
@@ -221,6 +220,8 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
           var obj = this.get('arrangedContent').objectAt(idx);
           return obj && obj.toString();
         }
+      }).create({
+        content: Ember.A([1,2,4,5])
       });
     });
   },

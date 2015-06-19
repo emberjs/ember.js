@@ -57,14 +57,12 @@ testBoth('observer on subclass', function(get, set) {
 
 testBoth('observer on instance', function(get, set) {
 
-  var obj = EmberObject.createWithMixins({
-
-    count: 0,
-
+  var obj = EmberObject.extend({
     foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
-
+  }).create({
+    count: 0
   });
 
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
@@ -77,20 +75,18 @@ testBoth('observer on instance', function(get, set) {
 testBoth('observer on instance overriding class', function(get, set) {
 
   var MyClass = EmberObject.extend({
-
     count: 0,
 
     foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
-
   });
 
-  var obj = MyClass.createWithMixins({
+  var obj = MyClass.extend({
     foo: observer('baz', function() { // <-- change property we observe
       set(this, 'count', get(this, 'count')+1);
     })
-  });
+  }).create();
 
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
@@ -104,12 +100,12 @@ testBoth('observer on instance overriding class', function(get, set) {
 
 testBoth('observer should not fire after being destroyed', function(get, set) {
 
-  var obj = EmberObject.createWithMixins({
+  var obj = EmberObject.extend({
     count: 0,
     foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
-  });
+  }).create();
 
   equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
@@ -171,17 +167,17 @@ testBoth('chain observer on class', function(get, set) {
     })
   });
 
-  var obj1 = MyClass.createWithMixins({
+  var obj1 = MyClass.extend().create({
     bar: { baz: 'biff' }
   });
 
-  var obj2 = MyClass.createWithMixins({
-    bar: { baz: 'biff2' },
-    bar2: { baz: 'biff3' },
-
+  var obj2 = MyClass.extend({
     foo: observer('bar2.baz', function() {
       set(this, 'count', get(this, 'count')+1);
     })
+  }).create({
+    bar: { baz: 'biff2' },
+    bar2: { baz: 'biff3' }
   });
 
   equal(get(obj1, 'count'), 0, 'should not invoke yet');

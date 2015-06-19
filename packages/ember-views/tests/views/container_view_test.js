@@ -781,13 +781,13 @@ QUnit.test('should allow hX tags as tagName', function() {
 QUnit.test('renders contained view with omitted start tag and parent view context', function() {
   expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
-  view = ContainerView.createWithMixins({
+  view = ContainerView.extend({
     tagName: 'table',
     childViews: ['row'],
-    row: View.createWithMixins({
+    row: View.create({
       tagName: 'tr'
     })
-  });
+  }).create();
 
   run(view, view.append);
 

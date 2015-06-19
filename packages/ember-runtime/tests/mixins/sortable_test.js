@@ -19,7 +19,7 @@ QUnit.module('Ember.Sortable with content', {
 
       unsortedArray = Ember.A(Ember.A(array).copy());
 
-      sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
+      sortedArrayController = ArrayProxy.extend(SortableMixin).create({
         content: unsortedArray
       });
     });
@@ -70,11 +70,12 @@ QUnit.test('you can change sorted properties', function() {
 QUnit.test('changing sort order triggers observers', function() {
   var observer;
   var changeCount = 0;
-  observer = EmberObject.createWithMixins({
-    array: sortedArrayController,
+  observer = EmberObject.extend({
     arrangedDidChange: emberObserver('array.[]', function() {
       changeCount++;
     })
+  }).create({
+    array: sortedArrayController
   });
 
   equal(changeCount, 0, 'precond - changeCount starts at 0');
@@ -224,7 +225,7 @@ QUnit.test('you can unshift objects in sorted order', function() {
 QUnit.test('addObject does not insert duplicates', function() {
   var sortedArrayProxy;
   var obj = {};
-  sortedArrayProxy = ArrayProxy.createWithMixins(SortableMixin, {
+  sortedArrayProxy = ArrayProxy.extend(SortableMixin).create({
     content: Ember.A([obj])
   });
 
@@ -355,7 +356,7 @@ QUnit.test('you can sort with custom sorting function', function() {
 
 QUnit.test('Ember.Sortable with sortFunction on ArrayProxy should work like ArrayController', function() {
   run(function() {
-    sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
+    sortedArrayController = ArrayProxy.extend(SortableMixin).create({
       sortProperties: ['name'],
       sortFunction(v, w) {
         var lowerV = v.toLowerCase();

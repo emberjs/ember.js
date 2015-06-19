@@ -97,11 +97,12 @@ QUnit.test('should be able to bind element attributes using {{bind-attr}}', func
   equal(view.$('img').attr('alt'), 'The SproutCore Logo', 'updates alt attribute when content object is a hash');
 
   run(function() {
-    set(view, 'content', EmberObject.createWithMixins({
-      url: 'http://www.emberjs.com/assets/images/logo.png',
+    set(view, 'content', EmberObject.extend({
       title: computed(function() {
         return 'Nanananana Ember!';
       })
+    }).create({
+      url: 'http://www.emberjs.com/assets/images/logo.png'
     }));
   });
 
@@ -202,11 +203,12 @@ QUnit.test('should be able to bind use {{bind-attr}} more than once on an elemen
   equal(view.$('img').attr('alt'), 'The SproutCore Logo', 'updates alt attribute when content object is a hash');
 
   run(function() {
-    set(view, 'content', EmberObject.createWithMixins({
-      url: 'http://www.emberjs.com/assets/images/logo.png',
+    set(view, 'content', EmberObject.extend({
       title: computed(function() {
         return 'Nanananana Ember!';
       })
+    }).create({
+      url: 'http://www.emberjs.com/assets/images/logo.png'
     }));
   });
 

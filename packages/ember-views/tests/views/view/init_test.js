@@ -29,27 +29,27 @@ QUnit.test('registers view in the global views hash using layerId for event targ
   equal(EmberView.views[get(view, 'elementId')], view, 'registers view');
 });
 
-QUnit.module('EmberView.createWithMixins');
+QUnit.module('EmberView.extend');
 
 QUnit.test('should warn if a computed property is used for classNames', function() {
   expectAssertion(function() {
-    EmberView.createWithMixins({
+    EmberView.extend({
       elementId: 'test',
       classNames: computed(function() {
         return ['className'];
       }).volatile()
-    });
+    }).create();
   }, /Only arrays of static class strings.*For dynamic classes/i);
 });
 
 QUnit.test('should warn if a non-array is used for classNameBindings', function() {
   expectAssertion(function() {
-    EmberView.createWithMixins({
+    EmberView.extend({
       elementId: 'test',
       classNameBindings: computed(function() {
         return ['className'];
       }).volatile()
-    });
+    }).create();
   }, /Only arrays are allowed/i);
 });
 
