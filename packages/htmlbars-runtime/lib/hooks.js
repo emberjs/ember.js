@@ -1,7 +1,7 @@
 import render from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
-import { createObject, keyLength, shallowCopy } from "../htmlbars-util/object-utils";
+import { keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
 import { RenderState, clearMorph, clearMorphList, renderAndCleanup } from "../htmlbars-util/template-utils";
 import { linkParams } from "../htmlbars-util/morph-utils";
@@ -430,8 +430,8 @@ export function bindShadowScope(env /*, parentScope, shadowScope */) {
 }
 
 export function createChildScope(parent) {
-  var scope = createObject(parent);
-  scope.locals = createObject(parent.locals);
+  var scope = Object.create(parent);
+  scope.locals = Object.create(parent.locals);
   return scope;
 }
 

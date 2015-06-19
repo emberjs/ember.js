@@ -41,10 +41,6 @@
       "SL_IE_9": {
         "command": "ember sauce:launch -b 'internet explorer' -v 9 --no-ct -u <url>",
         "protocol": "tap"
-      },
-      "SL_IE_8": {
-        "command": "ember sauce:launch -b 'internet explorer' -v 8 --no-ct -u <url>",
-        "protocol": "tap"
       }
     }
   ,
@@ -62,7 +58,6 @@
     "SL_Safari_Last",
     "SL_IE_11",
     "SL_IE_10",
-    "SL_IE_9",
-    "SL_IE_8"
+    "SL_IE_9"
   ]
 }
