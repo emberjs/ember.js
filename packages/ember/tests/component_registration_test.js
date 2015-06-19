@@ -1,4 +1,6 @@
-import "ember";
+import 'ember';
+import Ember from 'ember-metal/core';
+import keys from 'ember-metal/keys';
 
 import compile from "ember-template-compiler/system/compile";
 import helpers from "ember-htmlbars/helpers";
@@ -11,7 +13,7 @@ function prepare() {
   Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
   Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
 
-  originalHelpers = Ember.A(Ember.keys(helpers));
+  originalHelpers = Ember.A(keys(helpers));
 }
 
 function cleanup() {
@@ -27,7 +29,7 @@ function cleanup() {
 }
 
 function cleanupHandlebarsHelpers() {
-  var currentHelpers = Ember.A(Ember.keys(helpers));
+  var currentHelpers = Ember.A(keys(helpers));
 
   currentHelpers.forEach(function(name) {
     if (!originalHelpers.contains(name)) {
