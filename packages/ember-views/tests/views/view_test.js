@@ -78,8 +78,8 @@ QUnit.test("should re-render if the context is changed", function() {
   equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });
 
-QUnit.test("renders a contained view with omitted start tag and tagless parent view context", function() {
-  view = EmberView.createWithMixins({
+QUnit.test('renders a contained view with omitted start tag and tagless parent view context', function() {
+  view = EmberView.create({
     tagName: 'table',
     template: compile("{{view view.pivot}}"),
     pivot: EmberView.extend({
@@ -105,9 +105,9 @@ QUnit.test("renders a contained view with omitted start tag and tagless parent v
 QUnit.test("propagates dependent-key invalidated sets upstream", function() {
   view = EmberView.create({
     parentProp: 'parent-value',
-    template: compile("{{view view.childView childProp=view.parentProp}}"),
-    childView: EmberView.createWithMixins({
-      template: compile("child template"),
+    template: compile('{{view view.childView childProp=view.parentProp}}'),
+    childView: EmberView.create({
+      template: compile('child template'),
       childProp: 'old-value'
     })
   });
@@ -127,9 +127,9 @@ QUnit.test("propagates dependent-key invalidated sets upstream", function() {
 QUnit.test("propagates dependent-key invalidated bindings upstream", function() {
   view = EmberView.create({
     parentProp: 'parent-value',
-    template: compile("{{view view.childView childProp=view.parentProp}}"),
-    childView: EmberView.createWithMixins({
-      template: compile("child template"),
+    template: compile('{{view view.childView childProp=view.parentProp}}'),
+    childView: EmberView.extend({
+      template: compile('child template'),
       childProp: Ember.computed('dependencyProp', {
         get(key) {
           return this.get('dependencyProp');
@@ -140,7 +140,7 @@ QUnit.test("propagates dependent-key invalidated bindings upstream", function() 
         }
       }),
       dependencyProp: 'old-value'
-    })
+    }).create()
   });
 
   run(view, view.append);

@@ -50,12 +50,12 @@ QUnit.test('Overriding a method several layers deep', function() {
   equal(obj.barCnt, 2, 'should invoke both');
 
   // Try overriding on create also
-  obj = FinalClass.createWithMixins({
+  obj = FinalClass.extend({
     foo() {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }
-  });
+  }).create();
 
   obj.foo();
   obj.bar();

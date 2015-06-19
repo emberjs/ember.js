@@ -7,7 +7,7 @@ QUnit.test("a listener can be added to an object", function() {
   var count = 0;
   var F = function() { count++; };
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
 
   obj.on('event!', F);
   obj.trigger('event!');
@@ -23,7 +23,7 @@ QUnit.test("a listener can be added and removed automatically the first time it 
   var count = 0;
   var F = function() { count++; };
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', F);
   obj.trigger('event!');
@@ -38,7 +38,7 @@ QUnit.test("a listener can be added and removed automatically the first time it 
 QUnit.test("triggering an event can have arguments", function() {
   var self, args;
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
 
   obj.on('event!', function() {
     args = [].slice.call(arguments);
@@ -55,7 +55,7 @@ QUnit.test("a listener can be added and removed automatically and have arguments
   var self, args;
   var count = 0;
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', function() {
     args = [].slice.call(arguments);
@@ -79,7 +79,7 @@ QUnit.test("a listener can be added and removed automatically and have arguments
 QUnit.test("binding an event can specify a different target", function() {
   var self, args;
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
   var target = {};
 
   obj.on('event!', target, function() {
@@ -98,7 +98,7 @@ QUnit.test("a listener registered with one can take method as string and can be 
   var target = {};
   target.fn = function() { count++; };
 
-  var obj = EmberObject.createWithMixins(Evented);
+  var obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', target, 'fn');
   obj.trigger('event!');
@@ -110,10 +110,10 @@ QUnit.test("a listener registered with one can take method as string and can be 
   equal(count, 1, "the event was not triggered again");
 });
 
-QUnit.test("a listener registered with one can be removed with off", function() {
-  var obj = EmberObject.createWithMixins(Evented, {
+QUnit.test('a listener registered with one can be removed with off', function() {
+  var obj = EmberObject.extend(Evented, {
     F() {}
-  });
+  }).create();
   var F = function() {};
 
   obj.one('event!', F);
@@ -127,8 +127,8 @@ QUnit.test("a listener registered with one can be removed with off", function() 
   equal(obj.has('event!'), false, 'has no more events');
 });
 
-QUnit.test("adding and removing listeners should be chainable", function() {
-  var obj = EmberObject.createWithMixins(Evented);
+QUnit.test('adding and removing listeners should be chainable', function() {
+  var obj = EmberObject.extend(Evented).create();
   var F = function() {};
 
   var ret = obj.on('event!', F);

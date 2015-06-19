@@ -67,8 +67,8 @@ ArrayTests.extend({
 
 }).run();
 
-QUnit.test("the return value of slice has Ember.Array applied", function() {
-  var x = EmberObject.createWithMixins(EmberArray, {
+QUnit.test('the return value of slice has Ember.Array applied', function() {
+  var x = EmberObject.extend(EmberArray).create({
     length: 0
   });
   var y = x.slice(1);
@@ -114,11 +114,12 @@ QUnit.module('mixins/array/arrayContent[Will|Did]Change');
 
 QUnit.test('should notify observers of []', function() {
 
-  obj = DummyArray.createWithMixins({
-    _count: 0,
+  obj = DummyArray.extend({
     enumerablePropertyDidChange: emberObserver('[]', function() {
       this._count++;
     })
+  }).create({
+    _count: 0
   });
 
   equal(obj._count, 0, 'should not have invoked yet');
@@ -136,12 +137,12 @@ QUnit.test('should notify observers of []', function() {
 
 QUnit.module('notify observers of length', {
   setup() {
-    obj = DummyArray.createWithMixins({
-      _after: 0,
+    obj = DummyArray.extend({
       lengthDidChange: emberObserver('length', function() {
         this._after++;
       })
-
+    }).create({
+      _after: 0
     });
 
     equal(obj._after, 0, 'should not have fired yet');
@@ -186,10 +187,7 @@ QUnit.module('notify array observers', {
   setup() {
     obj = DummyArray.create();
 
-    observer = EmberObject.createWithMixins({
-      _before: null,
-      _after: null,
-
+    observer = EmberObject.extend({
       arrayWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
@@ -199,6 +197,9 @@ QUnit.module('notify array observers', {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
+    }).create({
+      _before: null,
+      _after: null
     });
 
     obj.addArrayObserver(observer);
@@ -251,10 +252,7 @@ QUnit.module('notify enumerable observers as well', {
   setup() {
     obj = DummyArray.create();
 
-    observer = EmberObject.createWithMixins({
-      _before: null,
-      _after: null,
-
+    observer = EmberObject.extend({
       enumerableWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
@@ -264,6 +262,9 @@ QUnit.module('notify enumerable observers as well', {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
+    }).create({
+      _before: null,
+      _after: null
     });
 
     obj.addEnumerableObserver(observer);
@@ -418,16 +419,17 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
 });
 
 
-testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
-  var obj = EmberObject.createWithMixins({
+testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
+  var obj = EmberObject.extend({
     init() {
+      this._super(...arguments);
       set(this, 'resources', Ember.A());
     },
 
-    common: computed(function() {
+    common: computed('resources.@each.common', function() {
       return get(get(this, 'resources').objectAt(0), 'common');
-    }).property('resources.@each.common')
-  });
+    })
+  }).create();
 
   get(obj, 'resources').pushObject(EmberObject.create({ common: "HI!" }));
   equal("HI!", get(obj, 'common'));
@@ -439,8 +441,9 @@ testBoth("should be clear caches for computed properties that have dependent key
 testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
   var count = 0;
 
-  var obj = EmberObject.createWithMixins({
+  var obj = EmberObject.extend({
     init() {
+      this._super(...arguments);
       // Observer does not fire on init
       set(this, 'resources', Ember.A());
     },
@@ -448,7 +451,7 @@ testBoth("observers that contain @each in the path should fire only once the fir
     commonDidChange: emberObserver('resources.@each.common', function() {
       count++;
     })
-  });
+  }).create();
 
   // Observer fires second time when new object is added
   get(obj, 'resources').pushObject(EmberObject.create({ common: "HI!" }));

@@ -1497,7 +1497,7 @@ QUnit.test("using replaceWith calls location.replaceURL if available", function(
   var replaceCount = 0;
 
   Router.reopen({
-    location: Ember.NoneLocation.createWithMixins({
+    location: Ember.NoneLocation.create({
       setURL(path) {
         setCount++;
         set(this, 'path', path);
@@ -1533,7 +1533,7 @@ QUnit.test("using replaceWith calls setURL if location.replaceURL is not defined
   var setCount = 0;
 
   Router.reopen({
-    location: Ember.NoneLocation.createWithMixins({
+    location: Ember.NoneLocation.create({
       setURL(path) {
         setCount++;
         set(this, 'path', path);

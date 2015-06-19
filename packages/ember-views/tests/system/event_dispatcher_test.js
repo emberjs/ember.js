@@ -34,20 +34,17 @@ QUnit.test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  var childView = View.createWithMixins({
-    template: compile('<span id="wot">ewot</span>'),
-
+  var childView = View.extend({
     keyDown(evt) {
       childKeyDownCalled++;
 
       return false;
     }
+  }).create({
+    template: compile('<span id="wot">ewot</span>')
   });
 
-  view = View.createWithMixins({
-    template: compile('some <span id="awesome">awesome</span> content {{view view.childView}}'),
-    childView: childView,
-
+  view = View.extend({
     mouseDown(evt) {
       parentMouseDownCalled++;
       receivedEvent = evt;
@@ -56,6 +53,9 @@ QUnit.test("should dispatch events to views", function() {
     keyDown(evt) {
       parentKeyDownCalled++;
     }
+  }).create({
+    template: compile('some <span id="awesome">awesome</span> content {{view view.childView}}'),
+    childView: childView
   });
 
   run(function() {
@@ -84,12 +84,12 @@ QUnit.test("should dispatch events to views", function() {
 QUnit.test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
-  view = View.createWithMixins({
-    template: compile('some <span id="awesome">awesome</span> content'),
-
+  view = View.extend({
     mouseDown(evt) {
       receivedEvent = evt;
     }
+  }).create({
+    template: compile('some <span id="awesome">awesome</span> content')
   });
 
   run(function() {
@@ -196,10 +196,9 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var receivedEvent=0;
-  view = ContainerView.createWithMixins({
-    elementId: 'containerView',
+  view = ContainerView.extend({
 
-    eventManager: EmberObject.create({
+    eventManager: EmberObject.extend({
       mouseDown(evt, view) {
         // Re-dispatch event when you get it.
         //
@@ -211,9 +210,7 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
         // re-dispatching works
         view.$().trigger('mousedown', this);
       }
-    }),
-
-    childViews: ['child'],
+    }).create(),
 
     child: View.extend({
       elementId: 'nestedView',
@@ -226,6 +223,9 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
     mouseDown(evt) {
       receivedEvent++;
     }
+  }).create({
+    elementId: 'containerView',
+    childViews: ['child']
   });
 
   run(function() { view.append(); });
@@ -237,14 +237,14 @@ QUnit.test("event manager should be able to re-dispatch events to view", functio
 QUnit.test("event handlers should be wrapped in a run loop", function() {
   expect(1);
 
-  view = View.createWithMixins({
-    elementId: 'test-view',
-
-    eventManager: EmberObject.create({
+  view = View.extend({
+    eventManager: EmberObject.extend({
       mouseDown() {
         ok(run.currentRunLoop, 'a run loop should have started');
       }
-    })
+    }).create()
+  }).create({
+    elementId: 'test-view'
   });
 
   run(function() { view.append(); });

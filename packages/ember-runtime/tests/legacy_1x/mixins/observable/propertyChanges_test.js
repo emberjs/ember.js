@@ -29,17 +29,10 @@ var ObjectA;
 
 QUnit.module("object.propertyChanges", {
   setup() {
-    ObjectA = ObservableObject.createWithMixins({
-      foo  : 'fooValue',
-      prop : 'propValue',
-
+    ObjectA = ObservableObject.extend({
       action: observer('foo', function() {
         this.set('prop', 'changedPropValue');
       }),
-
-      newFoo : 'newFooValue',
-      newProp: 'newPropValue',
-
       notifyAction: observer('newFoo', function() {
         this.set('newProp', 'changedNewPropValue');
       }),
@@ -48,12 +41,18 @@ QUnit.module("object.propertyChanges", {
         this.set('newFoo', 'changedNewFooValue');
       }),
 
-      starProp: null,
       starObserver(target, key, value, rev) {
         revMatches = (rev === target.propertyRevision);
         this.starProp = key;
       }
+    }).create({
+      starProp: null,
 
+      foo  : 'fooValue',
+      prop : 'propValue',
+
+      newFoo : 'newFooValue',
+      newProp: 'newPropValue'
     });
   }
 });
@@ -121,15 +120,16 @@ QUnit.test("should notify that the property of an object has changed", function(
 
 QUnit.test("should invalidate function property cache when notifyPropertyChange is called", function() {
 
-  var a = ObservableObject.createWithMixins({
-    _b: null,
+  var a = ObservableObject.extend({
     b: computed({
-      get: function() { return this._b; },
-      set: function(key, value) {
+      get() { return this._b; },
+      set(key, value) {
         this._b = value;
         return this;
       }
     }).volatile()
+  }).create({
+    _b: null
   });
 
   a.set('b', 'foo');

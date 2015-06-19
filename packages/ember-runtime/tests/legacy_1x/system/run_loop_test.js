@@ -23,22 +23,21 @@ var MyApp, binding1, binding2;
 QUnit.module("System:run_loop() - chained binding", {
   setup() {
     MyApp = {};
-    MyApp.first = EmberObject.createWithMixins(Observable, {
+    MyApp.first = EmberObject.extend(Observable).create({
       output: 'MyApp.first'
     });
 
-    MyApp.second = EmberObject.createWithMixins(Observable, {
-      input: 'MyApp.second',
-      output: 'MyApp.second',
-
-      inputDidChange: emberObserver("input", function() {
-        this.set("output", this.get("input"));
+    MyApp.second = EmberObject.extend(Observable, {
+      inputDidChange: emberObserver('input', function() {
+        this.set('output', this.get('input'));
       })
-
+    }).create({
+      input: 'MyApp.second',
+      output: 'MyApp.second'
     });
 
-    MyApp.third = EmberObject.createWithMixins(Observable, {
-      input: "MyApp.third"
+    MyApp.third = EmberObject.extend(Observable).create({
+      input: 'MyApp.third'
     });
   }
 });

@@ -152,7 +152,7 @@ QUnit.test("modelFor doesn't require the router", function() {
 
 QUnit.test(".send just calls an action if the router is absent", function() {
   expect(7);
-  var route = EmberRoute.createWithMixins({
+  var route = EmberRoute.extend({
     actions: {
       returnsTrue(foo, bar) {
         equal(foo, 1);
@@ -166,7 +166,7 @@ QUnit.test(".send just calls an action if the router is absent", function() {
         return false;
       }
     }
-  });
+  }).create();
 
   equal(true, route.send('returnsTrue', 1, 2));
   equal(false, route.send('returnsFalse'));

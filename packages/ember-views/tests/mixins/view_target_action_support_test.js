@@ -7,7 +7,7 @@ QUnit.module("ViewTargetActionSupport");
 QUnit.test("it should return false if no action is specified", function() {
   expect(1);
 
-  var view = View.createWithMixins(ViewTargetActionSupport, {
+  var view = View.extend(ViewTargetActionSupport).create({
     controller: EmberObject.create()
   });
 
@@ -17,7 +17,7 @@ QUnit.test("it should return false if no action is specified", function() {
 QUnit.test("it should support actions specified as strings", function() {
   expect(2);
 
-  var view = View.createWithMixins(ViewTargetActionSupport, {
+  var view = View.extend(ViewTargetActionSupport).create({
     controller: EmberObject.create({
       anEvent() {
         ok(true, "anEvent method was called");
@@ -32,14 +32,15 @@ QUnit.test("it should support actions specified as strings", function() {
 QUnit.test("it should invoke the send() method on the controller with the view's context", function() {
   expect(3);
 
-  var view = View.createWithMixins(ViewTargetActionSupport, {
-    context: {},
+  var view = View.extend(ViewTargetActionSupport, {
     controller: EmberObject.create({
       send(evt, context) {
-        equal(evt, 'anEvent', "send() method was invoked with correct event name");
-        equal(context, view.context, "send() method was invoked with correct context");
+        equal(evt, 'anEvent', 'send() method was invoked with correct event name');
+        equal(context, view.get('context'), 'send() method was invoked with correct context');
       }
-    }),
+    })
+  }).create({
+    context: {},
     action: 'anEvent'
   });
 

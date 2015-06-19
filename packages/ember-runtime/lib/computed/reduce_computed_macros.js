@@ -459,10 +459,11 @@ export var union = uniq;
   Example
 
   ```javascript
-  var obj = Ember.Object.createWithMixins({
-    adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
-    charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock'],
+  var obj = Ember.Object.extend({
     friendsInCommon: Ember.computed.intersect('adaFriends', 'charlesFriends')
+  }).create({
+    adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
+    charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
   });
 
   obj.get('friendsInCommon'); // ['William King', 'Mary Somerville']

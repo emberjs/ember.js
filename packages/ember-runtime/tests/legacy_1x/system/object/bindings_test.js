@@ -126,9 +126,9 @@ QUnit.module("fooBinding method", fooBindingModuleOpts);
 QUnit.test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", function() {
   // create binding
   run(function() {
-    testObject = TestObject.createWithMixins({
-      fooBinding: "TestNamespace.fromObject.bar"
-    });
+    testObject = TestObject.extend({
+      fooBinding: 'TestNamespace.fromObject.bar'
+    }).create();
 
     // now make a change to see if the binding triggers.
     set(fromObject, "bar", "changedValue");
@@ -139,9 +139,9 @@ QUnit.test("fooBinding: TestNamespace.fromObject.bar should follow absolute path
 
 QUnit.test("fooBinding: .bar should bind to relative path", function() {
   run(function() {
-    testObject = TestObject.createWithMixins({
-      fooBinding: "bar"
-    });
+    testObject = TestObject.extend({
+      fooBinding: 'bar'
+    }).create();
     // now make a change to see if the binding triggers.
     set(testObject, "bar", "changedValue");
   });
@@ -151,9 +151,9 @@ QUnit.test("fooBinding: .bar should bind to relative path", function() {
 
 QUnit.test('fooBinding: should disconnect bindings when destroyed', function () {
   run(function() {
-    testObject = TestObject.createWithMixins({
-      fooBinding: "TestNamespace.fromObject.bar"
-    });
+    testObject = TestObject.extend({
+      fooBinding: 'TestNamespace.fromObject.bar'
+    }).create();
 
     set(TestNamespace.fromObject, 'bar', 'BAZ');
   });

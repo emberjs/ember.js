@@ -158,7 +158,7 @@ QUnit.test("input title is updated when setting title property of view", functio
 QUnit.test("value binding works properly for inputs that haven't been created", function() {
   run(function() {
     textArea.destroy(); // destroy existing textarea
-    textArea = TextArea.createWithMixins({
+    textArea = TextArea.create({
       valueBinding: 'TestObject.value'
     });
   });

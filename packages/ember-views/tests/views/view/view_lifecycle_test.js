@@ -34,7 +34,7 @@ QUnit.test("should create and append a DOM element after bindings have synced", 
       fakeThing: 'controllerPropertyValue'
     });
 
-    view = EmberView.createWithMixins({
+    view = EmberView.create({
       fooBinding: 'ViewTest.fakeController.fakeThing',
       template: compile("{{view.foo}}")
     });
@@ -207,11 +207,12 @@ QUnit.test("should throw an exception when calling appendChild when DOM element 
 
 QUnit.test("should replace DOM representation if rerender() is called after element is created", function() {
   run(function() {
-    view = EmberView.createWithMixins({
-      template: compile("Do not taunt happy fun {{unbound view.shape}}"),
+    view = EmberView.extend({
       rerender() {
         this._super.apply(this, arguments);
-      },
+      }
+    }).create({
+      template: compile('Do not taunt happy fun {{unbound view.shape}}'),
       shape: 'sphere'
     });
 
@@ -366,4 +367,3 @@ QUnit.test("trigger rerender on a view in the inDOM state keeps its state as inD
     view.destroy();
   });
 });
-
