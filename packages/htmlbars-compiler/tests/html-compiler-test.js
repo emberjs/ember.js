@@ -10,20 +10,6 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
 
 var hooks, helpers, partials, env;
 
-// IE8 doesn't correctly handle these html strings
-var innerHTMLSupportsCustomTags = (function() {
-  var div = document.createElement('div');
-  div.innerHTML = '<x-bar></x-bar>';
-  return normalizeInnerHTML(div.innerHTML) === '<x-bar></x-bar>';
-})();
-
-// IE8 doesn't handle newlines in innerHTML correctly
-var innerHTMLHandlesNewlines = (function() {
-  var div = document.createElement('div');
-  div.innerHTML = 'foo\n\nbar';
-  return div.innerHTML.length === 8;
-})();
-
 function registerHelper(name, callback) {
   helpers[name] = callback;
 }
@@ -215,13 +201,9 @@ test("The compiler can handle backslashes", function() {
   compilesTo('<div>This is a backslash: \\</div>');
 });
 
-if (innerHTMLHandlesNewlines) {
-
 test("The compiler can handle newlines", function() {
   compilesTo("<div>common\n\nbro</div>");
 });
-
-}
 
 test("The compiler can handle comments", function() {
   compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
@@ -704,8 +686,6 @@ test('Components - Called as helpers', function () {
   compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcf', object);
 });
 
-if (innerHTMLSupportsCustomTags) {
-
 test('Components - Unknown helpers fall back to elements', function () {
   var object = { size: 'med', foo: 'b' };
   compilesTo('<x-bar class="btn-{{size}}">a{{foo}}c</x-bar>','<x-bar class="btn-med">abc</x-bar>', object);
@@ -724,8 +704,6 @@ test('Components - Text-only dashed attributes work', function () {
   var object = { foo: 'qux' };
   compilesTo('<x-bar aria-label="foo" id="test">{{foo}}</x-bar>','<x-bar aria-label="foo" id="test">qux</x-bar>', object);
 });
-
-}
 
 test('Repaired text nodes are ensured in the right place', function () {
   var object = { a: "A", b: "B", c: "C", d: "D" };
@@ -907,11 +885,6 @@ test("A helpful error message is provided for mismatched start/end tags", functi
   }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
 });
 
-// These skipped tests don't actually have anything to do with innerHTML,
-// but are related to IE8 doing Bad Things with newlines. This should
-// likely have its own feature detect instead of using this one.
-if (innerHTMLHandlesNewlines) {
-
 test("error line numbers include comment lines", function() {
   QUnit.throws(function() {
     compile("<div>\n<p>\n{{! some comment}}\n\n</div>");
@@ -941,8 +914,6 @@ test("error line numbers include multiple mustache lines", function() {
     compile("<div>\n<p>\n{{some-comment}}</div>{{some-comment}}");
   }, /Closing tag `div` \(on line 3\) did not match last open tag `p` \(on line 2\)\./);
 });
-
-}
 
 if (document.createElement('div').namespaceURI) {
 

@@ -25,20 +25,6 @@ export function preprocess(html, options) {
 
 export default preprocess;
 
-var splitLines;
-// IE8 throws away blank pieces when splitting strings with a regex
-// So we split using a string instead as appropriate
-if ("foo\n\nbar".split(/\n/).length === 2) {
-  splitLines = function(str) {
-     var clean = str.replace(/\r\n?/g, '\n');
-     return clean.split('\n');
-  };
-} else {
-  splitLines = function(str) {
-    return str.split(/(?:\r\n?|\n)/g);
-  };
-}
-
 const entityParser = new EntityParser(fullCharRefs);
 
 export function Parser(source, options) {
@@ -50,7 +36,7 @@ export function Parser(source, options) {
   this.currentAttribute = null;
 
   if (typeof source === 'string') {
-    this.source = splitLines(source);
+    this.source = source.split(/(?:\r\n?|\n)/g);
   }
 }
 
