@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core';
+import isEmpty from 'ember-metal/is_empty';
+import keys from 'ember-metal/keys';
 import EmberObject from 'ember-runtime/system/object';
 import merge from 'ember-metal/merge';
 
@@ -11,7 +12,7 @@ var RouterState = EmberObject.extend({
     var state = this.routerJsState;
     if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
 
-    var emptyQueryParams = Ember.isEmpty(Ember.keys(queryParams));
+    var emptyQueryParams = isEmpty(keys(queryParams));
 
     if (queryParamsMustMatch && !emptyQueryParams) {
       var visibleQueryParams = {};
@@ -37,4 +38,3 @@ function shallowEqual(a, b) {
 }
 
 export default RouterState;
-
