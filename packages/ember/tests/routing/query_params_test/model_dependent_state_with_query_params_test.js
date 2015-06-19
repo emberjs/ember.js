@@ -105,8 +105,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       sharedSetup();
 
       App.Router.map(function() {
-        this.resource('article', { path: '/a/:id' }, function() {
-          this.resource('comments');
+        this.route('article', { path: '/a/:id' }, function() {
+          this.route('comments', { resetNamespace: true });
         });
       });
 
@@ -338,8 +338,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('can reset query params using the resetController hook', function() {
     App.Router.map(function() {
-      this.resource('article', { path: '/a/:id' }, function() {
-        this.resource('comments');
+      this.route('article', { path: '/a/:id' }, function() {
+        this.route('comments', { resetNamespace: true });
       });
       this.route('about');
     });
@@ -386,8 +386,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       sharedSetup();
 
       App.Router.map(function() {
-        this.resource('article', { path: '/a/:id' }, function() {
-          this.resource('comments');
+        this.route('article', { path: '/a/:id' }, function() {
+          this.route('comments', { resetNamespace: true });
         });
       });
 
@@ -613,8 +613,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('can reset query params using the resetController hook', function() {
     App.Router.map(function() {
-      this.resource('article', { path: '/a/:id' }, function() {
-        this.resource('comments');
+      this.route('article', { path: '/a/:id' }, function() {
+        this.route('comments', { resetNamespace: true });
       });
       this.route('about');
     });

@@ -36,7 +36,7 @@ QUnit.module('Ember.Application – logging of generated classes', {
       });
 
       App.Router.map(function() {
-        this.resource('posts');
+        this.route('posts', { resetNamespace: true });
       });
 
       App.deferReadiness();
@@ -161,7 +161,7 @@ QUnit.module('Ember.Application – logging of view lookups', {
       });
 
       App.Router.map(function() {
-        this.resource('posts');
+        this.route('posts', { resetNamespace: true });
       });
 
       App.deferReadiness();

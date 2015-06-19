@@ -116,7 +116,7 @@ var ActionHandler = Mixin.create({
 
     ```js
     App.Router.map(function() {
-      this.resource("album", function() {
+      this.route("album", function() {
         this.route("song");
       });
     });

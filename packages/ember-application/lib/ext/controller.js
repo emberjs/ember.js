@@ -97,7 +97,7 @@ ControllerMixin.reopen({
     this.get('controllers.post'); // instance of App.PostController
     ```
 
-    Given that you have a nested controller (nested resource):
+    Given that you have a nested controller (nested routes):
 
     ```javascript
     App.CommentsNewController = Ember.ObjectController.extend({

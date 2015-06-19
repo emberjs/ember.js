@@ -116,8 +116,8 @@ QUnit.test('Slow promises waterfall on startup', function() {
   var sallyDeferred = Ember.RSVP.defer();
 
   Router.map(function() {
-    this.resource('grandma', function() {
-      this.resource('mom', function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
         this.route('sally');
       });
     });
@@ -170,7 +170,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
   var momDeferred = Ember.RSVP.defer();
 
   Router.map(function() {
-    this.resource('grandma', function() {
+    this.route('grandma', function() {
       this.route('mom');
     });
   });
@@ -285,8 +285,8 @@ QUnit.test('Enter child loading state of pivot route', function() {
   var deferred = Ember.RSVP.defer();
 
   Router.map(function() {
-    this.resource('grandma', function() {
-      this.resource('mom', function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
         this.route('sally');
       });
       this.route('smells');
@@ -332,8 +332,8 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
   var smellsDeferred = Ember.RSVP.defer();
 
   Router.map(function() {
-    this.resource('grandma', function() {
-      this.resource('mom', function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
         this.route('sally');
       });
       this.route('smells');
@@ -386,8 +386,8 @@ QUnit.test('Default error event moves into nested route', function() {
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
 
   Router.map(function() {
-    this.resource('grandma', function() {
-      this.resource('mom', function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
         this.route('sally');
       });
     });
@@ -493,8 +493,8 @@ if (isEnabled('ember-routing-named-substates')) {
     templates['grandma/mom_error'] = 'MOM ERROR: {{model.msg}}';
 
     Router.map(function() {
-      this.resource('grandma', function() {
-        this.resource('mom', function() {
+      this.route('grandma', function() {
+        this.route('mom', { resetNamespace: true }, function() {
           this.route('sally');
         });
       });
@@ -528,7 +528,7 @@ if (isEnabled('ember-routing-named-substates')) {
     equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
   });
 
-  QUnit.test('Prioritized substate entry works with preserved-namespace nested resources', function() {
+  QUnit.test('Prioritized substate entry works with preserved-namespace nested routes', function() {
 
     expect(2);
 
@@ -536,8 +536,8 @@ if (isEnabled('ember-routing-named-substates')) {
     templates['foo/bar/index'] = 'YAY';
 
     Router.map(function() {
-      this.resource('foo', function() {
-        this.resource('foo.bar', { path: '/bar' }, function() {
+      this.route('foo', function() {
+        this.route('foo.bar', { path: '/bar', resetNamespace: true }, function() {
         });
       });
     });
@@ -628,7 +628,7 @@ if (isEnabled('ember-routing-named-substates')) {
     templates['foo'] = '{{outlet}}';
 
     Router.map(function() {
-      this.resource('foo', function() {
+      this.route('foo', function() {
         this.route('bar');
       });
     });
@@ -665,7 +665,7 @@ if (isEnabled('ember-routing-named-substates')) {
     templates['foo'] = '{{outlet}}';
 
     Router.map(function() {
-      this.resource('foo', function() {
+      this.route('foo', function() {
         this.route('bar');
       });
     });

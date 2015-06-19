@@ -243,7 +243,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     );
 
     Router.map(function() {
-      this.resource('search', function() {
+      this.route('search', function() {
         this.route('results');
       });
     });
@@ -378,7 +378,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('The {{link-to}} helper applies active class to parent route', function() {
     App.Router.map(function() {
-      this.resource('parent', function() {
+      this.route('parent', function() {
         this.route('child');
       });
     });
@@ -610,7 +610,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     );
 
     Router.map(function() {
-      this.resource('search', function() {
+      this.route('search', function() {
         this.route('results');
       });
     });
@@ -722,7 +722,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('The {{link-to}} helper applies active class to parent route', function() {
     App.Router.map(function() {
-      this.resource('parent', function() {
+      this.route('parent', function() {
         this.route('child');
       });
     });
