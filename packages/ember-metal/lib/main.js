@@ -223,7 +223,6 @@ Ember._Cache = Cache;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
-Ember.create          = Object.create;
 Ember.keys            = Object.keys;
 Ember.platform        = {
   defineProperty: true,
@@ -407,5 +406,7 @@ Ember.onerror = null;
 if (Ember.__loader.registry['ember-debug']) {
   requireModule('ember-debug');
 }
+
+Ember.create = Ember.deprecateFunc('Ember.create is deprecated in-favour of Object.create', Object.create);
 
 export default Ember;
