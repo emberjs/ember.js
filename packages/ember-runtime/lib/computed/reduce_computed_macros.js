@@ -186,6 +186,9 @@ export function map(dependentKey, callback) {
     _suppressDeprecation: true,
 
     addedItem(array, item, changeMeta, instanceMeta) {
+      Ember.assert('Ember.computed.map expects a callback function for its second argument, ' +
+        'perhaps you meant to use "mapBy"', typeof callback === 'function');
+
       var mapped = callback.call(this, item, changeMeta.index);
       array.insertAt(changeMeta.index, mapped);
       return array;
