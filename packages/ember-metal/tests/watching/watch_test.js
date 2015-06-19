@@ -93,7 +93,7 @@ testBoth('watching a regular undefined property', function(get, set) {
 
 testBoth('watches should inherit', function(get, set) {
   var obj = { foo: 'baz' };
-  var objB = Ember.create(obj);
+  var objB = Object.create(obj);
 
   addListeners(obj, 'foo');
   watch(obj, 'foo');
