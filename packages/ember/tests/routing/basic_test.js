@@ -688,7 +688,7 @@ QUnit.test('The Homepage getting its controller context via model', function() {
 QUnit.test('The Specials Page getting its controller context by deserializing the params hash', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   App.SpecialRoute = Ember.Route.extend({
@@ -719,7 +719,7 @@ QUnit.test('The Specials Page getting its controller context by deserializing th
 QUnit.test('The Specials Page defaults to looking models up via `find`', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   App.MenuItem = Ember.Object.extend();
@@ -753,7 +753,7 @@ QUnit.test('The Specials Page defaults to looking models up via `find`', functio
 QUnit.test('The Special Page returning a promise puts the app into a loading state until the promise is resolved', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   var menuItem, resolve;
@@ -805,7 +805,7 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
 QUnit.test('The loading state doesn\'t get entered for promises that resolve on the same run loop', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   App.MenuItem = Ember.Object.extend();
@@ -848,7 +848,7 @@ QUnit.test('The loading state doesn\'t get entered for promises that resolve on 
 asyncTest("The Special page returning an error fires the error hook on SpecialRoute", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
-    this.resource("special", { path: "/specials/:menu_item_id" });
+    this.route("special", { path: "/specials/:menu_item_id" });
   });
 
   var menuItem;
@@ -883,7 +883,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 QUnit.test('The Special page returning an error invokes SpecialRoute\'s error handler', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   var menuItem, promise, resolve;
@@ -926,7 +926,7 @@ function testOverridableErrorHandler(handlersName) {
 
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   var menuItem, resolve;
@@ -980,7 +980,7 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 
   Router.map(function() {
     this.route('home', { path: '/' });
-    this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('special', { path: '/specials/:menu_item_id' });
   });
 
   App.MenuItem = Ember.Object.extend();
@@ -1024,8 +1024,8 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 
 asyncTest('Nested callbacks are not exited when moving to siblings', function() {
   Router.map(function() {
-    this.resource('root', { path: '/' }, function() {
-      this.resource('special', { path: '/specials/:menu_item_id' });
+    this.route('root', { path: '/' }, function() {
+      this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
     });
   });
 
@@ -1212,7 +1212,7 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `acti
 
 QUnit.asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function() {
   Router.map(function() {
-    this.resource('root', { path: '/' }, function() {
+    this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
     });
   });
@@ -1285,7 +1285,7 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `even
 
 QUnit.asyncTest('Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)', function() {
   Router.map(function() {
-    this.resource('root', { path: '/' }, function() {
+    this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
     });
   });
@@ -1406,7 +1406,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
 
 QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
   Router.map(function() {
-    this.resource('root', { path: '/' }, function() {
+    this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
     });
   });
@@ -1563,10 +1563,10 @@ QUnit.test('Route inherits model from parent route', function() {
   expect(9);
 
   Router.map(function() {
-    this.resource('the_post', { path: '/posts/:post_id' }, function() {
+    this.route('the_post', { path: '/posts/:post_id' }, function() {
       this.route('comments');
 
-      this.resource('shares', { path: '/shares/:share_id' }, function() {
+      this.route('shares', { path: '/shares/:share_id', resetNamespace: true }, function() {
         this.route('share');
       });
     });
@@ -1634,12 +1634,12 @@ QUnit.test('Route inherits model from parent route', function() {
   handleURL('/posts/3/shares/3');
 });
 
-QUnit.test('Resource inherits model from parent resource', function() {
+QUnit.test('Routes with { resetNamespace: true } inherits model from parent route', function() {
   expect(6);
 
   Router.map(function() {
-    this.resource('the_post', { path: '/posts/:post_id' }, function() {
-      this.resource('comments', function() {
+    this.route('the_post', { path: '/posts/:post_id' }, function() {
+      this.route('comments', { resetNamespace: true }, function() {
       });
     });
   });
@@ -1685,8 +1685,8 @@ QUnit.test('It is possible to get the model from a parent route', function() {
   expect(9);
 
   Router.map(function() {
-    this.resource('the_post', { path: '/posts/:post_id' }, function() {
-      this.resource('comments');
+    this.route('the_post', { path: '/posts/:post_id' }, function() {
+      this.route('comments', { resetNamespace: true });
     });
   });
 
@@ -1762,8 +1762,8 @@ QUnit.test('Redirecting from the middle of a route aborts the remainder of the r
 
   Router.map(function() {
     this.route('home');
-    this.resource('foo', function() {
-      this.resource('bar', function() {
+    this.route('foo', function() {
+      this.route('bar', { resetNamespace: true }, function() {
         this.route('baz');
       });
     });
@@ -1797,8 +1797,8 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
 
   Router.map(function() {
     this.route('home');
-    this.resource('foo', function() {
-      this.resource('bar', function() {
+    this.route('foo', function() {
+      this.route('bar', { resetNamespace: true }, function() {
         this.route('baz');
       });
     });
@@ -1837,8 +1837,8 @@ QUnit.test('Redirecting to the current target with a different context aborts th
 
   Router.map(function() {
     this.route('home');
-    this.resource('foo', function() {
-      this.resource('bar', { path: 'bar/:id' }, function() {
+    this.route('foo', function() {
+      this.route('bar', { path: 'bar/:id', resetNamespace: true }, function() {
         this.route('baz');
       });
     });
@@ -1878,8 +1878,8 @@ QUnit.test('Redirecting to the current target with a different context aborts th
 
 QUnit.test('Transitioning from a parent event does not prevent currentPath from being set', function() {
   Router.map(function() {
-    this.resource('foo', function() {
-      this.resource('bar', function() {
+    this.route('foo', function() {
+      this.route('bar', { resetNamespace: true }, function() {
         this.route('baz');
       });
       this.route('qux');
@@ -1920,8 +1920,8 @@ QUnit.test('Generated names can be customized when providing routes with dot not
   Ember.TEMPLATES['bar/baz'] = compile('<p>{{name}}Bottom!</p>');
 
   Router.map(function() {
-    this.resource('foo', { path: '/top' }, function() {
-      this.resource('bar', { path: '/middle' }, function() {
+    this.route('foo', { path: '/top' }, function() {
+      this.route('bar', { path: '/middle', resetNamespace: true }, function() {
         this.route('baz', { path: '/bottom' });
       });
     });
@@ -1964,8 +1964,8 @@ QUnit.test('Child routes render into their parent route\'s template by default',
   Ember.TEMPLATES['middle/bottom'] = compile('<p>Bottom!</p>');
 
   Router.map(function() {
-    this.resource('top', function() {
-      this.resource('middle', function() {
+    this.route('top', function() {
+      this.route('middle', { resetNamespace: true }, function() {
         this.route('bottom');
       });
     });
@@ -1986,8 +1986,8 @@ QUnit.test('Child routes render into specified template', function() {
   Ember.TEMPLATES['middle/bottom'] = compile('<p>Bottom!</p>');
 
   Router.map(function() {
-    this.resource('top', function() {
-      this.resource('middle', function() {
+    this.route('top', function() {
+      this.route('middle', { resetNamespace: true }, function() {
         this.route('bottom');
       });
     });
@@ -2012,7 +2012,7 @@ QUnit.test('Rendering into specified template with slash notation', function() {
   Ember.TEMPLATES['person/details'] = compile('details!');
 
   Router.map(function() {
-    this.resource('home', { path: '/' });
+    this.route('home', { path: '/' });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -2038,8 +2038,8 @@ QUnit.test('Parent route context change', function() {
   Ember.TEMPLATES['post/edit'] = compile('editing');
 
   Router.map(function() {
-    this.resource('posts', function() {
-      this.resource('post', { path: '/:postId' }, function() {
+    this.route('posts', function() {
+      this.route('post', { path: '/:postId', resetNamespace: true }, function() {
         this.route('edit');
       });
     });
@@ -2137,7 +2137,7 @@ QUnit.test('Router accounts for rootURL on page load when using history location
   });
 
   Router.map(function() {
-    this.resource('posts', { path: '/posts' });
+    this.route('posts', { path: '/posts' });
   });
 
   App.PostsRoute = Ember.Route.extend({
@@ -2185,7 +2185,7 @@ QUnit.test('Only use route rendered into main outlet for default into property o
   Ember.TEMPLATES['posts/menu'] = compile('postsMenu');
 
   Router.map(function() {
-    this.resource('posts', function() {});
+    this.route('posts', function() {});
   });
 
   App.PostsMenuView = EmberView.extend({
@@ -2268,7 +2268,7 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
 
 QUnit.test('Nested index route is not overriden by parent\'s implicit index route', function() {
   Router.map(function() {
-    this.resource('posts', function() {
+    this.route('posts', function() {
       this.route('index', { path: ':category' });
     });
   });
@@ -2500,8 +2500,8 @@ QUnit.test('Route should tear down multiple outlets', function() {
   Ember.TEMPLATES['posts/footer'] = compile('postsFooter');
 
   Router.map(function() {
-    this.resource('posts', function() {});
-    this.resource('users', function() {});
+    this.route('posts', function() {});
+    this.route('users', function() {});
   });
 
   App.PostsMenuView = EmberView.extend({
@@ -2579,8 +2579,8 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
   Ember.TEMPLATES['posts/extra'] = compile('postsExtra');
 
   Router.map(function() {
-    this.resource('posts', function() {});
-    this.resource('users', function() {});
+    this.route('posts', function() {});
+    this.route('users', function() {});
   });
 
   App.PostsIndexView = EmberView.extend({
@@ -2661,8 +2661,8 @@ QUnit.test('Route supports clearing outlet using string parameter', function() {
   Ember.TEMPLATES['posts/modal'] = compile('postsModal');
 
   Router.map(function() {
-    this.resource('posts', function() {});
-    this.resource('users', function() {});
+    this.route('posts', function() {});
+    this.route('users', function() {});
   });
 
   App.PostsIndexView = EmberView.extend({
@@ -3000,10 +3000,10 @@ QUnit.test('currentRouteName is a property installed on ApplicationController th
   expect(24);
 
   Router.map(function() {
-    this.resource('be', function() {
-      this.resource('excellent', function() {
-        this.resource('to', function() {
-          this.resource('each', function() {
+    this.route('be', function() {
+      this.route('excellent', { resetNamespace: true }, function() {
+        this.route('to', { resetNamespace: true }, function() {
+          this.route('each', { resetNamespace: true }, function() {
             this.route('other');
           });
         });
@@ -3087,7 +3087,7 @@ QUnit.test('Ember.Location.registerImplementation is deprecated', function() {
 
 QUnit.test('Routes can refresh themselves causing their model hooks to be re-run', function() {
   Router.map(function() {
-    this.resource('parent', { path: '/parent/:parent_id' }, function() {
+    this.route('parent', { path: '/parent/:parent_id' }, function() {
       this.route('child');
     });
   });
@@ -3352,9 +3352,9 @@ QUnit.test('Route#resetController gets fired when changing models and exiting ro
   expect(4);
 
   Router.map(function() {
-    this.resource('a', function() {
-      this.resource('b', { path: '/b/:id' }, function() { });
-      this.resource('c', { path: '/c/:id' }, function() { });
+    this.route('a', function() {
+      this.route('b', { path: '/b/:id', resetNamespace: true }, function() { });
+      this.route('c', { path: '/c/:id', resetNamespace: true }, function() { });
     });
     this.route('out');
   });
@@ -3624,7 +3624,7 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
 
   Router.map(function() {
     this.route('app', { path: '/app' }, function() {
-      this.resource('sub', { path: '/sub' });
+      this.route('sub', { path: '/sub', resetNamespace: true });
     });
   });
 

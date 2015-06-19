@@ -481,7 +481,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES['parent/child'] = compile('{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}');
 
     App.Router.map(function() {
-      this.resource('parent', function() {
+      this.route('parent', function() {
         this.route('child');
       });
     });
@@ -534,7 +534,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Subresource naming style is supported when configuration is all on the route', function() {
 
     Router.map(function() {
-      this.resource('abc.def', { path: '/abcdef' }, function() {
+      this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
       });
     });
@@ -998,7 +998,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('controllers won\'t be eagerly instantiated by internal query params logic when configured on the route', function() {
     expect(10);
     Router.map(function() {
-      this.resource('cats', function() {
+      this.route('cats', function() {
         this.route('index', { path: '/' });
       });
       this.route('home', { path: '/' });
@@ -1389,7 +1389,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES['parent/child'] = compile('{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}');
 
     App.Router.map(function() {
-      this.resource('parent', function() {
+      this.route('parent', function() {
         this.route('child');
       });
     });
@@ -1504,7 +1504,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Subresource naming style is supported when configured on the route', function() {
 
     Router.map(function() {
-      this.resource('abc.def', { path: '/abcdef' }, function() {
+      this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
       });
     });
@@ -2082,7 +2082,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('controllers won\'t be eagerly instantiated by internal query params logic', function() {
     expect(10);
     Router.map(function() {
-      this.resource('cats', function() {
+      this.route('cats', function() {
         this.route('index', { path: '/' });
       });
       this.route('home', { path: '/' });
@@ -2529,7 +2529,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES['parent/child'] = compile('{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}');
 
     App.Router.map(function() {
-      this.resource('parent', function() {
+      this.route('parent', function() {
         this.route('child');
       });
     });
@@ -2670,7 +2670,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Subresource naming style is supported', function() {
 
     Router.map(function() {
-      this.resource('abc.def', { path: '/abcdef' }, function() {
+      this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
       });
     });

@@ -741,7 +741,7 @@ QUnit.module('ember-testing routing helpers', {
       });
 
       App.Router.map(function() {
-        this.resource('posts', function() {
+        this.route('posts', { resetNamespace: true }, function() {
           this.route('new');
         });
       });
@@ -842,7 +842,7 @@ QUnit.module('ember-testing async router', {
       });
 
       App.Router.map(function() {
-        this.resource('user', function() {
+        this.route('user', { resetNamespace: true }, function() {
           this.route('profile');
           this.route('edit');
         });

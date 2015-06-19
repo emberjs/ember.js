@@ -84,7 +84,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     });
 
     function generateDSL() {
-      this.resource('application', { path: '/', overrideNameAssertion: true }, function() {
+      this.route('application', { path: '/', resetNamespace: true, overrideNameAssertion: true }, function() {
         for (var i=0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
@@ -918,13 +918,13 @@ EmberRouter.reopenClass({
 
   /**
     The `Router.map` function allows you to define mappings from URLs to routes
-    and resources in your application. These mappings are defined within the
-    supplied callback function using `this.resource` and `this.route`.
+    in your application. These mappings are defined within the
+    supplied callback function using `this.route`.
 
     ```javascript
     App.Router.map(function(){
       this.route('about');
-      this.resource('article');
+      this.route('article', { resetNamespace: true });
     });
     ```
 

@@ -886,12 +886,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     Multiple models will be applied last to first recursively up the
-    resource tree.
+    route tree.
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', { path:':blogPostId' }, function() {
-        this.resource('blogComment', { path: ':blogCommentId' });
+      this.route('blogPost', { path:':blogPostId' }, function() {
+        this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
 
@@ -949,7 +949,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-      this.resource('articles', { path: '/articles' }, function() {
+      this.route('articles', { path: '/articles' }, function() {
         this.route('new');
       });
     });
@@ -969,8 +969,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     App.Router.map(function() {
       this.route('index');
 
-      this.resource('breakfast', { path: ':breakfastId' }, function() {
-        this.resource('cereal', { path: ':cerealId' });
+      this.route('breakfast', { path: ':breakfastId' }, function() {
+        this.route('cereal', { path: ':cerealId', resetNamespace: true });
       });
     });
 
@@ -990,7 +990,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-      this.resource('fruits', function() {
+      this.route('fruits', function() {
         this.route('apples');
       });
     });
@@ -1395,7 +1395,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-      this.resource('post', { path: '/posts/:post_id' });
+      this.route('post', { path: '/posts/:post_id' });
     });
     ```
 
@@ -1551,7 +1551,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-      this.resource('post', { path: '/posts/:post_id' });
+      this.route('post', { path: '/posts/:post_id' });
     });
 
     App.PostRoute = Ember.Route.extend({
@@ -1648,7 +1648,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-      this.resource('post', { path: '/posts/:post_id' });
+      this.route('post', { path: '/posts/:post_id' });
     });
     ```
 
@@ -1759,14 +1759,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     App.Router.map(function() {
-        this.resource('post', { path: '/post/:post_id' }, function() {
-            this.resource('comments');
+        this.route('post', { path: '/post/:post_id' }, function() {
+          this.route('comments', { resetNamespace: true });
         });
     });
 
     App.CommentsRoute = Ember.Route.extend({
         afterModel: function() {
-            this.set('post', this.modelFor('post'));
+          this.set('post', this.modelFor('post'));
         }
     });
     ```
@@ -1837,7 +1837,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     Router.map(function() {
-      this.resource('photos');
+      this.route('photos');
     });
     ```
 
@@ -1902,7 +1902,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     // router
     Router.map(function() {
       this.route('index');
-      this.resource('post', { path: '/posts/:post_id' });
+      this.route('post', { path: '/posts/:post_id' });
     });
     ```
 

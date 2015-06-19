@@ -253,7 +253,7 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {
 
 QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes', function() {
   Router.map(function() {
-    this.resource('about', function() {
+    this.route('about', function() {
       this.route('item');
     });
   });
@@ -273,7 +273,7 @@ QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function(
   expectDeprecation('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.');
 
   Router.map(function(match) {
-    this.resource('index', { path: '/' }, function() {
+    this.route('index', { path: '/' }, function() {
       this.route('about');
     });
 
@@ -294,7 +294,7 @@ QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function(
 
 QUnit.test('The {{link-to}} helper supports custom, nested, current-when', function() {
   Router.map(function(match) {
-    this.resource('index', { path: '/' }, function() {
+    this.route('index', { path: '/' }, function() {
       this.route('about');
     });
 
@@ -313,13 +313,13 @@ QUnit.test('The {{link-to}} helper supports custom, nested, current-when', funct
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
 });
 
-QUnit.test('The {{link-to}} helper does not disregard current-when when it is given explicitly for a resource', function() {
+QUnit.test('The {{link-to}} helper does not disregard current-when when it is given explicitly for a route', function() {
   Router.map(function(match) {
-    this.resource('index', { path: '/' }, function() {
+    this.route('index', { path: '/' }, function() {
       this.route('about');
     });
 
-    this.resource('items', function() {
+    this.route('items', function() {
       this.route('item');
     });
   });
@@ -333,12 +333,12 @@ QUnit.test('The {{link-to}} helper does not disregard current-when when it is gi
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a resource');
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
 });
 
 QUnit.test('The {{link-to}} helper supports multiple current-when routes', function() {
   Router.map(function(match) {
-    this.resource('index', { path: '/' }, function() {
+    this.route('index', { path: '/' }, function() {
       this.route('about');
     });
     this.route('item');
@@ -376,7 +376,7 @@ QUnit.test('The {{link-to}} helper defaults to bubbling', function() {
   Ember.TEMPLATES['about/contact'] = compile('<h1 id=\'contact\'>Contact</h1>');
 
   Router.map(function() {
-    this.resource('about', function() {
+    this.route('about', function() {
       this.route('contact');
     });
   });
@@ -411,7 +411,7 @@ QUnit.test('The {{link-to}} helper supports bubbles=false', function() {
   Ember.TEMPLATES['about/contact'] = compile('<h1 id=\'contact\'>Contact</h1>');
 
   Router.map(function() {
-    this.resource('about', function() {
+    this.route('about', function() {
       this.route('contact');
     });
   });
@@ -445,7 +445,7 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
   expectDeprecation(arrayControllerDeprecation);
   Router.map(function(match) {
     this.route('about');
-    this.resource('item', { path: '/item/:id' });
+    this.route('item', { path: '/item/:id' });
   });
 
   Ember.TEMPLATES.about = compile('<h3>List</h3><ul>{{#each model as |person|}}<li>{{#link-to \'item\' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to \'index\' id=\'home-link\'}}Home{{/link-to}}');
@@ -601,7 +601,7 @@ QUnit.test('The {{link-to}} helper accepts string/numeric arguments', function()
 QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about context arguments', function() {
   expect(2);
   Router.map(function() {
-    this.resource('lobby', function() {
+    this.route('lobby', function() {
       this.route('index', { path: ':lobby_id' });
       this.route('list');
     });
@@ -894,9 +894,9 @@ QUnit.test('{{linkTo}} is aliased', function() {
   equal(container.lookup('controller:application').get('currentRouteName'), 'about', 'linkTo worked properly');
 });
 
-QUnit.test('The {{link-to}} helper is active when a resource is active', function() {
+QUnit.test('The {{link-to}} helper is active when a route is active', function() {
   Router.map(function() {
-    this.resource('about', function() {
+    this.route('about', function() {
       this.route('item');
     });
   });
@@ -909,12 +909,12 @@ QUnit.test('The {{link-to}} helper is active when a resource is active', functio
 
   Ember.run(router, 'handleURL', '/about');
 
-  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about resource link is active');
+  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
   equal(Ember.$('#item-link.active', '#qunit-fixture').length, 0, 'The item route link is inactive');
 
   Ember.run(router, 'handleURL', '/about/item');
 
-  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about resource link is active');
+  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
   equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, 'The item route link is active');
 
 });
@@ -1202,7 +1202,7 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
 
 
   Router.map(function() {
-    this.resource('things', { path: '/things/:name' }, function() {
+    this.route('things', { path: '/things/:name' }, function() {
       this.route('other');
     });
   });

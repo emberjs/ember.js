@@ -94,7 +94,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       sharedSetup();
 
       App.Router.map(function() {
-        this.resource('parent', function() {
+        this.route('parent', function() {
           this.route('child');
         });
       });
@@ -191,7 +191,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       sharedSetup();
 
       App.Router.map(function() {
-        this.resource('parent', function() {
+        this.route('parent', function() {
           this.route('child');
         });
       });
