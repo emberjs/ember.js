@@ -80,7 +80,7 @@ QUnit.test('should re-render if the context is changed', function() {
 });
 
 QUnit.test('renders a contained view with omitted start tag and tagless parent view context', function() {
-  view = EmberView.createWithMixins({
+  view = EmberView.create({
     tagName: 'table',
     template: compile('{{view view.pivot}}'),
     pivot: EmberView.extend({
@@ -107,7 +107,7 @@ QUnit.test('propagates dependent-key invalidated sets upstream', function() {
   view = EmberView.create({
     parentProp: 'parent-value',
     template: compile('{{view view.childView childProp=view.parentProp}}'),
-    childView: EmberView.createWithMixins({
+    childView: EmberView.create({
       template: compile('child template'),
       childProp: 'old-value'
     })
@@ -129,7 +129,7 @@ QUnit.test('propagates dependent-key invalidated bindings upstream', function() 
   view = EmberView.create({
     parentProp: 'parent-value',
     template: compile('{{view view.childView childProp=view.parentProp}}'),
-    childView: EmberView.createWithMixins({
+    childView: EmberView.extend({
       template: compile('child template'),
       childProp: Ember.computed('dependencyProp', {
         get(key) {
@@ -141,7 +141,7 @@ QUnit.test('propagates dependent-key invalidated bindings upstream', function() 
         }
       }),
       dependencyProp: 'old-value'
-    })
+    }).create()
   });
 
   run(view, view.append);

@@ -86,17 +86,17 @@ QUnit.test('deferred observing during bindings', function() {
     value2: 'value2'
   });
 
-  toObject = EmberObject.createWithMixins({
-    value1: 'value1',
-    value2: 'value2',
-
-    callCount: 0,
-
+  toObject = EmberObject.extend({
     observer: emberObserver('value1', 'value2', function() {
       equal(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
       equal(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
       this.callCount++;
     })
+  }).create({
+    value1: 'value1',
+    value2: 'value2',
+
+    callCount: 0
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
@@ -168,13 +168,13 @@ QUnit.module('chained binding', {
     run(function() {
       first = EmberObject.create({ output: 'first' });
 
-      second = EmberObject.createWithMixins({
-        input: 'second',
-        output: 'second',
-
+      second = EmberObject.extend({
         inputDidChange: emberObserver('input', function() {
           set(this, 'output', get(this, 'input'));
         })
+      }).create({
+        input: 'second',
+        output: 'second'
       });
 
       third = EmberObject.create({ input: 'third' });
@@ -243,12 +243,7 @@ QUnit.test('two bindings to the same value should sync in the order they are ini
     foo: 'bar'
   });
 
-  var b = EmberObject.createWithMixins({
-    foo: 'baz',
-    fooBinding: 'a.foo',
-
-    a: a,
-
+  var b = EmberObject.extend({
     C: EmberObject.extend({
       foo: 'bee',
       fooBinding: 'owner.foo'
@@ -258,7 +253,10 @@ QUnit.test('two bindings to the same value should sync in the order they are ini
       this._super.apply(this, arguments);
       set(this, 'c', this.C.create({ owner: this }));
     }
-
+  }).create({
+    foo: 'baz',
+    fooBinding: 'a.foo',
+    a: a
   });
 
   run.end();
@@ -283,10 +281,11 @@ QUnit.module('propertyNameBinding with longhand', {
         value: 'originalValue'
       });
 
-      TestNamespace.toObject = EmberObject.createWithMixins({
+      TestNamespace.toObject = EmberObject.extend({
         valueBinding: Binding.from('TestNamespace.fromObject.value'),
-        localValue: 'originalLocal',
         relativeBinding: Binding.from('localValue')
+      }).create({
+        localValue: 'originalLocal'
       });
     });
   },

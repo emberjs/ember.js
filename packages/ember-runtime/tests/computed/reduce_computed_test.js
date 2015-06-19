@@ -25,10 +25,7 @@ QUnit.module('arrayComputed - [DEPRECATED]', {
 
     expectDeprecation(function() {
 
-      obj = EmberObject.createWithMixins({
-        numbers:  Ember.A([1, 2, 3, 4, 5, 6]),
-        otherNumbers: Ember.A([7, 8, 9]),
-
+      obj = EmberObject.extend({
         // Users would obviously just use `Ember.computed.map`
         // This implementation is fine for these tests, but doesn't properly work as
         // it's not index based.
@@ -56,8 +53,6 @@ QUnit.module('arrayComputed - [DEPRECATED]', {
           }
         }),
 
-        nestedNumbers:  Ember.A([1,2,3,4,5,6].map((n) => EmberObject.create({ p: 'otherProperty', v: n }))),
-
         evenNestedNumbers: arrayComputed({
           addedItem(array, item, keyName) {
             var value = item.get('v');
@@ -71,6 +66,10 @@ QUnit.module('arrayComputed - [DEPRECATED]', {
             return array;
           }
         }).property('nestedNumbers.@each.v')
+      }).create({
+        numbers:  Ember.A([1, 2, 3, 4, 5, 6]),
+        otherNumbers: Ember.A([7, 8, 9]),
+        nestedNumbers:  Ember.A([1,2,3,4,5,6].map((n) => EmberObject.create({ p: 'otherProperty', v: n })))
       });
 
     }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
@@ -103,8 +102,7 @@ QUnit.test('array computed properties are instances of ComputedProperty', functi
 QUnit.test('when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned', function() {
   expectDeprecation(/Ember.arrayComputed is deprecated/);
 
-  obj = EmberObject.createWithMixins({
-    numbers: null,
+  obj = EmberObject.extend({
     doubledNumbers: arrayComputed('numbers', {
       addedItem(array, n) {
         addCalls++;
@@ -112,6 +110,8 @@ QUnit.test('when the dependent array is null or undefined, `addedItem` is not ca
         return array;
       }
     })
+  }).create({
+    numbers: null
   });
 
   deepEqual(get(obj, 'doubledNumbers'), [], 'When the dependent array is null, the initial value is returned');
@@ -189,9 +189,7 @@ QUnit.test('changes to array computed properties happen synchronously', function
 });
 
 QUnit.test('multiple dependent keys can be specified via brace expansion', function() {
-  var obj = EmberObject.createWithMixins({
-    bar: Ember.A(),
-    baz: Ember.A(),
+  var obj = EmberObject.extend({
     foo: reduceComputed({
       initialValue: Ember.A(),
       addedItem(array, item) {
@@ -203,6 +201,9 @@ QUnit.test('multiple dependent keys can be specified via brace expansion', funct
         return array;
       }
     }).property('{bar,baz}')
+  }).create({
+    bar: Ember.A(),
+    baz: Ember.A()
   });
 
   deepEqual(get(obj, 'foo'), [], 'initially empty');
@@ -227,8 +228,7 @@ QUnit.test('multiple dependent keys can be specified via brace expansion', funct
 QUnit.test('multiple item property keys can be specified via brace expansion', function() {
   var expected = Ember.A();
   var item = { propA: 'A', propB: 'B', propC: 'C' };
-  var obj = EmberObject.createWithMixins({
-    bar: Ember.A([item]),
+  var obj = EmberObject.extend({
     foo: reduceComputed({
       initialValue: Ember.A(),
       addedItem(array, item, changeMeta) {
@@ -240,6 +240,8 @@ QUnit.test('multiple item property keys can be specified via brace expansion', f
         return array;
       }
     }).property('bar.@each.{propA,propB}')
+  }).create({
+    bar: Ember.A([item])
   });
 
   expected.pushObjects(['a:A:B:C']);
@@ -262,8 +264,7 @@ QUnit.test('multiple item property keys can be specified via brace expansion', f
 
 QUnit.test('doubly nested item property keys (@each.foo.@each) are not supported', function() {
   run(function() {
-    obj = EmberObject.createWithMixins({
-      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: 'Jaime Lannister' })]) }]),
+    obj = EmberObject.extend({
       people: arrayComputed({
         addedItem(array, item) {
           array.pushObject(get(item, 'first.firstObject'));
@@ -277,20 +278,23 @@ QUnit.test('doubly nested item property keys (@each.foo.@each) are not supported
           return array;
         }
       }).property('people.@each.name')
+    }).create({
+      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: 'Jaime Lannister' })]) }])
     });
   });
 
   equal(obj.get('names.firstObject'), 'Jaime Lannister', 'Doubly nested item properties can be retrieved manually');
 
   throws(function() {
-    obj = EmberObject.createWithMixins({
-      people: [{ first: Ember.A([EmberObject.create({ name: 'Jaime Lannister' })]) }],
+    obj = EmberObject.extend({
       names: arrayComputed({
         addedItem(array, item) {
           array.pushObject(item);
           return array;
         }
       }).property('people.@each.first.@each.name')
+    }).create({
+      people: [{ first: Ember.A([EmberObject.create({ name: 'Jaime Lannister' })]) }]
     });
   }, /Nested @each/, 'doubly nested item property keys are not supported');
 });
@@ -362,8 +366,7 @@ QUnit.test('multiple array computed properties on the same object can observe de
 
 QUnit.test('an error is thrown when a reduceComputed is defined without an initialValue property', function() {
   var defineExploder = function() {
-    EmberObject.createWithMixins({
-      collection: Ember.A(),
+    EmberObject.extend({
       exploder: reduceComputed('collection', {
         initialize(initialValue, changeMeta, instanceMeta) {},
 
@@ -375,6 +378,8 @@ QUnit.test('an error is thrown when a reduceComputed is defined without an initi
           return item;
         }
       })
+    }).create({
+      collection: Ember.A()
     });
   };
 
@@ -603,8 +608,7 @@ QUnit.module('Ember.arryComputed - self chains', {
 
     expectDeprecation(function() {
 
-      obj = ArrayProxy.createWithMixins({
-        content: Ember.A([a, b]),
+      obj = ArrayProxy.extend({
         names: arrayComputed('@this.@each.name', {
           addedItem(array, item, changeMeta, instanceMeta) {
             var mapped = get(item, 'name');
@@ -616,6 +620,8 @@ QUnit.module('Ember.arryComputed - self chains', {
             return array;
           }
         })
+      }).create({
+        content: Ember.A([a, b])
       });
     }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
   },
@@ -649,9 +655,7 @@ QUnit.module('arrayComputed - changeMeta property observers', {
     callbackItems = [];
     run(function() {
       expectDeprecation(function() {
-
-        obj = EmberObject.createWithMixins({
-          items: Ember.A([EmberObject.create({ n: 'zero' }), EmberObject.create({ n: 'one' })]),
+        obj = EmberObject.extend({
           itemsN: arrayComputed('items.@each.n', {
             addedItem(array, item, changeMeta, instanceMeta) {
               callbackItems.push('add:' + changeMeta.index + ':' + get(changeMeta.item, 'n'));
@@ -660,6 +664,8 @@ QUnit.module('arrayComputed - changeMeta property observers', {
               callbackItems.push('remove:' + changeMeta.index + ':' + get(changeMeta.item, 'n'));
             }
           })
+        }).create({
+          items: Ember.A([EmberObject.create({ n: 'zero' }), EmberObject.create({ n: 'one' })])
         });
       }, 'Ember.arrayComputed is deprecated. Replace it with plain array methods');
     });
@@ -751,8 +757,7 @@ QUnit.test('changeMeta includes item and index', function() {
 });
 
 QUnit.test('changeMeta includes changedCount and arrayChanged', function() {
-  var obj = EmberObject.createWithMixins({
-    letters: Ember.A(['a', 'b']),
+  var obj = EmberObject.extend({
     lettersArrayComputed: arrayComputed('letters', {
       addedItem(array, item, changeMeta, instanceMeta) {
         callbackItems.push('add:' + changeMeta.changedCount + ':' + changeMeta.arrayChanged.join(''));
@@ -761,6 +766,8 @@ QUnit.test('changeMeta includes changedCount and arrayChanged', function() {
         callbackItems.push('remove:' + changeMeta.changedCount + ':' + changeMeta.arrayChanged.join(''));
       }
     })
+  }).create({
+    letters: Ember.A(['a', 'b'])
   });
 
   var letters = get(obj, 'letters');
@@ -813,8 +820,7 @@ QUnit.test('`updateIndexes` is not over-eager about skipping retain:n (#4620)', 
 });
 
 QUnit.test('when initialValue is undefined, everything works as advertised', function() {
-  var chars = EmberObject.createWithMixins({
-    letters: Ember.A(),
+  var chars = EmberObject.extend({
     firstUpper: reduceComputed('letters', {
       initialValue: undefined,
 
@@ -843,6 +849,8 @@ QUnit.test('when initialValue is undefined, everything works as advertised', fun
         return instanceMeta.firstMatch();
       }
     })
+  }).create({
+    letters: Ember.A()
   });
   equal(get(chars, 'firstUpper'), undefined, 'initialValue is undefined');
 

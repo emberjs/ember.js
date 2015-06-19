@@ -201,7 +201,7 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
 
   run(function() {
     textField.destroy(); // destroy existing textField
-    textField = TextField.createWithMixins({
+    textField = TextField.create({
       valueBinding: 'TestObject.value'
     });
   });
@@ -224,7 +224,7 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
 QUnit.test('value binding sets value on the element', function() {
   run(function() {
     textField.destroy(); // destroy existing textField
-    textField = TextField.createWithMixins({
+    textField = TextField.create({
       valueBinding: 'TestObject.value'
     });
     textField.append();

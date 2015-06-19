@@ -346,7 +346,7 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
 
   view = EmberView.create({
     container: container,
-    controller: EmberController.createWithMixins({
+    controller: EmberController.create({
       container: container,
       zero: false
     }),

@@ -34,9 +34,10 @@ if (isEnabled('mandatory-setter')) {
   // a destroyed object removes meta but leaves the accessor
   // that looks it up
   QUnit.test('should raise an exception when modifying watched properties on a destroyed object', function() {
-    var obj = EmberObject.createWithMixins({
-      foo: 'bar',
+    var obj = EmberObject.extend({
       fooDidChange: observer('foo', function() { })
+    }).create({
+      foo: 'bar'
     });
 
     run(function() {
@@ -51,11 +52,11 @@ if (isEnabled('mandatory-setter')) {
 
 QUnit.test('observers should not fire after an object has been destroyed', function() {
   var count = 0;
-  var obj = EmberObject.createWithMixins({
+  var obj = EmberObject.extend({
     fooDidChange: observer('foo', function() {
       count++;
     })
-  });
+  }).create();
 
   obj.set('foo', 'bar');
 

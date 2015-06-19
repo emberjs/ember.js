@@ -1260,11 +1260,12 @@ QUnit.test('should respect keywords', function() {
 });
 
 QUnit.test('should bind to the property if no registered helper found for a mustache without parameters', function() {
-  view = EmberView.createWithMixins({
-    template: compile('{{view.foobarProperty}}'),
+  view = EmberView.extend({
     foobarProperty: computed(function() {
       return 'foobarProperty';
     })
+  }).create({
+    template: compile('{{view.foobarProperty}}')
   });
 
   runAppend(view);

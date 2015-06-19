@@ -77,9 +77,7 @@ QUnit.module('EmberObject observers', {
     };
 
     // create an object
-    obj = EmberObject.createWithMixins({
-      prop1: null,
-
+    obj = EmberObject.extend({
       // normal observer
       observer: emberObserver('prop1', function() {
         this._normal = true;
@@ -92,6 +90,8 @@ QUnit.module('EmberObject observers', {
       bothObserver: emberObserver('prop1', 'TestNamespace.obj.value', function() {
         this._both = true;
       })
+    }).create({
+      prop1: null
     });
 
   },
