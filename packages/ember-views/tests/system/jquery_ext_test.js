@@ -62,12 +62,12 @@ if (canDataTransfer) {
     var receivedEvent;
     var dropCalled = 0;
 
-    view = View.createWithMixins({
+    view = View.extend({
       drop(evt) {
         receivedEvent = evt;
         dropCalled++;
       }
-    });
+    }).create();
 
     run(function() {
       view.append();

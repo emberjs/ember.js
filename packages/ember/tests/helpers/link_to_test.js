@@ -47,7 +47,7 @@ function sharedSetup() {
 
   updateCount = replaceCount = 0;
   App.Router.reopen({
-    location: Ember.NoneLocation.createWithMixins({
+    location: Ember.NoneLocation.create({
       setURL(path) {
         updateCount++;
         set(this, 'path', path);

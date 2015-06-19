@@ -9,9 +9,7 @@ QUnit.test('The `contentArrayDidChange` method is invoked after `content` is upd
   var proxy;
   var observerCalled = false;
 
-  proxy = ArrayProxy.createWithMixins({
-    content: Ember.A(),
-
+  proxy = ArrayProxy.extend({
     arrangedContent: computed('content', function(key) {
       return Ember.A(this.get('content').slice());
     }),
@@ -20,6 +18,8 @@ QUnit.test('The `contentArrayDidChange` method is invoked after `content` is upd
       observerCalled = true;
       return this._super(array, idx, removedCount, addedCount);
     }
+  }).create({
+    content: Ember.A()
   });
 
   proxy.pushObject(1);

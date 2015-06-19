@@ -90,7 +90,7 @@ function makeCtor() {
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
 
-        Ember.assert('Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.', !(properties instanceof Mixin));
+        Ember.assert('Ember.Object.create no longer supports mixing in other definitions, use .extend & .create seperately instead.', !(properties instanceof Mixin));
 
         if (typeof properties !== 'object' && properties !== undefined) {
           throw new EmberError('Ember.Object.create only accepts objects.');
@@ -582,14 +582,15 @@ var ClassMixinProps = {
     @static
     @param [arguments]*
     @private
+    @deprecated
   */
-  createWithMixins(...args) {
+  createWithMixins: Ember.deprecateFunc('.createWithMixins is deprecated, please use .create or .extend accordingly', function(...args) {
     var C = this;
     if (args.length > 0) {
       this._initMixins(args);
     }
     return new C();
-  },
+  }),
 
   /**
     Creates an instance of a class. Accepts either no arguments, or an object
@@ -622,7 +623,7 @@ var ClassMixinProps = {
 
     NOTE: For performance reasons, you cannot declare methods or computed
     properties during `create`. You should instead declare methods and computed
-    properties when using `extend` or use the `createWithMixins` shorthand.
+    properties when using `extend`.
 
     @method create
     @static

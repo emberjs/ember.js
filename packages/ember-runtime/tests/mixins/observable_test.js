@@ -43,13 +43,14 @@ QUnit.test('should be able to use setProperties to set multiple properties at on
 
 testBoth('calling setProperties completes safely despite exceptions', function(get, set) {
   var exc = new Error('Something unexpected happened!');
-  var obj = EmberObject.createWithMixins({
-    firstName: 'Steve',
-    lastName: 'Jobs',
+  var obj = EmberObject.extend({
     companyName: computed({
-      get: function() { return 'Apple, Inc.'; },
-      set: function(key, value) { throw exc; }
+      get() { return 'Apple, Inc.'; },
+      set(key, value) { throw exc; }
     })
+  }).create({
+    firstName: 'Steve',
+    lastName: 'Jobs'
   });
 
   var firstNameChangedCount = 0;
@@ -72,11 +73,11 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
 });
 
 testBoth('should be able to retrieve cached values of computed properties without invoking the computed property', function(get) {
-  var obj = EmberObject.createWithMixins({
+  var obj = EmberObject.extend({
     foo: computed(function() {
       return 'foo';
-    }),
-
+    })
+  }).create({
     bar: 'bar'
   });
 

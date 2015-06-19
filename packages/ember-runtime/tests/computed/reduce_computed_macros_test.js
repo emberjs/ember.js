@@ -32,8 +32,7 @@ QUnit.module('computedMap', {
   setup() {
     run(function() {
       userFnCalls = 0;
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+      obj = EmberObject.extend({
 
         mapped: computedMap('array.@each.v', function(item) {
           ++userFnCalls;
@@ -48,6 +47,8 @@ QUnit.module('computedMap', {
             name: item.v.name
           };
         })
+      }).create({
+        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
       });
     });
   },
@@ -95,9 +96,10 @@ QUnit.test('it maps simple unshifted properties', function() {
   var array = Ember.A([]);
 
   run(function() {
-    obj = EmberObject.createWithMixins({
-      array: array,
-      mapped: computedMap('array', function (item) { return item.toUpperCase(); })
+    obj = EmberObject.extend({
+      mapped: computedMap('array', (item) => item.toUpperCase())
+    }).create({
+      array
     });
     get(obj, 'mapped');
   });
@@ -117,9 +119,10 @@ QUnit.test('it passes the index to the callback', function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
-    obj = EmberObject.createWithMixins({
-      array: array,
-      mapped: computedMap('array', function (item, index) { return index; })
+    obj = EmberObject.extend({
+      mapped: computedMap('array', (item, index) => index)
+    }).create({
+      array
     });
     get(obj, 'mapped');
   });
@@ -154,11 +157,12 @@ QUnit.test('it maps unshifted objects with property observers', function() {
   var cObj = { v: 'c' };
 
   run(function() {
-    obj = EmberObject.createWithMixins({
-      array: array,
+    obj = EmberObject.extend({
       mapped: computedMap('array.@each.v', function (item) {
         return get(item, 'v').toUpperCase();
       })
+    }).create({
+      array
     });
     get(obj, 'mapped');
   });
@@ -178,9 +182,10 @@ QUnit.test('it maps unshifted objects with property observers', function() {
 QUnit.module('computedMapBy', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+      obj = EmberObject.extend({
         mapped: computedMapBy('array', 'v')
+      }).create({
+        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
       });
     });
   },
@@ -231,12 +236,13 @@ QUnit.module('computedFilter', {
   setup() {
     run(function() {
       userFnCalls = 0;
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8]),
+      obj = EmberObject.extend({
         filtered: computedFilter('array', function(item) {
           ++userFnCalls;
           return item % 2 === 0;
         })
+      }).create({
+        array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8])
       });
     });
   },
@@ -257,9 +263,10 @@ QUnit.test('it passes the index to the callback', function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
-    obj = EmberObject.createWithMixins({
-      array: array,
+    obj = EmberObject.extend({
       filtered: computedFilter('array', function (item, index) { return index === 1; })
+    }).create({
+      array
     });
     get(obj, 'filtered');
   });
@@ -271,9 +278,10 @@ QUnit.test('it passes the array to the callback', function() {
   var array = Ember.A(['a', 'b', 'c']);
 
   run(function() {
-    obj = EmberObject.createWithMixins({
-      array: array,
+    obj = EmberObject.extend({
       filtered: computedFilter('array', function (item, index, array) { return index === array.get('length') - 2; })
+    }).create({
+      array
     });
     get(obj, 'filtered');
   });
@@ -369,16 +377,17 @@ QUnit.test('it updates as the array is replaced', function() {
 
 QUnit.module('computedFilterBy', {
   setup() {
-    obj = EmberObject.createWithMixins({
+    obj = EmberObject.extend({
+      a1s: computedFilterBy('array', 'a', 1),
+      as: computedFilterBy('array', 'a'),
+      bs: computedFilterBy('array', 'b')
+    }).create({
       array: Ember.A([
         { name: 'one', a: 1, b: false },
         { name: 'two', a: 2, b: false },
         { name: 'three', a: 1, b: true },
         { name: 'four', b: true }
-      ]),
-      a1s: computedFilterBy('array', 'a', 1),
-      as: computedFilterBy('array', 'a'),
-      bs: computedFilterBy('array', 'b')
+      ])
     });
   },
   teardown() {
@@ -449,10 +458,11 @@ QUnit.test('properties can be filtered by values', function() {
 });
 
 QUnit.test('properties values can be replaced', function() {
-  obj = EmberObject.createWithMixins({
-      array: Ember.A([]),
+  obj = EmberObject.extend({
       a1s: computedFilterBy('array', 'a', 1),
       a1bs: computedFilterBy('a1s', 'b')
+    }).create({
+      array: Ember.A([])
     });
 
   var a1bs = get(obj, 'a1bs');
@@ -474,11 +484,12 @@ QUnit.test('properties values can be replaced', function() {
     setup() {
       run(function() {
         union = testedFunc('array', 'array2', 'array3');
-        obj = EmberObject.createWithMixins({
+        obj = EmberObject.extend({
+          union: union
+        }).create({
           array: Ember.A([1,2,3,4,5,6]),
           array2: Ember.A([4,5,6,7,8,9,4,5,6,7,8,9]),
-          array3: Ember.A([1,8,10]),
-          union: union
+          array3: Ember.A([1,8,10])
         });
       });
     },
@@ -563,11 +574,12 @@ QUnit.test('properties values can be replaced', function() {
 QUnit.module('computed.intersect', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        intersection: computedIntersect('array', 'array2', 'array3')
+      }).create({
         array: Ember.A([1,2,3,4,5,6]),
         array2: Ember.A([3,3,3,4,5]),
-        array3: Ember.A([3,5,6,7,8]),
-        intersection: computedIntersect('array', 'array2', 'array3')
+        array3: Ember.A([3,5,6,7,8])
       });
     });
   },
@@ -616,10 +628,11 @@ QUnit.test('it has set-intersection semantics', function() {
 QUnit.module('computedSetDiff', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5,10]),
+      obj = EmberObject.extend({
         diff: computedSetDiff('array', 'array2')
+      }).create({
+        array: Ember.A([1,2,3,4,5,6,7]),
+        array2: Ember.A([3,4,5,10])
       });
     });
   },
@@ -632,19 +645,21 @@ QUnit.module('computedSetDiff', {
 
 QUnit.test('it throws an error if given fewer or more than two dependent properties', function() {
   throws(function () {
-    EmberObject.createWithMixins({
-      array: Ember.A([1,2,3,4,5,6,7]),
-      array2: Ember.A([3,4,5]),
+    EmberObject.extend({
       diff: computedSetDiff('array')
+    }).create({
+      array: Ember.A([1,2,3,4,5,6,7]),
+      array2: Ember.A([3,4,5])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
   throws(function () {
-    EmberObject.createWithMixins({
+    EmberObject.extend({
+      diff: computedSetDiff('array', 'array2', 'array3')
+    }).create({
       array: Ember.A([1,2,3,4,5,6,7]),
       array2: Ember.A([3,4,5]),
-      array3: Ember.A([7]),
-      diff: computedSetDiff('array', 'array2', 'array3')
+      array3: Ember.A([7])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
@@ -811,7 +826,9 @@ function commonSortTests() {
 QUnit.module('computedSort - sortProperties', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        sortedItems: computedSort('items', 'itemSorting')
+      }).create({
         itemSorting: Ember.A(['lname', 'fname']),
         items: Ember.A([{
           fname: 'Jaime', lname: 'Lannister', age: 34
@@ -821,9 +838,7 @@ QUnit.module('computedSort - sortProperties', {
           fname: 'Robb', lname: 'Stark', age: 16
         }, {
           fname: 'Bran', lname: 'Stark', age: 8
-        }]),
-
-        sortedItems: computedSort('items', 'itemSorting')
+        }])
       });
     });
   },
@@ -985,10 +1000,11 @@ QUnit.test('updating an item\'s sort properties does not error when binary searc
       status: 2
     });
 
-    obj = EmberObject.createWithMixins({
-      people: Ember.A([jaime, cersei]),
-      sortProps: Ember.A(['status']),
+    obj = EmberObject.extend({
       sortedPeople: computedSort('people', 'sortProps')
+    }).create({
+      people: Ember.A([jaime, cersei]),
+      sortProps: Ember.A(['status'])
     });
   });
 
@@ -1023,10 +1039,11 @@ QUnit.test('array observers do not leak', function() {
 
   run(function() {
     sortProps = Ember.A(['name']);
-    jaime = EmberObject.createWithMixins({
-      sisters: sisters,
+    jaime = EmberObject.extend({
       sortedPeople: computedSort('sisters', 'sortProps'),
       sortProps: sortProps
+    }).create({
+      sisters: sisters
     });
   });
 
@@ -1061,10 +1078,11 @@ QUnit.test('property paths in sort properties update the sorted array', function
       relatedObj: EmberObject.create({ status: 3, firstName: 'Sansa', lastName: 'Stark' })
     });
 
-    obj = EmberObject.createWithMixins({
-      people: Ember.A([jaime, cersei, sansa]),
-      sortProps: Ember.A(['relatedObj.status']),
+    obj = EmberObject.extend({
       sortedPeople: computedSort('people', 'sortProps')
+    }).create({
+      people: Ember.A([jaime, cersei, sansa]),
+      sortProps: Ember.A(['relatedObj.status'])
     });
   });
 
@@ -1119,7 +1137,9 @@ function sortByFnameAsc(a, b) {
 QUnit.module('computedSort - sort function', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        sortedItems: computedSort('items.@each.fname', sortByLnameFname)
+      }).create({
         items: Ember.A([{
           fname: 'Jaime', lname: 'Lannister', age: 34
         }, {
@@ -1128,9 +1148,7 @@ QUnit.module('computedSort - sort function', {
           fname: 'Robb', lname: 'Stark', age: 16
         }, {
           fname: 'Bran', lname: 'Stark', age: 8
-        }]),
-
-        sortedItems: computedSort('items.@each.fname', sortByLnameFname)
+        }])
       });
     });
   },
@@ -1187,7 +1205,10 @@ QUnit.test('changing item properties not specified via @each does not trigger a 
 QUnit.module('computedSort - stability', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        sortProps: Ember.A(['count', 'name']),
+        sortedItems: computedSort('items', 'sortProps')
+      }).create({
         items: Ember.A(Ember.A([{
           name: 'A', count: 1
         }, {
@@ -1196,12 +1217,7 @@ QUnit.module('computedSort - stability', {
           name: 'C', count: 1
         }, {
           name: 'D', count: 1
-        }]).map(function(elt) {
-          return EmberObject.create(elt);
-        })),
-
-        sortProps: Ember.A(['count', 'name']),
-        sortedItems: computedSort('items', 'sortProps')
+        }]).map((elt) => EmberObject.create(elt)))
       });
     });
   },
@@ -1228,7 +1244,13 @@ QUnit.test('sorts correctly as only one property changes', function() {
 QUnit.module('computedSort - concurrency', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        sortProps: Ember.A(['count']),
+        sortedItems: computedSort('items', 'sortProps'),
+        customSortedItems: computedSort('items.@each.count', function(a, b) {
+          return get(a, 'count') - get(b, 'count');
+        })
+      }).create({
         items: Ember.A(Ember.A([{
           name: 'A', count: 1
         }, {
@@ -1237,15 +1259,7 @@ QUnit.module('computedSort - concurrency', {
           name: 'C', count: 3
         }, {
           name: 'D', count: 4
-        }]).map(function(elt) {
-          return EmberObject.create(elt);
-        })),
-
-        sortProps: Ember.A(['count']),
-        sortedItems: computedSort('items', 'sortProps'),
-        customSortedItems: computedSort('items.@each.count', function(a, b) {
-          return get(a, 'count') - get(b, 'count');
-        })
+        }]).map((elt) => EmberObject.create(elt)))
       });
     });
   },
@@ -1294,9 +1308,10 @@ QUnit.test('sorts correctly with a user-provided comparator when there are concu
 QUnit.module('computedMax', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
-        items: Ember.A([1,2,3]),
+      obj = EmberObject.extend({
         max: computedMax('items')
+      }).create({
+        items: Ember.A([1,2,3])
       });
     });
   },
@@ -1347,9 +1362,10 @@ QUnit.test('max recomputes when the current max is removed', function() {
 QUnit.module('computedMin', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
-        items: Ember.A([1,2,3]),
+      obj = EmberObject.extend({
         min: computedMin('items')
+      }).create({
+        items: Ember.A([1,2,3])
       });
     });
   },
@@ -1400,7 +1416,14 @@ QUnit.test('min recomputes when the current min is removed', function() {
 QUnit.module('Ember.arrayComputed - mixed sugar', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
+      obj = EmberObject.extend({
+        lannisters: computedFilterBy('items', 'lname', 'Lannister'),
+        sortedLannisters: computedSort('lannisters', 'lannisterSorting'),
+        starks: computedFilterBy('items', 'lname', 'Stark'),
+        starkAges: computedMapBy('starks', 'age'),
+        oldestStarkAge: computedMax('starkAges')
+      }).create({
+        lannisterSorting: Ember.A(['fname']),
         items: Ember.A([{
           fname: 'Jaime', lname: 'Lannister', age: 34
         }, {
@@ -1409,16 +1432,7 @@ QUnit.module('Ember.arrayComputed - mixed sugar', {
           fname: 'Robb', lname: 'Stark', age: 16
         }, {
           fname: 'Bran', lname: 'Stark', age: 8
-        }]),
-
-        lannisters: computedFilterBy('items', 'lname', 'Lannister'),
-        lannisterSorting: Ember.A(['fname']),
-        sortedLannisters: computedSort('lannisters', 'lannisterSorting'),
-
-
-        starks: computedFilterBy('items', 'lname', 'Stark'),
-        starkAges: computedMapBy('starks', 'age'),
-        oldestStarkAge: computedMax('starkAges')
+        }])
       });
     });
   },
@@ -1485,10 +1499,11 @@ function evenPriorities(todo) {
 
 QUnit.module('Ember.arrayComputed - chains', {
   setup() {
-    obj = EmberObject.createWithMixins({
-      todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
-      sorted: computedSort('todos.@each.priority', priorityComparator),
-      filtered: computedFilter('sorted.@each.priority', evenPriorities)
+    obj = EmberObject.extend({
+      filtered: computedFilter('sorted.@each.priority', evenPriorities),
+      sorted: computedSort('todos.@each.priority', priorityComparator)
+    }).create({
+      todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)])
     });
   },
   teardown() {
@@ -1532,13 +1547,14 @@ QUnit.module('Chaining array and reduced CPs', {
   setup() {
     run(function() {
       userFnCalls = 0;
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+      obj = EmberObject.extend({
         mapped: computedMapBy('array', 'v'),
         max: computedMax('mapped'),
         maxDidChange: observer('max', function() {
           userFnCalls++;
         })
+      }).create({
+        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
       });
     });
   },
@@ -1572,9 +1588,10 @@ QUnit.test('it computes interdependent array computed properties', function() {
 QUnit.module('computedSum', {
   setup() {
     run(function() {
-      obj = EmberObject.createWithMixins({
-        array: Ember.A([1, 2, 3]),
+      obj = EmberObject.extend({
         total: computedSum('array')
+      }).create({
+        array: Ember.A([1, 2, 3])
       });
     });
   },
