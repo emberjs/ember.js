@@ -1916,6 +1916,49 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
   });
+
+  QUnit.test('Changing a query param property on a controller after navigating using a {{link-to}} should preserve the unchanged query params', function() {
+    expect(11);
+    Router.map(function() {
+      this.route('example');
+    });
+
+    Ember.TEMPLATES.application = compile(
+      '{{link-to \'Example\' \'example\' (query-params bar=\'abc\' foo=\'def\') id=\'the-link1\'}}' +
+      '{{link-to \'Example\' \'example\' (query-params bar=\'123\' foo=\'456\') id=\'the-link2\'}}'
+    );
+
+    App.ExampleRoute = Ember.Route.extend({
+      queryParams: {
+        foo: { defaultValue: 'foo' },
+        bar: { defaultValue: 'bar' }
+      }
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:example');
+
+    var $link1 = Ember.$('#the-link1');
+    var $link2 = Ember.$('#the-link2');
+    equal($link1.attr('href'), '/example?bar=abc&foo=def');
+    equal($link2.attr('href'), '/example?bar=123&foo=456');
+
+    expectedPushURL = '/example?bar=abc&foo=def';
+    Ember.run($link1, 'click');
+    equal(get(controller, 'bar'), 'abc');
+    equal(get(controller, 'foo'), 'def');
+
+    expectedPushURL = '/example?bar=123&foo=456';
+    Ember.run($link2, 'click');
+    equal(get(controller, 'bar'), '123');
+    equal(get(controller, 'foo'), '456');
+
+    expectedPushURL = '/example?bar=rab&foo=456';
+    setAndFlush(controller, 'bar', 'rab');
+    equal(get(controller, 'bar'), 'rab');
+    equal(get(controller, 'foo'), '456');
+  });
 } else {
   QUnit.test('Single query params can be set on ObjectController [DEPRECATED]', function() {
     expectDeprecation('Ember.ObjectController is deprecated, please use Ember.Controller and use `model.propertyName`.');
