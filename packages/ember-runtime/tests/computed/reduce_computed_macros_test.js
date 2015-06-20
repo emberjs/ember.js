@@ -235,6 +235,10 @@ QUnit.test('it is observable', function() {
   equal(calls, 1, 'computedMapBy is observable');
 });
 
+QUnit.test('it complains with the wrong arguments', function() {
+  expectAssertion(() => computedMapBy('array', a => a), /mapBy expects a property string/);
+});
+
 QUnit.module('computedFilter', {
   setup() {
     run(function() {
