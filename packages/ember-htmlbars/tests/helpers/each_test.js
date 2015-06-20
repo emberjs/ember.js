@@ -1302,5 +1302,39 @@ QUnit.test('can specify `@identity` to represent mixed object and primitive item
   equal(view.$().text(), 'foobarbaz');
 });
 
-testEachWithItem("{{#each foo in bar}}", false);
-testEachWithItem("{{#each bar as |foo|}}", true);
+QUnit.test('duplicate keys trigger a useful error (temporary until we can deal with this properly in HTMLBars)', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: ['a', 'a', 'a'],
+    template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
+  });
+
+  throws(
+    function() {
+      runAppend(view);
+    },
+    `Duplicate key found ('a') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`
+  );
+});
+
+QUnit.test('pushing a new duplicate key will trigger a useful error (temporary until we can deal with this properly in HTMLBars)', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: A(['a', 'b', 'c']),
+    template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
+  });
+
+  runAppend(view);
+
+  throws(
+    function() {
+      run(function() {
+        view.get('items').pushObject('a');
+      });
+    },
+    `Duplicate key found ('a') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`
+  );
+});
+
+testEachWithItem('{{#each foo in bar}}', false);
+testEachWithItem('{{#each bar as |foo|}}', true);

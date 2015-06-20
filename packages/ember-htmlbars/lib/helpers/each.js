@@ -1,3 +1,5 @@
+import Ember from 'ember-metal/core';
+import Error from 'ember-metal/error';
 import { forEach } from "ember-metal/enumerable_utils";
 import normalizeSelf from "ember-htmlbars/utils/normalize-self";
 import shouldDisplay from "ember-views/streams/should_display";
@@ -79,13 +81,19 @@ export default function eachHelper(params, hash, blocks) {
   }
 
   if (shouldDisplay(list)) {
-    forEach(list, function(item, i) {
+    let seenKeys = {};
+    forEach(list, (item, i) => {
       var self;
       if (blocks.template.arity === 0) {
         self = normalizeSelf(item);
       }
 
       var key = decodeEachKey(item, keyPath, i);
+      if (seenKeys[key] === true) {
+        throw new Error(`Duplicate key found ('${key}') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`);
+      } else {
+        seenKeys[key] = true;
+      }
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {
