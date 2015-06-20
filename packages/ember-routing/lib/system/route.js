@@ -788,7 +788,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         }
 
 
-        controller._qpDelegate = get(this, '_qp.states.inactive');
+        controller._qpDelegate = get(route, '_qp.states.inactive');
 
         var thisQueryParamChanged = (svalue !== qp.serializedValue);
         if (thisQueryParamChanged) {
