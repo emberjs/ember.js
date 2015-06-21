@@ -87,7 +87,7 @@ QUnit.test("log class generation if logging enabled", function() {
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    equal(Ember.keys(logs).length, 6, 'expected logs');
+    equal(keys(logs).length, 6, 'expected logs');
   });
 });
 

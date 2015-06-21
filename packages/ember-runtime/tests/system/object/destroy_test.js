@@ -1,7 +1,7 @@
-import run from "ember-metal/run_loop";
 import { hasPropertyAccessors } from "ember-metal/platform/define_property";
-import { observer } from "ember-metal/mixin";
+import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
+import { observer } from "ember-metal/mixin";
 import { bind } from "ember-metal/binding";
 import {
   beginPropertyChanges,
@@ -31,16 +31,25 @@ testBoth("should schedule objects to be destroyed at the end of the run loop", f
 });
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-  // MANDATORY_SETTER moves value to meta.values
-  // a destroyed object removes meta but leaves the accessor
-  // that looks it up
-  QUnit.test('should raise an exception when modifying watched properties on a destroyed object', function() {
-    var obj = EmberObject.extend({
-      fooDidChange: observer('foo', function() { })
-    }).create({
-      foo: 'bar'
+  if (hasPropertyAccessors) {
+    // MANDATORY_SETTER moves value to meta.values
+    // a destroyed object removes meta but leaves the accessor
+    // that looks it up
+    QUnit.test("should raise an exception when modifying watched properties on a destroyed object", function() {
+      var obj = EmberObject.extend({
+        foo: "bar",
+        fooDidChange: observer('foo', function() { })
+      }).create();
+
+      run(function() {
+        obj.destroy();
+      });
+
+      throws(function() {
+        set(obj, 'foo', 'baz');
+      }, Error, "raises an exception");
     });
-  });
+  }
 }
 
 QUnit.test("observers should not fire after an object has been destroyed", function() {

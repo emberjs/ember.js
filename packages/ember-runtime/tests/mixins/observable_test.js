@@ -42,21 +42,11 @@ QUnit.test('should be able to use setProperties to set multiple properties at on
 });
 
 testBoth('calling setProperties completes safely despite exceptions', function(get, set) {
-<<<<<<< HEAD
-  var exc = new Error("Something unexpected happened!");
-  var obj = EmberObject.createWithMixins({
-    firstName: "Steve",
-    lastName: "Jobs",
-    companyName: computed({
-      get: function() { return "Apple, Inc."; },
-      set: function(key, value) { throw exc; }
-=======
   var exc = new Error('Something unexpected happened!');
   var obj = EmberObject.extend({
     companyName: computed({
       get() { return 'Apple, Inc.'; },
       set(key, value) { throw exc; }
->>>>>>> 30a91ca... [Bugfix Release] deprecate createWithMixins
     })
   }).create({
     firstName: 'Steve',
@@ -82,15 +72,6 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
   equal(firstNameChangedCount, 1, 'firstName should have fired once');
 });
 
-<<<<<<< HEAD
-testBoth("should be able to retrieve cached values of computed properties without invoking the computed property", function(get) {
-  var obj = EmberObject.createWithMixins({
-    foo: computed(function() {
-      return "foo";
-    }),
-
-    bar: "bar"
-=======
 testBoth('should be able to retrieve cached values of computed properties without invoking the computed property', function(get) {
   var obj = EmberObject.extend({
     foo: computed(function() {
@@ -98,7 +79,6 @@ testBoth('should be able to retrieve cached values of computed properties withou
     })
   }).create({
     bar: 'bar'
->>>>>>> 30a91ca... [Bugfix Release] deprecate createWithMixins
   });
 
   equal(obj.cacheFor('foo'), undefined, "should return undefined if no value has been cached");

@@ -51,7 +51,7 @@ QUnit.test("new Set([1,2,3]) should create set with three items in them", functi
 });
 
 QUnit.test("new Set() should accept anything that implements EmberArray", function() {
-  var arrayLikeObject = EmberObject.createWithMixins(EmberArray, {
+  var arrayLikeObject = EmberObject.extend(EmberArray).create({
     _content: [a,b,c],
     length: 3,
     objectAt(idx) { return this._content[idx]; }

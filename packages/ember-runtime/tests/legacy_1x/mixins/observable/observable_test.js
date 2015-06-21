@@ -264,28 +264,24 @@ QUnit.module("object.set()", {
 });
 
 QUnit.test("should change normal properties when passing undefined", function() {
-  var ret = object.set('normal', undefined);
+  object.set('normal', undefined);
   equal(object.get('normal'), undefined);
-  equal(ret, undefined);
 });
 
-QUnit.test('should replace the function for a non-computed property and return the value', function() {
-  var ret = object.set('method', 'changed');
+QUnit.test('should replace the function for a non-computed property', function() {
+  object.set('method', 'changed');
   equal(object.get('_method'), 'method'); // make sure this was NOT run
   ok(typeof object.get('method') !== 'function');
-  equal(ret, 'changed');
 });
 
 QUnit.test('should replace prover when property value is null', function() {
-  var ret = object.set('nullProperty', 'changed');
+  object.set('nullProperty', 'changed');
   equal(object.get('nullProperty'), 'changed');
-  equal(ret, 'changed');
 });
 
 QUnit.test('should call unknownProperty with value when property is undefined', function() {
-  var ret = object.set('unknown', 'changed');
+  object.set('unknown', 'changed');
   equal(object.get('_unknown'), 'changed');
-  equal(ret, 'changed');
 });
 
 // ..........................................................

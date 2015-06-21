@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import { map } from 'ember-metal/enumerable_utils';
 import {
   get,
   getWithDefault

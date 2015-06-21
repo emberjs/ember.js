@@ -1,13 +1,9 @@
 import Ember from "ember-metal/core";
 import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {Mixin, observer} from "ember-metal/mixin";
-import run from "ember-metal/run_loop";
 import {on} from "ember-metal/events";
 import EmberObject from "ember-runtime/system/object";
-import keys from "ember-metal/keys";
 
 var moduleOptions, originalLookup;
 

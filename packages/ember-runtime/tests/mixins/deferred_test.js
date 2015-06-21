@@ -354,7 +354,7 @@ if (!EmberDev.runningProdBuild) {
       deprecationMade = message;
     };
 
-    deferred = EmberObject.createWithMixins(Deferred);
+    deferred = EmberObject.extend(Deferred).create();
     equal(deprecationMade, undefined, 'no deprecation was made on init');
 
     deferred.then(function(value) {
