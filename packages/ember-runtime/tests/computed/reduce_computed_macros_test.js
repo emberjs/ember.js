@@ -179,6 +179,10 @@ QUnit.test('it maps unshifted objects with property observers', function() {
   deepEqual(get(obj, 'mapped'), ['A', 'B', 'D'], 'properties unshifted in sequence are mapped correctly');
 });
 
+QUnit.test('it complains if you invoke the wrong map macro', function() {
+  expectAssertion(() => computedMap('array', 'property'), /map expects a callback function/);
+});
+
 QUnit.module('computedMapBy', {
   setup() {
     run(function() {
@@ -231,6 +235,9 @@ QUnit.test('it is observable', function() {
   equal(calls, 1, 'computedMapBy is observable');
 });
 
+QUnit.test('it complains with the wrong arguments', function() {
+  expectAssertion(() => computedMapBy('array', a => a), /mapBy expects a property string/);
+});
 
 QUnit.module('computedFilter', {
   setup() {
