@@ -14,7 +14,6 @@ import {
   Mixin,
   aliasMethod
 } from 'ember-metal/mixin';
-import { indexOf } from 'ember-metal/enumerable_utils';
 import { computed } from 'ember-metal/computed';
 import {
   propertyWillChange,
@@ -640,9 +639,7 @@ export default Mixin.create({
     @private
   */
   every(callback, target) {
-    return !this.find(function(x, idx, i) {
-      return !callback.call(target, x, idx, i);
-    });
+    return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
 
   /**
@@ -970,8 +967,8 @@ export default Mixin.create({
   uniq() {
     var ret = Ember.A();
 
-    this.forEach(function(k) {
-      if (indexOf(ret, k) < 0) {
+    this.forEach((k) => {
+      if (ret.indexOf(k) < 0) {
         ret.push(k);
       }
     });

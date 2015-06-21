@@ -1,17 +1,18 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import Ember from 'ember-metal/core';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('addObject');
 
-suite.test("should return receiver", function() {
+suite.test('should return receiver', function() {
   var before, obj;
   before = this.newFixture(3);
   obj    = this.newObject(before);
   equal(obj.addObject(before[1]), obj, 'should return receiver');
 });
 
-suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
+suite.test('[A,B].addObject(C) => [A,B,C] + notify', function() {
   var obj, before, after, observer, item;
 
   before = this.newFixture(2);
@@ -36,7 +37,7 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   }
 });
 
-suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
+suite.test('[A,B,C].addObject(A) => [A,B,C] + NO notify', function() {
   var obj, before, after, observer, item;
 
   before = this.newFixture(3);

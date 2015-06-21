@@ -1,6 +1,5 @@
 import EmberArray from 'ember-runtime/mixins/array';
 import EmberObject from 'ember-runtime/system/object';
-import {isArray as _isArray} from 'ember-metal/utils';
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -44,7 +43,7 @@ var toString = Object.prototype.toString;
 */
 export function isArray(obj) {
   if (!obj || obj.setInterval) { return false; }
-  if (_isArray(obj)) { return true; }
+  if (Array.isArray(obj)) { return true; }
   if (EmberArray.detect(obj)) { return true; }
 
   let type = typeOf(obj);

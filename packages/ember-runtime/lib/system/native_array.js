@@ -3,21 +3,16 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
-
-import { get } from "ember-metal/property_get";
-import {
-  _replace as replace,
-  forEach
-} from "ember-metal/enumerable_utils";
-import { Mixin } from "ember-metal/mixin";
-import { indexOf, lastIndexOf } from "ember-metal/array";
-import EmberArray from "ember-runtime/mixins/array";
-import MutableArray from "ember-runtime/mixins/mutable_array";
-import Observable from "ember-runtime/mixins/observable";
-import Copyable from "ember-runtime/mixins/copyable";
-import { FROZEN_ERROR } from "ember-runtime/mixins/freezable";
-import copy from "ember-runtime/copy";
+import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES
+import { _replace as replace } from 'ember-metal/replace';
+import { get } from 'ember-metal/property_get';
+import { Mixin } from 'ember-metal/mixin';
+import EmberArray from 'ember-runtime/mixins/array';
+import MutableArray from 'ember-runtime/mixins/mutable_array';
+import Observable from 'ember-runtime/mixins/observable';
+import Copyable from 'ember-runtime/mixins/copyable';
+import { FROZEN_ERROR } from 'ember-runtime/mixins/freezable';
+import copy from 'ember-runtime/copy';
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -88,13 +83,12 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     return ret;
   },
 
-  indexOf: indexOf,
-
-  lastIndexOf: lastIndexOf,
+  indexOf: Array.prototype.indexOf,
+  lastIndexOf: Array.prototype.lastIndexOf,
 
   copy(deep) {
     if (deep) {
-      return this.map(function(item) { return copy(item, true); });
+      return this.map((item) => copy(item, true));
     }
 
     return this.slice();
@@ -103,7 +97,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
-forEach(NativeArray.keys(), function(methodName) {
+NativeArray.keys().forEach((methodName) => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
   }

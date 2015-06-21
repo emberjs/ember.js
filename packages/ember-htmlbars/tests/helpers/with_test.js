@@ -1,18 +1,19 @@
 /*jshint newcap:false*/
-import EmberView from "ember-views/views/view";
-import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
-import { computed } from "ember-metal/computed";
-import { set } from "ember-metal/property_set";
-import { get } from "ember-metal/property_get";
-import ObjectController from "ember-runtime/controllers/object_controller";
+import Ember from 'ember-metal/core';
+import EmberView from 'ember-views/views/view';
+import run from 'ember-metal/run_loop';
+import EmberObject from 'ember-runtime/system/object';
+import { computed } from 'ember-metal/computed';
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import ObjectController from 'ember-runtime/controllers/object_controller';
 import {
   objectControllerDeprecation
-} from "ember-runtime/controllers/object_controller";
+} from 'ember-runtime/controllers/object_controller';
 import EmberController from 'ember-runtime/controllers/controller';
-import { Registry } from "ember-runtime/system/container";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { Registry } from 'ember-runtime/system/container';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view, lookup;
 var originalLookup = Ember.lookup;
@@ -26,7 +27,7 @@ function testWithAs(moduleName, templateString, deprecated) {
       if (deprecated) {
         expectDeprecation(function() {
           template = compile(templateString);
-        }, "Using {{with}} without block syntax (L1:C0) is deprecated. Please use standard block form (`{{#with foo as |bar|}}`) instead.");
+        }, 'Using {{with}} without block syntax (L1:C0) is deprecated. Please use standard block form (`{{#with foo as |bar|}}`) instead.');
       } else {
         template = compile(templateString);
       }
@@ -35,8 +36,8 @@ function testWithAs(moduleName, templateString, deprecated) {
       view = EmberView.create({
         template: template,
         context: {
-          title: "Señor Engineer",
-          person: { name: "Tom Dale" }
+          title: 'Señor Engineer',
+          person: { name: 'Tom Dale' }
         }
       });
 
@@ -49,42 +50,42 @@ function testWithAs(moduleName, templateString, deprecated) {
     }
   });
 
-  QUnit.test("it should support #with-as syntax", function() {
-    equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
+  QUnit.test('it should support #with-as syntax', function() {
+    equal(view.$().text(), 'Señor Engineer: Tom Dale', 'should be properly scoped');
   });
 
-  QUnit.test("updating the context should update the alias", function() {
+  QUnit.test('updating the context should update the alias', function() {
     run(function() {
       view.set('context.person', {
-        name: "Yehuda Katz"
+        name: 'Yehuda Katz'
       });
     });
 
-    equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
+    equal(view.$().text(), 'Señor Engineer: Yehuda Katz', 'should be properly scoped after updating');
   });
 
-  QUnit.test("updating a property on the context should update the HTML", function() {
-    equal(view.$().text(), "Señor Engineer: Tom Dale", "precond - should be properly scoped after updating");
+  QUnit.test('updating a property on the context should update the HTML', function() {
+    equal(view.$().text(), 'Señor Engineer: Tom Dale', 'precond - should be properly scoped after updating');
 
     run(function() {
-      set(view, 'context.person.name', "Yehuda Katz");
+      set(view, 'context.person.name', 'Yehuda Katz');
     });
 
-    equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
+    equal(view.$().text(), 'Señor Engineer: Yehuda Katz', 'should be properly scoped after updating');
   });
 
-  QUnit.test("updating a property on the view should update the HTML", function() {
+  QUnit.test('updating a property on the view should update the HTML', function() {
     run(function() {
-      view.set('context.title', "Señorette Engineer");
+      view.set('context.title', 'Señorette Engineer');
     });
 
-    equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
+    equal(view.$().text(), 'Señorette Engineer: Tom Dale', 'should be properly scoped after updating');
   });
 }
 
-testWithAs("ember-htmlbars: {{#with}} helper", "{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}", true);
+testWithAs('ember-htmlbars: {{#with}} helper', '{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}', true);
 
-QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
+QUnit.module('Multiple Handlebars {{with foo as bar}} helpers', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
   },
@@ -96,22 +97,22 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
   }
 });
 
-QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
+QUnit.test('re-using the same variable with different #with blocks does not override each other', function() {
   view = EmberView.create({
-    template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
+    template: compile('Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}'),
     context: {
-      admin: { name: "Tom Dale" },
-      user: { name: "Yehuda Katz" }
+      admin: { name: 'Tom Dale' },
+      user: { name: 'Yehuda Katz' }
     }
   });
 
   runAppend(view);
-  equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
+  equal(view.$().text(), 'Admin: Tom Dale User: Yehuda Katz', 'should be properly scoped');
 });
 
-QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
+QUnit.test('the scoped variable is not available outside the {{with}} block.', function() {
   view = EmberView.create({
-    template: compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"),
+    template: compile('{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}'),
     context: {
       name: 'Stef',
       other: 'Yehuda'
@@ -119,12 +120,12 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
   });
 
   runAppend(view);
-  equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
+  equal(view.$().text(), 'Stef-Yehuda-Stef', 'should be properly scoped after updating');
 });
 
-QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+QUnit.test('nested {{with}} blocks shadow the outer scoped variable properly.', function() {
   view = EmberView.create({
-    template: compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"),
+    template: compile('{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}'),
     context: {
       first: 'Limbo',
       fifth: 'Wrath',
@@ -133,16 +134,16 @@ QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", 
   });
 
   runAppend(view);
-  equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
+  equal(view.$().text(), 'Limbo-Wrath-Treachery-Wrath-Limbo', 'should be properly scoped after updating');
 });
 
-QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
+QUnit.module('Handlebars {{#with}} globals helper [DEPRECATED]', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     lookup.Foo = { bar: 'baz' };
     view = EmberView.create({
-      template: compile("{{#with Foo.bar as |qux|}}{{qux}}{{/with}}")
+      template: compile('{{#with Foo.bar as |qux|}}{{qux}}{{/with}}')
     });
   },
 
@@ -152,91 +153,91 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   }
 });
 
-QUnit.test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
+QUnit.test('it should support #with Foo.bar as qux [DEPRECATED]', function() {
   expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of Foo from a Handlebars template is deprecated/);
 
-  equal(view.$().text(), "baz", "should be properly scoped");
+  equal(view.$().text(), 'baz', 'should be properly scoped');
 
   run(function() {
     set(lookup.Foo, 'bar', 'updated');
   });
 
-  equal(view.$().text(), "updated", "should update");
+  equal(view.$().text(), 'updated', 'should update');
 });
 
-QUnit.module("Handlebars {{#with keyword as |foo|}}");
+QUnit.module('Handlebars {{#with keyword as |foo|}}');
 
-QUnit.test("it should support #with view as foo", function() {
+QUnit.test('it should support #with view as foo', function() {
   var view = EmberView.create({
-    template: compile("{{#with view as |myView|}}{{myView.name}}{{/with}}"),
-    name: "Sonics"
+    template: compile('{{#with view as |myView|}}{{myView.name}}{{/with}}'),
+    name: 'Sonics'
   });
 
   runAppend(view);
-  equal(view.$().text(), "Sonics", "should be properly scoped");
+  equal(view.$().text(), 'Sonics', 'should be properly scoped');
 
   run(function() {
-    set(view, 'name', "Thunder");
+    set(view, 'name', 'Thunder');
   });
 
-  equal(view.$().text(), "Thunder", "should update");
+  equal(view.$().text(), 'Thunder', 'should update');
 
   runDestroy(view);
 });
 
-QUnit.test("it should support #with name as foo, then #with foo as bar", function() {
+QUnit.test('it should support #with name as foo, then #with foo as bar', function() {
   var view = EmberView.create({
-    template: compile("{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}"),
-    context: { name: "caterpillar" }
+    template: compile('{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}'),
+    context: { name: 'caterpillar' }
   });
 
   runAppend(view);
-  equal(view.$().text(), "caterpillar", "should be properly scoped");
+  equal(view.$().text(), 'caterpillar', 'should be properly scoped');
 
   run(function() {
-    set(view, 'context.name', "butterfly");
+    set(view, 'context.name', 'butterfly');
   });
 
-  equal(view.$().text(), "butterfly", "should update");
+  equal(view.$().text(), 'butterfly', 'should update');
 
   runDestroy(view);
 });
 
-QUnit.module("Handlebars {{#with this as |foo|}}");
+QUnit.module('Handlebars {{#with this as |foo|}}');
 
-QUnit.test("it should support #with this as qux", function() {
+QUnit.test('it should support #with this as qux', function() {
   var view = EmberView.create({
-    template: compile("{{#with this as |person|}}{{person.name}}{{/with}}"),
-    controller: EmberObject.create({ name: "Los Pivots" })
+    template: compile('{{#with this as |person|}}{{person.name}}{{/with}}'),
+    controller: EmberObject.create({ name: 'Los Pivots' })
   });
 
   runAppend(view);
-  equal(view.$().text(), "Los Pivots", "should be properly scoped");
+  equal(view.$().text(), 'Los Pivots', 'should be properly scoped');
 
   run(function() {
-    set(view, 'controller.name', "l'Pivots");
+    set(view, 'controller.name', 'l\'Pivots');
   });
 
-  equal(view.$().text(), "l'Pivots", "should update");
+  equal(view.$().text(), 'l\'Pivots', 'should update');
 
   runDestroy(view);
 });
 
-QUnit.module("Handlebars {{#with foo}} with defined controller");
+QUnit.module('Handlebars {{#with foo}} with defined controller');
 
-QUnit.test("it should wrap context with object controller [DEPRECATED]", function() {
+QUnit.test('it should wrap context with object controller [DEPRECATED]', function() {
   var childController;
 
   var Controller = ObjectController.extend({
     init() {
-      if (childController) { throw new Error("Did not expect controller.init to be invoked twice"); }
+      if (childController) { throw new Error('Did not expect controller.init to be invoked twice'); }
       childController = this;
       this._super();
     },
     controllerName: computed(function() {
-      return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
+      return 'controller:'+this.get('model.name') + ' and ' + this.get('parentController.name');
     }).property('model.name', 'parentController.name')
   });
 
@@ -263,29 +264,29 @@ QUnit.test("it should wrap context with object controller [DEPRECATED]", functio
 
   runAppend(view);
 
-  equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
+  equal(view.$().text(), 'controller:Steve Holt and Bob Loblaw');
 
   run(function() {
     view.rerender();
   });
 
-  equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
+  equal(view.$().text(), 'controller:Steve Holt and Bob Loblaw');
 
   run(function() {
     parentController.set('name', 'Carl Weathers');
     view.rerender();
   });
 
-  equal(view.$().text(), "controller:Steve Holt and Carl Weathers");
+  equal(view.$().text(), 'controller:Steve Holt and Carl Weathers');
 
   run(function() {
     person.set('name', 'Gob');
     view.rerender();
   });
 
-  equal(view.$().text(), "controller:Gob and Carl Weathers");
+  equal(view.$().text(), 'controller:Gob and Carl Weathers');
 
-  strictEqual(childController.get('target'), parentController, "the target property of the child controllers are set correctly");
+  strictEqual(childController.get('target'), parentController, 'the target property of the child controllers are set correctly');
 
   runDestroy(view);
 });
@@ -324,7 +325,7 @@ QUnit.test("it should still have access to original parentController within an {
 });
 */
 
-QUnit.test("it should wrap keyword with object controller [DEPRECATED]", function() {
+QUnit.test('it should wrap keyword with object controller [DEPRECATED]', function() {
   expectDeprecation(objectControllerDeprecation);
 
   var PersonController = ObjectController.extend({
@@ -353,32 +354,32 @@ QUnit.test("it should wrap keyword with object controller [DEPRECATED]", functio
 
   runAppend(view);
 
-  equal(view.$().text(), "Bob Loblaw - STEVE HOLT");
+  equal(view.$().text(), 'Bob Loblaw - STEVE HOLT');
 
   run(function() {
     view.rerender();
   });
 
-  equal(view.$().text(), "Bob Loblaw - STEVE HOLT");
+  equal(view.$().text(), 'Bob Loblaw - STEVE HOLT');
 
   run(function() {
     parentController.set('name', 'Carl Weathers');
     view.rerender();
   });
 
-  equal(view.$().text(), "Carl Weathers - STEVE HOLT");
+  equal(view.$().text(), 'Carl Weathers - STEVE HOLT');
 
   run(function() {
     person.set('name', 'Gob');
     view.rerender();
   });
 
-  equal(view.$().text(), "Carl Weathers - GOB");
+  equal(view.$().text(), 'Carl Weathers - GOB');
 
   runDestroy(view);
 });
 
-QUnit.test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
+QUnit.test('destroys the controller generated with {{with foo controller=\'blah\'}} [DEPRECATED]', function() {
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy() {
@@ -414,7 +415,7 @@ QUnit.test("destroys the controller generated with {{with foo controller='blah'}
   ok(destroyed, 'controller was destroyed properly');
 });
 
-QUnit.test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
+QUnit.test('destroys the controller generated with {{with foo as bar controller=\'blah\'}}', function() {
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy() {
@@ -448,15 +449,15 @@ QUnit.test("destroys the controller generated with {{with foo as bar controller=
   ok(destroyed, 'controller was destroyed properly');
 });
 
-QUnit.module("{{#with}} helper binding to view keyword", {
+QUnit.module('{{#with}} helper binding to view keyword', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
-      template: compile("We have: {{#with view.thing as |fromView|}}{{fromView.name}} and {{fromContext.name}}{{/with}}"),
+      template: compile('We have: {{#with view.thing as |fromView|}}{{fromView.name}} and {{fromContext.name}}{{/with}}'),
       thing: { name: 'this is from the view' },
       context: {
-        fromContext: { name: "this is from the context" }
+        fromContext: { name: 'this is from the context' }
       }
     });
 
@@ -469,13 +470,13 @@ QUnit.module("{{#with}} helper binding to view keyword", {
   }
 });
 
-QUnit.test("{{with}} helper can bind to keywords with 'as'", function() {
-  equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
+QUnit.test('{{with}} helper can bind to keywords with \'as\'', function() {
+  equal(view.$().text(), 'We have: this is from the view and this is from the context', 'should render');
 });
 
-testWithAs("ember-htmlbars: {{#with x as |y|}}", "{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}");
+testWithAs('ember-htmlbars: {{#with x as |y|}}', '{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}');
 
-QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
+QUnit.module('Multiple Handlebars {{with foo as |bar|}} helpers', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -487,22 +488,22 @@ QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
   }
 });
 
-QUnit.test("re-using the same variable with different #with blocks does not override each other", function() {
+QUnit.test('re-using the same variable with different #with blocks does not override each other', function() {
   view = EmberView.create({
-    template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
+    template: compile('Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}'),
     context: {
-      admin: { name: "Tom Dale" },
-      user: { name: "Yehuda Katz" }
+      admin: { name: 'Tom Dale' },
+      user: { name: 'Yehuda Katz' }
     }
   });
 
   runAppend(view);
-  equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
+  equal(view.$().text(), 'Admin: Tom Dale User: Yehuda Katz', 'should be properly scoped');
 });
 
-QUnit.test("the scoped variable is not available outside the {{with}} block.", function() {
+QUnit.test('the scoped variable is not available outside the {{with}} block.', function() {
   view = EmberView.create({
-    template: compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"),
+    template: compile('{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}'),
     context: {
       name: 'Stef',
       other: 'Yehuda'
@@ -511,12 +512,12 @@ QUnit.test("the scoped variable is not available outside the {{with}} block.", f
 
   runAppend(view);
 
-  equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
+  equal(view.$().text(), 'Stef-Yehuda-Stef', 'should be properly scoped after updating');
 });
 
-QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", function() {
+QUnit.test('nested {{with}} blocks shadow the outer scoped variable properly.', function() {
   view = EmberView.create({
-    template: compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"),
+    template: compile('{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}'),
     context: {
       first: 'Limbo',
       fifth: 'Wrath',
@@ -525,26 +526,26 @@ QUnit.test("nested {{with}} blocks shadow the outer scoped variable properly.", 
   });
 
   runAppend(view);
-  equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
+  equal(view.$().text(), 'Limbo-Wrath-Treachery-Wrath-Limbo', 'should be properly scoped after updating');
 });
 
-QUnit.test("{{with}} block should not render if passed variable is falsey", function () {
+QUnit.test('{{with}} block should not render if passed variable is falsey', function () {
   view = EmberView.create({
-    template: compile("{{#with foo as |bar|}}Don't render me{{/with}}"),
+    template: compile('{{#with foo as |bar|}}Don\'t render me{{/with}}'),
     context: {
       foo: null
     }
   });
   runAppend(view);
-  equal(view.$().text(), "", "should not render the inner template");
+  equal(view.$().text(), '', 'should not render the inner template');
 });
 
-QUnit.module("{{#with}} inverse template", {
+QUnit.module('{{#with}} inverse template', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
-      template: compile("{{#with view.falsyThing as |thing|}}Has Thing{{else}}No Thing{{/with}}"),
+      template: compile('{{#with view.falsyThing as |thing|}}Has Thing{{else}}No Thing{{/with}}'),
       falsyThing: null
     });
 
@@ -557,23 +558,23 @@ QUnit.module("{{#with}} inverse template", {
   }
 });
 
-QUnit.test("inverse template is displayed", function() {
-  equal(view.$().text(), "No Thing", "should render inverse template");
+QUnit.test('inverse template is displayed', function() {
+  equal(view.$().text(), 'No Thing', 'should render inverse template');
 });
 
-QUnit.test("changing the property to truthy causes standard template to be displayed", function() {
+QUnit.test('changing the property to truthy causes standard template to be displayed', function() {
   run(function() {
     set(view, 'falsyThing', true);
   });
-  equal(view.$().text(), "Has Thing", "should render standard template");
+  equal(view.$().text(), 'Has Thing', 'should render standard template');
 });
 
-QUnit.module("{{#with}} inverse template preserves context", {
+QUnit.module('{{#with}} inverse template preserves context', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
     view = EmberView.create({
-      template: compile("{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}"),
+      template: compile('{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}'),
       context: {
         falsyThing: null,
         otherThing: 'bar'
@@ -589,6 +590,6 @@ QUnit.module("{{#with}} inverse template preserves context", {
   }
 });
 
-QUnit.test("inverse template is displayed with context", function() {
-  equal(view.$().text(), "No Thing bar", "should render inverse template with context preserved");
+QUnit.test('inverse template is displayed with context', function() {
+  equal(view.$().text(), 'No Thing bar', 'should render inverse template with context preserved');
 });

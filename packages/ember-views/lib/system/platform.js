@@ -1,4 +1,4 @@
-import environment from "ember-metal/environment";
+import environment from 'ember-metal/environment';
 
 // IE 6/7 have bugs around setting names on inputs during creation.
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:

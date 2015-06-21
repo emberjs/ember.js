@@ -1,18 +1,19 @@
-import isEnabled from "ember-metal/features";
-import ComponentLookup from "ember-views/component_lookup";
-import Registry from "container/registry";
-import EmberView from "ember-views/views/view";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import run from "ember-metal/run_loop";
-import { set } from "ember-metal/property_set";
-import { get } from "ember-metal/property_get";
-import Component from "ember-views/views/component";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import Registry from 'container/registry';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import ComponentLookup from 'ember-views/component_lookup';
+import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
+import compile from 'ember-template-compiler/system/compile';
 
 var view, registry, container;
 
 if (isEnabled('ember-htmlbars-component-helper')) {
-  QUnit.module("ember-htmlbars: {{#component}} helper", {
+  QUnit.module('ember-htmlbars: {{#component}} helper', {
     setup() {
       registry = new Registry();
       container = registry.container();
@@ -28,7 +29,7 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     }
   });
 
-  QUnit.test("component helper with unquoted string is bound", function() {
+  QUnit.test('component helper with unquoted string is bound', function() {
     registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
     registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
 
@@ -43,13 +44,61 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
 
     Ember.run(function() {
-      set(view, "dynamicComponent", 'baz-qux');
-      set(view, "location", 'Loisaida');
+      set(view, 'dynamicComponent', 'baz-qux');
+      set(view, 'location', 'Loisaida');
     });
     equal(view.$().text(), 'yummy Loisaida arepas!', 'component was updated and re-rendered');
   });
 
-  QUnit.test("component helper with actions", function() {
+  QUnit.test('component helper destroys underlying component when it is swapped out', function() {
+    var currentComponent;
+    var destroyCalls = 0;
+    registry.register('component:foo-bar', Component.extend({
+      init() {
+        this._super(...arguments);
+        currentComponent = 'foo-bar';
+      },
+      willDestroy() {
+        destroyCalls++;
+      }
+    }));
+    registry.register('component:baz-qux', Component.extend({
+      init() {
+        this._super(...arguments);
+        currentComponent = 'baz-qux';
+      },
+      willDestroy() {
+        destroyCalls++;
+      }
+    }));
+
+    view = EmberView.create({
+      container: container,
+      dynamicComponent: 'foo-bar',
+      template: compile('{{component view.dynamicComponent}}')
+    });
+
+    runAppend(view);
+
+    equal(currentComponent, 'foo-bar', 'precond - instantiates the proper component');
+    equal(destroyCalls, 0, 'precond - nothing destroyed yet');
+
+    Ember.run(function() {
+      set(view, 'dynamicComponent', 'baz-qux');
+    });
+
+    equal(currentComponent, 'baz-qux', 'changing bound value instantiates the proper component');
+    equal(destroyCalls, 1, 'prior component should be destroyed');
+
+    Ember.run(function() {
+      set(view, 'dynamicComponent', 'foo-bar');
+    });
+
+    equal(currentComponent, 'foo-bar', 'changing bound value instantiates the proper component');
+    equal(destroyCalls, 2, 'prior components destroyed');
+  });
+
+  QUnit.test('component helper with actions', function() {
     registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
     registry.register('component:foo-bar', Ember.Component.extend({
       classNames: 'foo-bar',
@@ -106,7 +155,7 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     equal(get(componentInstance, 'parentView'), view, 'component\'s parentView is the view invoking the helper');
   });
 
-  QUnit.test("nested component helpers", function() {
+  QUnit.test('nested component helpers', function() {
     registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
     registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
     registry.register('template:components/corge-grault', compile('delicious {{attrs.location}} {{yield}}'));
@@ -123,13 +172,13 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yippie! Caracas yummy Caracas arepas!', 'components were looked up and rendered');
 
     Ember.run(function() {
-      set(view, "dynamicComponent1", 'corge-grault');
-      set(view, "location", 'Loisaida');
+      set(view, 'dynamicComponent1', 'corge-grault');
+      set(view, 'location', 'Loisaida');
     });
     equal(view.$().text(), 'delicious Loisaida yummy Loisaida arepas!', 'components were updated and re-rendered');
   });
 
-  QUnit.test("component helper can be used with a quoted string (though you probably would not do this)", function() {
+  QUnit.test('component helper can be used with a quoted string (though you probably would not do this)', function() {
     registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
 
     view = EmberView.create({
@@ -143,7 +192,7 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
   });
 
-  QUnit.test("component with unquoted param resolving to non-existent component", function() {
+  QUnit.test('component with unquoted param resolving to non-existent component', function() {
     view = EmberView.create({
       container: container,
       dynamicComponent: 'does-not-exist',
@@ -153,10 +202,10 @@ if (isEnabled('ember-htmlbars-component-helper')) {
 
     expectAssertion(function() {
       runAppend(view);
-    }, /HTMLBars error: Could not find component named "does-not-exist"./, "Expected missing component to generate an exception");
+    }, /HTMLBars error: Could not find component named "does-not-exist"./, 'Expected missing component to generate an exception');
   });
 
-  QUnit.test("component with unquoted param resolving to a component, then non-existent component", function() {
+  QUnit.test('component with unquoted param resolving to a component, then non-existent component', function() {
     registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
     view = EmberView.create({
       container: container,
@@ -170,13 +219,13 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     equal(view.$().text(), 'yippie! Caracas arepas!', 'component was looked up and rendered');
 
     Ember.run(function() {
-      set(view, "dynamicComponent", undefined);
+      set(view, 'dynamicComponent', undefined);
     });
 
     equal(view.$().text(), '', 'component correctly deals with falsey values set post-render');
   });
 
-  QUnit.test("component with quoted param for non-existent component", function() {
+  QUnit.test('component with quoted param for non-existent component', function() {
     view = EmberView.create({
       container: container,
       location: 'Caracas',
@@ -188,7 +237,7 @@ if (isEnabled('ember-htmlbars-component-helper')) {
     }, /HTMLBars error: Could not find component named "does-not-exist"./);
   });
 
-  QUnit.test("component helper properly invalidates hash params inside an {{each}} invocation #11044", function() {
+  QUnit.test('component helper properly invalidates hash params inside an {{each}} invocation #11044', function() {
     registry.register('component:foo-bar', Component.extend({
       willRender() {
         // store internally available name to ensure that the name available in `this.attrs.name`

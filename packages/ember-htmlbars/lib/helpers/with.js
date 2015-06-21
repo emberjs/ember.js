@@ -3,8 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import normalizeSelf from "ember-htmlbars/utils/normalize-self";
-import shouldDisplay from "ember-views/streams/should_display";
+import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
+import shouldDisplay from 'ember-views/streams/should_display';
 
 /**
   Use the `{{with}}` helper when you want to alias a property to a new name. This is helpful

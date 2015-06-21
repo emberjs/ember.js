@@ -11,20 +11,20 @@
 // CONSTANTS
 //
 
-var OUT_OF_RANGE_EXCEPTION = "Index out of range";
+var OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 var EMPTY = [];
 
 // ..........................................................
 // HELPERS
 //
 
-import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
-import EmberError from "ember-metal/error";
-import { Mixin } from "ember-metal/mixin";
-import EmberArray from "ember-runtime/mixins/array";
-import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
-import Enumerable from "ember-runtime/mixins/enumerable";
+import { get } from 'ember-metal/property_get';
+import EmberError from 'ember-metal/error';
+import { Mixin } from 'ember-metal/mixin';
+import EmberArray from 'ember-runtime/mixins/array';
+import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
+import Enumerable from 'ember-runtime/mixins/enumerable';
+
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
@@ -194,8 +194,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   pushObjects(objects) {
-    if (!(Enumerable.detect(objects) || isArray(objects))) {
-      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
+    if (!(Enumerable.detect(objects) || Array.isArray(objects))) {
+      throw new TypeError('Must pass Ember.Enumerable to Ember.MutableArray#pushObjects');
     }
     this.replace(get(this, 'length'), 0, objects);
     return this;

@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import { isStream } from "ember-metal/streams/utils";
+import { isStream } from 'ember-metal/streams/utils';
 
 export default function getChild(parent, key) {
   if (isStream(parent)) {

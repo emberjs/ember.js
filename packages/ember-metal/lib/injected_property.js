@@ -1,8 +1,7 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import { ComputedProperty } from "ember-metal/computed";
-import { AliasedProperty } from "ember-metal/alias";
-import { Descriptor } from "ember-metal/properties";
-import create from "ember-metal/platform/create";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { ComputedProperty } from 'ember-metal/computed';
+import { AliasedProperty } from 'ember-metal/alias';
+import { Descriptor } from 'ember-metal/properties';
 
 /**
   Read-only property that returns the result of a container lookup.
@@ -32,7 +31,7 @@ function injectedPropertyGet(keyName) {
   return this.container.lookup(desc.type + ':' + (desc.name || keyName));
 }
 
-InjectedProperty.prototype = create(Descriptor.prototype);
+InjectedProperty.prototype = Object.create(Descriptor.prototype);
 
 var InjectedPropertyPrototype = InjectedProperty.prototype;
 var ComputedPropertyPrototype = ComputedProperty.prototype;

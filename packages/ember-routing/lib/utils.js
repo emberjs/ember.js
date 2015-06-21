@@ -1,5 +1,5 @@
-import merge from "ember-metal/merge";
-import { get } from "ember-metal/property_get";
+import merge from 'ember-metal/merge';
+import { get } from 'ember-metal/property_get';
 
 export function routeArgs(targetRouteName, models, queryParams) {
   var args = [];
@@ -51,11 +51,11 @@ export function stashParamNames(router, handlerInfos) {
 */
 export function calculateCacheKey(prefix, _parts, values) {
   var parts = _parts || [];
-  var suffixes = "";
+  var suffixes = '';
   for (var i = 0, len = parts.length; i < len; ++i) {
     var part = parts[i];
     var value = get(values, part);
-    suffixes += "::" + part + ":" + value;
+    suffixes += '::' + part + ':' + value;
   }
   return prefix + suffixes.replace(ALL_PERIODS_REGEX, '-');
 }

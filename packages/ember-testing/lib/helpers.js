@@ -1,11 +1,11 @@
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import { get } from "ember-metal/property_get";
-import EmberError from "ember-metal/error";
-import run from "ember-metal/run_loop";
-import jQuery from "ember-views/system/jquery";
-import Test from "ember-testing/test";
-import RSVP from "ember-runtime/ext/rsvp";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import { get } from 'ember-metal/property_get';
+import EmberError from 'ember-metal/error';
+import run from 'ember-metal/run_loop';
+import jQuery from 'ember-views/system/jquery';
+import Test from 'ember-testing/test';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 /**
 @module ember
@@ -131,7 +131,7 @@ function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptio
     options = {};
   } else if (arity === 4) {
     // context and options are optional, so this is
-    if (typeof typeOrOptions === "object") {  // either
+    if (typeof typeOrOptions === 'object') {  // either
       // app, selector, type, options
       context = null;
       type = contextOrType;
@@ -190,7 +190,7 @@ function fillIn(app, selector, contextOrText, text) {
 function findWithAssert(app, selector, context) {
   var $el = app.testHelpers.find(selector, context);
   if ($el.length === 0) {
-    throw new EmberError("Element " + selector + " not found.");
+    throw new EmberError('Element ' + selector + ' not found.');
   }
   return $el;
 }

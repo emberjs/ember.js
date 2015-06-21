@@ -1,23 +1,24 @@
-import jQuery from "ember-views/system/jquery";
-import RenderBuffer from "ember-views/compat/render_buffer";
-import DOMHelper from "dom-helper";
+import jQuery from 'ember-views/system/jquery';
+import RenderBuffer from 'ember-views/compat/render_buffer';
+import DOMHelper from 'dom-helper';
 
-var svgNamespace = "http://www.w3.org/2000/svg";
-var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
+var svgNamespace = 'http://www.w3.org/2000/svg';
+var xhtmlNamespace = 'http://www.w3.org/1999/xhtml';
 var trim = jQuery.trim;
 
-QUnit.module("RenderBuffer");
+QUnit.module('RenderBuffer');
 
 var domHelper = new DOMHelper();
 
 function createRenderBuffer(tagName, contextualElement) {
+  expectDeprecation('`Ember.RenderBuffer` is deprecated.');
   var buffer = new RenderBuffer(domHelper);
   buffer.reset(tagName, contextualElement);
 
   return buffer;
 }
 
-QUnit.test("RenderBuffers raise a deprecation warning without a contextualElement", function() {
+QUnit.test('RenderBuffers raise a deprecation warning without a contextualElement', function() {
   var buffer = createRenderBuffer('div');
   expectDeprecation(function() {
     buffer.generateElement();
@@ -26,7 +27,7 @@ QUnit.test("RenderBuffers raise a deprecation warning without a contextualElemen
   }, /The render buffer expects an outer contextualElement to exist/);
 });
 
-QUnit.test("reset RenderBuffers raise a deprecation warning without a contextualElement", function() {
+QUnit.test('reset RenderBuffers raise a deprecation warning without a contextualElement', function() {
   var buffer = createRenderBuffer('div', document.body);
   buffer.reset('span');
   expectDeprecation(function() {
@@ -36,7 +37,7 @@ QUnit.test("reset RenderBuffers raise a deprecation warning without a contextual
   }, /The render buffer expects an outer contextualElement to exist/);
 });
 
-QUnit.test("RenderBuffers combine strings", function() {
+QUnit.test('RenderBuffers combine strings', function() {
   var buffer = createRenderBuffer('div', document.body);
   buffer.generateElement();
 
@@ -45,10 +46,10 @@ QUnit.test("RenderBuffers combine strings", function() {
 
   var el = buffer.element();
   equal(el.tagName.toLowerCase(), 'div');
-  equal(el.childNodes[0].nodeValue, 'ab', "Multiple pushes should concatenate");
+  equal(el.childNodes[0].nodeValue, 'ab', 'Multiple pushes should concatenate');
 });
 
-QUnit.test("RenderBuffers push fragments", function() {
+QUnit.test('RenderBuffers push fragments', function() {
   var buffer = createRenderBuffer('div', document.body);
   var fragment = document.createElement('span');
   buffer.generateElement();
@@ -57,10 +58,10 @@ QUnit.test("RenderBuffers push fragments", function() {
 
   var el = buffer.element();
   equal(el.tagName.toLowerCase(), 'div');
-  equal(el.childNodes[0].tagName, 'SPAN', "Fragment is pushed into the buffer");
+  equal(el.childNodes[0].tagName, 'SPAN', 'Fragment is pushed into the buffer');
 });
 
-QUnit.test("RenderBuffers cannot push fragments when something else is in the buffer", function() {
+QUnit.test('RenderBuffers cannot push fragments when something else is in the buffer', function() {
   var buffer = createRenderBuffer('div', document.body);
   var fragment = document.createElement('span');
   buffer.generateElement();
@@ -71,7 +72,7 @@ QUnit.test("RenderBuffers cannot push fragments when something else is in the bu
   });
 });
 
-QUnit.test("RenderBuffers cannot push strings after fragments", function() {
+QUnit.test('RenderBuffers cannot push strings after fragments', function() {
   var buffer = createRenderBuffer('div', document.body);
   var fragment = document.createElement('span');
   buffer.generateElement();
@@ -82,26 +83,26 @@ QUnit.test("RenderBuffers cannot push strings after fragments", function() {
   });
 });
 
-QUnit.test("value of 0 is included in output", function() {
+QUnit.test('value of 0 is included in output', function() {
   var buffer, el;
   buffer = createRenderBuffer('input', document.body);
   buffer.prop('value', 0);
   buffer.generateElement();
   el = buffer.element();
-  strictEqual(el.value, '0', "generated element has value of '0'");
+  strictEqual(el.value, '0', 'generated element has value of \'0\'');
 });
 
-QUnit.test("sets attributes with camelCase", function() {
+QUnit.test('sets attributes with camelCase', function() {
   var buffer = createRenderBuffer('div', document.body);
-  var content = "javascript:someCode()"; //jshint ignore:line
+  var content = 'javascript:someCode()'; //jshint ignore:line
 
   buffer.attr('onClick', content);
   buffer.generateElement();
   var el = buffer.element();
-  strictEqual(el.getAttribute('onClick'), content, "attribute with camelCase was set");
+  strictEqual(el.getAttribute('onClick'), content, 'attribute with camelCase was set');
 });
 
-QUnit.test("prevents XSS injection via `id`", function() {
+QUnit.test('prevents XSS injection via `id`', function() {
   var buffer = createRenderBuffer('div', document.body);
 
   buffer.id('hacked" megahax="yes');
@@ -111,21 +112,21 @@ QUnit.test("prevents XSS injection via `id`", function() {
   equal(el.id, 'hacked" megahax="yes');
 });
 
-QUnit.test("prevents XSS injection via `attr`", function() {
+QUnit.test('prevents XSS injection via `attr`', function() {
   var buffer = createRenderBuffer('div', document.body);
 
   buffer.attr('id', 'trololol" onmouseover="pwn()');
-  buffer.attr('class', "hax><img src=\"trollface.png\"");
+  buffer.attr('class', 'hax><img src="trollface.png"');
   buffer.generateElement();
 
   var el = buffer.element();
   equal(el.tagName.toLowerCase(), 'div');
   equal(el.childNodes.length, 0);
   equal(el.id, 'trololol" onmouseover="pwn()');
-  equal(el.getAttribute('class'), "hax><img src=\"trollface.png\"");
+  equal(el.getAttribute('class'), 'hax><img src="trollface.png"');
 });
 
-QUnit.test("prevents XSS injection via `addClass`", function() {
+QUnit.test('prevents XSS injection via `addClass`', function() {
   var buffer = createRenderBuffer('div', document.body);
 
   buffer.addClass('megahax" xss="true');
@@ -135,7 +136,7 @@ QUnit.test("prevents XSS injection via `addClass`", function() {
   equal(el.getAttribute('class'), 'megahax" xss="true');
 });
 
-QUnit.test("prevents XSS injection via `style`", function() {
+QUnit.test('prevents XSS injection via `style`', function() {
   var buffer = createRenderBuffer('div', document.body);
 
   buffer.style('color', 'blue;" xss="true" style="color:red');
@@ -154,7 +155,7 @@ QUnit.test("prevents XSS injection via `style`", function() {
   equal(el.getAttribute('style'), div.getAttribute('style'));
 });
 
-QUnit.test("prevents XSS injection via `tagName`", function() {
+QUnit.test('prevents XSS injection via `tagName`', function() {
   var buffer = createRenderBuffer('cool-div><div xss="true"', document.body);
   try {
     buffer.generateElement();
@@ -164,7 +165,7 @@ QUnit.test("prevents XSS injection via `tagName`", function() {
   }
 });
 
-QUnit.test("handles null props - Issue #2019", function() {
+QUnit.test('handles null props - Issue #2019', function() {
   var buffer = createRenderBuffer('div', document.body);
 
   buffer.prop('value', null);
@@ -172,7 +173,7 @@ QUnit.test("handles null props - Issue #2019", function() {
   equal(buffer.element().tagName, 'DIV', 'div exists');
 });
 
-QUnit.test("handles browsers like Firefox < 11 that don't support outerHTML Issue #1952", function() {
+QUnit.test('handles browsers like Firefox < 11 that don\'t support outerHTML Issue #1952', function() {
   var buffer = createRenderBuffer('div', document.body);
   buffer.generateElement();
   // Make sure element.outerHTML is falsy to trigger the fallback.
@@ -182,7 +183,7 @@ QUnit.test("handles browsers like Firefox < 11 that don't support outerHTML Issu
   equal(trim(buffer.string().toLowerCase()), elementStub);
 });
 
-QUnit.test("lets `setClasses` and `addClass` work together", function() {
+QUnit.test('lets `setClasses` and `addClass` work together', function() {
   var buffer = createRenderBuffer('div', document.body);
   buffer.setClasses(['foo', 'bar']);
   buffer.addClass('baz');
@@ -193,7 +194,7 @@ QUnit.test("lets `setClasses` and `addClass` work together", function() {
   equal(el.getAttribute('class'), 'foo bar baz');
 });
 
-QUnit.test("generates text and a div and text", function() {
+QUnit.test('generates text and a div and text', function() {
   var div = document.createElement('div');
   var buffer = createRenderBuffer(undefined, div);
   buffer.buffer = 'Howdy<div>Nick</div>Cage';
@@ -206,7 +207,7 @@ QUnit.test("generates text and a div and text", function() {
 });
 
 
-QUnit.test("generates a tr from a tr innerString", function() {
+QUnit.test('generates a tr from a tr innerString', function() {
   var table = document.createElement('table');
   var buffer = createRenderBuffer(undefined, table);
   buffer.buffer = '<tr></tr>';
@@ -215,7 +216,7 @@ QUnit.test("generates a tr from a tr innerString", function() {
   equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
 });
 
-QUnit.test("generates a tr from a tr innerString with leading <script", function() {
+QUnit.test('generates a tr from a tr innerString with leading <script', function() {
   var table = document.createElement('table');
   var buffer = createRenderBuffer(undefined, table);
   buffer.buffer = '<script></script><tr></tr>';
@@ -224,7 +225,7 @@ QUnit.test("generates a tr from a tr innerString with leading <script", function
   equal(el.childNodes[1].tagName.toLowerCase(), 'tr');
 });
 
-QUnit.test("generates a tr from a tr innerString with leading comment", function() {
+QUnit.test('generates a tr from a tr innerString with leading comment', function() {
   var table = document.createElement('table');
   var buffer = createRenderBuffer(undefined, table);
   buffer.buffer = '<!-- blargh! --><tr></tr>';
@@ -233,7 +234,7 @@ QUnit.test("generates a tr from a tr innerString with leading comment", function
   equal(el.childNodes[1].tagName, 'TR');
 });
 
-QUnit.test("generates a tr from a tr innerString on rerender", function() {
+QUnit.test('generates a tr from a tr innerString on rerender', function() {
   var buffer = createRenderBuffer('table', document.body);
   buffer.generateElement();
   buffer.buffer = '<tr></tr>';
@@ -242,7 +243,7 @@ QUnit.test("generates a tr from a tr innerString on rerender", function() {
   equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
 });
 
-QUnit.test("generates a tbody from a tbody innerString", function() {
+QUnit.test('generates a tbody from a tbody innerString', function() {
   var table = document.createElement('table');
   var buffer = createRenderBuffer(undefined, table);
   buffer.buffer = '<tbody><tr></tr></tbody>';
@@ -251,7 +252,7 @@ QUnit.test("generates a tbody from a tbody innerString", function() {
   equal(el.childNodes[0].tagName, 'TBODY');
 });
 
-QUnit.test("generates a col from a col innerString", function() {
+QUnit.test('generates a col from a col innerString', function() {
   var table = document.createElement('table');
   var buffer = createRenderBuffer(undefined, table);
   buffer.buffer = '<col></col>';
@@ -260,9 +261,9 @@ QUnit.test("generates a col from a col innerString", function() {
   equal(el.childNodes[0].tagName, 'COL');
 });
 
-QUnit.module("RenderBuffer - without tagName");
+QUnit.module('RenderBuffer - without tagName');
 
-QUnit.test("It is possible to create a RenderBuffer without a tagName", function() {
+QUnit.test('It is possible to create a RenderBuffer without a tagName', function() {
   var buffer = createRenderBuffer(undefined, document.body);
   buffer.push('a');
   buffer.push('b');
@@ -270,28 +271,28 @@ QUnit.test("It is possible to create a RenderBuffer without a tagName", function
 
   var el = buffer.element();
 
-  equal(el.nodeType, 11, "Buffers without tagNames do not wrap the content in a tag");
+  equal(el.nodeType, 11, 'Buffers without tagNames do not wrap the content in a tag');
   equal(el.childNodes.length, 1);
   equal(el.childNodes[0].nodeValue, 'abc');
 });
 
-QUnit.module("RenderBuffer#element");
+QUnit.module('RenderBuffer#element');
 
-QUnit.test("properly handles old IE's zero-scope bug", function() {
+QUnit.test('properly handles old IE\'s zero-scope bug', function() {
   var buffer = createRenderBuffer('div', document.body);
   buffer.generateElement();
   buffer.push('<script></script>foo');
 
   var element = buffer.element();
-  ok(jQuery(element).html().match(/script/i), "should have script tag");
-  ok(!jQuery(element).html().match(/&shy;/), "should not have &shy;");
+  ok(jQuery(element).html().match(/script/i), 'should have script tag');
+  ok(!jQuery(element).html().match(/&shy;/), 'should not have &shy;');
 });
 
 if ('namespaceURI' in document.createElement('div')) {
 
-  QUnit.module("RenderBuffer namespaces");
+  QUnit.module('RenderBuffer namespaces');
 
-  QUnit.test("properly makes a content string SVG namespace inside an SVG tag", function() {
+  QUnit.test('properly makes a content string SVG namespace inside an SVG tag', function() {
     var buffer = createRenderBuffer('svg', document.body);
     buffer.generateElement();
     buffer.push('<path></path>foo');
@@ -304,7 +305,7 @@ if ('namespaceURI' in document.createElement('div')) {
     equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
   });
 
-  QUnit.test("properly makes a path element svg namespace inside SVG context", function() {
+  QUnit.test('properly makes a path element svg namespace inside SVG context', function() {
     var buffer = createRenderBuffer('path', document.createElementNS(svgNamespace, 'svg'));
     buffer.generateElement();
     buffer.push('<g></g>');
@@ -317,7 +318,7 @@ if ('namespaceURI' in document.createElement('div')) {
     equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
   });
 
-  QUnit.test("properly makes a foreignObject svg namespace inside SVG context", function() {
+  QUnit.test('properly makes a foreignObject svg namespace inside SVG context', function() {
     var buffer = createRenderBuffer('foreignObject', document.createElementNS(svgNamespace, 'svg'));
     buffer.generateElement();
     buffer.push('<div></div>');
@@ -330,7 +331,7 @@ if ('namespaceURI' in document.createElement('div')) {
     equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
   });
 
-  QUnit.test("properly makes a div xhtml namespace inside foreignObject context", function() {
+  QUnit.test('properly makes a div xhtml namespace inside foreignObject context', function() {
     var buffer = createRenderBuffer('div', document.createElementNS(svgNamespace, 'foreignObject'));
     buffer.generateElement();
     buffer.push('<div></div>');

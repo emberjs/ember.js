@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-htmlbars
 */
-
-import calculateLocationDisplay from "ember-template-compiler/system/calculate-location-display";
+import Ember from 'ember-metal/core';
+import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 /**
   An HTMLBars AST transformation that replaces all instances of
@@ -49,11 +49,11 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
       let moduleInfo = calculateLocationDisplay(moduleName, node.program.loc);
 
       Ember.deprecate(
-        "Using {{with}} without block syntax " + moduleInfo + "is deprecated. " +
-        "Please use standard block form (`{{#with foo as |bar|}}`) " +
-        "instead.",
+        'Using {{with}} without block syntax ' + moduleInfo + 'is deprecated. ' +
+        'Please use standard block form (`{{#with foo as |bar|}}`) ' +
+        'instead.',
         false,
-        { url: "http://emberjs.com/deprecations/v1.x/#toc_code-as-code-sytnax-for-code-with-code" }
+        { url: 'http://emberjs.com/deprecations/v1.x/#toc_code-as-code-sytnax-for-code-with-code' }
       );
 
       var removedParams = node.params.splice(1, 2);

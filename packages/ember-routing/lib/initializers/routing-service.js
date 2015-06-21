@@ -1,5 +1,5 @@
-import { onLoad } from "ember-runtime/system/lazy_load";
-import RoutingService from "ember-routing/services/routing";
+import { onLoad } from 'ember-runtime/system/lazy_load';
+import RoutingService from 'ember-routing/services/routing';
 
 onLoad('Ember.Application', function(Application) {
   Application.initializer({

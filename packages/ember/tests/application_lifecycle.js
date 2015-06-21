@@ -1,8 +1,9 @@
-import "ember";
+import 'ember';
+import Ember from 'ember-metal/core';
 
 var App, container, router;
 
-QUnit.module("Application Lifecycle", {
+QUnit.module('Application Lifecycle', {
   setup() {
     Ember.run(function() {
       App = Ember.Application.create({
@@ -39,7 +40,7 @@ function handleURL(path) {
 }
 
 
-QUnit.test("Resetting the application allows controller properties to be set when a route deactivates", function() {
+QUnit.test('Resetting the application allows controller properties to be set when a route deactivates', function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -76,7 +77,7 @@ QUnit.test("Resetting the application allows controller properties to be set whe
   equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
 });
 
-QUnit.test("Destroying the application resets the router before the container is destroyed", function() {
+QUnit.test('Destroying the application resets the router before the container is destroyed', function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });

@@ -1,19 +1,19 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('removeObjects');
 
-suite.test("should return receiver", function() {
+suite.test('should return receiver', function() {
   var before, obj;
   before = Ember.A(this.newFixture(3));
   obj = before;
   equal(obj.removeObjects(before[1]), obj, 'should return receiver');
 });
 
-suite.test("[A,B,C].removeObjects([B]) => [A,C] + notify", function() {
+suite.test('[A,B,C].removeObjects([B]) => [A,C] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newFixture(3));
@@ -36,7 +36,7 @@ suite.test("[A,B,C].removeObjects([B]) => [A,C] + notify", function() {
   }
 });
 
-suite.test("[{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify", function() {
+suite.test('[{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newObjectsFixture(3));
@@ -59,7 +59,7 @@ suite.test("[{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify", function(
   }
 });
 
-suite.test("[A,B,C].removeObjects([A,B]) => [C] + notify", function() {
+suite.test('[A,B,C].removeObjects([A,B]) => [C] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newFixture(3));
@@ -82,7 +82,7 @@ suite.test("[A,B,C].removeObjects([A,B]) => [C] + notify", function() {
   }
 });
 
-suite.test("[{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify", function() {
+suite.test('[{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newObjectsFixture(3));
@@ -105,7 +105,7 @@ suite.test("[{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify", function(
   }
 });
 
-suite.test("[A,B,C].removeObjects([A,B,C]) => [] + notify", function() {
+suite.test('[A,B,C].removeObjects([A,B,C]) => [] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newFixture(3));
@@ -128,7 +128,7 @@ suite.test("[A,B,C].removeObjects([A,B,C]) => [] + notify", function() {
   }
 });
 
-suite.test("[{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify", function() {
+suite.test('[{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify', function() {
   var obj, before, after, observer;
 
   before = Ember.A(this.newObjectsFixture(3));
@@ -151,7 +151,7 @@ suite.test("[{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify", function
   }
 });
 
-suite.test("[A,B,C].removeObjects([D]) => [A,B,C]", function() {
+suite.test('[A,B,C].removeObjects([D]) => [A,B,C]', function() {
   var obj, before, after, observer, item;
 
   before = Ember.A(this.newFixture(3));

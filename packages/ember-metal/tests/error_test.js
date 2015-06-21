@@ -1,6 +1,8 @@
-QUnit.module("Ember Error Throwing");
+import Ember from 'ember-metal/core';
 
-QUnit.test("new Ember.Error displays provided message", function() {
+QUnit.module('Ember Error Throwing');
+
+QUnit.test('new Ember.Error displays provided message', function() {
   throws(function() {
     throw new Ember.Error('A Message');
   }, function(e) {

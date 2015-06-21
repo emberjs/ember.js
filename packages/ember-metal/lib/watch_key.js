@@ -1,20 +1,15 @@
-import isEnabled from "ember-metal/features";
+import isEnabled from 'ember-metal/features';
 import {
-  meta as metaFor,
-  isArray
-} from "ember-metal/utils";
-import {
-  defineProperty as o_defineProperty,
-  hasPropertyAccessors
-} from "ember-metal/platform/define_property";
+  meta as metaFor
+} from 'ember-metal/utils';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION
-} from "ember-metal/properties";
+} from 'ember-metal/properties';
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && isArray(obj)) { return; }
+  if (keyName === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
   var watching = m.watching;
@@ -32,9 +27,7 @@ export function watchKey(obj, keyName, meta) {
     }
 
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        handleMandatorySetter(m, obj, keyName);
-      }
+      handleMandatorySetter(m, obj, keyName);
     }
   } else {
     watching[keyName] = (watching[keyName] || 0) + 1;
@@ -56,7 +49,7 @@ if (isEnabled('mandatory-setter')) {
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
       m.values[keyName] = obj[keyName];
-      o_defineProperty(obj, keyName, {
+      Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
         set: MANDATORY_SETTER_FUNCTION(keyName),
@@ -86,13 +79,13 @@ export function unwatchKey(obj, keyName, meta) {
     }
 
     if (isEnabled('mandatory-setter')) {
-      if (!desc && hasPropertyAccessors && keyName in obj) {
-        o_defineProperty(obj, keyName, {
+      if (!desc && keyName in obj) {
+        Object.defineProperty(obj, keyName, {
           configurable: true,
           enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
           set(val) {
             // redefine to set as enumerable
-            o_defineProperty(obj, keyName, {
+            Object.defineProperty(obj, keyName, {
               configurable: true,
               writable: true,
               enumerable: true,

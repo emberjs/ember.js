@@ -1,7 +1,7 @@
-import View from "ember-views/views/view";
-import _MetamorphView, { _Metamorph } from "ember-views/compat/metamorph_view";
+import View from 'ember-views/views/view';
+import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
 
-QUnit.module("ember-views: _Metamorph [DEPRECATED]");
+QUnit.module('ember-views: _Metamorph [DEPRECATED]');
 
 QUnit.test('Instantiating _MetamorphView triggers deprecation', function() {
   expectDeprecation(function() {

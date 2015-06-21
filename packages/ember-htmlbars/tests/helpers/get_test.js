@@ -1,16 +1,17 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
-import { Registry } from "ember-runtime/system/container";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import EmberView from "ember-views/views/view";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
+import { Registry } from 'ember-runtime/system/container';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import EmberView from 'ember-views/views/view';
 
 var view, registry, container;
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-get-helper')) {
 
-QUnit.module("ember-htmlbars: {{get}} helper", {
+  QUnit.module('ember-htmlbars: {{get}} helper', {
   setup() {
     registry = new Registry();
     container = registry.container();
@@ -26,7 +27,7 @@ QUnit.module("ember-htmlbars: {{get}} helper", {
   }
 });
 
-QUnit.test('should be able to get an object value with a static key', function() {
+  QUnit.test('should be able to get an object value with a static key', function() {
   var context = {
     colors: { apple: 'red', banana: 'yellow' }
   };
@@ -47,7 +48,7 @@ QUnit.test('should be able to get an object value with a static key', function()
   equal(view.$().text(), '[green] [green]', 'should return \'green\' for {{get colors \'apple\'}}');
 });
 
-QUnit.test('should be able to get an object value with a bound/dynamic key', function() {
+  QUnit.test('should be able to get an object value with a bound/dynamic key', function() {
   var context = {
     colors: { apple: 'red', banana: 'yellow' },
     key: 'apple'
@@ -82,7 +83,7 @@ QUnit.test('should be able to get an object value with a bound/dynamic key', fun
 
 });
 
-QUnit.test('should be able to get an object value with a GetStream key', function() {
+  QUnit.test('should be able to get an object value with a GetStream key', function() {
   var context = {
     colors: { apple: 'red', banana: 'yellow' },
     key: 'key1',
@@ -118,7 +119,7 @@ QUnit.test('should be able to get an object value with a GetStream key', functio
 
 });
 
-QUnit.test('should be able to get an object value with a GetStream value and bound/dynamic key', function() {
+  QUnit.test('should be able to get an object value with a GetStream value and bound/dynamic key', function() {
   var context = {
     possibleValues: {
       colors1: { apple: 'red', banana: 'yellow' },
@@ -169,7 +170,7 @@ QUnit.test('should be able to get an object value with a GetStream value and bou
 
 });
 
-QUnit.test('should be able to get an object value with a GetStream value and GetStream key', function() {
+  QUnit.test('should be able to get an object value with a GetStream value and GetStream key', function() {
   var context = {
     possibleValues: {
       colors1: { apple: 'red', banana: 'yellow' },
@@ -224,7 +225,7 @@ QUnit.test('should be able to get an object value with a GetStream value and Get
 
 });
 
-QUnit.test('should handle object values as nulls', function() {
+  QUnit.test('should handle object values as nulls', function() {
   var context = {
     colors: null
   };
@@ -251,7 +252,7 @@ QUnit.test('should handle object values as nulls', function() {
   equal(view.$().text(), '[] []', 'should return \'\' for {{get colors \'apple\'}} (colors = null)');
 });
 
-QUnit.test('should handle object keys as nulls', function() {
+  QUnit.test('should handle object keys as nulls', function() {
   var context = {
     colors: { apple: 'red', banana: 'yellow' },
     key: null
@@ -280,7 +281,7 @@ QUnit.test('should handle object keys as nulls', function() {
 
 });
 
-QUnit.test('should handle object values and keys as nulls', function() {
+  QUnit.test('should handle object values and keys as nulls', function() {
   var context = {
     colors: null,
     key: null

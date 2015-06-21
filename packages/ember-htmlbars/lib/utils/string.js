@@ -3,12 +3,9 @@
 @submodule ember-htmlbars
 */
 
-// required so we can extend this object.
-import {
-  SafeString,
-  escapeExpression
-} from "htmlbars-util";
-import EmberStringUtils from "ember-runtime/system/string";
+import Ember from 'ember-metal/core';
+import EmberStringUtils from 'ember-runtime/system/string';
+import { SafeString, escapeExpression } from 'htmlbars-util';
 
 /**
   Mark a string as safe for unescaped output with Handlebars. If you
@@ -27,7 +24,7 @@ import EmberStringUtils from "ember-runtime/system/string";
 */
 function htmlSafe(str) {
   if (str === null || str === undefined) {
-    return "";
+    return '';
   }
 
   if (typeof str !== 'string') {

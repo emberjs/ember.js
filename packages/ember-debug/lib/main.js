@@ -1,11 +1,12 @@
 /*global __fail__*/
 
-import Ember from "ember-metal/core";
-import isEnabled, { FEATURES } from "ember-metal/features";
-import EmberError from "ember-metal/error";
-import Logger from "ember-metal/logger";
+import Ember from 'ember-metal/core';
+import isEnabled, { FEATURES } from 'ember-metal/features';
+import EmberError from 'ember-metal/error';
+import Logger from 'ember-metal/logger';
+import deprecationManager, { deprecationLevels } from 'ember-debug/deprecation-manager';
 
-import environment from "ember-metal/environment";
+import environment from 'ember-metal/environment';
 
 /**
 @module ember
@@ -52,7 +53,7 @@ Ember.assert = function(desc, test) {
   }
 
   if (throwAssertion) {
-    throw new EmberError("Assertion Failed: " + desc);
+    throw new EmberError('Assertion Failed: ' + desc);
   }
 };
 
@@ -69,7 +70,7 @@ Ember.assert = function(desc, test) {
 */
 Ember.warn = function(message, test) {
   if (!test) {
-    Logger.warn("WARNING: "+message);
+    Logger.warn('WARNING: '+message);
     if ('trace' in Logger) {
       Logger.trace();
     }
@@ -89,7 +90,7 @@ Ember.warn = function(message, test) {
   @public
 */
 Ember.debug = function(message) {
-  Logger.debug("DEBUG: "+message);
+  Logger.debug('DEBUG: '+message);
 };
 
 /**
@@ -103,10 +104,20 @@ Ember.debug = function(message) {
     will be displayed. If this is a function, it will be executed and its return
     value will be used as condition.
   @param {Object} options An optional object that can be used to pass
-    in a `url` to the transition guide on the emberjs.com website.
+    in a `url` to the transition guide on the emberjs.com website, and a unique
+    `id` for this deprecation. The `id` can be used by Ember debugging tools
+    to change the behavior (raise, log or silence) for that specific deprecation.
+    The `id` should be namespaced by dots, e.g. "view.helper.select".
   @public
 */
 Ember.deprecate = function(message, test, options) {
+  if (Ember.ENV.RAISE_ON_DEPRECATION) {
+    deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
+  }
+  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.SILENCE) {
+    return;
+  }
+
   var noDeprecation;
 
   if (isPlainFunction(test)) {
@@ -117,7 +128,13 @@ Ember.deprecate = function(message, test, options) {
 
   if (noDeprecation) { return; }
 
-  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
+  if (options && options.id) {
+    message = message + ` [deprecation id: ${options.id}]`;
+  }
+
+  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.RAISE) {
+    throw new EmberError(message);
+  }
 
   var error;
 
@@ -147,11 +164,11 @@ Ember.deprecate = function(message, test, options) {
                           replace(/^\(/gm, '{anonymous}(').split('\n');
     }
 
-    stackStr = "\n    " + stack.slice(2).join("\n    ");
+    stackStr = '\n    ' + stack.slice(2).join('\n    ');
     message = message + stackStr;
   }
 
-  Logger.warn("DEPRECATION: "+message);
+  Logger.warn('DEPRECATION: '+message);
 };
 
 
@@ -246,7 +263,7 @@ if (!Ember.testing) {
   var isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
-    window.addEventListener("load", function() {
+    window.addEventListener('load', function() {
       if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
@@ -261,6 +278,13 @@ if (!Ember.testing) {
     }, false);
   }
 }
+
+Ember.Debug = {
+  _addDeprecationLevel(id, level) {
+    deprecationManager.setLevel(id, level);
+  },
+  _deprecationLevels: deprecationLevels
+};
 
 /*
   We are transitioning away from `ember.js` to `ember.debug.js` to make

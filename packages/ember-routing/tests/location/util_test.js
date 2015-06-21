@@ -1,14 +1,14 @@
-import merge from "ember-metal/merge";
+import merge from 'ember-metal/merge';
 import {
   replacePath,
   getPath,
   getQuery,
   getFullPath
-} from "ember-routing/location/util";
+} from 'ember-routing/location/util';
 import {
   supportsHistory,
   supportsHashChange
-} from "ember-routing/location/util";
+} from 'ember-routing/location/util';
 
 function mockBrowserLocation(overrides) {
   return merge({
@@ -22,9 +22,9 @@ function mockBrowserLocation(overrides) {
   }, overrides);
 }
 
-QUnit.module("Location Utilities");
+QUnit.module('Location Utilities');
 
-QUnit.test("replacePath cannot be used to redirect to a different origin", function() {
+QUnit.test('replacePath cannot be used to redirect to a different origin', function() {
   expect(1);
 
   var expectedURL;
@@ -43,7 +43,7 @@ QUnit.test("replacePath cannot be used to redirect to a different origin", funct
   replacePath(location, '//google.com');
 });
 
-QUnit.test("getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
+QUnit.test('getPath() should normalize location.pathname, making sure it always returns a leading slash', function() {
   expect(2);
 
   var location = mockBrowserLocation({ pathname: 'test' });
@@ -53,14 +53,14 @@ QUnit.test("getPath() should normalize location.pathname, making sure it always 
   equal(getPath(location), '/test', 'When a leading slash is already there, it isn\'t added again');
 });
 
-QUnit.test("getQuery() should return location.search as-is", function() {
+QUnit.test('getQuery() should return location.search as-is', function() {
   expect(1);
 
   var location = mockBrowserLocation({ search: '?foo=bar' });
   equal(getQuery(location), '?foo=bar');
 });
 
-QUnit.test("getFullPath() should return full pathname including query and hash", function() {
+QUnit.test('getFullPath() should return full pathname including query and hash', function() {
   expect(1);
 
   var location = mockBrowserLocation({
@@ -73,11 +73,11 @@ QUnit.test("getFullPath() should return full pathname including query and hash",
   equal(getFullPath(location), '/about?foo=bar#foo');
 });
 
-QUnit.test("Feature-Detecting onhashchange", function() {
-  equal(supportsHashChange(undefined, { onhashchange() {} }), true, "When not in IE, use onhashchange existence as evidence of the feature");
-  equal(supportsHashChange(undefined, { }), false, "When not in IE, use onhashchange absence as evidence of the feature absence");
-  equal(supportsHashChange(7, { onhashchange() {} }), false, "When in IE7 compatibility mode, never report existence of the feature");
-  equal(supportsHashChange(8, { onhashchange() {} }), true, "When in IE8+, use onhashchange existence as evidence of the feature");
+QUnit.test('Feature-Detecting onhashchange', function() {
+  equal(supportsHashChange(undefined, { onhashchange() {} }), true, 'When not in IE, use onhashchange existence as evidence of the feature');
+  equal(supportsHashChange(undefined, { }), false, 'When not in IE, use onhashchange absence as evidence of the feature absence');
+  equal(supportsHashChange(7, { onhashchange() {} }), false, 'When in IE7 compatibility mode, never report existence of the feature');
+  equal(supportsHashChange(8, { onhashchange() {} }), true, 'When in IE8+, use onhashchange existence as evidence of the feature');
 });
 
 // jscs:disable

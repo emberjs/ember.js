@@ -1,10 +1,11 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import Ember from 'ember-metal/core';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('clear');
 
-suite.test("[].clear() => [] + notify", function () {
+suite.test('[].clear() => [] + notify', function () {
   var obj, before, after, observer;
 
   before = [];
@@ -25,7 +26,7 @@ suite.test("[].clear() => [] + notify", function () {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
 });
 
-suite.test("[X].clear() => [] + notify", function () {
+suite.test('[X].clear() => [] + notify', function () {
   var obj, before, after, observer;
 
   before = this.newFixture(1);

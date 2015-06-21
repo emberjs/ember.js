@@ -1,30 +1,30 @@
-import ObjectController from "ember-runtime/controllers/object_controller";
+import ObjectController from 'ember-runtime/controllers/object_controller';
 import {
   objectControllerDeprecation
-} from "ember-runtime/controllers/object_controller";
+} from 'ember-runtime/controllers/object_controller';
 import { observer } from 'ember-metal/mixin';
 
-QUnit.module("Ember.ObjectController");
+QUnit.module('Ember.ObjectController');
 
-QUnit.test("should be able to set the target property of an ObjectController", function() {
+QUnit.test('should be able to set the target property of an ObjectController', function() {
   expectDeprecation(objectControllerDeprecation);
 
   var controller = ObjectController.create();
   var target = {};
 
   controller.set('target', target);
-  equal(controller.get('target'), target, "able to set the target property");
+  equal(controller.get('target'), target, 'able to set the target property');
 });
 
 // See https://github.com/emberjs/ember.js/issues/5112
-QUnit.test("can observe a path on an ObjectController", function() {
+QUnit.test('can observe a path on an ObjectController', function() {
   expectDeprecation(objectControllerDeprecation);
 
   var controller = ObjectController.extend({
     baz: observer('foo.bar', function() {})
   }).create();
   controller.set('model', {});
-  ok(true, "should not fail");
+  ok(true, 'should not fail');
 });
 
 QUnit.test('accessing model properties via proxy behavior results in a deprecation [DEPRECATED]', function() {

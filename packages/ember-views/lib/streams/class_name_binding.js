@@ -1,12 +1,8 @@
-import {
-  chain,
-  read
-} from "ember-metal/streams/utils";
-import { get } from "ember-metal/property_get";
-import { dasherize } from "ember-runtime/system/string";
-import {
-  isArray
-} from "ember-metal/utils";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { isArray } from 'ember-metal/utils';
+import { chain, read } from 'ember-metal/streams/utils';
+import { dasherize } from 'ember-runtime/system/string';
 
 /**
   Parse a path and return an object which holds the parsed properties.
@@ -30,7 +26,7 @@ import {
 export function parsePropertyPath(path) {
   var split = path.split(':');
   var propertyPath = split[0];
-  var classNames = "";
+  var classNames = '';
   var className, falsyClassName;
 
   // check if the property is defined as prop:class or prop:trueClass:falseClass
@@ -42,7 +38,7 @@ export function parsePropertyPath(path) {
 
     classNames = ':' + className;
     if (falsyClassName) {
-      classNames += ":" + falsyClassName;
+      classNames += ':' + falsyClassName;
     }
   }
 
@@ -119,7 +115,7 @@ export function classStringForValue(path, val, className, falsyClassName) {
 
 export function streamifyClassNameBinding(view, classNameBinding, prefix) {
   prefix = prefix || '';
-  Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", classNameBinding.indexOf(' ') === -1);
+  Ember.assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', classNameBinding.indexOf(' ') === -1);
   var parsedPath = parsePropertyPath(classNameBinding);
   if (parsedPath.path === '') {
     return classStringForValue(

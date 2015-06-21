@@ -1,7 +1,5 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import { indexOf } from "ember-metal/enumerable_utils";
-import InjectedProperty from "ember-metal/injected_property";
-import keys from "ember-metal/keys";
+import Ember from 'ember-metal/core'; // Ember.assert
+import InjectedProperty from 'ember-metal/injected_property';
 
 /**
   Namespace for injection helper methods.
@@ -11,9 +9,8 @@ import keys from "ember-metal/keys";
   @static
   @public
 */
-function inject() {
-  Ember.assert("Injected properties must be created through helpers, see `" +
-               keys(inject).join("`, `") + "`");
+export default function inject() {
+  Ember.assert(`Injected properties must be created through helpers, see '${Object.keys(inject).join('"', '"')}'`);
 }
 
 // Dictionary of injection validations by type, added to by `createInjectionHelper`
@@ -56,7 +53,7 @@ export function validatePropertyInjections(factory) {
 
   for (key in proto) {
     desc = proto[key];
-    if (desc instanceof InjectedProperty && indexOf(types, desc.type) === -1) {
+    if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }
   }
@@ -73,5 +70,3 @@ export function validatePropertyInjections(factory) {
 
   return true;
 }
-
-export default inject;

@@ -1,12 +1,10 @@
-import {
-  factory
-} from 'container/tests/container_helper';
-
+import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
+import { factory } from 'container/tests/container_helper';
 
 var originalModelInjections;
 
-QUnit.module("Container", {
+QUnit.module('Container', {
   setup() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
   },
@@ -15,7 +13,7 @@ QUnit.module("Container", {
   }
 });
 
-QUnit.test("A registered factory returns the same instance each time", function() {
+QUnit.test('A registered factory returns the same instance each time', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -24,12 +22,12 @@ QUnit.test("A registered factory returns the same instance each time", function(
 
   var postController = container.lookup('controller:post');
 
-  ok(postController instanceof PostController, "The lookup is an instance of the factory");
+  ok(postController instanceof PostController, 'The lookup is an instance of the factory');
 
   equal(postController, container.lookup('controller:post'));
 });
 
-QUnit.test("A registered factory is returned from lookupFactory", function() {
+QUnit.test('A registered factory is returned from lookupFactory', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -39,10 +37,10 @@ QUnit.test("A registered factory is returned from lookupFactory", function() {
   var PostControllerFactory = container.lookupFactory('controller:post');
 
   ok(PostControllerFactory, 'factory is returned');
-  ok(PostControllerFactory.create() instanceof  PostController, "The return of factory.create is an instance of PostController");
+  ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
 });
 
-QUnit.test("A registered factory is returned from lookupFactory is the same factory each time", function() {
+QUnit.test('A registered factory is returned from lookupFactory is the same factory each time', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -52,7 +50,7 @@ QUnit.test("A registered factory is returned from lookupFactory is the same fact
   deepEqual(container.lookupFactory('controller:post'), container.lookupFactory('controller:post'), 'The return of lookupFactory is always the same');
 });
 
-QUnit.test("A factory returned from lookupFactory has a debugkey", function() {
+QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -64,7 +62,7 @@ QUnit.test("A factory returned from lookupFactory has a debugkey", function() {
   equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 });
 
-QUnit.test("fallback for to create time injections if factory has no extend", function() {
+QUnit.test('fallback for to create time injections if factory has no extend', function() {
   var registry = new Registry();
   var container = registry.container();
   var AppleController = factory();
@@ -84,7 +82,7 @@ QUnit.test("fallback for to create time injections if factory has no extend", fu
   ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
 });
 
-QUnit.test("The descendants of a factory returned from lookupFactory have a container and debugkey", function() {
+QUnit.test('The descendants of a factory returned from lookupFactory have a container and debugkey', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -99,7 +97,7 @@ QUnit.test("The descendants of a factory returned from lookupFactory have a cont
   ok(instance instanceof PostController, 'factory instance is instance of factory');
 });
 
-QUnit.test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
+QUnit.test('A registered factory returns a fresh instance if singleton: false is passed as an option', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -111,18 +109,18 @@ QUnit.test("A registered factory returns a fresh instance if singleton: false is
   var postController3 = container.lookup('controller:post', { singleton: false });
   var postController4 = container.lookup('controller:post');
 
-  equal(postController1.toString(), postController4.toString(), "Singleton factories looked up normally return the same value");
-  notEqual(postController1.toString(), postController2.toString(), "Singleton factories are not equal to factories looked up with singleton: false");
-  notEqual(postController2.toString(), postController3.toString(), "Two factories looked up with singleton: false are not equal");
-  notEqual(postController3.toString(), postController4.toString(), "A singleton factory looked up after a factory called with singleton: false is not equal");
+  equal(postController1.toString(), postController4.toString(), 'Singleton factories looked up normally return the same value');
+  notEqual(postController1.toString(), postController2.toString(), 'Singleton factories are not equal to factories looked up with singleton: false');
+  notEqual(postController2.toString(), postController3.toString(), 'Two factories looked up with singleton: false are not equal');
+  notEqual(postController3.toString(), postController4.toString(), 'A singleton factory looked up after a factory called with singleton: false is not equal');
 
-  ok(postController1 instanceof PostController, "All instances are instances of the registered factory");
-  ok(postController2 instanceof PostController, "All instances are instances of the registered factory");
-  ok(postController3 instanceof PostController, "All instances are instances of the registered factory");
-  ok(postController4 instanceof PostController, "All instances are instances of the registered factory");
+  ok(postController1 instanceof PostController, 'All instances are instances of the registered factory');
+  ok(postController2 instanceof PostController, 'All instances are instances of the registered factory');
+  ok(postController3 instanceof PostController, 'All instances are instances of the registered factory');
+  ok(postController4 instanceof PostController, 'All instances are instances of the registered factory');
 });
 
-QUnit.test("A container lookup has access to the container", function() {
+QUnit.test('A container lookup has access to the container', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -134,7 +132,7 @@ QUnit.test("A container lookup has access to the container", function() {
   equal(postController.container, container);
 });
 
-QUnit.test("A factory type with a registered injection's instances receive that injection", function() {
+QUnit.test('A factory type with a registered injection\'s instances receive that injection', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -151,7 +149,7 @@ QUnit.test("A factory type with a registered injection's instances receive that 
   equal(postController.store, store);
 });
 
-QUnit.test("An individual factory with a registered injection receives the injection", function() {
+QUnit.test('An individual factory with a registered injection receives the injection', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -173,7 +171,7 @@ QUnit.test("An individual factory with a registered injection receives the injec
   equal(postController.store, store, 'has the correct store injected');
 });
 
-QUnit.test("A factory with both type and individual injections", function() {
+QUnit.test('A factory with both type and individual injections', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -195,7 +193,7 @@ QUnit.test("A factory with both type and individual injections", function() {
   equal(postController.router, router);
 });
 
-QUnit.test("A factory with both type and individual factoryInjections", function() {
+QUnit.test('A factory with both type and individual factoryInjections', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -217,7 +215,7 @@ QUnit.test("A factory with both type and individual factoryInjections", function
   equal(PostControllerFactory.router, router, 'PostControllerFactory has the route instance');
 });
 
-QUnit.test("A non-singleton instance is never cached", function() {
+QUnit.test('A non-singleton instance is never cached', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostView = factory();
@@ -227,10 +225,10 @@ QUnit.test("A non-singleton instance is never cached", function() {
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
 
-  ok(postView1 !== postView2, "Non-singletons are not cached");
+  ok(postView1 !== postView2, 'Non-singletons are not cached');
 });
 
-QUnit.test("A non-instantiated property is not instantiated", function() {
+QUnit.test('A non-instantiated property is not instantiated', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -239,14 +237,14 @@ QUnit.test("A non-instantiated property is not instantiated", function() {
   equal(container.lookup('template:foo'), template);
 });
 
-QUnit.test("A failed lookup returns undefined", function() {
+QUnit.test('A failed lookup returns undefined', function() {
   var registry = new Registry();
   var container = registry.container();
 
   equal(container.lookup('doesnot:exist'), undefined);
 });
 
-QUnit.test("An invalid factory throws an error", function() {
+QUnit.test('An invalid factory throws an error', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -257,7 +255,7 @@ QUnit.test("An invalid factory throws an error", function() {
   }, /Failed to create an instance of \'controller:foo\'/);
 });
 
-QUnit.test("Injecting a failed lookup raises an error", function() {
+QUnit.test('Injecting a failed lookup raises an error', function() {
   Ember.MODEL_FACTORY_INJECTIONS = true;
 
   var registry = new Registry();
@@ -279,7 +277,7 @@ QUnit.test("Injecting a failed lookup raises an error", function() {
   });
 });
 
-QUnit.test("Injecting a falsy value does not raise an error", function() {
+QUnit.test('Injecting a falsy value does not raise an error', function() {
   var registry = new Registry();
   var container = registry.container();
   var ApplicationController = factory();
@@ -291,7 +289,7 @@ QUnit.test("Injecting a falsy value does not raise an error", function() {
   equal(container.lookup('controller:application').currentUser, null);
 });
 
-QUnit.test("Destroying the container destroys any cached singletons", function() {
+QUnit.test('Destroying the container destroys any cached singletons', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -307,15 +305,15 @@ QUnit.test("Destroying the container destroys any cached singletons", function()
   var postController = container.lookup('controller:post');
   var postView = postController.postView;
 
-  ok(postView instanceof PostView, "The non-singleton was injected");
+  ok(postView instanceof PostView, 'The non-singleton was injected');
 
   container.destroy();
 
-  ok(postController.isDestroyed, "Singletons are destroyed");
-  ok(!postView.isDestroyed, "Non-singletons are not destroyed");
+  ok(postController.isDestroyed, 'Singletons are destroyed');
+  ok(!postView.isDestroyed, 'Non-singletons are not destroyed');
 });
 
-QUnit.test("The container can use a registry hook to resolve factories lazily", function() {
+QUnit.test('The container can use a registry hook to resolve factories lazily', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -328,10 +326,10 @@ QUnit.test("The container can use a registry hook to resolve factories lazily", 
 
   var postController = container.lookup('controller:post');
 
-  ok(postController instanceof PostController, "The correct factory was provided");
+  ok(postController instanceof PostController, 'The correct factory was provided');
 });
 
-QUnit.test("The container normalizes names before resolving", function() {
+QUnit.test('The container normalizes names before resolving', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -343,10 +341,10 @@ QUnit.test("The container normalizes names before resolving", function() {
   registry.register('controller:post', PostController);
   var postController = container.lookup('controller:normalized');
 
-  ok(postController instanceof PostController, "Normalizes the name before resolving");
+  ok(postController instanceof PostController, 'Normalizes the name before resolving');
 });
 
-QUnit.test("The container normalizes names when looking factory up", function() {
+QUnit.test('The container normalizes names when looking factory up', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -358,10 +356,10 @@ QUnit.test("The container normalizes names when looking factory up", function() 
   registry.register('controller:post', PostController);
   var fact = container.lookupFactory('controller:normalized');
 
-  equal(fact.toString() === PostController.extend().toString(), true, "Normalizes the name when looking factory up");
+  equal(fact.toString() === PostController.extend().toString(), true, 'Normalizes the name when looking factory up');
 });
 
-QUnit.test("The container can get options that should be applied to a given factory", function() {
+QUnit.test('The container can get options that should be applied to a given factory', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostView = factory();
@@ -377,13 +375,13 @@ QUnit.test("The container can get options that should be applied to a given fact
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
 
-  ok(postView1 instanceof PostView, "The correct factory was provided");
-  ok(postView2 instanceof PostView, "The correct factory was provided");
+  ok(postView1 instanceof PostView, 'The correct factory was provided');
+  ok(postView2 instanceof PostView, 'The correct factory was provided');
 
-  ok(postView1 !== postView2, "The two lookups are different");
+  ok(postView1 !== postView2, 'The two lookups are different');
 });
 
-QUnit.test("The container can get options that should be applied to all factories for a given type", function() {
+QUnit.test('The container can get options that should be applied to all factories for a given type', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostView = factory();
@@ -399,13 +397,13 @@ QUnit.test("The container can get options that should be applied to all factorie
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
 
-  ok(postView1 instanceof PostView, "The correct factory was provided");
-  ok(postView2 instanceof PostView, "The correct factory was provided");
+  ok(postView1 instanceof PostView, 'The correct factory was provided');
+  ok(postView2 instanceof PostView, 'The correct factory was provided');
 
-  ok(postView1 !== postView2, "The two lookups are different");
+  ok(postView1 !== postView2, 'The two lookups are different');
 });
 
-QUnit.test("factory resolves are cached", function() {
+QUnit.test('factory resolves are cached', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -423,7 +421,7 @@ QUnit.test("factory resolves are cached", function() {
   deepEqual(resolveWasCalled, ['controller:post']);
 });
 
-QUnit.test("factory for non extendables (MODEL) resolves are cached", function() {
+QUnit.test('factory for non extendables (MODEL) resolves are cached', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = factory();
@@ -441,7 +439,7 @@ QUnit.test("factory for non extendables (MODEL) resolves are cached", function()
   deepEqual(resolveWasCalled, ['model:post']);
 });
 
-QUnit.test("factory for non extendables resolves are cached", function() {
+QUnit.test('factory for non extendables resolves are cached', function() {
   var registry = new Registry();
   var container = registry.container();
   var PostController = {};
@@ -460,7 +458,7 @@ QUnit.test("factory for non extendables resolves are cached", function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
-QUnit.test("The `_onLookup` hook is called on factories when looked up the first time", function() {
+QUnit.test('The `_onLookup` hook is called on factories when looked up the first time', function() {
   expect(2);
 
   var registry = new Registry();
@@ -480,7 +478,7 @@ QUnit.test("The `_onLookup` hook is called on factories when looked up the first
   container.lookupFactory('apple:main');
 });
 
-QUnit.test("A factory's lazy injections are validated when first instantiated", function() {
+QUnit.test('A factory\'s lazy injections are validated when first instantiated', function() {
   var registry = new Registry();
   var container = registry.container();
   var Apple = factory();
@@ -500,7 +498,7 @@ QUnit.test("A factory's lazy injections are validated when first instantiated", 
   }, /Attempting to inject an unknown injection: `banana:main`/);
 });
 
-QUnit.test("Lazy injection validations are cached", function() {
+QUnit.test('Lazy injection validations are cached', function() {
   expect(1);
 
   var registry = new Registry();

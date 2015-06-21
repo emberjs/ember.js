@@ -1,6 +1,5 @@
-import Ember from "ember-metal/core";
-import DOMHelper from "dom-helper";
-import o_create from 'ember-metal/platform/create';
+import Ember from 'ember-metal/core';
+import DOMHelper from 'dom-helper';
 
 var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
 
@@ -16,7 +15,7 @@ function EmberAttrMorph(element, attrName, domHelper, namespace) {
   this.streamUnsubscribers = null;
 }
 
-var proto = EmberAttrMorph.prototype = o_create(HTMLBarsAttrMorph.prototype);
+var proto = EmberAttrMorph.prototype = Object.create(HTMLBarsAttrMorph.prototype);
 proto.HTMLBarsAttrMorph$setContent = HTMLBarsAttrMorph.prototype.setContent;
 
 proto._deprecateEscapedStyle = function EmberAttrMorph_deprecateEscapedStyle(value) {

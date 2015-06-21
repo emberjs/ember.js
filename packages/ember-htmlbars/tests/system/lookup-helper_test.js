@@ -1,14 +1,15 @@
-import lookupHelper, { findHelper } from "ember-htmlbars/system/lookup-helper";
-import ComponentLookup from "ember-views/component_lookup";
-import Registry from "container/registry";
-import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import lookupHelper, { findHelper } from 'ember-htmlbars/system/lookup-helper';
+import ComponentLookup from 'ember-views/component_lookup';
+import Registry from 'container/registry';
+import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 function generateEnv(helpers, container) {
   return {
     container: container,
     helpers: (helpers ? helpers : {}),
-    hooks: { keywords: {} }
+    hooks: { keywords: {} },
+    knownHelpers: {}
   };
 }
 
@@ -70,6 +71,22 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
   var actual = lookupHelper('some-name', view, env);
 
   ok(someName.detect(actual), 'helper is an instance of the helper class');
+});
+
+QUnit.test('does a lookup in the container if the name is found in knownHelpers', function() {
+  var container = generateContainer();
+  var env = generateEnv(null, container);
+  var view = {
+    container: container
+  };
+
+  env.knownHelpers['t'] = true;
+  var t = Helper.extend();
+  view.container._registry.register('helper:t', t);
+
+  var actual = lookupHelper('t', view, env);
+
+  ok(t.detect(actual), 'helper is an instance of the helper class');
 });
 
 QUnit.test('looks up a shorthand helper in the container', function() {

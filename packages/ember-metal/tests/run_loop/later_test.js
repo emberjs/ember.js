@@ -95,15 +95,15 @@ asyncTest('should always invoke within a separate runloop', function() {
     pauseUntil(+new Date() + 100);
   });
 
-  ok(firstRunLoop, "first run loop captured");
-  ok(!run.currentRunLoop, "shouldn't be in a run loop after flush");
-  equal(obj.invoked, 0, "shouldn't have invoked later item yet");
+  ok(firstRunLoop, 'first run loop captured');
+  ok(!run.currentRunLoop, 'shouldn\'t be in a run loop after flush');
+  equal(obj.invoked, 0, 'shouldn\'t have invoked later item yet');
 
   wait(function() {
     QUnit.start();
-    equal(obj.invoked, 10, "should have invoked later item");
-    ok(secondRunLoop, "second run loop took place");
-    ok(secondRunLoop !== firstRunLoop, "two different run loops took place");
+    equal(obj.invoked, 10, 'should have invoked later item');
+    ok(secondRunLoop, 'second run loop took place');
+    ok(secondRunLoop !== firstRunLoop, 'two different run loops took place');
   });
 });
 

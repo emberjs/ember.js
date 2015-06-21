@@ -1,5 +1,7 @@
-import "ember";
-import EmberHandlebars from "ember-htmlbars/compat";
+import 'ember';
+import Ember from 'ember-metal/core';
+import EmberHandlebars from 'ember-htmlbars/compat';
+import EmberView from 'ember-views/views/view';
 
 var compile = EmberHandlebars.compile;
 
@@ -13,11 +15,11 @@ function bootApplication() {
   Ember.run(App, 'advanceReadiness');
 }
 
-QUnit.module("Top Level DOM Structure", {
+QUnit.module('Top Level DOM Structure', {
   setup() {
     Ember.run(function() {
       App = Ember.Application.create({
-        name: "App",
+        name: 'App',
         rootElement: '#qunit-fixture'
       });
 
@@ -51,13 +53,13 @@ QUnit.module("Top Level DOM Structure", {
   }
 });
 
-QUnit.test("Topmost template always get an element", function() {
+QUnit.test('Topmost template always get an element', function() {
   bootApplication();
   equal(Ember.$('#qunit-fixture > .ember-view').text(), 'hello world');
 });
 
-QUnit.test("If topmost view has its own element, it doesn't get wrapped in a higher element", function() {
-  App.registry.register('view:application', Ember.View.extend({
+QUnit.test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
+  App.registry.register('view:application', EmberView.extend({
     classNames: ['im-special']
   }));
   bootApplication();

@@ -1,21 +1,12 @@
-import "ember";
-import isEnabled from "ember-metal/features";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
+import 'ember';
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
-import EmberHandlebars from "ember-htmlbars/compat";
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
 var Router, App, router, registry, container;
-
-function withoutMeta(object) {
-  if (canDefineNonEnumerableProperties) {
-    return object;
-  }
-  var newObject = Ember.$.extend(true, {}, object);
-  delete newObject['__ember_meta__'];
-  return newObject;
-}
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -48,10 +39,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   setURL(path) {
     if (expectedReplaceURL) {
-      ok(false, "pushState occurred but a replaceState was expected");
+      ok(false, 'pushState occurred but a replaceState was expected');
     }
     if (expectedPushURL) {
-      equal(path, expectedPushURL, "an expected pushState occurred");
+      equal(path, expectedPushURL, 'an expected pushState occurred');
       expectedPushURL = null;
     }
     this.set('path', path);
@@ -59,10 +50,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   replaceURL(path) {
     if (expectedPushURL) {
-      ok(false, "replaceState occurred but a pushState was expected");
+      ok(false, 'replaceState occurred but a pushState was expected');
     }
     if (expectedReplaceURL) {
-      equal(path, expectedReplaceURL, "an expected replaceState occurred");
+      equal(path, expectedReplaceURL, 'an expected replaceState occurred');
       expectedReplaceURL = null;
     }
     this.set('path', path);
@@ -72,7 +63,7 @@ var TestLocation = Ember.NoneLocation.extend({
 function sharedSetup() {
   Ember.run(function() {
     App = Ember.Application.create({
-      name: "App",
+      name: 'App',
       rootElement: '#qunit-fixture'
     });
 
@@ -94,8 +85,8 @@ function sharedSetup() {
     App.LoadingRoute = Ember.Route.extend({
     });
 
-    Ember.TEMPLATES.application = compile("{{outlet}}");
-    Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
+    Ember.TEMPLATES.application = compile('{{outlet}}');
+    Ember.TEMPLATES.home = compile('<h3>Hours</h3>');
   });
 }
 
@@ -109,7 +100,7 @@ function sharedTeardown() {
 }
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
-  QUnit.module("Model Dep Query Params with Route-based configuration", {
+  QUnit.module('Model Dep Query Params with Route-based configuration', {
     setup() {
       sharedSetup();
 
@@ -137,7 +128,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
         },
         model(params) {
           if (self.expectedModelHookParams) {
-            deepEqual(params, self.expectedModelHookParams, "the ArticleRoute model hook received the expected merged dynamic segment + query params hash");
+            deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
             self.expectedModelHookParams = null;
           }
           return articles.findProperty('id', params.id);
@@ -152,7 +143,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
         }
       });
 
-      Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}");
+      Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}');
 
       this.boot = function() {
         bootApplication();
@@ -171,11 +162,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     teardown() {
       sharedTeardown();
-      ok(!this.expectedModelHookParams, "there should be no pending expectation of expected model hook params");
+      ok(!this.expectedModelHookParams, 'there should be no pending expectation of expected model hook params');
     }
   });
 
-  QUnit.test("query params have 'model' stickiness by default", function() {
+  QUnit.test('query params have \'model\' stickiness by default', function() {
     this.boot();
 
     Ember.run(this.$link1, 'click');
@@ -191,20 +182,20 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(this.controller.get('q'), 'wat');
     equal(this.controller.get('z'), 0);
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
     equal(this.$link2.attr('href'), '/a/a-2');
     equal(this.$link3.attr('href'), '/a/a-3');
   });
 
-  QUnit.test("query params have 'model' stickiness by default (url changes)", function() {
+  QUnit.test('query params have \'model\' stickiness by default (url changes)', function() {
 
     this.boot();
 
     this.expectedModelHookParams = { id: 'a-1', q: 'lol', z: 0 };
     handleURL('/a/a-1?q=lol');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-1' });
+    deepEqual(this.controller.get('model'), { id: 'a-1' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
@@ -214,7 +205,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
     handleURL('/a/a-2?q=lol');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' }, "controller's model changed to a-2");
+    deepEqual(this.controller.get('model'), { id: 'a-2' }, 'controller\'s model changed to a-2');
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
@@ -231,15 +222,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=lol&z=123');
   });
 
-  QUnit.test("query params have 'model' stickiness by default (params-based transitions)", function() {
-    Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
+  QUnit.test('query params have \'model\' stickiness by default (params-based transitions)', function() {
+    Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a.id id=a.id}} {{/each}}');
 
     this.boot();
 
     this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-1');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-1' });
+    deepEqual(this.controller.get('model'), { id: 'a-1' });
     equal(this.controller.get('q'), 'wat');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -249,7 +240,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-2', { queryParams: { q: 'lol' } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -259,7 +250,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-3', { queryParams: { q: 'hay' } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-3' });
+    deepEqual(this.controller.get('model'), { id: 'a-3' });
     equal(this.controller.get('q'), 'hay');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -269,7 +260,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
     Ember.run(router, 'transitionTo', 'article', 'a-2', { queryParams: { z: 1 } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 1);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -277,7 +268,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=hay');
   });
 
-  QUnit.test("'controller' stickiness shares QP state between models", function() {
+  QUnit.test('\'controller\' stickiness shares QP state between models', function() {
     App.ArticleRoute.reopen({
       queryParams: { q: { scope: 'controller' } }
     });
@@ -297,7 +288,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
 
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
     equal(this.$link2.attr('href'), '/a/a-2?q=lol');
@@ -306,7 +297,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
     handleURL('/a/a-3?q=haha&z=123');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-3' });
+    deepEqual(this.controller.get('model'), { id: 'a-3' });
     equal(this.controller.get('q'), 'haha');
     equal(this.controller.get('z'), 123);
 
@@ -321,7 +312,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=woot&z=123');
   });
 
-  QUnit.test("'model' stickiness is scoped to current or first dynamic parent route", function() {
+  QUnit.test('\'model\' stickiness is scoped to current or first dynamic parent route', function() {
     this.boot();
 
     Ember.run(router, 'transitionTo', 'comments', 'a-1');
@@ -345,7 +336,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/a/a-1/comments?page=3');
   });
 
-  QUnit.test("can reset query params using the resetController hook", function() {
+  QUnit.test('can reset query params using the resetController hook', function() {
     App.Router.map(function() {
       this.resource('article', { path: '/a/:id' }, function() {
         this.resource('comments');
@@ -362,7 +353,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    Ember.TEMPLATES.about = compile("{{link-to 'A' 'comments' 'a-1' id='one'}} {{link-to 'B' 'comments' 'a-2' id='two'}}");
+    Ember.TEMPLATES.about = compile('{{link-to \'A\' \'comments\' \'a-1\' id=\'one\'}} {{link-to \'B\' \'comments\' \'a-2\' id=\'two\'}}');
 
     this.boot();
 
@@ -386,11 +377,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.run(router, 'transitionTo', 'about');
 
-    equal(Ember.$('#one').attr('href'), "/a/a-1/comments?q=imdone");
-    equal(Ember.$('#two').attr('href'), "/a/a-2/comments");
+    equal(Ember.$('#one').attr('href'), '/a/a-1/comments?q=imdone');
+    equal(Ember.$('#two').attr('href'), '/a/a-2/comments');
   });
 } else {
-  QUnit.module("Model Dep Query Params", {
+  QUnit.module('Model Dep Query Params', {
     setup() {
       sharedSetup();
 
@@ -410,7 +401,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       App.ArticleRoute = Ember.Route.extend({
         model(params) {
           if (self.expectedModelHookParams) {
-            deepEqual(params, self.expectedModelHookParams, "the ArticleRoute model hook received the expected merged dynamic segment + query params hash");
+            deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
             self.expectedModelHookParams = null;
           }
           return articles.findProperty('id', params.id);
@@ -428,7 +419,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
         page: 1
       });
 
-      Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}");
+      Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}');
 
       this.boot = function() {
         bootApplication();
@@ -447,11 +438,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     teardown() {
       sharedTeardown();
-      ok(!this.expectedModelHookParams, "there should be no pending expectation of expected model hook params");
+      ok(!this.expectedModelHookParams, 'there should be no pending expectation of expected model hook params');
     }
   });
 
-  QUnit.test("query params have 'model' stickiness by default", function() {
+  QUnit.test('query params have \'model\' stickiness by default', function() {
     this.boot();
 
     Ember.run(this.$link1, 'click');
@@ -467,19 +458,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(this.controller.get('q'), 'wat');
     equal(this.controller.get('z'), 0);
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
     equal(this.$link2.attr('href'), '/a/a-2');
     equal(this.$link3.attr('href'), '/a/a-3');
   });
 
-  QUnit.test("query params have 'model' stickiness by default (url changes)", function() {
+  QUnit.test('query params have \'model\' stickiness by default (url changes)', function() {
     this.boot();
 
     this.expectedModelHookParams = { id: 'a-1', q: 'lol', z: 0 };
     handleURL('/a/a-1?q=lol');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-1' });
+    deepEqual(this.controller.get('model'), { id: 'a-1' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
@@ -489,7 +480,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
     handleURL('/a/a-2?q=lol');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' }, "controller's model changed to a-2");
+    deepEqual(this.controller.get('model'), { id: 'a-2' }, 'controller\'s model changed to a-2');
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
@@ -506,15 +497,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=lol&z=123');
   });
 
-  QUnit.test("query params have 'model' stickiness by default (params-based transitions)", function() {
-    Ember.TEMPLATES.application = compile("{{#each articles as |a|}} {{link-to 'Article' 'article' a.id id=a.id}} {{/each}}");
+  QUnit.test('query params have \'model\' stickiness by default (params-based transitions)', function() {
+    Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a.id id=a.id}} {{/each}}');
 
     this.boot();
 
     this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-1');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-1' });
+    deepEqual(this.controller.get('model'), { id: 'a-1' });
     equal(this.controller.get('q'), 'wat');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -524,7 +515,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-2', { queryParams: { q: 'lol' } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -534,7 +525,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
     Ember.run(router, 'transitionTo', 'article', 'a-3', { queryParams: { q: 'hay' } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-3' });
+    deepEqual(this.controller.get('model'), { id: 'a-3' });
     equal(this.controller.get('q'), 'hay');
     equal(this.controller.get('z'), 0);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -544,7 +535,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
     Ember.run(router, 'transitionTo', 'article', 'a-2', { queryParams: { z: 1 } });
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 1);
     equal(this.$link1.attr('href'), '/a/a-1');
@@ -552,7 +543,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=hay');
   });
 
-  QUnit.test("'controller' stickiness shares QP state between models", function() {
+  QUnit.test('\'controller\' stickiness shares QP state between models', function() {
     App.ArticleController.reopen({
       queryParams: { q: { scope: 'controller' } }
     });
@@ -572,7 +563,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-2' });
+    deepEqual(this.controller.get('model'), { id: 'a-2' });
 
     equal(this.$link1.attr('href'), '/a/a-1?q=lol');
     equal(this.$link2.attr('href'), '/a/a-2?q=lol');
@@ -581,7 +572,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
     handleURL('/a/a-3?q=haha&z=123');
 
-    deepEqual(withoutMeta(this.controller.get('model')), { id: 'a-3' });
+    deepEqual(this.controller.get('model'), { id: 'a-3' });
     equal(this.controller.get('q'), 'haha');
     equal(this.controller.get('z'), 123);
 
@@ -596,7 +587,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(this.$link3.attr('href'), '/a/a-3?q=woot&z=123');
   });
 
-  QUnit.test("'model' stickiness is scoped to current or first dynamic parent route", function() {
+  QUnit.test('\'model\' stickiness is scoped to current or first dynamic parent route', function() {
     this.boot();
 
     Ember.run(router, 'transitionTo', 'comments', 'a-1');
@@ -620,7 +611,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/a/a-1/comments?page=3');
   });
 
-  QUnit.test("can reset query params using the resetController hook", function() {
+  QUnit.test('can reset query params using the resetController hook', function() {
     App.Router.map(function() {
       this.resource('article', { path: '/a/:id' }, function() {
         this.resource('comments');
@@ -637,7 +628,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    Ember.TEMPLATES.about = compile("{{link-to 'A' 'comments' 'a-1' id='one'}} {{link-to 'B' 'comments' 'a-2' id='two'}}");
+    Ember.TEMPLATES.about = compile('{{link-to \'A\' \'comments\' \'a-1\' id=\'one\'}} {{link-to \'B\' \'comments\' \'a-2\' id=\'two\'}}');
 
     this.boot();
     Ember.run(router, 'transitionTo', 'comments', 'a-1');
@@ -661,15 +652,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.run(router, 'transitionTo', 'about');
 
-    equal(Ember.$('#one').attr('href'), "/a/a-1/comments?q=imdone");
-    equal(Ember.$('#two').attr('href'), "/a/a-2/comments");
+    equal(Ember.$('#one').attr('href'), '/a/a-1/comments?q=imdone');
+    equal(Ember.$('#two').attr('href'), '/a/a-2/comments');
   });
 
-  QUnit.test("can unit test without bucket cache", function() {
+  QUnit.test('can unit test without bucket cache', function() {
     var controller = container.lookup('controller:article');
     controller._bucketCache = null;
 
-    controller.set('q', "i used to break");
-    equal(controller.get('q'), "i used to break");
+    controller.set('q', 'i used to break');
+    equal(controller.get('q'), 'i used to break');
   });
 }

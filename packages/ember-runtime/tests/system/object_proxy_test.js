@@ -1,12 +1,12 @@
-import { addObserver, removeObserver } from "ember-metal/observer";
-import { computed } from "ember-metal/computed";
-import { isWatching } from "ember-metal/watching";
-import { testBoth } from "ember-metal/tests/props_helper";
-import ObjectProxy from "ember-runtime/system/object_proxy";
+import { addObserver, removeObserver } from 'ember-metal/observer';
+import { computed } from 'ember-metal/computed';
+import { isWatching } from 'ember-metal/watching';
+import { testBoth } from 'ember-metal/tests/props_helper';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
 
-QUnit.module("ObjectProxy");
+QUnit.module('ObjectProxy');
 
-testBoth("should not proxy properties passed to create", function (get, set) {
+testBoth('should not proxy properties passed to create', function (get, set) {
   var Proxy = ObjectProxy.extend({
     cp: computed({
       get: function(key) { return this._cp; },
@@ -25,7 +25,7 @@ testBoth("should not proxy properties passed to create", function (get, set) {
   equal(proxy._cp, 'Bar', 'should use CP setter');
 });
 
-testBoth("should proxy properties to content", function(get, set) {
+testBoth('should proxy properties to content', function(get, set) {
   var content = {
         firstName: 'Tom',
         lastName: 'Dale',
@@ -55,7 +55,7 @@ testBoth("should proxy properties to content", function(get, set) {
   equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
 });
 
-testBoth("should work with watched properties", function(get, set) {
+testBoth('should work with watched properties', function(get, set) {
   var content1 = { firstName: 'Tom', lastName: 'Dale' };
   var content2 = { firstName: 'Yehuda', lastName: 'Katz' };
   var count = 0;
@@ -116,7 +116,7 @@ testBoth("should work with watched properties", function(get, set) {
   equal(get(content2, 'lastName'), 'Katzdale');
 });
 
-QUnit.test("set and get should work with paths", function () {
+QUnit.test('set and get should work with paths', function () {
   var content = { foo: { bar: 'baz' } };
   var proxy = ObjectProxy.create({ content: content });
   var count = 0;
@@ -136,7 +136,7 @@ QUnit.test("set and get should work with paths", function () {
   equal(proxy.get('content.foo.bar'), 'bye');
 });
 
-testBoth("should transition between watched and unwatched strategies", function(get, set) {
+testBoth('should transition between watched and unwatched strategies', function(get, set) {
   var content = { foo: 'foo' };
   var proxy = ObjectProxy.create({ content: content });
   var count = 0;

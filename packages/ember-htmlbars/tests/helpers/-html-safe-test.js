@@ -1,13 +1,14 @@
 /* globals EmberDev */
-import { Registry } from "ember-runtime/system/container";
-import Component from "ember-views/views/component";
-import compile from "ember-template-compiler/system/compile";
+import Ember from 'ember-metal/core';
+import { Registry } from 'ember-runtime/system/container';
+import Component from 'ember-views/views/component';
+import compile from 'ember-template-compiler/system/compile';
 
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var component, registry, container, warnings, originalWarn;
 
-QUnit.module("ember-htmlbars: {{-html-safe}} helper", {
+QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
   setup() {
     registry = new Registry();
     container = registry.container();

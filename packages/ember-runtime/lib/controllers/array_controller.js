@@ -5,17 +5,15 @@
 
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import {
-  forEach,
-  replace
-} from 'ember-metal/enumerable_utils';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import SortableMixin from 'ember-runtime/mixins/sortable';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
 import EmberArray from 'ember-runtime/mixins/array';
+import replace from 'ember-metal/replace';
 
+export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
@@ -40,7 +38,7 @@ import EmberArray from 'ember-runtime/mixins/array';
   Then, create a view that binds to your new controller:
 
   ```handlebars
-  {{#each person in MyApp.listController}}
+  {{#each MyApp.listController as |person|}}
     {{person.firstName}} {{person.lastName}}
   {{/each}}
   ```
@@ -57,7 +55,7 @@ import EmberArray from 'ember-runtime/mixins/array';
   For example:
 
   ```handlebars
-  {{#each post in controller}}
+  {{#each controller as |post|}}
     <li>{{post.title}} ({{post.titleLength}} characters)</li>
   {{/each}}
   ```
@@ -101,6 +99,7 @@ import EmberArray from 'ember-runtime/mixins/array';
   @extends Ember.ArrayProxy
   @uses Ember.SortableMixin
   @uses Ember.ControllerMixin
+  @deprecated
   @public
 */
 
@@ -187,7 +186,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     if (subControllers.length) {
       var subControllersToRemove = subControllers.slice(idx, idx + removedCnt);
 
-      forEach(subControllersToRemove, function(subController) {
+      subControllersToRemove.forEach(function(subController) {
         if (subController) {
           subController.destroy();
         }
@@ -203,6 +202,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init() {
+    Ember.deprecate(arrayControllerDeprecation);
     this._super(...arguments);
     this._subControllers = [];
   },

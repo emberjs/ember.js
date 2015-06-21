@@ -1,5 +1,4 @@
-import EmberError from "ember-metal/error";
-import { forEach } from "ember-metal/enumerable_utils";
+import EmberError from 'ember-metal/error';
 
 var RETAIN = 'r';
 var FILTER = 'f';
@@ -113,7 +112,7 @@ SubArray.prototype = {
         self._composeAt(operationIndex);
       }
     }, function() {
-      throw new EmberError("Can't remove an item that has never been added.");
+      throw new EmberError('Can\'t remove an item that has never been added.');
     });
 
     return returnValue;
@@ -170,9 +169,9 @@ SubArray.prototype = {
   },
 
   toString() {
-    var str = "";
-    forEach(this._operations, function (operation) {
-      str += " " + operation.type + ":" + operation.count;
+    var str = '';
+    this._operations.forEach((operation) => {
+      str += ' ' + operation.type + ':' + operation.count;
     });
     return str.substring(1);
   }

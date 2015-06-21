@@ -1,4 +1,4 @@
-import { compile } from "ember-template-compiler";
+import { compile } from 'ember-template-compiler';
 
 QUnit.module('ember-template-compiler: transform-each-into-collection');
 

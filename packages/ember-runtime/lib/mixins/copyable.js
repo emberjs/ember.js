@@ -3,10 +3,10 @@
 @submodule ember-runtime
 */
 
-import { get } from "ember-metal/property_get";
-import { Mixin } from "ember-metal/mixin";
-import { Freezable } from "ember-runtime/mixins/freezable";
-import { fmt } from "ember-runtime/system/string";
+import { get } from 'ember-metal/property_get';
+import { Mixin } from 'ember-metal/mixin';
+import { Freezable } from 'ember-runtime/mixins/freezable';
+import { fmt } from 'ember-runtime/system/string';
 import EmberError from 'ember-metal/error';
 
 /**
@@ -58,7 +58,7 @@ export default Mixin.create({
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new EmberError(fmt("%@ does not support freezing", [this]));
+      throw new EmberError(fmt('%@ does not support freezing', [this]));
     }
   }
 });

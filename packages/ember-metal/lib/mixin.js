@@ -1,48 +1,42 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-"REMOVE_USE_STRICT: true";
+'REMOVE_USE_STRICT: true';
 
 /**
 @module ember
 @submodule ember-metal
 */
 
-import Ember from "ember-metal/core"; // warn, assert, wrap, et;
-import merge from "ember-metal/merge";
-import {
-  indexOf as a_indexOf,
-  forEach as a_forEach
-} from "ember-metal/array";
-import o_create from "ember-metal/platform/create";
-import { get } from "ember-metal/property_get";
-import { set, trySet } from "ember-metal/property_set";
+import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
+import merge from 'ember-metal/merge';
+import { get } from 'ember-metal/property_get';
+import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
   meta as metaFor,
   wrap,
-  makeArray,
-  isArray
-} from "ember-metal/utils";
-import expandProperties from "ember-metal/expand_properties";
+  makeArray
+} from 'ember-metal/utils';
+import expandProperties from 'ember-metal/expand_properties';
 import {
   Descriptor,
   defineProperty
-} from "ember-metal/properties";
-import { ComputedProperty } from "ember-metal/computed";
-import { Binding } from "ember-metal/binding";
+} from 'ember-metal/properties';
+import { ComputedProperty } from 'ember-metal/computed';
+import { Binding } from 'ember-metal/binding';
 import {
   addObserver,
   removeObserver,
   addBeforeObserver,
   removeBeforeObserver,
   _suspendObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 import {
   addListener,
   removeListener
-} from "ember-metal/events";
-import { isStream } from "ember-metal/streams/utils";
+} from 'ember-metal/events';
+import { isStream } from 'ember-metal/streams/utils';
 
 var REQUIRED;
 var a_slice = [].slice;
@@ -85,7 +79,7 @@ function mixinsMeta(obj) {
   if (!ret) {
     ret = m.mixins = {};
   } else if (!m.hasOwnProperty('mixins')) {
-    ret = m.mixins = o_create(ret);
+    ret = m.mixins = Object.create(ret);
   }
   return ret;
 }
@@ -153,7 +147,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // Since multiple mixins may inherit from the same parent, we need
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
-  property = o_create(property);
+  property = Object.create(property);
   property._getter = wrap(property._getter, superProperty._getter);
   if (superProperty._setter) {
     if (property._setter) {
@@ -226,7 +220,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
-  Ember.assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !isArray(value));
+  Ember.assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !Array.isArray(value));
 
   if (!baseValue) { return value; }
 
@@ -266,11 +260,11 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     descs[key]  = value;
     values[key] = undefined;
   } else {
-    if ((concats && a_indexOf.call(concats, key) >= 0) ||
+    if ((concats && concats.indexOf(key) >= 0) ||
                 key === 'concatenatedProperties' ||
                 key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
-    } else if ((mergings && a_indexOf.call(mergings, key) >= 0)) {
+    } else if ((mergings && mergings.indexOf(key) >= 0)) {
       value = applyMergedProperties(base, key, value, values);
     } else if (isMethod(value)) {
       value = giveMethodSuper(base, key, value, values, descs);
@@ -313,7 +307,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
     } else if (currentMixin.mixins) {
       mergeMixins(currentMixin.mixins, m, descs, values, base, keys);
-      if (currentMixin._without) { a_forEach.call(currentMixin._without, removeKeys); }
+      if (currentMixin._without) { currentMixin._without.forEach(removeKeys); }
     }
   }
 }
@@ -326,7 +320,7 @@ function detectBinding(obj, key, value, m) {
     if (!bindings) {
       bindings = m.bindings = {};
     } else if (!m.hasOwnProperty('bindings')) {
-      bindings = m.bindings = o_create(m.bindings);
+      bindings = m.bindings = Object.create(m.bindings);
     }
     bindings[key] = value;
   }
@@ -351,7 +345,7 @@ function connectStreamBinding(obj, key, stream) {
   stream.subscribe(onNotify);
 
   if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = o_create(null);
+    obj._streamBindingSubscriptions = Object.create(null);
   }
 
   obj._streamBindingSubscriptions[key] = onNotify;
@@ -698,9 +692,7 @@ function _keys(ret, mixin, seen) {
       if (props.hasOwnProperty(key)) { ret[key] = true; }
     }
   } else if (mixin.mixins) {
-    a_forEach.call(mixin.mixins, (x) => {
-      _keys(ret, x, seen);
-    });
+    mixin.mixins.forEach((x) => _keys(ret, x, seen));
   }
 }
 
@@ -799,9 +791,6 @@ export function aliasMethod(methodName) {
   });
   ```
 
-  In the future this method may become asynchronous. If you want to ensure
-  synchronous behavior, use `immediateObserver`.
-
   Also available as `Function.prototype.observes` if prototype extensions are
   enabled.
 
@@ -819,7 +808,7 @@ export function observer(...args) {
   var addWatchedProperty = function(path) { paths.push(path); };
   var _paths = args.slice(0, -1);
 
-  if (typeof func !== "function") {
+  if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
 
     func  = args[0];
@@ -832,8 +821,8 @@ export function observer(...args) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 
-  if (typeof func !== "function") {
-    throw new Ember.Error("Ember.observer called without a function");
+  if (typeof func !== 'function') {
+    throw new Ember.Error('Ember.observer called without a function');
   }
 
   func.__ember_observes__ = paths;
@@ -861,14 +850,17 @@ export function observer(...args) {
   @for Ember
   @param {String} propertyNames*
   @param {Function} func
+  @deprecated Use `Ember.observer` instead.
   @return func
   @private
 */
 export function immediateObserver() {
+  Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.');
+
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
-    Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.",
-                 typeof arg !== "string" || arg.indexOf('.') === -1);
+    Ember.assert('Immediate observers must observe internal properties only, not properties on other objects.',
+                 typeof arg !== 'string' || arg.indexOf('.') === -1);
   }
 
   return observer.apply(this, arguments);
@@ -925,7 +917,7 @@ export function beforeObserver(...args) {
 
   var _paths = args.slice(0, -1);
 
-  if (typeof func !== "function") {
+  if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
 
     func  = args[0];
@@ -938,8 +930,8 @@ export function beforeObserver(...args) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 
-  if (typeof func !== "function") {
-    throw new Ember.Error("Ember.beforeObserver called without a function");
+  if (typeof func !== 'function') {
+    throw new Ember.Error('Ember.beforeObserver called without a function');
   }
 
   func.__ember_observesBefore__ = paths;

@@ -1,13 +1,12 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-"REMOVE_USE_STRICT: true";
+'REMOVE_USE_STRICT: true';
 
-import o_create from "ember-metal/platform/create";
 import {
   watch,
   unwatch
-} from "ember-metal/watching";
+} from 'ember-metal/watching';
 
 /**
 @module ember
@@ -38,7 +37,7 @@ function keysForDep(depsMeta, depKey) {
   } else if (!depsMeta.hasOwnProperty(depKey)) {
     // otherwise if the dependency list is inherited from
     // a superclass, clone the hash
-    keys = depsMeta[depKey] = o_create(keys);
+    keys = depsMeta[depKey] = Object.create(keys);
   }
   return keys;
 }

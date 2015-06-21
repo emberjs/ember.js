@@ -3,11 +3,10 @@
 @submodule ember-views
 */
 import Ember from 'ember-metal/core';
-import { Mixin } from "ember-metal/mixin";
-import { removeObject } from "ember-metal/enumerable_utils";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import setProperties from "ember-metal/set_properties";
+import { Mixin } from 'ember-metal/mixin';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import setProperties from 'ember-metal/set_properties';
 
 var EMPTY_ARRAY = [];
 
@@ -61,7 +60,8 @@ var ViewChildViewsSupport = Mixin.create({
     // remove view from childViews array.
     var childViews = get(this, 'childViews');
 
-    removeObject(childViews, view);
+    var index = childViews.indexOf(view);
+    if (index !== -1) { childViews.splice(index, 1); }
 
     return this;
   },
@@ -81,7 +81,7 @@ var ViewChildViewsSupport = Mixin.create({
   */
   createChildView(maybeViewClass, _attrs) {
     if (!maybeViewClass) {
-      throw new TypeError("createChildViews first argument must exist");
+      throw new TypeError('createChildViews first argument must exist');
     }
 
     if (maybeViewClass.isView && maybeViewClass.parentView === this && maybeViewClass.container === this.container) {
@@ -105,7 +105,7 @@ var ViewChildViewsSupport = Mixin.create({
       var fullName = 'view:' + maybeViewClass;
       var ViewKlass = this.container.lookupFactory(fullName);
 
-      Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
+      Ember.assert('Could not find view: \'' + fullName + '\'', !!ViewKlass);
 
       view = ViewKlass.create(attrs);
     } else {

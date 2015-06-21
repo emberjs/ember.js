@@ -1,11 +1,11 @@
-import Service from "ember-runtime/system/service";
-import { Registry } from "ember-runtime/system/container";
-import inject from "ember-runtime/inject";
-import View from "ember-views/views/view";
+import Service from 'ember-runtime/system/service';
+import { Registry } from 'ember-runtime/system/container';
+import inject from 'ember-runtime/inject';
+import View from 'ember-views/views/view';
 
 QUnit.module('EmberView - injected properties');
 
-QUnit.test("services can be injected into views", function() {
+QUnit.test('services can be injected into views', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -18,5 +18,5 @@ QUnit.test("services can be injected into views", function() {
   var appView = container.lookup('view:application');
   var profilerService = container.lookup('service:profiler');
 
-  equal(profilerService, appView.get('profilerService'), "service.profiler is injected");
+  equal(profilerService, appView.get('profilerService'), 'service.profiler is injected');
 });

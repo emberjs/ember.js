@@ -1,10 +1,11 @@
-import Component from "ember-views/views/component";
-import Helper, { helper as makeHelper } from "ember-htmlbars/helper";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import Registry from "container/registry";
-import run from "ember-metal/run_loop";
-import ComponentLookup from "ember-views/component_lookup";
+import Ember from 'ember-metal/core';
+import Component from 'ember-views/views/component';
+import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import Registry from 'container/registry';
+import run from 'ember-metal/run_loop';
+import ComponentLookup from 'ember-views/component_lookup';
 
 let registry, container, component;
 
@@ -74,6 +75,38 @@ QUnit.test('dashed helper can recompute a new value', function() {
   component = Component.extend({
     container,
     layout: compile('{{hello-world}}')
+  }).create();
+
+  runAppend(component);
+  equal(component.$().text(), '1');
+  run(function() {
+    helper.recompute();
+  });
+  equal(component.$().text(), '2');
+  equal(destroyCount, 0, 'destroy is not called on recomputation');
+});
+
+QUnit.test('dashed helper with arg can recompute a new value', function() {
+  var destroyCount = 0;
+  var count = 0;
+  var helper;
+  var HelloWorld = Helper.extend({
+    init() {
+      this._super(...arguments);
+      helper = this;
+    },
+    compute() {
+      return ++count;
+    },
+    destroy() {
+      destroyCount++;
+      this._super();
+    }
+  });
+  registry.register('helper:hello-world', HelloWorld);
+  component = Component.extend({
+    container,
+    layout: compile('{{hello-world "whut"}}')
   }).create();
 
   runAppend(component);

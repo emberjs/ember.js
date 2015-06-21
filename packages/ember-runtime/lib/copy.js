@@ -1,5 +1,4 @@
-import { indexOf } from 'ember-metal/enumerable_utils';
-import { isArray } from 'ember-metal/utils';
+import Ember from 'ember-metal/core';
 import EmberObject from 'ember-runtime/system/object';
 import Copyable from 'ember-runtime/mixins/copyable';
 
@@ -12,7 +11,7 @@ function _copy(obj, deep, seen, copies) {
   }
 
   // avoid cyclical loops
-  if (deep && (loc = indexOf(seen, obj)) >= 0) {
+  if (deep && (loc = seen.indexOf(obj)) >= 0) {
     return copies[loc];
   }
 
@@ -21,7 +20,7 @@ function _copy(obj, deep, seen, copies) {
 
   // IMPORTANT: this specific test will detect a native array only. Any other
   // object will need to implement Copyable.
-  if (isArray(obj)) {
+  if (Array.isArray(obj)) {
     ret = obj.slice();
 
     if (deep) {

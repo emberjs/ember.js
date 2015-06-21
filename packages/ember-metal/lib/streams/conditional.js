@@ -1,11 +1,10 @@
-import Stream from "ember-metal/streams/stream";
+import Stream from 'ember-metal/streams/stream';
 import {
   read,
   subscribe,
   unsubscribe,
   isStream
-} from "ember-metal/streams/utils";
-import create from "ember-metal/platform/create";
+} from 'ember-metal/streams/utils';
 
 export default function conditional(test, consequent, alternate) {
   if (isStream(test)) {
@@ -28,7 +27,7 @@ function ConditionalStream(test, consequent, alternate) {
   this.alternate = alternate;
 }
 
-ConditionalStream.prototype = create(Stream.prototype);
+ConditionalStream.prototype = Object.create(Stream.prototype);
 
 ConditionalStream.prototype.compute = function() {
   var oldTestResult = this.oldTestResult;

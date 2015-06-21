@@ -1,35 +1,32 @@
-import Ember from "ember-metal/core"; // FEATURES, A, deprecate, assert, Logger
-import isEnabled from "ember-metal/features";
-import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import getProperties from "ember-metal/get_properties";
-import { forEach } from "ember-metal/enumerable_utils";
-import isNone from "ember-metal/is_none";
-import { computed } from "ember-metal/computed";
-import merge from "ember-metal/merge";
+import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
+import isEnabled from 'ember-metal/features';
+import EmberError from 'ember-metal/error';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import getProperties from 'ember-metal/get_properties';
+import isNone from 'ember-metal/is_none';
+import { computed } from 'ember-metal/computed';
+import merge from 'ember-metal/merge';
 import {
-  isArray,
   typeOf
-} from "ember-runtime/utils";
-import run from "ember-metal/run_loop";
-import keys from "ember-metal/keys";
-import copy from "ember-runtime/copy";
+} from 'ember-runtime/utils';
+import run from 'ember-metal/run_loop';
+import copy from 'ember-runtime/copy';
 import {
   classify
-} from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import Evented from "ember-runtime/mixins/evented";
-import ActionHandler from "ember-runtime/mixins/action_handler";
-import generateController from "ember-routing/system/generate_controller";
+} from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import Evented from 'ember-runtime/mixins/evented';
+import ActionHandler from 'ember-runtime/mixins/action_handler';
+import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
-} from "ember-routing/system/generate_controller";
+} from 'ember-routing/system/generate_controller';
 import {
   stashParamNames,
   normalizeControllerQueryParams,
   calculateCacheKey
-} from "ember-routing/utils";
+} from 'ember-routing/utils';
 
 var slice = Array.prototype.slice;
 
@@ -107,7 +104,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var controllerName = this.controllerName || this.routeName;
     var definedControllerClass = this.container.lookupFactory(`controller:${controllerName}`);
     var queryParameterConfiguraton = get(this, 'queryParams');
-    var hasRouterDefinedQueryParams = !!keys(queryParameterConfiguraton).length;
+    var hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
     if (definedControllerClass) {
       // the developer has authored a controller class in their application for this route
@@ -174,7 +171,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var urlKey = desc.as || this.serializeQueryParamKey(propName);
       var defaultValue = get(controllerProto, propName);
 
-      if (isArray(defaultValue)) {
+      if (Array.isArray(defaultValue)) {
         defaultValue = Ember.A(defaultValue.slice());
       }
 
@@ -197,7 +194,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         parts: parts, // provided later when stashNames is called if 'model' scope
         values: null, // provided later when setup is called. no idea why.
         scope: scope,
-        prefix: ""
+        prefix: ''
       };
 
       map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
@@ -740,7 +737,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     queryParamsDidChange(changed, totalPresent, removed) {
       var qpMap = get(this, '_qp').map;
 
-      var totalChanged = keys(changed).concat(keys(removed));
+      var totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (var i = 0, len = totalChanged.length; i < len; ++i) {
         var qp = qpMap[totalChanged[i]];
         if (qp && get(this._optionsForQueryParam(qp), 'refreshModel')) {
@@ -791,7 +788,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         }
 
 
-        controller._qpDelegate = get(this, '_qp.states.inactive');
+        controller._qpDelegate = get(route, '_qp.states.inactive');
 
         var thisQueryParamChanged = (svalue !== qp.serializedValue);
         if (thisQueryParamChanged) {
@@ -826,7 +823,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         transition.method('replace');
       }
 
-      forEach(qpMeta.qps, function(qp) {
+      qpMeta.qps.forEach(function(qp) {
         var routeQpMeta = get(qp.route, '_qp');
         var finalizedController = qp.route.controller;
         finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
@@ -1181,7 +1178,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.setupControllers) {
-      Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
+      Ember.deprecate('Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.');
       this.setupControllers(controller, context);
     } else {
       var queryParams = get(this, '_qp');
@@ -1195,7 +1192,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         var allParams = queryParams.propertyNames;
         var cache = this._bucketCache;
 
-        forEach(allParams, function(prop) {
+        allParams.forEach(function(prop) {
           var aQp = queryParams.map[prop];
 
           aQp.values = params;
@@ -1220,7 +1217,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.renderTemplates) {
-      Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
+      Ember.deprecate('Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.');
       this.renderTemplates(context);
     } else {
       this.renderTemplate(controller, context);
@@ -1235,7 +1232,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    var cacheKey = calculateCacheKey(qp.prefix || "", qp.parts, qp.values);
+    var cacheKey = calculateCacheKey(qp.prefix || '', qp.parts, qp.values);
 
     // Update model-dep cache
     var cache = this._bucketCache;
@@ -1596,7 +1593,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       if (name in model) {
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
-        object[name] = get(model, "id");
+        object[name] = get(model, 'id');
       }
     } else {
       object = getProperties(model, params);
@@ -1950,7 +1947,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   render(_name, options) {
-    Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
+    Ember.assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
     var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
@@ -2015,7 +2012,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   disconnectOutlet(options) {
     var outletName;
     var parentView;
-    if (!options || typeof options === "string") {
+    if (!options || typeof options === 'string') {
       outletName = options;
     } else {
       outletName = options.outlet;
@@ -2200,7 +2197,7 @@ function getQueryParamsFor(route, state) {
 }
 
 function copyDefaultValue(value) {
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     return Ember.A(value.slice());
   }
   return value;
@@ -2254,7 +2251,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
 }
 
 function addQueryParamsObservers(controller, propNames) {
-  forEach(propNames, function(prop) {
+  propNames.forEach(function(prop) {
     controller.addObserver(prop + '.[]', controller, controller._qpChanged);
   });
 }

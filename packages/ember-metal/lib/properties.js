@@ -2,14 +2,10 @@
 @module ember-metal
 */
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import { meta as metaFor } from "ember-metal/utils";
-import {
-  defineProperty as objectDefineProperty,
-  hasPropertyAccessors
-} from 'ember-metal/platform/define_property';
-import { overrideChains } from "ember-metal/property_events";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import { meta as metaFor } from 'ember-metal/utils';
+import { overrideChains } from 'ember-metal/property_events';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -105,10 +101,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   if (desc instanceof Descriptor) {
     value = desc;
-
     if (isEnabled('mandatory-setter')) {
-      if (watching && hasPropertyAccessors) {
-        objectDefineProperty(obj, keyName, {
+      if (watching) {
+        Object.defineProperty(obj, keyName, {
           configurable: true,
           enumerable: true,
           writable: true,
@@ -126,9 +121,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       value = data;
 
       if (isEnabled('mandatory-setter')) {
-        if (watching && hasPropertyAccessors) {
+        if (watching) {
           meta.values[keyName] = data;
-          objectDefineProperty(obj, keyName, {
+          Object.defineProperty(obj, keyName, {
             configurable: true,
             enumerable: true,
             set: MANDATORY_SETTER_FUNCTION(keyName),
@@ -143,8 +138,8 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     } else {
       value = desc;
 
-      // compatibility with ES5
-      objectDefineProperty(obj, keyName, desc);
+      // fallback to ES5
+      Object.defineProperty(obj, keyName, desc);
     }
   }
 

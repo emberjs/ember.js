@@ -1,10 +1,11 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import Ember from 'ember-metal/core';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
 
 suite.module('setObjects');
 
-suite.test("[A,B,C].setObjects([]) = > [] + notify", function() {
+suite.test('[A,B,C].setObjects([]) = > [] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(3);
@@ -25,7 +26,7 @@ suite.test("[A,B,C].setObjects([]) = > [] + notify", function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
-suite.test("[A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify", function() {
+suite.test('[A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify', function() {
   var obj, before, after, observer;
 
   before = this.newFixture(3);

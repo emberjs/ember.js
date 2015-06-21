@@ -30,10 +30,9 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
   return true;
 }
 
-import merge from "ember-metal/merge";
-import create from "ember-metal/platform/create";
-import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/utils";
+import merge from 'ember-metal/merge';
+import Stream from 'ember-metal/streams/stream';
+import { read } from 'ember-metal/streams/utils';
 
 function VolatileStream(source) {
   this.init(`(volatile ${source.label})`);
@@ -42,7 +41,7 @@ function VolatileStream(source) {
   this.addDependency(source);
 }
 
-VolatileStream.prototype = create(Stream.prototype);
+VolatileStream.prototype = Object.create(Stream.prototype);
 
 merge(VolatileStream.prototype, {
   value() {

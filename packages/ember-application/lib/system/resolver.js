@@ -9,12 +9,14 @@ import Logger from 'ember-metal/logger';
 import {
   classify,
   capitalize,
+  dasherize,
   decamelize
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import helpers from 'ember-htmlbars/helpers';
 import validateType from 'ember-application/utils/validate-type';
+import dictionary from 'ember-metal/dictionary';
 
 export var Resolver = EmberObject.extend({
   /*
@@ -104,7 +106,6 @@ export var Resolver = EmberObject.extend({
   @extends Ember.Object
   @public
 */
-import dictionary from 'ember-metal/dictionary';
 
 export default EmberObject.extend({
   /**
@@ -125,9 +126,9 @@ export default EmberObject.extend({
       name
     ] = fullName.split(':', 2);
 
-    Ember.assert("Tried to normalize a container name without a colon (:) in it." +
-                 " You probably tried to lookup a name that did not contain a type," +
-                 " a colon, and a name. A proper lookup name would be `view:post`.", fullName.split(':').length === 2);
+    Ember.assert('Tried to normalize a container name without a colon (:) in it.' +
+                 ' You probably tried to lookup a name that did not contain a type,' +
+                 ' a colon, and a name. A proper lookup name would be `view:post`.', fullName.split(':').length === 2);
 
     if (type !== 'template') {
       var result = name;
@@ -419,5 +420,54 @@ export default EmberObject.extend({
     }
 
     Logger.info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+  },
+
+  /**
+   Used to iterate all items of a given type.
+
+   @method knownForType
+   @param {String} type the type to search for
+   @private
+   */
+  knownForType(type) {
+    let namespace = get(this, 'namespace');
+    let suffix = classify(type);
+    let typeRegexp = new RegExp(`${suffix}$`);
+
+    let known = dictionary(null);
+    let knownKeys = Object.keys(namespace);
+    for (let index = 0, length = knownKeys.length; index < length; index++) {
+      let name = knownKeys[index];
+
+      if (typeRegexp.test(name)) {
+        let containerName = this.translateToContainerFullname(type, name);
+
+        known[containerName] = true;
+      }
+    }
+
+    return known;
+  },
+
+  /**
+   Converts provided name from the backing namespace into a container lookup name.
+
+   Examples:
+
+   App.FooBarHelper -> helper:foo-bar
+   App.THelper -> helper:t
+
+   @method translateToContainerFullname
+   @param {String} type
+   @param {String} name
+   @private
+   */
+
+  translateToContainerFullname(type, name) {
+    let suffix = classify(type);
+    let namePrefix = name.slice(0, suffix.length * -1);
+    let dasherizedName = dasherize(namePrefix);
+
+    return `${type}:${dasherizedName}`;
   }
 });

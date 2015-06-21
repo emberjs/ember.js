@@ -175,6 +175,11 @@ In general bug fixes are pulled into the beta branch. As such, the prefix is: `[
 
 For bugs related to canary features, follow the prefixing rules for features.
 
+### Cleanup
+
+Cleanup commits are for removing deprecated functionality and should be tagged
+as `[CLEANUP beta]`.
+
 ### Features
 
 All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature.

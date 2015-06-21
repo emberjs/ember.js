@@ -1,18 +1,17 @@
-import { get } from "ember-metal/property_get";
-import run from "ember-metal/run_loop";
-import { indexOf } from "ember-metal/enumerable_utils";
-import jQuery from "ember-views/system/jquery";
-import View from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import jQuery from 'ember-views/system/jquery';
+import View from 'ember-views/views/view';
+import ContainerView from 'ember-views/views/container_view';
 
 // .......................................................
 // removeChild()
 //
 
 var parentView, child;
-QUnit.module("View#removeChild", {
+QUnit.module('View#removeChild', {
   setup() {
-    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+    expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     parentView = ContainerView.create({ childViews: [View] });
     child = get(parentView, 'childViews').objectAt(0);
@@ -25,17 +24,17 @@ QUnit.module("View#removeChild", {
   }
 });
 
-QUnit.test("returns receiver", function() {
+QUnit.test('returns receiver', function() {
   equal(parentView.removeChild(child), parentView, 'receiver');
 });
 
-QUnit.test("removes child from parent.childViews array", function() {
-  ok(indexOf(get(parentView, 'childViews'), child)>=0, 'precond - has child in childViews array before remove');
+QUnit.test('removes child from parent.childViews array', function() {
+  ok(get(parentView, 'childViews').indexOf(child)>=0, 'precond - has child in childViews array before remove');
   parentView.removeChild(child);
-  ok(indexOf(get(parentView, 'childViews'), child)<0, 'removed child');
+  ok(get(parentView, 'childViews').indexOf(child)<0, 'removed child');
 });
 
-QUnit.test("sets parentView property to null", function() {
+QUnit.test('sets parentView property to null', function() {
   ok(get(child, 'parentView'), 'precond - has parentView');
   parentView.removeChild(child);
   ok(!get(child, 'parentView'), 'parentView is now null');
@@ -45,9 +44,9 @@ QUnit.test("sets parentView property to null", function() {
 // removeAllChildren()
 //
 var view, childViews;
-QUnit.module("View#removeAllChildren", {
+QUnit.module('View#removeAllChildren', {
   setup() {
-    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+    expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     view = ContainerView.create({
       childViews: [View, View, View]
@@ -62,21 +61,21 @@ QUnit.module("View#removeAllChildren", {
   }
 });
 
-QUnit.test("removes all child views", function() {
+QUnit.test('removes all child views', function() {
   equal(get(view, 'childViews.length'), 3, 'precond - has child views');
 
   view.removeAllChildren();
   equal(get(view, 'childViews.length'), 0, 'removed all children');
 });
 
-QUnit.test("returns receiver", function() {
+QUnit.test('returns receiver', function() {
   equal(view.removeAllChildren(), view, 'receiver');
 });
 
 // .......................................................
 // removeFromParent()
 //
-QUnit.module("View#removeFromParent", {
+QUnit.module('View#removeFromParent', {
   teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
@@ -86,8 +85,8 @@ QUnit.module("View#removeFromParent", {
   }
 });
 
-QUnit.test("removes view from parent view", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('removes view from parent view', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
@@ -97,19 +96,19 @@ QUnit.test("removes view from parent view", function() {
     parentView.createElement();
   });
 
-  ok(parentView.$('div').length, "precond - has a child DOM element");
+  ok(parentView.$('div').length, 'precond - has a child DOM element');
 
   run(function() {
     child.removeFromParent();
   });
 
   ok(!get(child, 'parentView'), 'no longer has parentView');
-  ok(indexOf(get(parentView, 'childViews'), child)<0, 'no longer in parent childViews');
-  equal(parentView.$('div').length, 0, "removes DOM element from parent");
+  ok(get(parentView, 'childViews').indexOf(child)<0, 'no longer in parent childViews');
+  equal(parentView.$('div').length, 0, 'removes DOM element from parent');
 });
 
-QUnit.test("returns receiver", function() {
-  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+QUnit.test('returns receiver', function() {
+  expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
   parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
@@ -120,7 +119,7 @@ QUnit.test("returns receiver", function() {
   equal(removed, child, 'receiver');
 });
 
-QUnit.test("does nothing if not in parentView", function() {
+QUnit.test('does nothing if not in parentView', function() {
   child = View.create();
 
   // monkey patch for testing...
@@ -134,7 +133,7 @@ QUnit.test("does nothing if not in parentView", function() {
 });
 
 
-QUnit.test("the DOM element is gone after doing append and remove in two separate runloops", function() {
+QUnit.test('the DOM element is gone after doing append and remove in two separate runloops', function() {
   view = View.create();
   run(function() {
     view.append();
@@ -144,10 +143,10 @@ QUnit.test("the DOM element is gone after doing append and remove in two separat
   });
 
   var viewElem = jQuery('#'+get(view, 'elementId'));
-  ok(viewElem.length === 0, "view's element doesn't exist in DOM");
+  ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
-QUnit.test("the DOM element is gone after doing append and remove in a single runloop", function() {
+QUnit.test('the DOM element is gone after doing append and remove in a single runloop', function() {
   view = View.create();
   run(function() {
     view.append();
@@ -155,6 +154,6 @@ QUnit.test("the DOM element is gone after doing append and remove in a single ru
   });
 
   var viewElem = jQuery('#'+get(view, 'elementId'));
-  ok(viewElem.length === 0, "view's element doesn't exist in DOM");
+  ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 

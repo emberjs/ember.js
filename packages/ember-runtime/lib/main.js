@@ -14,15 +14,13 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import SubArray from 'ember-runtime/system/subarray';
-import { Container, Registry } from "ember-runtime/system/container";
+import { Container, Registry } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
 
 import NativeArray from 'ember-runtime/system/native_array';
-import Set from 'ember-runtime/system/set';
 import EmberStringUtils from 'ember-runtime/system/string';
-import Deferred from 'ember-runtime/system/deferred';
 import {
   onLoad,
   runLoadHooks
@@ -40,7 +38,6 @@ import _ProxyMixin from 'ember-runtime/mixins/-proxy';
 
 import Observable from 'ember-runtime/mixins/observable';
 import ActionHandler from 'ember-runtime/mixins/action_handler';
-import DeferredMixin from 'ember-runtime/mixins/deferred';
 import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
@@ -85,7 +82,7 @@ import RSVP from 'ember-runtime/ext/rsvp';     // just for side effect of extend
 import 'ember-runtime/ext/string';   // just for side effect of extending String.prototype
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
 
-import { typeOf, isArray } from 'ember-runtime/utils';
+import { typeOf } from 'ember-runtime/utils';
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -105,8 +102,6 @@ Ember.SortableMixin = SortableMixin;
 Ember.Freezable = Freezable;
 Ember.FROZEN_ERROR = FROZEN_ERROR;
 
-Ember.DeferredMixin = DeferredMixin;
-
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 
@@ -122,8 +117,8 @@ Ember.ArrayComputedProperty = ArrayComputedProperty;
 Ember.reduceComputed = reduceComputed;
 Ember.ReduceComputedProperty = ReduceComputedProperty;
 
-Ember.typeOf    = typeOf;
-Ember.isArray   = isArray;
+Ember.typeOf = typeOf;
+Ember.isArray = Array.isArray;
 
 // ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
 var EmComputed = Ember.computed;
@@ -158,8 +153,6 @@ Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
 // ES6TODO: Currently we must rely on the global from ember-metal/core to avoid circular deps
 // Ember.A = A;
-Ember.Set = Set;
-Ember.Deferred = Deferred;
 Ember.onLoad = onLoad;
 Ember.runLoadHooks = runLoadHooks;
 

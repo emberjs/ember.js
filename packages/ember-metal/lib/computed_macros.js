@@ -1,7 +1,7 @@
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { computed } from "ember-metal/computed";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
 import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
@@ -476,41 +476,6 @@ export var or = generateComputedWithProperties(function(properties) {
 });
 
 /**
-  A computed property that returns the first truthy value
-  from a list of dependent properties.
-
-  Example
-
-  ```javascript
-  var Hamster = Ember.Object.extend({
-    hasClothes: Ember.computed.any('hat', 'shirt')
-  });
-
-  var hamster = Hamster.create();
-
-  hamster.get('hasClothes'); // null
-  hamster.set('shirt', 'Hawaiian Shirt');
-  hamster.get('hasClothes'); // 'Hawaiian Shirt'
-  ```
-
-  @method any
-  @for Ember.computed
-  @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which returns
-  the first truthy value of given list of properties.
-  @deprecated Use `Ember.computed.or` instead.
-  @public
-*/
-export var any = generateComputedWithProperties(function(properties) {
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key) && properties[key]) {
-      return properties[key];
-    }
-  }
-  return null;
-});
-
-/**
   A computed property that returns the array of values
   for the provided dependent properties.
 
@@ -664,48 +629,6 @@ export function oneWay(dependentKey) {
 */
 export function readOnly(dependentKey) {
   return alias(dependentKey).readOnly();
-}
-
-/**
-  A computed property that acts like a standard getter and setter,
-  but returns the value at the provided `defaultPath` if the
-  property itself has not been set to a value
-
-  Example
-
-  ```javascript
-  var Hamster = Ember.Object.extend({
-    wishList: Ember.computed.defaultTo('favoriteFood')
-  });
-
-  var hamster = Hamster.create({ favoriteFood: 'Banana' });
-
-  hamster.get('wishList');                     // 'Banana'
-  hamster.set('wishList', 'More Unit Tests');
-  hamster.get('wishList');                     // 'More Unit Tests'
-  hamster.get('favoriteFood');                 // 'Banana'
-  ```
-
-  @method defaultTo
-  @for Ember.computed
-  @param {String} defaultPath
-  @return {Ember.ComputedProperty} computed property which acts like
-  a standard getter and setter, but defaults to the value from `defaultPath`.
-  @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
-  @public
-*/
-export function defaultTo(defaultPath) {
-  return computed({
-    get(key) {
-      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
-      return get(this, defaultPath);
-    },
-
-    set(key, newValue, cachedValue) {
-      Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
-      return newValue != null ? newValue : get(this, defaultPath);
-    }
-  });
 }
 
 /**

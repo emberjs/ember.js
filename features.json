@@ -6,7 +6,7 @@
     "ember-htmlbars-component-helper": true,
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,
-    "ember-htmlbars-each-in": null,
+    "ember-htmlbars-each-in": true,
     "ember-routing-transitioning-classes": true,
     "ember-testing-checkbox-helpers": null,
     "ember-metal-stream": null,
@@ -19,8 +19,9 @@
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
     "ember-routing-htmlbars-improved-actions": true,
-    "ember-htmlbars-get-helper": null,
-    "ember-htmlbars-helper": true
+    "ember-htmlbars-get-helper": true,
+    "ember-htmlbars-helper": true,
+    "ember-htmlbars-dashless-helpers": true
   },
   "debugStatements": [
     "Ember.warn",
@@ -34,6 +35,16 @@
     "Ember.Logger.info",
     "Ember.default.Logger.info",
     "Ember.runInDebug",
-    "Ember.default.runInDebug"
+    "Ember.default.runInDebug",
+    "_emberMetalCore.default.deprecate",
+    "_emberMetalCore.default.warn",
+    "_emberMetalCore.default.assert",
+    "_emberMetalCore.default.debug",
+    "_emberMetalCore.default.runInDebug",
+    "_emberMetal.default.deprecate",
+    "_emberMetal.default.warn",
+    "_emberMetal.default.assert",
+    "_emberMetal.default.debug",
+    "_emberMetal.default.runInDebug"
   ]
 }

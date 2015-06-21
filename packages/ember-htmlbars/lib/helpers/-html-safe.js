@@ -1,4 +1,4 @@
-import SafeString from "htmlbars-util/safe-string";
+import SafeString from 'htmlbars-util/safe-string';
 
 /**
  This private helper is used internally to handle `isVisible: false` for

@@ -1,12 +1,12 @@
-import compile from "ember-template-compiler/system/compile";
+import compile from 'ember-template-compiler/system/compile';
 import {
   compile as htmlbarsCompile
-} from "htmlbars-compiler/compiler";
+} from 'htmlbars-compiler/compiler';
 
 QUnit.module('ember-htmlbars: compile');
 
 QUnit.test('compiles the provided template with htmlbars', function() {
-  var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
+  var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
   var expected = htmlbarsCompile(templateString);
@@ -15,7 +15,7 @@ QUnit.test('compiles the provided template with htmlbars', function() {
 });
 
 QUnit.test('calls template on the compiled function', function() {
-  var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
+  var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
 
@@ -24,7 +24,7 @@ QUnit.test('calls template on the compiled function', function() {
 });
 
 QUnit.test('includes the current revision in the compiled template', function() {
-  var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
+  var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
 
@@ -32,7 +32,7 @@ QUnit.test('includes the current revision in the compiled template', function() 
 });
 
 QUnit.test('the template revision is different than the HTMLBars default revision', function() {
-  var templateString = "{{foo}} -- {{some-bar blah='foo'}}";
+  var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
   var expected = htmlbarsCompile(templateString);
@@ -41,7 +41,7 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
 });
 
 QUnit.test('{{with}} template deprecation includes moduleName if provided', function() {
-  var templateString = "{{#with foo as bar}} {{bar}} {{/with}}";
+  var templateString = '{{#with foo as bar}} {{bar}} {{/with}}';
 
   expectDeprecation(function() {
     compile(templateString, {

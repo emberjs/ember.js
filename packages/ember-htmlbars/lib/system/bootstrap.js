@@ -5,13 +5,13 @@
 @submodule ember-htmlbars
 */
 
-import Ember from "ember-metal/core";
-import ComponentLookup from "ember-views/component_lookup";
-import jQuery from "ember-views/system/jquery";
-import EmberError from "ember-metal/error";
-import { onLoad } from "ember-runtime/system/lazy_load";
-import htmlbarsCompile from "ember-template-compiler/system/compile";
-import environment from "ember-metal/environment";
+import Ember from 'ember-metal/core';
+import ComponentLookup from 'ember-views/component_lookup';
+import jQuery from 'ember-views/system/jquery';
+import EmberError from 'ember-metal/error';
+import { onLoad } from 'ember-runtime/system/lazy_load';
+import htmlbarsCompile from 'ember-template-compiler/system/compile';
+import environment from 'ember-metal/environment';
 
 /**
 @module ember

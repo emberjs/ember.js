@@ -2,18 +2,18 @@
 @module ember
 @submodule ember-views
 */
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
 
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
-import run from "ember-metal/run_loop";
-import { fmt } from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import jQuery from "ember-views/system/jquery";
-import ActionManager from "ember-views/system/action_manager";
-import View from "ember-views/views/view";
-import merge from "ember-metal/merge";
+import run from 'ember-metal/run_loop';
+import { fmt } from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import jQuery from 'ember-views/system/jquery';
+import ActionManager from 'ember-views/system/action_manager';
+import View from 'ember-views/views/view';
+import merge from 'ember-metal/merge';
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -192,12 +192,16 @@ export default EmberObject.extend({
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
       var actions   = ActionManager.registeredActions[actionId];
 
+      // We have to check for actions here since in some cases, jQuery will trigger
+      // an event on `removeChild` (i.e. focusout) after we've already torn down the
+      // action handlers for the view.
+      if (!actions) {
+        return;
+      }
+
       for (let index = 0, length = actions.length; index < length; index++) {
         let action = actions[index];
 
-        // We have to check for action here since in some cases, jQuery will trigger
-        // an event on `removeChild` (i.e. focusout) after we've already torn down the
-        // action handlers for the view.
         if (action && action.eventName === eventName) {
           return action.handler(evt);
         }

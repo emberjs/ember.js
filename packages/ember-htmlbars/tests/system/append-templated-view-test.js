@@ -1,7 +1,7 @@
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/views/component';
-import compile from "ember-template-compiler/system/compile";
+import compile from 'ember-template-compiler/system/compile';
 
 var view;
 QUnit.module('ember-htmlbars: appendTemplatedView', {

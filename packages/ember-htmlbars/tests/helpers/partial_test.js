@@ -1,16 +1,17 @@
-import EmberObject from "ember-runtime/system/object";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
-import jQuery from "ember-views/system/jquery";
+import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
+import jQuery from 'ember-views/system/jquery';
 var trim = jQuery.trim;
-import { Registry } from "ember-runtime/system/container";
-import compile from "ember-template-compiler/system/compile";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { Registry } from 'ember-runtime/system/container';
+import compile from 'ember-template-compiler/system/compile';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
 
-QUnit.module("Support for {{partial}} helper", {
+QUnit.module('Support for {{partial}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
@@ -24,7 +25,7 @@ QUnit.module("Support for {{partial}} helper", {
   }
 });
 
-QUnit.test("should render other templates registered with the container", function() {
+QUnit.test('should render other templates registered with the container', function() {
   registry.register('template:_subTemplateFromContainer', compile('sub-template'));
 
   view = EmberView.create({
@@ -34,11 +35,11 @@ QUnit.test("should render other templates registered with the container", functi
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "This sub-template is pretty great.");
+  equal(trim(view.$().text()), 'This sub-template is pretty great.');
 });
 
-QUnit.test("should render other slash-separated templates registered with the container", function() {
-  registry.register('template:child/_subTemplateFromContainer', compile("sub-template"));
+QUnit.test('should render other slash-separated templates registered with the container', function() {
+  registry.register('template:child/_subTemplateFromContainer', compile('sub-template'));
 
   view = EmberView.create({
     container: container,
@@ -47,11 +48,11 @@ QUnit.test("should render other slash-separated templates registered with the co
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "This sub-template is pretty great.");
+  equal(trim(view.$().text()), 'This sub-template is pretty great.');
 });
 
-QUnit.test("should use the current view's context", function() {
-  registry.register('template:_person_name', compile("{{firstName}} {{lastName}}"));
+QUnit.test('should use the current view\'s context', function() {
+  registry.register('template:_person_name', compile('{{firstName}} {{lastName}}'));
 
   view = EmberView.create({
     container: container,
@@ -64,12 +65,12 @@ QUnit.test("should use the current view's context", function() {
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "Who is Kris Selden?");
+  equal(trim(view.$().text()), 'Who is Kris Selden?');
 });
 
-QUnit.test("Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name", function() {
-  registry.register('template:_subTemplate', compile("sub-template"));
-  registry.register('template:_otherTemplate', compile("other-template"));
+QUnit.test('Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name', function() {
+  registry.register('template:_subTemplate', compile('sub-template'));
+  registry.register('template:_otherTemplate', compile('other-template'));
 
   view = EmberView.create({
     container: container,
@@ -79,17 +80,17 @@ QUnit.test("Quoteless parameters passed to {{template}} perform a bound property
 
   runAppend(view);
 
-  equal(trim(view.$().text()), "This sub-template is pretty great.");
+  equal(trim(view.$().text()), 'This sub-template is pretty great.');
 
   run(function() {
     view.set('partialName', 'otherTemplate');
   });
 
-  equal(trim(view.$().text()), "This other-template is pretty great.");
+  equal(trim(view.$().text()), 'This other-template is pretty great.');
 
   run(function() {
     view.set('partialName', null);
   });
 
-  equal(trim(view.$().text()), "This  is pretty great.");
+  equal(trim(view.$().text()), 'This  is pretty great.');
 });

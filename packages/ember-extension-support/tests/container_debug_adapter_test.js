@@ -1,7 +1,7 @@
-import run from "ember-metal/run_loop";
-import EmberController from "ember-runtime/controllers/controller";
-import "ember-extension-support"; // Must be required to export Ember.ContainerDebugAdapter
-import Application from "ember-application/system/application";
+import run from 'ember-metal/run_loop';
+import EmberController from 'ember-runtime/controllers/controller';
+import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter
+import Application from 'ember-application/system/application';
 
 var adapter, App;
 
@@ -10,7 +10,7 @@ function boot() {
   run(App, 'advanceReadiness');
 }
 
-QUnit.module("Container Debug Adapter", {
+QUnit.module('Container Debug Adapter', {
   setup() {
     run(function() {
       App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
@@ -32,21 +32,21 @@ QUnit.module("Container Debug Adapter", {
   }
 });
 
-QUnit.test("the default ContainerDebugAdapter cannot catalog certain entries by type", function() {
-  equal(adapter.canCatalogEntriesByType('model'), false, "canCatalogEntriesByType should return false for model");
-  equal(adapter.canCatalogEntriesByType('template'), false, "canCatalogEntriesByType should return false for template");
+QUnit.test('the default ContainerDebugAdapter cannot catalog certain entries by type', function() {
+  equal(adapter.canCatalogEntriesByType('model'), false, 'canCatalogEntriesByType should return false for model');
+  equal(adapter.canCatalogEntriesByType('template'), false, 'canCatalogEntriesByType should return false for template');
 });
 
-QUnit.test("the default ContainerDebugAdapter can catalog typical entries by type", function() {
-  equal(adapter.canCatalogEntriesByType('controller'), true, "canCatalogEntriesByType should return true for controller");
-  equal(adapter.canCatalogEntriesByType('route'), true, "canCatalogEntriesByType should return true for route");
-  equal(adapter.canCatalogEntriesByType('view'), true, "canCatalogEntriesByType should return true for view");
+QUnit.test('the default ContainerDebugAdapter can catalog typical entries by type', function() {
+  equal(adapter.canCatalogEntriesByType('controller'), true, 'canCatalogEntriesByType should return true for controller');
+  equal(adapter.canCatalogEntriesByType('route'), true, 'canCatalogEntriesByType should return true for route');
+  equal(adapter.canCatalogEntriesByType('view'), true, 'canCatalogEntriesByType should return true for view');
 });
 
-QUnit.test("the default ContainerDebugAdapter catalogs controller entries", function() {
+QUnit.test('the default ContainerDebugAdapter catalogs controller entries', function() {
   App.PostController = EmberController.extend();
   var controllerClasses = adapter.catalogEntriesByType('controller');
 
-  equal(controllerClasses.length, 1, "found 1 class");
-  equal(controllerClasses[0], 'post', "found the right class");
+  equal(controllerClasses.length, 1, 'found 1 class');
+  equal(controllerClasses[0], 'post', 'found the right class');
 });

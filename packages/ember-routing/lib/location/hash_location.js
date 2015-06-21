@@ -1,11 +1,11 @@
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import run from "ember-metal/run_loop";
-import { guidFor } from "ember-metal/utils";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import run from 'ember-metal/run_loop';
+import { guidFor } from 'ember-metal/utils';
 
-import EmberObject from "ember-runtime/system/object";
-import EmberLocation from "ember-routing/location/api";
+import EmberObject from 'ember-runtime/system/object';
+import EmberLocation from 'ember-routing/location/api';
 
 /**
 @module ember

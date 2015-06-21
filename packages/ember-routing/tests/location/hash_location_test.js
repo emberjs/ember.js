@@ -1,8 +1,8 @@
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { guidFor } from "ember-metal/utils";
-import run from "ember-metal/run_loop";
-import HashLocation from "ember-routing/location/hash_location";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { guidFor } from 'ember-metal/utils';
+import run from 'ember-metal/run_loop';
+import HashLocation from 'ember-routing/location/hash_location';
 
 var HashTestLocation, location;
 
@@ -32,7 +32,7 @@ function mockBrowserLocation(path) {
   };
 }
 
-QUnit.module("Ember.HashLocation", {
+QUnit.module('Ember.HashLocation', {
   setup() {
     HashTestLocation = HashLocation.extend({
       _location: {
@@ -54,7 +54,7 @@ QUnit.module("Ember.HashLocation", {
   }
 });
 
-QUnit.test("HashLocation.getURL() returns the current url", function() {
+QUnit.test('HashLocation.getURL() returns the current url', function() {
   expect(1);
 
   createLocation({
@@ -64,7 +64,7 @@ QUnit.test("HashLocation.getURL() returns the current url", function() {
   equal(location.getURL(), '/foo/bar');
 });
 
-QUnit.test("HashLocation.getURL() includes extra hashes", function() {
+QUnit.test('HashLocation.getURL() includes extra hashes', function() {
   expect(1);
 
   createLocation({
@@ -74,7 +74,7 @@ QUnit.test("HashLocation.getURL() includes extra hashes", function() {
   equal(location.getURL(), '/foo#bar#car');
 });
 
-QUnit.test("HashLocation.getURL() assumes location.hash without #/ prefix is not a route path", function() {
+QUnit.test('HashLocation.getURL() assumes location.hash without #/ prefix is not a route path', function() {
   expect(1);
 
   createLocation({
@@ -84,7 +84,7 @@ QUnit.test("HashLocation.getURL() assumes location.hash without #/ prefix is not
   equal(location.getURL(), '/#foo#bar');
 });
 
-QUnit.test("HashLocation.getURL() returns a normal forward slash when there is no location.hash", function() {
+QUnit.test('HashLocation.getURL() returns a normal forward slash when there is no location.hash', function() {
   expect(1);
 
   createLocation({
@@ -94,7 +94,7 @@ QUnit.test("HashLocation.getURL() returns a normal forward slash when there is n
   equal(location.getURL(), '/');
 });
 
-QUnit.test("HashLocation.setURL() correctly sets the url", function() {
+QUnit.test('HashLocation.setURL() correctly sets the url', function() {
   expect(2);
 
   createLocation();
@@ -105,7 +105,7 @@ QUnit.test("HashLocation.setURL() correctly sets the url", function() {
   equal(get(location, 'lastSetURL'), '/bar');
 });
 
-QUnit.test("HashLocation.replaceURL() correctly replaces to the path with a page reload", function() {
+QUnit.test('HashLocation.replaceURL() correctly replaces to the path with a page reload', function() {
   expect(2);
 
   createLocation({
@@ -121,7 +121,7 @@ QUnit.test("HashLocation.replaceURL() correctly replaces to the path with a page
   equal(get(location, 'lastSetURL'), '/foo');
 });
 
-QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", function() {
+QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', function() {
   expect(3);
 
   var oldJquery = Ember.$;
@@ -149,7 +149,7 @@ QUnit.test("HashLocation.onUpdateURL() registers a hashchange callback", functio
   Ember.$ = oldJquery;
 });
 
-QUnit.test("HashLocation.onUpdateURL callback executes as expected", function() {
+QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() {
   expect(1);
 
   createLocation({
@@ -165,7 +165,7 @@ QUnit.test("HashLocation.onUpdateURL callback executes as expected", function() 
   Ember.$(window).trigger('hashchange');
 });
 
-QUnit.test("HashLocation.onUpdateURL doesnt execute callback if lastSetURL === path", function() {
+QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL === path', function() {
   expect(0);
 
   createLocation({
@@ -184,7 +184,7 @@ QUnit.test("HashLocation.onUpdateURL doesnt execute callback if lastSetURL === p
   Ember.$(window).trigger('hashchange');
 });
 
-QUnit.test("HashLocation.formatURL() prepends a # to the provided string", function() {
+QUnit.test('HashLocation.formatURL() prepends a # to the provided string', function() {
   expect(1);
 
   createLocation();
@@ -192,7 +192,7 @@ QUnit.test("HashLocation.formatURL() prepends a # to the provided string", funct
   equal(location.formatURL('/foo#bar'), '#/foo#bar');
 });
 
-QUnit.test("HashLocation.willDestroy() cleans up hashchange event listener", function() {
+QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', function() {
   expect(2);
 
   var oldJquery = Ember.$;

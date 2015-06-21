@@ -1,9 +1,8 @@
-import Ember from "ember-metal/core";
-import emberRun from "ember-metal/run_loop";
-import create from 'ember-metal/platform/create';
-import RSVP from "ember-runtime/ext/rsvp";
-import setupForTesting from "ember-testing/setup_for_testing";
-import EmberApplication from "ember-application/system/application";
+import Ember from 'ember-metal/core';
+import emberRun from 'ember-metal/run_loop';
+import RSVP from 'ember-runtime/ext/rsvp';
+import setupForTesting from 'ember-testing/setup_for_testing';
+import EmberApplication from 'ember-application/system/application';
 
 /**
   @module ember
@@ -177,7 +176,7 @@ var Test = {
     @param {String} label An optional string for identifying the promise.
   */
   promise(resolver, label) {
-    var fullLabel = `Ember.Test.promise: ${label || "<Unknown Promise>"}`;
+    var fullLabel = `Ember.Test.promise: ${label || '<Unknown Promise>'}`;
     return new Test.Promise(resolver, fullLabel);
   },
 
@@ -480,7 +479,7 @@ Test.Promise = function() {
   Test.lastPromise = this;
 };
 
-Test.Promise.prototype = create(RSVP.Promise.prototype);
+Test.Promise.prototype = Object.create(RSVP.Promise.prototype);
 Test.Promise.prototype.constructor = Test.Promise;
 Test.Promise.resolve = Test.resolve;
 

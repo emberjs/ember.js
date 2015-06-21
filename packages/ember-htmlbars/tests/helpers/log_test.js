@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var originalLookup, originalLog, logCalls, lookup, view;
 

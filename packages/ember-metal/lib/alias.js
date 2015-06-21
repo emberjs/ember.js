@@ -1,21 +1,20 @@
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import Ember from "ember-metal/core"; // Ember.assert
-import EmberError from "ember-metal/error";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import Ember from 'ember-metal/core'; // Ember.assert
+import EmberError from 'ember-metal/error';
 import {
   Descriptor,
   defineProperty
-} from "ember-metal/properties";
-import { ComputedProperty } from "ember-metal/computed";
-import create from "ember-metal/platform/create";
+} from 'ember-metal/properties';
+import { ComputedProperty } from 'ember-metal/computed';
 import {
   meta,
   inspect
-} from "ember-metal/utils";
+} from 'ember-metal/utils';
 import {
   addDependentKeys,
   removeDependentKeys
-} from "ember-metal/dependent_keys";
+} from 'ember-metal/dependent_keys';
 
 export default function alias(altKey) {
   return new AliasedProperty(altKey);
@@ -27,7 +26,7 @@ export function AliasedProperty(altKey) {
   this._dependentKeys = [altKey];
 }
 
-AliasedProperty.prototype = create(Descriptor.prototype);
+AliasedProperty.prototype = Object.create(Descriptor.prototype);
 
 AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
   return get(obj, this.altKey);

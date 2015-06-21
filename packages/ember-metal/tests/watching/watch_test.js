@@ -1,12 +1,11 @@
 import Ember from 'ember-metal/core';
 import { testBoth } from 'ember-metal/tests/props_helper';
-import { indexOf } from 'ember-metal/enumerable_utils';
-import { addListener } from "ember-metal/events";
+import { addListener } from 'ember-metal/events';
 import {
   watch,
   unwatch,
   destroy
-} from "ember-metal/watching";
+} from 'ember-metal/watching';
 
 var willCount, didCount,
     willKeys, didKeys,
@@ -93,7 +92,7 @@ testBoth('watching a regular undefined property', function(get, set) {
 
 testBoth('watches should inherit', function(get, set) {
   var obj = { foo: 'baz' };
-  var objB = Ember.create(obj);
+  var objB = Object.create(obj);
 
   addListeners(obj, 'foo');
   watch(obj, 'foo');
@@ -105,7 +104,7 @@ testBoth('watches should inherit', function(get, set) {
   equal(didCount, 2, 'should have invoked didCount once only');
 });
 
-QUnit.test("watching an object THEN defining it should work also", function() {
+QUnit.test('watching an object THEN defining it should work also', function() {
   var obj = {};
   addListeners(obj, 'foo');
 
@@ -120,7 +119,7 @@ QUnit.test("watching an object THEN defining it should work also", function() {
 
 });
 
-QUnit.test("watching a chain then defining the property", function () {
+QUnit.test('watching a chain then defining the property', function () {
   var obj = {};
   var foo = { bar: 'bar' };
   addListeners(obj, 'foo.bar');
@@ -137,7 +136,7 @@ QUnit.test("watching a chain then defining the property", function () {
   equal(didCount, 2, 'should have invoked didChange twice');
 });
 
-QUnit.test("watching a chain then defining the nested property", function () {
+QUnit.test('watching a chain then defining the nested property', function () {
   var bar = {};
   var obj = { foo: bar };
   var baz = { baz: 'baz' };
@@ -206,14 +205,14 @@ QUnit.test('when watching a global object, destroy should remove chain watchers 
 
   var meta_Global = Ember.meta(Global);
   var chainNode = Ember.meta(obj).chains._chains.Global._chains.foo;
-  var index = indexOf(meta_Global.chainWatchers.foo, chainNode);
+  var index = meta_Global.chainWatchers.foo.indexOf(chainNode);
 
   equal(meta_Global.watching.foo, 1, 'should be watching foo');
   strictEqual(meta_Global.chainWatchers.foo[index], chainNode, 'should have chain watcher');
 
   destroy(obj);
 
-  index = indexOf(meta_Global.chainWatchers.foo, chainNode);
+  index = meta_Global.chainWatchers.foo.indexOf(chainNode);
   equal(meta_Global.watching.foo, 0, 'should not be watching foo');
   equal(index, -1, 'should not have chain watcher');
 
@@ -230,14 +229,14 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
 
   var meta_objB = Ember.meta(objB);
   var chainNode = Ember.meta(objA).chains._chains.b._chains.foo;
-  var index = indexOf(meta_objB.chainWatchers.foo, chainNode);
+  var index = meta_objB.chainWatchers.foo.indexOf(chainNode);
 
   equal(meta_objB.watching.foo, 1, 'should be watching foo');
   strictEqual(meta_objB.chainWatchers.foo[index], chainNode, 'should have chain watcher');
 
   destroy(objA);
 
-  index = indexOf(meta_objB.chainWatchers.foo, chainNode);
+  index = meta_objB.chainWatchers.foo.indexOf(chainNode);
   equal(meta_objB.watching.foo, 0, 'should not be watching foo');
   equal(index, -1, 'should not have chain watcher');
 });

@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // for Ember.A
 import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
-import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import EmberArray from 'ember-runtime/mixins/array';
@@ -25,7 +24,7 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
   },
 
   addObject(obj) {
-    if (indexOf(this._content, obj)>=0) {
+    if (this._content.indexOf(obj)>=0) {
       return this;
     }
 
@@ -70,44 +69,44 @@ EnumerableTests.extend({
 
 QUnit.module('Ember.Enumerable');
 
-QUnit.test("should apply Ember.Array to return value of map", function() {
-  var x = EmberObject.createWithMixins(Enumerable);
+QUnit.test('should apply Ember.Array to return value of map', function() {
+  var x = EmberObject.extend(Enumerable).create();
   var y = x.map(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of filter", function() {
-  var x = EmberObject.createWithMixins(Enumerable);
+QUnit.test('should apply Ember.Array to return value of filter', function() {
+  var x = EmberObject.extend(Enumerable).create();
   var y = x.filter(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of invoke", function() {
-  var x = EmberObject.createWithMixins(Enumerable);
+QUnit.test('should apply Ember.Array to return value of invoke', function() {
+  var x = EmberObject.extend(Enumerable).create();
   var y = x.invoke(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of toArray", function() {
-  var x = EmberObject.createWithMixins(Enumerable);
+QUnit.test('should apply Ember.Array to return value of toArray', function() {
+  var x = EmberObject.extend(Enumerable).create();
   var y = x.toArray(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of without", function() {
-  var x = EmberObject.createWithMixins(Enumerable, {
+QUnit.test('should apply Ember.Array to return value of without', function() {
+  var x = EmberObject.extend(Enumerable, {
     contains() {
       return true;
     }
-  });
+  }).create();
   var y = x.without(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
-QUnit.test("should apply Ember.Array to return value of uniq", function() {
-  var x = EmberObject.createWithMixins(Enumerable);
+QUnit.test('should apply Ember.Array to return value of uniq', function() {
+  var x = EmberObject.extend(Enumerable).create();
   var y = x.uniq(K);
-  equal(EmberArray.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
 
 QUnit.test('any', function() {
@@ -132,7 +131,7 @@ QUnit.test('any with NaN', function() {
     return isNaN(n);
   });
 
-  equal(hasNaN, true, "works when matching NaN");
+  equal(hasNaN, true, 'works when matching NaN');
 });
 
 QUnit.test('every', function() {
@@ -185,13 +184,14 @@ QUnit.module('mixins/enumerable/enumerableContentDidChange');
 
 QUnit.test('should notify observers of []', function() {
 
-  var obj = EmberObject.createWithMixins(Enumerable, {
+  var obj = EmberObject.extend(Enumerable, {
     nextObject() {}, // avoid exceptions
 
-    _count: 0,
     enumerablePropertyDidChange: emberObserver('[]', function() {
       this._count++;
     })
+  }).create({
+    _count: 0
   });
 
   equal(obj._count, 0, 'should not have invoked yet');
@@ -207,12 +207,12 @@ QUnit.test('should notify observers of []', function() {
 
 QUnit.module('notify observers of length', {
   setup() {
-    obj = DummyEnum.createWithMixins({
-      _after: 0,
+    obj = DummyEnum.extend({
       lengthDidChange: emberObserver('length', function() {
         this._after++;
       })
-
+    }).create({
+      _after: 0
     });
 
     equal(obj._after, 0, 'should not have fired yet');
@@ -280,10 +280,7 @@ QUnit.module('notify enumerable observers', {
   setup() {
     obj = DummyEnum.create();
 
-    observer = EmberObject.createWithMixins({
-      _before: null,
-      _after: null,
-
+    observer = EmberObject.extend({
       enumerableWillChange() {
         equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
@@ -293,6 +290,9 @@ QUnit.module('notify enumerable observers', {
         equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
+    }).create({
+      _before: null,
+      _after: null
     });
 
     obj.addEnumerableObserver(observer);

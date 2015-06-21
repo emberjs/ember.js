@@ -1,4 +1,4 @@
-import merge from "ember-metal/merge";
+import merge from 'ember-metal/merge';
 
 /**
   @module ember-metal

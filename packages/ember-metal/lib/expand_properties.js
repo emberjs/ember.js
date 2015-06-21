@@ -1,5 +1,4 @@
 import EmberError from 'ember-metal/error';
-import { forEach } from 'ember-metal/array';
 
 /**
 @module ember
@@ -43,13 +42,13 @@ export default function expandProperties(pattern, callback) {
     var parts = pattern.split(SPLIT_REGEX);
     var properties = [parts];
 
-    forEach.call(parts, function(part, index) {
+    parts.forEach((part, index) => {
       if (part.indexOf(',') >= 0) {
         properties = duplicateAndReplace(properties, part.split(','), index);
       }
     });
 
-    forEach.call(properties, function(property) {
+    properties.forEach((property) => {
       callback(property.join(''));
     });
   } else {
@@ -60,8 +59,8 @@ export default function expandProperties(pattern, callback) {
 function duplicateAndReplace(properties, currentParts, index) {
   var all = [];
 
-  forEach.call(properties, (property) => {
-    forEach.call(currentParts, (part) => {
+  properties.forEach((property) => {
+    currentParts.forEach((part) => {
       var current = property.slice(0);
       current[index] = part;
       all.push(current);

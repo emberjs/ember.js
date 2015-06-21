@@ -1,7 +1,8 @@
-import "ember";
-import isEnabled from "ember-metal/features";
+import 'ember';
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
-import EmberHandlebars from "ember-htmlbars/compat";
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
@@ -26,10 +27,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   setURL(path) {
     if (expectedReplaceURL) {
-      ok(false, "pushState occurred but a replaceState was expected");
+      ok(false, 'pushState occurred but a replaceState was expected');
     }
     if (expectedPushURL) {
-      equal(path, expectedPushURL, "an expected pushState occurred");
+      equal(path, expectedPushURL, 'an expected pushState occurred');
       expectedPushURL = null;
     }
     this.set('path', path);
@@ -37,10 +38,10 @@ var TestLocation = Ember.NoneLocation.extend({
 
   replaceURL(path) {
     if (expectedPushURL) {
-      ok(false, "replaceState occurred but a pushState was expected");
+      ok(false, 'replaceState occurred but a pushState was expected');
     }
     if (expectedReplaceURL) {
-      equal(path, expectedReplaceURL, "an expected replaceState occurred");
+      equal(path, expectedReplaceURL, 'an expected replaceState occurred');
       expectedReplaceURL = null;
     }
     this.set('path', path);
@@ -50,7 +51,7 @@ var TestLocation = Ember.NoneLocation.extend({
 function sharedSetup() {
   Ember.run(function() {
     App = Ember.Application.create({
-      name: "App",
+      name: 'App',
       rootElement: '#qunit-fixture'
     });
 
@@ -72,8 +73,8 @@ function sharedSetup() {
     App.LoadingRoute = Ember.Route.extend({
     });
 
-    Ember.TEMPLATES.application = compile("{{outlet}}");
-    Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
+    Ember.TEMPLATES.application = compile('{{outlet}}');
+    Ember.TEMPLATES.home = compile('<h3>Hours</h3>');
   });
 }
 
@@ -88,7 +89,7 @@ function sharedTeardown() {
 
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
-  QUnit.module("Query Params - overlapping query param property names when configured on the route", {
+  QUnit.module('Query Params - overlapping query param property names when configured on the route', {
     setup() {
       sharedSetup();
 
@@ -109,7 +110,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     }
   });
 
-  QUnit.test("can remap same-named qp props", function() {
+  QUnit.test('can remap same-named qp props', function() {
     App.ParentRoute = Ember.Route.extend({
       queryParams: {
         page: {
@@ -160,7 +161,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/parent/child');
   });
 
-  QUnit.test("query params in the same route hierarchy with the same url key get auto-scoped", function() {
+  QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
     App.ParentRoute = Ember.Route.extend({
       queryParams: {
         foo: {
@@ -182,10 +183,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var self = this;
     expectAssertion(function() {
       self.boot();
-    }, "You're not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: 'other-foo' }`");
+    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
   });
 } else {
-  QUnit.module("Query Params - overlapping query param property names", {
+  QUnit.module('Query Params - overlapping query param property names', {
     setup() {
       sharedSetup();
 
@@ -206,7 +207,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     }
   });
 
-  QUnit.test("can remap same-named qp props", function() {
+  QUnit.test('can remap same-named qp props', function() {
     App.ParentController = Ember.Controller.extend({
       queryParams: { page: 'parentPage' },
       page: 1
@@ -249,7 +250,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/parent/child');
   });
 
-  QUnit.test("query params in the same route hierarchy with the same url key get auto-scoped", function() {
+  QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
     App.ParentController = Ember.Controller.extend({
       queryParams: { foo: 'shared' },
       foo: 1
@@ -263,10 +264,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var self = this;
     expectAssertion(function() {
       self.boot();
-    }, "You're not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: 'other-foo' }`");
+    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
   });
 
-  QUnit.test("Support shared but overridable mixin pattern", function() {
+  QUnit.test('Support shared but overridable mixin pattern', function() {
 
     var HasPage = Ember.Mixin.create({
       queryParams: 'page',

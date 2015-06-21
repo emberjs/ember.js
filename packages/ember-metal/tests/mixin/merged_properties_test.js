@@ -1,8 +1,6 @@
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import {
-  mixin,
-  Mixin
-} from 'ember-metal/mixin';
+import { mixin, Mixin } from 'ember-metal/mixin';
 
 QUnit.module('Mixin mergedProperties');
 
@@ -53,7 +51,7 @@ QUnit.test('defining mergedProperties with null properties should keep propertie
   equal(get(obj, 'foo'), null);
 });
 
-QUnit.test("mergedProperties' properties can get overwritten", function() {
+QUnit.test('mergedProperties\' properties can get overwritten', function() {
 
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
@@ -87,11 +85,11 @@ QUnit.test('mergedProperties should be concatenated', function() {
 
   var obj = mixin({}, MixinA, MixinB, MixinC);
   deepEqual(get(obj, 'mergedProperties'), ['foo', 'bar'], 'get mergedProperties');
-  deepEqual(get(obj, 'foo'), { a: true, b: true, c: true, d: true, e: true, f: true }, "get foo");
-  deepEqual(get(obj, 'bar'), { a: true, l: true, e: true, x: true }, "get bar");
+  deepEqual(get(obj, 'foo'), { a: true, b: true, c: true, d: true, e: true, f: true }, 'get foo');
+  deepEqual(get(obj, 'bar'), { a: true, l: true, e: true, x: true }, 'get bar');
 });
 
-QUnit.test("mergedProperties should exist even if not explicitly set on create", function() {
+QUnit.test('mergedProperties should exist even if not explicitly set on create', function() {
 
   var AnObj = Ember.Object.extend({
     mergedProperties: ['options'],
@@ -109,11 +107,11 @@ QUnit.test("mergedProperties should exist even if not explicitly set on create",
     }
   });
 
-  equal(get(obj, "options").a, 'A');
-  equal(get(obj, "options").b.c, 'ccc');
+  equal(get(obj, 'options').a, 'A');
+  equal(get(obj, 'options').b.c, 'ccc');
 });
 
-QUnit.test("mergedProperties' overwriting methods can call _super", function() {
+QUnit.test('mergedProperties\' overwriting methods can call _super', function() {
 
   expect(4);
 
@@ -121,8 +119,8 @@ QUnit.test("mergedProperties' overwriting methods can call _super", function() {
     mergedProperties: ['foo'],
     foo: {
       meth(a) {
-        equal(a, "WOOT", "_super successfully called MixinA's `foo.meth` method");
-        return "WAT";
+        equal(a, 'WOOT', '_super successfully called MixinA\'s `foo.meth` method');
+        return 'WAT';
       }
     }
   });
@@ -130,7 +128,7 @@ QUnit.test("mergedProperties' overwriting methods can call _super", function() {
   var MixinB = Mixin.create({
     foo: {
       meth(a) {
-        ok(true, "MixinB's `foo.meth` method called");
+        ok(true, 'MixinB\'s `foo.meth` method called');
         return this._super.apply(this, arguments);
       }
     }
@@ -139,14 +137,14 @@ QUnit.test("mergedProperties' overwriting methods can call _super", function() {
   var MixinC = Mixin.create({
     foo: {
       meth(a) {
-        ok(true, "MixinC's `foo.meth` method called");
+        ok(true, 'MixinC\'s `foo.meth` method called');
         return this._super(a);
       }
     }
   });
 
   var obj = mixin({}, MixinA, MixinB, MixinC);
-  equal(obj.foo.meth("WOOT"), "WAT");
+  equal(obj.foo.meth('WOOT'), 'WAT');
 });
 
 QUnit.test('Merging an Array should raise an error', function() {
@@ -159,7 +157,7 @@ QUnit.test('Merging an Array should raise an error', function() {
   });
 
   var MixinB = Mixin.create({
-    foo: ["a"]
+    foo: ['a']
   });
 
   expectAssertion(function() {

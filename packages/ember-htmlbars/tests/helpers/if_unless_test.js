@@ -1,24 +1,24 @@
-import isEnabled from "ember-metal/features";
-import run from "ember-metal/run_loop";
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
 import Namespace from 'ember-runtime/system/namespace';
-import { Registry } from "ember-runtime/system/container";
-import EmberView from "ember-views/views/view";
-import ObjectProxy from "ember-runtime/system/object_proxy";
-import EmberObject from "ember-runtime/system/object";
-import compile from "ember-template-compiler/system/compile";
-import ArrayProxy from "ember-runtime/system/array_proxy";
+import { Registry } from 'ember-runtime/system/container';
+import EmberView from 'ember-views/views/view';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
+import EmberObject from 'ember-runtime/system/object';
+import compile from 'ember-template-compiler/system/compile';
+import ArrayProxy from 'ember-runtime/system/array_proxy';
 
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-runtime/utils';
-import { forEach } from 'ember-metal/enumerable_utils';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var originalLookup = Ember.lookup;
 
 var view, lookup, registry, container, TemplateTests;
 
-QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
+QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
   setup() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
@@ -38,7 +38,7 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
   }
 });
 
-QUnit.test("unless should keep the current context (#784) [DEPRECATED]", function() {
+QUnit.test('unless should keep the current context (#784) [DEPRECATED]', function() {
   view = EmberView.create({
     o: EmberObject.create({ foo: '42' }),
 
@@ -52,7 +52,7 @@ QUnit.test("unless should keep the current context (#784) [DEPRECATED]", functio
   equal(view.$().text(), 'foo: 42');
 });
 
-QUnit.test("The `if` helper tests for `isTruthy` if available", function() {
+QUnit.test('The `if` helper tests for `isTruthy` if available', function() {
   view = EmberView.create({
     truthy: EmberObject.create({ isTruthy: true }),
     falsy: EmberObject.create({ isTruthy: false }),
@@ -65,7 +65,7 @@ QUnit.test("The `if` helper tests for `isTruthy` if available", function() {
   equal(view.$().text(), 'Yep');
 });
 
-QUnit.test("The `if` helper does not error on undefined", function() {
+QUnit.test('The `if` helper does not error on undefined', function() {
   view = EmberView.create({
     undefinedValue: undefined,
     template: compile('{{#if view.undefinedValue}}Yep{{/if}}{{#unbound if view.undefinedValue}}Yep{{/unbound}}')
@@ -76,7 +76,7 @@ QUnit.test("The `if` helper does not error on undefined", function() {
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `unless` helper does not error on undefined", function() {
+QUnit.test('The `unless` helper does not error on undefined', function() {
   view = EmberView.create({
     undefinedValue: undefined,
     template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}{{#unbound unless view.undefinedValue}}YepUnbound{{/unbound}}')
@@ -87,7 +87,7 @@ QUnit.test("The `unless` helper does not error on undefined", function() {
   equal(view.$().text(), 'YepBoundYepUnbound');
 });
 
-QUnit.test("The `if` helper does not print the contents for an object proxy without content", function() {
+QUnit.test('The `if` helper does not print the contents for an object proxy without content', function() {
   view = EmberView.create({
     truthy: ObjectProxy.create({ content: {} }),
     falsy: ObjectProxy.create({ content: null }),
@@ -100,7 +100,7 @@ QUnit.test("The `if` helper does not print the contents for an object proxy with
   equal(view.$().text(), 'Yep');
 });
 
-QUnit.test("The `if` helper updates if an object proxy gains or loses context", function() {
+QUnit.test('The `if` helper updates if an object proxy gains or loses context', function() {
   view = EmberView.create({
     proxy: ObjectProxy.create({ content: null }),
 
@@ -149,15 +149,15 @@ function testIfArray(array) {
 
 }
 
-QUnit.test("The `if` helper updates if an array is empty or not", function() {
+QUnit.test('The `if` helper updates if an array is empty or not', function() {
   testIfArray(Ember.A());
 });
 
-QUnit.test("The `if` helper updates if an array-like object is empty or not", function() {
+QUnit.test('The `if` helper updates if an array-like object is empty or not', function() {
   testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
 });
 
-QUnit.test("The `unless` helper updates if an array-like object is empty or not", function() {
+QUnit.test('The `unless` helper updates if an array-like object is empty or not', function() {
   view = EmberView.create({
     array: ArrayProxy.create({ content: Ember.A([]) }),
 
@@ -181,7 +181,7 @@ QUnit.test("The `unless` helper updates if an array-like object is empty or not"
   equal(view.$().text(), 'Yep');
 });
 
-QUnit.test("The `if` helper updates when the value changes", function() {
+QUnit.test('The `if` helper updates when the value changes', function() {
   view = EmberView.create({
     conditional: true,
     template: compile('{{#if view.conditional}}Yep{{/if}}')
@@ -194,7 +194,7 @@ QUnit.test("The `if` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `unbound if` helper does not update when the value changes", function() {
+QUnit.test('The `unbound if` helper does not update when the value changes', function() {
   view = EmberView.create({
     conditional: true,
     template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
@@ -207,7 +207,7 @@ QUnit.test("The `unbound if` helper does not update when the value changes", fun
   equal(view.$().text(), 'Yep');
 });
 
-QUnit.test("The `unless` helper updates when the value changes", function() {
+QUnit.test('The `unless` helper updates when the value changes', function() {
   view = EmberView.create({
     conditional: false,
     template: compile('{{#unless view.conditional}}Nope{{/unless}}')
@@ -220,7 +220,7 @@ QUnit.test("The `unless` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-QUnit.test("The `unbound if` helper does not update when the value changes", function() {
+QUnit.test('The `unbound if` helper does not update when the value changes', function() {
   view = EmberView.create({
     conditional: false,
     template: compile('{{#unbound unless view.conditional}}Nope{{/unbound}}')
@@ -233,7 +233,7 @@ QUnit.test("The `unbound if` helper does not update when the value changes", fun
   equal(view.$().text(), 'Nope');
 });
 
-QUnit.test("The `unbound if` helper should work when its inverse is not present", function() {
+QUnit.test('The `unbound if` helper should work when its inverse is not present', function() {
   view = EmberView.create({
     conditional: false,
     template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
@@ -282,7 +282,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'onDrugs', val);
     });
@@ -336,7 +336,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -371,7 +371,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -389,7 +389,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 QUnit.test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
     template: compile('{{#if view.display}}{{view view.MyView}}{{/if}}'),
-    MyView: Ember.View.extend({
+    MyView: EmberView.extend({
       tagName: 'input'
     }),
     display: false
@@ -447,7 +447,7 @@ QUnit.test('should update the block when object passed to #unless helper changes
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'onDrugs', val);
     });
@@ -502,7 +502,7 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -537,7 +537,7 @@ QUnit.test('should update the block when object passed to #if helper changes and
 
   var tests = [false, null, undefined, [], '', 0];
 
-  forEach(tests, function(val) {
+  tests.forEach(function(val) {
     run(function() {
       set(view, 'inception', val);
     });
@@ -621,7 +621,7 @@ QUnit.test('edge case: rerender appearance of inner virtual view', function() {
 });
 
 if (isEnabled('ember-htmlbars-inline-if-helper')) {
-  QUnit.test("`if` helper with inline form: renders the second argument when conditional is truthy", function() {
+  QUnit.test('`if` helper with inline form: renders the second argument when conditional is truthy', function() {
     view = EmberView.create({
       conditional: true,
       template: compile('{{if view.conditional "truthy" "falsy"}}')
@@ -632,7 +632,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'truthy');
   });
 
-  QUnit.test("`if` helper with inline form: renders the third argument when conditional is falsy", function() {
+  QUnit.test('`if` helper with inline form: renders the third argument when conditional is falsy', function() {
     view = EmberView.create({
       conditional: false,
       template: compile('{{if view.conditional "truthy" "falsy"}}')
@@ -643,7 +643,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'falsy');
   });
 
-  QUnit.test("`if` helper with inline form: can omit the falsy argument", function() {
+  QUnit.test('`if` helper with inline form: can omit the falsy argument', function() {
     view = EmberView.create({
       conditional: true,
       template: compile('{{if view.conditional "truthy"}}')
@@ -654,7 +654,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'truthy');
   });
 
-  QUnit.test("`if` helper with inline form: can omit the falsy argument and renders nothing when conditional is falsy", function() {
+  QUnit.test('`if` helper with inline form: can omit the falsy argument and renders nothing when conditional is falsy', function() {
     view = EmberView.create({
       conditional: false,
       template: compile('{{if view.conditional "truthy"}}')
@@ -665,7 +665,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), '');
   });
 
-  QUnit.test("`if` helper with inline form: truthy and falsy arguments are changed if conditional changes", function() {
+  QUnit.test('`if` helper with inline form: truthy and falsy arguments are changed if conditional changes', function() {
     view = EmberView.create({
       conditional: true,
       template: compile('{{if view.conditional "truthy" "falsy"}}')
@@ -682,7 +682,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'falsy');
   });
 
-  QUnit.test("`if` helper with inline form: can use truthy param as binding", function() {
+  QUnit.test('`if` helper with inline form: can use truthy param as binding', function() {
     view = EmberView.create({
       truthy: 'ok',
       conditional: true,
@@ -700,7 +700,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'yes');
   });
 
-  QUnit.test("`if` helper with inline form: can use falsy param as binding", function() {
+  QUnit.test('`if` helper with inline form: can use falsy param as binding', function() {
     view = EmberView.create({
       truthy: 'ok',
       falsy: 'boom',
@@ -719,7 +719,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'no');
   });
 
-  QUnit.test("`if` helper with inline form: raises when using more than three arguments", function() {
+  QUnit.test('`if` helper with inline form: raises when using more than three arguments', function() {
     view = EmberView.create({
       conditional: true,
       template: compile('{{if one two three four}}')
@@ -730,7 +730,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
   });
 
-  QUnit.test("`if` helper with inline form: raises when using less than two arguments", function() {
+  QUnit.test('`if` helper with inline form: raises when using less than two arguments', function() {
     view = EmberView.create({
       conditional: true,
       template: compile('{{if one}}')
@@ -741,7 +741,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
   });
 
-  QUnit.test("`if` helper with inline form: works when used in a sub expression", function() {
+  QUnit.test('`if` helper with inline form: works when used in a sub expression', function() {
     view = EmberView.create({
       conditional: true,
       innerConditional: true,
@@ -753,7 +753,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'truthy');
   });
 
-  QUnit.test("`if` helper with inline form: updates if condition changes in a sub expression", function() {
+  QUnit.test('`if` helper with inline form: updates if condition changes in a sub expression', function() {
     view = EmberView.create({
       conditional: true,
       innerConditional: true,
@@ -771,11 +771,11 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'innerFalsy');
   });
 
-  QUnit.test("`if` helper with inline form: can use truthy param as binding in a sub expression", function() {
+  QUnit.test('`if` helper with inline form: can use truthy param as binding in a sub expression', function() {
     view = EmberView.create({
       conditional: true,
       innerConditional: true,
-      innerTruthy: "innerTruthy",
+      innerTruthy: 'innerTruthy',
       template: compile('{{if view.conditional (if view.innerConditional view.innerTruthy)}}')
     });
 
@@ -790,7 +790,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'innerOk');
   });
 
-  QUnit.test("`if` helper with inline form: respects isTruthy when object changes", function() {
+  QUnit.test('`if` helper with inline form: respects isTruthy when object changes', function() {
     view = EmberView.create({
       conditional: Ember.Object.create({ isTruthy: false }),
       template: compile('{{if view.conditional "truthy" "falsy"}}')
@@ -814,7 +814,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
-  QUnit.test("`if` helper with inline form: respects isTruthy when property changes", function() {
+  QUnit.test('`if` helper with inline form: respects isTruthy when property changes', function() {
     var candidate = Ember.Object.create({ isTruthy: false });
 
     view = EmberView.create({
@@ -840,7 +840,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
-  QUnit.test("`if` helper with inline form: respects length test when list content changes", function() {
+  QUnit.test('`if` helper with inline form: respects length test when list content changes', function() {
     var list = Ember.A();
 
     view = EmberView.create({
@@ -866,7 +866,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
-  QUnit.test("`if` helper with inline form: respects length test when list itself", function() {
+  QUnit.test('`if` helper with inline form: respects length test when list itself', function() {
     view = EmberView.create({
       conditional: [],
       template: compile('{{if view.conditional "truthy" "falsy"}}')
@@ -890,7 +890,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
 
   });
 
-  QUnit.test("`if` helper with inline form: updates when given a falsey second argument", function() {
+  QUnit.test('`if` helper with inline form: updates when given a falsey second argument', function() {
     view = EmberView.create({
       conditional: false,
       template: compile('{{if view.conditional "" "falsy"}}')

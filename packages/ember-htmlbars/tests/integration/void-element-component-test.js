@@ -1,9 +1,9 @@
-import EmberView from "ember-views/views/view";
-import { Registry } from "ember-runtime/system/container";
+import EmberView from 'ember-views/views/view';
+import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from "ember-views/views/component";
+import Component from 'ember-views/views/component';
 
 var registry, container, view;
 

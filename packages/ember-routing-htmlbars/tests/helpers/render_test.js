@@ -1,22 +1,21 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
-import { set } from "ember-metal/property_set";
-import run from "ember-metal/run_loop";
-import { canDefineNonEnumerableProperties } from 'ember-metal/platform/define_property';
+import { set } from 'ember-metal/property_set';
+import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
 
-import Namespace from "ember-runtime/system/namespace";
+import Namespace from 'ember-runtime/system/namespace';
 
-import EmberController from "ember-runtime/controllers/controller";
-import EmberArrayController from "ember-runtime/controllers/array_controller";
+import EmberController from 'ember-runtime/controllers/controller';
+import EmberArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 
-import compile from "ember-template-compiler/system/compile";
+import compile from 'ember-template-compiler/system/compile';
 
-import EmberView from "ember-views/views/view";
-import jQuery from "ember-views/system/jquery";
-import ActionManager from "ember-views/system/action_manager";
+import EmberView from 'ember-views/views/view';
+import jQuery from 'ember-views/system/jquery';
+import ActionManager from 'ember-views/system/action_manager';
 
-import { buildRegistry } from "ember-routing-htmlbars/tests/utils";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { buildRegistry } from 'ember-routing-htmlbars/tests/utils';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 function runSet(object, key, value) {
   run(function() {
@@ -26,7 +25,7 @@ function runSet(object, key, value) {
 
 var view, container;
 
-QUnit.module("ember-routing-htmlbars: {{render}} helper", {
+QUnit.module('ember-routing-htmlbars: {{render}} helper', {
   setup() {
     var namespace = Namespace.create();
     var registry = buildRegistry(namespace);
@@ -41,8 +40,8 @@ QUnit.module("ember-routing-htmlbars: {{render}} helper", {
   }
 });
 
-QUnit.test("{{render}} helper should render given template", function() {
-  var template = "<h1>HI</h1>{{render 'home'}}";
+QUnit.test('{{render}} helper should render given template', function() {
+  var template = '<h1>HI</h1>{{render \'home\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -50,7 +49,7 @@ QUnit.test("{{render}} helper should render given template", function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   runAppend(view);
 
@@ -60,8 +59,8 @@ QUnit.test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveComponentNode('home'), 'should register home as active view');
 });
 
-QUnit.test("{{render}} helper should render nested helpers", function() {
-  var template = "<h1>HI</h1>{{render 'foo'}}";
+QUnit.test('{{render}} helper should render nested helpers', function() {
+  var template = '<h1>HI</h1>{{render \'foo\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -69,17 +68,17 @@ QUnit.test("{{render}} helper should render nested helpers", function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['foo'] = compile("<p>FOO</p>{{render 'bar'}}");
-  Ember.TEMPLATES['bar'] = compile("<p>BAR</p>{{render 'baz'}}");
-  Ember.TEMPLATES['baz'] = compile("<p>BAZ</p>");
+  Ember.TEMPLATES['foo'] = compile('<p>FOO</p>{{render \'bar\'}}');
+  Ember.TEMPLATES['bar'] = compile('<p>BAR</p>{{render \'baz\'}}');
+  Ember.TEMPLATES['baz'] = compile('<p>BAZ</p>');
 
   runAppend(view);
 
   equal(view.$().text(), 'HIFOOBARBAZ');
 });
 
-QUnit.test("{{render}} helper should have assertion if neither template nor view exists", function() {
-  var template = "<h1>HI</h1>{{render 'oops'}}";
+QUnit.test('{{render}} helper should have assertion if neither template nor view exists', function() {
+  var template = '<h1>HI</h1>{{render \'oops\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -92,8 +91,8 @@ QUnit.test("{{render}} helper should have assertion if neither template nor view
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
 });
 
-QUnit.test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
-  var template = "<h1>HI</h1>{{#render 'good'}} {{name}}{{/render}}";
+QUnit.test('{{render}} helper should not have assertion if template is supplied in block-form', function() {
+  var template = '<h1>HI</h1>{{#render \'good\'}} {{name}}{{/render}}';
   var controller = EmberController.extend({ container: container });
   container._registry.register('controller:good', EmberController.extend({ name: 'Rob' }));
   view = EmberView.create({
@@ -107,8 +106,8 @@ QUnit.test("{{render}} helper should not have assertion if template is supplied 
   equal(view.$().text(), 'HI Rob');
 });
 
-QUnit.test("{{render}} helper should not have assertion if view exists without a template", function() {
-  var template = "<h1>HI</h1>{{render 'oops'}}";
+QUnit.test('{{render}} helper should not have assertion if view exists without a template', function() {
+  var template = '<h1>HI</h1>{{render \'oops\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -123,10 +122,10 @@ QUnit.test("{{render}} helper should not have assertion if view exists without a
   equal(view.$().text(), 'HI');
 });
 
-QUnit.test("{{render}} helper should render given template with a supplied model", function() {
-  var template = "<h1>HI</h1>{{render 'post' post}}";
+QUnit.test('{{render}} helper should render given template with a supplied model', function() {
+  var template = '<h1>HI</h1>{{render \'post\' post}}';
   var post = {
-    title: "Rails is omakase"
+    title: 'Rails is omakase'
   };
 
   var Controller = EmberController.extend({
@@ -152,27 +151,23 @@ QUnit.test("{{render}} helper should render given template with a supplied model
   });
   container._registry.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
 
   runAppend(view);
 
   equal(view.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);
 
-  runSet(controller, 'post', { title: "Rails is unagi" });
+  runSet(controller, 'post', { title: 'Rails is unagi' });
 
   equal(view.$().text(), 'HIRails is unagi');
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController.get('model'), { title: "Rails is unagi" });
-  } else {
-    equal(postController.get('model').title, "Rails is unagi");
-  }
+  deepEqual(postController.get('model'), { title: 'Rails is unagi' });
 });
 
-QUnit.test("{{render}} helper with a supplied model should not fire observers on the controller", function () {
-  var template = "<h1>HI</h1>{{render 'post' post}}";
+QUnit.test('{{render}} helper with a supplied model should not fire observers on the controller', function () {
+  var template = '<h1>HI</h1>{{render \'post\' post}}';
   var post = {
-    title: "Rails is omakase"
+    title: 'Rails is omakase'
   };
 
   view = EmberView.create({
@@ -192,15 +187,15 @@ QUnit.test("{{render}} helper with a supplied model should not fire observers on
 
   container._registry.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
 
   var modelDidChange = 0;
   runAppend(view);
-  equal(modelDidChange, 0, "model observer did not fire");
+  equal(modelDidChange, 0, 'model observer did not fire');
 
 });
 
-QUnit.test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
+QUnit.test('{{render}} helper should raise an error when a given controller name does not resolve to a controller', function() {
   var template = '<h1>HI</h1>{{render "home" controller="postss"}}';
   var controller = EmberController.extend({ container: container });
   container._registry.register('controller:posts', EmberArrayController.extend());
@@ -210,14 +205,15 @@ QUnit.test("{{render}} helper should raise an error when a given controller name
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   expectAssertion(function() {
     runAppend(view);
   }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });
 
-QUnit.test("{{render}} helper should render with given controller", function() {
+QUnit.test('{{render}} helper should render with given controller', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var template = '{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
   var id = 0;
@@ -233,7 +229,7 @@ QUnit.test("{{render}} helper should render with given controller", function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("{{uniqueId}}");
+  Ember.TEMPLATES['home'] = compile('{{uniqueId}}');
 
   runAppend(view);
 
@@ -242,8 +238,8 @@ QUnit.test("{{render}} helper should render with given controller", function() {
   equal(uniqueId, view.$().html(), 'rendered with singleton controller');
 });
 
-QUnit.test("{{render}} helper should render a template without a model only once", function() {
-  var template = "<h1>HI</h1>{{render 'home'}}<hr/>{{render 'home'}}";
+QUnit.test('{{render}} helper should render a template without a model only once', function() {
+  var template = '<h1>HI</h1>{{render \'home\'}}<hr/>{{render \'home\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -251,20 +247,20 @@ QUnit.test("{{render}} helper should render a template without a model only once
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   expectAssertion(function() {
     runAppend(view);
   }, /\{\{render\}\} helper once/i);
 });
 
-QUnit.test("{{render}} helper should render templates with models multiple times", function() {
-  var template = "<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}";
+QUnit.test('{{render}} helper should render templates with models multiple times', function() {
+  var template = '<h1>HI</h1> {{render \'post\' post1}} {{render \'post\' post2}}';
   var post1 = {
-    title: "Me first"
+    title: 'Me first'
   };
   var post2 = {
-    title: "Then me"
+    title: 'Then me'
   };
 
   var Controller = EmberController.extend({
@@ -294,7 +290,7 @@ QUnit.test("{{render}} helper should render templates with models multiple times
   });
   container._registry.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
 
   runAppend(view);
 
@@ -302,20 +298,16 @@ QUnit.test("{{render}} helper should render templates with models multiple times
   equal(postController1.get('model'), post1);
   equal(postController2.get('model'), post2);
 
-  runSet(controller, 'post1', { title: "I am new" });
+  runSet(controller, 'post1', { title: 'I am new' });
 
   ok(view.$().text().match(/^HI ?I am new ?Then me$/));
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController1.get('model'), { title: "I am new" });
-  } else {
-    equal(postController1.get('model').title, "I am new");
-  }
+  deepEqual(postController1.get('model'), { title: 'I am new' });
 });
 
-QUnit.test("{{render}} helper should not leak controllers", function() {
-  var template = "<h1>HI</h1> {{render 'post' post1}}";
+QUnit.test('{{render}} helper should not leak controllers', function() {
+  var template = '<h1>HI</h1> {{render \'post\' post1}}';
   var post1 = {
-    title: "Me first"
+    title: 'Me first'
   };
 
   var Controller = EmberController.extend({
@@ -340,7 +332,7 @@ QUnit.test("{{render}} helper should not leak controllers", function() {
   });
   container._registry.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
 
   runAppend(view);
 
@@ -349,12 +341,12 @@ QUnit.test("{{render}} helper should not leak controllers", function() {
   ok(postController.isDestroyed, 'expected postController to be destroyed');
 });
 
-QUnit.test("{{render}} helper should not treat invocations with falsy contexts as context-less", function() {
-  var template = "<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}";
+QUnit.test('{{render}} helper should not treat invocations with falsy contexts as context-less', function() {
+  var template = '<h1>HI</h1> {{render \'post\' zero}} {{render \'post\' nonexistent}}';
 
   view = EmberView.create({
     container: container,
-    controller: EmberController.createWithMixins({
+    controller: EmberController.create({
       container: container,
       zero: false
     }),
@@ -374,7 +366,7 @@ QUnit.test("{{render}} helper should not treat invocations with falsy contexts a
   });
   container._registry.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile("<p>{{#unless model}}NOTHING{{/unless}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>{{#unless model}}NOTHING{{/unless}}</p>');
 
   runAppend(view);
 
@@ -383,10 +375,10 @@ QUnit.test("{{render}} helper should not treat invocations with falsy contexts a
   equal(postController2.get('model'), undefined);
 });
 
-QUnit.test("{{render}} helper should render templates both with and without models", function() {
-  var template = "<h1>HI</h1> {{render 'post'}} {{render 'post' post}}";
+QUnit.test('{{render}} helper should render templates both with and without models', function() {
+  var template = '<h1>HI</h1> {{render \'post\'}} {{render \'post\' post}}';
   var post = {
-    title: "Rails is omakase"
+    title: 'Rails is omakase'
   };
 
   var Controller = EmberController.extend({
@@ -415,7 +407,7 @@ QUnit.test("{{render}} helper should render templates both with and without mode
   });
   container._registry.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile("<p>Title:{{model.title}}</p>");
+  Ember.TEMPLATES['post'] = compile('<p>Title:{{model.title}}</p>');
 
   runAppend(view);
 
@@ -423,17 +415,14 @@ QUnit.test("{{render}} helper should render templates both with and without mode
   equal(postController1.get('model'), null);
   equal(postController2.get('model'), post);
 
-  runSet(controller, 'post', { title: "Rails is unagi" });
+  runSet(controller, 'post', { title: 'Rails is unagi' });
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
-  if (canDefineNonEnumerableProperties) {
-    deepEqual(postController2.get('model'), { title: "Rails is unagi" });
-  } else {
-    equal(postController2.get('model').title, "Rails is unagi");
-  }
+  deepEqual(postController2.get('model'), { title: 'Rails is unagi' });
 });
 
-QUnit.test("{{render}} helper should link child controllers to the parent controller", function() {
+QUnit.test('{{render}} helper should link child controllers to the parent controller', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var parentTriggered = 0;
 
   var template = '<h1>HI</h1>{{render "posts"}}';
@@ -444,7 +433,7 @@ QUnit.test("{{render}} helper should link child controllers to the parent contro
         parentTriggered++;
       }
     },
-    role: "Mom"
+    role: 'Mom'
   });
 
   container._registry.register('controller:posts', EmberArrayController.extend());
@@ -459,30 +448,30 @@ QUnit.test("{{render}} helper should link child controllers to the parent contro
 
   runAppend(view);
 
-  var button = jQuery("#parent-action");
+  var button = jQuery('#parent-action');
   var actionId = button.data('ember-action');
   var [ action ] = ActionManager.registeredActions[actionId];
   var handler = action.handler;
 
-  equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
+  equal(button.text(), 'Go to Mom', 'The parentController property is set on the child controller');
 
-  run(null, handler, new jQuery.Event("click"));
+  run(null, handler, new jQuery.Event('click'));
 
-  equal(parentTriggered, 1, "The event bubbled to the parent");
+  equal(parentTriggered, 1, 'The event bubbled to the parent');
 });
 
-QUnit.test("{{render}} helper should be able to render a template again when it was removed", function() {
+QUnit.test('{{render}} helper should be able to render a template again when it was removed', function() {
   var controller = EmberController.extend({ container: container });
   var CoreOutlet = container.lookupFactory('view:core-outlet');
   view = CoreOutlet.create({
     container: container
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   var liveRoutes = {
     render: {
-      template: compile("<h1>HI</h1>{{outlet}}")
+      template: compile('<h1>HI</h1>{{outlet}}')
     },
     outlets: {}
   };
@@ -491,7 +480,7 @@ QUnit.test("{{render}} helper should be able to render a template again when it 
     liveRoutes.outlets.main = {
       render: {
         controller: controller.create(),
-        template: compile("<div>1{{render 'home'}}</div>")
+        template: compile('<div>1{{render \'home\'}}</div>')
       }
     };
     view.setOutletState(liveRoutes);
@@ -504,7 +493,7 @@ QUnit.test("{{render}} helper should be able to render a template again when it 
     liveRoutes.outlets.main = {
       render: {
         controller: controller.create(),
-        template: compile("<div>2{{render 'home'}}</div>")
+        template: compile('<div>2{{render \'home\'}}</div>')
       }
     };
     view.setOutletState(liveRoutes);
@@ -513,7 +502,7 @@ QUnit.test("{{render}} helper should be able to render a template again when it 
   equal(view.$().text(), 'HI2BYE');
 });
 
-QUnit.test("{{render}} works with dot notation", function() {
+QUnit.test('{{render}} works with dot notation', function() {
   var template = '{{render "blog.post"}}';
 
   var ContextController = EmberController.extend({ container: container });
@@ -535,7 +524,7 @@ QUnit.test("{{render}} works with dot notation", function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['blog.post'] = compile("{{uniqueId}}");
+  Ember.TEMPLATES['blog.post'] = compile('{{uniqueId}}');
 
   runAppend(view);
 
@@ -543,7 +532,7 @@ QUnit.test("{{render}} works with dot notation", function() {
   equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
 });
 
-QUnit.test("{{render}} works with slash notation", function() {
+QUnit.test('{{render}} works with slash notation', function() {
   var template = '{{render "blog/post"}}';
 
   var ContextController = EmberController.extend({ container: container });
@@ -565,7 +554,7 @@ QUnit.test("{{render}} works with slash notation", function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['blog.post'] = compile("{{uniqueId}}");
+  Ember.TEMPLATES['blog.post'] = compile('{{uniqueId}}');
 
   runAppend(view);
 
@@ -573,7 +562,7 @@ QUnit.test("{{render}} works with slash notation", function() {
   equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
 });
 
-QUnit.test("throws an assertion if {{render}} is called with an unquoted template name", function() {
+QUnit.test('throws an assertion if {{render}} is called with an unquoted template name', function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -582,14 +571,14 @@ QUnit.test("throws an assertion if {{render}} is called with an unquoted templat
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   expectAssertion(function() {
     runAppend(view);
-  }, "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.");
+  }, 'The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.');
 });
 
-QUnit.test("throws an assertion if {{render}} is called with a literal for a model", function() {
+QUnit.test('throws an assertion if {{render}} is called with a literal for a model', function() {
   var template = '<h1>HI</h1>{{render "home" "model"}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
@@ -598,15 +587,15 @@ QUnit.test("throws an assertion if {{render}} is called with a literal for a mod
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
 
   expectAssertion(function() {
     runAppend(view);
-  }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
+  }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
 });
 
-QUnit.test("{{render}} helper should let view provide its own template", function() {
-  var template = "{{render 'fish'}}";
+QUnit.test('{{render}} helper should let view provide its own template', function() {
+  var template = '{{render \'fish\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,
@@ -626,8 +615,8 @@ QUnit.test("{{render}} helper should let view provide its own template", functio
   equal(view.$().text(), 'Hello other!');
 });
 
-QUnit.test("{{render}} helper should not require view to provide its own template", function() {
-  var template = "{{render 'fish'}}";
+QUnit.test('{{render}} helper should not require view to provide its own template', function() {
+  var template = '{{render \'fish\'}}';
   var controller = EmberController.extend({ container: container });
   view = EmberView.create({
     container: container,

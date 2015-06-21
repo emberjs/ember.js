@@ -6,19 +6,14 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
 import {
-  isArray,
   guidFor
 } from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
-import {
-  forEach
-} from 'ember-metal/enumerable_utils';
 import run from 'ember-metal/run_loop';
 import { addObserver } from 'ember-metal/observer';
 import { arrayComputed } from 'ember-runtime/computed/array_computed';
 import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
-import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
 
 var a_slice = [].slice;
@@ -36,6 +31,7 @@ var a_slice = [].slice;
 */
 export function sum(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
     initialValue: 0,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -84,6 +80,7 @@ export function sum(dependentKey) {
 */
 export function max(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
     initialValue: -Infinity,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -134,6 +131,8 @@ export function max(dependentKey) {
 */
 export function min(dependentKey) {
   return reduceComputed(dependentKey, {
+    _suppressDeprecation: true,
+
     initialValue: Infinity,
 
     addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
@@ -183,7 +182,12 @@ export function min(dependentKey) {
   @public
 */
 export function map(dependentKey, callback) {
+  Ember.assert('Ember.computed.map expects a callback function for its second argument, ' +
+    'perhaps you meant to use "mapBy"', typeof callback === 'function');
+
   var options = {
+    _suppressDeprecation: true,
+
     addedItem(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item, changeMeta.index);
       array.insertAt(changeMeta.index, mapped);
@@ -229,6 +233,9 @@ export function map(dependentKey, callback) {
   @public
 */
 export function mapBy(dependentKey, propertyKey) {
+  Ember.assert('Ember.computed.mapBy expects a property string for its second argument, ' +
+    'perhaps you meant to use "map"', typeof propertyKey === 'string');
+
   var callback = function(item) { return get(item, propertyKey); };
   return map(dependentKey + '.@each.' + propertyKey, callback);
 }
@@ -282,6 +289,8 @@ export var mapProperty = mapBy;
 */
 export function filter(dependentKey, callback) {
   var options = {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new SubArray();
     },
@@ -399,6 +408,8 @@ export function uniq() {
   var args = a_slice.call(arguments);
 
   args.push({
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
@@ -449,10 +460,11 @@ export var union = uniq;
   Example
 
   ```javascript
-  var obj = Ember.Object.createWithMixins({
-    adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
-    charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock'],
+  var obj = Ember.Object.extend({
     friendsInCommon: Ember.computed.intersect('adaFriends', 'charlesFriends')
+  }).create({
+    adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
+    charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
   });
 
   obj.get('friendsInCommon'); // ['William King', 'Mary Somerville']
@@ -469,6 +481,8 @@ export function intersect() {
   var args = a_slice.call(arguments);
 
   args.push({
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.itemCounts = {};
     },
@@ -488,7 +502,7 @@ export function intersect() {
       }
 
       if (++itemCounts[itemGuid][dependentGuid] === 1 &&
-          numberOfDependentArrays === keys(itemCounts[itemGuid]).length) {
+          numberOfDependentArrays === Object.keys(itemCounts[itemGuid]).length) {
         array.addObject(item);
       }
 
@@ -507,7 +521,7 @@ export function intersect() {
 
       if (--itemCounts[itemGuid][dependentGuid] === 0) {
         delete itemCounts[itemGuid][dependentGuid];
-        numberOfArraysItemAppearsIn = keys(itemCounts[itemGuid]).length;
+        numberOfArraysItemAppearsIn = Object.keys(itemCounts[itemGuid]).length;
 
         if (numberOfArraysItemAppearsIn === 0) {
           delete itemCounts[itemGuid];
@@ -561,6 +575,8 @@ export function setDiff(setAProperty, setBProperty) {
   }
 
   return arrayComputed(setAProperty, setBProperty, {
+    _suppressDeprecation: true,
+
     addedItem(array, item, changeMeta, instanceMeta) {
       var setA = get(this, setAProperty);
       var setB = get(this, setBProperty);
@@ -713,6 +729,8 @@ export function sort(itemsKey, sortDefinition) {
 
 function customSort(itemsKey, comparator) {
   return arrayComputed(itemsKey, {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       instanceMeta.order = comparator;
       instanceMeta.binarySearch = binarySearch;
@@ -750,6 +768,8 @@ function customSort(itemsKey, comparator) {
 
 function propertySort(itemsKey, sortPropertiesKey) {
   return arrayComputed(itemsKey, {
+    _suppressDeprecation: true,
+
     initialize(array, changeMeta, instanceMeta) {
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey);
@@ -758,11 +778,11 @@ function propertySort(itemsKey, sortPropertiesKey) {
         var sortProperty, idx, asc;
 
         Ember.assert('Cannot sort: \'' + sortPropertiesKey + '\' is not an array.',
-                     isArray(sortPropertyDefinitions));
+                     Array.isArray(sortPropertyDefinitions));
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 
-        forEach(sortPropertyDefinitions, function (sortPropertyDefinition) {
+        sortPropertyDefinitions.forEach(function (sortPropertyDefinition) {
           if ((idx = sortPropertyDefinition.indexOf(':')) !== -1) {
             sortProperty = sortPropertyDefinition.substring(0, idx);
             asc = sortPropertyDefinition.substring(idx+1).toLowerCase() !== 'desc';

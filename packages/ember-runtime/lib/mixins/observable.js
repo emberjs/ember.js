@@ -2,31 +2,31 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
 
 import {
   get,
   getWithDefault
-} from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import getProperties from "ember-metal/get_properties";
-import setProperties from "ember-metal/set_properties";
-import { Mixin } from "ember-metal/mixin";
-import { hasListeners } from "ember-metal/events";
+} from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import getProperties from 'ember-metal/get_properties';
+import setProperties from 'ember-metal/set_properties';
+import { Mixin } from 'ember-metal/mixin';
+import { hasListeners } from 'ember-metal/events';
 import {
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
   endPropertyChanges
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 import {
   addObserver,
   addBeforeObserver,
   removeObserver,
   observersFor
-} from "ember-metal/observer";
-import { cacheFor } from "ember-metal/computed";
-import isNone from "ember-metal/is_none";
+} from 'ember-metal/observer';
+import { cacheFor } from 'ember-metal/computed';
+import isNone from 'ember-metal/is_none';
 
 /**
   ## Overview
@@ -198,24 +198,14 @@ export default Mixin.create({
     another object) will be placed in a queue and called at a later time in a
     coalesced manner.
 
-    ### Chaining
-
-    In addition to property changes, `set()` returns the value of the object
-    itself so you can do chaining like this:
-
-    ```javascript
-    record.set('firstName', 'Charles').set('lastName', 'Jolley');
-    ```
-
     @method set
     @param {String} keyName The property to set
     @param {Object} value The value to set or `null`.
-    @return {Ember.Observable}
+    @return {Object} The passed value
     @public
   */
   set(keyName, value) {
-    set(this, keyName, value);
-    return this;
+    return set(this, keyName, value);
   },
 
 
@@ -230,7 +220,7 @@ export default Mixin.create({
 
     @method setProperties
     @param {Object} hash the hash of keys and values to set
-    @return {Ember.Observable}
+    @return {Object} The passed in hash
     @public
   */
   setProperties(hash) {
@@ -460,9 +450,8 @@ export default Mixin.create({
   */
   incrementProperty(keyName, increment) {
     if (isNone(increment)) { increment = 1; }
-    Ember.assert("Must pass a numeric value to incrementProperty", (!isNaN(parseFloat(increment)) && isFinite(increment)));
-    set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
-    return get(this, keyName);
+    Ember.assert('Must pass a numeric value to incrementProperty', (!isNaN(parseFloat(increment)) && isFinite(increment)));
+    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
   },
 
   /**
@@ -481,9 +470,8 @@ export default Mixin.create({
   */
   decrementProperty(keyName, decrement) {
     if (isNone(decrement)) { decrement = 1; }
-    Ember.assert("Must pass a numeric value to decrementProperty", (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
-    set(this, keyName, (get(this, keyName) || 0) - decrement);
-    return get(this, keyName);
+    Ember.assert('Must pass a numeric value to decrementProperty', (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
+    return set(this, keyName, (get(this, keyName) || 0) - decrement);
   },
 
   /**
@@ -496,12 +484,11 @@ export default Mixin.create({
 
     @method toggleProperty
     @param {String} keyName The name of the property to toggle
-    @return {Object} The new property value
+    @return {Boolean} The new property value
     @public
   */
   toggleProperty(keyName) {
-    set(this, keyName, !get(this, keyName));
-    return get(this, keyName);
+    return set(this, keyName, !get(this, keyName));
   },
 
   /**

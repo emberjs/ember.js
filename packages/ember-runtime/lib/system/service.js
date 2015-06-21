@@ -1,4 +1,4 @@
-import Object from "ember-runtime/system/object";
+import Object from 'ember-runtime/system/object';
 import { createInjectionHelper } from 'ember-runtime/inject';
 
 

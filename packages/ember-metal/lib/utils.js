@@ -1,16 +1,10 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-"REMOVE_USE_STRICT: true";
+'REMOVE_USE_STRICT: true';
 
-import Ember from "ember-metal/core";
-import isEnabled from "ember-metal/features";
-import o_create from 'ember-metal/platform/create';
-import {
-  hasPropertyAccessors,
-  defineProperty as o_defineProperty,
-  canDefineNonEnumerableProperties
-} from 'ember-metal/platform/define_property';
+import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember-metal
@@ -201,7 +195,7 @@ export function generateGuid(obj, prefix) {
       if (obj.__defineNonEnumerable) {
         obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
       } else {
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
       }
     }
   }
@@ -226,11 +220,11 @@ export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
-    return "(undefined)";
+    return '(undefined)';
   }
 
   if (obj === null) {
-    return "(null)";
+    return '(null)';
   }
 
   var ret;
@@ -282,7 +276,7 @@ export function guidFor(obj) {
         if (obj.__defineNonEnumerable) {
           obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
         } else {
-          o_defineProperty(obj, GUID_KEY, GUID_DESC);
+          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
         }
       }
       return ret;
@@ -310,25 +304,11 @@ Meta.prototype = {
   chainWatchers: null // FIXME
 };
 
-if (!canDefineNonEnumerableProperties) {
-  // on platforms that don't support enumerable false
-  // make meta fail jQuery.isPlainObject() to hide from
-  // jQuery.extend() by having a property that fails
-  // hasOwnProperty check.
-  Meta.prototype.__preventPlainObject__ = true;
-
-  // Without non-enumerable properties, meta objects will be output in JSON
-  // unless explicitly suppressed
-  Meta.prototype.toJSON = function() { };
-}
-
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
 
 if (isEnabled('mandatory-setter')) {
-  if (hasPropertyAccessors) {
-    EMPTY_META.values = {};
-  }
+  EMPTY_META.values = {};
 }
 
 /**
@@ -356,20 +336,16 @@ function meta(obj, writable) {
   }
 
   if (!ret) {
-    if (canDefineNonEnumerableProperties) {
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-      } else {
-        o_defineProperty(obj, '__ember_meta__', META_DESC);
-      }
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
 
     ret = new Meta(obj);
 
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = {};
-      }
+      ret.values = {};
     }
 
     obj.__ember_meta__ = ret;
@@ -377,19 +353,17 @@ function meta(obj, writable) {
     if (obj.__defineNonEnumerable) {
       obj.__defineNonEnumerable(EMBER_META_PROPERTY);
     } else {
-      o_defineProperty(obj, '__ember_meta__', META_DESC);
+      Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
 
-    ret = o_create(ret);
-    ret.watching  = o_create(ret.watching);
+    ret = Object.create(ret);
+    ret.watching  = Object.create(ret.watching);
     ret.cache     = undefined;
     ret.cacheMeta = undefined;
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {
-      if (hasPropertyAccessors) {
-        ret.values = o_create(ret.values);
-      }
+      ret.values = Object.create(ret.values);
     }
 
     obj['__ember_meta__'] = ret;
@@ -442,7 +416,7 @@ export function setMeta(obj, property, value) {
     shared with its constructor
 */
 export function metaPath(obj, path, writable) {
-  Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
+  Ember.deprecate('Ember.metaPath is deprecated and will be removed from future releases.');
   var _meta = meta(obj, writable);
   var keyName, value;
 
@@ -455,7 +429,7 @@ export function metaPath(obj, path, writable) {
       value = _meta[keyName] = { __ember_source__: obj };
     } else if (value.__ember_source__ !== obj) {
       if (!writable) { return undefined; }
-      value = _meta[keyName] = o_create(value);
+      value = _meta[keyName] = Object.create(value);
       value.__ember_source__ = obj;
     }
 
@@ -648,7 +622,7 @@ if (needsFinallyFix) {
 }
 
 var deprecatedTryFinally = function() {
-  Ember.deprecate("tryFinally is deprecated. Please use JavaScript's native try/finally.", false);
+  Ember.deprecate('tryFinally is deprecated. Please use JavaScript\'s native try/finally.', false);
   return tryFinally.apply(this, arguments);
 };
 
@@ -735,7 +709,7 @@ if (needsFinallyFix) {
 }
 
 var deprecatedTryCatchFinally = function() {
-  Ember.deprecate("tryCatchFinally is deprecated. Please use JavaScript's native try/catch/finally.", false);
+  Ember.deprecate('tryCatchFinally is deprecated. Please use JavaScript\'s native try/catch/finally.', false);
   return tryCatchFinally.apply(this, arguments);
 };
 
@@ -744,14 +718,6 @@ var deprecatedTryCatchFinally = function() {
 //
 
 var toString = Object.prototype.toString;
-
-var isArray = Array.isArray || function(value) {
-  return value !== null &&
-         value !== undefined &&
-         typeof value === 'object' &&
-         typeof value.length === 'number' &&
-         toString.call(value) === '[object Array]';
-};
 
 /**
   Forces the passed object to be part of an array. If the object is already
@@ -778,7 +744,7 @@ var isArray = Array.isArray || function(value) {
 */
 export function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
-  return isArray(obj) ? obj : [obj];
+  return Array.isArray(obj) ? obj : [obj];
 }
 
 /**
@@ -802,7 +768,7 @@ export function inspect(obj) {
   if (obj === undefined) {
     return 'undefined';
   }
-  if (isArray(obj)) {
+  if (Array.isArray(obj)) {
     return '[' + obj + ']';
   }
   // for non objects
@@ -822,16 +788,16 @@ export function inspect(obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (typeof v === 'function') { v = "function() { ... }"; }
+      if (typeof v === 'function') { v = 'function() { ... }'; }
 
       if (v && typeof v.toString !== 'function') {
-        ret.push(key + ": " + toString.call(v));
+        ret.push(key + ': ' + toString.call(v));
       } else {
-        ret.push(key + ": " + v);
+        ret.push(key + ': ' + v);
       }
     }
   }
-  return "{" + ret.join(", ") + "}";
+  return '{' + ret.join(', ') + '}';
 }
 
 // The following functions are intentionally minified to keep the functions
@@ -879,7 +845,6 @@ export {
   META_DESC,
   EMPTY_META,
   meta,
-  isArray,
   makeArray,
   tryCatchFinally,
   deprecatedTryCatchFinally,

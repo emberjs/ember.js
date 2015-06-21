@@ -3,9 +3,10 @@
 @submodule ember-htmlbars
 */
 
-import { findHelper } from "ember-htmlbars/system/lookup-helper";
-import { handleRedirect } from "htmlbars-runtime/hooks";
-import { buildHelperStream } from "ember-htmlbars/system/invoke-helper";
+import Ember from 'ember-metal/core';
+import { findHelper } from 'ember-htmlbars/system/lookup-helper';
+import { handleRedirect } from 'htmlbars-runtime/hooks';
+import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
 
 var fakeElement;
 

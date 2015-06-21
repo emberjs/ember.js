@@ -41,8 +41,8 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
   return shadowScope;
 }
 
-import ProxyStream from "ember-metal/streams/proxy-stream";
-import subscribe from "ember-htmlbars/utils/subscribe";
+import ProxyStream from 'ember-metal/streams/proxy-stream';
+import subscribe from 'ember-htmlbars/utils/subscribe';
 
 function newStream(scope, key, newValue, renderNode, isSelf) {
   var stream = new ProxyStream(newValue, isSelf ? '' : key);

@@ -1,7 +1,8 @@
-import { internal, render } from "htmlbars-runtime";
-import getValue from "ember-htmlbars/hooks/get-value";
-import { get } from "ember-metal/property_get";
-import { isGlobal } from "ember-metal/path_cache";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { isGlobal } from 'ember-metal/path_cache';
+import { internal, render } from 'htmlbars-runtime';
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 export default function buildComponentTemplate({ component, layout, isAngleBracket}, attrs, content) {
   var blockToRender, tagName, meta;
@@ -44,12 +45,12 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
 }
 
 function blockFor(template, options) {
-  Ember.assert("BUG: Must pass a template to blockFor", !!template);
+  Ember.assert('BUG: Must pass a template to blockFor', !!template);
   return internal.blockFor(render, template, options);
 }
 
 function createContentBlock(template, scope, self, component) {
-  Ember.assert("BUG: buildComponentTemplate can take a scope or a self, but not both", !(scope && self));
+  Ember.assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
 
   return blockFor(template, {
     scope: scope,
@@ -231,7 +232,7 @@ function normalizeClasses(classes, output) {
 
   for (i=0, l=classes.length; i<l; i++) {
     var className = classes[i];
-    Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", className.indexOf(' ') === -1);
+    Ember.assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
 
     var [propName, activeClass, inactiveClass] = className.split(':');
 

@@ -1,9 +1,9 @@
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { isGlobal } from "ember-metal/path_cache";
-import { fmt } from "ember-runtime/system/string";
-import { read, isStream } from "ember-metal/streams/utils";
-import ControllerMixin from "ember-runtime/mixins/controller";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
+import { isGlobal } from 'ember-metal/path_cache';
+import { fmt } from 'ember-runtime/system/string';
+import { read, isStream } from 'ember-metal/streams/utils';
+import ControllerMixin from 'ember-runtime/mixins/controller';
 
 export function readViewFactory(object, container) {
   var value = read(object);
@@ -14,14 +14,14 @@ export function readViewFactory(object, container) {
       viewClass = get(null, value);
       Ember.deprecate('Resolved the view "'+value+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}.', !viewClass, { url: 'http://emberjs.com/guides/deprecations/#toc_global-lookup-of-views' });
     } else {
-      Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
+      Ember.assert('View requires a container to resolve views not passed in through the context', !!container);
       viewClass = container.lookupFactory('view:'+value);
     }
   } else {
     viewClass = value;
   }
 
-  Ember.assert(fmt(value+" must be a subclass or an instance of Ember.View, not %@", [viewClass]), (function(viewClass) {
+  Ember.assert(fmt(value+' must be a subclass or an instance of Ember.View, not %@', [viewClass]), (function(viewClass) {
     return viewClass && (viewClass.isViewFactory || viewClass.isView || viewClass.isComponentFactory || viewClass.isComponent);
   })(viewClass));
 
@@ -31,8 +31,8 @@ export function readViewFactory(object, container) {
 export function readComponentFactory(nameOrStream, container) {
   var name = read(nameOrStream);
   var componentLookup = container.lookup('component-lookup:main');
-  Ember.assert("Could not find 'component-lookup:main' on the provided container," +
-               " which is necessary for performing component lookups", componentLookup);
+  Ember.assert('Could not find \'component-lookup:main\' on the provided container,' +
+               ' which is necessary for performing component lookups', componentLookup);
 
   return componentLookup.lookupFactory(name, container);
 }

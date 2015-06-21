@@ -3,24 +3,24 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.assert
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { meta } from "ember-metal/utils";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { meta } from 'ember-metal/utils';
 import {
   addObserver,
   removeObserver,
   addBeforeObserver,
   removeBeforeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 import {
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
-import { computed } from "ember-metal/computed";
-import { defineProperty } from "ember-metal/properties";
-import { Mixin, observer } from "ember-metal/mixin";
-import { fmt } from "ember-runtime/system/string";
+} from 'ember-metal/property_events';
+import { computed } from 'ember-metal/computed';
+import { defineProperty } from 'ember-metal/properties';
+import { Mixin, observer } from 'ember-metal/mixin';
+import { fmt } from 'ember-runtime/system/string';
 
 function contentPropertyWillChange(content, contentKey) {
   var key = contentKey.slice(8); // remove "content."
@@ -53,7 +53,7 @@ export default Mixin.create({
   */
   content: null,
   _contentDidChange: observer('content', function() {
-    Ember.assert("Can't set Proxy's content to itself", get(this, 'content') !== this);
+    Ember.assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
   }),
 
   isTruthy: computed.bool('content'),
@@ -94,8 +94,8 @@ export default Mixin.create({
     }
 
     var content = get(this, 'content');
-    Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of" +
-                     " object proxy %@: its 'content' is undefined.", [key, value, this]), content);
+    Ember.assert(fmt('Cannot delegate set(\'%@\', %@) to the \'content\' property of' +
+                     ' object proxy %@: its \'content\' is undefined.', [key, value, this]), content);
 
     Ember.deprecate(
       fmt('You attempted to set `%@` from `%@`, but object proxying is deprecated. ' +

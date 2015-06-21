@@ -3,24 +3,20 @@
 */
 
 import {
-  isArray
-} from "ember-metal/utils";
-import {
   removeChainWatcher,
   flushPendingChains
-} from "ember-metal/chains";
+} from 'ember-metal/chains';
 import {
   watchKey,
   unwatchKey
-} from "ember-metal/watch_key";
+} from 'ember-metal/watch_key';
 import {
   watchPath,
   unwatchPath
-} from "ember-metal/watch_path";
-
+} from 'ember-metal/watch_path';
 import {
   isPath
-} from "ember-metal/path_cache";
+} from 'ember-metal/path_cache';
 
 /**
   Starts watching a property on an object. Whenever the property changes,
@@ -37,7 +33,7 @@ import {
 */
 function watch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
-  if (_keyPath === 'length' && isArray(obj)) { return; }
+  if (_keyPath === 'length' && Array.isArray(obj)) { return; }
 
   if (!isPath(_keyPath)) {
     watchKey(obj, _keyPath, m);
@@ -57,7 +53,7 @@ watch.flushPending = flushPendingChains;
 
 export function unwatch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
-  if (_keyPath === 'length' && isArray(obj)) { return; }
+  if (_keyPath === 'length' && Array.isArray(obj)) { return; }
 
   if (!isPath(_keyPath)) {
     unwatchKey(obj, _keyPath, m);

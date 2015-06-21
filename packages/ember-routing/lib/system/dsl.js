@@ -1,6 +1,5 @@
-import Ember from "ember-metal/core"; // FEATURES, assert
-import isEnabled from "ember-metal/features";
-import { indexOf } from "ember-metal/array";
+import Ember from 'ember-metal/core'; // FEATURES, assert
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -32,11 +31,11 @@ DSL.prototype = {
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
 
-        return indexOf.call(['array', 'basic', 'object', 'application'], name) === -1;
+        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
       })()
     );
 
-    if (isEnabled("ember-routing-named-substates")) {
+    if (isEnabled('ember-routing-named-substates')) {
       if (this.enableLoadingSubstates) {
         createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
         createRoute(this, `${name}_error`, { path: dummyErrorRoute });
@@ -62,7 +61,7 @@ DSL.prototype = {
 
   push(url, name, callback) {
     var parts = name.split('.');
-    if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
+    if (url === '' || url === '/' || parts[parts.length-1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
   },
@@ -85,7 +84,7 @@ DSL.prototype = {
     var dslMatches = this.matches;
 
     if (!this.explicitIndex) {
-      this.route("index", { path: "/" });
+      this.route('index', { path: '/' });
     }
 
     return function(match) {

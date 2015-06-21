@@ -1,11 +1,11 @@
-import {get} from "ember-metal/property_get";
-import EmberObject from "ember-runtime/system/object";
+import {get} from 'ember-metal/property_get';
+import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module('EmberObject.extend');
 
 QUnit.test('Basic extend', function() {
   var SomeClass = EmberObject.extend({ foo: 'BAR' });
-  ok(SomeClass.isClass, "A class has isClass of true");
+  ok(SomeClass.isClass, 'A class has isClass of true');
   var obj = new SomeClass();
   equal(obj.foo, 'BAR');
 });
@@ -50,12 +50,12 @@ QUnit.test('Overriding a method several layers deep', function() {
   equal(obj.barCnt, 2, 'should invoke both');
 
   // Try overriding on create also
-  obj = FinalClass.createWithMixins({
+  obj = FinalClass.extend({
     foo() {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }
-  });
+  }).create();
 
   obj.foo();
   obj.bar();
@@ -71,8 +71,8 @@ QUnit.test('With concatenatedProperties', function() {
   var another = new AnotherClass();
   var yetAnother = new YetAnotherClass();
   deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
-  deepEqual(another.get('things'), ['foo', 'bar'], "subclass should have base class' and its own");
-  deepEqual(yetAnother.get('things'), ['foo', 'baz'], "subclass should have base class' and its own");
+  deepEqual(another.get('things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
+  deepEqual(yetAnother.get('things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
 });
 
 QUnit.test('With concatenatedProperties class properties', function() {
@@ -89,7 +89,7 @@ QUnit.test('With concatenatedProperties class properties', function() {
   var another = new AnotherClass();
   var yetAnother = new YetAnotherClass();
   deepEqual(get(some.constructor, 'things'), ['foo'], 'base class should have just its value');
-  deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], "subclass should have base class' and its own");
-  deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], "subclass should have base class' and its own");
+  deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
+  deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
 });
 

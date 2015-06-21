@@ -4,15 +4,15 @@
 */
 
 // BEGIN IMPORTS
-import Ember from "ember-metal/core";
-import isEnabled, { FEATURES } from "ember-metal/features";
-import merge from "ember-metal/merge";
+import Ember from 'ember-metal/core';
+import isEnabled, { FEATURES } from 'ember-metal/features';
+import merge from 'ember-metal/merge';
 import {
   instrument,
   reset as instrumentationReset,
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
-} from "ember-metal/instrumentation";
+} from 'ember-metal/instrumentation';
 import {
   EMPTY_META,
   GUID_KEY,
@@ -33,28 +33,17 @@ import {
   tryInvoke,
   uuid,
   wrap
-} from "ember-metal/utils";
-import EmberError from "ember-metal/error";
-import EnumerableUtils from "ember-metal/enumerable_utils";
-import Cache from "ember-metal/cache";
-import {
-  hasPropertyAccessors
-} from 'ember-metal/platform/define_property';
-import create from 'ember-metal/platform/create';
-import {
-  filter,
-  forEach,
-  indexOf,
-  map
-} from "ember-metal/array";
-import Logger from "ember-metal/logger";
+} from 'ember-metal/utils';
+import EmberError from 'ember-metal/error';
+import Cache from 'ember-metal/cache';
+import Logger from 'ember-metal/logger';
 
 import {
   _getPath,
   get,
   getWithDefault,
   normalizeTuple
-} from "ember-metal/property_get";
+} from 'ember-metal/property_get';
 
 import {
   accumulateListeners,
@@ -67,9 +56,9 @@ import {
   suspendListener,
   suspendListeners,
   watchedEvents
-} from "ember-metal/events";
+} from 'ember-metal/events';
 
-import ObserverSet from "ember-metal/observer_set";
+import ObserverSet from 'ember-metal/observer_set';
 
 import {
   beginPropertyChanges,
@@ -78,50 +67,50 @@ import {
   overrideChains,
   propertyDidChange,
   propertyWillChange
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 
 import {
   defineProperty
-} from "ember-metal/properties";
+} from 'ember-metal/properties';
 import {
   set,
   trySet
-} from "ember-metal/property_set";
+} from 'ember-metal/property_set';
 
 import {
   Map,
   MapWithDefault,
   OrderedSet
-} from "ember-metal/map";
-import getProperties from "ember-metal/get_properties";
-import setProperties from "ember-metal/set_properties";
+} from 'ember-metal/map';
+import getProperties from 'ember-metal/get_properties';
+import setProperties from 'ember-metal/set_properties';
 import {
   watchKey,
   unwatchKey
-} from "ember-metal/watch_key";
+} from 'ember-metal/watch_key';
 import {
   ChainNode,
   finishChains,
   flushPendingChains,
   removeChainWatcher
-} from "ember-metal/chains";
+} from 'ember-metal/chains';
 import {
   watchPath,
   unwatchPath
-} from "ember-metal/watch_path";
+} from 'ember-metal/watch_path';
 import {
   destroy,
   isWatching,
   rewatch,
   unwatch,
   watch
-} from "ember-metal/watching";
-import expandProperties from "ember-metal/expand_properties";
+} from 'ember-metal/watching';
+import expandProperties from 'ember-metal/expand_properties';
 import {
   ComputedProperty,
   computed,
   cacheFor
-} from "ember-metal/computed";
+} from 'ember-metal/computed';
 
 import alias from 'ember-metal/alias';
 import {
@@ -144,7 +133,7 @@ import {
   or,
   any,
   collect
-} from "ember-metal/computed_macros";
+} from 'ember-metal/computed_macros';
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;
@@ -179,7 +168,7 @@ import {
   observersFor,
   removeBeforeObserver,
   removeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 import {
   IS_BINDING,
   Mixin,
@@ -189,20 +178,19 @@ import {
   mixin,
   observer,
   required
-} from "ember-metal/mixin";
+} from 'ember-metal/mixin';
 import {
   Binding,
   bind,
   isGlobalPath,
   oneWay
-} from "ember-metal/binding";
-import run from "ember-metal/run_loop";
-import Libraries from "ember-metal/libraries";
+} from 'ember-metal/binding';
+import run from 'ember-metal/run_loop';
+import Libraries from 'ember-metal/libraries';
 import isNone from 'ember-metal/is_none';
 import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
-import keys from 'ember-metal/keys';
 import Backburner from 'backburner';
 import {
   isStream,
@@ -215,9 +203,9 @@ import {
   scanHash,
   concat,
   chain
-} from "ember-metal/streams/utils";
+} from 'ember-metal/streams/utils';
 
-import Stream from "ember-metal/streams/stream";
+import Stream from 'ember-metal/streams/stream';
 
 // END IMPORTS
 
@@ -235,19 +223,10 @@ Ember._Cache = Cache;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
-Ember.create          = create;
-Ember.keys            = keys;
 Ember.platform        = {
-  defineProperty: defineProperty,
-  hasPropertyAccessors: hasPropertyAccessors
+  defineProperty: true,
+  hasPropertyAccessors: true
 };
-
-var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
-
-EmberArrayPolyfills.map = map;
-EmberArrayPolyfills.forEach = forEach;
-EmberArrayPolyfills.filter = filter;
-EmberArrayPolyfills.indexOf = indexOf;
 
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
@@ -274,8 +253,6 @@ Ember.get            = get;
 Ember.getWithDefault = getWithDefault;
 Ember.normalizeTuple = normalizeTuple;
 Ember._getPath       = _getPath;
-
-Ember.EnumerableUtils = EnumerableUtils;
 
 Ember.on                  = on;
 Ember.addListener         = addListener;
@@ -428,5 +405,8 @@ Ember.onerror = null;
 if (Ember.__loader.registry['ember-debug']) {
   requireModule('ember-debug');
 }
+
+Ember.create = Ember.deprecateFunc('Ember.create is deprecated in-favour of Object.create', Object.create);
+Ember.keys = Ember.deprecateFunc('Ember.keys is deprecated in-favour of Object.keys', Object.keys);
 
 export default Ember;

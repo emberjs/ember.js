@@ -1,4 +1,4 @@
-import Object from "ember-runtime/system/object";
+import Object from 'ember-runtime/system/object';
 
 // Ember.Helper.extend({ compute(params, hash) {} });
 var Helper = Object.extend({

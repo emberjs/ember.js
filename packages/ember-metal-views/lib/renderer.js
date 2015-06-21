@@ -1,11 +1,9 @@
-import run from "ember-metal/run_loop";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { assign } from "ember-metal/merge";
-import setProperties from "ember-metal/set_properties";
-import buildComponentTemplate from "ember-views/system/build-component-template";
-import { indexOf } from "ember-metal/enumerable_utils";
-//import { deprecation } from "ember-views/compat/attrs-proxy";
+import run from 'ember-metal/run_loop';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { assign } from 'ember-metal/merge';
+import setProperties from 'ember-metal/set_properties';
+import buildComponentTemplate from 'ember-views/system/build-component-template';
 
 function Renderer(_helper) {
   this._dom = _helper;
@@ -14,7 +12,7 @@ function Renderer(_helper) {
 Renderer.prototype.prerenderTopLevelView =
   function Renderer_prerenderTopLevelView(view, renderNode) {
     if (view._state === 'inDOM') {
-      throw new Error("You cannot insert a View that has already been rendered");
+      throw new Error('You cannot insert a View that has already been rendered');
     }
     view.ownerView = renderNode.emberView = view;
     view._renderNode = renderNode;
@@ -84,7 +82,7 @@ Renderer.prototype.dispatchLifecycleHooks =
 Renderer.prototype.ensureViewNotRendering =
   function Renderer_ensureViewNotRendering(view) {
     var env = view.ownerView.env;
-    if (env && indexOf(env.renderedViews, view.elementId) !== -1) {
+    if (env && env.renderedViews.indexOf(view.elementId) !== -1) {
       throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
     }
   };
@@ -231,14 +229,7 @@ Renderer.prototype.willDestroyElement = function (view) {
   }
 
   if (view._transitionTo) {
-    view._transitionTo('destroying', false);
-  }
-
-  var childViews = view.childViews;
-  if (childViews) {
-    for (var i = 0; i < childViews.length; i++) {
-      this.willDestroyElement(childViews[i]);
-    }
+    view._transitionTo('destroying');
   }
 };
 
@@ -253,11 +244,8 @@ Renderer.prototype.didDestroyElement = function (view) {
     view._transitionTo('preRender');
   }
 
-  var childViews = view.childViews;
-  if (childViews) {
-    for (var i = 0; i < childViews.length; i++) {
-      this.didDestroyElement(childViews[i]);
-    }
+  if (view.trigger) {
+    view.trigger('didDestroyElement');
   }
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 

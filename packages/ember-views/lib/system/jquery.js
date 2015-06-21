@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 
 // ES6TODO: the functions on EnumerableUtils need their own exports
-import { forEach } from 'ember-metal/enumerable_utils';
 import environment from 'ember-metal/environment';
 
 var jQuery;
@@ -13,7 +12,7 @@ if (environment.hasDOM) {
     jQuery = require('jquery');
   }
 
-  Ember.assert("Ember Views require jQuery between 1.7 and 2.1", jQuery &&
+  Ember.assert('Ember Views require jQuery between 1.7 and 2.1', jQuery &&
                (jQuery().jquery.match(/^((1\.(7|8|9|10|11))|(2\.(0|1)))(\.\d+)?(pre|rc\d?)?/) ||
                 Ember.ENV.FORCE_JQUERY));
 
@@ -31,7 +30,7 @@ if (environment.hasDOM) {
 
     // Copies the `dataTransfer` property from a browser event object onto the
     // jQuery event object for the specified events
-    forEach(dragEvents, function(eventName) {
+    dragEvents.forEach(function(eventName) {
       jQuery.event.fixHooks[eventName] = {
         props: ['dataTransfer']
       };

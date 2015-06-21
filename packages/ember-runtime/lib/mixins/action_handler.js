@@ -2,9 +2,10 @@
 @module ember
 @submodule ember-runtime
 */
-import merge from "ember-metal/merge";
+import Ember from 'ember-metal/core';
+import merge from 'ember-metal/merge';
 import { Mixin } from 'ember-metal/mixin';
-import { get } from "ember-metal/property_get";
+import { get } from 'ember-metal/property_get';
 
 /**
   The `Ember.ActionHandler` mixin implements support for moving an `actions`
@@ -158,7 +159,7 @@ var ActionHandler = Mixin.create({
     var hashName;
 
     if (!props._actions) {
-      Ember.assert("'actions' should not be a function", typeof(props.actions) !== 'function');
+      Ember.assert('\'actions\' should not be a function', typeof(props.actions) !== 'function');
 
       if (!!props.actions && typeof props.actions === 'object') {
         hashName = 'actions';
@@ -215,8 +216,8 @@ var ActionHandler = Mixin.create({
     }
 
     if (target = get(this, 'target')) {
-      Ember.assert("The `target` for " + this + " (" + target +
-                   ") does not have a `send` method", typeof target.send === 'function');
+      Ember.assert('The `target` for ' + this + ' (' + target +
+                   ') does not have a `send` method', typeof target.send === 'function');
       target.send(...arguments);
     }
   }

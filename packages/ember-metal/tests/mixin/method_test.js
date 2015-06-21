@@ -1,4 +1,3 @@
-import create from 'ember-metal/platform/create';
 import {
   mixin,
   Mixin
@@ -79,7 +78,7 @@ QUnit.test('overriding inherited objects', function() {
   var objA = {};
   MixinA.apply(objA);
 
-  var objB = create(objA);
+  var objB = Object.create(objA);
   MixinB.apply(objB);
 
   cnt = 0;

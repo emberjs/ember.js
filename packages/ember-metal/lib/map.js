@@ -21,10 +21,9 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-import { guidFor } from "ember-metal/utils";
-import { indexOf } from "ember-metal/array";
-import create from "ember-metal/platform/create";
-import { deprecateProperty } from "ember-metal/deprecate_property";
+import Ember from 'ember-metal/core';
+import { guidFor } from 'ember-metal/utils';
+import { deprecateProperty } from 'ember-metal/deprecate_property';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -35,7 +34,7 @@ function missingNew(name) {
 }
 
 function copyNull(obj) {
-  var output = create(null);
+  var output = Object.create(null);
 
   for (var prop in obj) {
     // hasOwnPropery is not needed because obj is Object.create(null);
@@ -72,7 +71,7 @@ function OrderedSet() {
     this.clear();
     this._silenceRemoveDeprecation = false;
   } else {
-    missingNew("OrderedSet");
+    missingNew('OrderedSet');
   }
 }
 
@@ -95,7 +94,7 @@ OrderedSet.prototype = {
     @private
   */
   clear() {
-    this.presenceSet = create(null);
+    this.presenceSet = Object.create(null);
     this.list = [];
     this.size = 0;
   },
@@ -150,7 +149,7 @@ OrderedSet.prototype = {
 
     if (presenceSet[guid] === true) {
       delete presenceSet[guid];
-      var index = indexOf.call(list, obj);
+      var index = list.indexOf(obj);
       if (index > -1) {
         list.splice(index, 1);
       }
@@ -266,10 +265,10 @@ function Map() {
   if (this instanceof this.constructor) {
     this._keys = OrderedSet.create();
     this._keys._silenceRemoveDeprecation = true;
-    this._values = create(null);
+    this._values = Object.create(null);
     this.size = 0;
   } else {
-    missingNew("OrderedSet");
+    missingNew('OrderedSet');
   }
 }
 
@@ -440,7 +439,7 @@ Map.prototype = {
   */
   clear() {
     this._keys.clear();
-    this._values = create(null);
+    this._values = Object.create(null);
     this.size = 0;
   },
 
@@ -487,7 +486,7 @@ MapWithDefault.create = function(options) {
   }
 };
 
-MapWithDefault.prototype = create(Map.prototype);
+MapWithDefault.prototype = Object.create(Map.prototype);
 MapWithDefault.prototype.constructor = MapWithDefault;
 MapWithDefault.prototype._super$constructor = Map;
 MapWithDefault.prototype._super$get = Map.prototype.get;

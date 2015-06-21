@@ -55,6 +55,11 @@ function createDOMHelper() {
     return (protocol == null) ? ':' : protocol;
   };
 
+  domHelper.setMorphHTML = function(morph, html) {
+    var section = this.document.createRawHTMLSection(html);
+    morph.setNode(section);
+  };
+
   return domHelper;
 }
 
@@ -78,6 +83,18 @@ function registerTemplates(app, templates) {
     initialize: function(app) {
       for (var key in templates) {
         app.registry.register('template:' + key, compile(templates[key]));
+      }
+    }
+  });
+}
+
+function registerControllers(app, controllers) {
+  app.instanceInitializer({
+    name: 'register-application-controllers',
+
+    initialize: function(app) {
+      for (var key in controllers) {
+        app.registry.register('controller:' + key, controllers[key]);
       }
     }
   });
@@ -204,6 +221,34 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
       var element = renderToElement(instance);
 
       assertHTMLMatches(assert, element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" href="\/photos" class="ember-view">Go to photos<\/a><\/h1><\/div>$/);
+    });
+  });
+
+  QUnit.test("It is possible to render non-escaped content", function(assert) {
+    debugger;
+    run(function() {
+      app = createApplication();
+
+      app.Router.map(function() {
+        this.route('photos');
+      });
+
+      registerDOMHelper(app);
+      registerTemplates(app, {
+        application: "<h1>{{{title}}}</h1>"
+      });
+
+      registerControllers(app, {
+        application: Ember.Controller.extend({
+          title: "<b>Hello world</b>"
+        })
+      });
+    });
+
+    return app.visit('/').then(function(instance) {
+      var element = renderToElement(instance);
+
+      assertHTMLMatches(assert, element.firstChild, /^<div id="ember\d+" class="ember-view"><h1><b>Hello world<\/b><\/h1><\/div>$/);
     });
   });
 

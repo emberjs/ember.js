@@ -1,20 +1,19 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 //
-"REMOVE_USE_STRICT: true";
+'REMOVE_USE_STRICT: true';
 
 /**
 @module ember
 @submodule ember-metal
 */
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 import {
   meta as metaFor,
   tryFinally,
   apply,
   applyStr
-} from "ember-metal/utils";
-import create from "ember-metal/platform/create";
+} from 'ember-metal/utils';
 
 /* listener flags */
 var ONCE = 1;
@@ -59,11 +58,11 @@ function actionsFor(obj, eventName) {
   var listeners = meta.listeners;
 
   if (!listeners) {
-    listeners = meta.listeners = create(null);
+    listeners = meta.listeners = Object.create(null);
     listeners.__source__ = obj;
   } else if (listeners.__source__ !== obj) {
     // setup inherited copy of the listeners object
-    listeners = meta.listeners = create(listeners);
+    listeners = meta.listeners = Object.create(listeners);
     listeners.__source__ = obj;
   }
 
@@ -117,7 +116,7 @@ export function accumulateListeners(obj, eventName, otherActions) {
   @public
 */
 export function addListener(obj, eventName, target, method, once) {
-  Ember.assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
+  Ember.assert('You must pass at least an object and event name to Ember.addListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -157,7 +156,7 @@ export function addListener(obj, eventName, target, method, once) {
   @public
 */
 function removeListener(obj, eventName, target, method) {
-  Ember.assert("You must pass at least an object and event name to Ember.removeListener", !!obj && !!eventName);
+  Ember.assert('You must pass at least an object and event name to Ember.removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;

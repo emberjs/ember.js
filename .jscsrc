@@ -35,6 +35,7 @@
   "requireSpaceBeforeBlockStatements": true,
   "validateIndentation": 2,
   "validateParameterSeparator": ", ",
+  "validateQuoteMarks": "'",
   "requireSpaceBeforeKeywords": [
     "else",
     "while",

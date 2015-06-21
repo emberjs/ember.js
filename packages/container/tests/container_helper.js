@@ -22,7 +22,7 @@ var factory = function() {
   };
 
   Klass.prototype.toString = function() {
-    return "<Factory:" + this._guid + ">";
+    return '<Factory:' + this._guid + '>';
   };
 
   Klass.create = create;

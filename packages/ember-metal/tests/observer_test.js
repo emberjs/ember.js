@@ -7,12 +7,11 @@ import {
   _suspendObserver,
   _suspendObservers,
   removeBeforeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import create from 'ember-metal/platform/create';
 import { defineProperty } from 'ember-metal/properties';
 import {
   computed,
@@ -30,7 +29,7 @@ import {
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 
 // ..........................................................
 // ADD OBSERVER
@@ -438,7 +437,7 @@ testBoth('deferring property change notifications', function(get, set) {
 testBoth('deferring property change notifications safely despite exceptions', function(get, set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
-  var exc = new Error("Something unexpected happened!");
+  var exc = new Error('Something unexpected happened!');
 
   expect(2);
   addObserver(obj, 'foo', function() { fooCount++; });
@@ -511,7 +510,7 @@ testBoth('addObserver should propagate through prototype', function(get, set) {
   var obj2;
 
   addObserver(obj, 'foo', function() { this.count++; });
-  obj2 = create(obj);
+  obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
 
@@ -608,7 +607,7 @@ testBoth('removing observer should stop firing', function(get, set) {
   removeObserver(obj, 'foo', F);
 
   set(obj, 'foo', 'baz');
-  equal(count, 1, "removed observer shouldn't fire");
+  equal(count, 1, 'removed observer shouldn\'t fire');
 });
 
 testBoth('local observers can be removed', function(get, set) {
@@ -812,7 +811,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get, s
   var obj2;
 
   addBeforeObserver(obj, 'foo', function() { this.count++; });
-  obj2 = create(obj);
+  obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
   equal(obj2.count, 1, 'should have invoked observer on inherited');
@@ -875,7 +874,7 @@ QUnit.module('addObserver - dependentkey with chained properties', {
       foo: {
         bar: {
           baz: {
-            biff: "BIFF"
+            biff: 'BIFF'
           }
         }
       }
@@ -886,7 +885,7 @@ QUnit.module('addObserver - dependentkey with chained properties', {
         foo: {
           bar: {
             baz: {
-              biff: "BIFF"
+              biff: 'BIFF'
             }
           }
         }
@@ -954,7 +953,7 @@ testBoth('depending on a simple chain', function(get, set) {
   equal(val, undefined);
   equal(count, 6);
 
-  set(foo.bar.baz, 'biff', "BOOM");
+  set(foo.bar.baz, 'biff', 'BOOM');
   equal(count, 6, 'should be not have invoked observer');
 });
 
@@ -993,7 +992,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(val, undefined);
   equal(count, 6);
 
-  set(foo.bar.baz, 'biff', "BOOM");
+  set(foo.bar.baz, 'biff', 'BOOM');
   equal(count, 6, 'should be not have invoked observer');
 });
 
@@ -1051,9 +1050,10 @@ testBoth('setting a cached computed property whose value has changed should trig
   equal(get(obj, 'foo'), 'bar');
 });
 
-QUnit.module("Ember.immediateObserver");
+QUnit.module('Ember.immediateObserver (Deprecated)');
 
-testBoth("immediate observers should fire synchronously", function(get, set) {
+testBoth('immediate observers should fire synchronously', function(get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   var obj = {};
   var observerCalled = 0;
   var mixin;
@@ -1064,23 +1064,23 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
     mixin = Mixin.create({
       fooDidChange: immediateObserver('foo', function() {
         observerCalled++;
-        equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
+        equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
       })
     });
 
     mixin.apply(obj);
 
     defineProperty(obj, 'foo', computed({
-      get: function() { return "yes hello this is foo"; },
+      get: function() { return 'yes hello this is foo'; },
       set: function(key, value) { return value; }
     }));
 
-    equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
-    equal(observerCalled, 0, "observer has not yet been called");
+    equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
+    equal(observerCalled, 0, 'observer has not yet been called');
 
     set(obj, 'foo', 'barbaz');
 
-    equal(observerCalled, 1, "observer was called once");
+    equal(observerCalled, 1, 'observer was called once');
   });
 });
 
@@ -1097,28 +1097,29 @@ if (Ember.EXTEND_PROTOTYPES) {
       mixin = Mixin.create({
         fooDidChange: function() {
           observerCalled++;
-          equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
+          equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
         }.observesImmediately('{foo,bar}')
       });
 
       mixin.apply(obj);
 
       defineProperty(obj, 'foo', computed({
-        get: function(key) { return "yes hello this is foo"; },
+        get: function(key) { return 'yes hello this is foo'; },
         set: function(key, value) { return value; }
       }));
 
-      equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
-      equal(observerCalled, 0, "observer has not yet been called");
+      equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
+      equal(observerCalled, 0, 'observer has not yet been called');
 
       set(obj, 'foo', 'barbaz');
 
-      equal(observerCalled, 1, "observer was called once");
+      equal(observerCalled, 1, 'observer was called once');
     });
   });
 }
 
 testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   var obj = {};
   var observerCalled = 0;
   var mixin;
@@ -1129,35 +1130,36 @@ testBoth('immediate observers watching multiple properties via brace expansion f
     mixin = Mixin.create({
       fooDidChange: immediateObserver('{foo,bar}', function() {
         observerCalled++;
-        equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
+        equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
       })
     });
 
     mixin.apply(obj);
 
     defineProperty(obj, 'foo', computed({
-      get: function() { return "yes hello this is foo"; },
+      get: function() { return 'yes hello this is foo'; },
       set: function(key, value) { return value; }
     }));
 
-    equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
-    equal(observerCalled, 0, "observer has not yet been called");
+    equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
+    equal(observerCalled, 0, 'observer has not yet been called');
 
     set(obj, 'foo', 'barbaz');
 
-    equal(observerCalled, 1, "observer was called once");
+    equal(observerCalled, 1, 'observer was called once');
   });
 });
 
-testBoth("immediate observers are for internal properties only", function(get, set) {
+testBoth('immediate observers are for internal properties only', function(get, set) {
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   expectAssertion(function() {
     immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
-QUnit.module("changeProperties");
+QUnit.module('changeProperties');
 
-testBoth("observers added/removed during changeProperties should do the right thing.", function(get, set) {
+testBoth('observers added/removed during changeProperties should do the right thing.', function(get, set) {
   var obj = {
     foo: 0
   };

@@ -6,7 +6,7 @@ var suite = SuiteModuleBuilder.create();
 
 suite.module('frozenCopy');
 
-suite.test("frozen objects should return same instance", function() {
+suite.test('frozen objects should return same instance', function() {
   var obj, copy;
 
   obj = this.newObject();

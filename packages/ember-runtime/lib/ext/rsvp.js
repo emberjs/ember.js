@@ -2,7 +2,7 @@
 
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
-import run from "ember-metal/run_loop";
+import run from 'ember-metal/run_loop';
 import * as RSVP from 'rsvp';
 
 var testModuleName = 'ember-testing/test';
@@ -30,11 +30,6 @@ RSVP.configure('async', function(callback, promise) {
     callback(promise);
   });
 });
-
-RSVP.Promise.prototype.fail = function(callback, label) {
-  Ember.deprecate('RSVP.Promise.fail has been renamed as RSVP.Promise.catch');
-  return this['catch'](callback, label);
-};
 
 export function onerrorDefault(e) {
   var error;

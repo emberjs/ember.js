@@ -1,7 +1,8 @@
-import EmberHandlebars from "ember-htmlbars/compat";
-import run from "ember-metal/run_loop";
-import $ from "ember-views/system/jquery";
-import { subscribe, unsubscribe } from "ember-metal/instrumentation";
+import Ember from 'ember-metal/core';
+import EmberHandlebars from 'ember-htmlbars/compat';
+import run from 'ember-metal/run_loop';
+import $ from 'ember-views/system/jquery';
+import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 
 var compile = EmberHandlebars.compile;
 
@@ -9,9 +10,9 @@ var App, $fixture;
 
 function setupExample() {
   // setup templates
-  Ember.TEMPLATES.application = compile("{{outlet}}");
-  Ember.TEMPLATES.index = compile("<h1>Node 1</h1>");
-  Ember.TEMPLATES.posts = compile("<h1>Node 1</h1>");
+  Ember.TEMPLATES.application = compile('{{outlet}}');
+  Ember.TEMPLATES.index = compile('<h1>Node 1</h1>');
+  Ember.TEMPLATES.posts = compile('<h1>Node 1</h1>');
 
   App.Router.map(function() {
     this.route('posts');
@@ -23,7 +24,7 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
-QUnit.module("View Instrumentation", {
+QUnit.module('View Instrumentation', {
   setup() {
     run(function() {
       App = Ember.Application.create({
@@ -47,7 +48,7 @@ QUnit.module("View Instrumentation", {
   }
 });
 
-QUnit.test("Nodes without view instances are instrumented", function(assert) {
+QUnit.test('Nodes without view instances are instrumented', function(assert) {
   var called = false;
   var subscriber = subscribe('render', {
     before() {

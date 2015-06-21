@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-import isEnabled from "ember-metal/features";
+import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
+import { assign } from 'ember-metal/merge';
 import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
@@ -185,7 +186,7 @@ Registry.prototype = {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
 
     if (instanceInitializersFeatureEnabled) {
-      Ember.deprecate('`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
+      Ember.deprecate('`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: 'http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers' });
     }
 
     return this._defaultContainer.lookup(fullName, options);
@@ -195,7 +196,7 @@ Registry.prototype = {
     Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
 
     if (instanceInitializersFeatureEnabled) {
-      Ember.deprecate('`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: "http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers" });
+      Ember.deprecate('`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: 'http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers' });
     }
 
     return this._defaultContainer.lookupFactory(fullName);
@@ -691,6 +692,36 @@ Registry.prototype = {
     });
   },
 
+  /**
+   @method knownForType
+   @param {String} type the type to iterate over
+   @private
+  */
+  knownForType(type) {
+    let fallbackKnown, resolverKnown;
+
+    let localKnown = dictionary(null);
+    let registeredNames = Object.keys(this.registrations);
+    for (let index = 0, length = registeredNames.length; index < length; index++) {
+      let fullName = registeredNames[index];
+      let itemType = fullName.split(':')[0];
+
+      if (itemType === type) {
+        localKnown[fullName] = true;
+      }
+    }
+
+    if (this.fallback) {
+      fallbackKnown = this.fallback.knownForType(type);
+    }
+
+    if (this.resolver.knownForType) {
+      resolverKnown = this.resolver.knownForType(type);
+    }
+
+    return assign({}, fallbackKnown, localKnown, resolverKnown);
+  },
+
   validateFullName(fullName) {
     if (!VALID_FULL_NAME_REGEXP.test(fullName)) {
       throw new TypeError('Invalid Fullname, expected: `type:name` got: ' + fullName);
@@ -717,7 +748,7 @@ Registry.prototype = {
 
     for (var key in hash) {
       if (hash.hasOwnProperty(key)) {
-        Ember.assert("Expected a proper full name, given '" + hash[key] + "'", this.validateFullName(hash[key]));
+        Ember.assert('Expected a proper full name, given \'' + hash[key] + '\'', this.validateFullName(hash[key]));
 
         injections.push({
           property: key,

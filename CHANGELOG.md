@@ -1,5 +1,65 @@
 # Ember Changelog
 
+### 1.13.0 (June 12, 2015)
+
+- [#11270](https://github.com/emberjs/ember.js/pull/11270) [BUGFIX] Ensure view registry is propagated to components.
+- [#11273](https://github.com/emberjs/ember.js/pull/11273) [BUGFIX] Downgrade Ember.Service without proper inheritance to a deprecation (instead of an assertion).
+- [#11274](https://github.com/emberjs/ember.js/pull/11274) [BUGFIX] Unify template compiler deprecations so that they can report the proper location of the deprecation.
+- [#11279](https://github.com/emberjs/ember.js/pull/11279) [DEPRECATION] Deprecate `{{#each foo in bar}}{{/each}}`.
+- [#11229](https://github.com/emberjs/ember.js/pull/11229) [BUGFIX] Prevent views from having access to component lifecycle hooks.
+- [#11286](https://github.com/emberjs/ember.js/pull/11286) [DEPRECATION] Deprecate `Ember.EnumerableUtils`.
+- [#11338](https://github.com/emberjs/ember.js/pull/11338) [BUGFIX] Ensure `parentView` is available properly.
+- [#11313](https://github.com/emberjs/ember.js/pull/11313) [DEPRECATION] Allow deprecated access to `template` in component to determine if a block was provided.
+- [#11339](https://github.com/emberjs/ember.js/pull/11339) Add special values (`@index` or `@guid`) to `{{each}}`'s keyPath.
+- [#11360](https://github.com/emberjs/ember.js/pull/11360) Add warning message when using `{{each}}` without specifying `key`.
+- [#11348](https://github.com/emberjs/ember.js/pull/11348) [BUGFIX] Provide useful errors when a closure action is not found.
+- [#11264](https://github.com/emberjs/ember.js/pull/11264) Add `{{concat}}` helper.
+- [#11362](https://github.com/emberjs/ember.js/pull/11362) / [#11365](https://github.com/emberjs/ember.js/pull/11365) [DOC] Ensure all documentation comments include `@public` or `@private`.
+- [#11278](https://github.com/emberjs/ember.js/pull/11278) Implement Ember.Helper. Read [emberjs/rfcs#53](https://github.com/emberjs/rfcs/pull/53) for more details.
+- [#11373](https://github.com/emberjs/ember.js/pull/11373) [BUGFIX] Fix issue with multiple actions in a single element.
+- [#11387](https://github.com/emberjs/ember.js/pull/11387) [DEPRECATION] Deprecate `Ember.View`.
+- [#11389](https://github.com/emberjs/ember.js/pull/11389) [DEPRECATION] Deprecate `{{view}}` helper.
+- [#11394](https://github.com/emberjs/ember.js/pull/11394) [DEPRECATION] Add `Ember.LinkComponent` and deprecate `Ember.LinkView`.
+- [#11400](https://github.com/emberjs/ember.js/pull/11400) [DEPRECATION] Deprecate `Ember.computed.any`.
+- [#11330](https://github.com/emberjs/ember.js/pull/11330) [BUGFIX] Ensure that `{{each}}` can properly transition into and out of its inverse state.
+- [#11416](https://github.com/emberjs/ember.js/pull/11416) [DEPRECATION] Deprecate `Ember.Select`.
+- [#11403](https://github.com/emberjs/ember.js/pull/11403) [DEPRECATION] Deprecate `Ember.arrayComputed`, `Ember.ReduceComputedProperty`, `Ember.ArrayComputedProperty`, and  `Ember.reduceComputed`.
+- [#11401](https://github.com/emberjs/ember.js/pull/11401) [DEPRECATION] Deprecate `{{view` and `{{controller` template local keywords.
+- [#11329](https://github.com/emberjs/ember.js/pull/11329) [BUGFIX] Fix issue with `{{component}}` helper not properly cleaning up components after they have been replaced.
+- [#11393](https://github.com/emberjs/ember.js/pull/11393) Implement support for automatic registration of all helpers (with or without a dash). Requires ember-resolver@0.1.17 or higher if using ember-cli. Read [emberjs/rfcs#58](https://github.com/emberjs/rfcs/pull/58) for more details.
+- [#11425](https://github.com/emberjs/ember.js/pull/11425) [BUGFIX] Prevent `willDestroyElement` from being called multiple times on the same component.
+- [#11138](https://github.com/emberjs/ember.js/pull/11138) Add a better deprecation for `{{bind-attr}}`.
+- [#11201](https://github.com/emberjs/ember.js/pull/11201) [BUGFIX] Fix `currentURL` test helper.
+- [#11161](https://github.com/emberjs/ember.js/pull/11161) [BUGFIX] Fix initial selection for select with optgroup.
+- [#10980](https://github.com/emberjs/ember.js/pull/10980) [BUGFIX] Fix `Ember.String.dasherize`, `Ember.String.underscore`, `Ember.String.capitalize`, `Ember.String.classify` for multi-word input values.
+- [#11187](https://github.com/emberjs/ember.js/pull/11187) [BUGFIX] Handle mut cell action names.
+- [#11194](https://github.com/emberjs/ember.js/pull/11194) [BUGFIX] Ensure `classNameBindings` properly handles multiple entries.
+- [#11203](https://github.com/emberjs/ember.js/pull/11203) [BUGFIX] Ensure components for void tagNames do not have childNodes.
+- [#11205](https://github.com/emberjs/ember.js/pull/11205) [BUGFIX] Ensure `Ember.get` works on empty string paths.
+- [#11220](https://github.com/emberjs/ember.js/pull/11220) [BUGFIX] Fix issue with `Ember.computed.sort` where array observers were not properly detached.
+- [#11222](https://github.com/emberjs/ember.js/pull/11222) [BUGFIX] Only attempt to lookup components with a dash.
+- [#11227](https://github.com/emberjs/ember.js/pull/11227) [BUGFIX] Ensure `role` is properly applied to views if `ariaRole` attribute is present.
+- [#11228](https://github.com/emberjs/ember.js/pull/11228) [BUGFIX] Fix `{{each}}` with `itemViewClass` specified `tagName`.
+- [#11231](https://github.com/emberjs/ember.js/pull/11231) [BUGFIX] Fix `{{each}}` with `itemViewClass` and `{{else}}`.
+- [#11234](https://github.com/emberjs/ember.js/pull/11234) [BUGFIX] Fix `{{each item in model itemViewClass="..."}}`.
+- [#11235](https://github.com/emberjs/ember.js/pull/11235) [BUGFIX] Properly handle `isVisible` as a computed property.
+- [#11242](https://github.com/emberjs/ember.js/pull/11242) [BUGFIX] Use the proper value for `options.data.view` with Handlebars compat helpers.
+- [#11252](https://github.com/emberjs/ember.js/pull/11253) [BUGFIX] Ensure `instanceInitializers` are called with the proper arguments when calling `App.reset`.
+- [#11257](https://github.com/emberjs/ember.js/pull/11257) [BUGFIX] Fix (and deprecate) `{{input on="..." action="..."}}`.
+- [#11260](https://github.com/emberjs/ember.js/pull/11260) [BUGFIX] Ensure that passing an array argument to `(action` helper is handled properly.
+- [#11261](https://github.com/emberjs/ember.js/pull/11261) Add helpful assertion when exporting the wrong type of factory (for Routes, Components, Services, and Views).
+- [#11266](https://github.com/emberjs/ember.js/pull/11266) [BUGFIX] Ensure `parentView` includes yielding component.
+- [#11267](https://github.com/emberjs/ember.js/pull/11267) Disable angle bracket components. See [#11267](https://github.com/emberjs/ember.js/pull/11267) and [emberjs/rfcs#60](https://github.com/emberjs/rfcs/pull/60) for more details.
+- [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
+- [#10501](https://github.com/emberjs/ember.js/pull/10501) Implement Glimmer Engine.
+- [#11029](https://github.com/emberjs/ember.js/pull/11029) Allow bound outlet names.
+- [#11035](https://github.com/emberjs/ember.js/pull/11035) {{#with}} helper should not render if passed variable is falsey.
+- [#11104](https://github.com/emberjs/ember.js/pull/11104) /  [#10501](https://github.com/emberjs/ember.js/pull/10501) Remove support for non-HTMLBars templates.
+- [#11116](https://github.com/emberjs/ember.js/pull/11116) / [emberjs/rfcs#50](https://github.com/emberjs/rfcs/pull/50) [FEATURE ember-routing-htmlbars-improved-actions].
+- [#11028](https://github.com/emberjs/ember.js/pull/11028) Add positional parameter support to components.
+- [#11084](https://github.com/emberjs/ember.js/pull/11084) Enable {{yield to="inverse"}} in components.
+- [#11141](https://github.com/emberjs/ember.js/pull/11141) Implement angle-bracket components.
+
 ### 1.12.0 (May 13, 2015)
 
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
@@ -57,7 +117,7 @@
 - [#10372](https://github.com/emberjs/ember.js/pull/10372) / [#10431](https://github.com/emberjs/ember.js/pull/10431) / [#10439](https://github.com/emberjs/ember.js/pull/10439) / [#10442](https://github.com/emberjs/ember.js/pull/10442) Decouple route transition from view creation.
 - [#10436](https://github.com/emberjs/ember.js/pull/10436) [BUGFIX] Ensure `instrument.{subscribe,unsubscribe,reset}` aren’t accidentally clobbered.
 - [#10462](https://github.com/emberjs/ember.js/pull/10462) [BUGFIX] Fix incorrect export of `Ember.OutletView`.
-- [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr shoud remove attributes.
+- [#10398](https://github.com/emberjs/ember.js/pull/10398) [BUGFIX] `undefined` and `null` values in bind-attr should remove attributes.
 - [#10413](https://github.com/emberjs/ember.js/pull/10413) Update to use inclusive `morph-range` (via HTMLBars v0.11.1).
 - [#10464](https://github.com/emberjs/ember.js/pull/10464) Add helpful assertion if templates are compiled with a different template compiler revision.
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
@@ -94,7 +154,7 @@
 * [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
 * [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
 * [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
-* [BUGFIX] Ensure that calling the `wait` testing helpe without routing works properly.
+* [BUGFIX] Ensure that calling the `wait` testing helper without routing works properly.
 * [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
 * [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
 * [BUGFIX] Allow unbound helpers to add attributes.
@@ -260,7 +320,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Allow for bound property {{input}} type.
 * [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
 * [BUGFIX] instrument should still call block even without subscribers.
-* [BUGFIX] Remove uneeded normalization in query param controller lookup.
+* [BUGFIX] Remove unneeded normalization in query param controller lookup.
 * [BUGFIX] Do not use defineProperty on each View instance.
 * [PERF] Speedup `watchKey` by preventing for in related deopt.
 * [PERF] Change `ENV.MANDATORY_SETTER` to FEATURES so it can be compiled out of production builds.
@@ -322,7 +382,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
 * [BUGFIX] Fix `{{#with view.foo as bar}}`.
 * [BUGFIX] Force remove `required` attribute for IE8.
-* [BUGFIX] Controller precendence for `Ember.Route.prototype.render` updated.
+* [BUGFIX] Controller precedence for `Ember.Route.prototype.render` updated.
 * [BUGFIX] fixes variable argument passing to triggerEvent helper.
 * [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
 * [BUGFIX] Do not throw uncaught errors mid-transition.
@@ -444,7 +504,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 * Performance improvements.
-* [BUGFIX] Templete-less components properties should not collide with internal properties.
+* [BUGFIX] Template-less components properties should not collide with internal properties.
 * Unbound helper supports bound helper static strings.
 * Preserve `<base>` URL when using history location for routing.
 * Begin adding names for anonymous functions to aid in debugging.
@@ -482,7 +542,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Use imported handlebars before global Handlebars
 * Update router.js
 * Update RSVP.js
-* Improved a handeful of error messages
+* Improved a handful of error messages
 * Provide more information for debugging
 * Added more assertions and deprecation warnings
 * [BUGFIX] Add preventDefault option to link-to and action.
@@ -588,7 +648,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Fix evaluateUnboundHelper properties
 * Use Ember.Error consistently.
 * [BUGFIX] Make Component.sendAction behave the same as {{action}} helper.
-* [BUGFIX] uniq reduceComputed dependent keys.
+* [BUGFIX] Unique reduceComputed dependent keys.
 * Don't allow registration of undefined factories.
 * Decamelize handles strings with numbers
 * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
@@ -599,7 +659,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Remove Route#redirect soft deprecation
 * [BUGFIX] link-to, bound helper issues with arrays of primitives
 * [BUGFIX] Don't use incompatible array methods
-* [BUGFIX] `Ember.Object.extend` should allow any prorerty
+* [BUGFIX] `Ember.Object.extend` should allow any property
 * [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
 * [BUGFIX] `Ember.keys` should return own property
 * [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
@@ -748,7 +808,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Fix indeterminate checkbox that is set on insert
 * Add jQuery 1.9 to testing rake task
 * Support object with `Ember.String.fmt`
-* Add 'date', 'regexp' and 'error' supprot to `Ember.inspect`
+* Add 'date', 'regexp' and 'error' support to `Ember.inspect`
 * Improve `Ember.inspect` for array
 * Fix replacement for `Ember.String.fmt` to be parsed as decimal digit
 * Upgrade to latest router.js
@@ -893,7 +953,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update backburner to fix IE8 failing test
 * Update Backburner.js fixing the performance regression introduce in rc4
 * maintain ruby'esq version string for gems
-* remove starter_kit upload task (we just use the github tarbals)
+* remove starter_kit upload task (we just use the github tarballs)
 
 
 ### Ember 1.0.0-rc.4 _(May 27, 2013)_
@@ -958,7 +1018,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Don't add disabled class if disabledWhen not provided
 * More accurate, helpful error message for handlebars version errors.
 * Adds disabledWhen option to {{linkTo}} helper
-* Clean up pendingDisconnections propertly
+* Clean up pendingDisconnections properly
 * Make router's render idempotent
 * Switch from bind to on for routing handlers.
 * Switch from delegate/undelegate to on/off for EventDispatcher.
@@ -978,7 +1038,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Update route-recognizer - Fixes #2559
 * Revert "Use isNone to check tag name"
 * Support for redirection from ApplicationRoute
-* Improving Ember.Select's null-content regresion test
+* Improving Ember.Select's null-content regression test
 * Prevent another exception on empty Ember.Select.content
 * prevent exception on empty Em.Select content
 * deprecate the defaultContainer (see: http://git.io/EKPpnA)
@@ -1337,7 +1397,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Replaced getPath/setPath with get/set
 * Remove LEGACY_HANDLEBARS_TAG flag
 * Add two new core methods to allow invoking possibly unknown methods on objects
-* Change ternary syntax to double colon sytax
+* Change ternary syntax to double colon syntax
 * Add tests for ternary operator in class bindings
 * Test for defined Router lacking App(View|Controller)
 * Allow alternate clicks for href handling - Fixes #1096

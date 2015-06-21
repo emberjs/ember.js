@@ -4,16 +4,15 @@
 */
 
 // Ember.lookup, Ember.BOOTED, Ember.deprecate, Ember.NAME_KEY, Ember.anyUnprocessedMixins
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { indexOf } from "ember-metal/array";
+import Ember from 'ember-metal/core';
+import { get } from 'ember-metal/property_get';
 import {
   GUID_KEY,
   guidFor
-} from "ember-metal/utils";
-import { Mixin } from "ember-metal/mixin";
+} from 'ember-metal/utils';
+import { Mixin } from 'ember-metal/mixin';
 
-import EmberObject from "ember-runtime/system/object";
+import EmberObject from 'ember-runtime/system/object';
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -61,7 +60,7 @@ var Namespace = EmberObject.extend({
       Ember.lookup[toString] = undefined;
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
-    namespaces.splice(indexOf.call(namespaces, this), 1);
+    namespaces.splice(namespaces.indexOf(this), 1);
     this._super(...arguments);
   }
 });
@@ -184,9 +183,9 @@ function classToString() {
   } else {
     var str = superClassString(this);
     if (str) {
-      ret = "(subclass of " + str + ")";
+      ret = '(subclass of ' + str + ')';
     } else {
-      ret = "(unknown mixin)";
+      ret = '(unknown mixin)';
     }
     this.toString = makeToString(ret);
   }

@@ -1,4 +1,4 @@
-import isEnabled from "ember-metal/features";
+import isEnabled from 'ember-metal/features';
 
 /*
   This private helper is used in conjuntion with the get keyword

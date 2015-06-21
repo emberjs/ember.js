@@ -1,9 +1,8 @@
-import EmberObject from "ember-runtime/system/object";
+import EmberObject from 'ember-runtime/system/object';
 import {
   guidFor
-} from "ember-metal/utils";
-import { get } from "ember-metal/property_get";
-import { forEach } from "ember-metal/enumerable_utils";
+} from 'ember-metal/utils';
+import { get } from 'ember-metal/property_get';
 
 /*
   @class
@@ -118,11 +117,10 @@ Suite.reopenClass({
   notest() {},
 
   importModuleTests(builder) {
-    var self = this;
     this.module(builder._module);
 
-    forEach(builder._tests, function(descAndFunc) {
-      self.test.apply(self, descAndFunc);
+    builder._tests.forEach((descAndFunc) => {
+      this.test.apply(this, descAndFunc);
     });
   }
 });

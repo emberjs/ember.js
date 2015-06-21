@@ -1,11 +1,11 @@
-import Registry from "container/registry";
-import jQuery from "ember-views/system/jquery";
-import compile from "ember-template-compiler/system/compile";
+import Registry from 'container/registry';
+import jQuery from 'ember-views/system/jquery';
+import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from "ember-views/views/component";
-import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
+import Component from 'ember-views/views/component';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
 
 var registry, container, view;
 var hooks;
@@ -92,18 +92,18 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
 
   view = EmberView.extend({
     template: compile('{{the-top twitter=(readonly view.twitter)}}'),
-    twitter: "@tomdale",
+    twitter: '@tomdale',
     container: container
   }).create();
 
   runAppend(view);
 
-  ok(component, "The component was inserted");
+  ok(component, 'The component was inserted');
   equal(jQuery('#qunit-fixture').text(), 'Twitter: @tomdale Name: Tom Dale Website: tomdale.net');
 
-  let topAttrs = { twitter: "@tomdale" };
-  let middleAttrs = { name: "Tom Dale" };
-  let bottomAttrs = { website: "tomdale.net" };
+  let topAttrs = { twitter: '@tomdale' };
+  let middleAttrs = { name: 'Tom Dale' };
+  let bottomAttrs = { website: 'tomdale.net' };
 
   deepEqual(hooks, [
     hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
@@ -131,7 +131,7 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
     components.middle.rerender();
   });
 
-  bottomAttrs = { oldAttrs: { website: "tomdale.net" }, newAttrs: { website: "tomdale.net" } };
+  bottomAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'tomdale.net' } };
 
   deepEqual(hooks, [
     hook('middle', 'willUpdate'), hook('middle', 'willRender'),
@@ -151,7 +151,7 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
     components.top.rerender();
   });
 
-  middleAttrs = { oldAttrs: { name: "Tom Dale" }, newAttrs: { name: "Tom Dale" } };
+  middleAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Tom Dale' } };
 
   deepEqual(hooks, [
     hook('top', 'willUpdate'), hook('top', 'willRender'),
@@ -180,8 +180,8 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
   // in lifecycle hooks being invoked for the child.
 
   deepEqual(hooks, [
-    hook('top', 'didUpdateAttrs', { oldAttrs: { twitter: "@tomdale" }, newAttrs: { twitter: "@hipstertomdale" } }),
-    hook('top', 'didReceiveAttrs', { oldAttrs: { twitter: "@tomdale" }, newAttrs: { twitter: "@hipstertomdale" } }),
+    hook('top', 'didUpdateAttrs', { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@hipstertomdale' } }),
+    hook('top', 'didReceiveAttrs', { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@hipstertomdale' } }),
     hook('top', 'willUpdate'),
     hook('top', 'willRender'),
     hook('top', 'didUpdate'), hook('top', 'didRender')
@@ -243,18 +243,18 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
 
   view = EmberView.extend({
     template: compile('{{the-top twitter=(readonly view.twitter)}}'),
-    twitter: "@tomdale",
+    twitter: '@tomdale',
     container: container
   }).create();
 
   runAppend(view);
 
-  ok(component, "The component was inserted");
+  ok(component, 'The component was inserted');
   equal(jQuery('#qunit-fixture').text(), 'Top: Middle: Bottom: @tomdale');
 
-  let topAttrs = { twitter: "@tomdale" };
-  let middleAttrs = { twitterTop: "@tomdale" };
-  let bottomAttrs = { twitterMiddle: "@tomdale" };
+  let topAttrs = { twitter: '@tomdale' };
+  let middleAttrs = { twitterTop: '@tomdale' };
+  let bottomAttrs = { twitterMiddle: '@tomdale' };
 
   deepEqual(hooks, [
     hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
@@ -275,9 +275,9 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   // the lifecycle hooks are invoked for all components.
 
 
-  topAttrs = { oldAttrs: { twitter: "@tomdale" }, newAttrs: { twitter: "@hipstertomdale" } };
-  middleAttrs = { oldAttrs: { twitterTop: "@tomdale" }, newAttrs: { twitterTop: "@hipstertomdale" } };
-  bottomAttrs = { oldAttrs: { twitterMiddle: "@tomdale" }, newAttrs: { twitterMiddle: "@hipstertomdale" } };
+  topAttrs = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@hipstertomdale' } };
+  middleAttrs = { oldAttrs: { twitterTop: '@tomdale' }, newAttrs: { twitterTop: '@hipstertomdale' } };
+  bottomAttrs = { oldAttrs: { twitterMiddle: '@tomdale' }, newAttrs: { twitterMiddle: '@hipstertomdale' } };
 
   deepEqual(hooks, [
     hook('top', 'didUpdateAttrs', topAttrs), hook('top', 'didReceiveAttrs', topAttrs),
@@ -302,9 +302,9 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
     view.rerender();
   });
 
-  topAttrs = { oldAttrs: { twitter: "@hipstertomdale" }, newAttrs: { twitter: "@hipstertomdale" } };
-  middleAttrs = { oldAttrs: { twitterTop: "@hipstertomdale" }, newAttrs: { twitterTop: "@hipstertomdale" } };
-  bottomAttrs = { oldAttrs: { twitterMiddle: "@hipstertomdale" }, newAttrs: { twitterMiddle: "@hipstertomdale" } };
+  topAttrs = { oldAttrs: { twitter: '@hipstertomdale' }, newAttrs: { twitter: '@hipstertomdale' } };
+  middleAttrs = { oldAttrs: { twitterTop: '@hipstertomdale' }, newAttrs: { twitterTop: '@hipstertomdale' } };
+  bottomAttrs = { oldAttrs: { twitterMiddle: '@hipstertomdale' }, newAttrs: { twitterMiddle: '@hipstertomdale' } };
 
   deepEqual(hooks, [
     hook('top', 'didUpdateAttrs', topAttrs), hook('top', 'didReceiveAttrs', topAttrs),
@@ -322,14 +322,14 @@ QUnit.test('passing values through attrs causes lifecycle hooks to fire if the a
   ]);
 });
 
-QUnit.test("changing a component's displayed properties inside didInsertElement() is deprecated", function(assert) {
+QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
   let component = Component.extend({
     layout: compile('{{handle}}'),
-    handle: "@wycats",
+    handle: '@wycats',
     container: container,
 
     didInsertElement() {
-      this.set('handle', "@tomdale");
+      this.set('handle', '@tomdale');
     }
   }).create();
 
@@ -337,7 +337,7 @@ QUnit.test("changing a component's displayed properties inside didInsertElement(
     runAppend(component);
   }, /modified inside the didInsertElement hook/);
 
-  assert.strictEqual(component.$().text(), "@tomdale");
+  assert.strictEqual(component.$().text(), '@tomdale');
 
   run(() => {
     component.destroy();

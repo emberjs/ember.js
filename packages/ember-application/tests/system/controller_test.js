@@ -1,16 +1,16 @@
 /*jshint newcap:false */
 
-import Controller from "ember-runtime/controllers/controller";
-import "ember-application/ext/controller";
+import Controller from 'ember-runtime/controllers/controller';
+import 'ember-application/ext/controller';
 
-import { Registry } from "ember-runtime/system/container";
-import { A } from "ember-runtime/system/native_array";
-import ArrayController from "ember-runtime/controllers/array_controller";
-import { computed } from "ember-metal/computed";
+import { Registry } from 'ember-runtime/system/container';
+import { A } from 'ember-runtime/system/native_array';
+import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
+import { computed } from 'ember-metal/computed';
 
-QUnit.module("Controller dependencies");
+QUnit.module('Controller dependencies');
 
-QUnit.test("If a controller specifies a dependency, but does not have a container it should error", function() {
+QUnit.test('If a controller specifies a dependency, but does not have a container it should error', function() {
   var AController = Controller.extend({
     needs: 'posts'
   });
@@ -20,7 +20,7 @@ QUnit.test("If a controller specifies a dependency, but does not have a containe
   }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
 });
 
-QUnit.test("If a controller specifies a dependency, it is accessible", function() {
+QUnit.test('If a controller specifies a dependency, it is accessible', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -33,10 +33,10 @@ QUnit.test("If a controller specifies a dependency, it is accessible", function(
   var postController = container.lookup('controller:post');
   var postsController = container.lookup('controller:posts');
 
-  equal(postsController, postController.get('controllers.posts'), "controller.posts must be auto synthesized");
+  equal(postsController, postController.get('controllers.posts'), 'controller.posts must be auto synthesized');
 });
 
-QUnit.test("If a controller specifies an unavailable dependency, it raises", function() {
+QUnit.test('If a controller specifies an unavailable dependency, it raises', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -57,7 +57,8 @@ QUnit.test("If a controller specifies an unavailable dependency, it raises", fun
   }, /controller:posts, controller:comments/);
 });
 
-QUnit.test("Mixin sets up controllers if there is needs before calling super", function() {
+QUnit.test('Mixin sets up controllers if there is needs before calling super', function() {
+  expectDeprecation(arrayControllerDeprecation);
   var registry = new Registry();
   var container = registry.container();
 
@@ -79,7 +80,7 @@ QUnit.test("Mixin sets up controllers if there is needs before calling super", f
   deepEqual(['a','b','c'], container.lookup('controller:another').toArray());
 });
 
-QUnit.test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
+QUnit.test('raises if trying to get a controller that was not pre-defined in `needs`', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -104,7 +105,7 @@ QUnit.test("raises if trying to get a controller that was not pre-defined in `ne
   'should throw if no such controller was needed');
 });
 
-QUnit.test("setting the value of a controller dependency should not be possible", function() {
+QUnit.test('setting the value of a controller dependency should not be possible', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -123,11 +124,11 @@ QUnit.test("setting the value of a controller dependency should not be possible"
   /You cannot overwrite the value of `controllers.posts` of .+/,
   'should raise when attempting to set the value of a controller dependency property');
 
-  postController.set('controllers.posts.title', "A Troll's Life");
-  equal(postController.get('controllers.posts.title'), "A Troll's Life", "can set the value of controllers.posts.title");
+  postController.set('controllers.posts.title', 'A Troll\'s Life');
+  equal(postController.get('controllers.posts.title'), 'A Troll\'s Life', 'can set the value of controllers.posts.title');
 });
 
-QUnit.test("raises if a dependency with a period is requested", function() {
+QUnit.test('raises if a dependency with a period is requested', function() {
   var registry = new Registry();
   var container = registry.container();
 
@@ -142,7 +143,7 @@ QUnit.test("raises if a dependency with a period is requested", function() {
   'throws if periods used');
 });
 
-QUnit.test("can unit test controllers with `needs` dependencies by stubbing their `controllers` properties", function() {
+QUnit.test('can unit test controllers with `needs` dependencies by stubbing their `controllers` properties', function() {
   expect(1);
 
   var BrotherController = Controller.extend({
@@ -156,6 +157,6 @@ QUnit.test("can unit test controllers with `needs` dependencies by stubbing thei
     }
   });
 
-  equal(broController.get('foo'), 5, "`needs` dependencies can be stubbed");
+  equal(broController.get('foo'), 5, '`needs` dependencies can be stubbed');
 });
 

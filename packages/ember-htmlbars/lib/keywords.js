@@ -3,14 +3,13 @@
 @submodule ember-htmlbars
 */
 
-import { hooks } from "htmlbars-runtime";
-import o_create from "ember-metal/platform/create";
+import { hooks } from 'htmlbars-runtime';
 
 /**
  @private
  @property helpers
 */
-var keywords = o_create(hooks.keywords);
+var keywords = Object.create(hooks.keywords);
 
 /**
 @module ember

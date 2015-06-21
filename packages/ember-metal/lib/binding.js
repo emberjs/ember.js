@@ -1,16 +1,16 @@
-import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, assert
-import { get } from "ember-metal/property_get";
-import { trySet } from "ember-metal/property_set";
-import { guidFor } from "ember-metal/utils";
+import Ember from 'ember-metal/core'; // Ember.Logger, Ember.LOG_BINDINGS, assert
+import { get } from 'ember-metal/property_get';
+import { trySet } from 'ember-metal/property_set';
+import { guidFor } from 'ember-metal/utils';
 import {
   addObserver,
   removeObserver,
   _suspendObserver
-} from "ember-metal/observer";
-import run from "ember-metal/run_loop";
+} from 'ember-metal/observer';
+import run from 'ember-metal/run_loop';
 import {
   isGlobal as isGlobalPath
-} from "ember-metal/path_cache";
+} from 'ember-metal/path_cache';
 
 
 // ES6TODO: where is Ember.lookup defined?
@@ -333,6 +333,7 @@ mixinProperties(Binding, {
     @public
   */
   oneWay(from, flag) {
+    Ember.deprecate('Ember.oneWay has been deprecated. Please use Ember.computed.oneWay instead.', false);
     var C = this;
     return new C(undefined, from).oneWay(flag);
   }

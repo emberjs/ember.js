@@ -1,9 +1,9 @@
 import {
   subscribe,
   reset as instrumentationReset
-} from "ember-metal/instrumentation";
-import run from "ember-metal/run_loop";
-import EmberView from "ember-views/views/view";
+} from 'ember-metal/instrumentation';
+import run from 'ember-metal/run_loop';
+import EmberView from 'ember-views/views/view';
 
 var view, beforeCalls, afterCalls;
 
@@ -13,12 +13,12 @@ function confirmPayload(payload, view) {
   equal(payload && payload.view, view, 'payload contains the view itself');
 }
 
-QUnit.module("EmberView#instrumentation", {
+QUnit.module('EmberView#instrumentation', {
   setup() {
     beforeCalls = [];
     afterCalls  = [];
 
-    subscribe("render", {
+    subscribe('render', {
       before(name, timestamp, payload) {
         beforeCalls.push(payload);
       },
@@ -43,7 +43,7 @@ QUnit.module("EmberView#instrumentation", {
   }
 });
 
-QUnit.test("generates the proper instrumentation details when called directly", function() {
+QUnit.test('generates the proper instrumentation details when called directly', function() {
   var payload = {};
 
   view.instrumentDetails(payload);
@@ -51,7 +51,7 @@ QUnit.test("generates the proper instrumentation details when called directly", 
   confirmPayload(payload, view);
 });
 
-QUnit.test("should add ember-view to views", function() {
+QUnit.test('should add ember-view to views', function() {
   run(view, 'createElement');
 
   confirmPayload(beforeCalls[0], view);

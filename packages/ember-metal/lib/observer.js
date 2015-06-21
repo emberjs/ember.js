@@ -1,15 +1,14 @@
 import {
   watch,
   unwatch
-} from "ember-metal/watching";
-import { map } from "ember-metal/array";
+} from 'ember-metal/watching';
 import {
   listenersFor,
   addListener,
   removeListener,
   suspendListeners,
   suspendListener
-} from "ember-metal/events";
+} from 'ember-metal/events';
 /**
 @module ember-metal
 */
@@ -90,12 +89,12 @@ export function _suspendObserver(obj, path, target, method, callback) {
 }
 
 export function _suspendBeforeObservers(obj, paths, target, method, callback) {
-  var events = map.call(paths, beforeEvent);
+  var events = paths.map(beforeEvent);
   return suspendListeners(obj, events, target, method, callback);
 }
 
 export function _suspendObservers(obj, paths, target, method, callback) {
-  var events = map.call(paths, changeEvent);
+  var events = paths.map(changeEvent);
   return suspendListeners(obj, events, target, method, callback);
 }
 
