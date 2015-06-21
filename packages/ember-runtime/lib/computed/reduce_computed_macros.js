@@ -182,6 +182,9 @@ export function min(dependentKey) {
   @public
 */
 export function map(dependentKey, callback) {
+  Ember.assert('Ember.computed.map expects a callback function for its second argument, ' +
+    'perhaps you meant to use "mapBy"', typeof callback === 'function');
+
   var options = {
     _suppressDeprecation: true,
 
@@ -230,6 +233,9 @@ export function map(dependentKey, callback) {
   @public
 */
 export function mapBy(dependentKey, propertyKey) {
+  Ember.assert('Ember.computed.mapBy expects a property string for its second argument, ' +
+    'perhaps you meant to use "map"', typeof propertyKey === 'string');
+
   var callback = function(item) { return get(item, propertyKey); };
   return map(dependentKey + '.@each.' + propertyKey, callback);
 }
