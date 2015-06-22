@@ -46,6 +46,28 @@ export function stashParamNames(router, handlerInfos) {
   handlerInfos._namesStashed = true;
 }
 
+function _calculateCacheValuePrefix(prefix, part) {
+  // calculates the dot seperated sections from prefix that are also
+  // at the start of part - which gives us the route name
+
+  // given : prefix = site.article.comments, part = site.article.id
+  //      - returns: site.article (use get(values[site.article], 'id') to get the dynamic part - used below)
+
+  // given : prefix = site.article, part = site.article.id
+  //      - returns: site.article. (use get(values[site.article], 'id') to get the dynamic part - used below)
+
+  var prefixParts = prefix.split('.');
+  var currPrefix = '';
+  for (var i = 0, len = prefixParts.length; i < len; i++) {
+    var currPart = prefixParts.slice(0, i+1).join('.');
+    if (part.indexOf(currPart) !== 0) {
+      break;
+    }
+    currPrefix = currPart;
+  }
+  return currPrefix;
+}
+
 /*
   Stolen from Controller
 */
@@ -54,7 +76,14 @@ export function calculateCacheKey(prefix, _parts, values) {
   var suffixes = '';
   for (var i = 0, len = parts.length; i < len; ++i) {
     var part = parts[i];
-    var value = get(values, part);
+    var cacheValuePrefix = _calculateCacheValuePrefix(prefix, part);
+    var value;
+    if (cacheValuePrefix && cacheValuePrefix in values) {
+      var partRemovedPrefix = (part.indexOf(cacheValuePrefix) === 0) ? part.substr(cacheValuePrefix.length + 1) : part;
+      value = get(values[cacheValuePrefix], partRemovedPrefix);
+    } else {
+      value = get(values, part);
+    }
     suffixes += '::' + part + ':' + value;
   }
   return prefix + suffixes.replace(ALL_PERIODS_REGEX, '-');
