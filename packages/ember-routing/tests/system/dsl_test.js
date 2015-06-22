@@ -39,7 +39,7 @@ QUnit.test('should fail when using a reserved route name', function() {
 
       var router = Router.create();
       router._initRouterJs();
-    }, `'${reservedName}' cannot be used as a resource name.`);
+    }, `'${reservedName}' cannot be used as a route name.`);
 
   });
 });
