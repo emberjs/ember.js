@@ -84,7 +84,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     });
 
     function generateDSL() {
-      this.resource('application', { path: '/', overrideNameAssertion: true }, function() {
+      this.route('application', { path: '/', resetNamespace: true, overrideNameAssertion: true }, function() {
         for (var i=0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
@@ -918,17 +918,39 @@ EmberRouter.reopenClass({
 
   /**
     The `Router.map` function allows you to define mappings from URLs to routes
-    and resources in your application. These mappings are defined within the
-    supplied callback function using `this.resource` and `this.route`.
+    in your application. These mappings are defined within the
+    supplied callback function using `this.route`.
+
+    The first parameter is the name of the route which is used by default as the
+    path name as well.
+
+    The second parameter is the optional options hash. Available options are:
+      * `path`: allows you to provide your own path as well as mark dynamic
+        segments.
+      * `resetNamespace`: false by default; when nesting routes, ember will
+        combine the route names to form the fully-qualified route name, which is
+        used with `{{link-to}}` or manually transitioning to routes. Setting
+        `resetNamespace: true` will cause the route not to inherit from its
+        parent route's names. This is handy for resources which can be accessed
+        in multiple places as well as preventing extremely long route names.
+        Keep in mind that the actual URL path behavior is still retained.
+
+    The third parameter is a function, which can be used to nest routes.
+    Nested routes, by default, will have the parent route tree's route name and
+    path prepended to it's own.
 
     ```javascript
     App.Router.map(function(){
-      this.route('about');
-      this.resource('article');
+      this.route('post', { path: '/post/:post_id' }, function() {
+        this.route('edit');
+        this.route('comments', { resetNamespace: true }, function() {
+          this.route('new');
+        });
+      });
     });
     ```
 
-    For more detailed examples please see
+    For more detailed documentation and examples please see
     [the guides](http://emberjs.com/guides/routing/defining-your-routes/).
 
     @method map

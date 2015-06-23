@@ -26,7 +26,7 @@ import { getHash } from 'ember-routing/location/util';
 
   ```javascript
   App.Router.map(function() {
-    this.resource('posts', function() {
+    this.route('posts', function() {
       this.route('new');
     });
   });
@@ -47,7 +47,7 @@ import { getHash } from 'ember-routing/location/util';
 
   ```javascript
   App.Router.map(function() {
-    this.resource('posts', function() {
+    this.route('posts', function() {
       this.route('new');
     });
   });
@@ -75,7 +75,7 @@ import { getHash } from 'ember-routing/location/util';
 
   ```javascript
   App.Router.map(function() {
-    this.resource('posts', function() {
+    this.route('posts', function() {
       this.route('new');
     });
   });

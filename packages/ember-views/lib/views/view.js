@@ -371,7 +371,7 @@ Ember.TEMPLATES = {};
   });
   ```
 
-  If you have nested resources, your Handlebars template will look like this:
+  If you have nested routes, your Handlebars template will look like this:
 
   ```html
   <script type='text/x-handlebars' data-template-name='posts/new'>

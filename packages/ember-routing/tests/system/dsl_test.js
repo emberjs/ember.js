@@ -13,9 +13,10 @@ QUnit.module('Ember Router DSL', {
 });
 
 QUnit.test('should fail when using a reserved route name', function() {
+  expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
   var reservedNames = ['array', 'basic', 'object', 'application'];
 
-  expect(reservedNames.length * 2);
+  expect((reservedNames.length * 2) + 1);
 
   reservedNames.forEach(function(reservedName) {
     expectAssertion(function() {
@@ -38,12 +39,14 @@ QUnit.test('should fail when using a reserved route name', function() {
 
       var router = Router.create();
       router._initRouterJs();
-    }, '\'' + reservedName + '\' cannot be used as a resource name.');
+    }, `'${reservedName}' cannot be used as a route name.`);
 
   });
 });
 
 QUnit.test('should reset namespace if nested with resource', function() {
+  expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
+
   Router = Router.map(function() {
     this.resource('bleep', function() {
       this.resource('bloop', function() {

@@ -25,9 +25,8 @@ DSL.prototype = {
       options = {};
     }
 
-    var type = options.resetNamespace === true ? 'resource' : 'route';
     Ember.assert(
-      `'${name}' cannot be used as a ${type} name.`,
+      `'${name}' cannot be used as a route name.`,
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
 
@@ -77,6 +76,7 @@ DSL.prototype = {
     }
 
     options.resetNamespace = true;
+    Ember.deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
     this.route(name, options, callback);
   },
 

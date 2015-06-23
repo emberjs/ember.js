@@ -147,7 +147,7 @@ import merge from 'ember-metal/merge';
 
   ```javascript
   App.Router.map(function() {
-    this.resource("photoGallery", {path: "hamster-photos/:photo_id"});
+    this.route("photoGallery", {path: "hamster-photos/:photo_id"});
   });
   ```
 
@@ -172,7 +172,7 @@ import merge from 'ember-metal/merge';
 
   ```javascript
   App.Router.map(function() {
-    this.resource("photoGallery", {path: "hamster-photos/:photo_id"}, function() {
+    this.route("photoGallery", { path: "hamster-photos/:photo_id" }, function() {
       this.route("comment", {path: "comments/:comment_id"});
     });
   });
@@ -199,7 +199,7 @@ import merge from 'ember-metal/merge';
 
   ```javascript
   App.Router.map(function() {
-    this.resource("photoGallery", {path: "hamster-photos/:photo_id"});
+    this.route("photoGallery", { path: "hamster-photos/:photo_id" });
   });
   ```
 

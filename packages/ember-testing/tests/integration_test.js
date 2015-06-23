@@ -23,7 +23,7 @@ QUnit.module('ember-testing Integration', {
       });
 
       App.Router.map(function() {
-        this.resource('people', { path: '/' });
+        this.route('people', { path: '/' });
       });
 
       App.PeopleRoute = EmberRoute.extend({

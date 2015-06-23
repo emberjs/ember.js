@@ -65,12 +65,12 @@ ControllerMixin.reopen({
     ```
 
     Multiple models will be applied last to first recursively up the
-    resource tree.
+    route tree.
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function() {
-        this.resource('blogComment', {path: ':blogCommentId'});
+      this.route('blogPost', { path: ':blogPostId' }, function() {
+        this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
 
@@ -156,12 +156,12 @@ ControllerMixin.reopen({
     ```
 
     Multiple models will be applied last to first recursively up the
-    resource tree.
+    route tree.
 
     ```javascript
     App.Router.map(function() {
-      this.resource('blogPost', {path:':blogPostId'}, function() {
-        this.resource('blogComment', {path: ':blogCommentId'});
+      this.route('blogPost', { path: ':blogPostId' }, function() {
+        this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
 
