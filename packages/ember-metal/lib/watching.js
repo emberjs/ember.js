@@ -91,7 +91,7 @@ export function destroy(obj) {
         nodes = node._chains;
         if (nodes) {
           for (key in nodes) {
-            if (nodes.hasOwnProperty(key)) {
+            if (nodes[key] !== undefined) {
               NODE_STACK.push(nodes[key]);
             }
           }
