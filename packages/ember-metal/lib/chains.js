@@ -18,6 +18,12 @@ function isVolatile(obj) {
   return !(isObject(obj) && obj.isDescriptor && obj._cacheable);
 }
 
+function Chains() {
+
+}
+
+Chains.prototype = Object.create(null);
+
 var pendingQueue = [];
 
 // attempts to add the pendingQueue chains again. If some of them end up
@@ -46,13 +52,15 @@ function addChainWatcher(obj, keyName, node) {
   var nodes = m.chainWatchers;
 
   if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
-    nodes = m.chainWatchers = {};
+    nodes = m.chainWatchers = new Chains();
   }
 
   if (!nodes[keyName]) {
-    nodes[keyName] = [];
+    nodes[keyName] = [node];
+  } else {
+    nodes[keyName].push(node);
   }
-  nodes[keyName].push(node);
+
   watchKey(obj, keyName, m);
 }
 
@@ -92,6 +100,10 @@ function ChainNode(parent, key, value) {
   // and for global paths (because the parent node is the object with
   // the observer on it)
   this._watching = (value === undefined);
+
+  this._chains = undefined;
+  this._object = undefined;
+  this.count = 0;
 
   this._value = value;
   this._paths = {};
@@ -231,19 +243,19 @@ ChainNode.prototype = {
     this.unchain(key, path);
   },
 
-  count: 0,
-
   chain(key, path, src) {
     var chains = this._chains;
     var node;
-    if (!chains) {
-      chains = this._chains = {};
+    if (chains === undefined) {
+      chains = this._chains = new Chains();
+    } else {
+      node = chains[key];
     }
 
-    node = chains[key];
-    if (!node) {
+    if (node === undefined) {
       node = chains[key] = new ChainNode(this, key, src);
     }
+
     node.count++; // count chains...
 
     // chain rest of path if there is one
@@ -268,7 +280,7 @@ ChainNode.prototype = {
     // delete node if needed.
     node.count--;
     if (node.count <= 0) {
-      delete chains[node._key];
+      chains[node._key] = undefined;
       node.destroy();
     }
   },
@@ -277,9 +289,6 @@ ChainNode.prototype = {
     var chains = this._chains;
     if (chains) {
       for (var key in chains) {
-        if (!chains.hasOwnProperty(key)) {
-          continue;
-        }
         chains[key].willChange(events);
       }
     }
@@ -347,9 +356,6 @@ ChainNode.prototype = {
     var chains = this._chains;
     if (chains) {
       for (var key in chains) {
-        if (!chains.hasOwnProperty(key)) {
-          continue;
-        }
         chains[key].didChange(events);
       }
     }
@@ -376,10 +382,6 @@ export function finishChains(obj) {
     chainWatchers = m.chainWatchers;
     if (chainWatchers) {
       for (var key in chainWatchers) {
-        if (!chainWatchers.hasOwnProperty(key)) {
-          continue;
-        }
-
         chainNodes = chainWatchers[key];
         if (chainNodes) {
           for (var i = 0, l = chainNodes.length; i < l; i++) {
