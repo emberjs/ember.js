@@ -245,7 +245,7 @@ DependentArraysObserver.prototype = {
     if (this.suspended) { return; }
 
     var removedItem = this.callbacks.removedItem;
-    var changeMeta;
+    var changeMeta, changedItem, previousValues;
     var guid = guidFor(dependentArray);
     var dependentKey = this.dependentKeysByGuid[guid];
     var itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [];
@@ -270,7 +270,10 @@ DependentArraysObserver.prototype = {
 
       itemPropertyKeys.forEach(removeObservers, this);
 
-      changeMeta = new ChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp, normalizedRemoveCount);
+      if(changedItem = this.changedItems[guidFor(item)]) {
+        previousValues = changedItem.previousValues;
+      }
+      changeMeta = new ChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp, normalizedRemoveCount, previousValues);
       this.setValue(removedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }
@@ -288,7 +291,7 @@ DependentArraysObserver.prototype = {
     var length = get(dependentArray, 'length');
     var normalizedIndex = normalizeIndex(index, length, addedCount);
     var endIndex = normalizedIndex + addedCount;
-    var changeMeta, observerContext;
+    var changeMeta, observerContext, changedItem, previousValues;
 
     dependentArray.slice(normalizedIndex, endIndex).forEach(function (item, sliceIndex) {
       if (itemPropertyKeys) {
@@ -302,7 +305,10 @@ DependentArraysObserver.prototype = {
         }, this);
       }
 
-      changeMeta = new ChangeMeta(dependentArray, item, normalizedIndex + sliceIndex, this.instanceMeta.propertyName, this.cp, addedCount);
+      if(changedItem = this.changedItems[guidFor(item)]) {
+        previousValues = changedItem.previousValues;
+      }
+      changeMeta = new ChangeMeta(dependentArray, item, normalizedIndex + sliceIndex, this.instanceMeta.propertyName, this.cp, addedCount, previousValues);
       this.setValue(addedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }, this);

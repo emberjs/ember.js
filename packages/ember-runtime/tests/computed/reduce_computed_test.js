@@ -1076,3 +1076,69 @@ QUnit.test('item property change flushes are gated by a semaphore', function() {
   shared.set('flag', true);
   deepEqual(callbackItems, ['remove:true', 'add:true', 'remove:true', 'add:true'], 'item property flushes that depend on a shared prop are gated by a semaphore');
 });
+
+QUnit.module('arrayComputed - changeMeta property observers, previousValues', {
+  setup: function() {
+    callbackItems = [];
+    run(function() {
+      obj = EmberObject.createWithMixins({
+        items: Ember.A([EmberObject.create({ n: 'one' })]),
+        itemsChanged: arrayComputed('items.@each.n', {
+          addedItem: function(array, item, changeMeta, instanceMeta) {
+            array.insertAt(changeMeta.index, item);
+            return array;
+          },
+          removedItem: function(array, item, changeMeta, instanceMeta) {
+            array.removeAt(changeMeta.index);
+            return array;
+          }
+        }),
+        itemsN: arrayComputed('itemsChanged.@each.n', {
+          addedItem: function(array, item, changeMeta, instanceMeta) {
+            var previousNValue = null;
+            if(changeMeta.previousValues) {
+              previousNValue = changeMeta.previousValues.n;
+            }
+            callbackItems.push('add:' + previousNValue + ":" + get(changeMeta.item, 'n'));
+
+          },
+          removedItem: function (array, item, changeMeta, instanceMeta) {
+            var previousNValue = null;
+            if(changeMeta.previousValues) {
+              previousNValue = changeMeta.previousValues.n;
+            }
+            callbackItems.push('remove:' + previousNValue + ":" + get(changeMeta.item, 'n'));
+          }
+        })
+      });
+    });
+  },
+  teardown: function() {
+    run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("previousValues are passed to removedItem and addedItem callbacks", function() {
+  var expected, items, anotherObj;
+
+  items = get(obj, 'items');
+
+  anotherObj = Ember.Object.create({
+    item: obj.get('items.firstObject'),
+    nBinding: 'item.n'
+  });
+
+  run(function() {
+    obj.get('itemsN');
+  });
+
+  callbackItems = [];
+  run(function() {
+    set(anotherObj, 'n', "two");
+  });
+
+  expected = ['remove:one:two', 'add:one:two'];
+  deepEqual(callbackItems, expected, "changeMeta includes previous values");
+});
