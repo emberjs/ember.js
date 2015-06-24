@@ -241,7 +241,6 @@ Ember.tryCatchFinally = deprecatedTryCatchFinally;
 Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
 Ember.tryInvoke       = tryInvoke;
-Ember.tryFinally      = deprecatedTryFinally;
 Ember.wrap            = wrap;
 Ember.apply           = apply;
 Ember.applyStr        = applyStr;

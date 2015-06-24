@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import { tryCatchFinally } from 'ember-metal/utils';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -97,19 +96,23 @@ export function instrument(name, _payload, callback, binding) {
     return callback.call(binding);
   }
   var payload = _payload || {};
-  var finalizer = _instrumentStart(name, function () {
-    return payload;
-  });
+  var finalizer = _instrumentStart(name, () => payload);
+
   if (finalizer) {
-    var tryable = function _instrumenTryable() {
-      return callback.call(binding);
-    };
-    var catchable = function _instrumentCatchable(e) {
-      payload.exception = e;
-    };
-    return tryCatchFinally(tryable, catchable, finalizer);
+    return withFinalizer(callback, finalizer, payload, binding);
   } else {
     return callback.call(binding);
+  }
+}
+
+function withFinalizer(callback, finalizer, payload, binding) {
+  try {
+    return callback.call(binding);
+  } catch(e) {
+    payload.exception = e;
+    return payload;
+  } finally {
+    return finalizer();
   }
 }
 

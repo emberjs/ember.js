@@ -10,7 +10,6 @@
 import Ember from 'ember-metal/core';
 import {
   meta as metaFor,
-  tryFinally,
   apply,
   applyStr
 } from 'ember-metal/utils';
@@ -221,10 +220,13 @@ export function suspendListener(obj, eventName, target, method, callback) {
     actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
   }
 
-  function tryable() { return callback.call(target); }
-  function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
-
-  return tryFinally(tryable, finalizer);
+  try {
+    return callback.call(target);
+  } finally {
+    if (actionIndex !== -1) {
+      actions[actionIndex+2] &= ~SUSPENDED;
+    }
+  }
 }
 
 /**
@@ -248,12 +250,11 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
 
   var suspendedActions = [];
   var actionsList = [];
-  var eventName, actions, i, l;
 
-  for (i=0, l=eventNames.length; i<l; i++) {
-    eventName = eventNames[i];
-    actions = actionsFor(obj, eventName);
-    var actionIndex = indexOf(actions, target, method);
+  for (let i=0, l=eventNames.length; i<l; i++) {
+    let eventName = eventNames[i];
+    let actions = actionsFor(obj, eventName);
+    let actionIndex = indexOf(actions, target, method);
 
     if (actionIndex !== -1) {
       actions[actionIndex+2] |= SUSPENDED;
@@ -262,16 +263,14 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
     }
   }
 
-  function tryable() { return callback.call(target); }
-
-  function finalizer() {
-    for (var i = 0, l = suspendedActions.length; i < l; i++) {
-      var actionIndex = suspendedActions[i];
+  try {
+    return callback.call(target);
+  } finally {
+    for (let i = 0, l = suspendedActions.length; i < l; i++) {
+      let actionIndex = suspendedActions[i];
       actionsList[i][actionIndex+2] &= ~SUSPENDED;
     }
   }
-
-  return tryFinally(tryable, finalizer);
 }
 
 /**
