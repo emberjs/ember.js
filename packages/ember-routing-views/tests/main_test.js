@@ -14,5 +14,6 @@ QUnit.test("Ember.LinkView throws a deprecation warning when instantiated", func
 
 QUnit.test("Ember.LinkView throws a deprecation warning when reopened", function() {
   expectDeprecation(/Ember.LinkView is deprecated. Please use Ember.LinkComponent/);
-  Ember.LinkView.reopen({});
+
+  ok(Ember.LinkView.reopen({}), 'maintains return value');
 });
