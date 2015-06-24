@@ -437,8 +437,8 @@ testBoth('should be clear caches for computed properties that have dependent key
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   equal('HI!', get(obj, 'common'));
 
-  set(objectAt(get(obj, 'resources'), 0), 'common', "BYE!");
-  equal("BYE!", get(obj, 'common'));
+  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
+  equal('BYE!', get(obj, 'common'));
 });
 
 testBoth('observers that contain @each in the path should fire only once the first time they are accessed', function(get, set) {
@@ -459,7 +459,7 @@ testBoth('observers that contain @each in the path should fire only once the fir
   // Observer fires second time when new object is added
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   // Observer fires third time when property on an object is changed
-  set(objectAt(get(obj, 'resources'), 0), 'common', "BYE!");
+  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
 
   equal(count, 2, 'observers should only be called once');
 });

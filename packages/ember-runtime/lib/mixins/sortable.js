@@ -23,9 +23,6 @@ import {
   objectAt
 } from 'ember-runtime/mixins/array';
 
-import {
-  indexOf
-} from 'ember-metal/enumerable_utils';
 /**
   `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
@@ -277,7 +274,7 @@ export default Mixin.create(MutableEnumerable, {
 
   contentItemSortPropertyDidChange(item) {
     var arrangedContent = get(this, 'arrangedContent');
-    var oldIndex = indexOf(arrangedContent, item);
+    var oldIndex = arrangedContent.indexOf(item);
     var leftItem = objectAt(arrangedContent, oldIndex - 1);
     var rightItem = objectAt(arrangedContent, oldIndex + 1);
     var leftResult = leftItem && this.orderBy(item, leftItem);

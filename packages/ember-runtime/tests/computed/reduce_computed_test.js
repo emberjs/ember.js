@@ -715,7 +715,7 @@ QUnit.test('changeMeta includes item and index', function() {
 
   // remove0 add0
   run(function() {
-    objectAt(items, 0).set('n', "zero''");
+    objectAt(items, 0).set('n', `zero''`);
   });
 
   expected = expected.concat(['add:2:five', 'add:3:six', 'remove:0:zero\'\'', 'add:0:zero\'\'']);
@@ -736,7 +736,7 @@ QUnit.test('changeMeta includes item and index', function() {
   // [zero'', five, six] -> [zero'', five, seven]
   // remove2 add2
   run(function() {
-    objectAt(items, 2).set('n', "seven");
+    objectAt(items, 2).set('n', 'seven');
   });
 
   // observer should have been added to the new item

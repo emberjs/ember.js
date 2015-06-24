@@ -1242,7 +1242,7 @@ QUnit.test('sorts correctly as only one property changes', function() {
   run(function() {
     sorted = obj.get('sortedItems');
   });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
+  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
   objectAt(obj.get('items'), 3).set('count', 2);
   run(function() {
     sorted = obj.get('sortedItems');

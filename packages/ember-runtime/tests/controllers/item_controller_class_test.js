@@ -315,7 +315,7 @@ QUnit.test('array observers can invoke `objectAt` without overwriting existing i
     lannistersWillChange() { return this; },
     lannistersDidChange(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
-      equal(objectAt(this, idx).get('model.name'), "Tyrion", "Array observers get the right object via `objectAt`");
+      equal(objectAt(this, idx).get('model.name'), 'Tyrion', 'Array observers get the right object via `objectAt`');
     }
   });
 
