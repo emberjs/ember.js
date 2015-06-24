@@ -8,6 +8,7 @@ import SortableMixin from 'ember-runtime/mixins/sortable';
 import EmberObject from 'ember-runtime/system/object';
 import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { objectAt } from 'ember-runtime/mixins/array';
+import { replace } from 'ember-runtime/system/native_array';
 
 var unsortedArray, sortedArrayController;
 
@@ -276,7 +277,7 @@ QUnit.test('sortProperties observers removed on content removal', function() {
   var removedObject = objectAt(unsortedArray, 2);
   equal(listenersFor(removedObject, 'name:change').length, 1,
     'Before removal, there should be one listener for sortProperty change.');
-  unsortedArray.replace(2, 1, []);
+  replace(unsortedArray, 2, 1, []);
   equal(listenersFor(removedObject, 'name:change').length, 0,
     'After removal, there should be no listeners for sortProperty change.');
 });

@@ -11,9 +11,7 @@ import ControllerMixin from 'ember-runtime/mixins/controller';
 import { computed } from 'ember-metal/computed';
 import EmberError from 'ember-metal/error';
 import replace from 'ember-metal/replace';
-import EmberArray, {
-  objectAt
-} from 'ember-runtime/mixins/array';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 export var arrayControllerDeprecation = '`Ember.ArrayController` is deprecated.';
 
@@ -214,12 +212,6 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
       return Ember.A();
     },
     set(key, value) {
-      Ember.assert(
-        'ArrayController expects `model` to implement the Ember.Array mixin. ' +
-        'This can often be fixed by wrapping your model with `Ember.A()`.',
-        EmberArray.detect(value) || !value
-      );
-
       return value;
     }
   }),

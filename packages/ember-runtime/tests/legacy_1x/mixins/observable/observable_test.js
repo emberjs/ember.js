@@ -6,7 +6,7 @@ import { observer } from 'ember-metal/mixin';
 import { fmt, w } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
-
+import { replace } from 'ember-runtime/system/native_array';
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
@@ -753,7 +753,7 @@ QUnit.test('toggle function, should be boolean', function() {
 });
 
 QUnit.test('should notify array observer when array changes', function() {
-  get(object, 'normalArray').replace(0, 0, 6);
+  replace(get(object, 'normalArray'), 0, 0, 6);
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 

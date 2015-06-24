@@ -13,6 +13,7 @@ import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-runtime/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { replace } from 'ember-runtime/system/native_array';
 
 var originalLookup = Ember.lookup;
 
@@ -859,7 +860,7 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'truthy');
 
     run(function() {
-      list.replace(0, 1);
+      replace(list, 0, 1);
     });
 
     equal(view.$().text(), 'falsy');

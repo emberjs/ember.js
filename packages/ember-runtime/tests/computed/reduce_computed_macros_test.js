@@ -27,6 +27,7 @@ import {
 } from 'ember-runtime/computed/reduce_computed_macros';
 
 import { objectAt } from 'ember-runtime/mixins/array';
+import { replace } from 'ember-runtime/system/native_array';
 
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
 
@@ -783,8 +784,8 @@ function commonSortTests() {
       });
       items = get(obj, 'items');
 
-      items.replace(0, 1, jaime);
-      items.replace(1, 1, jaimeInDisguise);
+      replace(items, 0, 1, jaime);
+      replace(items, 1, 1, jaimeInDisguise);
       sorted = get(obj, 'sortedItems');
     });
 

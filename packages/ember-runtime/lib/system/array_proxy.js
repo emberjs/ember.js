@@ -23,6 +23,7 @@ import {
   removeArrayObserver,
   objectAt
 } from 'ember-runtime/mixins/array';
+import { replace } from 'ember-runtime/system/native_array';
 
 /**
 @module ember
@@ -127,7 +128,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @private
   */
   replaceContent(idx, amt, objects) {
-    get(this, 'content').replace(idx, amt, objects);
+    replace(get(this, 'content'), idx, amt, objects);
   },
 
   /**

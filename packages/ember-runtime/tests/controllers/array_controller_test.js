@@ -13,7 +13,7 @@ MutableArrayTests.extend({
     var ret = ary ? ary.slice() : this.newFixture(3);
     expectDeprecation(arrayControllerDeprecation);
     return ArrayController.create({
-      model: Ember.A(ret)
+      model: ret
     });
   },
 
