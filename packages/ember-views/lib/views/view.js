@@ -1310,6 +1310,7 @@ var View = CoreView.extend(
     @private
   */
   init() {
+    this.attrs = undefined;
     if (!this.elementId) {
       this.elementId = guidFor(this);
     }
