@@ -48,7 +48,7 @@ function validateAction(component, actionName) {
   ```handlebars
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
-  <img {{bind-attr src=person.avatar}}>
+  <img src={{person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
   ```
 
