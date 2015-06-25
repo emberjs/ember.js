@@ -56,6 +56,8 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     adding = addAmt;
   }
 
+  propertyDidChange(array, '[]');
+  propertyDidChange(array, 'length');
   // TODO: something something
   // array.enumerableContentDidChange(removeAmt, adding);
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
@@ -110,6 +112,8 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
     removing = removeAmt;
   }
 
+  propertyWillChange(array, '[]');
+  propertyWillChange(array, 'length');
   // TODO: can we kill these?
   //enumerableContentWillChange(array, removing, addAmt);
 }

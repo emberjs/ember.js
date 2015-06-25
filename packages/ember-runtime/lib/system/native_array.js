@@ -16,6 +16,7 @@ import Observable from 'ember-runtime/mixins/observable';
 import Copyable from 'ember-runtime/mixins/copyable';
 import { FROZEN_ERROR } from 'ember-runtime/mixins/freezable';
 import copy from 'ember-runtime/copy';
+
 export function replace(array, index, amt, objects) {
   if (this.isFrozen) {
     throw FROZEN_ERROR;
