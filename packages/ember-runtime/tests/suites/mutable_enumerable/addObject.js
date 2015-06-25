@@ -59,15 +59,4 @@ suite.test('[A,B,C].addObject(A) => [A,B,C] + NO notify', function() {
   }
 });
 
-suite.test('Adding object should notify enumerable observer', function() {
-  var obj = this.newObject(this.newFixture(3));
-  var observer = this.newObserver(obj).observeEnumerable(obj);
-  var item = this.newFixture(1)[0];
-
-  obj.addObject(item);
-
-  deepEqual(observer._before, [obj, null, [item]]);
-  deepEqual(observer._after, [obj, null, [item]]);
-});
-
 export default suite;

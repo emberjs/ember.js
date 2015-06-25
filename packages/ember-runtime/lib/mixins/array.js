@@ -119,8 +119,7 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 
   var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
   propertyWillChange(array, '[]');
-  // TODO: can we kill these?
-  //enumerableContentWillChange(array, removing, addAmt);
+
   if (hasDelta) {
     propertyWillChange(array, 'length');
   }

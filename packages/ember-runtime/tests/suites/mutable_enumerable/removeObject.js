@@ -60,16 +60,4 @@ suite.test('[A,B,C].removeObject(D) => [A,B,C]', function() {
   }
 });
 
-suite.test('Removing object should notify enumerable observer', function() {
-  var fixtures = this.newFixture(3);
-  var obj = this.newObject(fixtures);
-  var observer = this.newObserver(obj).observeEnumerable(obj);
-  var item = fixtures[1];
-
-  obj.removeObject(item);
-
-  deepEqual(observer._before, [obj, [item], null]);
-  deepEqual(observer._after, [obj, [item], null]);
-});
-
 export default suite;

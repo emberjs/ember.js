@@ -17,9 +17,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
       return this;
     }
 
-    this.enumerableContentWillChange(null, [obj]);
     this._content.push(obj);
-    this.enumerableContentDidChange(null, [obj]);
   },
 
   removeObject(obj) {
@@ -28,9 +26,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
       return this;
     }
 
-    this.enumerableContentWillChange([obj], null);
     this._content.splice(idx, 1);
-    this.enumerableContentDidChange([obj], null);
     return this;
   },
 
