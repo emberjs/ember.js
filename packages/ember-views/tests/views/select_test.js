@@ -7,6 +7,7 @@ import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
 import { replace } from 'ember-runtime/system/native_array';
 import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 
 var trim = jQuery.trim;
 
@@ -418,7 +419,7 @@ QUnit.test('multiple selections can be set by changing in place the selection ar
   run(function() {
     // TODO: pushObject(array, obj);
     // TODO: pushObjects(array, [obj]);
-    replace(selection, 0, selection.get('length'), [david, brennain]);
+    replace(selection, 0, selection.length, [david, brennain]);
   });
 
   deepEqual(
@@ -516,7 +517,7 @@ QUnit.test('select with group doesn\'t break options', function() {
   equal(trim(select.$().text()), 'YehudaTomKeith');
 
   run(function() {
-    content.set('firstObject.firstName', 'Peter');
+    set(content[0], 'firstName', 'Peter');
   });
   equal(select.$().text(), 'PeterTomKeith\n');
 
