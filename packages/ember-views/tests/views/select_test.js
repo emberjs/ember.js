@@ -6,6 +6,8 @@ import jQuery from 'ember-views/system/jquery';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
 import { replace } from 'ember-runtime/system/native_array';
+import { get } from 'ember-metal/property_get';
+
 var trim = jQuery.trim;
 
 var dispatcher, select;
@@ -414,6 +416,8 @@ QUnit.test('multiple selections can be set by changing in place the selection ar
   deepEqual(select.get('selection'), [yehuda, tom], 'Initial selection should be correct');
 
   run(function() {
+    // TODO: pushObject(array, obj);
+    // TODO: pushObjects(array, [obj]);
     replace(selection, 0, selection.get('length'), [david, brennain]);
   });
 
@@ -555,7 +559,9 @@ QUnit.test('select with group observes its content', function() {
   append();
 
   run(function() {
-    content.pushObject({ firstName: 'Keith', organization: 'Envato' });
+    replace(content, get(content, 'length'), [
+      { firstName: 'Keith', organization: 'Envato' }
+    ]);
   });
 
   equal(select.$('optgroup').length, 2);

@@ -4,7 +4,7 @@
 */
 
 import Ember from 'ember-metal/core';
-import replace from 'ember-metal/replace';
+import { replace } from 'ember-runtime/system/native_array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import View from 'ember-views/views/view';
@@ -19,6 +19,8 @@ import htmlbarsTemplate from 'ember-htmlbars/templates/select';
 import selectOptionDefaultTemplate from 'ember-htmlbars/templates/select-option';
 import selectOptgroupDefaultTemplate from 'ember-htmlbars/templates/select-optgroup';
 
+
+// TODO: extract
 function find(obj, callback, target) {
   if (obj.find) { return obj.find(callback, target); }
 
@@ -33,8 +35,14 @@ function find(obj, callback, target) {
   }
 
   return result;
-
 }
+
+
+// TODO: extract
+function pushObject(array, object) {
+  replace(array, get(array, 'length'), 0, [object]);
+}
+
 var defaultTemplate = htmlbarsTemplate;
 
 var SelectOption = View.extend({
@@ -499,7 +507,7 @@ var Select = View.extend({
       var label = get(item, groupPath);
 
       if (get(groupedContent, 'lastObject.label') !== label) {
-        groupedContent.pushObject({
+        pushObject(groupedContent, {
           label: label,
           content: emberA()
         });
