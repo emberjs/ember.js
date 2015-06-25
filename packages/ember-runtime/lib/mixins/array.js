@@ -56,8 +56,13 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     adding = addAmt;
   }
 
+  var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
+
   propertyDidChange(array, '[]');
-  propertyDidChange(array, 'length');
+
+  if (hasDelta) {
+    propertyDidChange(array, 'length');
+  }
   // TODO: something something
   // array.enumerableContentDidChange(removeAmt, adding);
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
@@ -112,10 +117,13 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
     removing = removeAmt;
   }
 
+  var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
   propertyWillChange(array, '[]');
-  propertyWillChange(array, 'length');
   // TODO: can we kill these?
   //enumerableContentWillChange(array, removing, addAmt);
+  if (hasDelta) {
+    propertyWillChange(array, 'length');
+  }
 }
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
