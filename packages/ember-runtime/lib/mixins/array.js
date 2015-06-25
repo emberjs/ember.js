@@ -29,7 +29,7 @@ import {
 import { isWatching } from 'ember-metal/watching';
 
 export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
-  var adding, lim;
+  var adding;
 
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
@@ -45,16 +45,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  if (startIdx >= 0 && addAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    adding = [];
-    lim = startIdx + addAmt;
-
-    for (var idx = startIdx; idx < lim; idx++) {
-      adding.push(objectAt(idx));
-    }
-  } else {
-    adding = addAmt;
-  }
+  adding = addAmt;
 
   var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
 
@@ -63,8 +54,6 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   if (hasDelta) {
     propertyDidChange(array, 'length');
   }
-  // TODO: something something
-  // array.enumerableContentDidChange(removeAmt, adding);
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   var length = get(array, 'length');
@@ -83,7 +72,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
-  var removing, lim;
+  var removing;
 
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
@@ -106,16 +95,7 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
-  if (startIdx >= 0 && removeAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    removing = [];
-    lim = startIdx + removeAmt;
-
-    for (var idx = startIdx; idx < lim; idx++) {
-      removing.push(objectAt(array, idx));
-    }
-  } else {
-    removing = removeAmt;
-  }
+  removing = removeAmt;
 
   var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
   propertyWillChange(array, '[]');
@@ -189,9 +169,6 @@ export function objectAt(content, idx) {
   To support `Ember.Array` in your own class, you must override two
   primitives to use it: `replace()` and `objectAt()`.
 
-  Note that the Ember.Array mixin also incorporates the `Ember.Enumerable`
-  mixin. All `Ember.Array`-like objects are also enumerable.
-
   @class Array
   @namespace Ember
   @uses Ember.Enumerable
@@ -262,7 +239,6 @@ export default Mixin.create(Enumerable, {
     return indexes.map(idx => objectAt(this, idx));
   },
 
-  // overrides Ember.Enumerable version
   nextObject(idx) {
     return objectAt(this, idx);
   },
@@ -271,8 +247,6 @@ export default Mixin.create(Enumerable, {
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
-
-    This property overrides the default property defined in `Ember.Enumerable`.
 
     @property []
     @return this
@@ -296,7 +270,6 @@ export default Mixin.create(Enumerable, {
     return this.objectAt(get(this, 'length') - 1);
   }),
 
-  // optimized version from Enumerable
   contains(obj) {
     return this.indexOf(obj) >= 0;
   },
@@ -544,7 +517,7 @@ export default Mixin.create(Enumerable, {
   /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
-    return an enumerable that maps automatically to the named key on the
+    return an that maps automatically to the named key on the
     member objects.
 
     If you merely want to watch for any items being added or removed to the array,
