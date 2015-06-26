@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 
-// ES6TODO: the functions on EnumerableUtils need their own exports
 import environment from 'ember-metal/environment';
 
 var jQuery;
