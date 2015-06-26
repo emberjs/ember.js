@@ -14,35 +14,7 @@ import {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
 } from 'ember-metal/instrumentation';
-import {
-  GUID_KEY,
-  apply,
-  applyStr,
-  canInvoke,
-  generateGuid,
-  guidFor,
-  inspect,
-  makeArray,
-  deprecatedTryCatchFinally,
-  tryInvoke,
-  uuid,
-  wrap
-} from 'ember-metal/utils';
-import {
-  EMPTY_META,
-  META_DESC,
-  meta
-} from 'ember-metal/meta';
-import EmberError from 'ember-metal/error';
 import Cache from 'ember-metal/cache';
-import Logger from 'ember-metal/logger';
-
-import {
-  _getPath,
-  get,
-  getWithDefault,
-  normalizeTuple
-} from 'ember-metal/property_get';
 
 import {
   accumulateListeners,
@@ -199,34 +171,32 @@ Ember.subscribe = instrumentationSubscribe;
 
 Ember._Cache = Cache;
 
-Ember.generateGuid    = generateGuid;
-Ember.GUID_KEY        = GUID_KEY;
-Ember.platform        = {
+Ember.platform = {
   defineProperty: true,
   hasPropertyAccessors: true
 };
 
-Ember.Error           = EmberError;
-Ember.guidFor         = guidFor;
-Ember.META_DESC       = META_DESC;
-Ember.EMPTY_META      = EMPTY_META;
-Ember.meta            = meta;
-Ember.inspect         = inspect;
-Ember.tryCatchFinally = deprecatedTryCatchFinally;
-Ember.makeArray       = makeArray;
-Ember.canInvoke       = canInvoke;
-Ember.tryInvoke       = tryInvoke;
-Ember.wrap            = wrap;
-Ember.apply           = apply;
-Ember.applyStr        = applyStr;
-Ember.uuid            = uuid;
+var reexport = Ember._reexport;
 
-Ember.Logger = Logger;
+reexport('ember-metal/error', [['default', 'Error']]);
+reexport('ember-metal/meta', ['EMPTY_META', 'META_DESC', 'meta']);
+reexport('ember-metal/utils', [
+  'GUID_KEY',
+  'guidFor',
+  'inspect',
+  'apply',
+  'applyStr',
+  'canInvoke',
+  'tryInovke',
+  'generateGuid',
+  ['deprecatedTryCatchFinally', 'tryCatchFinally'],
+  'makeArray',
+  'uuid',
+  'wrap'
+]);
 
-Ember.get            = get;
-Ember.getWithDefault = getWithDefault;
-Ember.normalizeTuple = normalizeTuple;
-Ember._getPath       = _getPath;
+reexport('ember-metal/logger', [['default', 'Logger']]);
+reexport('ember-metal/property_get', ['get', '_getPath', 'getWithDefault', 'normalizeTuple']);
 
 Ember.on                  = on;
 Ember.addListener         = addListener;

@@ -170,4 +170,43 @@ export { K };
 Ember.K = K;
 //TODO: ES6 GLOBAL TODO
 
+// Stub out the methods defined by the ember-debug package in case it's not loaded
+
+if ('undefined' === typeof Ember.assert) { Ember.assert = K; }
+if ('undefined' === typeof Ember.warn) { Ember.warn = K; }
+if ('undefined' === typeof Ember.debug) { Ember.debug = K; }
+if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = K; }
+if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = K; }
+if ('undefined' === typeof Ember.deprecateFunc) {
+  Ember.deprecateFunc = function(_, func) { return func; };
+}
+
+const CACHE = Object.create(null);
+function reexport(moduleName, properties) {
+  properties.forEach((property) => {
+    let importAs, exportAs;
+
+    if (Array.isArray(property)) {
+      [importAs, exportAs] = property;
+    } else {
+      importAs = exportAs = property;
+    }
+
+    Object.defineProperty(Ember, exportAs, {
+      get() {
+        var key = moduleName + '_' + importAs;
+        if (CACHE[key]) {
+          return CACHE[key];
+        }
+        return (CACHE[key] = Ember.__loader.require(moduleName)[importAs]);
+      },
+      set(value) {
+        var key = moduleName + '_' + importAs;
+        return (CACHE[key] = value);
+      }
+    });
+  });
+}
+Ember.__reexport = reexport;
+
 export default Ember;
