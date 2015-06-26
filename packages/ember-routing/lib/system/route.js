@@ -1012,7 +1012,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
-    @private
+    @public
   */
   transitionTo(name, context) {
     var router = this.router;
