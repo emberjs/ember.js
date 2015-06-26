@@ -287,9 +287,13 @@ ChainNode.prototype = {
 
   willChange(events) {
     var chains = this._chains;
+    var node;
     if (chains) {
       for (var key in chains) {
-        chains[key].willChange(events);
+        node = chains[key];
+        if (node !== undefined) {
+          node.willChange(events);
+        }
       }
     }
 

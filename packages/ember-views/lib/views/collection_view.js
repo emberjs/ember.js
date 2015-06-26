@@ -7,6 +7,7 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';
 import EmberArray from 'ember-runtime/mixins/array';
+import { defineProperty } from 'ember-metal/properties';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
@@ -294,8 +295,12 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @param {Number} removed number of object to be removed from content
     @private
   */
-  arrayWillChange(content, start, removedCount) {
-    this.replace(start, removedCount, []);
+  arrayWillChange(content, start, removed) {
+    if (removed) {
+      var firstRemovedView = this.objectAt(start);
+      this.replace(start, removed, []);
+      set(firstRemovedView, 'previousView', null);
+    }
   },
 
   /**
@@ -314,29 +319,38 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @private
   */
   arrayDidChange(content, start, removed, added) {
-    var addedViews = [];
-    var view, item, idx, len, itemViewClass, itemViewProps;
-
-    len = content ? get(content, 'length') : 0;
+    var len = content ? get(content, 'length') : 0;
+    var view, item, idx, addedViews, itemViewClass, itemViewProps;
 
     if (len) {
-      itemViewProps = this._itemViewProps || {};
-      itemViewClass = this.getAttr('itemViewClass') || get(this, 'itemViewClass');
+      idx = start;
+      view = this.objectAt(start-1);
 
-      itemViewClass = readViewFactory(itemViewClass, this.container);
+      if (added) {
+        addedViews = [];
 
-      for (idx = start; idx < start+added; idx++) {
-        item = content.objectAt(idx);
-        itemViewProps._context = this.keyword ? this.get('context') : item;
-        itemViewProps.content = item;
-        itemViewProps.contentIndex = idx;
+        itemViewProps = this._itemViewProps || {};
+        itemViewClass = this.getAttr('itemViewClass') || get(this, 'itemViewClass');
+        itemViewClass = readViewFactory(itemViewClass, this.container);
 
-        view = this.createChildView(itemViewClass, itemViewProps);
+        for (idx; idx < start+added; idx++) {
+          item = content.objectAt(idx);
+          itemViewProps._context = this.keyword ? this.get('context') : item;
+          itemViewProps.content = item;
+          itemViewProps.previousView = view;
 
-        addedViews.push(view);
+          view = this.createChildView(itemViewClass, itemViewProps);
+          defineProperty(view, 'contentIndex', computed('previousView.contentIndex', contentIndex));
+
+          addedViews.push(view);
+        }
+
+        this.replace(start, 0, addedViews);
       }
 
-      this.replace(start, 0, addedViews);
+      if (added+removed > 0 && idx < len) {
+        set(this.objectAt(idx), 'previousView', view);
+      }
     }
   },
 
@@ -448,6 +462,10 @@ function buildItemViewProps(template, attrs) {
   }
 
   return props;
+}
+
+function contentIndex() {
+  return get(this, 'previousView.contentIndex') + 1 || 0;
 }
 
 export default CollectionView;
