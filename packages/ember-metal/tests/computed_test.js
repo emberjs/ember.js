@@ -15,7 +15,7 @@ import { set } from 'ember-metal/property_set';
 import { isWatching } from 'ember-metal/watching';
 import {
   addObserver,
-  addBeforeObserver
+  _addBeforeObserver
 } from 'ember-metal/observer';
 
 var originalLookup = Ember.lookup;
@@ -716,19 +716,19 @@ testBoth('setting a watched computed property', function(get, set) {
   var firstNameDidChange = 0;
   var lastNameWillChange = 0;
   var lastNameDidChange = 0;
-  addBeforeObserver(obj, 'fullName', function () {
+  _addBeforeObserver(obj, 'fullName', function () {
     fullNameWillChange++;
   });
   addObserver(obj, 'fullName', function () {
     fullNameDidChange++;
   });
-  addBeforeObserver(obj, 'firstName', function () {
+  _addBeforeObserver(obj, 'firstName', function () {
     firstNameWillChange++;
   });
   addObserver(obj, 'firstName', function () {
     firstNameDidChange++;
   });
-  addBeforeObserver(obj, 'lastName', function () {
+  _addBeforeObserver(obj, 'lastName', function () {
     lastNameWillChange++;
   });
   addObserver(obj, 'lastName', function () {
@@ -767,7 +767,7 @@ testBoth('setting a cached computed property that modifies the value you give it
   );
   var plusOneWillChange = 0;
   var plusOneDidChange = 0;
-  addBeforeObserver(obj, 'plusOne', function () {
+  _addBeforeObserver(obj, 'plusOne', function () {
     plusOneWillChange++;
   });
   addObserver(obj, 'plusOne', function () {

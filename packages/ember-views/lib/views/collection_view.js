@@ -13,7 +13,7 @@ import { fmt } from 'ember-runtime/system/string';
 import { computed } from 'ember-metal/computed';
 import {
   observer,
-  beforeObserver
+  _beforeObserver
 } from 'ember-metal/mixin';
 import { readViewFactory } from 'ember-views/streams/utils';
 import EmptyViewSupport from 'ember-views/mixins/empty_view_support';
@@ -222,7 +222,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @private
     @method _contentWillChange
   */
-  _contentWillChange: beforeObserver('content', function() {
+  _contentWillChange: _beforeObserver('content', function() {
     var content = this.get('content');
 
     if (content) { content.removeArrayObserver(this); }

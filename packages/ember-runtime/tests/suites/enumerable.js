@@ -3,7 +3,7 @@ import EmberObject from 'ember-runtime/system/object';
 import {guidFor, generateGuid} from 'ember-metal/utils';
 import {computed} from 'ember-metal/computed';
 import {get} from 'ember-metal/property_get';
-import { addBeforeObserver } from 'ember-metal/observer';
+import { _addBeforeObserver } from 'ember-metal/observer';
 
 var ObserverClass = EmberObject.extend({
 
@@ -55,7 +55,7 @@ var ObserverClass = EmberObject.extend({
     var keys = Array.prototype.slice.call(arguments, 1);
     var loc  = keys.length;
     while (--loc>=0) {
-      addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
+      _addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
     }
 
     return this;

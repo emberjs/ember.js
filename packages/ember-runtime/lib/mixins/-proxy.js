@@ -10,8 +10,8 @@ import { meta } from 'ember-metal/utils';
 import {
   addObserver,
   removeObserver,
-  addBeforeObserver,
-  removeBeforeObserver
+  _addBeforeObserver,
+  _removeBeforeObserver
 } from 'ember-metal/observer';
 import {
   propertyWillChange,
@@ -62,13 +62,13 @@ export default Mixin.create({
 
   willWatchProperty(key) {
     var contentKey = 'content.' + key;
-    addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
+    _addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
   didUnwatchProperty(key) {
     var contentKey = 'content.' + key;
-    removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
+    _removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },
 

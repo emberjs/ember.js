@@ -3,10 +3,10 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   addObserver,
   removeObserver,
-  addBeforeObserver,
+  _addBeforeObserver,
   _suspendObserver,
   _suspendObservers,
-  removeBeforeObserver
+  _removeBeforeObserver
 } from 'ember-metal/observer';
 import {
   propertyWillChange,
@@ -21,7 +21,7 @@ import {
   Mixin,
   mixin,
   observer,
-  beforeObserver,
+  _beforeObserver,
   immediateObserver
 } from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
@@ -251,16 +251,16 @@ testBoth('removing an chain before observer on change should not fail', function
   function observer2() { count2++; }
   function observer3() {
     count3++;
-    removeBeforeObserver(obj1, 'foo.bar', observer1);
-    removeBeforeObserver(obj2, 'foo.bar', observer2);
-    removeBeforeObserver(obj4, 'foo.bar', observer4);
+    _removeBeforeObserver(obj1, 'foo.bar', observer1);
+    _removeBeforeObserver(obj2, 'foo.bar', observer2);
+    _removeBeforeObserver(obj4, 'foo.bar', observer4);
   }
   function observer4() { count4++; }
 
-  addBeforeObserver(obj1, 'foo.bar' , observer1);
-  addBeforeObserver(obj2, 'foo.bar' , observer2);
-  addBeforeObserver(obj3, 'foo.bar' , observer3);
-  addBeforeObserver(obj4, 'foo.bar' , observer4);
+  _addBeforeObserver(obj1, 'foo.bar' , observer1);
+  _addBeforeObserver(obj2, 'foo.bar' , observer2);
+  _addBeforeObserver(obj3, 'foo.bar' , observer3);
+  _addBeforeObserver(obj4, 'foo.bar' , observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -468,7 +468,7 @@ testBoth('deferring property change notifications will not defer before observer
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  addBeforeObserver(obj, 'foo', function() { fooCount++; });
+  _addBeforeObserver(obj, 'foo', function() { fooCount++; });
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
@@ -676,14 +676,14 @@ testBoth('removeObserver should respect targets with methods', function(get, set
 // BEFORE OBSERVER
 //
 
-QUnit.module('addBeforeObserver');
+QUnit.module('_addBeforeObserver');
 
 testBoth('observer should fire before a property is modified', function(get, set) {
 
   var obj = { foo: 'foo' };
   var count = 0;
 
-  addBeforeObserver(obj, 'foo', function() {
+  _addBeforeObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'foo', 'should invoke before value changed');
     count++;
   });
@@ -701,7 +701,7 @@ testBoth('observer should fire before dependent property is modified', function(
   get(obj, 'foo');
 
   var count = 0;
-  addBeforeObserver(obj, 'foo', function() {
+  _addBeforeObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
     count++;
   });
@@ -764,7 +764,7 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   var count = 0;
 
   mixin(obj, {
-    fooAndBarWatcher: beforeObserver('{foo,bar}', function () {
+    fooAndBarWatcher: _beforeObserver('{foo,bar}', function () {
       count++;
     })
   });
@@ -792,7 +792,7 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   }).property('baz'));
 
   mixin(obj, {
-    fooAndBarWatcher: beforeObserver('{foo,bar}', function () {
+    fooAndBarWatcher: _beforeObserver('{foo,bar}', function () {
       count++;
     })
   });
@@ -806,11 +806,11 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('addBeforeObserver should propagate through prototype', function(get, set) {
+testBoth('_addBeforeObserver should propagate through prototype', function(get, set) {
   var obj = { foo: 'foo', count: 0 };
   var obj2;
 
-  addBeforeObserver(obj, 'foo', function() { this.count++; });
+  _addBeforeObserver(obj, 'foo', function() { this.count++; });
   obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
@@ -823,7 +823,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get, s
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addBeforeObserver should respect targets with methods', function(get, set) {
+testBoth('_addBeforeObserver should respect targets with methods', function(get, set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -852,8 +852,8 @@ testBoth('addBeforeObserver should respect targets with methods', function(get, 
     }
   };
 
-  addBeforeObserver(observed, 'foo', target1, 'willChange');
-  addBeforeObserver(observed, 'foo', target2, target2.willChange);
+  _addBeforeObserver(observed, 'foo', target1, 'willChange');
+  _addBeforeObserver(observed, 'foo', target2, target2.willChange);
 
   set(observed, 'foo', 'BAZ');
   equal(target1.count, 1, 'target1 observer should have fired');
@@ -996,7 +996,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(count, 6, 'should be not have invoked observer');
 });
 
-QUnit.module('removeBeforeObserver');
+QUnit.module('_removeBeforeObserver');
 
 // ..........................................................
 // SETTING IDENTICAL VALUES
@@ -1169,11 +1169,11 @@ testBoth('observers added/removed during changeProperties should do the right th
   }
   Observer.prototype = {
     add() {
-      addBeforeObserver(obj, 'foo', this, 'willChange');
+      _addBeforeObserver(obj, 'foo', this, 'willChange');
       addObserver(obj, 'foo', this, 'didChange');
     },
     remove() {
-      removeBeforeObserver(obj, 'foo', this, 'willChange');
+      _removeBeforeObserver(obj, 'foo', this, 'willChange');
       removeObserver(obj, 'foo', this, 'didChange');
     },
     willChange() {
@@ -1198,7 +1198,7 @@ testBoth('observers added/removed during changeProperties should do the right th
 
     set(obj, 'foo', 1);
 
-    equal(addedBeforeFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called before the first change invoked immediately');
+    equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change invoked immediately');
     equal(addedBeforeFirstChangeObserver.didChangeCount, 0, 'addObserver called before the first change is deferred');
 
     addedAfterFirstChangeObserver.add();
@@ -1206,23 +1206,23 @@ testBoth('observers added/removed during changeProperties should do the right th
 
     set(obj, 'foo', 2);
 
-    equal(addedAfterFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called after the first change invoked immediately');
+    equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change invoked immediately');
     equal(addedAfterFirstChangeObserver.didChangeCount, 0, 'addObserver called after the first change is deferred');
 
     addedAfterLastChangeObserver.add();
     removedAfterLastChangeObserver.remove();
   });
 
-  equal(removedBeforeFirstChangeObserver.willChangeCount, 0, 'removeBeforeObserver called before the first change sees none');
+  equal(removedBeforeFirstChangeObserver.willChangeCount, 0, '_removeBeforeObserver called before the first change sees none');
   equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
-  equal(addedBeforeFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called before the first change sees only 1');
+  equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change sees only 1');
   equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
-  equal(addedAfterFirstChangeObserver.willChangeCount, 1, 'addBeforeObserver called after the first change sees 1');
+  equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change sees 1');
   equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
-  equal(addedAfterLastChangeObserver.willChangeCount, 0, 'addBeforeObserver called after the last change sees none');
+  equal(addedAfterLastChangeObserver.willChangeCount, 0, '_addBeforeObserver called after the last change sees none');
   equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
-  equal(removedBeforeLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called before the last change still sees 1');
+  equal(removedBeforeLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called before the last change still sees 1');
   equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
-  equal(removedAfterLastChangeObserver.willChangeCount, 1, 'removeBeforeObserver called after the last change still sees 1');
+  equal(removedAfterLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called after the last change still sees 1');
   equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
 });
