@@ -349,6 +349,8 @@ var LinkComponent = EmberComponent.extend({
 
     if (get(this, 'loading')) { return get(this, 'loadingHref'); }
 
+    targetRouteName = this._handleOnlyQueryParamsSupplied(targetRouteName);
+
     var routing = get(this, '_routing');
     var queryParams = get(this, 'queryParams.values');
     return routing.generateURL(targetRouteName, models, queryParams);
@@ -362,6 +364,22 @@ var LinkComponent = EmberComponent.extend({
       return get(this, 'loadingClass');
     }
   }),
+
+  _handleOnlyQueryParamsSupplied(route) {
+    var params = this.attrs.params.slice();
+    var lastParam = params[params.length - 1];
+    if (lastParam && lastParam.isQueryParams) {
+      params.pop();
+    }
+    let onlyQueryParamsSupplied = (params.length === 0);
+    if (onlyQueryParamsSupplied) {
+      var appController = this.container.lookup('controller:application');
+      if (appController) {
+        return get(appController, 'currentRouteName');
+      }
+    }
+    return route;
+  },
 
   /**
     The default href value to use while a link-to is loading.
@@ -437,19 +455,10 @@ var LinkComponent = EmberComponent.extend({
 
     let targetRouteName;
     let models = [];
-    let onlyQueryParamsSupplied = (params.length === 0);
+    targetRouteName = this._handleOnlyQueryParamsSupplied(params[0]);
 
-    if (onlyQueryParamsSupplied) {
-      var appController = this.container.lookup('controller:application');
-      if (appController) {
-        targetRouteName = get(appController, 'currentRouteName');
-      }
-    } else {
-      targetRouteName = params[0];
-
-      for (let i = 1; i < params.length; i++) {
-        models.push(params[i]);
-      }
+    for (let i = 1; i < params.length; i++) {
+      models.push(params[i]);
     }
 
     let resolvedQueryParams = getResolvedQueryParams(queryParams, targetRouteName);
