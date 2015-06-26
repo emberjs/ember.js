@@ -16,6 +16,8 @@ import { arrayComputed } from 'ember-runtime/computed/array_computed';
 import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import SubArray from 'ember-runtime/system/subarray';
+import { objectAt } from 'ember-runtime/mixins/array';
+import { replace } from 'ember-runtime/system/native_array';
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
@@ -168,7 +170,7 @@ QUnit.test('after first retrieval, array computed properties can observe propert
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
   run(function() {
-    nestedNumbers.objectAt(0).set('v', 22);
+    objectAt(nestedNumbers, 0).set('v', 22);
   });
 
   deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
@@ -182,7 +184,7 @@ QUnit.test('changes to array computed properties happen synchronously', function
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
   run(function() {
-    nestedNumbers.objectAt(0).set('v', 22);
+    objectAt(nestedNumbers, 0).set('v', 22);
     deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
     deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
   });
@@ -319,14 +321,16 @@ QUnit.test('array observers are torn down when dependent arrays change', functio
   equal(addCalls, 6, 'precond - add has been called for each item in the array');
   equal(removeCalls, 0, 'precond - removed has not been called');
 
-  run(function() {
+  Ember.run(() => {
     set(obj, 'numbers', Ember.A([20, 23, 28]));
   });
 
   equal(addCalls, 9, 'add is called for each item in the new array');
   equal(removeCalls, 0, 'remove is not called when the array is reset');
 
-  numbers.replace(0, numbers.get('length'), Ember.A([7,8,9,10]));
+  Ember.run(() => {
+    replace(numbers, 0, numbers.get('length'), Ember.A([7,8,9,10]));
+  });
 
   equal(addCalls, 9, 'add is not called');
   equal(removeCalls, 0, 'remove is not called');
@@ -339,8 +343,8 @@ QUnit.test('modifying properties on dependent array items triggers observers exa
   equal(addCalls, 6, 'precond - add has not been called for each item in the array');
   equal(removeCalls, 0, 'precond - removed has not been called');
 
-  run(function() {
-    numbers.replace(0, 2, [7,8,9,10]);
+  Ember.run(() => {
+    replace(numbers, 0, 2, [7,8,9,10]);
   });
 
   equal(addCalls, 10, 'add is called for each item added');
@@ -431,11 +435,11 @@ QUnit.test('dependent arrays can use `replace` with an out of bounds index to ad
 
   deepEqual(array, [], 'precond - computed array is initially empty');
 
-  dependentArray.replace(100, 0, [1, 2]);
+  replace(dependentArray, 100, 0, [1, 2]);
 
   deepEqual(array, [1, 2], 'index >= length treated as a push');
 
-  dependentArray.replace(-100, 0, [3, 4]);
+  replace(dependentArray, -100, 0, [3, 4]);
 
   deepEqual(array, [3, 4, 1, 2], 'index < 0 treated as an unshift');
 });
@@ -459,7 +463,7 @@ QUnit.test('dependent arrays can use `replace` with a negative index to remove i
 
   deepEqual(array, [], 'precond - no items have been removed initially');
 
-  dependentArray.replace(-3, 2);
+  replace(dependentArray, -3, 2);
 
   deepEqual(array, [4,3], 'index < 0 used as a right index for removal');
 });
@@ -482,7 +486,7 @@ QUnit.test('dependent arrays that call `replace` with an out of bounds index to 
 
   deepEqual(array, [], 'precond - computed array is initially empty');
 
-  dependentArray.replace(100, 2);
+  replace(dependentArray, 100, 2);
 });
 
 QUnit.test('dependent arrays that call `replace` with a too-large removedCount a) works and b) still right-truncates', function() {
@@ -504,7 +508,7 @@ QUnit.test('dependent arrays that call `replace` with a too-large removedCount a
 
   deepEqual(array, [], 'precond - computed array is initially empty');
 
-  dependentArray.replace(1, 200);
+  replace(dependentArray, 1, 200);
 
   deepEqual(array, [2], 'array was correctly right-truncated');
 });
@@ -638,7 +642,7 @@ QUnit.test('@this can be used to treat the object as the array itself', function
   deepEqual(names, ['a', 'b'], 'precond - names is initially correct');
 
   run(function() {
-    obj.objectAt(1).set('name', 'c');
+    objectAt(obj, 1).set('name', 'c');
   });
 
   deepEqual(names, ['a', 'c'], '@this can be used with item property observers');
@@ -714,7 +718,7 @@ QUnit.test('changeMeta includes item and index', function() {
 
   // remove0 add0
   run(function() {
-    items.objectAt(0).set('n', 'zero\'\'');
+    objectAt(items, 0).set('n', `zero''`);
   });
 
   expected = expected.concat(['add:2:five', 'add:3:six', 'remove:0:zero\'\'', 'add:0:zero\'\'']);
@@ -723,7 +727,7 @@ QUnit.test('changeMeta includes item and index', function() {
   // [zero'', one, five, six] -> [zero'', five, six]
   // remove1
   run(function() {
-    item = items.objectAt(1);
+    item = objectAt(items, 1);
     items.removeAt(1, 1);
   });
 
@@ -735,7 +739,7 @@ QUnit.test('changeMeta includes item and index', function() {
   // [zero'', five, six] -> [zero'', five, seven]
   // remove2 add2
   run(function() {
-    items.objectAt(2).set('n', 'seven');
+    objectAt(items, 2).set('n', 'seven');
   });
 
   // observer should have been added to the new item
@@ -744,7 +748,7 @@ QUnit.test('changeMeta includes item and index', function() {
 
   // reset (does not call remove)
   run(function() {
-    item = items.objectAt(1);
+    item = objectAt(items, 1);
     set(obj, 'items', Ember.A([]));
   });
 
@@ -775,7 +779,7 @@ QUnit.test('changeMeta includes changedCount and arrayChanged', function() {
   obj.get('lettersArrayComputed');
   letters.pushObject('c');
   letters.popObject();
-  letters.replace(0, 1, ['d']);
+  replace(letters, 0, 1, ['d']);
   letters.removeAt(0, letters.length);
 
   var expected = ['add:2:ab', 'add:2:ab', 'add:1:abc', 'remove:1:abc', 'remove:1:ab', 'add:1:db', 'remove:2:db', 'remove:2:db'];

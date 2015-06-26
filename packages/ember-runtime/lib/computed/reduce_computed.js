@@ -21,7 +21,10 @@ import {
   cacheFor
 } from 'ember-metal/computed';
 import TrackedArray from 'ember-runtime/system/tracked_array';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
 
 var cacheSet = cacheFor.set;
@@ -88,7 +91,7 @@ function ItemPropertyObserverContext(dependentArray, index, trackedArray) {
 
   this.dependentArray = dependentArray;
   this.index = index;
-  this.item = dependentArray.objectAt(index);
+  this.item = objectAt(dependentArray, index);
   this.trackedArray = trackedArray;
   this.beforeObserver = null;
   this.observer = null;
@@ -107,7 +110,7 @@ DependentArraysObserver.prototype = {
   setupObservers(dependentArray, dependentKey) {
     this.dependentKeysByGuid[guidFor(dependentArray)] = dependentKey;
 
-    dependentArray.addArrayObserver(this, {
+    addArrayObserver(dependentArray, this, {
       willChange: 'dependentArrayWillChange',
       didChange: 'dependentArrayDidChange'
     });
@@ -266,7 +269,7 @@ DependentArraysObserver.prototype = {
       itemIndex = normalizedIndex + sliceIndex;
       if (itemIndex >= length) { break; }
 
-      item = dependentArray.objectAt(itemIndex);
+      item = objectAt(dependentArray, itemIndex);
 
       itemPropertyKeys.forEach(removeObservers, this);
 

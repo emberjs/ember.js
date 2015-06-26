@@ -13,7 +13,7 @@ MutableArrayTests.extend({
     var ret = ary ? ary.slice() : this.newFixture(3);
     expectDeprecation(arrayControllerDeprecation);
     return ArrayController.create({
-      model: Ember.A(ret)
+      model: ret
     });
   },
 
@@ -56,15 +56,9 @@ QUnit.test('works properly when model is set to a plain array', function() {
   expectDeprecation(arrayControllerDeprecation);
   var controller = ArrayController.create();
 
-  if (Ember.EXTEND_PROTOTYPES) {
-    set(controller, 'model', ['red', 'green']);
+  set(controller, 'model', ['red', 'green']);
 
-    deepEqual(get(controller, 'model'), ['red', 'green'], 'can set model as a plain array');
-  } else {
-    expectAssertion(function() {
-      set(controller, 'model', ['red', 'green']);
-    }, /ArrayController expects `model` to implement the Ember.Array mixin. This can often be fixed by wrapping your model with `Ember\.A\(\)`./);
-  }
+  deepEqual(get(controller, 'model'), ['red', 'green'], 'can set model as a plain array');
 });
 
 QUnit.test('works properly when model is set to `null`', function() {

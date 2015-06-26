@@ -15,16 +15,6 @@ import {
   aliasMethod
 } from 'ember-metal/mixin';
 import { computed } from 'ember-metal/computed';
-import {
-  propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-import {
-  addListener,
-  removeListener,
-  sendEvent,
-  hasListeners
-} from 'ember-metal/events';
 import compare from 'ember-runtime/compare';
 
 var contexts = [];
@@ -220,11 +210,7 @@ export default Mixin.create({
     @private
   */
   contains(obj) {
-    var found = this.find(function(item) {
-      return item === obj;
-    });
-
-    return found !== undefined;
+    return this.find(item => item === obj) !== undefined;
   },
 
   /**
@@ -301,9 +287,7 @@ export default Mixin.create({
     @private
   */
   setEach(key, value) {
-    return this.forEach(function(item) {
-      set(item, key, value);
-    });
+    return this.forEach(item => set(item, key, value));
   },
 
   /**
@@ -336,7 +320,7 @@ export default Mixin.create({
   map(callback, target) {
     var ret = Ember.A();
 
-    this.forEach(function(x, idx, i) {
+    this.forEach((x, idx, i) => {
       ret[idx] = callback.call(target, x, idx, i);
     });
 
@@ -353,9 +337,7 @@ export default Mixin.create({
     @private
   */
   mapBy(key) {
-    return this.map(function(next) {
-      return get(next, key);
-    });
+    return this.map(next => get(next, key));
   },
 
   /**
@@ -403,7 +385,7 @@ export default Mixin.create({
   filter(callback, target) {
     var ret = Ember.A();
 
-    this.forEach(function(x, idx, i) {
+    this.forEach((x, idx, i) => {
       if (callback.call(target, x, idx, i)) {
         ret.push(x);
       }
@@ -850,9 +832,9 @@ export default Mixin.create({
 
     var ret = initialValue;
 
-    this.forEach(function(item, i) {
+    this.forEach((item, i) => {
       ret = callback(ret, item, i, this, reducerProperty);
-    }, this);
+    });
 
     return ret;
   },
@@ -871,7 +853,7 @@ export default Mixin.create({
   invoke(methodName, ...args) {
     var ret = Ember.A();
 
-    this.forEach(function(x, idx) {
+    this.forEach((x, idx) => {
       var method = x && x[methodName];
 
       if ('function' === typeof method) {
@@ -893,9 +875,7 @@ export default Mixin.create({
   toArray() {
     var ret = Ember.A();
 
-    this.forEach(function(o, idx) {
-      ret[idx] = o;
-    });
+    this.forEach((o, idx) => ret[idx] = o);
 
     return ret;
   },
@@ -913,9 +893,7 @@ export default Mixin.create({
     @private
   */
   compact() {
-    return this.filter(function(value) {
-      return value != null;
-    });
+    return this.filter((value) => value != null);
   },
 
   /**
@@ -940,7 +918,7 @@ export default Mixin.create({
 
     var ret = Ember.A();
 
-    this.forEach(function(k) {
+    this.forEach((k) => {
       if (k !== value) {
         ret[ret.length] = k;
       }
@@ -993,188 +971,6 @@ export default Mixin.create({
     get(key) { return this; }
   }),
 
-  // ..........................................................
-  // ENUMERABLE OBSERVERS
-  //
-
-  /**
-    Registers an enumerable observer. Must implement `Ember.EnumerableObserver`
-    mixin.
-
-    @method addEnumerableObserver
-    @param {Object} target
-    @param {Object} [opts]
-    @return this
-    @private
-  */
-  addEnumerableObserver(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    var hasObservers = get(this, 'hasEnumerableObservers');
-
-    if (!hasObservers) {
-      propertyWillChange(this, 'hasEnumerableObservers');
-    }
-
-    addListener(this, '@enumerable:before', target, willChange);
-    addListener(this, '@enumerable:change', target, didChange);
-
-    if (!hasObservers) {
-      propertyDidChange(this, 'hasEnumerableObservers');
-    }
-
-    return this;
-  },
-
-  /**
-    Removes a registered enumerable observer.
-
-    @method removeEnumerableObserver
-    @param {Object} target
-    @param {Object} [opts]
-    @return this
-    @private
-  */
-  removeEnumerableObserver(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    var hasObservers = get(this, 'hasEnumerableObservers');
-
-    if (hasObservers) {
-      propertyWillChange(this, 'hasEnumerableObservers');
-    }
-
-    removeListener(this, '@enumerable:before', target, willChange);
-    removeListener(this, '@enumerable:change', target, didChange);
-
-    if (hasObservers) {
-      propertyDidChange(this, 'hasEnumerableObservers');
-    }
-
-    return this;
-  },
-
-  /**
-    Becomes true whenever the array currently has observers watching changes
-    on the array.
-
-    @property hasEnumerableObservers
-    @type Boolean
-    @private
-  */
-  hasEnumerableObservers: computed(function() {
-    return hasListeners(this, '@enumerable:change') || hasListeners(this, '@enumerable:before');
-  }),
-
-
-  /**
-    Invoke this method just before the contents of your enumerable will
-    change. You can either omit the parameters completely or pass the objects
-    to be removed or added if available or just a count.
-
-    @method enumerableContentWillChange
-    @param {Ember.Enumerable|Number} removing An enumerable of the objects to
-      be removed or the number of items to be removed.
-    @param {Ember.Enumerable|Number} adding An enumerable of the objects to be
-      added or the number of items to be added.
-    @chainable
-    @private
-  */
-  enumerableContentWillChange(removing, adding) {
-    var removeCnt, addCnt, hasDelta;
-
-    if ('number' === typeof removing) {
-      removeCnt = removing;
-    } else if (removing) {
-      removeCnt = get(removing, 'length');
-    } else {
-      removeCnt = removing = -1;
-    }
-
-    if ('number' === typeof adding) {
-      addCnt = adding;
-    } else if (adding) {
-      addCnt = get(adding, 'length');
-    } else {
-      addCnt = adding = -1;
-    }
-
-    hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
-
-    if (removing === -1) {
-      removing = null;
-    }
-
-    if (adding === -1) {
-      adding = null;
-    }
-
-    propertyWillChange(this, '[]');
-
-    if (hasDelta) {
-      propertyWillChange(this, 'length');
-    }
-
-    sendEvent(this, '@enumerable:before', [this, removing, adding]);
-
-    return this;
-  },
-
-  /**
-    Invoke this method when the contents of your enumerable has changed.
-    This will notify any observers watching for content changes. If you are
-    implementing an ordered enumerable (such as an array), also pass the
-    start and end values where the content changed so that it can be used to
-    notify range observers.
-
-    @method enumerableContentDidChange
-    @param {Ember.Enumerable|Number} removing An enumerable of the objects to
-      be removed or the number of items to be removed.
-    @param {Ember.Enumerable|Number} adding  An enumerable of the objects to
-      be added or the number of items to be added.
-    @chainable
-    @private
-  */
-  enumerableContentDidChange(removing, adding) {
-    var removeCnt, addCnt, hasDelta;
-
-    if ('number' === typeof removing) {
-      removeCnt = removing;
-    } else if (removing) {
-      removeCnt = get(removing, 'length');
-    } else {
-      removeCnt = removing = -1;
-    }
-
-    if ('number' === typeof adding) {
-      addCnt = adding;
-    } else if (adding) {
-      addCnt = get(adding, 'length');
-    } else {
-      addCnt = adding = -1;
-    }
-
-    hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
-
-    if (removing === -1) {
-      removing = null;
-    }
-
-    if (adding === -1) {
-      adding = null;
-    }
-
-    sendEvent(this, '@enumerable:change', [this, removing, adding]);
-
-    if (hasDelta) {
-      propertyDidChange(this, 'length');
-    }
-
-    propertyDidChange(this, '[]');
-
-    return this;
-  },
-
   /**
     Converts the enumerable into an array and sorts by the keys
     specified in the argument.
@@ -1190,7 +986,7 @@ export default Mixin.create({
   sortBy() {
     var sortKeys = arguments;
 
-    return this.toArray().sort(function(a, b) {
+    return this.toArray().sort((a, b) => {
       for (var i = 0; i < sortKeys.length; i++) {
         var key = sortKeys[i];
         var propA = get(a, key);

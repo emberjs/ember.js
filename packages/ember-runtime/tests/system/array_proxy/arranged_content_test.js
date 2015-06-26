@@ -2,6 +2,8 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import {computed} from 'ember-metal/computed';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { objectAt } from 'ember-runtime/mixins/array';
+import { replace } from 'ember-runtime/system/native_array';
 
 var array;
 
@@ -11,14 +13,14 @@ QUnit.module('ArrayProxy - arrangedContent', {
       array = ArrayProxy.extend({
         arrangedContent: computed('content.[]', function() {
           var content = this.get('content');
-          return content && Ember.A(content.slice().sort(function(a, b) {
+          return content && content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
-          }));
+          });
         })
       }).create({
-        content: Ember.A([1,2,4,5])
+        content: [1,2,4,5]
       });
     });
   },
@@ -69,7 +71,7 @@ QUnit.test('nextObject - returns object at index in arrangedContent', function()
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
-  equal(array.objectAt(1), 4, 'returns object at index');
+  equal(objectAt(array, 1), 4, 'returns object at index');
 });
 
 // Not sure if we need a specific test for it, since it's internal
@@ -115,7 +117,7 @@ QUnit.test('removeObjects - removes objects from content', function() {
 
 QUnit.test('replace - raises, indeterminate behavior', function() {
   throws(function() {
-    run(function() { array.replace(1, 2, [3]); });
+    run(function() { replace(array, 1, 2, [3]); });
   });
 });
 
@@ -217,7 +219,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
         }).property('content.[]'),
 
         objectAtContent(idx) {
-          var obj = this.get('arrangedContent').objectAt(idx);
+          var obj = objectAt(this.get('arrangedContent'), idx);
           return obj && obj.toString();
         }
       }).create({
@@ -246,7 +248,7 @@ QUnit.test('nextObject - returns object at index in arrangedContent', function()
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
-  equal(array.objectAt(1), '4', 'returns object at index');
+  equal(objectAt(array, 1), '4', 'returns object at index');
 });
 
 // Not sure if we need a specific test for it, since it's internal

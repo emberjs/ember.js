@@ -7,11 +7,12 @@ import { computed } from 'ember-metal/computed';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  objectAt
+} from 'ember-runtime/mixins/array';
 
 /*
-  Implement a basic fake mutable array.  This validates that any non-native
-  enumerable can impl this API.
+  Implement a basic fake mutable array.
 */
 var TestArray = EmberObject.extend(EmberArray, {
 
@@ -103,7 +104,7 @@ var DummyArray = EmberObject.extend(EmberArray, {
   objectAt(idx) { return 'ITEM-'+idx; }
 });
 
-var obj, observer;
+var obj;
 
 
 // ..........................................................
@@ -115,7 +116,7 @@ QUnit.module('mixins/array/arrayContent[Will|Did]Change');
 QUnit.test('should notify observers of []', function() {
 
   obj = DummyArray.extend({
-    enumerablePropertyDidChange: emberObserver('[]', function() {
+    arrayPropertyDidChange: emberObserver('[]', function() {
       this._count++;
     })
   }).create({
@@ -176,137 +177,6 @@ QUnit.test('should notify when passed lengths are different', function() {
 
   obj.arrayContentDidChange(0, 1, 2);
   equal(obj._after, 1);
-});
-
-
-// ..........................................................
-// NOTIFY ARRAY OBSERVER
-//
-
-QUnit.module('notify array observers', {
-  setup() {
-    obj = DummyArray.create();
-
-    observer = EmberObject.extend({
-      arrayWillChange() {
-        equal(this._before, null); // should only call once
-        this._before = Array.prototype.slice.call(arguments);
-      },
-
-      arrayDidChange() {
-        equal(this._after, null); // should only call once
-        this._after = Array.prototype.slice.call(arguments);
-      }
-    }).create({
-      _before: null,
-      _after: null
-    });
-
-    obj.addArrayObserver(observer);
-  },
-
-  teardown() {
-    obj = observer = null;
-  }
-});
-
-QUnit.test('should notify enumerable observers when called with no params', function() {
-  obj.arrayContentWillChange();
-  deepEqual(observer._before, [obj, 0, -1, -1]);
-
-  obj.arrayContentDidChange();
-  deepEqual(observer._after, [obj, 0, -1, -1]);
-});
-
-// API variation that included items only
-QUnit.test('should notify when called with same length items', function() {
-  obj.arrayContentWillChange(0, 1, 1);
-  deepEqual(observer._before, [obj, 0, 1, 1]);
-
-  obj.arrayContentDidChange(0, 1, 1);
-  deepEqual(observer._after, [obj, 0, 1, 1]);
-});
-
-QUnit.test('should notify when called with diff length items', function() {
-  obj.arrayContentWillChange(0, 2, 1);
-  deepEqual(observer._before, [obj, 0, 2, 1]);
-
-  obj.arrayContentDidChange(0, 2, 1);
-  deepEqual(observer._after, [obj, 0, 2, 1]);
-});
-
-QUnit.test('removing enumerable observer should disable', function() {
-  obj.removeArrayObserver(observer);
-  obj.arrayContentWillChange();
-  deepEqual(observer._before, null);
-
-  obj.arrayContentDidChange();
-  deepEqual(observer._after, null);
-});
-
-// ..........................................................
-// NOTIFY ENUMERABLE OBSERVER
-//
-
-QUnit.module('notify enumerable observers as well', {
-  setup() {
-    obj = DummyArray.create();
-
-    observer = EmberObject.extend({
-      enumerableWillChange() {
-        equal(this._before, null); // should only call once
-        this._before = Array.prototype.slice.call(arguments);
-      },
-
-      enumerableDidChange() {
-        equal(this._after, null); // should only call once
-        this._after = Array.prototype.slice.call(arguments);
-      }
-    }).create({
-      _before: null,
-      _after: null
-    });
-
-    obj.addEnumerableObserver(observer);
-  },
-
-  teardown() {
-    obj = observer = null;
-  }
-});
-
-QUnit.test('should notify enumerable observers when called with no params', function() {
-  obj.arrayContentWillChange();
-  deepEqual(observer._before, [obj, null, null], 'before');
-
-  obj.arrayContentDidChange();
-  deepEqual(observer._after, [obj, null, null], 'after');
-});
-
-// API variation that included items only
-QUnit.test('should notify when called with same length items', function() {
-  obj.arrayContentWillChange(0, 1, 1);
-  deepEqual(observer._before, [obj, ['ITEM-0'], 1], 'before');
-
-  obj.arrayContentDidChange(0, 1, 1);
-  deepEqual(observer._after, [obj, 1, ['ITEM-0']], 'after');
-});
-
-QUnit.test('should notify when called with diff length items', function() {
-  obj.arrayContentWillChange(0, 2, 1);
-  deepEqual(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
-
-  obj.arrayContentDidChange(0, 2, 1);
-  deepEqual(observer._after, [obj, 2, ['ITEM-0']], 'after');
-});
-
-QUnit.test('removing enumerable observer should disable', function() {
-  obj.removeEnumerableObserver(observer);
-  obj.arrayContentWillChange();
-  deepEqual(observer._before, null, 'before');
-
-  obj.arrayContentDidChange();
-  deepEqual(observer._after, null, 'after');
 });
 
 // ..........................................................
@@ -410,14 +280,13 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   var each = get(ary, '@each');
   var count = 0;
 
-  addObserver(each, 'isDone', function() { count++; });
+  addObserver(each, 'isDone', () => count++ );
 
   count = 0;
-  var item = ary.objectAt(2);
+  var item = objectAt(ary, 2);
   set(item, 'isDone', !get(item, 'isDone'));
   equal(count, 1, '@each.isDone should have notified');
 });
-
 
 testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
   var obj = EmberObject.extend({
@@ -427,14 +296,14 @@ testBoth('should be clear caches for computed properties that have dependent key
     },
 
     common: computed('resources.@each.common', function() {
-      return get(get(this, 'resources').objectAt(0), 'common');
+      return get(objectAt(get(this, 'resources'), 0), 'common');
     })
   }).create();
 
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   equal('HI!', get(obj, 'common'));
 
-  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
+  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
   equal('BYE!', get(obj, 'common'));
 });
 
@@ -456,7 +325,7 @@ testBoth('observers that contain @each in the path should fire only once the fir
   // Observer fires second time when new object is added
   get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   // Observer fires third time when property on an object is changed
-  set(get(obj, 'resources').objectAt(0), 'common', 'BYE!');
+  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
 
   equal(count, 2, 'observers should only be called once');
 });

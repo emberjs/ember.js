@@ -4,7 +4,7 @@
 */
 
 import Ember from 'ember-metal/core';
-import replace from 'ember-metal/replace';
+import { replace } from 'ember-runtime/system/native_array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import View from 'ember-views/views/view';
@@ -14,10 +14,34 @@ import { computed } from 'ember-metal/computed';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { observer } from 'ember-metal/mixin';
 import { defineProperty } from 'ember-metal/properties';
-
+import { objectAt } from 'ember-runtime/mixins/array';
 import htmlbarsTemplate from 'ember-htmlbars/templates/select';
 import selectOptionDefaultTemplate from 'ember-htmlbars/templates/select-option';
 import selectOptgroupDefaultTemplate from 'ember-htmlbars/templates/select-optgroup';
+
+
+// TODO: extract
+function find(obj, callback, target) {
+  if (obj.find) { return obj.find(callback, target); }
+
+  if (!Array.isArray(obj)) { throw new TypeError('TODO: GOOD ERROR!!'); }
+
+  var result = [];
+  for (let i = 0; i < obj.length; i++) {
+    let entry = obj[i];
+    if (callback.call(target, entry, i, obj)) {
+      result.push(entry);
+    }
+  }
+
+  return result;
+}
+
+
+// TODO: extract
+function pushObject(array, object) {
+  replace(array, get(array, 'length'), 0, [object]);
+}
 
 var defaultTemplate = htmlbarsTemplate;
 
@@ -483,7 +507,7 @@ var Select = View.extend({
       var label = get(item, groupPath);
 
       if (get(groupedContent, 'lastObject.label') !== label) {
-        groupedContent.pushObject({
+        pushObject(groupedContent, {
           label: label,
           content: emberA()
         });
@@ -534,7 +558,7 @@ var Select = View.extend({
     var selection;
 
     if (value !== selectedValue) {
-      selection = content ? content.find(function(obj) {
+      selection = content ? find(content, obj => {
         return value === (valuePath ? get(obj, valuePath) : obj);
       }) : null;
 
@@ -566,7 +590,7 @@ var Select = View.extend({
     }
 
     if (prompt) { selectedIndex -= 1; }
-    set(this, 'selection', content.objectAt(selectedIndex));
+    set(this, 'selection', objectAt(content, selectedIndex));
   },
 
   _selectedIndex(value, defaultIndex = 0) {
@@ -594,7 +618,10 @@ var Select = View.extend({
       var selectedIndexes = options.map(function() {
         return this.index - offset;
       });
-      var newSelection = content.objectsAt([].slice.call(selectedIndexes));
+
+      var newSelection = [].slice.call(selectedIndexes).map((index) => {
+        return objectAt(content, index);
+      });
 
       if (isArray(selection)) {
         replace(selection, 0, get(selection, 'length'), newSelection);

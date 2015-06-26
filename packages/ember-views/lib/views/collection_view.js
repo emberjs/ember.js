@@ -6,7 +6,10 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
@@ -244,7 +247,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
     if (content) {
       this._assertArrayLike(content);
-      content.addArrayObserver(this);
+      addArrayObserver(content, this);
     }
 
     var len = content ? get(content, 'length') : 0;
@@ -326,7 +329,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
-        item = content.objectAt(idx);
+        item = objectAt(content, idx);
         itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
         itemViewProps.contentIndex = idx;

@@ -1,5 +1,5 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {fmt} from 'ember-runtime/system/string';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -12,7 +12,7 @@ suite.test('should return object at specified index', function() {
   var idx;
 
   for (idx=0;idx<len;idx++) {
-    equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));
+    equal(objectAt(obj, idx), expected[idx], `obj.objectAt(${idx}) should match`);
   }
 
 });

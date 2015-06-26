@@ -29,13 +29,13 @@ export function _replace(array, idx, amt, objects) {
 
   ```javascript
     var array = [1,2,3];
-    Ember.EnumerableUtils.replace(array, 1, 2, [4, 5]); // [1, 4, 5]
+    replace(array, 1, 2, [4, 5]); // [1, 4, 5]
 
     var array = [1,2,3];
-    Ember.EnumerableUtils.replace(array, 1, 1, [4, 5]); // [1, 4, 5, 3]
+    replace(array, 1, 1, [4, 5]); // [1, 4, 5, 3]
 
     var array = [1,2,3];
-    Ember.EnumerableUtils.replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
+    replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
   ```
 
   @method replace
@@ -52,6 +52,7 @@ export function _replace(array, idx, amt, objects) {
   @public
 */
 export default function replace(array, idx, amt, objects) {
+  // TODO: FIXME
   if (array.replace) {
     return array.replace(idx, amt, objects);
   } else {

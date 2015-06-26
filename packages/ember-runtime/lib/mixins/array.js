@@ -28,6 +28,83 @@ import {
 } from 'ember-metal/events';
 import { isWatching } from 'ember-metal/watching';
 
+export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
+  var adding;
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  adding = addAmt;
+
+  var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
+
+  propertyDidChange(array, '[]');
+
+  if (hasDelta) {
+    propertyDidChange(array, 'length');
+  }
+  sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
+
+  var length = get(array, 'length');
+  var cachedFirst = cacheFor(array, 'firstObject');
+  var cachedLast = cacheFor(array, 'lastObject');
+
+  if (objectAt(array, 0) !== cachedFirst) {
+    propertyWillChange(array, 'firstObject');
+    propertyDidChange(array, 'firstObject');
+  }
+
+  if (objectAt(array, length-1) !== cachedLast) {
+    propertyWillChange(array, 'lastObject');
+    propertyDidChange(array, 'lastObject');
+  }
+}
+
+export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
+  var removing;
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  // Make sure the @each proxy is set up if anyone is observing @each
+  if (isWatching(array, '@each')) {
+    get(array, '@each');
+  }
+
+  sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
+
+  removing = removeAmt;
+
+  var hasDelta = addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0;
+  propertyWillChange(array, '[]');
+
+  if (hasDelta) {
+    propertyWillChange(array, 'length');
+  }
+}
+
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   var willChange = (opts && opts.willChange) || 'arrayWillChange';
   var didChange  = (opts && opts.didChange) || 'arrayDidChange';
@@ -46,6 +123,20 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
 
   return obj;
 }
+
+export function addArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, addListener, false);
+}
+
+export function removeArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, removeListener, true);
+}
+
+export function objectAt(content, idx) {
+  if (content.objectAt) { return content.objectAt(idx); }
+  return content[idx];
+}
+
 
 // ..........................................................
 // ARRAY
@@ -77,9 +168,6 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
 
   To support `Ember.Array` in your own class, you must override two
   primitives to use it: `replace()` and `objectAt()`.
-
-  Note that the Ember.Array mixin also incorporates the `Ember.Enumerable`
-  mixin. All `Ember.Array`-like objects are also enumerable.
 
   @class Array
   @namespace Ember
@@ -148,24 +236,17 @@ export default Mixin.create(Enumerable, {
     @public
    */
   objectsAt(indexes) {
-    var self = this;
-
-    return indexes.map(function(idx) {
-      return self.objectAt(idx);
-    });
+    return indexes.map(idx => objectAt(this, idx));
   },
 
-  // overrides Ember.Enumerable version
   nextObject(idx) {
-    return this.objectAt(idx);
+    return objectAt(this, idx);
   },
 
   /**
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
-
-    This property overrides the default property defined in `Ember.Enumerable`.
 
     @property []
     @return this
@@ -189,7 +270,6 @@ export default Mixin.create(Enumerable, {
     return this.objectAt(get(this, 'length') - 1);
   }),
 
-  // optimized version from Enumerable
   contains(obj) {
     return this.indexOf(obj) >= 0;
   },
@@ -406,42 +486,7 @@ export default Mixin.create(Enumerable, {
     @public
   */
   arrayContentWillChange(startIdx, removeAmt, addAmt) {
-    var removing, lim;
-
-    // if no args are passed assume everything changes
-    if (startIdx === undefined) {
-      startIdx = 0;
-      removeAmt = addAmt = -1;
-    } else {
-      if (removeAmt === undefined) {
-        removeAmt = -1;
-      }
-
-      if (addAmt === undefined) {
-        addAmt = -1;
-      }
-    }
-
-    // Make sure the @each proxy is set up if anyone is observing @each
-    if (isWatching(this, '@each')) {
-      get(this, '@each');
-    }
-
-    sendEvent(this, '@array:before', [this, startIdx, removeAmt, addAmt]);
-
-    if (startIdx >= 0 && removeAmt >= 0 && get(this, 'hasEnumerableObservers')) {
-      removing = [];
-      lim = startIdx + removeAmt;
-
-      for (var idx = startIdx; idx < lim; idx++) {
-        removing.push(this.objectAt(idx));
-      }
-    } else {
-      removing = removeAmt;
-    }
-
-    this.enumerableContentWillChange(removing, addAmt);
-
+    arrayContentWillChange(this, startIdx, removeAmt, addAmt);
     return this;
   },
 
@@ -461,50 +506,7 @@ export default Mixin.create(Enumerable, {
     @public
   */
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
-    var adding, lim;
-
-    // if no args are passed assume everything changes
-    if (startIdx === undefined) {
-      startIdx = 0;
-      removeAmt = addAmt = -1;
-    } else {
-      if (removeAmt === undefined) {
-        removeAmt = -1;
-      }
-
-      if (addAmt === undefined) {
-        addAmt = -1;
-      }
-    }
-
-    if (startIdx >= 0 && addAmt >= 0 && get(this, 'hasEnumerableObservers')) {
-      adding = [];
-      lim = startIdx + addAmt;
-
-      for (var idx = startIdx; idx < lim; idx++) {
-        adding.push(this.objectAt(idx));
-      }
-    } else {
-      adding = addAmt;
-    }
-
-    this.enumerableContentDidChange(removeAmt, adding);
-    sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
-
-    var length = get(this, 'length');
-    var cachedFirst = cacheFor(this, 'firstObject');
-    var cachedLast = cacheFor(this, 'lastObject');
-
-    if (this.objectAt(0) !== cachedFirst) {
-      propertyWillChange(this, 'firstObject');
-      propertyDidChange(this, 'firstObject');
-    }
-
-    if (this.objectAt(length-1) !== cachedLast) {
-      propertyWillChange(this, 'lastObject');
-      propertyDidChange(this, 'lastObject');
-    }
-
+    arrayContentDidChange(this, startIdx, removeAmt, addAmt);
     return this;
   },
 
@@ -515,7 +517,7 @@ export default Mixin.create(Enumerable, {
   /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
-    return an enumerable that maps automatically to the named key on the
+    return an that maps automatically to the named key on the
     member objects.
 
     If you merely want to watch for any items being added or removed to the array,

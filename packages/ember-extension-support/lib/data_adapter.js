@@ -5,7 +5,10 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Application from 'ember-application/system/application';
-
+import {
+  addArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 /**
 @module ember
 @submodule ember-extension-support
@@ -40,7 +43,7 @@ import Application from 'ember-application/system/application';
 
   ```javascript
   Application.initializer({
-    name: "data-adapter",
+    name: 'data-adapter',
 
     initialize: function(container, application) {
       application.register('data-adapter:main', DS.DataAdapter);
@@ -162,7 +165,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     var release = () => {
-      releaseMethods.forEach((fn) => fn() );
+      releaseMethods.forEach(fn => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -218,7 +221,7 @@ export default EmberObject.extend({
 
     var contentDidChange = (array, idx, removedCount, addedCount) => {
       for (var i = idx; i < idx + addedCount; i++) {
-        var record = array.objectAt(i);
+        var record = objectAt(array, i);
         var wrapped = this.wrapRecord(record);
         releaseMethods.push(this.observeRecord(record, recordUpdated));
         recordsAdded([wrapped]);
@@ -230,10 +233,10 @@ export default EmberObject.extend({
     };
 
     var observer = { didChange: contentDidChange, willChange() { return this; } };
-    records.addArrayObserver(this, observer);
+    addArrayObserver(records, this, observer);
 
     release = () => {
-      releaseMethods.forEach(function(fn) { fn(); });
+      releaseMethods.forEach(fn => fn());
       records.removeArrayObserver(this, observer);
       this.releaseMethods.removeObject(release);
     };
@@ -251,9 +254,7 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._super(...arguments);
-    this.releaseMethods.forEach(function(fn) {
-      fn();
-    });
+    this.releaseMethods.forEach(fn => fn());
   },
 
   /**
@@ -309,7 +310,7 @@ export default EmberObject.extend({
       willChange() { return this; }
     };
 
-    records.addArrayObserver(this, observer);
+    addArrayObserver(records, this, observer);
 
     var release = () => {
       records.removeArrayObserver(this, observer);

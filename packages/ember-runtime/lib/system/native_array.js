@@ -4,15 +4,38 @@
 */
 
 import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES
-import { _replace as replace } from 'ember-metal/replace';
+import { _replace } from 'ember-metal/replace';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  arrayContentWillChange,
+  arrayContentDidChange
+} from 'ember-runtime/mixins/array';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import Observable from 'ember-runtime/mixins/observable';
 import Copyable from 'ember-runtime/mixins/copyable';
 import { FROZEN_ERROR } from 'ember-runtime/mixins/freezable';
 import copy from 'ember-runtime/copy';
+
+export function replace(array, index, amt, objects) {
+  if (this.isFrozen) {
+    throw FROZEN_ERROR;
+  }
+
+  // if we replaced exactly the same number of items, then pass only the
+  // replaced range. Otherwise, pass the full remaining array length
+  // since everything has shifted
+  var len = objects ? get(objects, 'length') : 0;
+  arrayContentWillChange(array, index, amt, len);
+
+  if (len === 0) {
+    array.splice(index, amt);
+  } else {
+    _replace(array, index, amt, objects);
+  }
+
+  arrayContentDidChange(array, index, amt, len);
+}
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -52,24 +75,8 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // primitive for array support.
   replace(idx, amt, objects) {
+    replace(this, idx, amt, objects);
 
-    if (this.isFrozen) {
-      throw FROZEN_ERROR;
-    }
-
-    // if we replaced exactly the same number of items, then pass only the
-    // replaced range. Otherwise, pass the full remaining array length
-    // since everything has shifted
-    var len = objects ? get(objects, 'length') : 0;
-    this.arrayContentWillChange(idx, amt, len);
-
-    if (len === 0) {
-      this.splice(idx, amt);
-    } else {
-      replace(this, idx, amt, objects);
-    }
-
-    this.arrayContentDidChange(idx, amt, len);
     return this;
   },
 

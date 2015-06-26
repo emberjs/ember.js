@@ -9,6 +9,10 @@ import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/contr
 import Controller from 'ember-runtime/controllers/controller';
 import {sort} from 'ember-runtime/computed/reduce_computed_macros';
 import Registry from 'container/registry';
+import {
+  addArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 
 var lannisters, arrayController, controllerClass, otherControllerClass, registry, container, itemControllerCount,
     tywin, jaime, cersei, tyrion;
@@ -311,15 +315,16 @@ QUnit.test('array observers can invoke `objectAt` without overwriting existing i
     lannistersWillChange() { return this; },
     lannistersDidChange(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
-      equal(this.objectAt(idx).get('model.name'), 'Tyrion', 'Array observers get the right object via `objectAt`');
+      equal(objectAt(this, idx).get('model.name'), 'Tyrion', 'Array observers get the right object via `objectAt`');
     }
   });
-  arrayController.addArrayObserver(arrayController, {
+
+  addArrayObserver(arrayController, arrayController, {
     willChange: 'lannistersWillChange',
     didChange: 'lannistersDidChange'
   });
 
-  run(function() {
+  run(() => {
     lannisters.unshiftObject(tyrion);
   });
 

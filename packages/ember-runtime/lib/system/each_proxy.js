@@ -8,9 +8,12 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
 import { guidFor } from 'ember-metal/utils';
 import { typeOf } from 'ember-runtime/utils';
-import EmberArray from 'ember-runtime/mixins/array'; // ES6TODO: WAT? Circular dep?
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
+import EmberArray, {
+  addArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array'; // ES6TODO: WAT? Circular dep?
 import {
   addObserver,
   addBeforeObserver,
@@ -37,7 +40,7 @@ var EachArray = EmberObject.extend(EmberArray, {
   },
 
   objectAt(idx) {
-    var item = this._content.objectAt(idx);
+    var item = objectAt(this._content, idx);
     return item && get(item, this._keyName);
   },
 
@@ -58,7 +61,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   }
 
   while (--loc >= idx) {
-    var item = content.objectAt(loc);
+    var item = objectAt(content, loc);
     if (item) {
       Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', typeOf(item) === 'instance' || typeOf(item) === 'object');
       addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
@@ -85,7 +88,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   var indices, guid;
 
   while (--loc >= idx) {
-    var item = content.objectAt(loc);
+    var item = objectAt(content, loc);
     if (item) {
       removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       removeObserver(item, keyName, proxy, 'contentKeyDidChange');
@@ -109,13 +112,11 @@ var EachProxy = EmberObject.extend({
   init(content) {
     this._super(...arguments);
     this._content = content;
-    content.addArrayObserver(this);
+    addArrayObserver(content, this);
 
     // in case someone is already observing some keys make sure they are
     // added
-    watchedEvents(this).forEach((eventName) => {
-      this.didAddListener(eventName);
-    });
+    watchedEvents(this).forEach(eventName => this.didAddListener(eventName));
   },
 
   /**
