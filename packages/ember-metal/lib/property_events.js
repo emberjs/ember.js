@@ -1,6 +1,5 @@
 import {
-  guidFor,
-  tryFinally
+  guidFor
 } from 'ember-metal/utils';
 import {
   sendEvent,
@@ -276,7 +275,11 @@ function endPropertyChanges() {
 */
 function changeProperties(callback, binding) {
   beginPropertyChanges();
-  tryFinally(callback, endPropertyChanges, binding);
+  try {
+    callback.call(binding);
+  } finally {
+    endPropertyChanges.call(binding);
+  }
 }
 
 function notifyBeforeObservers(obj, keyName) {

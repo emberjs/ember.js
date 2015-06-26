@@ -62,8 +62,7 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   @return {Object} return value from invoking the passed function.
   @public
 */
-export default run;
-function run() {
+export default function run() {
   return backburner.run(...arguments);
 }
 
