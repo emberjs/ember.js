@@ -34,8 +34,8 @@ import { Binding } from "ember-metal/binding";
 import {
   addObserver,
   removeObserver,
-  addBeforeObserver,
-  removeBeforeObserver,
+  _addBeforeObserver,
+  _removeBeforeObserver,
   _suspendObserver
 } from "ember-metal/observer";
 import {
@@ -421,13 +421,13 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
   var prev = obj[key];
 
   if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', removeBeforeObserver);
+    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
     updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
     updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
   }
 
   if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', addBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', _addBeforeObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
   }
@@ -880,9 +880,9 @@ export function immediateObserver() {
   Note, `@each.property` observer is called per each add or replace of an element
   and it's not called with a specific enumeration item.
 
-  A `beforeObserver` fires before a property changes.
+  A `_beforeObserver` fires before a property changes.
 
-  A `beforeObserver` is an alternative form of `.observesBefore()`.
+  A `_beforeObserver` is an alternative form of `.observesBefore()`.
 
   ```javascript
   App.PersonView = Ember.View.extend({
@@ -915,9 +915,10 @@ export function immediateObserver() {
   @param {String} propertyNames*
   @param {Function} func
   @return func
+  @deprecated
   @private
 */
-export function beforeObserver(...args) {
+export function _beforeObserver(...args) {
   var func  = args.slice(-1)[0];
   var paths;
 

@@ -7,7 +7,7 @@ import { set } from "ember-metal/property_set";
 import { forEach } from "ember-metal/enumerable_utils";
 import {
   observer,
-  beforeObserver
+  _beforeObserver
 } from "ember-metal/mixin";
 import { on } from "ember-metal/events";
 
@@ -225,7 +225,7 @@ var ContainerView = View.extend(MutableArray, {
     }
   },
 
-  _currentViewWillChange: beforeObserver('currentView', function() {
+  _currentViewWillChange: _beforeObserver('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
       currentView.destroy();

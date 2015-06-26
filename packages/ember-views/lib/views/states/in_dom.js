@@ -1,7 +1,8 @@
+import Ember from 'ember-metal/core';
 import create from 'ember-metal/platform/create';
 import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
-import { addBeforeObserver } from 'ember-metal/observer';
+import { _addBeforeObserver } from 'ember-metal/observer';
 
 import hasElement from "ember-views/views/states/has_element";
 /**
@@ -20,8 +21,8 @@ merge(inDOM, {
     }
 
     Ember.runInDebug(function() {
-      addBeforeObserver(view, 'elementId', function() {
-        throw new EmberError("Changing a view's elementId after creation is not allowed");
+      _addBeforeObserver(view, 'elementId', function() {
+        throw new EmberError('Changing a view\'s elementId after creation is not allowed');
       });
     });
   },

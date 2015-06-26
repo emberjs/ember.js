@@ -172,18 +172,18 @@ import {
   _suspendBeforeObservers,
   _suspendObserver,
   _suspendObservers,
-  addBeforeObserver,
+  _addBeforeObserver,
   addObserver,
-  beforeObserversFor,
+  _beforeObserversFor,
   observersFor,
-  removeBeforeObserver,
+  _removeBeforeObserver,
   removeObserver
 } from "ember-metal/observer";
 import {
   IS_BINDING,
   Mixin,
   aliasMethod,
-  beforeObserver,
+  _beforeObserver,
   immediateObserver,
   mixin,
   observer,
@@ -332,20 +332,20 @@ Ember.cacheFor = cacheFor;
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
 Ember.removeObserver = removeObserver;
-Ember.addBeforeObserver = addBeforeObserver;
+Ember.addBeforeObserver = Ember.deprecateFunc('Ember.addBeforeObserver is deprecated and will be removed in the near future. See http://emberjs.com/deprecations/v1.x/#toc_beforeobserver', _addBeforeObserver);
 Ember._suspendBeforeObserver = _suspendBeforeObserver;
 Ember._suspendBeforeObservers = _suspendBeforeObservers;
 Ember._suspendObserver = _suspendObserver;
 Ember._suspendObservers = _suspendObservers;
-Ember.beforeObserversFor = beforeObserversFor;
-Ember.removeBeforeObserver = removeBeforeObserver;
+Ember.beforeObserversFor = Ember.deprecateFunc('Ember.beforeObserversFor is deprecated and will be removed in the near future. See http://emberjs.com/deprecations/v1.x/#toc_beforeobserver', _beforeObserversFor);
+Ember.removeBeforeObserver = Ember.deprecateFunc('Ember.removeBeforeObserver is deprecated and will be removed in the near future. See http://emberjs.com/deprecations/v1.x/#toc_beforeobserver', _removeBeforeObserver);
 
 Ember.IS_BINDING = IS_BINDING;
 Ember.required = required;
 Ember.aliasMethod = aliasMethod;
 Ember.observer = observer;
 Ember.immediateObserver = immediateObserver;
-Ember.beforeObserver = beforeObserver;
+Ember.beforeObserver = Ember.deprecateFunc('Ember.beforeObserver is deprecated and will be removed in the near future. See http://emberjs.com/deprecations/v1.x/#toc_beforeobserver', _beforeObserver);
 Ember.mixin = mixin;
 Ember.Mixin = Mixin;
 
