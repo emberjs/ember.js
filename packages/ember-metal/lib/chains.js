@@ -354,9 +354,13 @@ ChainNode.prototype = {
 
     // then notify chains...
     var chains = this._chains;
+    var node;
     if (chains) {
       for (var key in chains) {
-        chains[key].didChange(events);
+        node = chains[key];
+        if (node !== undefined) {
+          node.didChange(events);
+        }
       }
     }
 
