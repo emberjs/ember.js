@@ -5,7 +5,7 @@ import {
 } from 'ember-runtime/utils';
 import { computed } from 'ember-metal/computed';
 import {
-  beforeObserver,
+  _beforeObserver,
   observer
 } from 'ember-metal/mixin';
 import {
@@ -132,7 +132,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @private
     @method _contentWillChange
   */
-  _contentWillChange: beforeObserver('content', function() {
+  _contentWillChange: _beforeObserver('content', function() {
     this._teardownContent();
   }),
 
@@ -202,7 +202,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     }
   },
 
-  _arrangedContentWillChange: beforeObserver('arrangedContent', function() {
+  _arrangedContentWillChange: _beforeObserver('arrangedContent', function() {
     var arrangedContent = get(this, 'arrangedContent');
     var len = arrangedContent ? get(arrangedContent, 'length') : 0;
 

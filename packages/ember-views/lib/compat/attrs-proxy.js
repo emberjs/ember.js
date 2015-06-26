@@ -7,8 +7,8 @@ import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import {
   addObserver,
   removeObserver,
-  addBeforeObserver,
-  removeBeforeObserver
+  _addBeforeObserver,
+  _removeBeforeObserver
 } from 'ember-metal/observer';
 
 export function deprecation(key) {
@@ -60,7 +60,7 @@ let AttrsProxyMixin = {
     if (this._isAngleBracket || key === 'attrs') { return; }
 
     let attrsKey = `attrs.${key}`;
-    addBeforeObserver(this, attrsKey, null, attrsWillChange);
+    _addBeforeObserver(this, attrsKey, null, attrsWillChange);
     addObserver(this, attrsKey, null, attrsDidChange);
   },
 
@@ -68,7 +68,7 @@ let AttrsProxyMixin = {
     if (this._isAngleBracket || key === 'attrs') { return; }
 
     let attrsKey = `attrs.${key}`;
-    removeBeforeObserver(this, attrsKey, null, attrsWillChange);
+    _removeBeforeObserver(this, attrsKey, null, attrsWillChange);
     removeObserver(this, attrsKey, null, attrsDidChange);
   },
 
