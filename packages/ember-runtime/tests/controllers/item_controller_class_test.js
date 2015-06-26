@@ -380,5 +380,7 @@ QUnit.test('item controllers can be used to provide properties for array compute
     sorted: sort('@this', 'sortProperties')
   });
 
-  deepEqual(arrayController.get('sorted').mapProperty('model.name'), ['Jaime', 'Cersei'], 'ArrayController items can be sorted on itemController properties');
+  var sortedNames = arrayController.get('sorted').mapBy('model.name');
+
+  deepEqual(sortedNames, ['Jaime', 'Cersei'], 'ArrayController items can be sorted on itemController properties');
 });

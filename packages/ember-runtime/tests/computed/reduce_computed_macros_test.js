@@ -4,390 +4,310 @@ import setProperties from 'ember-metal/set_properties';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
 import { addObserver } from 'ember-metal/observer';
+import { observer } from 'ember-metal/mixin';
 import {
-  beginPropertyChanges,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import { observer, Mixin } from 'ember-metal/mixin';
-import {
-  sum as computedSum,
-  min as computedMin,
-  max as computedMax,
-  map as computedMap,
-  sort as computedSort,
-  setDiff as computedSetDiff,
-  mapBy as computedMapBy,
-  filter as computedFilter,
-  filterBy as computedFilterBy,
-  uniq as computedUniq,
-  union as computedUnion,
-  intersect as computedIntersect
+  sum,
+  min,
+  max,
+  map,
+  sort,
+  setDiff,
+  mapBy,
+  filter,
+  filterBy,
+  uniq,
+  union,
+  intersect
 } from 'ember-runtime/computed/reduce_computed_macros';
 
-var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
-
-QUnit.module('computedMap', {
+var obj;
+QUnit.module('map', {
   setup() {
-    run(function() {
-      userFnCalls = 0;
-      obj = EmberObject.extend({
+    obj = EmberObject.extend({
+      mapped: map('array.@each.v', (item) => item.v),
+      mappedObjects: map('arrayObjects.@each.v',  (item) => ({ name: item.v.name }))
+    }).create({
+      arrayObjects: Ember.A([
+        { v: { name: 'Robert' } },
+        { v: { name: 'Leanna' } }
+      ]),
 
-        mapped: computedMap('array.@each.v', function(item) {
-          ++userFnCalls;
-          return item.v;
-        }),
-
-        arrayObjects: Ember.A([
-          EmberObject.create({ v: { name: 'Robert' } }),
-          EmberObject.create({ v: { name: 'Leanna' } })]),
-        mappedObjects: computedMap('arrayObjects.@each.v', function (item) {
-          return {
-            name: item.v.name
-          };
-        })
-      }).create({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
-      });
+      array: Ember.A([
+        { v: 1 },
+        { v: 3 },
+        { v: 2 },
+        { v: 1 }
+      ])
     });
   },
+
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('map is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('mapped', 1);
+  }, /Cannot set read-only property "mapped" on object:/);
 });
 
 QUnit.test('it maps simple properties', function() {
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
+  deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
 
-  run(function() {
-    obj.get('array').pushObject({ v: 5 });
-  });
+  obj.get('array').pushObject({ v: 5 });
 
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1, 5]);
+  deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
-  run(function() {
-    obj.get('array').removeAt(3);
-  });
+  obj.get('array').removeAt(3);
 
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
-});
-
-QUnit.test('it caches properly', function() {
-  var array = get(obj, 'array');
-  get(obj, 'mapped');
-
-  equal(userFnCalls, 4, 'precond - mapper called expected number of times');
-
-  run(function() {
-    array.addObject({ v: 7 });
-  });
-
-  equal(userFnCalls, 5, 'precond - mapper called expected number of times');
-
-  get(obj, 'mapped');
-
-  equal(userFnCalls, 5, 'computedMap caches properly');
+  deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
 });
 
 QUnit.test('it maps simple unshifted properties', function() {
-  var array = Ember.A([]);
+  var array = Ember.A();
 
-  run(function() {
-    obj = EmberObject.extend({
-      mapped: computedMap('array', (item) => item.toUpperCase())
-    }).create({
-      array
-    });
-    get(obj, 'mapped');
+  obj = EmberObject.extend({
+    mapped: map('array', (item) => item.toUpperCase())
+  }).create({
+    array
   });
 
-  run(function() {
-    array.unshiftObject('c');
-    array.unshiftObject('b');
-    array.unshiftObject('a');
+  array.unshiftObject('c');
+  array.unshiftObject('b');
+  array.unshiftObject('a');
 
-    array.popObject();
-  });
+  array.popObject();
 
-  deepEqual(get(obj, 'mapped'), ['A', 'B'], 'properties unshifted in sequence are mapped correctly');
+  deepEqual(obj.get('mapped'), ['A', 'B'], 'properties unshifted in sequence are mapped correctly');
 });
 
 QUnit.test('it passes the index to the callback', function() {
-  var array = Ember.A(['a', 'b', 'c']);
+  var array = ['a', 'b', 'c'];
 
-  run(function() {
-    obj = EmberObject.extend({
-      mapped: computedMap('array', (item, index) => index)
-    }).create({
-      array
-    });
-    get(obj, 'mapped');
+  obj = EmberObject.extend({
+    mapped: map('array', (item, index) => index)
+  }).create({
+    array
   });
 
-  deepEqual(get(obj, 'mapped'), [0, 1, 2], 'index is passed to callback correctly');
+  deepEqual(obj.get('mapped'), [0, 1, 2], 'index is passed to callback correctly');
 });
 
 QUnit.test('it maps objects', function() {
-  deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Leanna' }]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Robert' },
+    { name: 'Leanna' }
+  ]);
 
-  run(function() {
-    obj.get('arrayObjects').pushObject({ v: { name: 'Eddard' } });
+  obj.get('arrayObjects').pushObject({
+    v: { name: 'Eddard' }
   });
 
-  deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Leanna' }, { name: 'Eddard' }]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Robert' },
+    { name: 'Leanna' },
+    { name: 'Eddard' }
+  ]);
 
-  run(function() {
-    obj.get('arrayObjects').removeAt(1);
-  });
+  obj.get('arrayObjects').removeAt(1);
 
-  deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Eddard' }]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Robert' },
+    { name: 'Eddard' }
+  ]);
 
-  run(function() {
-    obj.get('arrayObjects').objectAt(0).set('v', { name: 'Stannis' });
-  });
+  set(obj.get('arrayObjects')[0], 'v', { name: 'Stannis' });
 
-  deepEqual(get(obj, 'mappedObjects'), [{ name: 'Stannis' }, { name: 'Eddard' }]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Stannis' },
+    { name: 'Eddard' }
+  ]);
 });
 
 QUnit.test('it maps unshifted objects with property observers', function() {
-  var array = Ember.A([]);
+  var array = Ember.A();
   var cObj = { v: 'c' };
 
-  run(function() {
-    obj = EmberObject.extend({
-      mapped: computedMap('array.@each.v', function (item) {
-        return get(item, 'v').toUpperCase();
-      })
-    }).create({
-      array
-    });
-    get(obj, 'mapped');
+  obj = EmberObject.extend({
+    mapped: map('array.@each.v', (item) => get(item, 'v').toUpperCase())
+  }).create({
+    array
   });
 
-  run(function() {
-    array.unshiftObject(cObj);
-    array.unshiftObject({ v: 'b' });
-    array.unshiftObject({ v: 'a' });
+  array.unshiftObject(cObj);
+  array.unshiftObject({ v: 'b' });
+  array.unshiftObject({ v: 'a' });
 
-    set(cObj, 'v', 'd');
-  });
+  set(cObj, 'v', 'd');
 
   deepEqual(array.mapBy('v'), ['a', 'b', 'd'], 'precond - unmapped array is correct');
-  deepEqual(get(obj, 'mapped'), ['A', 'B', 'D'], 'properties unshifted in sequence are mapped correctly');
+  deepEqual(obj.get('mapped'), ['A', 'B', 'D'], 'properties unshifted in sequence are mapped correctly');
 });
 
-QUnit.test('it complains if you invoke the wrong map macro', function() {
-  expectAssertion(() => computedMap('array', 'property'), /map expects a callback function/);
-});
-
-QUnit.module('computedMapBy', {
+QUnit.module('mapBy', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        mapped: computedMapBy('array', 'v')
-      }).create({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
-      });
+    obj = EmberObject.extend({
+      mapped: mapBy('array', 'v')
+    }).create({
+      array: Ember.A([
+        { v: 1 },
+        { v: 3 },
+        { v: 2 },
+        { v: 1 }
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('mapBy is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('mapped', 1);
+  }, /Cannot set read-only property "mapped" on object:/);
 });
 
 QUnit.test('it maps properties', function() {
-  get(obj, 'mapped');
+  deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
 
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
+  obj.get('array').pushObject({ v: 5 });
 
-  run(function() {
-    obj.get('array').pushObject({ v: 5 });
-  });
+  deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1, 5]);
+  obj.get('array').removeAt(3);
 
-  run(function() {
-    obj.get('array').removeAt(3);
-  });
-
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
+  deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
 });
 
 QUnit.test('it is observable', function() {
-  get(obj, 'mapped');
   var calls = 0;
 
-  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
+  deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
 
-  addObserver(obj, 'mapped.@each', function() {
-    calls++;
-  });
+  addObserver(obj, 'mapped.@each', () => calls++);
 
-  run(function() {
-    obj.get('array').pushObject({ v: 5 });
-  });
+  obj.get('array').pushObject({ v: 5 });
 
-  equal(calls, 1, 'computedMapBy is observable');
+  equal(calls, 1, 'mapBy is observable');
 });
 
-QUnit.test('it complains with the wrong arguments', function() {
-  expectAssertion(() => computedMapBy('array', a => a), /mapBy expects a property string/);
-});
-
-QUnit.module('computedFilter', {
+QUnit.module('filter', {
   setup() {
-    run(function() {
-      userFnCalls = 0;
-      obj = EmberObject.extend({
-        filtered: computedFilter('array', function(item) {
-          ++userFnCalls;
-          return item % 2 === 0;
-        })
-      }).create({
-        array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8])
-      });
+    obj = EmberObject.extend({
+      filtered: filter('array', (item) => item % 2 === 0)
+    }).create({
+      array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
-QUnit.test('it filters according to the specified filter function', function() {
-  var filtered = get(obj, 'filtered');
+QUnit.test('filter is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('filtered', 1);
+  }, /Cannot set read-only property "filtered" on object:/);
+});
 
-  deepEqual(filtered, [2,4,6,8], 'computedFilter filters by the specified function');
+QUnit.test('it filters according to the specified filter function', function() {
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'filter filters by the specified function');
 });
 
 QUnit.test('it passes the index to the callback', function() {
-  var array = Ember.A(['a', 'b', 'c']);
-
-  run(function() {
-    obj = EmberObject.extend({
-      filtered: computedFilter('array', function (item, index) { return index === 1; })
-    }).create({
-      array
-    });
-    get(obj, 'filtered');
+  obj = EmberObject.extend({
+    filtered: filter('array', (item, index) => index === 1)
+  }).create({
+    array: ['a', 'b', 'c']
   });
 
   deepEqual(get(obj, 'filtered'), ['b'], 'index is passed to callback correctly');
 });
 
 QUnit.test('it passes the array to the callback', function() {
-  var array = Ember.A(['a', 'b', 'c']);
-
-  run(function() {
-    obj = EmberObject.extend({
-      filtered: computedFilter('array', function (item, index, array) { return index === array.get('length') - 2; })
-    }).create({
-      array
-    });
-    get(obj, 'filtered');
+  obj = EmberObject.extend({
+    filtered: filter('array',  (item, index, array) => index === get(array, 'length') - 2)
+  }).create({
+    array: Ember.A(['a', 'b', 'c'])
   });
 
-  deepEqual(get(obj, 'filtered'), ['b'], 'array is passed to callback correctly');
+  deepEqual(obj.get('filtered'), ['b'], 'array is passed to callback correctly');
 });
 
 QUnit.test('it caches properly', function() {
-  var array = get(obj, 'array');
-  get(obj, 'filtered');
+  var array = obj.get('array');
 
-  equal(userFnCalls, 8, 'precond - filter called expected number of times');
+  var filtered = obj.get('filtered');
+  ok(filtered === obj.get('filtered'));
 
-  run(function() {
-    array.addObject(11);
-  });
+  array.addObject(11);
+  var newFiltered = obj.get('filtered');
 
-  equal(userFnCalls, 9, 'precond - filter called expected number of times');
+  ok(filtered !== newFiltered);
 
-  get(obj, 'filtered');
-
-  equal(userFnCalls, 9, 'computedFilter caches properly');
+  ok(obj.get('filtered') === newFiltered);
 });
 
 QUnit.test('it updates as the array is modified', function() {
-  var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
+  var array = obj.get('array');
 
-  deepEqual(filtered, [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
 
-  run(function() {
-    array.addObject(11);
-  });
-  deepEqual(filtered, [2,4,6,8], 'objects not passing the filter are not added');
+  array.addObject(11);
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'objects not passing the filter are not added');
 
-  run(function() {
-    array.addObject(12);
-  });
-  deepEqual(filtered, [2,4,6,8,12], 'objects passing the filter are added');
+  array.addObject(12);
+  deepEqual(obj.get('filtered'), [2,4,6,8,12], 'objects passing the filter are added');
 
-  run(function() {
-    array.removeObject(3);
-    array.removeObject(4);
-  });
-  deepEqual(filtered, [2,6,8,12], 'objects removed from the dependent array are removed from the computed array');
+  array.removeObject(3);
+  array.removeObject(4);
+
+  deepEqual(obj.get('filtered'), [2,6,8,12], 'objects removed from the dependent array are removed from the computed array');
 });
 
 QUnit.test('the dependent array can be cleared one at a time', function() {
   var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
 
-  deepEqual(filtered, [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
 
-  run(function() {
-    // clear 1-8 but in a random order
-    array.removeObject(3);
-    array.removeObject(1);
-    array.removeObject(2);
-    array.removeObject(4);
-    array.removeObject(8);
-    array.removeObject(6);
-    array.removeObject(5);
-    array.removeObject(7);
-  });
+  // clear 1-8 but in a random order
+  array.removeObject(3);
+  array.removeObject(1);
+  array.removeObject(2);
+  array.removeObject(4);
+  array.removeObject(8);
+  array.removeObject(6);
+  array.removeObject(5);
+  array.removeObject(7);
 
-  deepEqual(filtered, [], 'filtered array cleared correctly');
+  deepEqual(obj.get('filtered'), [], 'filtered array cleared correctly');
 });
 
 QUnit.test('the dependent array can be `clear`ed directly (#3272)', function() {
-  var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
 
-  deepEqual(filtered, [2,4,6,8], 'precond - filtered array is initially correct');
+  obj.get('array').clear();
 
-  run(function() {
-    array.clear();
-  });
-
-  deepEqual(filtered, [], 'filtered array cleared correctly');
+  deepEqual(obj.get('filtered'), [], 'filtered array cleared correctly');
 });
 
 QUnit.test('it updates as the array is replaced', function() {
-  get(obj, 'array');
-  var filtered = get(obj, 'filtered');
+  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
 
-  deepEqual(filtered, [2,4,6,8], 'precond - filtered array is initially correct');
+  obj.set('array', [20,21,22,23,24]);
 
-  run(function() {
-    set(obj, 'array', Ember.A([20,21,22,23,24]));
-  });
-  deepEqual(filtered, [20,22,24], 'computed array is updated when array is changed');
+  deepEqual(obj.get('filtered'), [20,22,24], 'computed array is updated when array is changed');
 });
 
-QUnit.module('computedFilterBy', {
+QUnit.module('filterBy', {
   setup() {
     obj = EmberObject.extend({
-      a1s: computedFilterBy('array', 'a', 1),
-      as: computedFilterBy('array', 'a'),
-      bs: computedFilterBy('array', 'b')
+      a1s: filterBy('array', 'a', 1),
+      as: filterBy('array', 'a'),
+      bs: filterBy('array', 'b')
     }).create({
       array: Ember.A([
         { name: 'one', a: 1, b: false },
@@ -398,262 +318,218 @@ QUnit.module('computedFilterBy', {
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
+QUnit.test('filterBy is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('as', 1);
+  }, /Cannot set read-only property "as" on object:/);
+});
+
 QUnit.test('properties can be filtered by truthiness', function() {
-  var array = get(obj, 'array');
-  var as = get(obj, 'as');
-  var bs = get(obj, 'bs');
+  deepEqual(obj.get('as').mapBy('name'), ['one', 'two', 'three'], 'properties can be filtered by existence');
+  deepEqual(obj.get('bs').mapBy('name'), ['three', 'four'], 'booleans can be filtered');
 
-  deepEqual(as.mapBy('name'), ['one', 'two', 'three'], 'properties can be filtered by existence');
-  deepEqual(bs.mapBy('name'), ['three', 'four'], 'booleans can be filtered');
+  set(obj.get('array')[0], 'a', undefined);
+  set(obj.get('array')[3], 'a', true);
 
-  run(function() {
-    set(array.objectAt(0), 'a', undefined);
-    set(array.objectAt(3), 'a', true);
+  set(obj.get('array')[0], 'b', true);
+  set(obj.get('array')[3], 'b', false);
 
-    set(array.objectAt(0), 'b', true);
-    set(array.objectAt(3), 'b', false);
-  });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to property changes');
-  deepEqual(bs.mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to property changes');
+  deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to property changes');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to property changes');
 
-  run(function() {
-    array.pushObject({ name: 'five', a: 6, b: true });
-  });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four', 'five'], 'arrays computed by filter property respond to added objects');
-  deepEqual(bs.mapBy('name'), ['one', 'three', 'five'], 'arrays computed by filtered property respond to added objects');
+  obj.get('array').pushObject({ name: 'five', a: 6, b: true });
 
-  run(function() {
-    array.popObject();
-  });
-  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to removed objects');
-  deepEqual(bs.mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to removed objects');
+  deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four', 'five'], 'arrays computed by filter property respond to added objects');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three', 'five'], 'arrays computed by filtered property respond to added objects');
 
-  run(function() {
-    set(obj, 'array', Ember.A([{ name: 'six', a: 12, b: true }]));
-  });
-  deepEqual(as.mapBy('name'), ['six'], 'arrays computed by filter property respond to array changes');
-  deepEqual(bs.mapBy('name'), ['six'], 'arrays computed by filtered property respond to array changes');
+  obj.get('array').popObject();
+
+  deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to removed objects');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to removed objects');
+
+  obj.set('array', [
+    { name: 'six', a: 12, b: true }
+  ]);
+
+  deepEqual(obj.get('as').mapBy('name'), ['six'], 'arrays computed by filter property respond to array changes');
+  deepEqual(obj.get('bs').mapBy('name'), ['six'], 'arrays computed by filtered property respond to array changes');
 });
 
 QUnit.test('properties can be filtered by values', function() {
-  var array = get(obj, 'array');
-  var a1s = get(obj, 'a1s');
+  deepEqual(obj.get('a1s').mapBy('name'), ['one', 'three'], 'properties can be filtered by matching value');
 
-  deepEqual(a1s.mapBy('name'), ['one', 'three'], 'properties can be filtered by matching value');
+  obj.get('array').pushObject({ name: 'five', a: 1 });
 
-  run(function() {
-    array.pushObject({ name: 'five', a: 1 });
-  });
-  deepEqual(a1s.mapBy('name'), ['one', 'three', 'five'], 'arrays computed by matching value respond to added objects');
+  deepEqual(obj.get('a1s').mapBy('name'), ['one', 'three', 'five'], 'arrays computed by matching value respond to added objects');
 
-  run(function() {
-    array.popObject();
-  });
-  deepEqual(a1s.mapBy('name'), ['one', 'three'], 'arrays computed by matching value respond to removed objects');
+  obj.get('array').popObject();
 
-  run(function() {
-    set(array.objectAt(1), 'a', 1);
-    set(array.objectAt(2), 'a', 2);
-  });
-  deepEqual(a1s.mapBy('name'), ['one', 'two'], 'arrays computed by matching value respond to modified properties');
+  deepEqual(obj.get('a1s').mapBy('name'), ['one', 'three'], 'arrays computed by matching value respond to removed objects');
+
+  set(obj.get('array')[1], 'a', 1);
+  set(obj.get('array')[2], 'a', 2);
+
+  deepEqual(obj.get('a1s').mapBy('name'), ['one', 'two'], 'arrays computed by matching value respond to modified properties');
 });
 
 QUnit.test('properties values can be replaced', function() {
   obj = EmberObject.extend({
-      a1s: computedFilterBy('array', 'a', 1),
-      a1bs: computedFilterBy('a1s', 'b')
-    }).create({
-      array: Ember.A([])
-    });
-
-  var a1bs = get(obj, 'a1bs');
-  deepEqual(a1bs.mapBy('name'), [], 'properties can be filtered by matching value');
-
-  run(function() {
-    set(obj, 'array', Ember.A([{ name: 'item1', a: 1, b: true }]));
+    a1s: filterBy('array', 'a', 1),
+    a1bs: filterBy('a1s', 'b')
+  }).create({
+    array: []
   });
 
-  a1bs = get(obj, 'a1bs');
-  deepEqual(a1bs.mapBy('name'), ['item1'], 'properties can be filtered by matching value');
+  deepEqual(obj.get('a1bs').mapBy('name'), [], 'properties can be filtered by matching value');
+
+  set(obj, 'array', [
+    { name: 'item1', a: 1, b: true }
+  ]);
+
+  deepEqual(obj.get('a1bs').mapBy('name'), ['item1'], 'properties can be filtered by matching value');
 });
 
-[['uniq', computedUniq], ['union', computedUnion]].forEach(function (tuple) {
-  var alias  = tuple[0];
-  var testedFunc = tuple[1];
+[
+  ['uniq', uniq],
+  ['union', union]
+].forEach((tuple) => {
+  const [name, macro] = tuple;
 
-  QUnit.module('computed.' + alias, {
+  QUnit.module(`computed.${name}`, {
     setup() {
-      run(function() {
-        union = testedFunc('array', 'array2', 'array3');
-        obj = EmberObject.extend({
-          union: union
-        }).create({
-          array: Ember.A([1,2,3,4,5,6]),
-          array2: Ember.A([4,5,6,7,8,9,4,5,6,7,8,9]),
-          array3: Ember.A([1,8,10])
-        });
+      obj = EmberObject.extend({
+        union: macro('array', 'array2', 'array3')
+      }).create({
+        array: Ember.A([1, 2, 3, 4, 5, 6]),
+        array2: Ember.A([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
+        array3: Ember.A([1, 8, 10])
       });
     },
     teardown() {
-      run(function() {
-        obj.destroy();
-      });
+      Ember.run(obj, 'destroy');
     }
   });
 
+  QUnit.test(`${name} is readOnly`, function() {
+    QUnit.throws(function() {
+      obj.set('union', 1);
+    }, /Cannot set read-only property "union" on object:/);
+  });
+
   QUnit.test('does not include duplicates', function() {
-    var array = get(obj, 'array');
-    var array2 = get(obj, 'array2');
-    get(obj, 'array3');
-    var union = get(obj, 'union');
+    var array = obj.get('array');
+    var array2 = obj.get('array2');
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + ' does not include duplicates');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' does not include duplicates');
 
-    run(function() {
-      array.pushObject(8);
-    });
+    array.pushObject(8);
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + ' does not add existing items');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' does not add existing items');
 
-    run(function() {
-      array.pushObject(11);
-    });
+    array.pushObject(11);
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + ' adds new items');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10,11], name + ' adds new items');
 
-    run(function() {
-      array2.removeAt(6); // remove 7
-    });
+    array2.removeAt(6); // remove 7
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + ' does not remove items that are still in the dependent array');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10,11], name + ' does not remove items that are still in the dependent array');
 
-    run(function() {
-      array2.removeObject(7);
-    });
+    array2.removeObject(7);
 
-    deepEqual(union, [1,2,3,4,5,6,8,9,10,11], alias + ' removes items when their last instance is gone');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,8,9,10,11], name + ' removes items when their last instance is gone');
   });
 
   QUnit.test('has set-union semantics', function() {
-    var array = get(obj, 'array');
-    get(obj, 'array2');
-    get(obj, 'array3');
-    var union = get(obj, 'union');
+    var array = obj.get('array');
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + ' is initially correct');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' is initially correct');
 
-    run(function() {
-      array.removeObject(6);
-    });
+    array.removeObject(6);
 
-    deepEqual(union, [1,2,3,4,5,6,7,8,9,10], 'objects are not removed if they exist in other dependent arrays');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], 'objects are not removed if they exist in other dependent arrays');
 
-    run(function() {
-      array.clear();
-    });
+    array.clear();
 
-    deepEqual(union, [1,4,5,6,7,8,9,10], 'objects are removed when they are no longer in any dependent array');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1,4,5,6,7,8,9,10], 'objects are removed when they are no longer in any dependent array');
   });
-
-  QUnit.test('does not need to query the accumulated array while building it', function() {
-    var indexOfCalls = [];
-    var CountIndexOfCalls = Mixin.create({
-      indexOf() {
-        indexOfCalls.push(arguments);
-        return this._super.apply(this, arguments);
-      }
-    });
-    union.initialValue = function() {
-      return CountIndexOfCalls.apply(Ember.A([]));
-    };
-    get(obj, 'union');
-    ok(indexOfCalls.length === 0, 'Ember.computed.' + alias + ' should not need to query the union as it is being built');
-  });
-
 });
 
 QUnit.module('computed.intersect', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        intersection: computedIntersect('array', 'array2', 'array3')
-      }).create({
-        array: Ember.A([1,2,3,4,5,6]),
-        array2: Ember.A([3,3,3,4,5]),
-        array3: Ember.A([3,5,6,7,8])
-      });
+    obj = EmberObject.extend({
+      intersection: intersect('array', 'array2', 'array3')
+    }).create({
+      array: Ember.A([1,2,3,4,5,6]),
+      array2: Ember.A([3,3,3,4,5]),
+      array3: Ember.A([3,5,6,7,8])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('intersect is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('intersection', 1);
+  }, /Cannot set read-only property "intersection" on object:/);
 });
 
 QUnit.test('it has set-intersection semantics', function() {
-  get(obj, 'array');
-  var array2 = get(obj, 'array2');
-  var array3 = get(obj, 'array3');
-  var intersection = get(obj, 'intersection');
+  var array2 = obj.get('array2');
+  var array3 = obj.get('array3');
 
-  deepEqual(intersection, [3,5], 'intersection is initially correct');
+  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'intersection is initially correct');
 
-  run(function() {
-    array2.shiftObject();
-  });
-  deepEqual(intersection, [3,5], 'objects are not removed when they are still in all dependent arrays');
+  array2.shiftObject();
 
-  run(function() {
-    array2.shiftObject();
-  });
-  deepEqual(intersection, [3,5], 'objects are not removed when they are still in all dependent arrays');
+  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'objects are not removed when they are still in all dependent arrays');
 
-  run(function() {
-    array2.shiftObject();
-  });
-  deepEqual(intersection, [5], 'objects are removed once they are gone from all dependent arrays');
+  array2.shiftObject();
 
-  run(function() {
-    array2.pushObject(1);
-  });
-  deepEqual(intersection, [5], 'objects are not added as long as they are missing from any dependent array');
+  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'objects are not removed when they are still in all dependent arrays');
 
-  run(function() {
-    array3.pushObject(1);
-  });
-  deepEqual(intersection, [5,1], 'objects added once they belong to all dependent arrays');
+  array2.shiftObject();
+
+  deepEqual(obj.get('intersection'), [5], 'objects are removed once they are gone from all dependent arrays');
+
+  array2.pushObject(1);
+
+  deepEqual(obj.get('intersection'), [5], 'objects are not added as long as they are missing from any dependent array');
+
+  array3.pushObject(1);
+
+  deepEqual(obj.get('intersection').sort((x,y) => x - y), [1,5], 'objects added once they belong to all dependent arrays');
 });
 
-
-QUnit.module('computedSetDiff', {
+QUnit.module('setDiff', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        diff: computedSetDiff('array', 'array2')
-      }).create({
-        array: Ember.A([1,2,3,4,5,6,7]),
-        array2: Ember.A([3,4,5,10])
-      });
+    obj = EmberObject.extend({
+      diff: setDiff('array', 'array2')
+    }).create({
+      array: Ember.A([1,2,3,4,5,6,7]),
+      array2: Ember.A([3,4,5,10])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('setDiff is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('diff', 1);
+  }, /Cannot set read-only property "diff" on object:/);
 });
 
 QUnit.test('it throws an error if given fewer or more than two dependent properties', function() {
   throws(function () {
     EmberObject.extend({
-      diff: computedSetDiff('array')
+      diff: setDiff('array')
     }).create({
       array: Ember.A([1,2,3,4,5,6,7]),
       array2: Ember.A([3,4,5])
@@ -662,7 +538,7 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
 
   throws(function () {
     EmberObject.extend({
-      diff: computedSetDiff('array', 'array2', 'array3')
+      diff: setDiff('array', 'array2', 'array3')
     }).create({
       array: Ember.A([1,2,3,4,5,6,7]),
       array2: Ember.A([3,4,5]),
@@ -673,451 +549,512 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
 
 
 QUnit.test('it has set-diff semantics', function() {
-  var array1 = get(obj, 'array');
-  var array2 = get(obj, 'array2');
-  var diff = get(obj, 'diff');
+  var array1 = obj.get('array');
+  var array2 = obj.get('array2');
 
-  deepEqual(diff, [1, 2, 6, 7], 'set-diff is initially correct');
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 6, 7], 'set-diff is initially correct');
 
-  run(function() {
-    array2.popObject();
-  });
-  deepEqual(diff, [1,2,6,7], 'removing objects from the remove set has no effect if the object is not in the keep set');
+  array2.popObject();
 
-  run(function() {
-    array2.shiftObject();
-  });
-  deepEqual(diff, [1, 2, 6, 7, 3], 'removing objects from the remove set adds them if they\'re in the keep set');
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1,2,6,7], 'removing objects from the remove set has no effect if the object is not in the keep set');
 
-  run(function() {
-    array1.removeObject(3);
-  });
-  deepEqual(diff, [1, 2, 6, 7], 'removing objects from the keep array removes them from the computed array');
+  array2.shiftObject();
 
-  run(function() {
-    array1.pushObject(5);
-  });
-  deepEqual(diff, [1, 2, 6, 7], 'objects added to the keep array that are in the remove array are not added to the computed array');
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 3, 6, 7], 'removing objects from the remove set adds them if they\'re in the keep set');
 
-  run(function() {
-    array1.pushObject(22);
-  });
-  deepEqual(diff, [1, 2, 6, 7, 22], 'objects added to the keep array not in the remove array are added to the computed array');
+  array1.removeObject(3);
+
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 6, 7], 'removing objects from the keep array removes them from the computed array');
+
+  array1.pushObject(5);
+
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 6, 7], 'objects added to the keep array that are in the remove array are not added to the computed array');
+
+  array1.pushObject(22);
+
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 6, 7, 22], 'objects added to the keep array not in the remove array are added to the computed array');
 });
 
 
 function commonSortTests() {
   QUnit.test('arrays are initially sorted', function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-    });
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'array is initially sorted');
+  });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'array is initially sorted');
+  QUnit.test('default sort order is correct', function() {
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'array is initially sorted');
   });
 
   QUnit.test('changing the dependent array updates the sorted array', function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-    });
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'precond - array is initially sorted');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+    obj.set('items', [
+      { fname: 'Roose', lname: 'Bolton' },
+      { fname: 'Theon', lname: 'Greyjoy' },
+      { fname: 'Ramsey', lname: 'Bolton' },
+      { fname: 'Stannis', lname: 'Baratheon' }
+    ]);
 
-    run(function() {
-      set(obj, 'items', Ember.A([{
-        fname: 'Roose', lname: 'Bolton'
-      }, {
-        fname: 'Theon', lname: 'Greyjoy'
-      }, {
-        fname: 'Ramsey', lname: 'Bolton'
-      }, {
-        fname: 'Stannis', lname: 'Baratheon'
-      }]));
-    });
-
-    deepEqual(sorted.mapBy('fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], 'changing dependent array updates sorted array');
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Stannis',
+      'Ramsey',
+      'Roose',
+      'Theon'
+    ], 'changing dependent array updates sorted array');
   });
 
   QUnit.test('adding to the dependent array updates the sorted array', function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-      items = get(obj, 'items');
+    var items = obj.get('items');
+
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'precond - array is initially sorted');
+
+    items.pushObject({
+      fname: 'Tyrion',
+      lname: 'Lannister'
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
-
-    run(function() {
-      items.pushObject({ fname: 'Tyrion', lname: 'Lannister' });
-    });
-
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], 'Adding to the dependent array updates the sorted array');
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Tyrion',
+      'Bran',
+      'Robb'
+    ], 'Adding to the dependent array updates the sorted array');
   });
 
   QUnit.test('removing from the dependent array updates the sorted array', function() {
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-      items = get(obj, 'items');
-    });
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'precond - array is initially sorted');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+    obj.get('items').popObject();
 
-    run(function() {
-      items.popObject();
-    });
-
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], 'Removing from the dependent array updates the sorted array');
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Robb'
+    ], 'Removing from the dependent array updates the sorted array');
   });
 
   QUnit.test('distinct items may be sort-equal, although their relative order will not be guaranteed', function() {
-    var jaime, jaimeInDisguise;
+    // We recreate jaime and "Cersei" here only for test stability: we want
+    // their guid-ordering to be deterministic
+    var jaimeInDisguise = {
+      fname: 'Cersei',
+      lname: 'Lannister',
+      age: 34
+    };
 
-    run(function() {
-      // We recreate jaime and "Cersei" here only for test stability: we want
-      // their guid-ordering to be deterministic
-      jaimeInDisguise = EmberObject.create({
-        fname: 'Cersei', lname: 'Lannister', age: 34
-      });
-      jaime = EmberObject.create({
-        fname: 'Jaime', lname: 'Lannister', age: 34
-      });
-      items = get(obj, 'items');
+    var jaime = {
+      fname: 'Jaime',
+      lname: 'Lannister',
+      age: 34
+    };
 
-      items.replace(0, 1, jaime);
-      items.replace(1, 1, jaimeInDisguise);
-      sorted = get(obj, 'sortedItems');
-    });
+    var items = obj.get('items');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+    items.replace(0, 1, jaime);
+    items.replace(1, 1, jaimeInDisguise);
 
-    run(function() {
-      // comparator will now return 0.
-      // Apparently it wasn't a very good disguise.
-      jaimeInDisguise.set('fname', 'Jaime');
-    });
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'precond - array is initially sorted');
 
-    deepEqual(sorted.mapBy('fname'), ['Jaime', 'Jaime', 'Bran', 'Robb'], 'sorted array is updated');
+    set(jaimeInDisguise, 'fname', 'Jaime');
 
-    run(function() {
-      // comparator will again return non-zero
-      jaimeInDisguise.set('fname', 'Cersei');
-    });
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Jaime',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'sorted array is updated');
 
+    set(jaimeInDisguise, 'fname', 'Cersei');
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'sorted array is updated');
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Bran',
+      'Robb'
+    ], 'sorted array is updated');
   });
 
   QUnit.test('guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys', function() {
-    var tyrion = { fname: 'Tyrion', lname: 'Lannister' };
+    var tyrion = {
+      fname: 'Tyrion',
+      lname: 'Lannister'
+    };
+
     var tyrionInDisguise = ObjectProxy.create({
-          fname: 'Yollo',
-          lname: '',
-          content: tyrion
-        });
-
-    items = get(obj, 'items');
-
-    run(function() {
-      sorted = get(obj, 'sortedItems');
-      items.pushObject(tyrion);
+      fname: 'Yollo',
+      lname: '',
+      content: tyrion
     });
 
-    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+    var items = obj.get('items');
 
-    run(function() {
-      items.pushObject(tyrionInDisguise);
-    });
+    items.pushObject(tyrion);
 
-    deepEqual(sorted.mapBy('fname'), ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Tyrion',
+      'Bran',
+      'Robb'
+    ]);
+
+    items.pushObject(tyrionInDisguise);
+
+    deepEqual(obj.get('sortedItems').mapBy('fname'), [
+      'Yollo',
+      'Cersei',
+      'Jaime',
+      'Tyrion',
+      'Bran',
+      'Robb'
+    ]);
   });
 }
 
-QUnit.module('computedSort - sortProperties', {
+QUnit.module('sort - sortProperties', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        sortedItems: computedSort('items', 'itemSorting')
-      }).create({
-        itemSorting: Ember.A(['lname', 'fname']),
-        items: Ember.A([{
-          fname: 'Jaime', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Cersei', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Robb', lname: 'Stark', age: 16
-        }, {
-          fname: 'Bran', lname: 'Stark', age: 8
-        }])
-      });
+    obj = EmberObject.extend({
+      sortedItems: sort('items', 'itemSorting')
+    }).create({
+      itemSorting: Ember.A(['lname', 'fname']),
+      items: Ember.A([
+        { fname: 'Jaime', lname: 'Lannister', age: 34 },
+        { fname: 'Cersei', lname: 'Lannister', age: 34 },
+        { fname: 'Robb', lname: 'Stark', age: 16 },
+        { fname: 'Bran', lname: 'Stark', age: 8 }
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('sort is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('sortedItems', 1);
+  }, /Cannot set read-only property "sortedItems" on object:/);
 });
 
 commonSortTests();
 
 QUnit.test('updating sort properties detaches observers for old sort properties', function() {
-  var objectToRemove = get(obj, 'items').objectAt(3);
+  var objectToRemove = obj.get('items')[3];
 
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+  obj.set('itemSorting', Ember.A(['fname:desc']));
 
-  run(function() {
-    set(obj, 'itemSorting', Ember.A(['fname:desc']));
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Robb',
+    'Jaime',
+    'Cersei',
+    'Bran'
+  ], 'after updating sort properties array is updated');
 
-  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], 'after updating sort properties array is updated');
+  obj.get('items').removeObject(objectToRemove);
 
-  run(function() {
-    get(obj, 'items').removeObject(objectToRemove);
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Robb',
+    'Jaime',
+    'Cersei'
+  ], 'after removing item array is updated');
 
-  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei'], 'after removing item array is updated');
+  set(objectToRemove, 'lname', 'Updated-Stark');
 
-  run(function() {
-    set(objectToRemove, 'lname', 'Updated-Stark');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei'], 'after changing removed item array is not updated');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Robb',
+    'Jaime',
+    'Cersei'
+  ], 'after changing removed item array is not updated');
 });
 
 QUnit.test('updating sort properties updates the sorted array', function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+  obj.set('itemSorting', Ember.A(['fname:desc']));
 
-  run(function() {
-    set(obj, 'itemSorting', Ember.A(['fname:desc']));
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], 'after updating sort properties array is updated');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Robb',
+    'Jaime',
+    'Cersei',
+    'Bran'
+  ], 'after updating sort properties array is updated');
 });
 
-QUnit.test('updating sort properties in place updates the sorted array', function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    sortProps = get(obj, 'itemSorting');
-  });
+QUnit.test('updating sort properties invalidates the sorted array', function() {
+  var sortProps = obj.get('itemSorting');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  run(function() {
-    sortProps.clear();
-    sortProps.pushObject('fname');
-  });
+  sortProps.clear();
+  sortProps.pushObject('fname');
 
-  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], 'after updating sort properties array is updated');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Bran',
+    'Cersei',
+    'Jaime',
+    'Robb'
+  ], 'after updating sort properties array is updated');
 });
 
-QUnit.test('updating new sort properties in place updates the sorted array', function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
+QUnit.test('updating new sort properties invalidates the sorted array', function() {
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+  obj.set('itemSorting', Ember.A(['age:desc', 'fname:asc']));
 
-  run(function() {
-    set(obj, 'itemSorting', Ember.A(['age:desc', 'fname:asc']));
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Robb',
+    'Bran'
+  ], 'precond - array is correct after item sorting is changed');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb', 'Bran'], 'precond - array is correct after item sorting is changed');
+  set(obj.get('items')[1], 'age', 29);
 
-  run(function() {
-    items = get(obj, 'items');
-
-    var cersei = items.objectAt(1);
-    set(cersei, 'age', 29); // how vain
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], 'after updating sort properties array is updated');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Jaime',
+    'Cersei',
+    'Robb',
+    'Bran'
+  ], 'after updating sort properties array is updated');
 });
 
 QUnit.test('sort direction defaults to ascending', function() {
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ]);
+});
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+QUnit.test('sort direction defaults to ascending (with sort property change)', function() {
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  run(function() {
-    set(obj, 'itemSorting', Ember.A(['fname']));
-  });
+  obj.set('itemSorting', Ember.A(['fname']));
 
-  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], 'sort direction defaults to ascending');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Bran',
+    'Cersei',
+    'Jaime',
+    'Robb'
+  ], 'sort direction defaults to ascending');
 });
 
 QUnit.test('updating an item\'s sort properties updates the sorted array', function() {
-  var tyrionInDisguise;
+  var tyrionInDisguise = obj.get('items')[1];
 
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    items = get(obj, 'items');
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
 
-  tyrionInDisguise = items.objectAt(1);
+  set(tyrionInDisguise, 'fname', 'Tyrion');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
-
-  run(function() {
-    set(tyrionInDisguise, 'fname', 'Tyrion');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], 'updating an item\'s sort properties updates the sorted array');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Jaime',
+    'Tyrion',
+    'Bran',
+    'Robb'
+  ], 'updating an item\'s sort properties updates the sorted array');
 });
 
 QUnit.test('updating several of an item\'s sort properties updated the sorted array', function() {
-  var sansaInDisguise;
+  var sansaInDisguise = obj.get('items')[1];
 
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    items = get(obj, 'items');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Cersei',
+    'Jaime',
+    'Bran',
+    'Robb'
+  ], 'precond - array is initially sorted');
+
+  setProperties(sansaInDisguise, {
+    fname: 'Sansa',
+    lname: 'Stark'
   });
 
-  sansaInDisguise = items.objectAt(1);
-
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
-
-  run(function() {
-    setProperties(sansaInDisguise, {
-      fname: 'Sansa',
-      lname: 'Stark'
-    });
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Bran', 'Robb', 'Sansa'], 'updating an item\'s sort properties updates the sorted array');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), [
+    'Jaime',
+    'Bran',
+    'Robb',
+    'Sansa'
+  ], 'updating an item\'s sort properties updates the sorted array');
 });
 
 QUnit.test('updating an item\'s sort properties does not error when binary search does a self compare (#3273)', function() {
-  var jaime, cersei;
+  var jaime = {
+    name: 'Jaime',
+    status: 1
+  };
 
-  run(function() {
-    jaime = EmberObject.create({
-      name: 'Jaime',
-      status: 1
-    });
-    cersei = EmberObject.create({
-      name: 'Cersei',
-      status: 2
-    });
+  var cersei = {
+    name: 'Cersei',
+    status: 2
+  };
 
-    obj = EmberObject.extend({
-      sortedPeople: computedSort('people', 'sortProps')
-    }).create({
-      people: Ember.A([jaime, cersei]),
-      sortProps: Ember.A(['status'])
-    });
+  var obj = EmberObject.extend({
+    sortProps: ['status'],
+    sortedPeople: sort('people', 'sortProps')
+  }).create({
+    people: [jaime, cersei]
   });
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], 'precond - array is initially sorted');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei
+  ], 'precond - array is initially sorted');
 
-  run(function() {
-    cersei.set('status', 3);
-  });
+  set(cersei, 'status', 3);
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei
+  ], 'array is sorted correctly');
 
-  run(function() {
-    cersei.set('status', 2);
-  });
+  set(cersei, 'status', 2);
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei
+  ], 'array is sorted correctly');
 });
 
 QUnit.test('array observers do not leak', function() {
-  var jaime;
+  var daria = { name: 'Daria' };
+  var jane  = { name: 'Jane' };
 
-  var daria = EmberObject.create({
-    name: 'Daria'
+  var sisters = [jane, daria];
+
+  var sortProps = Ember.A(['name']);
+  var jaime = EmberObject.extend({
+    sortedPeople: sort('sisters', 'sortProps'),
+    sortProps
+  }).create({
+    sisters
   });
 
-  var jane = EmberObject.create({
-    name: 'Jane'
-  });
+  jaime.get('sortedPeople');
+  Ember.run(jaime, 'destroy');
 
-  var sisters = Ember.A([jane, daria]);
-  var sortProps;
-
-  run(function() {
-    sortProps = Ember.A(['name']);
-    jaime = EmberObject.extend({
-      sortedPeople: computedSort('sisters', 'sortProps'),
-      sortProps: sortProps
-    }).create({
-      sisters: sisters
+  try {
+    sortProps.pushObject({
+      name: 'Anna'
     });
-  });
-
-  run(function() {
-    jaime.get('sortedPeople');
-    jaime.destroy();
-  });
-
-  run(function() {
-    try {
-      sortProps.pushObject({
-        name: 'Anna'
-      });
-      ok(true);
-    } catch (e) {
-      ok(false, e);
-    }
-  });
+    ok(true);
+  } catch (e) {
+    ok(false, e);
+  }
 });
 
 QUnit.test('property paths in sort properties update the sorted array', function () {
-  var jaime, cersei, sansa;
+  var jaime = {
+    relatedObj: { status: 1, firstName: 'Jaime', lastName: 'Lannister' }
+  };
 
-  run(function () {
-    jaime = EmberObject.create({
-      relatedObj: EmberObject.create({ status: 1, firstName: 'Jaime', lastName: 'Lannister' })
-    });
-    cersei = EmberObject.create({
-      relatedObj: EmberObject.create({ status: 2, firstName: 'Cersei', lastName: 'Lannister' })
-    });
-    sansa = EmberObject.create({
-      relatedObj: EmberObject.create({ status: 3, firstName: 'Sansa', lastName: 'Stark' })
-    });
+  var cersei = {
+    relatedObj: { status: 2, firstName: 'Cersei', lastName: 'Lannister' }
+  };
 
-    obj = EmberObject.extend({
-      sortedPeople: computedSort('people', 'sortProps')
-    }).create({
-      people: Ember.A([jaime, cersei, sansa]),
-      sortProps: Ember.A(['relatedObj.status'])
-    });
+  var sansa = EmberObject.create({
+    relatedObj: { status: 3, firstName: 'Sansa', lastName: 'Stark' }
   });
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], 'precond - array is initially sorted');
-
-  run(function () {
-    cersei.set('status', 3);
+  var obj = EmberObject.extend({
+    sortProps: ['relatedObj.status'],
+    sortedPeople: sort('people', 'sortProps')
+  }).create({
+    people: [jaime, cersei, sansa]
   });
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei,
+    sansa
+  ], 'precond - array is initially sorted');
 
-  run(function () {
-    cersei.set('status', 1);
-  });
+  get(cersei, 'status', 3);
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei,
+    sansa
+  ], 'array is sorted correctly');
 
-  run(function () {
-    sansa.set('status', 1);
-  });
+  set(cersei, 'status', 1);
 
-  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [
+    jaime,
+    cersei,
+    sansa
+  ], 'array is sorted correctly');
 
-  run(function () {
-    obj.set('sortProps', Ember.A(['relatedObj.firstName']));
-  });
+  sansa.set('status', 1);
 
-  deepEqual(get(obj, 'sortedPeople'), [cersei, jaime, sansa], 'array is sorted correctly');
+  deepEqual(obj.get('sortedPeople'), [jaime, cersei, sansa], 'array is sorted correctly');
+
+  obj.set('sortProps', ['relatedObj.firstName']);
+
+  deepEqual(obj.get('sortedPeople'), [cersei, jaime, sansa], 'array is sorted correctly');
 });
 
 function sortByLnameFname(a, b) {
@@ -1141,350 +1078,265 @@ function sortByFnameAsc(a, b) {
   return fna > fnb ? 1 : -1;
 }
 
-QUnit.module('computedSort - sort function', {
+QUnit.module('sort - sort function', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        sortedItems: computedSort('items.@each.fname', sortByLnameFname)
-      }).create({
-        items: Ember.A([{
-          fname: 'Jaime', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Cersei', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Robb', lname: 'Stark', age: 16
-        }, {
-          fname: 'Bran', lname: 'Stark', age: 8
-        }])
-      });
+    obj = EmberObject.extend({
+      sortedItems: sort('items.@each.fname', sortByLnameFname)
+    }).create({
+      items: Ember.A([
+        { fname: 'Jaime', lname: 'Lannister', age: 34 },
+        { fname: 'Cersei', lname: 'Lannister', age: 34 },
+        { fname: 'Robb', lname: 'Stark', age: 16 },
+        { fname: 'Bran', lname: 'Stark', age: 8 }
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('sort (with function) is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('sortedItems', 1);
+  }, /Cannot set read-only property "sortedItems" on object:/);
 });
 
 commonSortTests();
 
 QUnit.test('changing item properties specified via @each triggers a resort of the modified item', function() {
-  var tyrionInDisguise;
+  var items = get(obj, 'items');
 
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    items = get(obj, 'items');
-  });
+  var tyrionInDisguise = items[1];
 
-  tyrionInDisguise = items.objectAt(1);
+  deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+  set(tyrionInDisguise, 'fname', 'Tyrion');
 
-  run(function() {
-    set(tyrionInDisguise, 'fname', 'Tyrion');
-  });
-
-  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], 'updating a specified property on an item resorts it');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], 'updating a specified property on an item resorts it');
 });
 
 QUnit.test('changing item properties not specified via @each does not trigger a resort', function() {
-  var cersei;
+  var items = obj.get('items');
+  var cersei = items[1];
 
-  run(function() {
-    sorted = get(obj, 'sortedItems');
-    items = get(obj, 'items');
-  });
+  deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
-  cersei = items.objectAt(1);
-
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
-
-  run(function() {
-    set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
-  });
+  set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
 
   // The array has become unsorted.  If your sort function is sensitive to
   // properties, they *must* be specified as dependent item property keys or
   // we'll be doing binary searches on unsorted arrays.
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'updating an unspecified property on an item does not resort it');
+  deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'updating an unspecified property on an item does not resort it');
 });
 
-QUnit.module('computedSort - stability', {
+QUnit.module('sort - stability', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        sortProps: Ember.A(['count', 'name']),
-        sortedItems: computedSort('items', 'sortProps')
-      }).create({
-        items: Ember.A(Ember.A([{
-          name: 'A', count: 1
-        }, {
-          name: 'B', count: 1
-        }, {
-          name: 'C', count: 1
-        }, {
-          name: 'D', count: 1
-        }]).map((elt) => EmberObject.create(elt)))
-      });
+    obj = EmberObject.extend({
+      sortProps: ['count', 'name'],
+      sortedItems: sort('items', 'sortProps')
+    }).create({
+      items: [
+        { name: 'A', count: 1 },
+        { name: 'B', count: 1 },
+        { name: 'C', count: 1 },
+        { name: 'D', count: 1 }
+      ]
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
 QUnit.test('sorts correctly as only one property changes', function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
-  obj.get('items').objectAt(3).set('count', 2);
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'final');
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+
+  set(obj.get('items')[3], 'count', 2);
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'final');
 });
 
-QUnit.module('computedSort - concurrency', {
+QUnit.module('sort - concurrency', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        sortProps: Ember.A(['count']),
-        sortedItems: computedSort('items', 'sortProps'),
-        customSortedItems: computedSort('items.@each.count', function(a, b) {
-          return get(a, 'count') - get(b, 'count');
-        })
-      }).create({
-        items: Ember.A(Ember.A([{
-          name: 'A', count: 1
-        }, {
-          name: 'B', count: 2
-        }, {
-          name: 'C', count: 3
-        }, {
-          name: 'D', count: 4
-        }]).map((elt) => EmberObject.create(elt)))
-      });
+    obj = EmberObject.extend({
+      sortProps: ['count'],
+      sortedItems: sort('items', 'sortProps'),
+      customSortedItems: sort('items.@each.count', (a, b) => a.count - b.count)
+    }).create({
+      items: Ember.A([
+        { name: 'A', count: 1 },
+        { name: 'B', count: 2 },
+        { name: 'C', count: 3 },
+        { name: 'D', count: 4 }
+      ])
     });
   },
+
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
-QUnit.test('sorts correctly when there are concurrent changes', function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
+QUnit.test('sorts correctly after mutation to the sort properties', function() {
+  var sorted = obj.get('sortedItems');
   deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
-  Ember.changeProperties(function() {
-    obj.get('items').objectAt(1).set('count', 5);
-    obj.get('items').objectAt(2).set('count', 6);
-  });
-  run(function() {
-    sorted = obj.get('sortedItems');
-  });
-  deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+
+  set(obj.get('items')[1], 'count', 5);
+  set(obj.get('items')[2], 'count', 6);
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
 });
 
-QUnit.test('sorts correctly with a user-provided comparator when there are concurrent changes', function() {
-  var sorted;
-  run(function() {
-    sorted = obj.get('customSortedItems');
-    deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
-  });
+QUnit.test('sort correctl after mutation to the sor ', function() {
+  deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
 
-  run(function() {
-    Ember.changeProperties(function() {
-      obj.get('items').objectAt(1).set('count', 5);
-      obj.get('items').objectAt(2).set('count', 6);
-    });
-    sorted = obj.get('customSortedItems');
-    deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
-  });
+  set(obj.get('items')[1], 'count', 5);
+  set(obj.get('items')[2], 'count', 6);
+
+  deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
 });
 
-
-
-QUnit.module('computedMax', {
+QUnit.module('max', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        max: computedMax('items')
-      }).create({
-        items: Ember.A([1,2,3])
-      });
+    obj = EmberObject.extend({
+      max: max('items')
+    }).create({
+      items: Ember.A([1,2,3])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
+});
+
+QUnit.test('max is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('max', 1);
+  }, /Cannot set read-only property "max" on object:/);
 });
 
 QUnit.test('max tracks the max number as objects are added', function() {
-  equal(get(obj, 'max'), 3, 'precond - max is initially correct');
+  equal(obj.get('max'), 3, 'precond - max is initially correct');
 
-  run(function() {
-    items = get(obj, 'items');
-  });
+  var items = obj.get('items');
 
-  run(function() {
-    items.pushObject(5);
-  });
+  items.pushObject(5);
 
-  equal(get(obj, 'max'), 5, 'max updates when a larger number is added');
+  equal(obj.get('max'), 5, 'max updates when a larger number is added');
 
-  run(function() {
-    items.pushObject(2);
-  });
+  items.pushObject(2);
 
-  equal(get(obj, 'max'), 5, 'max does not update when a smaller number is added');
+  equal(obj.get('max'), 5, 'max does not update when a smaller number is added');
 });
 
 QUnit.test('max recomputes when the current max is removed', function() {
-  equal(get(obj, 'max'), 3, 'precond - max is initially correct');
+  equal(obj.get('max'), 3, 'precond - max is initially correct');
 
-  run(function() {
-    items = get(obj, 'items');
-    items.removeObject(2);
-  });
+  obj.get('items').removeObject(2);
 
-  equal(get(obj, 'max'), 3, 'max is unchanged when a non-max item is removed');
+  equal(obj.get('max'), 3, 'max is unchanged when a non-max item is removed');
 
-  run(function() {
-    items.removeObject(3);
-  });
+  obj.get('items').removeObject(3);
 
-  equal(get(obj, 'max'), 1, 'max is recomputed when the current max is removed');
+  equal(obj.get('max'), 1, 'max is recomputed when the current max is removed');
 });
 
-QUnit.module('computedMin', {
+QUnit.module('min', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        min: computedMin('items')
-      }).create({
-        items: Ember.A([1,2,3])
-      });
+    obj = EmberObject.extend({
+      min: min('items')
+    }).create({
+      items: Ember.A([1,2,3])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
+QUnit.test('min is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('min', 1);
+  }, /Cannot set read-only property "min" on object:/);
+});
+
 QUnit.test('min tracks the min number as objects are added', function() {
-  equal(get(obj, 'min'), 1, 'precond - min is initially correct');
+  equal(obj.get('min'), 1, 'precond - min is initially correct');
 
-  run(function() {
-    items = get(obj, 'items');
-  });
+  obj.get('items').pushObject(-2);
 
-  run(function() {
-    items.pushObject(-2);
-  });
+  equal(obj.get('min'), -2, 'min updates when a smaller number is added');
 
-  equal(get(obj, 'min'), -2, 'min updates when a smaller number is added');
+  obj.get('items').pushObject(2);
 
-  run(function() {
-    items.pushObject(2);
-  });
-
-  equal(get(obj, 'min'), -2, 'min does not update when a larger number is added');
+  equal(obj.get('min'), -2, 'min does not update when a larger number is added');
 });
 
 QUnit.test('min recomputes when the current min is removed', function() {
-  equal(get(obj, 'min'), 1, 'precond - min is initially correct');
+  var items = obj.get('items');
 
-  run(function() {
-    items = get(obj, 'items');
-    items.removeObject(2);
-  });
+  equal(obj.get('min'), 1, 'precond - min is initially correct');
 
-  equal(get(obj, 'min'), 1, 'min is unchanged when a non-min item is removed');
+  items.removeObject(2);
 
-  run(function() {
-    items.removeObject(1);
-  });
+  equal(obj.get('min'), 1, 'min is unchanged when a non-min item is removed');
 
-  equal(get(obj, 'min'), 3, 'min is recomputed when the current min is removed');
+  items.removeObject(1);
+
+  equal(obj.get('min'), 3, 'min is recomputed when the current min is removed');
 });
 
 QUnit.module('Ember.arrayComputed - mixed sugar', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        lannisters: computedFilterBy('items', 'lname', 'Lannister'),
-        sortedLannisters: computedSort('lannisters', 'lannisterSorting'),
-        starks: computedFilterBy('items', 'lname', 'Stark'),
-        starkAges: computedMapBy('starks', 'age'),
-        oldestStarkAge: computedMax('starkAges')
-      }).create({
-        lannisterSorting: Ember.A(['fname']),
-        items: Ember.A([{
-          fname: 'Jaime', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Cersei', lname: 'Lannister', age: 34
-        }, {
-          fname: 'Robb', lname: 'Stark', age: 16
-        }, {
-          fname: 'Bran', lname: 'Stark', age: 8
-        }])
-      });
+    obj = EmberObject.extend({
+      lannisters: filterBy('items', 'lname', 'Lannister'),
+      lannisterSorting: Ember.A(['fname']),
+      sortedLannisters: sort('lannisters', 'lannisterSorting'),
+
+      starks: filterBy('items', 'lname', 'Stark'),
+      starkAges: mapBy('starks', 'age'),
+      oldestStarkAge: max('starkAges')
+    }).create({
+      items: Ember.A([
+        { fname: 'Jaime', lname: 'Lannister', age: 34 },
+        { fname: 'Cersei', lname: 'Lannister', age: 34 },
+        { fname: 'Robb', lname: 'Stark', age: 16 },
+        { fname: 'Bran', lname: 'Stark', age: 8 }
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
 QUnit.test('filtering and sorting can be combined', function() {
-  run(function() {
-    items = get(obj, 'items');
-    sorted = get(obj, 'sortedLannisters');
-  });
+  var items = obj.get('items');
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime'], 'precond - array is initially filtered and sorted');
+  deepEqual(obj.get('sortedLannisters').mapBy('fname'), ['Cersei', 'Jaime'], 'precond - array is initially filtered and sorted');
 
-  run(function() {
-    items.pushObject({ fname: 'Tywin',   lname: 'Lannister' });
-    items.pushObject({ fname: 'Lyanna',  lname: 'Stark' });
-    items.pushObject({ fname: 'Gerion',  lname: 'Lannister' });
-  });
+  items.pushObject({ fname: 'Tywin',   lname: 'Lannister' });
+  items.pushObject({ fname: 'Lyanna',  lname: 'Stark' });
+  items.pushObject({ fname: 'Gerion',  lname: 'Lannister' });
 
-  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], 'updates propagate to array');
+  deepEqual(obj.get('sortedLannisters').mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], 'updates propagate to array');
 });
 
 QUnit.test('filtering, sorting and reduce (max) can be combined', function() {
-  run(function() {
-    items = get(obj, 'items');
-  });
+  var items = obj.get('items');
 
-  equal(16, get(obj, 'oldestStarkAge'), 'precond - end of chain is initially correct');
+  equal(16, obj.get('oldestStarkAge'), 'precond - end of chain is initially correct');
 
-  run(function() {
-    items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
-  });
+  items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
 
-  equal(16, get(obj, 'oldestStarkAge'), 'chain is updated correctly');
+  equal(16, obj.get('oldestStarkAge'), 'chain is updated correctly');
 
-  run(function() {
-    items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
-  });
+  items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
 
-  equal(35, get(obj, 'oldestStarkAge'), 'chain is updated correctly');
+  equal(35, obj.get('oldestStarkAge'), 'chain is updated correctly');
 });
 
 function todo(name, priority) {
@@ -1507,127 +1359,100 @@ function evenPriorities(todo) {
 QUnit.module('Ember.arrayComputed - chains', {
   setup() {
     obj = EmberObject.extend({
-      filtered: computedFilter('sorted.@each.priority', evenPriorities),
-      sorted: computedSort('todos.@each.priority', priorityComparator)
+      sorted: sort('todos.@each.priority', priorityComparator),
+      filtered: filter('sorted.@each.priority', evenPriorities)
     }).create({
-      todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)])
+      todos: Ember.A([
+        todo('E', 4),
+        todo('D', 3),
+        todo('C', 2),
+        todo('B', 1),
+        todo('A', 0)
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
 QUnit.test('it can filter and sort when both depend on the same item property', function() {
-  run(function() {
-    filtered = get(obj, 'filtered');
-    sorted = get(obj, 'sorted');
-    todos = get(obj, 'todos');
-  });
+  deepEqual(obj.get('todos').mapBy('name'), ['E', 'D', 'C', 'B', 'A'], 'precond - todos initially correct');
+  deepEqual(obj.get('sorted').mapBy('name'), ['A', 'B', 'C', 'D', 'E'], 'precond - sorted initially correct');
+  deepEqual(obj.get('filtered').mapBy('name'), ['A', 'C', 'E'], 'precond - filtered initially correct');
 
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], 'precond - todos initially correct');
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'D', 'E'], 'precond - sorted initially correct');
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E'], 'precond - filtered initially correct');
+  set(obj.get('todos')[1], 'priority', 6);
 
-  run(function() {
-    beginPropertyChanges();
-    // here we trigger several changes
-    //  A. D.priority 3 -> 6
-    //    1. updated sorted from item property change
-    //      a. remove D; reinsert D
-    //      b. update filtered from sorted change
-    //    2. update filtered from item property change
-    //
-    // If 1.b happens before 2 it should invalidate 2
-    todos.objectAt(1).set('priority', 6);
-    endPropertyChanges();
-  });
-
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], 'precond - todos remain correct');
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'E', 'D'], 'precond - sorted updated correctly');
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], 'filtered updated correctly');
+  deepEqual(obj.get('todos').mapBy('name'), ['E', 'D', 'C', 'B', 'A'], 'precond - todos remain correct');
+  deepEqual(obj.get('sorted').mapBy('name'), ['A', 'B', 'C', 'E', 'D'], 'precond - sorted updated correctly');
+  deepEqual(obj.get('filtered').mapBy('name'), ['A', 'C', 'E', 'D'], 'filtered updated correctly');
 });
 
+var userFnCalls;
 QUnit.module('Chaining array and reduced CPs', {
   setup() {
-    run(function() {
-      userFnCalls = 0;
-      obj = EmberObject.extend({
-        mapped: computedMapBy('array', 'v'),
-        max: computedMax('mapped'),
-        maxDidChange: observer('max', function() {
-          userFnCalls++;
-        })
-      }).create({
-        array: Ember.A([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }])
-      });
+    userFnCalls = 0;
+    obj = EmberObject.extend({
+      mapped: mapBy('array', 'v'),
+      max: max('mapped'),
+      maxDidChange: observer('max', () => userFnCalls++)
+    }).create({
+      array: Ember.A([
+        { v: 1 },
+        { v: 3 },
+        { v: 2 },
+        { v: 1 }
+      ])
     });
   },
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
 QUnit.test('it computes interdependent array computed properties', function() {
-  get(obj, 'mapped');
-
-  equal(get(obj, 'max'), 3, 'sanity - it properly computes the maximum value');
-  equal(userFnCalls, 0, 'observer is not called on initialisation');
+  equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
 
   var calls = 0;
-  addObserver(obj, 'max', function() {
-    calls++;
-  });
 
-  run(function() {
-    obj.get('array').pushObject({ v: 5 });
-  });
+  addObserver(obj, 'max', () => calls++);
 
-  equal(get(obj, 'max'), 5, 'maximum value is updated correctly');
+  obj.get('array').pushObject({ v: 5 });
+
+  equal(obj.get('max'), 5, 'maximum value is updated correctly');
   equal(userFnCalls, 1, 'object defined observers fire');
   equal(calls, 1, 'runtime created observers fire');
 });
 
-QUnit.module('computedSum', {
+QUnit.module('sum', {
   setup() {
-    run(function() {
-      obj = EmberObject.extend({
-        total: computedSum('array')
-      }).create({
-        array: Ember.A([1, 2, 3])
-      });
+    obj = EmberObject.extend({
+      total: sum('array')
+    }).create({
+      array: Ember.A([1, 2, 3])
     });
   },
+
   teardown() {
-    run(function() {
-      obj.destroy();
-    });
+    Ember.run(obj, 'destroy');
   }
 });
 
+QUnit.test('sum is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('total', 1);
+  }, /Cannot set read-only property "total" on object:/);
+});
 QUnit.test('sums the values in the dependentKey', function() {
-  var sum = get(obj, 'total');
-  equal(sum, 6, 'sums the values');
+  equal(obj.get('total'), 6, 'sums the values');
 });
 
 QUnit.test('updates when array is modified', function() {
-  var sum = function() {
-    return get(obj, 'total');
-  };
+  obj.get('array').pushObject(1);
 
-  run(function() {
-    get(obj, 'array').pushObject(1);
-  });
+  equal(obj.get('total'), 7, 'recomputed when elements are added');
 
-  equal(sum(), 7, 'recomputed when elements are added');
+  obj.get('array').popObject();
 
-  run(function() {
-    get(obj, 'array').popObject();
-  });
-
-  equal(sum(), 6, 'recomputes when elements are removed');
+  equal(obj.get('total'), 6, 'recomputes when elements are removed');
 });

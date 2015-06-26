@@ -5,18 +5,47 @@
 
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
-import {
-  guidFor
-} from 'ember-metal/utils';
 import EmberError from 'ember-metal/error';
-import run from 'ember-metal/run_loop';
-import { addObserver } from 'ember-metal/observer';
-import { arrayComputed } from 'ember-runtime/computed/array_computed';
-import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
-import SubArray from 'ember-runtime/system/subarray';
+import { ComputedProperty, computed } from 'ember-metal/computed';
+import { addObserver, removeObserver } from 'ember-metal/observer';
 import compare from 'ember-runtime/compare';
+import { isArray } from 'ember-runtime/utils';
 
-var a_slice = [].slice;
+function reduceMacro(dependentKey, callback, initialValue) {
+  return computed(`${dependentKey}.[]`, function() {
+    return get(this, dependentKey).reduce(callback, initialValue);
+  }).readOnly();
+}
+
+function arrayMacro(dependentKey, callback) {
+  // This is a bit ugly
+  var propertyName;
+  if (/@each/.test(dependentKey)) {
+    propertyName = dependentKey.replace(/\.@each.*$/, '');
+  } else {
+    propertyName = dependentKey;
+    dependentKey += '.[]';
+  }
+
+  return computed(dependentKey, function() {
+    var value = get(this, propertyName);
+    if (isArray(value)) {
+      return Ember.A(callback(value));
+    } else {
+      return Ember.A();
+    }
+  }).readOnly();
+}
+
+function multiArrayMacro(dependentKeys, callback) {
+  var args = dependentKeys.map(key => `${key}.[]`);
+
+  args.push(function() {
+    return Ember.A(callback.call(this, dependentKeys));
+  });
+
+  return computed.apply(this, args).readOnly();
+}
 
 /**
   A computed property that returns the sum of the value
@@ -30,18 +59,7 @@ var a_slice = [].slice;
   @public
 */
 export function sum(dependentKey) {
-  return reduceComputed(dependentKey, {
-    _suppressDeprecation: true,
-    initialValue: 0,
-
-    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      return accumulatedValue + item;
-    },
-
-    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      return accumulatedValue - item;
-    }
-  });
+  return reduceMacro(dependentKey, (sum, item) => sum + item, 0);
 }
 
 /**
@@ -79,20 +97,7 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
-  return reduceComputed(dependentKey, {
-    _suppressDeprecation: true,
-    initialValue: -Infinity,
-
-    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      return Math.max(accumulatedValue, item);
-    },
-
-    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      if (item < accumulatedValue) {
-        return accumulatedValue;
-      }
-    }
-  });
+  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity);
 }
 
 /**
@@ -130,21 +135,7 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
-  return reduceComputed(dependentKey, {
-    _suppressDeprecation: true,
-
-    initialValue: Infinity,
-
-    addedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      return Math.min(accumulatedValue, item);
-    },
-
-    removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
-      if (item > accumulatedValue) {
-        return accumulatedValue;
-      }
-    }
-  });
+  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity);
 }
 
 /**
@@ -182,24 +173,7 @@ export function min(dependentKey) {
   @public
 */
 export function map(dependentKey, callback) {
-  Ember.assert('Ember.computed.map expects a callback function for its second argument, ' +
-    'perhaps you meant to use "mapBy"', typeof callback === 'function');
-
-  var options = {
-    _suppressDeprecation: true,
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var mapped = callback.call(this, item, changeMeta.index);
-      array.insertAt(changeMeta.index, mapped);
-      return array;
-    },
-    removedItem(array, item, changeMeta, instanceMeta) {
-      array.removeAt(changeMeta.index, 1);
-      return array;
-    }
-  };
-
-  return arrayComputed(dependentKey, options);
+  return arrayMacro(dependentKey, value => value.map(callback));
 }
 
 /**
@@ -236,8 +210,7 @@ export function mapBy(dependentKey, propertyKey) {
   Ember.assert('Ember.computed.mapBy expects a property string for its second argument, ' +
     'perhaps you meant to use "map"', typeof propertyKey === 'string');
 
-  var callback = function(item) { return get(item, propertyKey); };
-  return map(dependentKey + '.@each.' + propertyKey, callback);
+  return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
 }
 
 /**
@@ -248,7 +221,10 @@ export function mapBy(dependentKey, propertyKey) {
   @param propertyKey
   @public
 */
-export var mapProperty = mapBy;
+export function mapProperty() {
+  Ember.deprecate('Ember.computed.mapProperty is deprecated. Please use Ember.computed.mapBy.');
+  return mapBy.apply(this, arguments);
+}
 
 /**
   Filters the array by the callback.
@@ -288,36 +264,7 @@ export var mapProperty = mapBy;
   @public
 */
 export function filter(dependentKey, callback) {
-  var options = {
-    _suppressDeprecation: true,
-
-    initialize(array, changeMeta, instanceMeta) {
-      instanceMeta.filteredArrayIndexes = new SubArray();
-    },
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var match = !!callback.call(this, item, changeMeta.index, changeMeta.arrayChanged);
-      var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
-
-      if (match) {
-        array.insertAt(filterIndex, item);
-      }
-
-      return array;
-    },
-
-    removedItem(array, item, changeMeta, instanceMeta) {
-      var filterIndex = instanceMeta.filteredArrayIndexes.removeItem(changeMeta.index);
-
-      if (filterIndex > -1) {
-        array.removeAt(filterIndex);
-      }
-
-      return array;
-    }
-  };
-
-  return arrayComputed(dependentKey, options);
+  return arrayMacro(dependentKey, value => value.filter(callback));
 }
 
 /**
@@ -360,7 +307,7 @@ export function filterBy(dependentKey, propertyKey, value) {
     };
   }
 
-  return filter(dependentKey + '.@each.' + propertyKey, callback);
+  return filter(`${dependentKey}.@each.${propertyKey}`, callback);
 }
 
 /**
@@ -372,7 +319,10 @@ export function filterBy(dependentKey, propertyKey, value) {
   @deprecated Use `Ember.computed.filterBy` instead
   @public
 */
-export var filterProperty = filterBy;
+export function filterProperty() {
+  Ember.deprecate('Ember.computed.filterProperty is deprecated. Please use Ember.computed.filterBy.');
+  return filterBy.apply(this, arguments);
+}
 
 /**
   A computed property which returns a new array with all the unique
@@ -404,41 +354,23 @@ export var filterProperty = filterBy;
   unique elements from the dependent array
   @public
 */
-export function uniq() {
-  var args = a_slice.call(arguments);
+export function uniq(...args) {
+  return multiArrayMacro(args, function(dependentKeys) {
+    var uniq = Ember.A();
 
-  args.push({
-    _suppressDeprecation: true,
-
-    initialize(array, changeMeta, instanceMeta) {
-      instanceMeta.itemCounts = {};
-    },
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var guid = guidFor(item);
-
-      if (!instanceMeta.itemCounts[guid]) {
-        instanceMeta.itemCounts[guid] = 1;
-        array.pushObject(item);
-      } else {
-        ++instanceMeta.itemCounts[guid];
+    dependentKeys.forEach(dependentKey => {
+      var value = get(this, dependentKey);
+      if (isArray(value)) {
+        value.forEach(item => {
+          if (uniq.indexOf(item) === -1) {
+            uniq.push(item);
+          }
+        });
       }
-      return array;
-    },
+    });
 
-    removedItem(array, item, _, instanceMeta) {
-      var guid = guidFor(item);
-      var itemCounts = instanceMeta.itemCounts;
-
-      if (--itemCounts[guid] === 0) {
-        array.removeObject(item);
-      }
-
-      return array;
-    }
+    return uniq;
   });
-
-  return arrayComputed.apply(null, args);
 }
 
 /**
@@ -477,65 +409,36 @@ export var union = uniq;
   duplicated elements from the dependent arrays
   @public
 */
-export function intersect() {
-  var args = a_slice.call(arguments);
+export function intersect(...args) {
+  return multiArrayMacro(args, function(dependentKeys) {
+    var arrays = dependentKeys.map(dependentKey => {
+      var array = get(this, dependentKey);
 
-  args.push({
-    _suppressDeprecation: true,
+      return isArray(array) ? array : [];
+    });
 
-    initialize(array, changeMeta, instanceMeta) {
-      instanceMeta.itemCounts = {};
-    },
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var itemGuid = guidFor(item);
-      var dependentGuid = guidFor(changeMeta.arrayChanged);
-      var numberOfDependentArrays = changeMeta.property._dependentKeys.length;
-      var itemCounts = instanceMeta.itemCounts;
-
-      if (!itemCounts[itemGuid]) {
-        itemCounts[itemGuid] = {};
-      }
-
-      if (itemCounts[itemGuid][dependentGuid] === undefined) {
-        itemCounts[itemGuid][dependentGuid] = 0;
-      }
-
-      if (++itemCounts[itemGuid][dependentGuid] === 1 &&
-          numberOfDependentArrays === Object.keys(itemCounts[itemGuid]).length) {
-        array.addObject(item);
-      }
-
-      return array;
-    },
-
-    removedItem(array, item, changeMeta, instanceMeta) {
-      var itemGuid = guidFor(item);
-      var dependentGuid = guidFor(changeMeta.arrayChanged);
-      var numberOfArraysItemAppearsIn;
-      var itemCounts = instanceMeta.itemCounts;
-
-      if (itemCounts[itemGuid][dependentGuid] === undefined) {
-        itemCounts[itemGuid][dependentGuid] = 0;
-      }
-
-      if (--itemCounts[itemGuid][dependentGuid] === 0) {
-        delete itemCounts[itemGuid][dependentGuid];
-        numberOfArraysItemAppearsIn = Object.keys(itemCounts[itemGuid]).length;
-
-        if (numberOfArraysItemAppearsIn === 0) {
-          delete itemCounts[itemGuid];
+    var results = arrays.pop().filter(candidate => {
+      for (var i = 0; i < arrays.length; i++) {
+        var found = false;
+        var array = arrays[i];
+        for (var j = 0; j < array.length; j++) {
+          if (array[j] === candidate) {
+            found = true;
+            break;
+          }
         }
 
-        array.removeObject(item);
+        if (found === false) { return false; }
       }
 
-      return array;
-    }
-  });
+      return true;
+    });
 
-  return arrayComputed.apply(null, args);
+
+    return Ember.A(results);
+  });
 }
+
 
 /**
   A computed property which returns a new array with all the
@@ -574,82 +477,16 @@ export function setDiff(setAProperty, setBProperty) {
     throw new EmberError('setDiff requires exactly two dependent arrays.');
   }
 
-  return arrayComputed(setAProperty, setBProperty, {
-    _suppressDeprecation: true,
+  return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
+    var setA = this.get(setAProperty);
+    var setB = this.get(setBProperty);
 
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var setA = get(this, setAProperty);
-      var setB = get(this, setBProperty);
+    if (!isArray(setA)) { return Ember.A(); }
+    if (!isArray(setB)) { return Ember.A(setA); }
 
-      if (changeMeta.arrayChanged === setA) {
-        if (!setB.contains(item)) {
-          array.addObject(item);
-        }
-      } else {
-        array.removeObject(item);
-      }
-
-      return array;
-    },
-
-    removedItem(array, item, changeMeta, instanceMeta) {
-      var setA = get(this, setAProperty);
-      var setB = get(this, setBProperty);
-
-      if (changeMeta.arrayChanged === setB) {
-        if (setA.contains(item)) {
-          array.addObject(item);
-        }
-      } else {
-        array.removeObject(item);
-      }
-
-      return array;
-    }
-  });
+    return setA.filter(x => setB.indexOf(x) === -1);
+  }).readOnly();
 }
-
-function binarySearch(array, item, low, high) {
-  var mid, midItem, res, guidMid, guidItem;
-
-  if (arguments.length < 4) {
-    high = get(array, 'length');
-  }
-
-  if (arguments.length < 3) {
-    low = 0;
-  }
-
-  if (low === high) {
-    return low;
-  }
-
-  mid = low + Math.floor((high - low) / 2);
-  midItem = array.objectAt(mid);
-
-  guidMid = guidFor(midItem);
-  guidItem = guidFor(item);
-
-  if (guidMid === guidItem) {
-    return mid;
-  }
-
-  res = this.order(midItem, item);
-
-  if (res === 0) {
-    res = guidMid < guidItem ? -1 : 1;
-  }
-
-
-  if (res < 0) {
-    return this.binarySearch(array, item, mid+1, high);
-  } else if (res > 0) {
-    return this.binarySearch(array, item, low, mid);
-  }
-
-  return mid;
-}
-
 
 /**
   A computed property which returns a new array with all the
@@ -728,146 +565,58 @@ export function sort(itemsKey, sortDefinition) {
 }
 
 function customSort(itemsKey, comparator) {
-  return arrayComputed(itemsKey, {
-    _suppressDeprecation: true,
-
-    initialize(array, changeMeta, instanceMeta) {
-      instanceMeta.order = comparator;
-      instanceMeta.binarySearch = binarySearch;
-      instanceMeta.waitingInsertions = [];
-      instanceMeta.insertWaiting = function() {
-        var index, item;
-        var waiting = instanceMeta.waitingInsertions;
-        instanceMeta.waitingInsertions = [];
-        for (var i=0; i<waiting.length; i++) {
-          item = waiting[i];
-          index = instanceMeta.binarySearch(array, item);
-          array.insertAt(index, item);
-        }
-      };
-      instanceMeta.insertLater = function(item) {
-        this.waitingInsertions.push(item);
-      };
-    },
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      instanceMeta.insertLater(item);
-      return array;
-    },
-
-    removedItem(array, item, changeMeta, instanceMeta) {
-      array.removeObject(item);
-      return array;
-    },
-
-    flushedChanges(array, instanceMeta) {
-      instanceMeta.insertWaiting();
-    }
-  });
+  return arrayMacro(itemsKey, value => value.slice().sort(comparator));
 }
 
+// This one needs to dynamically set up and tear down observers on the itemsKey
+// depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  return arrayComputed(itemsKey, {
-    _suppressDeprecation: true,
+  var cp = new ComputedProperty(function(key) {
+    function didChange() {
+      this.notifyPropertyChange(key);
+    }
 
-    initialize(array, changeMeta, instanceMeta) {
-      function setupSortProperties() {
-        var sortPropertyDefinitions = get(this, sortPropertiesKey);
-        var sortProperties = instanceMeta.sortProperties = [];
-        var sortPropertyAscending = instanceMeta.sortPropertyAscending = {};
-        var sortProperty, idx, asc;
+    var items = itemsKey === '@this' ? this : get(this, itemsKey);
+    var sortProperties = get(this, sortPropertiesKey);
 
-        Ember.assert('Cannot sort: \'' + sortPropertiesKey + '\' is not an array.',
-                     Array.isArray(sortPropertyDefinitions));
+    // TODO: Ideally we'd only do this if things have changed
+    if (cp._sortPropObservers) {
+      cp._sortPropObservers.forEach(args => removeObserver.apply(null, args));
+    }
 
-        changeMeta.property.clearItemPropertyKeys(itemsKey);
+    cp._sortPropObservers = [];
 
-        sortPropertyDefinitions.forEach(function (sortPropertyDefinition) {
-          if ((idx = sortPropertyDefinition.indexOf(':')) !== -1) {
-            sortProperty = sortPropertyDefinition.substring(0, idx);
-            asc = sortPropertyDefinition.substring(idx+1).toLowerCase() !== 'desc';
-          } else {
-            sortProperty = sortPropertyDefinition;
-            asc = true;
-          }
+    if (!isArray(sortProperties)) { return items; }
 
-          sortProperties.push(sortProperty);
-          sortPropertyAscending[sortProperty] = asc;
-          changeMeta.property.itemPropertyKey(itemsKey, sortProperty);
-        });
+    // Normalize properties
+    var normalizedSort = sortProperties.map(p => {
+      let [prop, direction] = p.split(':');
+      direction = direction || 'asc';
 
-        this.addObserver(sortPropertiesKey + '.@each', this, updateSortPropertiesOnce);
-      }
+      return [prop, direction];
+    });
 
-      function updateSortPropertiesOnce() {
-        run.once(this, updateSortProperties, changeMeta.propertyName);
-      }
+    // TODO: Ideally we'd only do this if things have changed
+    // Add observers
+    normalizedSort.forEach(prop => {
+      var args = [this, `${itemsKey}.@each.${prop[0]}`, didChange];
+      cp._sortPropObservers.push(args);
+      addObserver.apply(null, args);
+    });
 
-      function updateSortProperties(propertyName) {
-        setupSortProperties.call(this);
-        changeMeta.property.recomputeOnce.call(this, propertyName);
-      }
+    return Ember.A(items.slice().sort((itemA, itemB) => {
 
-      addObserver(this, sortPropertiesKey, updateSortPropertiesOnce);
-      setupSortProperties.call(this);
-
-      instanceMeta.order = function (itemA, itemB) {
-        var sortProperty, result, asc;
-        var keyA = this.keyFor(itemA);
-        var keyB = this.keyFor(itemB);
-
-        for (var i = 0; i < this.sortProperties.length; ++i) {
-          sortProperty = this.sortProperties[i];
-
-          result = compare(keyA[sortProperty], keyB[sortProperty]);
-
-          if (result !== 0) {
-            asc = this.sortPropertyAscending[sortProperty];
-            return asc ? result : (-1 * result);
-          }
+      for (var i = 0; i < normalizedSort.length; ++i) {
+        var [prop, direction] = normalizedSort[i];
+        var result = compare(get(itemA, prop), get(itemB, prop));
+        if (result !== 0) {
+          return (direction === 'desc') ? (-1 * result) : result;
         }
+      }
 
-        return 0;
-      };
-
-      instanceMeta.binarySearch = binarySearch;
-      setupKeyCache(instanceMeta);
-    },
-
-    addedItem(array, item, changeMeta, instanceMeta) {
-      var index = instanceMeta.binarySearch(array, item);
-      array.insertAt(index, item);
-      return array;
-    },
-
-    removedItem(array, item, changeMeta, instanceMeta) {
-      var index = instanceMeta.binarySearch(array, item);
-      array.removeAt(index);
-      instanceMeta.dropKeyFor(item);
-      return array;
-    }
+      return 0;
+    }));
   });
-}
 
-function setupKeyCache(instanceMeta) {
-  instanceMeta.keyFor = function(item) {
-    var guid = guidFor(item);
-    if (this.keyCache[guid]) {
-      return this.keyCache[guid];
-    }
-    var sortProperty;
-    var key = {};
-    for (var i = 0; i < this.sortProperties.length; ++i) {
-      sortProperty = this.sortProperties[i];
-      key[sortProperty] = get(item, sortProperty);
-    }
-    return this.keyCache[guid] = key;
-  };
-
-  instanceMeta.dropKeyFor = function(item) {
-    var guid = guidFor(item);
-    this.keyCache[guid] = null;
-  };
-
-  instanceMeta.keyCache = {};
+  return cp.property(`${itemsKey}.[]`, `${sortPropertiesKey}.[]`).readOnly();
 }
