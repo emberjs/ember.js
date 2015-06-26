@@ -16,7 +16,7 @@ import { computed } from 'ember-metal/computed';
 import { notEmpty } from 'ember-metal/computed_macros';
 import {
   Mixin,
-  beforeObserver,
+  _beforeObserver,
   observer
 } from 'ember-metal/mixin'; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
 
@@ -188,7 +188,7 @@ export default Mixin.create(MutableEnumerable, {
     }
   }),
 
-  _contentWillChange: beforeObserver('content', function() {
+  _contentWillChange: _beforeObserver('content', function() {
     var content = get(this, 'content');
     var sortProperties = get(this, 'sortProperties');
 
@@ -203,7 +203,7 @@ export default Mixin.create(MutableEnumerable, {
     this._super(...arguments);
   }),
 
-  sortPropertiesWillChange: beforeObserver('sortProperties', function() {
+  sortPropertiesWillChange: _beforeObserver('sortProperties', function() {
     this._lastSortAscending = undefined;
   }),
 
@@ -211,7 +211,7 @@ export default Mixin.create(MutableEnumerable, {
     this._lastSortAscending = undefined;
   }),
 
-  sortAscendingWillChange: beforeObserver('sortAscending', function() {
+  sortAscendingWillChange: _beforeObserver('sortAscending', function() {
     this._lastSortAscending = get(this, 'sortAscending');
   }),
 
