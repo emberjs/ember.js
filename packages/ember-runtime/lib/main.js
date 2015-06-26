@@ -43,7 +43,6 @@ import MutableArray from 'ember-runtime/mixins/mutable_array';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import Evented from 'ember-runtime/mixins/evented';
 import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
-import SortableMixin from 'ember-runtime/mixins/sortable';
 
 import {
   sum,
@@ -83,8 +82,6 @@ Ember.Array = EmberArray;
 
 Ember.Comparable = Comparable;
 Ember.Copyable = Copyable;
-
-Ember.SortableMixin = SortableMixin;
 
 Ember.Freezable = Freezable;
 Ember.FROZEN_ERROR = FROZEN_ERROR;
