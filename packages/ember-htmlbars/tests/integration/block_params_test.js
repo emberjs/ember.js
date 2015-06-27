@@ -2,6 +2,7 @@ import Registry from 'container/registry';
 import run from 'ember-metal/run_loop';
 import ComponentLookup from 'ember-views/component_lookup';
 import View from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { registerHelper } from 'ember-htmlbars/helpers';
@@ -127,4 +128,43 @@ QUnit.test('components can yield values', function() {
   runAppend(view);
 
   equal(view.$().text(), 'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+
+  run(function() {
+    view.set('committer1', { name: 'wycats' });
+  });
+
+  equal(view.$().text(), 'ebryn[wycats[machty]wycats]ebryn[machty[wycats]machty]ebryn');
+});
+
+QUnit.test('#11519 - block param infinite loop', function(assert) {
+  // To trigger this case, a component must 1) consume a KeyStream and then yield that KeyStream
+  // into a parent light scope.
+  registry.register('template:components/block-with-yield', compile('{{danger}} {{yield danger}}'));
+
+  var component;
+  registry.register('component:block-with-yield', Component.extend({
+    init() {
+      component = this;
+      return this._super(...arguments);
+    },
+
+    danger: 0
+  }));
+
+  view = View.create({
+    container: container,
+    template: compile('{{#block-with-yield as |dangerBlockParam|}} {{/block-with-yield}}')
+  });
+
+  // On initial render, create streams. The bug will not have manifested yet, but at this point
+  // we have created streams that create a circular invalidation.
+  runAppend(view);
+
+  // Trigger a revalidation, which will cause an infinite loop without the fix
+  // in place.  Note that we do not see the infinite loop is in testing mode,
+  // because a deprecation warning about re-renders is issued, which Ember
+  // treats as an exception.
+  run(() => { component.set('danger', 1); });
+
+  assert.equal(view.$().text().trim(), '1');
 });
