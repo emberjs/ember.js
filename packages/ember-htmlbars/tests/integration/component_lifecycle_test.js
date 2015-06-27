@@ -6,9 +6,12 @@ import Component from 'ember-views/views/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
+import Service from 'ember-runtime/system/service';
+import inject from 'ember-runtime/inject';
+import { computed } from 'ember-metal/computed';
 
 var registry, container, view;
-var hooks;
+var hooks, components;
 
 QUnit.module('component - lifecycle hooks', {
   setup() {
@@ -20,6 +23,7 @@ QUnit.module('component - lifecycle hooks', {
     registry.register('component-lookup:main', ComponentLookup);
 
     hooks = [];
+    components = {};
   },
 
   teardown() {
@@ -37,51 +41,49 @@ function hook(view, type, arg) {
   return { type: type, view: view, arg: arg };
 }
 
+function component(label, mixin = {}) {
+  return Component.extend(mixin, {
+    init() {
+      this.label = label;
+      components[label] = this;
+      this._super.apply(this, arguments);
+    },
+
+    didInitAttrs(options) {
+      pushHook(label, 'didInitAttrs', options);
+    },
+
+    didUpdateAttrs(options) {
+      pushHook(label, 'didUpdateAttrs', options);
+    },
+
+    willUpdate(options) {
+      pushHook(label, 'willUpdate', options);
+    },
+
+    didReceiveAttrs(options) {
+      pushHook(label, 'didReceiveAttrs', options);
+    },
+
+    willRender() {
+      pushHook(label, 'willRender');
+    },
+
+    didRender() {
+      pushHook(label, 'didRender');
+    },
+
+    didInsertElement() {
+      pushHook(label, 'didInsertElement');
+    },
+
+    didUpdate(options) {
+      pushHook(label, 'didUpdate', options);
+    }
+  });
+}
+
 QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
-  var components = {};
-
-  function component(label) {
-    return Component.extend({
-      init() {
-        this.label = label;
-        components[label] = this;
-        this._super.apply(this, arguments);
-      },
-
-      didInitAttrs(options) {
-        pushHook(label, 'didInitAttrs', options);
-      },
-
-      didUpdateAttrs(options) {
-        pushHook(label, 'didUpdateAttrs', options);
-      },
-
-      willUpdate(options) {
-        pushHook(label, 'willUpdate', options);
-      },
-
-      didReceiveAttrs(options) {
-        pushHook(label, 'didReceiveAttrs', options);
-      },
-
-      willRender() {
-        pushHook(label, 'willRender');
-      },
-
-      didRender() {
-        pushHook(label, 'didRender');
-      },
-
-      didInsertElement() {
-        pushHook(label, 'didInsertElement');
-      },
-
-      didUpdate(options) {
-        pushHook(label, 'didUpdate', options);
-      }
-    });
-  }
-
   registry.register('component:the-top', component('top'));
   registry.register('component:the-middle', component('middle'));
   registry.register('component:the-bottom', component('bottom'));
@@ -189,50 +191,6 @@ QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
 });
 
 QUnit.test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
-  var components = {};
-
-  function component(label) {
-    return Component.extend({
-      init() {
-        this.label = label;
-        components[label] = this;
-        this._super.apply(this, arguments);
-      },
-
-      didInitAttrs(options) {
-        pushHook(label, 'didInitAttrs', options);
-      },
-
-      didUpdateAttrs(options) {
-        pushHook(label, 'didUpdateAttrs', options);
-      },
-
-      willUpdate(options) {
-        pushHook(label, 'willUpdate', options);
-      },
-
-      didReceiveAttrs(options) {
-        pushHook(label, 'didReceiveAttrs', options);
-      },
-
-      willRender() {
-        pushHook(label, 'willRender');
-      },
-
-      didRender() {
-        pushHook(label, 'didRender');
-      },
-
-      didInsertElement() {
-        pushHook(label, 'didInsertElement');
-      },
-
-      didUpdate(options) {
-        pushHook(label, 'didUpdate', options);
-      }
-    });
-  }
-
   registry.register('component:the-top', component('top'));
   registry.register('component:the-middle', component('middle'));
   registry.register('component:the-bottom', component('bottom'));
@@ -342,6 +300,51 @@ QUnit.test('changing a component\'s displayed properties inside didInsertElement
   run(() => {
     component.destroy();
   });
+});
+
+QUnit.test('changing an attributeBinding that is not provided in this.attrs triggers willRender', function() {
+  var service;
+
+  registry.register('service:foo-bar', Service.extend({
+    init() {
+      this._super(...arguments);
+      this.value = null;
+      service = this;
+    }
+  }));
+
+  registry.register('component:the-top', component('top', {
+    fooBar: inject.service('foo-bar'),
+
+    attributeBindings: ['dataFooBar:data-foo-bar'],
+
+    dataFooBar: computed('fooBar.value', function() {
+      return this.get('fooBar.value');
+    })
+  }));
+
+  registry.register('template:components/the-top', compile('Top'));
+
+  view = EmberView.extend({
+    template: compile('{{the-top}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  equal(jQuery('#qunit-fixture').text(), 'Top');
+
+  hooks = [];
+
+  run(function() {
+    service.set('value', 'new-value');
+  });
+
+  deepEqual(hooks, [
+    hook('top', 'willUpdate'), hook('top', 'willRender'),
+
+    hook('top', 'didUpdate'), hook('top', 'didRender')
+  ]);
 });
 
 // TODO: Write a test that involves deep mutability: the component plucks something

@@ -30,7 +30,7 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
 
   shadowScope.view = view;
 
-  if (view && options.attrs) {
+  if (view && view.isComponent) {
     shadowScope.component = view;
   }
 
