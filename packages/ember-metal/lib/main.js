@@ -176,7 +176,7 @@ Ember.platform = {
   hasPropertyAccessors: true
 };
 
-var reexport = Ember._reexport;
+var reexport = Ember.__reexport;
 
 reexport('ember-metal/error', [['default', 'Error']]);
 reexport('ember-metal/meta', ['EMPTY_META', 'META_DESC', 'meta']);
