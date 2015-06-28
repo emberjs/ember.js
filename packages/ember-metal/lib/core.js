@@ -182,7 +182,44 @@ if ('undefined' === typeof Ember.deprecateFunc) {
 }
 
 const CACHE = Object.create(null);
-function reexport(moduleName, properties) {
+function reexport(moduleName, exportsProperty, properties) {
+  if (arguments.length === 2) {
+    properties = exportsProperty;
+    exportsProperty = undefined;
+  }
+
+  let exportObj = exportsProperty ? Ember[exportsProperty] : Ember;
+  const tail = array => array.slice(1);
+  const head = array => array[0];
+  const pathLookUp = (paths, obj) => {
+    if (!Array.isArray(paths)) {
+      paths = paths.split('.');
+    }
+
+    if (paths.length > 1) {
+      let assignment = paths[paths.length - 1];
+      let node = head(paths);
+
+      if (node === assignment) {
+        return obj;
+      }
+
+      Ember.assert('Attempted to assign at ${node}, but it does not exist.', !obj[node]);
+
+      pathLookUp(tail(paths), obj[node]);
+    } else {
+      return obj;
+    }
+  };
+
+  if (exportsProperty === 'string') {
+    exportObj = pathLookUp(exportsProperty, exportObj);
+  }
+
+  if (typeof properties === 'string') {
+    properties = [['default', properties]];
+  }
+
   properties.forEach((property) => {
     let importAs, exportAs;
 
@@ -192,7 +229,9 @@ function reexport(moduleName, properties) {
       importAs = exportAs = property;
     }
 
-    Object.defineProperty(Ember, exportAs, {
+    Ember.assert(`Import exists ${moduleName}{${importAs}}`, typeof Ember.__loader.require(moduleName)[importAs] !== 'undefined');
+
+    Object.defineProperty(exportObj, exportAs, {
       get() {
         var key = moduleName + '_' + importAs;
         if (CACHE[key]) {

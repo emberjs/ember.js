@@ -12,31 +12,9 @@ import {
   getViewBoundingClientRect
 } from 'ember-views/system/utils';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
-import {
-  cloneStates,
-  states
-} from 'ember-views/views/states';
 
-import Renderer from 'ember-metal-views/renderer';
-import { DeprecatedCoreView } from 'ember-views/views/core_view';
-import { DeprecatedView } from 'ember-views/views/view';
-import { DeprecatedContainerView } from 'ember-views/views/container_view';
-import CollectionView from 'ember-views/views/collection_view';
-import Component from 'ember-views/components/component';
-
-import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
-import ComponentLookup from 'ember-views/component_lookup';
-import Checkbox from 'ember-views/views/checkbox';
-import TextSupport from 'ember-views/mixins/text_support';
-import TextField from 'ember-views/views/text_field';
-import TextArea from 'ember-views/views/text_area';
 
-import {
-  Select,
-  SelectOption,
-  SelectOptgroup
-} from 'ember-views/views/select';
 import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
 import LegacyEachView from 'ember-views/views/legacy_each_view';
 
@@ -60,33 +38,34 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember.CoreView = DeprecatedCoreView;
-  Ember.View = DeprecatedView;
-  Ember.View.states = states;
-  Ember.View.cloneStates = cloneStates;
-  Ember.View._Renderer = Renderer;
-  Ember.ContainerView = DeprecatedContainerView;
-  Ember.CollectionView = CollectionView;
-}
-
-Ember._Renderer = Renderer;
-
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
+var reexport = Ember.__reexport;
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember.Select = Select;
+  reexport('ember-views/views/core_view', [['DeprecatedCoreView', 'CoreView']]);
+  reexport('ember-views/views/view', [['DeprecatedView', 'View']]);
+  reexport('ember-views/views/states', 'Ember.View', ['states', 'cloneStates']);
+  reexport('ember-metal-views/renderer', 'Ember.View', [['default', '_Renderer']]);
+  reexport('ember-views/views/container_view', 'ContainerView');
+  reexport('ember-views/views/collection_view', 'CollectionView');
 }
 
-Ember.SelectOption = SelectOption;
-Ember.SelectOptgroup = SelectOptgroup;
+reexport('ember-views/views/checkbox', 'Checkbox');
+reexport('ember-views/views/text_field', 'TextField');
+reexport('ember-views/views/text_area', 'TextArea');
 
-Ember.TextSupport = TextSupport;
-Ember.ComponentLookup = ComponentLookup;
-Ember.Component = Component;
-Ember.EventDispatcher = EventDispatcher;
+if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  reexport('ember-views/views/select', 'Select');
+}
+
+reexport('ember-views/views/select', [
+  'SelectOption',
+  'SelectOptgroup'
+]);
+
+reexport('ember-views/mixins/text_support', 'TextSupport');
+reexport('ember-views/component_lookup', 'ComponentLookup');
+reexport('ember-views/views/component', 'Component');
+reexport('ember-views/system/event_dispatcher', 'EventDispatcher');
 
 // Deprecated:
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
