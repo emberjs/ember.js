@@ -24,7 +24,11 @@ export default {
       toRender.template = topLevelViewTemplate;
     }
 
-    return { outletState: selectedOutletState, hasParentOutlet: env.hasParentOutlet };
+    return {
+      outletState: selectedOutletState,
+      hasParentOutlet: env.hasParentOutlet,
+      manager: state.manager
+    };
   },
 
   childEnv(state, env) {
@@ -65,6 +69,11 @@ export default {
 
     if (LOG_VIEW_LOOKUPS && ViewClass) {
       Ember.Logger.info("Rendering " + toRender.name + " with " + ViewClass, { fullName: 'view:' + toRender.name });
+    }
+
+    if (state.manager) {
+      state.manager.destroy();
+      state.manager = null;
     }
 
     var nodeManager = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
