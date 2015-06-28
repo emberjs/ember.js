@@ -1671,7 +1671,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method modelFor
     @param {String} name the name of the route
     @return {Object} the model object
-    @private
+    @public
   */
   modelFor(name) {
     var route = this.container.lookup(`route:${name}`);
