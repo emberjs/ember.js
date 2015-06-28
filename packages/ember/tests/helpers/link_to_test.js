@@ -1623,6 +1623,40 @@ QUnit.test("The {{link-to}} helper disregards query-params in activeness computa
   equal(router.get('location.path'), '/parent');
 });
 
+QUnit.test('{{link-to}} with only query-params updates when route changes', function() {
+  Router.map(function() {
+    this.route('about');
+  });
+
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
+    App.ApplicationRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        },
+        bar: {
+          defaultValue: 'yes'
+        }
+      }
+    });
+  } else {
+    App.ApplicationController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: '123',
+      bar: 'yes'
+    });
+  }
+
+  Ember.TEMPLATES.application = compile('{{#link-to (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}Index{{/link-to}}');
+  bootApplication();
+  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+
+  Ember.run(function() {
+    router.handleURL('/about');
+  });
+  equal(Ember.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+});
+
 function basicEagerURLUpdateTest(setTagName) {
   expect(6);
 
@@ -1930,37 +1964,3 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 }
-
-QUnit.test('{{link-to}} with only query-params updates when route changes', function() {
-  Router.map(function() {
-    this.route('about');
-  });
-
-  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Ember.Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.ApplicationController = Ember.Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
-
-  Ember.TEMPLATES.application = compile('{{#link-to (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}Index{{/link-to}}');
-  bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
-
-  Ember.run(function() {
-    router.handleURL('/about');
-  });
-  equal(Ember.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
-});
