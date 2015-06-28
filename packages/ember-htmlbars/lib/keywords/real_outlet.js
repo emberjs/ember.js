@@ -76,6 +76,11 @@ export default {
       state.manager = null;
     }
 
+    if (state.manager) {
+      state.manager.destroy();
+      state.manager = null;
+    }
+
     var nodeManager = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
     state.manager = nodeManager;
 
