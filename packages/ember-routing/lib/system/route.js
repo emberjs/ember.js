@@ -2229,7 +2229,8 @@ function mergeEachQueryParams(controllerQP, routeQP) {
     if (!controllerQP.hasOwnProperty(cqpName)) { continue; }
 
     var newControllerParameterConfiguration = {};
-    merge(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
+    merge(newControllerParameterConfiguration, controllerQP[cqpName]);
+    merge(newControllerParameterConfiguration, routeQP[cqpName]);
 
     qps[cqpName] = newControllerParameterConfiguration;
 
