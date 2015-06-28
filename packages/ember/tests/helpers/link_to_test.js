@@ -1936,7 +1936,7 @@ QUnit.test('{{link-to}} with only query-params updates when route changes', func
     this.route('about');
   });
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (Ember.FEATURES.isEnabled('ember-routing-route-configured-query-params')) {
     App.ApplicationRoute = Ember.Route.extend({
       queryParams: {
         foo: {
