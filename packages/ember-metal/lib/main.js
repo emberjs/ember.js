@@ -29,7 +29,6 @@ import {
   metaPath,
   setMeta,
   deprecatedTryCatchFinally,
-  deprecatedTryFinally,
   tryInvoke,
   uuid,
   wrap
