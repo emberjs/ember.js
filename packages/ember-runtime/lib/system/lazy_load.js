@@ -1,7 +1,6 @@
 /*globals CustomEvent */
 
 import Ember from 'ember-metal/core'; // Ember.ENV.EMBER_LOAD_HOOKS
-import 'ember-runtime/system/native_array'; // make sure Ember.A is setup.
 
 /**
   @module ember
@@ -34,8 +33,8 @@ export var _loaded = loaded;
 export function onLoad(name, callback) {
   var object = loaded[name];
 
-  loadHooks[name] = loadHooks[name] || Ember.A();
-  loadHooks[name].pushObject(callback);
+  loadHooks[name] = loadHooks[name] || [];
+  loadHooks[name].push(callback);
 
   if (object) {
     callback(object);
@@ -55,7 +54,9 @@ export function onLoad(name, callback) {
 export function runLoadHooks(name, object) {
   loaded[name] = object;
 
-  if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+  if (typeof window === 'object' &&
+      typeof window.dispatchEvent === 'function' &&
+      typeof CustomEvent === 'function') {
     var event = new CustomEvent(name, { detail: object, name: name });
     window.dispatchEvent(event);
   }

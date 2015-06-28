@@ -1,11 +1,11 @@
 /* globals RSVP:true */
 
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
-import Logger from 'ember-metal/logger';
-import run from 'ember-metal/run_loop';
 import * as RSVP from 'rsvp';
 
+function run() {
+  return Ember.__loader.require('ember-metal/run_loop');
+}
 var testModuleName = 'ember-testing/test';
 var Test;
 
@@ -22,11 +22,11 @@ var asyncEnd = function() {
 };
 
 RSVP.configure('async', function(callback, promise) {
-  var async = !run.currentRunLoop;
+  var async = !run().currentRunLoop;
 
   if (Ember.testing && async) { asyncStart(); }
 
-  run.backburner.schedule('actions', function() {
+  run().backburner.schedule('actions', function() {
     if (Ember.testing && async) { asyncEnd(); }
     callback(promise);
   });
@@ -63,14 +63,14 @@ export function onerrorDefault(reason) {
 
       if (Test && Test.adapter) {
         Test.adapter.exception(error);
-        Logger.error(error.stack);
+        Ember.Logger.error(error.stack);
       } else {
         throw error;
       }
     } else if (Ember.onerror) {
       Ember.onerror(error);
     } else {
-      Logger.error(error.stack);
+      Ember.Logger.error(error.stack);
     }
   }
 }

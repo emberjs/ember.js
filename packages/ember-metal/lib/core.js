@@ -181,7 +181,6 @@ if ('undefined' === typeof Ember.deprecateFunc) {
   Ember.deprecateFunc = function(_, func) { return func; };
 }
 
-const CACHE = Object.create(null);
 function reexport(moduleName, exportsProperty, properties) {
   if (arguments.length === 2) {
     properties = exportsProperty;
@@ -220,8 +219,9 @@ function reexport(moduleName, exportsProperty, properties) {
     properties = [['default', properties]];
   }
 
-  properties.forEach((property) => {
-    let importAs, exportAs;
+  for (var i =0; i< properties.length; i++) {
+    var property = properties[i];
+    var importAs, exportAs;
 
     if (Array.isArray(property)) {
       [importAs, exportAs] = property;
@@ -229,22 +229,18 @@ function reexport(moduleName, exportsProperty, properties) {
       importAs = exportAs = property;
     }
 
-    Ember.assert(`Import exists ${moduleName}{${importAs}}`, typeof Ember.__loader.require(moduleName)[importAs] !== 'undefined');
+    var exportObj = exportsProperty ? Ember[exportsProperty] : Ember;
 
+    //Ember.assert(`Do you really think Ember.${exportsProperty} exists? wtf`, typeof exportObj !== 'undefined');
+    //Ember.assert(`Import exists ${moduleName}{${importAs}}`, typeof Ember.__loader.require(moduleName)[importAs] !== 'undefined');
+
+    //exportObj[exportAs] = Ember.__loader.require(moduleName)[importAs];
     Object.defineProperty(exportObj, exportAs, {
       get() {
-        var key = moduleName + '_' + importAs;
-        if (CACHE[key]) {
-          return CACHE[key];
-        }
-        return (CACHE[key] = Ember.__loader.require(moduleName)[importAs]);
-      },
-      set(value) {
-        var key = moduleName + '_' + importAs;
-        return (CACHE[key] = value);
+        return (this[moduleName + '_' + importAs] = Ember.__loader.require(moduleName)[importAs]);
       }
     });
-  });
+  }
 }
 Ember.__reexport = reexport;
 

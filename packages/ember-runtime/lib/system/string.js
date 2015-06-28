@@ -3,11 +3,7 @@
 @submodule ember-runtime
 */
 import Ember from 'ember-metal/core'; // Ember.STRINGS
-import { deprecate } from 'ember-metal/debug';
-import {
-  inspect as emberInspect
-} from 'ember-metal/utils';
-import { isArray } from 'ember-runtime/utils';
+import inspect from 'ember-metal/inspect';
 
 import Cache from 'ember-metal/cache';
 
@@ -64,7 +60,7 @@ var DECAMELIZE_CACHE = new Cache(1000, function(str) {
 function _fmt(str, formats) {
   var cachedFormats = formats;
 
-  if (!isArray(cachedFormats) || arguments.length > 2) {
+  if (!Array.isArray(cachedFormats) || arguments.length > 2) {
     cachedFormats = new Array(arguments.length - 1);
 
     for (var i = 1, l = arguments.length; i < l; i++) {
@@ -77,7 +73,7 @@ function _fmt(str, formats) {
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];
-    return (s === null) ? '(null)' : (s === undefined) ? '' : emberInspect(s);
+    return (s === null) ? '(null)' : (s === undefined) ? '' : inspect(s);
   });
 }
 
@@ -91,7 +87,7 @@ function fmt(str, formats) {
 }
 
 function loc(str, formats) {
-  if (!isArray(formats) || arguments.length > 2) {
+  if (!Array.isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
 

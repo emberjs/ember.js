@@ -4,8 +4,8 @@
 */
 
 import Ember from 'ember-metal/core';
-import DataAdapter from 'ember-extension-support/data_adapter';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 
-Ember.DataAdapter = DataAdapter;
-Ember.ContainerDebugAdapter = ContainerDebugAdapter;
+var reexport = Ember.__reexport;
+
+reexport('ember-extension-support/data_adapter', 'DataAdapter');
+reexport('ember-extension-support/container_debug_adapter', 'ContainerDebugAdapter');

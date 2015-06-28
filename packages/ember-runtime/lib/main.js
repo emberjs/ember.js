@@ -5,11 +5,8 @@
 
 // BEGIN IMPORTS
 import Ember from 'ember-metal';
-import Controller from 'ember-runtime/controllers/controller';
-import ControllerMixin from 'ember-runtime/mixins/controller';
-import Service from 'ember-runtime/system/service';
 
-import RSVP from 'ember-runtime/ext/rsvp';     // just for side effect of extending Ember.RSVP
+import RSVP from 'ember-runtime/ext/rsvp'; // just for side effect of extending Ember.RSVP
 import 'ember-runtime/ext/string';   // just for side effect of extending String.prototype
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
 // END IMPORTS
@@ -70,10 +67,12 @@ reexport('ember-runtime/system/native_array', 'NativeArray');
 // Ember.A = A;
 reexport('ember-runtime/system/lazy_load', ['onLoad', 'runLoadHooks']);
 
-Ember.Controller = Controller;
-Ember.ControllerMixin = ControllerMixin;
-
-Ember.Service = Service;
+reexport('ember-runtime/controllers/array_controller', 'ArrayController');
+reexport('ember-runtime/controllers/object_controller', 'ObjectController');
+reexport('ember-runtime/controllers/controller', 'Controller');
+reexport('ember-runtime/mixins/controller', 'ControllerMixin');
+reexport('ember-runtime/system/service', 'Service');
+reexport('ember-runtime/mixins/-proxy', '_ProxyMixin');
 
 Ember.RSVP = RSVP;
 // END EXPORTS

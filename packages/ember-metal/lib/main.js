@@ -7,7 +7,6 @@
 import Ember from 'ember-metal/core';
 import { deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
-import merge from 'ember-metal/merge';
 import {
   instrument,
   reset as instrumentationReset,
@@ -19,57 +18,7 @@ import Cache from 'ember-metal/cache';
 var reexport = Ember.__reexport;
 
 reexport('ember-metal/computed', 'computed');
-reexport('ember-metal/computed_macros', 'computed', [
-  'empty',
-  'notEmpty',
-  'none',
-  'not',
-  'bool',
-  'match',
-  'equal',
-  'gt',
-  'gte',
-  'lt',
-  'lte',
-  'computedOneWay',
-  'readOnly',
-  'defaultTo',
-  'deprecatingAlias',
-  'and',
-  'or',
-  'any',
-  'collect'
-]);
-reexport('ember-metal/alias', 'computed', 'alias');
-
-import {
-  _suspendObserver,
-  _suspendObservers,
-  addObserver,
-  observersFor,
-  removeObserver
-} from 'ember-metal/observer';
-import {
-  IS_BINDING,
-  Mixin,
-  aliasMethod,
-  _immediateObserver,
-  mixin,
-  observer,
-  required
-} from 'ember-metal/mixin';
-import {
-  Binding,
-  bind,
-  isGlobalPath
-} from 'ember-metal/binding';
-import run from 'ember-metal/run_loop';
 import Libraries from 'ember-metal/libraries';
-import isNone from 'ember-metal/is_none';
-import isEmpty from 'ember-metal/is_empty';
-import isBlank from 'ember-metal/is_blank';
-import isPresent from 'ember-metal/is_present';
-import Backburner from 'backburner';
 
 // END IMPORTS
 
@@ -138,64 +87,120 @@ reexport('ember-metal/property_events', [
 
 reexport('ember-metal/properties', ['defineProperty']);
 
-reexport('ember-metal/property_set', ['set', 'trySet']);
+reexport('ember-metal/property_set', [
+  'set',
+  'trySet'
+]);
 
-reexport('ember-metal/map', ['OrderedSet', 'Map', 'MapWithDefault']);
+reexport('ember-metal/map', [
+  'OrderedSet',
+  'Map',
+  'MapWithDefault'
+]);
 
 reexport('ember-metal/get_properties', 'getProperties');
 reexport('ember-metal/set_properties', 'setProperties');
 
-reexport('ember-metal/watch_key', ['watchKey', 'unwatchKey']);
+reexport('ember-metal/watch_key', [
+  'watchKey',
+  'unwatchKey'
+]);
 
-reexport('ember-metal/chains', ['flushPendingChains', 'removeChainWatcher', ['_ChainNode', 'ChainNode'], 'finishChains']);
+reexport('ember-metal/chains', [
+  'flushPendingChains',
+  'removeChainWatcher',
+  ['_ChainNode', 'ChainNode'],
+  'finishChains'
+]);
 
-reexport('ember-metal/watch_path', ['watchPath', 'unwatchPath']);
+reexport('ember-metal/watch_path', [
+  'watchPath',
+  'unwatchPath'
+]);
 
-reexport('ember-metal/watching', ['watch', 'isWatching', 'unwatch', 'rewatch', 'destroy']);
+reexport('ember-metal/watching', [
+  'watch',
+  'isWatching',
+  'unwatch',
+  'rewatch',
+  'destroy'
+]);
 
 reexport('ember-metal/expand_properties', 'expandProperties');
 
-reexport('ember-metal/computed', ['ComputedProperty', 'cacheFor']);
+reexport('ember-metal/computed', [
+  'ComputedProperty',
+  'cacheFor'
+]);
 
-Ember.addObserver = addObserver;
-Ember.observersFor = observersFor;
-Ember.removeObserver = removeObserver;
-Ember._suspendObserver = _suspendObserver;
-Ember._suspendObservers = _suspendObservers;
+reexport('ember-metal/observer', [
+  'addObserver',
+  'observersFor',
+  'removeObserver',
+  'addBeforeObserver',
+  '_suspendBeforeObserver',
+  '_suspendBeforeObservers',
+  '_suspendObserver',
+  '_suspendObservers',
+  'beforeObserversFor',
+  'removeBeforeObserver'
+]);
 
-Ember.IS_BINDING = IS_BINDING;
-Ember.required = required;
-Ember.aliasMethod = aliasMethod;
-Ember.observer = observer;
-Ember.immediateObserver = _immediateObserver;
-Ember.mixin = mixin;
-Ember.Mixin = Mixin;
+reexport('ember-metal/mixin', [
+  'IS_BINDING',
+  'required',
+  'aliasMethod',
+  'observer',
+  'immediateObserver',
+  'beforeObserver',
+  'mixin',
+  'Mixin'
+]);
 
-Ember.bind = bind;
-Ember.Binding = Binding;
-Ember.isGlobalPath = isGlobalPath;
-
-Ember.run = run;
+reexport('ember-metal/binding', [
+  'oneWay',
+  'bind',
+  'Binding',
+  'isGlobalPath'
+]);
 
 /**
 @class Backburner
 @for Ember
 @private
 */
-Ember.Backburner = Backburner;
+reexport('backburner', 'Backburner');
 // this is the new go forward, once Ember Data updates to using `_Backburner` we
 // can remove the non-underscored version.
-Ember._Backburner = Backburner;
+reexport('backburner', '_Backburner');
 
 Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
-Ember.isNone = isNone;
-Ember.isEmpty = isEmpty;
-Ember.isBlank = isBlank;
-Ember.isPresent = isPresent;
+reexport('ember-metal/run_loop', 'run');
+reexport('ember-metal/is_none', 'isNone');
+reexport('ember-metal/is_empty', 'isEmpty');
+reexport('ember-metal/is_blank', 'isBlank');
+reexport('ember-metal/is_present', 'isPresent');
+reexport('ember-metal/merge', 'merge');
 
-Ember.merge = merge;
+<<<<<<< HEAD
+if (isEnabled('ember-metal-stream')) {
+  reexport('ember-metal/streams/stream', 'stream');
+  reexport('ember-metal/streams/utils', 'stream', [
+    'Stream',
+    'isStream',
+    'subscribe',
+    'unsubscribe',
+    'read',
+    'readHash',
+    'readArray',
+    'scanArray',
+    'scanHash',
+    'concat',
+    'chain'
+  ]);
+}
 
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;

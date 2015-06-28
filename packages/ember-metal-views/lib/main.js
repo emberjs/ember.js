@@ -1,2 +1,1 @@
-import Renderer from 'ember-metal-views/renderer';
-export { Renderer };
+export { Renderer } from 'ember-metal-views/renderer';

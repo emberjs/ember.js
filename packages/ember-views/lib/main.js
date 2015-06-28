@@ -5,21 +5,10 @@
 
 // BEGIN IMPORTS
 import Ember from 'ember-runtime';
-import jQuery from 'ember-views/system/jquery';
-import {
-  isSimpleClick,
-  getViewClientRects,
-  getViewBoundingClientRect
-} from 'ember-views/system/utils';
-import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
-
-import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
-
-import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
-import LegacyEachView from 'ember-views/views/legacy_each_view';
 
 // END IMPORTS
 
+var reexport = Ember.__reexport;
 /**
   Alias for jQuery
 
@@ -27,18 +16,17 @@ import LegacyEachView from 'ember-views/views/legacy_each_view';
   @for Ember
  @public
 */
+reexport('ember-views/system/jquery', '$');
 
-// BEGIN EXPORTS
-Ember.$ = jQuery;
+reexport('ember-views/mixins/view_target_action_support', 'ViewTargetActionSupport');
+reexport('ember-views/compat/render_buffer', 'RenderBuffer');
 
-Ember.ViewTargetActionSupport = ViewTargetActionSupport;
-
-var ViewUtils = Ember.ViewUtils = {};
-ViewUtils.isSimpleClick = isSimpleClick;
-ViewUtils.getViewClientRects = getViewClientRects;
-ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
-
-var reexport = Ember.__reexport;
+reexport('ember-views/system/utils', [
+  'isSimpleClick',
+  'getViewClientRects',
+  'getViewBoundingClientRect'
+]);
+Ember.ViewUtils = {};
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   reexport('ember-views/views/core_view', [['DeprecatedCoreView', 'CoreView']]);
@@ -69,11 +57,12 @@ reexport('ember-views/system/event_dispatcher', 'EventDispatcher');
 
 // Deprecated:
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember._Metamorph = _Metamorph;
-  Ember._MetamorphView = _MetamorphView;
-  Ember._LegacyEachView = LegacyEachView;
+  reexport('ember-views/compat/metamorph_view', [
+    ['default', '_MetamorphView'],
+    '_Metamorph'
+  ]);
 }
 
-// END EXPORTS
+reexport('ember-views/views/legacy_each_view', ['LegacyEachView', '_LegacyEachView']);
 
 export default Ember;

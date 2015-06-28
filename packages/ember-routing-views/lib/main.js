@@ -4,10 +4,15 @@
 */
 
 import Ember from 'ember-metal/core';
-import LinkComponent from 'ember-routing-views/components/link-to';
-import { OutletView } from 'ember-routing-views/views/outlet';
+import isEnabled from 'ember-metal/features';
 
-Ember.LinkComponent = LinkComponent;
-Ember.OutletView = OutletView;
+var reexport = Ember.__reexport;
+
+reexport('ember-routing-views/views/link', 'LinkComponent');
+reexport('ember-routing-views/views/outlet', ['OutletView']);
+
+if (isEnabled('ember-routing-core-outlet')) {
+  reexport('ember-routing-views/views/outlet', ['CoreOutletView']);
+}
 
 export default Ember;

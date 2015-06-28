@@ -3,10 +3,16 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES
-import { assert, deprecateFunc } from 'ember-metal/debug';
-import { computed } from 'ember-metal/computed';
-import { observer } from 'ember-metal/mixin';
+import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
+import expandProperties from 'ember-metal/expand_properties';
+
+function computed() {
+  return Ember.__loader.require('ember-metal/computed');
+}
+
+function observer() {
+  return Ember.__loader.require('ember-metal/observer');
+}
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
@@ -72,7 +78,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @public
   */
   FunctionPrototype.property = function () {
-    var ret = computed(this);
+    var ret = computed()(this);
     // ComputedProperty.prototype.property expands properties; no need for us to
     // do so here.
     return ret.property(...arguments);
@@ -105,7 +111,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
   */
   FunctionPrototype.observes = function(...args) {
     args.push(this);
-    return observer.apply(this, args);
+    return observer().apply(this, args);
   };
 
 
