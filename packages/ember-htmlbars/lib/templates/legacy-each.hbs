@@ -1,5 +1,5 @@
-{{~#each view._arrangedContent -legacy-keyword=keyword as |item|~}}
-  {{~#if keyword}}
+{{~#each view._arrangedContent -legacy-keyword=view.keyword as |item|~}}
+  {{~#if view.keyword}}
     {{~#if attrs.itemViewClass~}}
       {{~#view attrs.itemViewClass _defaultTagName=view._itemTagName~}}
         {{~legacy-yield item~}}
