@@ -322,6 +322,31 @@ QUnit.test('{{outlet}} should rerender when bound name changes', function() {
   equal(top.$().text().trim(), 'second');
 });
 
+QUnit.test('views created by {{outlet}} should get destroyed', function() {
+  let inserted = 0;
+  let destroyed = 0;
+  var routerState = {
+    render: {
+      ViewClass: EmberView.extend({
+        didInsertElement() {
+          inserted++;
+        },
+        willDestroyElement() {
+          destroyed++;
+        }
+      })
+    },
+    outlets: {}
+  };
+  top.setOutletState(routerState);
+  runAppend(top);
+  equal(inserted, 1, 'expected to see view inserted');
+  run(function() {
+    top.setOutletState(withTemplate('hello world'));
+  });
+  equal(destroyed, 1, 'expected to see view destroyed');
+});
+
 
 function withTemplate(string) {
   return {
