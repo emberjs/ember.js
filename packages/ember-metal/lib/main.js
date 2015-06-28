@@ -16,117 +16,31 @@ import {
 } from 'ember-metal/instrumentation';
 import Cache from 'ember-metal/cache';
 
-import {
-  accumulateListeners,
-  addListener,
-  hasListeners,
-  listenersFor,
-  on,
-  removeListener,
-  sendEvent,
-  suspendListener,
-  suspendListeners,
-  watchedEvents
-} from 'ember-metal/events';
+var reexport = Ember.__reexport;
 
-import ObserverSet from 'ember-metal/observer_set';
-
-import {
-  beginPropertyChanges,
-  changeProperties,
-  endPropertyChanges,
-  overrideChains,
-  propertyDidChange,
-  propertyWillChange
-} from 'ember-metal/property_events';
-
-import {
-  defineProperty
-} from 'ember-metal/properties';
-import {
-  set,
-  trySet
-} from 'ember-metal/property_set';
-
-import {
-  Map,
-  MapWithDefault,
-  OrderedSet
-} from 'ember-metal/map';
-import getProperties from 'ember-metal/get_properties';
-import setProperties from 'ember-metal/set_properties';
-import {
-  watchKey,
-  unwatchKey
-} from 'ember-metal/watch_key';
-import {
-  ChainNode,
-  finishChains,
-  flushPendingChains,
-  removeChainWatcher
-} from 'ember-metal/chains';
-import {
-  watchPath,
-  unwatchPath
-} from 'ember-metal/watch_path';
-import {
-  destroy,
-  isWatching,
-  rewatch,
-  unwatch,
-  watch
-} from 'ember-metal/watching';
-import expandProperties from 'ember-metal/expand_properties';
-import {
-  ComputedProperty,
-  computed,
-  cacheFor
-} from 'ember-metal/computed';
-
-import alias from 'ember-metal/alias';
-import {
-  empty,
-  notEmpty,
-  none,
-  not,
-  bool,
-  match,
-  equal,
-  gt,
-  gte,
-  lt,
-  lte,
-  oneWay as computedOneWay,
-  readOnly,
-  defaultTo,
-  deprecatingAlias,
-  and,
-  or,
-  any,
-  collect
-} from 'ember-metal/computed_macros';
-
-computed.empty = empty;
-computed.notEmpty = notEmpty;
-computed.none = none;
-computed.not = not;
-computed.bool = bool;
-computed.match = match;
-computed.equal = equal;
-computed.gt = gt;
-computed.gte = gte;
-computed.lt = lt;
-computed.lte = lte;
-computed.alias = alias;
-computed.oneWay = computedOneWay;
-computed.reads = computedOneWay;
-computed.readOnly = readOnly;
-computed.defaultTo = defaultTo;
-computed.deprecatingAlias = deprecatingAlias;
-computed.and = and;
-computed.or = or;
-computed.any = any;
-computed.collect = collect;
+reexport('ember-metal/computed', 'computed');
+reexport('ember-metal/computed_macros', 'computed', [
+  'empty',
+  'notEmpty',
+  'none',
+  'not',
+  'bool',
+  'match',
+  'equal',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'computedOneWay',
+  'readOnly',
+  'defaultTo',
+  'deprecatingAlias',
+  'and',
+  'or',
+  'any',
+  'collect'
+]);
+reexport('ember-metal/alias', 'computed', 'alias');
 
 import {
   _suspendObserver,
@@ -198,60 +112,50 @@ reexport('ember-metal/utils', [
 reexport('ember-metal/logger', [['default', 'Logger']]);
 reexport('ember-metal/property_get', ['get', '_getPath', 'getWithDefault', 'normalizeTuple']);
 
-Ember.on                  = on;
-Ember.addListener         = addListener;
-Ember.removeListener      = removeListener;
-Ember._suspendListener    = suspendListener;
-Ember._suspendListeners   = suspendListeners;
-Ember.sendEvent           = sendEvent;
-Ember.hasListeners        = hasListeners;
-Ember.watchedEvents       = watchedEvents;
-Ember.listenersFor        = listenersFor;
-Ember.accumulateListeners = accumulateListeners;
+reexport('ember-metal/events', [
+  'on',
+  'addListener',
+  'removeListener',
+  'suspendListener',
+  'suspendListeners',
+  'sendEvent',
+  'hasListeners',
+  'watchedEvents',
+  'listenersFor',
+  'accumulateListeners'
+]);
 
-Ember._ObserverSet = ObserverSet;
+reexport('ember-metal/observer_set', [['default', '_ObserverSet']]);
 
-Ember.propertyWillChange = propertyWillChange;
-Ember.propertyDidChange = propertyDidChange;
-Ember.overrideChains = overrideChains;
-Ember.beginPropertyChanges = beginPropertyChanges;
-Ember.endPropertyChanges = endPropertyChanges;
-Ember.changeProperties = changeProperties;
+reexport('ember-metal/property_events', [
+  'propertyWillChange',
+  'propertyDidChange',
+  'overrideChains',
+  'beginPropertyChanges',
+  'endPropertyChanges',
+  'changeProperties'
+]);
 
-Ember.defineProperty = defineProperty;
+reexport('ember-metal/properties', ['defineProperty']);
 
-Ember.set    = set;
-Ember.trySet = trySet;
+reexport('ember-metal/property_set', ['set', 'trySet']);
 
-Ember.OrderedSet = OrderedSet;
-Ember.Map = Map;
-Ember.MapWithDefault = MapWithDefault;
+reexport('ember-metal/map', ['OrderedSet', 'Map', 'MapWithDefault']);
 
-Ember.getProperties = getProperties;
-Ember.setProperties = setProperties;
+reexport('ember-metal/get_properties', 'getProperties');
+reexport('ember-metal/set_properties', 'setProperties');
 
-Ember.watchKey   = watchKey;
-Ember.unwatchKey = unwatchKey;
+reexport('ember-metal/watch_key', ['watchKey', 'unwatchKey']);
 
-Ember.flushPendingChains = flushPendingChains;
-Ember.removeChainWatcher = removeChainWatcher;
-Ember._ChainNode = ChainNode;
-Ember.finishChains = finishChains;
+reexport('ember-metal/chains', ['flushPendingChains', 'removeChainWatcher', ['_ChainNode', 'ChainNode'], 'finishChains']);
 
-Ember.watchPath = watchPath;
-Ember.unwatchPath = unwatchPath;
+reexport('ember-metal/watch_path', ['watchPath', 'unwatchPath']);
 
-Ember.watch = watch;
-Ember.isWatching = isWatching;
-Ember.unwatch = unwatch;
-Ember.rewatch = rewatch;
-Ember.destroy = destroy;
+reexport('ember-metal/watching', ['watch', 'isWatching', 'unwatch', 'rewatch', 'destroy']);
 
-Ember.expandProperties = expandProperties;
+reexport('ember-metal/expand_properties', 'expandProperties');
 
-Ember.ComputedProperty = ComputedProperty;
-Ember.computed = computed;
-Ember.cacheFor = cacheFor;
+reexport('ember-metal/computed', ['ComputedProperty', 'cacheFor']);
 
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
