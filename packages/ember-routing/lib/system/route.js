@@ -1001,7 +1001,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.4.0
-    @private
+    @public
    */
   refresh() {
     return this.router.router.refresh(this);
