@@ -37,7 +37,7 @@ var ClassNamesSupport = Mixin.create({
     @property classNames
     @type Array
     @default ['ember-view']
-    @private
+    @public
   */
   classNames: ['ember-view'],
 
