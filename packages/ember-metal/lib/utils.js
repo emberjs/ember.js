@@ -22,8 +22,7 @@ var _uuid = 0;
 /**
   Generates a universally unique identifier. This method
   is used internally by Ember for assisting with
-  the generation of GUID's and other unique identifiers
-  such as `bind-attr` data attributes.
+  the generation of GUID's and other unique identifiers.
 
   @public
   @return {Number} [description]

@@ -8,7 +8,7 @@ function TransformAngleBracketComponents() {
   @method transform
   @param {AST} ast The AST to be transformed.
 */
-TransformAngleBracketComponents.prototype.transform = function TransformBindAttrToAttributes_transform(ast) {
+TransformAngleBracketComponents.prototype.transform = function TransformAngleBracketComponents_transform(ast) {
   var walker = new this.syntax.Walker();
 
   walker.visit(ast, function(node) {
