@@ -13,7 +13,7 @@ import {
   isGlobalPath
 } from 'ember-metal/path_cache';
 
-import { symbol } from 'ember-metal/utils';
+import { inspect, symbol } from 'ember-metal/utils';
 export let INTERCEPT_SET = symbol('INTERCEPT_SET');
 export let UNHANDLED_SET = symbol('UNHANDLED_SET');
 
@@ -66,7 +66,7 @@ export function set(obj, keyName, value, tolerant) {
   }
 
   Ember.assert('You need to provide an object and key to `set`.', !!obj && keyName !== undefined);
-  Ember.assert('calling set on destroyed object', !obj.isDestroyed);
+  Ember.assert(`calling set('${inspect(keyName)}') on a destroyed object ${inspect(obj)}`, !obj.isDestroyed);
 
   if (desc) {
     desc.set(obj, keyName, value);

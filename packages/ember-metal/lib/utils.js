@@ -611,7 +611,7 @@ export function inspect(obj) {
   var v;
   var ret = [];
   for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (obj.hasOwnProperty && obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
       if (typeof v === 'function') { v = 'function() { ... }'; }
