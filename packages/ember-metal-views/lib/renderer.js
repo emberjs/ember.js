@@ -210,7 +210,7 @@ Renderer.prototype.renderElementRemoval =
     if (view._willRemoveElement) {
       view._willRemoveElement = false;
 
-      if (view._renderNode) {
+      if (view._renderNode && view.element && view.element.parentNode) {
         view._renderNode.clear();
       }
       this.didDestroyElement(view);

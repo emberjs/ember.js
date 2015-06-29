@@ -150,7 +150,10 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
 };
 
 ViewNodeManager.prototype.destroy = function() {
-  this.component.destroy();
+  if (this.component) {
+    this.component.destroy();
+    this.component = null;
+  }
 };
 
 function getTemplate(componentOrView) {
