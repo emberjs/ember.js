@@ -115,6 +115,23 @@ QUnit.test("unescaped inline form (triple curlies) does not escape link title", 
   equal(view.$('b').length, 1, '<b> was found');
 });
 
+QUnit.test("reopening on LinkView actually reopens on LinkComponent", function() {
+  expect(2);
+  var oldreopen = Ember.LinkComponent.reopen;
+
+  Ember.LinkComponent.reopen = function () {
+    ok(true, 'reopen was called on LinkComponent');
+    return oldreopen.apply(this, arguments);
+  };
+
+  expectDeprecation(function () {
+    Ember.LinkView.reopen({});
+  });
+
+  Ember.LinkComponent.reopen = oldreopen;
+
+});
+
 QUnit.test("unwraps controllers", function() {
   var template = "{{#link-to 'index' view.otherController}}Text{{/link-to}}";
 
