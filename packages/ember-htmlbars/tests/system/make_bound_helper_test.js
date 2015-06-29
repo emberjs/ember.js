@@ -4,9 +4,7 @@ import Registry from 'container/registry';
 import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import {
-  dasherize
-} from 'ember-runtime/system/string';
+import { dasherize } from 'ember-runtime/system/string';
 
 var view, registry, container;
 
@@ -35,21 +33,25 @@ QUnit.test('should update bound helpers in a subexpression when properties chang
     return dasherize(params[0]);
   }));
 
+  registry.register('helper:x-reverse', makeBoundHelper(function(params, hash, options, env) {
+    return params[0].split('').reverse().join('');
+  }));
+
   ignoreDeprecation(function() {
     view = EmberView.create({
       container: container,
       controller: { prop: 'isThing' },
-      template: compile('<div {{bind-attr data-foo=(x-dasherize prop)}}>{{prop}}</div>')
+      template: compile('<div data-foo="{{x-reverse (x-dasherize prop)}}">{{prop}}</div>')
     });
   });
 
   runAppend(view);
 
-  equal(view.$('div[data-foo="is-thing"]').text(), 'isThing', 'helper output is correct');
+  equal(view.$('div[data-foo="gniht-si"]').text(), 'isThing', 'helper output is correct');
 
   run(view, 'set', 'controller.prop', 'notThing');
 
-  equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', 'helper output is correct');
+  equal(view.$('div[data-foo="gniht-ton"]').text(), 'notThing', 'helper output is correct');
 });
 
 QUnit.test('should update bound helpers when properties change', function() {

@@ -10,9 +10,7 @@ import { A } from 'ember-runtime/system/native_array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import {
-  dasherize
-} from 'ember-runtime/system/string';
+import { dasherize } from 'ember-runtime/system/string';
 
 import EmberHandlebars from 'ember-htmlbars/compat';
 import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
@@ -98,20 +96,24 @@ QUnit.test('should update bound helpers in a subexpression when properties chang
     return dasherize(value);
   });
 
+  helper('reverse', function(value) {
+    return value.split('').reverse().join('');
+  });
+
   ignoreDeprecation(function() {
     view = EmberView.create({
       controller: { prop: 'isThing' },
-      template: compile('<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>')
+      template: compile('<div data-foo="{{reverse (dasherize prop)}}">{{prop}}</div>')
     });
   });
 
   runAppend(view);
 
-  equal(view.$('div[data-foo="is-thing"]').text(), 'isThing', 'helper output is correct');
+  equal(view.$('div[data-foo="gniht-si"]').text(), 'isThing', 'helper output is correct');
 
   run(view, 'set', 'controller.prop', 'notThing');
 
-  equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', 'helper output is correct');
+  equal(view.$('div[data-foo="gniht-ton"]').text(), 'notThing', 'helper output is correct');
 });
 
 QUnit.test('should allow for computed properties with dependencies', function() {

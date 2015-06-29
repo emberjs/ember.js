@@ -248,7 +248,7 @@ QUnit.test('can add and replace complicatedly harder', function() {
 
 QUnit.test('it does not mark each option tag as selected', function() {
   var selectView = EmberView.create({
-    template: compile('<select id="people-select"><option value="">Please select a name</option>{{#each view.people}}<option {{bind-attr value=name}}>{{name}}</option>{{/each}}</select>'),
+    template: compile('<select id="people-select"><option value="">Please select a name</option>{{#each view.people}}<option value={{name}}>{{name}}</option>{{/each}}</select>'),
     people: people
   });
 
