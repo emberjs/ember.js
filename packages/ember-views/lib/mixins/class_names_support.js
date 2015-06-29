@@ -81,7 +81,7 @@ var ClassNamesSupport = Mixin.create({
     @property classNameBindings
     @type Array
     @default []
-    @private
+    @public
   */
   classNameBindings: EMPTY_ARRAY
 });
