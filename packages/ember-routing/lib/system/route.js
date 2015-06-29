@@ -787,7 +787,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     @method deactivate
-    @private
+    @public
   */
   deactivate: K,
 
