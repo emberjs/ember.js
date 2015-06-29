@@ -796,7 +796,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     when the model for the route changes.
 
     @method activate
-    @private
+    @public
   */
   activate: K,
 
