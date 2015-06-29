@@ -122,7 +122,7 @@ ControllerMixin.reopen({
     @deprecated
     @for Ember.ControllerMixin
     @method transitionTo
-    @private
+    @public
   */
   transitionTo() {
     Ember.deprecate('transitionTo is deprecated. Please use transitionToRoute.');
