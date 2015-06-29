@@ -2007,7 +2007,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
-    @private
+    @public
   */
   disconnectOutlet(options) {
     var outletName;
