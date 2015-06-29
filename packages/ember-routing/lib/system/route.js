@@ -1271,7 +1271,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method redirect
     @param {Object} model the model for this route
     @param {Transition} transition the transition object associated with the current transition
-    @private
+    @public
   */
   redirect: K,
 
