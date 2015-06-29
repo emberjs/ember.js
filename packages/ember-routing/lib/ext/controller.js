@@ -226,7 +226,7 @@ ControllerMixin.reopen({
       containing a mapping of query parameters
     @for Ember.ControllerMixin
     @method transitionToRoute
-    @private
+    @public
   */
   transitionToRoute() {
     // target may be either another controller or a router
