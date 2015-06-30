@@ -35,11 +35,11 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
 QUnit.test('Ember.keys is deprecated', function() {
   expectDeprecation(function() {
     Ember.keys({});
-  }, 'Ember.keys is deprecated in-favour of Object.keys');
+  }, 'Ember.keys is deprecated in favor of Object.keys');
 });
 
 QUnit.test('Ember.keys is deprecated', function() {
   expectDeprecation(function() {
     Ember.create(null);
-  }, 'Ember.create is deprecated in-favour of Object.create');
+  }, 'Ember.create is deprecated in favor of Object.create');
 });
