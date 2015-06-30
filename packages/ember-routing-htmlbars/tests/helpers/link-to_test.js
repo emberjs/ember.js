@@ -132,6 +132,15 @@ QUnit.test("reopening on LinkView actually reopens on LinkComponent", function()
 
 });
 
+QUnit.test("Extending a LinkView returns a LinkView.", function() {
+  expect(2);
+
+  expectDeprecation(function() {
+    var result = Ember.LinkView.extend({});
+    equal(result.toString(), '(subclass of Ember.LinkView)', 'Returns a subclass of the Ember.LinkView object.');
+  });
+});
+
 QUnit.test("unwraps controllers", function() {
   var template = "{{#link-to 'index' view.otherController}}Text{{/link-to}}";
 

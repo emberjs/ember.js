@@ -522,7 +522,7 @@ DeprecatedLinkView.reopen = function reopenWithDeprecation() {
 DeprecatedLinkView.reopenClass({
   extend: function () {
     Ember.deprecate('Ember.LinkView is deprecated. Please extend from Ember.LinkComponent.', false);
-    this._super.apply(this, arguments);
+    return this._super.apply(this, arguments);
   }
 });
 
