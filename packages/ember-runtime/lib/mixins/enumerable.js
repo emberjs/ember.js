@@ -456,7 +456,7 @@ export default Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Array} rejected array
-    @private
+    @public
   */
   rejectBy(key, value) {
     var exactValue = function(item) {
