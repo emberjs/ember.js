@@ -651,7 +651,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @deprecated Use `isEvery` instead
     @return {Boolean}
-    @private
+    @public
   */
   everyBy: aliasMethod('isEvery'),
 
