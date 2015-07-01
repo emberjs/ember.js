@@ -399,7 +399,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Array} A filtered array.
-    @private
+    @public
   */
   filter(callback, target) {
     var ret = Ember.A();
