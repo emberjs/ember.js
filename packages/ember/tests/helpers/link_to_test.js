@@ -652,9 +652,9 @@ QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about
 QUnit.test('The {{link-to}} helper unwraps controllers', function() {
 
   if (isEnabled('ember-routing-transitioning-classes')) {
-    expect(5);
+    expect(7);
   } else {
-    expect(6);
+    expect(8);
   }
 
   Router.map(function() {
