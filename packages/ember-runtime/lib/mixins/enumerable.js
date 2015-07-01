@@ -541,7 +541,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Object} Found item or `undefined`.
-    @private
+    @public
   */
   find(callback, target) {
     var len = get(this, 'length');
