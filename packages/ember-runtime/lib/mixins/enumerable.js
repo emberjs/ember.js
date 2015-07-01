@@ -351,7 +351,7 @@ export default Mixin.create({
     @method mapBy
     @param {String} key name of the property
     @return {Array} The mapped array.
-    @private
+    @public
   */
   mapBy(key) {
     return this.map(function(next) {
