@@ -461,20 +461,6 @@ export default Mixin.create({
   },
 
   /**
-    Returns an array with just the items with the matched property. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
-
-    @method filterProperty
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Array} filtered array
-    @deprecated Use `filterBy` instead
-    @private
-  */
-  filterProperty: aliasMethod('filterBy'),
-
-  /**
     Returns an array with the items that do not have truthy values for
     key.  You can pass an optional second argument with the target value.  Otherwise
     this will match any property that evaluates to false.

@@ -311,20 +311,6 @@ export function filterBy(dependentKey, propertyKey, value) {
 }
 
 /**
-  @method filterProperty
-  @for Ember.computed
-  @param dependentKey
-  @param propertyKey
-  @param value
-  @deprecated Use `Ember.computed.filterBy` instead
-  @public
-*/
-export function filterProperty() {
-  Ember.deprecate('Ember.computed.filterProperty is deprecated. Please use Ember.computed.filterBy.');
-  return filterBy.apply(this, arguments);
-}
-
-/**
   A computed property which returns a new array with all the unique
   elements from one or more dependent arrays.
 
