@@ -510,7 +510,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Array} rejected array
     @deprecated Use `rejectBy` instead
-    @private
+    @public
   */
   rejectProperty: aliasMethod('rejectBy'),
 
