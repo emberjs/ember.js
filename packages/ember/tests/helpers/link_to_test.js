@@ -897,28 +897,6 @@ QUnit.test('The {{link-to}} helper\'s bound parameter functionality works as exp
   equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');
 });
 
-QUnit.test('{{linkTo}} is aliased', function() {
-  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#linkTo \'about\' id=\'about-link\' replace=true}}About{{/linkTo}}');
-
-  Router.map(function() {
-    this.route('about');
-  });
-
-  expectDeprecation(function() {
-    bootApplication();
-  }, 'The \'linkTo\' view helper is deprecated in favor of \'link-to\'');
-
-  Ember.run(function() {
-    router.handleURL('/');
-  });
-
-  Ember.run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
-  });
-
-  equal(container.lookup('controller:application').get('currentRouteName'), 'about', 'linkTo worked properly');
-});
-
 QUnit.test('The {{link-to}} helper is active when a route is active', function() {
   Router.map(function() {
     this.route('about', function() {

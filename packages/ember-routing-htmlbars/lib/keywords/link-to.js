@@ -305,15 +305,3 @@ export default {
     this.render(morph, env, scope, params, hash, template, inverse, visitor);
   }
 };
-
-/**
-  See [link-to](/api/classes/Ember.Handlebars.helpers.html#method_link-to)
-
-  @method linkTo
-  @for Ember.Handlebars.helpers
-  @deprecated
-  @param {String} routeName
-  @param {Object} [context]*
-  @return {String} HTML string
-  @private
-*/
