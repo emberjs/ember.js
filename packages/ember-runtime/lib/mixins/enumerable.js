@@ -178,7 +178,7 @@ export default Mixin.create({
 
     @property lastObject
     @return {Object} the last object or undefined
-    @private
+    @public
   */
   lastObject: computed('[]', function() {
     var len = get(this, 'length');
