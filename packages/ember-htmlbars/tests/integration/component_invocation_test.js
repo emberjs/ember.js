@@ -786,13 +786,15 @@ QUnit.test('non-block with each rendering child components', function() {
 });
 
 QUnit.test('specifying classNames results in correct class', function(assert) {
-  expect(1);
+  expect(3);
 
+  let clickyThing;
   registry.register('component:some-clicky-thing', Component.extend({
     tagName: 'button',
     classNames: ['foo', 'bar'],
-    click() {
-      assert.ok(true, 'click was fired!');
+    init() {
+      this._super(...arguments);
+      clickyThing = this;
     }
   }));
 
@@ -805,6 +807,12 @@ QUnit.test('specifying classNames results in correct class', function(assert) {
 
   let button = view.$('button');
   ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
+
+  let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
+  assert.deepEqual(clickyThing.get('classNames'),  expectedClassNames, 'classNames are properly combined');
+
+  let buttonClassNames = button.attr('class');
+  assert.deepEqual(buttonClassNames.split(' '), expectedClassNames, 'all classes are set 1:1 in DOM');
 });
 
 QUnit.test('specifying custom concatenatedProperties avoids clobbering', function(assert) {
@@ -1310,4 +1318,3 @@ function equalsElement(element, tagName, attributes, content) {
 
   QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
 }
-
