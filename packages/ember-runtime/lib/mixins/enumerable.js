@@ -217,7 +217,7 @@ export default Mixin.create({
     @method contains
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
-    @private
+    @public
   */
   contains(obj) {
     var found = this.find(function(item) {
