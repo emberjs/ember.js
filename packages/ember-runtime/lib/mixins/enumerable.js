@@ -367,7 +367,7 @@ export default Mixin.create({
     @param {String} key name of the property
     @return {Array} The mapped array.
     @deprecated Use `mapBy` instead
-    @private
+    @public
   */
 
   mapProperty: aliasMethod('mapBy'),
