@@ -582,7 +582,7 @@ export default Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Object} found item or `undefined`
-    @private
+    @public
   */
   findBy(key, value) {
     return this.find(iter.apply(this, arguments));
