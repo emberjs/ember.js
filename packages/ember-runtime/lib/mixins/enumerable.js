@@ -424,7 +424,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Array} A rejected array.
-     @private
+    @public
   */
   reject(callback, target) {
     return this.filter(function() {
