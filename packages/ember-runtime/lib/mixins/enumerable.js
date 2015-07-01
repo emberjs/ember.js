@@ -252,7 +252,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Object} receiver
-    @private
+    @public
   */
   forEach(callback, target) {
     if (typeof callback !== 'function') {
