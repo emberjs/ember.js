@@ -299,7 +299,7 @@ export default Mixin.create({
     @param {String} key The key to set
     @param {Object} value The object to set
     @return {Object} receiver
-    @private
+    @public
   */
   setEach(key, value) {
     return this.forEach(function(item) {
