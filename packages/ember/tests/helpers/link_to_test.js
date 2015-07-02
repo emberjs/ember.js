@@ -94,7 +94,7 @@ QUnit.module("The {{link-to}} helper", {
   teardown: sharedTeardown
 });
 
-// This test is designed to simulate the context of an ember-qunit/ember-test-helpers component integration test,
+// These two tests are designed to simulate the context of an ember-qunit/ember-test-helpers component integration test,
 // so the container is available but it does not boot the entire app
 QUnit.test('Using {{link-to}} does not cause an exception if it is rendered before the router has started routing', function(assert) {
   Router.map(function() {
@@ -110,6 +110,21 @@ QUnit.test('Using {{link-to}} does not cause an exception if it is rendered befo
 
   let router = container.lookup('router:main');
   router.setupRouter();
+
+  Ember.run(function() {
+    component.appendTo('#qunit-fixture');
+  });
+
+  assert.strictEqual(component.$('a').length, 1, 'the link is rendered');
+});
+
+QUnit.test('Using {{link-to}} does not cause an exception if it is rendered without a router.js instance', function(assert) {
+  registry.register('component-lookup:main', ComponentLookup);
+
+  let component = Ember.Component.extend({
+    layout: compile('{{#link-to "nonexistent"}}Does not work.{{/link-to}}'),
+    container: container
+  }).create();
 
   Ember.run(function() {
     component.appendTo('#qunit-fixture');
