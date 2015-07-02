@@ -671,7 +671,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Boolean}
     @since 1.3.0
-    @private
+    @public
   */
   isEvery(key, value) {
     return this.every(iter.apply(this, arguments));
