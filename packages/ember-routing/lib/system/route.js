@@ -235,7 +235,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method paramsFor
     @param {String} name
-    @private
+    @public
   */
   paramsFor(name) {
     var route = this.container.lookup(`route:${name}`);
