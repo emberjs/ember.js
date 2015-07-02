@@ -10,12 +10,17 @@ function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
-function isObject(obj) {
-  return obj && (typeof obj === 'object');
+function isWatchable(obj) {
+  if (!obj) {
+    return;
+  }
+
+  let type = typeof obj;
+  return type === 'object' || type === 'function';
 }
 
 function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._cacheable);
+  return !(isWatchable(obj) && obj.isDescriptor && obj._cacheable);
 }
 
 function Chains() { }
@@ -42,7 +47,7 @@ export function flushPendingChains() {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!isObject(obj)) {
+  if (!isWatchable(obj)) {
     return;
   }
 
@@ -63,7 +68,7 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node) {
-  if (!isObject(obj)) {
+  if (!isWatchable(obj)) {
     return;
   }
 

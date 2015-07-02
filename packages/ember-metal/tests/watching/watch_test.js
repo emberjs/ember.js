@@ -271,3 +271,22 @@ testBoth('watching "length" property on an array', function(get, set) {
   equal(get(arr, 'length'), 10, 'should get new value');
   equal(arr.length, 10, 'property should be accessible on arr');
 });
+
+testBoth('watching properties on a function', function(get, set) {
+  var obj = {
+    foo: function() {}
+  };
+  addListeners(obj, 'foo.baz');
+
+  watch(obj, 'foo.baz');
+  equal(get(obj, 'foo.baz'), undefined, 'should have original prop');
+
+  set(obj, 'foo.baz', 'bar');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'foo.baz'), 'bar', 'should get new value');
+  equal(obj.foo.baz, 'bar', 'property should be accessible on obj');
+});
+
+

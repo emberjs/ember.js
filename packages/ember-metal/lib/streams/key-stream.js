@@ -60,7 +60,8 @@ merge(KeyStream.prototype, {
     if (object !== this.observedObject) {
       this._clearObservedObject();
 
-      if (object && typeof object === 'object') {
+      var type = typeof object;
+      if (object && (type === 'object' || type === 'function')) {
         addObserver(object, this.key, this, this.notify);
         this.observedObject = object;
       }
