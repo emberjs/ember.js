@@ -214,19 +214,6 @@ export function mapBy(dependentKey, propertyKey) {
 }
 
 /**
-  @method mapProperty
-  @for Ember.computed
-  @deprecated Use `Ember.computed.mapBy` instead
-  @param dependentKey
-  @param propertyKey
-  @public
-*/
-export function mapProperty() {
-  Ember.deprecate('Ember.computed.mapProperty is deprecated. Please use Ember.computed.mapBy.');
-  return mapBy.apply(this, arguments);
-}
-
-/**
   Filters the array by the callback.
 
   The callback method you provide should have the following signature.

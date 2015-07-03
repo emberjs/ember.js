@@ -359,19 +359,6 @@ export default Mixin.create({
   },
 
   /**
-    Similar to map, this specialized function returns the value of the named
-    property on all items in the enumeration.
-
-    @method mapProperty
-    @param {String} key name of the property
-    @return {Array} The mapped array.
-    @deprecated Use `mapBy` instead
-    @private
-  */
-
-  mapProperty: aliasMethod('mapBy'),
-
-  /**
     Returns an array with all of the items in the enumeration that the passed
     function returns true for. This method corresponds to `filter()` defined in
     JavaScript 1.6.
