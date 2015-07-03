@@ -34,7 +34,7 @@ export default function emberElement(morph, env, scope, path, params, hash, visi
   var result;
   var helper = findHelper(path, scope.self, env);
   if (helper) {
-    var helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope);
+    var helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope, null, path);
     result = helperStream.value();
   } else {
     result = env.hooks.get(env, scope, path);

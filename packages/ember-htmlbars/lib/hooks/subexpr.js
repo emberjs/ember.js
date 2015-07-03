@@ -21,7 +21,7 @@ export default function subexpr(env, scope, helperName, params, hash) {
   var label = labelForSubexpr(params, hash, helperName);
   var helper = lookupHelper(helperName, scope.self, env);
 
-  var helperStream = buildHelperStream(helper, params, hash, { template: {}, inverse: {} }, env, scope, label);
+  var helperStream = buildHelperStream(helper, params, hash, { template: {}, inverse: {} }, env, scope, null, label);
 
   for (var i = 0, l = params.length; i < l; i++) {
     helperStream.addDependency(params[i]);
@@ -35,14 +35,14 @@ export default function subexpr(env, scope, helperName, params, hash) {
 }
 
 function labelForSubexpr(params, hash, helperName) {
-  return function() {
-    var paramsLabels = labelsForParams(params);
-    var hashLabels = labelsForHash(hash);
-    var label = `(${helperName}`;
-    if (paramsLabels) { label += ` ${paramsLabels}`; }
-    if (hashLabels) { label += ` ${hashLabels}`; }
-    return `${label})`;
-  };
+  var paramsLabels = labelsForParams(params);
+  var hashLabels = labelsForHash(hash);
+  var label = `(${helperName}`;
+
+  if (paramsLabels) { label += ` ${paramsLabels}`; }
+  if (hashLabels) { label += ` ${hashLabels}`; }
+
+  return `${label})`;
 }
 
 function labelsForParams(params) {
