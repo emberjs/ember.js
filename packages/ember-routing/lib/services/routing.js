@@ -53,6 +53,7 @@ export default Service.extend({
 
   generateURL(routeName, models, queryParams) {
     var router = get(this, 'router');
+    if (!router.router) { return; }
 
     var visibleQueryParams = {};
     merge(visibleQueryParams, queryParams);
