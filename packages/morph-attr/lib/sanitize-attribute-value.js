@@ -11,7 +11,8 @@ var badTags = {
   'LINK': true,
   'IMG': true,
   'IFRAME': true,
-  'BASE': true
+  'BASE': true,
+  'FORM': true
 };
 
 var badTagsForDataURI = {
@@ -21,7 +22,8 @@ var badTagsForDataURI = {
 export var badAttributes = {
   'href': true,
   'src': true,
-  'background': true
+  'background': true,
+  'action': true
 };
 
 var badAttributesForDataURI = {

@@ -311,6 +311,7 @@ test("helper calls follow the normal dirtying rules", function() {
 test("attribute nodes follow the normal dirtying rules", function() {
   var template = compile("<div class={{value}}>hello</div>");
   var object = { value: "world" };
+
   var result = template.render(object, env);
 
   equalTokens(result.fragment, "<div class='world'>hello</div>", "Initial render");

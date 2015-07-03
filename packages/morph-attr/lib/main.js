@@ -63,20 +63,22 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.rendered = false;
   this._renderedInitially = false;
 
-  var normalizedAttrName = normalizeProperty(this.element, attrName);
+
   if (this.namespace) {
     this._update = updateAttributeNS;
     this._get = getAttributeNS;
     this.attrName = attrName;
   } else {
-    if (element.namespaceURI === svgNamespace || attrName === 'style' || !normalizedAttrName) {
+    var { normalized, type } = normalizeProperty(this.element, attrName);
+
+    if (element.namespaceURI === svgNamespace || attrName === 'style' || type === 'attr') {
       this._update = updateAttribute;
       this._get = getAttribute;
-      this.attrName = attrName;
+      this.attrName = normalized ;
     } else {
       this._update = updateProperty;
       this._get = getProperty;
-      this.attrName = normalizedAttrName;
+      this.attrName = normalized ;
     }
   }
 }
