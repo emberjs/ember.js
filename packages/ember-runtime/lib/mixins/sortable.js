@@ -24,7 +24,11 @@ import {
   `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
   removed, or updated without changing the implicit order of their underlying
-  model array:
+  model array.
+  
+  `SortableMixin` works by taking the `content` array of the object it was mixed in on,
+  sorting that array according to the sorting properties, and exposes the sorted array
+  as `arrangedContent`.
 
   ```javascript
   songs = [
@@ -32,41 +36,37 @@ import {
     {trackNumber: 2, title: 'Back in the U.S.S.R.'},
     {trackNumber: 3, title: 'Glass Onion'},
   ];
-
-  songsController = Ember.ArrayController.create({
-    model: songs,
+  
+  songsComponent = Ember.Component.create(SortableMixin, {
+    content: songs,
     sortProperties: ['trackNumber'],
     sortAscending: true
   });
-
-  songsController.get('firstObject');  // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
-
-  songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
-  songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
+  
+  songsComponent.get('firstObject');  // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
+  
+  songsComponent.addObject({trackNumber: 1, title: 'Dear Prudence'});
+  songsComponent.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
 
   If you add or remove the properties to sort by or change the sort direction the model
   sort order will be automatically updated.
 
   ```javascript
-  songsController.set('sortProperties', ['title']);
-  songsController.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
+  songsComponent.set('sortProperties', ['title']);
+  songsComponent.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
 
-  songsController.toggleProperty('sortAscending');
-  songsController.get('firstObject'); // {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'}
+  songsComponent.toggleProperty('sortAscending');
+  songsComponent.get('firstObject'); // {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'}
   ```
 
-  `SortableMixin` works by sorting the `arrangedContent` array, which is the array that
-  `ArrayProxy` displays. Due to the fact that the underlying 'content' array is not changed, that
+  Due to the fact that the underlying `content` array is not changed, that
   array will not display the sorted list:
 
    ```javascript
-  songsController.get('content').get('firstObject'); // Returns the unsorted original content
-  songsController.get('firstObject'); // Returns the sorted content.
+  songsComponent.get('content').get('firstObject'); // Returns the first unsorted object
+  songsComponent.get('firstObject'); // Returns the first sorted object
   ```
-
-  Although the sorted content can also be accessed through the `arrangedContent` property,
-  it is preferable to use the proxied class and not the `arrangedContent` array directly.
 
   @class SortableMixin
   @namespace Ember
