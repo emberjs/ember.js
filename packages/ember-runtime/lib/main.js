@@ -53,7 +53,6 @@ import {
   sort,
   setDiff,
   mapBy,
-  mapProperty,
   filter,
   filterBy,
   uniq,
@@ -115,7 +114,6 @@ EmComputed.map = map;
 EmComputed.sort = sort;
 EmComputed.setDiff = setDiff;
 EmComputed.mapBy = mapBy;
-EmComputed.mapProperty = mapProperty;
 EmComputed.filter = filter;
 EmComputed.filterBy = filterBy;
 EmComputed.uniq = uniq;
