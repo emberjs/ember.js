@@ -56,7 +56,6 @@ import {
   mapProperty,
   filter,
   filterBy,
-  filterProperty,
   uniq,
   union,
   intersect
@@ -119,7 +118,6 @@ EmComputed.mapBy = mapBy;
 EmComputed.mapProperty = mapProperty;
 EmComputed.filter = filter;
 EmComputed.filterBy = filterBy;
-EmComputed.filterProperty = filterProperty;
 EmComputed.uniq = uniq;
 EmComputed.union = union;
 EmComputed.intersect = intersect;
