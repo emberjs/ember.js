@@ -196,14 +196,14 @@ test('#setProperty removes attr with undefined', function(){
 
 test('#setProperty uses setAttribute for special non-compliant element props', function() {
   expect(6);
-  
+
   var badPairs = [
     { tagName: 'button', key: 'type', value: 'submit', selfClosing: false },
     { tagName: 'input', key: 'type', value: 'x-not-supported', selfClosing: true }
   ];
 
   badPairs.forEach(function(pair) {
-    var node = dom.createElement(pair.tagName);   
+    var node = dom.createElement(pair.tagName);
     var setAttribute = node.setAttribute;
 
     node.setAttribute = function(attrName, value) {

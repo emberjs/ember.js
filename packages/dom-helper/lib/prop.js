@@ -1,63 +1,71 @@
 export function isAttrRemovalValue(value) {
   return value === null || value === undefined;
 }
+/*
+ *
+ * @method normalizeProperty
+ * @param element {HTMLElement}
+ * @param slotName {String}
+ * @returns {Object} { name, type }
+ */
+export function normalizeProperty(element, slotName) {
+  var type, normalized;
 
-function UNDEFINED() {}
-
-// TODO should this be an o_create kind of thing?
-export var propertyCaches = {};
-
-export function normalizeProperty(element, attrName) {
-  var tagName = element.tagName;
-  var key, cachedAttrName;
-  var cache = propertyCaches[tagName];
-  if (!cache) {
-    // TODO should this be an o_create kind of thing?
-    cache = {};
-    for (cachedAttrName in element) {
-      key = cachedAttrName.toLowerCase();
-      if (isSettable(element, cachedAttrName)) {
-        cache[key] = cachedAttrName;
-      } else {
-        cache[key] = UNDEFINED;
-      }
+  if (slotName in element) {
+    normalized = slotName;
+    type = 'prop';
+  } else {
+    var lower = slotName.toLowerCase();
+    if (lower in element) {
+      type = 'prop';
+      normalized = lower;
+    } else {
+      type = 'attr';
+      normalized = slotName;
     }
-    propertyCaches[tagName] = cache;
   }
 
-  // presumes that the attrName has been lowercased.
-  var value = cache[attrName];
-  return value === UNDEFINED ? undefined : value;
+  if (type === 'prop' && preferAttr(element.tagName, normalized)) {
+    type = 'attr';
+  }
+
+  return { normalized, type };
 }
 
-// elements with a property that does not conform to the spec in certain
-// browsers. In these cases, we'll end up using setAttribute instead
-var badPairs = [{
+// properties that MUST be set as attributes, due to:
+// * browser bug
+// * strange spec outlier
+var ATTR_OVERRIDES = {
+
   // phantomjs < 2.0 lets you set it as a prop but won't reflect it
   // back to the attribute. button.getAttribute('type') === null
-  tagName: 'BUTTON',
-  propName: 'type'
-}, {
-  // Some version of IE (like IE9) actually throw an exception
-  // if you set input.type = 'something-unknown'
-  tagName: 'INPUT',
-  propName: 'type'
-}, {
-  // Some versions of IE (IE8) throw an exception when setting
-  // `input.list = 'somestring'`:
-  // https://github.com/emberjs/ember.js/issues/10908
-  // https://github.com/emberjs/ember.js/issues/11364
-  tagName: 'INPUT',
-  propName: 'list'
-}];
+  BUTTON: { type: true, form: true },
 
-function isSettable(element, attrName) {
-  for (let i = 0, l = badPairs.length; i < l; i++) {
-    let pair = badPairs[i];
-    if (pair.tagName === element.tagName && pair.propName === attrName) {
-      return false;
-    }
-  }
+  INPUT: {
+    // TODO: remove when IE8 is droped
+    // Some versions of IE (IE8) throw an exception when setting
+    // `input.list = 'somestring'`:
+    // https://github.com/emberjs/ember.js/issues/10908
+    // https://github.com/emberjs/ember.js/issues/11364
+    list: true,
+    // Some version of IE (like IE9) actually throw an exception
+    // if you set input.type = 'something-unknown'
+    type: true,
+    form: true
+  },
 
-  return true;
+  // element.form is actually a legitimate readOnly property, that is to be
+  // mutated, but must be mutated by setAttribute...
+  SELECT:   { form: true },
+  OPTION:   { form: true },
+  TEXTAREA: { form: true },
+  LABEL:    { form: true },
+  FIELDSET: { form: true },
+  LEGEND:   { form: true },
+  OBJECT:   { form: true }
+};
+
+function preferAttr(tagName, propName) {
+  var tag = ATTR_OVERRIDES[tagName.toUpperCase()];
+  return tag && tag[propName.toLowerCase()] || false;
 }

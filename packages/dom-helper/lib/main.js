@@ -294,8 +294,8 @@ prototype.setProperty = function(element, name, value, namespace) {
       }
     }
   } else {
-    var normalized = normalizeProperty(element, name);
-    if (normalized) {
+    var { normalized , type } = normalizeProperty(element, name);
+    if (type === 'prop') {
       element[normalized] = value;
     } else {
       if (isAttrRemovalValue(value)) {

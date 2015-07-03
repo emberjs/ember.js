@@ -86,13 +86,15 @@ var badTags = [
   'LINK',
   'IMG',
   'IFRAME',
-  'BASE'
+  'BASE',
+  'FORM',
 ];
 
 var badAttributes = [
   'href',
   'src',
-  'background'
+  'background',
+  'action'
 ];
 
 var someIllegalProtocols = [
