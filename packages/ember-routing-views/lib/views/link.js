@@ -259,6 +259,8 @@ var LinkComponent = EmberComponent.extend({
   */
   active: computed('attrs.params', '_routing.currentState', function computeLinkComponentActive() {
     var currentState = get(this, '_routing.currentState');
+    if (!currentState) { return false; }
+
     return computeActive(this, currentState);
   }),
 
