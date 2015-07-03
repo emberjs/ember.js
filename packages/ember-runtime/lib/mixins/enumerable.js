@@ -470,7 +470,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Array} filtered array
     @deprecated Use `filterBy` instead
-    @private
+    @public
   */
   filterProperty: aliasMethod('filterBy'),
 
