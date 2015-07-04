@@ -130,7 +130,7 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
   @private
 */
 
-var RenderBuffer = function(domHelper) {
+export default function RenderBuffer(domHelper) {
   Ember.deprecate('`Ember.RenderBuffer` is deprecated.');
   this.buffer = null;
   this.childViews = [];
@@ -139,7 +139,18 @@ var RenderBuffer = function(domHelper) {
   Ember.assert('RenderBuffer requires a DOM helper to be passed to its constructor.', !!domHelper);
 
   this.dom = domHelper;
-};
+
+  this.tagName = undefined;
+  this.buffer = null;
+  this._element = null;
+  this._outerContextualElement = undefined;
+  this.elementClasses = null;
+  this.elementId = null;
+  this.elementAttributes = null;
+  this.elementProperties = null;
+  this.elementTag = null;
+  this.elementStyle = null;
+}
 
 RenderBuffer.prototype = {
 
@@ -467,7 +478,7 @@ RenderBuffer.prototype = {
 
     if (!canSetNameOnInputs && attrs && attrs.name) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
-      tagString = '<'+stripTagName(tagName)+' name="'+escapeAttribute(attrs.name)+'">';
+      tagString = `<${stripTagName(tagName)} name="${escapeAttribute(attrs.name)}">`;
     } else {
       tagString = tagName;
     }
@@ -504,9 +515,9 @@ RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        var normalizedCase = normalizeProperty(element, prop.toLowerCase()) || prop;
+        var { normalized } = normalizeProperty(element, prop);
 
-        this.dom.setPropertyStrict(element, normalizedCase, props[prop]);
+        this.dom.setPropertyStrict(element, normalized, props[prop]);
       }
 
       this.elementProperties = null;
@@ -618,5 +629,3 @@ RenderBuffer.prototype = {
     return this.buffer;
   }
 };
-
-export default RenderBuffer;
