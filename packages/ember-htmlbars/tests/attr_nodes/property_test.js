@@ -50,7 +50,7 @@ QUnit.test("quoted maxlength sets the property and attribute", function() {
 
   if (canSetFalsyMaxLength()) {
     Ember.run(view, view.set, 'context.length', null);
-    equal(view.element.firstChild.maxLength, 0);
+    equal(view.element.firstChild.maxLength, document.createElement('input').maxLength);
   } else {
     Ember.run(view, view.set, 'context.length', 1);
     equal(view.element.firstChild.maxLength, 1);
