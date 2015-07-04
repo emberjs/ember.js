@@ -28,7 +28,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('maxlength sets the property and attribute', function() {
+QUnit.test('maxlength sets the property and attribute', function() {
   view = EmberView.create({
     context: { length: 5 },
     template: compile('<input maxlength={{length}}>')
@@ -41,7 +41,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equal(view.element.firstChild.maxLength, 1);
 });
 
-  QUnit.test('quoted maxlength sets the property and attribute', function() {
+QUnit.test('quoted maxlength sets the attribute and is reflected as a property', function() {
   view = EmberView.create({
     context: { length: 5 },
     template: compile('<input maxlength=\'{{length}}\'>')
