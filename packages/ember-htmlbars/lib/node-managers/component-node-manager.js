@@ -308,6 +308,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
 
   component._renderNode = renderNode;
   renderNode.emberView = component;
+  renderNode.buildChildEnv = buildChildEnv;
   return component;
 }
 
@@ -359,4 +360,8 @@ function mergeBindings(target, attrs) {
   }
 
   return target;
+}
+
+function buildChildEnv(state, env) {
+  return env.childWithView(this.emberView);
 }
