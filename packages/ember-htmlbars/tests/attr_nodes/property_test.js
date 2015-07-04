@@ -59,7 +59,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('array value can be set as property', function() {
+QUnit.test('array value can be set as property', function() {
   view = EmberView.create({
     context: {},
     template: compile('<input value={{items}}>')
