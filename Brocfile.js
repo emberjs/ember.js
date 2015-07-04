@@ -124,7 +124,7 @@ for (var packageName in packages.dependencies) {
 
   // AMD lib
   var transpiledAmdLib = transpileES6(libTree, 'transpiledAmdLib', {
-    format: 'amd',
+    modules: 'amdStrict',
   });
   var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
     inputFiles: ['**/*.js'],
@@ -134,7 +134,7 @@ for (var packageName in packages.dependencies) {
 
   // CJS lib
   var transpiledCjsLib = transpileES6(libTree, 'transpiledCjsLib', {
-    format: 'cjs',
+    modules: 'common',
   });
   var pickedCjsLib = new Funnel(transpiledCjsLib, {
     destDir: '/cjs/'
@@ -159,7 +159,7 @@ for (var packageName in packages.dependencies) {
 
   // AMD tests
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), 'transpiledAmdTests', {
-    format: 'amd',
+    modules: 'amd',
   });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
     inputFiles: ['**/*.js'],
@@ -169,7 +169,7 @@ for (var packageName in packages.dependencies) {
 
   // CJS tests
   var transpiledCjsTests = transpileES6(mergeTrees(testTrees), 'transpiledCjsTests', {
-    format: 'cjs',
+    modules: 'common',
   });
   var movedCjsTests = new Funnel(transpiledCjsTests, {
     srcDir: packageName+'-tests/',
