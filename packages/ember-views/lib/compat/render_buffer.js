@@ -130,7 +130,7 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
   @private
 */
 
-var RenderBuffer = function(domHelper) {
+export default function RenderBuffer(domHelper) {
   Ember.deprecate('`Ember.RenderBuffer` is deprecated.');
   this.buffer = null;
   this.childViews = [];
@@ -618,5 +618,3 @@ RenderBuffer.prototype = {
     return this.buffer;
   }
 };
-
-export default RenderBuffer;
