@@ -140,7 +140,18 @@ export default function RenderBuffer(domHelper) {
   Ember.assert("RenderBuffer requires a DOM helper to be passed to its constructor.", !!domHelper);
 
   this.dom = domHelper;
-};
+
+  this.tagName = undefined;
+  this.buffer = null;
+  this._element = null;
+  this._outerContextualElement = undefined;
+  this.elementClasses = null;
+  this.elementId = null;
+  this.elementAttributes = null;
+  this.elementProperties = null;
+  this.elementTag = null;
+  this.elementStyle = null;
+}
 
 RenderBuffer.prototype = {
 
