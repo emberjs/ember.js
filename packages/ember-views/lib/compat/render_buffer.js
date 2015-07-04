@@ -516,9 +516,9 @@ RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        var normalizedCase = normalizeProperty(element, prop.toLowerCase()) || prop;
+        var { normalized } = normalizeProperty(element, prop);
 
-        this.dom.setPropertyStrict(element, normalizedCase, props[prop]);
+        this.dom.setPropertyStrict(element, normalized, props[prop]);
       }
 
       this.elementProperties = null;
