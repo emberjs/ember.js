@@ -43,6 +43,38 @@ test("can update property", function(){
   equal(element.disabled, false, 'disabled property is set');
 });
 
+test("input.maxLength", function(){
+  var element = domHelper.createElement('input');
+  var morph = domHelper.createAttrMorph(element, 'maxLength');
+  // different browsers have different defaults FF: -1, Chrome/Blink: 524288;
+  var MAX_LENGTH = element.maxLength;
+
+  morph.setContent(null);
+  equal(element.maxLength, MAX_LENGTH, 'property is w/e is default');
+
+  morph.setContent(1);
+  equal(element.maxLength, 1, 'should be 1');
+
+  morph.setContent(null);
+  equal(element.maxLength, 0, 'property 0, result of element.maxLength = ""');
+});
+
+test("input.maxlength (all lowercase)", function(){
+  var element = domHelper.createElement('input');
+  var morph = domHelper.createAttrMorph(element, 'maxlength');
+  // different browsers have different defaults FF: -1, Chrome/Blink: 524288;
+  var DEFAULT_MAX_LENGTH = element.maxLength;
+
+  morph.setContent(null);
+  equal(element.maxLength, DEFAULT_MAX_LENGTH, 'property is w/e is default');
+
+  morph.setContent(1);
+  equal(element.maxLength, 1, 'property is w/e is default');
+
+  morph.setContent(null);
+  equal(element.maxLength, DEFAULT_MAX_LENGTH, 'property is w/e is default');
+});
+
 test("does not add undefined properties on initial render", function(){
   var element = domHelper.createElement('div');
   var morph = domHelper.createAttrMorph(element, 'id');
