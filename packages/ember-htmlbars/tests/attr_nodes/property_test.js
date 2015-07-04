@@ -57,7 +57,7 @@ QUnit.test("quoted maxlength sets the property and attribute", function() {
   }
 });
 
-QUnit.test("array value can be set as property", function() {
+QUnit.test('array value can be set as property', function() {
   view = EmberView.create({
     context: {},
     template: compile("<input value={{items}}>")
