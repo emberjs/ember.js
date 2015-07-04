@@ -478,7 +478,7 @@ RenderBuffer.prototype = {
 
     if (!canSetNameOnInputs && attrs && attrs.name) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
-      tagString = '<'+stripTagName(tagName)+' name="'+escapeAttribute(attrs.name)+'">';
+      tagString = `<${stripTagName(tagName)} name="${escapeAttribute(attrs.name)}">`;
     } else {
       tagString = tagName;
     }
