@@ -113,8 +113,8 @@ var trees = [demos, test, loader, qunit, cliSauce];
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
 
-  var libTree = mergeTrees(packageTrees[0]),
-      testTree = mergeTrees(packageTrees[1]);
+  var libTree = mergeTrees(packageTrees[0]);
+  var testTree = mergeTrees(packageTrees[1]);
 
   // ES6
   var pickedEs6Lib = new Funnel(libTree, {
@@ -126,10 +126,12 @@ for (var packageName in packages.dependencies) {
   var transpiledAmdLib = transpileES6(libTree, 'transpiledAmdLib', {
     modules: 'amdStrict',
   });
+
   var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/' + packageName + '.amd.js'
   });
+
   trees.push(concatenatedAmdLib);
 
   // CJS lib
@@ -159,7 +161,7 @@ for (var packageName in packages.dependencies) {
 
   // AMD tests
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), 'transpiledAmdTests', {
-    modules: 'amd',
+    modules: 'amdStrict',
   });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
     inputFiles: ['**/*.js'],
@@ -168,18 +170,27 @@ for (var packageName in packages.dependencies) {
   trees.push(concatenatedAmdTests);
 
   // CJS tests
-  var transpiledCjsTests = transpileES6(mergeTrees(testTrees), 'transpiledCjsTests', {
-    modules: 'common',
-  });
-  var movedCjsTests = new Funnel(transpiledCjsTests, {
-    srcDir: packageName+'-tests/',
-    destDir: '/cjs/'+packageName+"-tests/"
-  });
-  trees.push(movedCjsTests);
+  // TODO: renable this, this build file is pretty messy and for some reason
+  // this was leaking into the AMD tests. At some future point in time we can
+  // restore these.
+  //
+  // var transpiledCjsTests = transpileES6(mergeTrees(testTrees), 'transpiledCjsTests', {
+  //   modules: 'amdStrict',
+  // });
+  // var movedCjsTests = new Funnel(transpiledCjsTests, {
+  //   srcDir: packageName+'-tests/',
+  //   destDir: '/cjs/' + packageName + "-tests/"
+  // });
+  // trees.push(movedCjsTests);
 }
 
-trees = replace(mergeTrees(trees, {overwrite: true}), {
-  files: [ 'es6/htmlbars.js', 'es6/htmlbars-compiler/template-compiler.js', 'amd/htmlbars.js', 'cjs/htmlbars.js' ],
+trees = replace(mergeTrees(trees, { overwrite: true }), {
+  files: [
+    'es6/htmlbars.js',
+    'es6/htmlbars-compiler/template-compiler.js',
+    'amd/htmlbars.js',
+    'cjs/htmlbars.js'
+  ],
   patterns: [
     { match: /VERSION_STRING_PLACEHOLDER/g, replacement: getVersion() }
   ]
