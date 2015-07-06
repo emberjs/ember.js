@@ -1,8 +1,6 @@
-import Walker from "../htmlbars-syntax/walker";
-import { preprocess } from "../htmlbars-syntax/parser";
+import { parse, Walker } from '../htmlbars-syntax';
 
-QUnit.module('Compiler plugins: AST');
-
+QUnit.module('[htmlbars-syntax] Compiler plugins: AST');
 
 test('AST plugins can be provided to the compiler', function() {
   expect(1);
@@ -12,7 +10,7 @@ test('AST plugins can be provided to the compiler', function() {
     ok(true, 'transform was called!');
   };
 
-  preprocess('<div></div>', {
+  parse('<div></div>', {
     plugins: {
       ast: [ Plugin ]
     }
@@ -27,7 +25,7 @@ test('provides syntax package as `syntax` prop if value is null', function() {
     equal(this.syntax.Walker, Walker);
   };
 
-  preprocess('<div></div>', {
+  parse('<div></div>', {
     plugins: {
       ast: [ Plugin ]
     }
@@ -44,7 +42,7 @@ test('AST plugins can modify the AST', function() {
     return expected;
   };
 
-  var ast = preprocess('<div></div>', {
+  var ast = parse('<div></div>', {
     plugins: {
       ast: [ Plugin ]
     }
@@ -70,7 +68,7 @@ test('AST plugins can be chained', function() {
     return 'BOOM!';
   };
 
-  var ast = preprocess('<div></div>', {
+  var ast = parse('<div></div>', {
     plugins: {
       ast: [ 
         Plugin,

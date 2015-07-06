@@ -1,6 +1,6 @@
 import { parse } from "../htmlbars-syntax";
 
-QUnit.module("Parser - Location Info");
+QUnit.module("[htmlbars-syntax] Parser - Location Info");
 
 function locEqual(node, startLine, startColumn, endLine, endColumn, message) {
 
