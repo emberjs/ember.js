@@ -1372,7 +1372,7 @@ QUnit.test('{{link-to}} populates href with fully supplied query param values', 
   equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 });
 
-QUnit.test('{{link-to}} with only query-params updates when route changes', function() {
+QUnit.test('{{link-to}} with only query-params and a block updates when route changes', function() {
   Router.map(function() {
     this.route('about');
   });
@@ -1397,6 +1397,40 @@ QUnit.test('{{link-to}} with only query-params updates when route changes', func
   }
 
   Ember.TEMPLATES.application = compile('{{#link-to (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}Index{{/link-to}}');
+  bootApplication();
+  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+
+  Ember.run(function() {
+    router.handleURL('/about');
+  });
+  equal(Ember.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+});
+
+QUnit.test('Block-less {{link-to}} with only query-params updates when route changes', function() {
+  Router.map(function() {
+    this.route('about');
+  });
+
+  if (isEnabled('ember-routing-route-configured-query-params')) {
+    App.ApplicationRoute = Ember.Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        },
+        bar: {
+          defaultValue: 'yes'
+        }
+      }
+    });
+  } else {
+    App.ApplicationController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: '123',
+      bar: 'yes'
+    });
+  }
+
+  Ember.TEMPLATES.application = compile('{{link-to "Index" (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}');
   bootApplication();
   equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 
