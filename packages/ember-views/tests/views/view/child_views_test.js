@@ -77,11 +77,11 @@ QUnit.test('should remove childViews on destroy', function() {
     container: {
       lookup() {
         return {
-          componentFor(tagName, container) {
+          componentFor() {
             return Component.extend();
           },
 
-          layoutFor(tagName, container) {
+          layoutFor() {
             return null;
           }
         };
