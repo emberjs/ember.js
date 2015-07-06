@@ -34,7 +34,7 @@ function traversalEqual(node, expectedTraversal) {
   actualTraversal = null;
 }
 
-QUnit.module('Traversal - visiting');
+QUnit.module('[htmlbars-syntax] Traversal - visiting');
 
 test('Elements and attributes', function() {
   let ast = parse(`<div id="id" class="large {{classes}}" value={{value}}><b></b><b></b></div>`);

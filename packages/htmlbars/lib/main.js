@@ -13,6 +13,8 @@ import {
   compile,
   compileSpec
 } from "./htmlbars-compiler/compiler";
-import Walker from "./htmlbars-syntax/walker";
 
-export {compile, compileSpec, Walker};
+export {
+  compile,
+  compileSpec
+};
