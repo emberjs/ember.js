@@ -1079,7 +1079,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   send(...args) {
-    if (this.router || !Ember.testing) {
+    if ((this.router && this.router.router) || !Ember.testing) {
       this.router.send(...args);
     } else {
       var name = args[0];
