@@ -1,5 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/views/component';
 import { compile } from 'ember-template-compiler';
 
 var parentView, childView;
@@ -77,16 +78,11 @@ QUnit.test('should remove childViews on destroy', function() {
       lookup() {
         return {
           componentFor(tagName, container) {
-            return Ember.Component.extend({
-              destroy() {
-                debugger;
-                this._super(...arguments);
-              }
-            });
+            return Component.extend();
           },
 
           layoutFor(tagName, container) {
-              return null;
+            return null;
           }
         };
       }
