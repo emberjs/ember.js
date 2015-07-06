@@ -371,7 +371,7 @@ var LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       params.pop();
     }
-    let onlyQueryParamsSupplied = (params.length === 0);
+    let onlyQueryParamsSupplied = (this.attrs.hasBlock ? params.length === 0 : params.length === 1);
     if (onlyQueryParamsSupplied) {
       var appController = this.container.lookup('controller:application');
       if (appController) {
