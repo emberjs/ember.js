@@ -1,9 +1,9 @@
-import { parse } from "../htmlbars-syntax/handlebars/compiler/base";
-import { preprocess } from "../htmlbars-syntax/parser";
+import { parse as handlebarsParse } from "../htmlbars-syntax/handlebars/compiler/base";
+import { parse } from "../htmlbars-syntax";
 
 import b from "../htmlbars-syntax/builders";
 
-QUnit.module("HTML-based compiler (AST)");
+QUnit.module("[htmlbars-syntax] HTML-based compiler (AST)");
 
 function normalizeNode(obj) {
   if (obj && typeof obj === 'object') {
@@ -43,10 +43,10 @@ function astEqual(actual, expected, message) {
   // that we don't want to have to write into our test cases.
 
   if (typeof actual === 'string') {
-    actual = preprocess(actual);
+    actual = parse(actual);
   }
   if (typeof expected === 'string') {
-    expected = preprocess(expected);
+    expected = parse(expected);
   }
 
   actual = normalizeNode(actual);
@@ -63,7 +63,7 @@ test("a simple piece of content", function() {
 });
 
 test("allow simple AST to be passed", function() {
-  var ast = preprocess(parse("simple"));
+  var ast = parse(handlebarsParse("simple"));
 
   astEqual(ast, b.program([
     b.text("simple")
@@ -71,7 +71,7 @@ test("allow simple AST to be passed", function() {
 });
 
 test("allow an AST with mustaches to be passed", function() {
-  var ast = preprocess(parse("<h1>some</h1> ast {{foo}}"));
+  var ast = parse(handlebarsParse("<h1>some</h1> ast {{foo}}"));
 
   astEqual(ast, b.program([
     b.element("h1", [], [], [
@@ -436,7 +436,7 @@ test("Components", function() {
 
 test("Components with disableComponentGeneration", function() {
   var t = "begin <x-foo>content</x-foo> finish";
-  var actual = preprocess(t, {
+  var actual = parse(t, {
     disableComponentGeneration: true
   });
 
@@ -451,7 +451,7 @@ test("Components with disableComponentGeneration", function() {
 
 test("Components with disableComponentGeneration === false", function() {
   var t = "begin <x-foo>content</x-foo> finish";
-  var actual = preprocess(t, {
+  var actual = parse(t, {
     disableComponentGeneration: false
   });
 
@@ -476,7 +476,7 @@ test("an HTML comment", function() {
 });
 
 test("allow {{null}} to be passed as helper name", function() {
-  var ast = preprocess(parse("{{null}}"));
+  var ast = parse("{{null}}");
 
   astEqual(ast, b.program([
     b.mustache(b.null())
@@ -484,7 +484,7 @@ test("allow {{null}} to be passed as helper name", function() {
 });
 
 test("allow {{null}} to be passed as a param", function() {
-  var ast = preprocess(parse("{{foo null}}"));
+  var ast = parse("{{foo null}}");
 
   astEqual(ast, b.program([
     b.mustache(b.path('foo'), [b.null()])
@@ -492,7 +492,7 @@ test("allow {{null}} to be passed as a param", function() {
 });
 
 test("allow {{undefined}} to be passed as helper name", function() {
-  var ast = preprocess(parse("{{undefined}}"));
+  var ast = parse("{{undefined}}");
 
   astEqual(ast, b.program([
     b.mustache(b.undefined())
@@ -500,7 +500,7 @@ test("allow {{undefined}} to be passed as helper name", function() {
 });
 
 test("allow {{undefined}} to be passed as a param", function() {
-  var ast = preprocess(parse("{{foo undefined}}"));
+  var ast = parse("{{foo undefined}}");
 
   astEqual(ast, b.program([
     b.mustache(b.path('foo'), [b.undefined()])
