@@ -30,6 +30,6 @@
     "route-recognizer": "0.1.5",
     "rsvp": "~3.0.6",
     "simple-dom": "^0.2.4",
-    "testem": "^0.8.0-0"
+    "testem": "^0.9.0-1"
   }
 }
