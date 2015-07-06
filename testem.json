@@ -3,6 +3,7 @@
   "test_page": "dist/tests/index.html?hidepassed",
   "timeout": 540,
   "parallel": 4,
+  "disable_watching": true,
   "launchers": {
     "SL_Chrome_Current": {
       "command": "ember sauce:launch -b chrome --no-ct -u <url>",
