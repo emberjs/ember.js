@@ -1,8 +1,7 @@
-import { preprocess } from '../htmlbars-syntax/parser';
-import Walker from '../htmlbars-syntax/walker';
+import { parse, Walker } from '../../htmlbars-syntax';
 
 function compareWalkedNodes(html, expected) {
-  var ast = preprocess(html);
+  var ast = parse(html);
   var walker = new Walker();
   var nodes = [];
 
@@ -13,7 +12,7 @@ function compareWalkedNodes(html, expected) {
   deepEqual(nodes, expected);
 }
 
-QUnit.module('AST Walker');
+QUnit.module('[htmlbars-syntax] AST Walker');
 
 test('walks elements', function() {
   compareWalkedNodes('<div><li></li></div>', [
