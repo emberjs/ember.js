@@ -138,27 +138,34 @@ function generateExtendPrototypeTests() {
 
 switch (process.env.TEST_SUITE) {
   case 'built-tests':
+    console.log('suite: built-tests');
     generateBuiltTests();
     break;
   case 'old-jquery':
+    console.log('suite: old-jquery');
     generateOldJQueryTests();
     break;
   case 'extend-prototypes':
+    console.log('suite: extend-prototypes');
     generateExtendPrototypeTests();
     break;
   case 'all':
+    console.log('suite: all');
     generateBuiltTests();
     generateOldJQueryTests();
     generateExtendPrototypeTests();
     generateEachPackageTests();
     break;
   case 'node':
+    console.log('suite: node');
     require('./run-node-tests');
     return;
   case 'sauce':
+    console.log('suite: sauce');
     require('./run-sauce-tests');
     return;
   default:
+    console.log('suite: default (generate each package)');
     generateEachPackageTests();
 }
 
