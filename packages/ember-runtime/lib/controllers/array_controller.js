@@ -202,7 +202,8 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init() {
-    Ember.deprecate(arrayControllerDeprecation);
+    Ember.deprecate(arrayControllerDeprecation, this.isGenerated);
+
     this._super(...arguments);
     this._subControllers = [];
   },
