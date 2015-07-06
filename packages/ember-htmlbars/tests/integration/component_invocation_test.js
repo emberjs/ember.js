@@ -750,6 +750,37 @@ QUnit.test("components in template of a yielding component should have the prope
   equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
 });
 
+QUnit.test('newly-added sub-components get correct parentView', function() {
+  var outer, inner;
+
+  registry.register('component:x-outer', Component.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  }));
+
+  registry.register('component:x-inner', Component.extend({
+    init() {
+      this._super(...arguments);
+      inner = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#x-outer}}{{#if view.showInner}}{{x-inner}}{{/if}}{{/x-outer}}'),
+    container: container,
+    showInner: false
+  }).create();
+
+  runAppend(view);
+
+  run(() => { view.set('showInner', true); });
+
+  equal(inner.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+  equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+});
+
 QUnit.test("components should receive the viewRegistry from the parent view", function() {
   var outer, innerTemplate, innerLayout;
 
