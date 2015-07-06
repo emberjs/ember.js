@@ -21,11 +21,28 @@ function shouldPrint(inputString) {
   return true;
 }
 
+var finalhandler = require('finalhandler')
+var http = require('http')
+var serveStatic = require('serve-static')
+
+// Serve up public/ftp folder
+var serve = serveStatic('./dist/', {'index': ['index.html', 'index.htm']})
+
+// Create server
+var server = http.createServer(function(req, res){
+  var done = finalhandler(req, res)
+  serve(req, res, done)
+})
+
+var PORT = 13141;
+// Listen
+server.listen(PORT);
+
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var args = [
       'bower_components/qunit-phantom-runner/runner.js',
-      './dist/tests/index.html?' + queryString
+      'http://localhost:' + PORT + '/tests/?' + queryString
     ];
 
     console.log('Running: phantomjs ' + args.join(' '));
