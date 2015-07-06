@@ -8,7 +8,9 @@
     "build": "ember build",
     "pretest": "ember build",
     "test": "bin/run-tests.js",
-    "start": "ember serve"
+    "start": "ember serve",
+    "sauce:connect": "ember sauce:connect",
+    "sauce:disconnect": "ember sauce:disconnect"
   },
   "repository": {
     "type": "git",

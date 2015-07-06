@@ -16,7 +16,7 @@ env:
 matrix:
   fast_finish: true
 before_script:
-  - ember sauce:connect
+  - npm run sauce:connect
 after_script:
   - sleep 10
-  - ember sauce:disconnect
+  - npm run sauce:disconnect
