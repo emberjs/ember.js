@@ -783,7 +783,7 @@ QUnit.test('newly-added sub-components get correct parentView', function() {
   equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
 });
 
-QUnit.test("components should receive the viewRegistry from the parent view", function() {
+QUnit.test('components should receive the viewRegistry from the parent view', function() {
   var outer, innerTemplate, innerLayout;
 
   var viewRegistry = {};
