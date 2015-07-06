@@ -3,30 +3,29 @@ import environment from "ember-metal/environment";
 import { hooks } from "htmlbars-runtime";
 import merge from "ember-metal/merge";
 
-import subexpr from "ember-htmlbars/hooks/subexpr";
-import concat from "ember-htmlbars/hooks/concat";
-import linkRenderNode from "ember-htmlbars/hooks/link-render-node";
-import createFreshScope from "ember-htmlbars/hooks/create-fresh-scope";
-import bindShadowScope from "ember-htmlbars/hooks/bind-shadow-scope";
-import bindSelf from "ember-htmlbars/hooks/bind-self";
-import bindScope from "ember-htmlbars/hooks/bind-scope";
-import bindLocal from "ember-htmlbars/hooks/bind-local";
-import updateSelf from "ember-htmlbars/hooks/update-self";
-import getRoot from "ember-htmlbars/hooks/get-root";
-import getChild from "ember-htmlbars/hooks/get-child";
-import getValue from "ember-htmlbars/hooks/get-value";
-import getCellOrValue from "ember-htmlbars/hooks/get-cell-or-value";
-import cleanupRenderNode from "ember-htmlbars/hooks/cleanup-render-node";
-import destroyRenderNode from "ember-htmlbars/hooks/destroy-render-node";
-import didRenderNode from "ember-htmlbars/hooks/did-render-node";
-import willCleanupTree from "ember-htmlbars/hooks/will-cleanup-tree";
-import didCleanupTree from "ember-htmlbars/hooks/did-cleanup-tree";
-import classify from "ember-htmlbars/hooks/classify";
-import component from "ember-htmlbars/hooks/component";
-import lookupHelper from "ember-htmlbars/hooks/lookup-helper";
-import hasHelper from "ember-htmlbars/hooks/has-helper";
-import invokeHelper from "ember-htmlbars/hooks/invoke-helper";
-import element from "ember-htmlbars/hooks/element";
+import subexpr from 'ember-htmlbars/hooks/subexpr';
+import concat from 'ember-htmlbars/hooks/concat';
+import linkRenderNode from 'ember-htmlbars/hooks/link-render-node';
+import createFreshScope from 'ember-htmlbars/hooks/create-fresh-scope';
+import bindShadowScope from 'ember-htmlbars/hooks/bind-shadow-scope';
+import bindSelf from 'ember-htmlbars/hooks/bind-self';
+import bindScope from 'ember-htmlbars/hooks/bind-scope';
+import bindLocal from 'ember-htmlbars/hooks/bind-local';
+import updateSelf from 'ember-htmlbars/hooks/update-self';
+import getRoot from 'ember-htmlbars/hooks/get-root';
+import getChild from 'ember-htmlbars/hooks/get-child';
+import getValue from 'ember-htmlbars/hooks/get-value';
+import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
+import cleanupRenderNode from 'ember-htmlbars/hooks/cleanup-render-node';
+import destroyRenderNode from 'ember-htmlbars/hooks/destroy-render-node';
+import didRenderNode from 'ember-htmlbars/hooks/did-render-node';
+import didCleanupTree from 'ember-htmlbars/hooks/did-cleanup-tree';
+import classify from 'ember-htmlbars/hooks/classify';
+import component from 'ember-htmlbars/hooks/component';
+import lookupHelper from 'ember-htmlbars/hooks/lookup-helper';
+import hasHelper from 'ember-htmlbars/hooks/has-helper';
+import invokeHelper from 'ember-htmlbars/hooks/invoke-helper';
+import element from 'ember-htmlbars/hooks/element';
 
 import helpers from "ember-htmlbars/helpers";
 import keywords, { registerKeyword } from "ember-htmlbars/keywords";
@@ -52,7 +51,6 @@ merge(emberHooks, {
   concat: concat,
   cleanupRenderNode: cleanupRenderNode,
   destroyRenderNode: destroyRenderNode,
-  willCleanupTree: willCleanupTree,
   didCleanupTree: didCleanupTree,
   didRenderNode: didRenderNode,
   classify: classify,
