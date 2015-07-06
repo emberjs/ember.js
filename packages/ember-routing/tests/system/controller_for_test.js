@@ -4,13 +4,13 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import Registry from 'container/registry';
-import Namespace from "ember-runtime/system/namespace";
-import { classify } from "ember-runtime/system/string";
-import Controller from "ember-runtime/controllers/controller";
-import ObjectController from "ember-runtime/controllers/object_controller";
-import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
-import controllerFor from "ember-routing/system/controller_for";
-import generateController from "ember-routing/system/generate_controller";
+import Namespace from 'ember-runtime/system/namespace';
+import { classify } from 'ember-runtime/system/string';
+import Controller from 'ember-runtime/controllers/controller';
+import ObjectController from 'ember-runtime/controllers/object_controller';
+import ArrayController from 'ember-runtime/controllers/array_controller';
+import controllerFor from 'ember-routing/system/controller_for';
+import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
 } from "ember-routing/system/generate_controller";
@@ -102,8 +102,7 @@ QUnit.test("generateController should create Ember.ObjectController [DEPRECATED]
   ok(controller instanceof ObjectController, 'should create controller');
 });
 
-QUnit.test("generateController should create Ember.ArrayController", function() {
-  expectDeprecation(arrayControllerDeprecation);
+QUnit.test('generateController should create Ember.ArrayController', function() {
   var context = Ember.A();
   var controller = generateController(container, 'home', context);
 
@@ -130,8 +129,7 @@ QUnit.test("generateController should create App.ObjectController if provided", 
 
 });
 
-QUnit.test("generateController should create App.ArrayController if provided", function() {
-  expectDeprecation(arrayControllerDeprecation);
+QUnit.test('generateController should create App.ArrayController if provided', function() {
   var context = Ember.A();
   var controller;
   namespace.ArrayController = ArrayController.extend();

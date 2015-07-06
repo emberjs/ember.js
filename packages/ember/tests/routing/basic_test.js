@@ -652,9 +652,7 @@ QUnit.test("The Homepage with a computed context that does not get overridden", 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the context intact");
 });
 
-QUnit.test("The Homepage getting its controller context via model", function() {
-  expectDeprecation(arrayControllerDeprecation);
-
+QUnit.test('The Homepage getting its controller context via model', function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -2287,10 +2285,8 @@ QUnit.test("Nested index route is not overriden by parent's implicit index route
   deepEqual(router.location.path, '/posts/emberjs');
 });
 
-QUnit.test("Application template does not duplicate when re-rendered", function() {
-  expectDeprecation(arrayControllerDeprecation);
-
-  Ember.TEMPLATES.application = compile("<h3>I Render Once</h3>{{outlet}}");
+QUnit.test('Application template does not duplicate when re-rendered', function() {
+  Ember.TEMPLATES.application = compile('<h3>I Render Once</h3>{{outlet}}');
 
   Router.map(function() {
     this.route('posts');

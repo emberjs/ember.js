@@ -1,7 +1,6 @@
-import "ember";
-
-import EmberHandlebars from "ember-htmlbars/compat";
-import { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
+import 'ember';
+import Ember from 'ember-metal/core';
+import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
 
@@ -24,7 +23,6 @@ function setupExample() {
 
   App.IndexRoute = Ember.Route.extend({
     model() {
-      expectDeprecation(arrayControllerDeprecation);
       var people = Ember.A([
         App.Person.create({
           firstName: "Tom",

@@ -1,10 +1,9 @@
 import "ember";
 import ComponentLookup from "ember-views/component_lookup";
 
-import { objectControllerDeprecation } from "ember-runtime/controllers/object_controller";
-import EmberHandlebars from "ember-htmlbars/compat";
-import EmberView from "ember-views/views/view";
-import { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
+import { objectControllerDeprecation } from 'ember-runtime/controllers/object_controller';
+import EmberHandlebars from 'ember-htmlbars/compat';
+import EmberView from 'ember-views/views/view';
 
 var compile = EmberHandlebars.compile;
 
@@ -479,8 +478,7 @@ QUnit.test("The {{link-to}} helper supports bubbles=false", function() {
   equal(hidden, 0, "The link didn't bubble");
 });
 
-QUnit.test("The {{link-to}} helper moves into the named route with context", function() {
-  expectDeprecation(arrayControllerDeprecation);
+QUnit.test('The {{link-to}} helper moves into the named route with context', function() {
   Router.map(function(match) {
     this.route("about");
     this.resource("item", { path: "/item/:id" });
@@ -1067,9 +1065,8 @@ QUnit.test("The non-block form {{link-to}} helper updates the link text when it 
   equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, "The link title is correctly updated when the route changes");
 });
 
-QUnit.test("The non-block form {{link-to}} helper moves into the named route with context", function() {
-  expect(6);
-  expectDeprecation(arrayControllerDeprecation);
+QUnit.test('The non-block form {{link-to}} helper moves into the named route with context', function() {
+  expect(5);
   Router.map(function(match) {
     this.route("item", { path: "/item/:id" });
   });
