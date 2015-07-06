@@ -102,7 +102,7 @@ if (!process.env.CI) {
   });
 }
 
-if (!process.env.CI || (process.env.CI && process.env.TEST_NODE)) {
+if (false /*!process.env.CI || (process.env.CI && process.env.TEST_NODE)*/) {
   Object.keys(packages.dependencies).forEach(function(packageName){
     if (packages.dependencies[packageName].node) {
       var testDir = 'dist/cjs/'+packageName+'-tests/';
