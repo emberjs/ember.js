@@ -46,6 +46,11 @@ RSVP.resolve()
   .finally(function() {
     return run('./node_modules/.bin/ember', [ 'sauce:disconnect' ]);
   })
-  .catch(function() {
+  .catch(function(error) {
+    console.log('error');
+    console.log(error);
     process.exit(1);
+  }).then(function(){
+    console.log('success');
+    process.exit(0);
   });
