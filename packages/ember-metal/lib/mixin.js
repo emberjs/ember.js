@@ -853,7 +853,7 @@ export function observer(...args) {
   @return func
   @private
 */
-export function immediateObserver() {
+export function _immediateObserver() {
   Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.');
 
   for (var i=0, l=arguments.length; i<l; i++) {
