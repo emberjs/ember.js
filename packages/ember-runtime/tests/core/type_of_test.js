@@ -35,4 +35,24 @@ QUnit.test('Ember.typeOf', function() {
   equal(typeOf(instance.method), 'function', 'item of type function');
   equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
   equal(typeOf(new Error()), 'error', 'item of type error');
+
+  if (typeof Symbol !== 'undefined') {
+    equal(typeOf(Symbol('foo')), 'symbol', 'item of type symbol');
+  }
+
+  (function(){
+    equal(typeOf(arguments), 'arguments', 'item of type arguments');
+  }());
+
+  if (typeof Promise !== 'undefined' &&
+      Object.prototype.toString.call(new Promise(function() {})) === '[object Promise]') {
+
+    equal(typeOf(new Promise(function() { })), 'promise', 'item of type promise');
+  }
+
+  if (typeof Map !== 'undefined' &&
+      Object.prototype.toString.call(new Map()) === '[object Map]') {
+
+    equal(typeOf(new Map()), ' map', 'item of type promise');
+  }
 });
