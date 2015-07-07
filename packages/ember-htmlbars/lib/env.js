@@ -19,6 +19,7 @@ import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import cleanupRenderNode from 'ember-htmlbars/hooks/cleanup-render-node';
 import destroyRenderNode from 'ember-htmlbars/hooks/destroy-render-node';
 import didRenderNode from 'ember-htmlbars/hooks/did-render-node';
+import willCleanupTree from 'ember-htmlbars/hooks/will-cleanup-tree';
 import didCleanupTree from 'ember-htmlbars/hooks/did-cleanup-tree';
 import classify from 'ember-htmlbars/hooks/classify';
 import component from 'ember-htmlbars/hooks/component';
@@ -51,6 +52,7 @@ merge(emberHooks, {
   concat: concat,
   cleanupRenderNode: cleanupRenderNode,
   destroyRenderNode: destroyRenderNode,
+  willCleanupTree: willCleanupTree,
   didCleanupTree: didCleanupTree,
   didRenderNode: didRenderNode,
   classify: classify,
