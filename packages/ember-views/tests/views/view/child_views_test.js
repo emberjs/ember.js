@@ -70,7 +70,7 @@ QUnit.test('should not duplicate childViews when rerendering', function() {
   });
 });
 
-QUnit.test('should remove childViews on destroy', function() {
+QUnit.test('should remove childViews inside {{if}} on destroy', function() {
   var outerView = EmberView.extend({
     component: 'my-thing',
     value: false,
@@ -104,7 +104,7 @@ QUnit.test('should remove childViews on destroy', function() {
   equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
 });
 
-QUnit.test('should remove childViews on destroy', function() {
+QUnit.test('should remove childViews inside {{each}} on destroy', function() {
   var outerView = EmberView.extend({
     component: 'my-thing',
     init() {
@@ -150,5 +150,4 @@ QUnit.test('should remove childViews on destroy', function() {
   run(outerView, 'set', 'value', false);
 
   equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
-  equal(outerView.get('childViews')[0].isDestroyed, true, 'should be destroyed');
 });
