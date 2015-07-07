@@ -31,12 +31,13 @@ proto.addDestruction = function(toDestroy) {
 };
 
 proto.cleanup = function() {
-  var view;
+  let view = this.emberView;
 
-  if (view = this.emberView) {
-    if (!view.ownerView.isDestroyingSubtree) {
-      view.ownerView.isDestroyingSubtree = true;
-      if (view.parentView) { view.parentView.removeChild(view); }
+  if (view) {
+    let parentView = view.parentView;
+
+    if (parentView && view.ownerView._destroyingSubtreeForView === parentView) {
+      parentView.removeChild(view);
     }
   }
 

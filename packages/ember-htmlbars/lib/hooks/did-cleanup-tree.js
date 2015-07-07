@@ -1,6 +1,5 @@
 export default function didCleanupTree(env) {
-  var view;
-  if (view = env.view) {
-    view.ownerView.isDestroyingSubtree = false;
-  }
+  // Once we have finsihed cleaning up the render node and sub-nodes, reset
+  // state tracking which view those render nodes belonged to.
+  env.view.ownerView._destroyingSubtreeForView = null;
 }
