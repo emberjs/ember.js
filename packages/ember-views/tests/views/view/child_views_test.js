@@ -103,3 +103,52 @@ QUnit.test('should remove childViews on destroy', function() {
 
   equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
 });
+
+QUnit.test('should remove childViews on destroy', function() {
+  var outerView = EmberView.extend({
+    component: 'my-thing',
+    init() {
+      this._super(...arguments);
+      this.value = false;
+    },
+    container: {
+      lookup() {
+        return {
+          componentFor() {
+            return Component.extend();
+          },
+
+          layoutFor() {
+            return null;
+          }
+        };
+      }
+    },
+    template: compile(`
+      {{#if view.value}}
+        {{#each view.data as |item|}}
+          {{component view.component value=item.value}}
+        {{/each}}
+      {{/if}}
+    `)
+  }).create();
+
+  run(outerView, 'append');
+
+  equal(outerView.get('childViews.length'), 0);
+
+  run(outerView, 'set', 'data', Ember.A([
+    { id: 1, value: new Date() },
+    { id: 2, value: new Date() }
+  ]));
+
+  equal(outerView.get('childViews.length'), 0);
+
+  run(outerView, 'set', 'value', true);
+  equal(outerView.get('childViews.length'), 2);
+
+  run(outerView, 'set', 'value', false);
+
+  equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
+  equal(outerView.get('childViews')[0].isDestroyed, true, 'should be destroyed');
+});
