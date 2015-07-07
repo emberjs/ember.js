@@ -27,8 +27,8 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @for String
     @private
   */
-  StringPrototype.fmt = function () {
-    return fmt(this, arguments);
+  StringPrototype.fmt = function (...args) {
+    return fmt(this, args);
   };
 
   /**
@@ -49,8 +49,8 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @for String
     @private
   */
-  StringPrototype.loc = function () {
-    return loc(this, arguments);
+  StringPrototype.loc = function (...args) {
+    return loc(this, args);
   };
 
   /**
