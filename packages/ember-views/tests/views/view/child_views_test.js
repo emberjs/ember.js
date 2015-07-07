@@ -1,4 +1,5 @@
 import run from 'ember-metal/run_loop';
+import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/views/component';
 import { compile } from 'ember-template-compiler';
