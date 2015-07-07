@@ -1,7 +1,7 @@
 import visitorKeys from '../types/visitor-keys';
 
 function visitNode(node, visitor) {
-  let handler = visitor[node.type];
+  let handler = visitor[node.type] || visitor.All;
 
   if (handler && handler.enter) {
     handler.enter.call(null, node);
