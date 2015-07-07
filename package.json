@@ -10,7 +10,8 @@
     "test:sauce": "bin/run-sauce-tests.js",
     "test:testem": "testem -f testem.dist.json",
     "start": "ember serve",
-    "docs": "ember ember-cli-yuidoc"
+    "docs": "ember ember-cli-yuidoc",
+    "sauce:launch": "ember sauce:launch"
   },
   "devDependencies": {
     "aws-sdk": "~2.1.5",
