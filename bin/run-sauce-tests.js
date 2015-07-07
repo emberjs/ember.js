@@ -41,7 +41,7 @@ RSVP.resolve()
     // calling testem directly here instead of `ember test` so that
     // we do not have to do a double build (by the time this is run
     // we have already ran `ember build`).
-    return run('./node_modules/.bin/testem', [ 'ci', '--port', '7000' ]);
+    return run('./node_modules/.bin/testem', [ 'ci', '-f', 'testem.sauce.json', '--port', '7000' ]);
   })
   .finally(function() {
     return run('./node_modules/.bin/ember', [ 'sauce:disconnect' ]);
