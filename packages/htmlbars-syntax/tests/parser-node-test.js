@@ -1,59 +1,9 @@
 import { parse as handlebarsParse } from "../htmlbars-syntax/handlebars/compiler/base";
 import { parse } from "../htmlbars-syntax";
-
 import b from "../htmlbars-syntax/builders";
+import { astEqual } from "./support";
 
 QUnit.module("[htmlbars-syntax] HTML-based compiler (AST)");
-
-function normalizeNode(obj) {
-  if (obj && typeof obj === 'object') {
-    var newObj;
-    if (obj.splice) {
-      newObj = new Array(obj.length);
-
-      for (var i = 0; i < obj.length; i++) {
-        newObj[i] = normalizeNode(obj[i]);
-      }
-    } else {
-      newObj = {};
-
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          newObj[key] = normalizeNode(obj[key]);
-        }
-      }
-
-      if (newObj.type) {
-        newObj._type = newObj.type;
-        delete newObj.type;
-      }
-
-      newObj.loc = null;
-    }
-    return newObj;
-  } else {
-    return obj;
-  }
-
-}
-
-function astEqual(actual, expected, message) {
-  // Perform a deepEqual but recursively remove the locInfo stuff
-  // (e.g. line/column information about the compiled template)
-  // that we don't want to have to write into our test cases.
-
-  if (typeof actual === 'string') {
-    actual = parse(actual);
-  }
-  if (typeof expected === 'string') {
-    expected = parse(expected);
-  }
-
-  actual = normalizeNode(actual);
-  expected = normalizeNode(expected);
-
-  deepEqual(actual, expected, message);
-}
 
 test("a simple piece of content", function() {
   var t = 'some content';
