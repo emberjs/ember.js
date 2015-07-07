@@ -61,15 +61,16 @@ export function removeObserver(obj, path, target, method) {
 }
 
 /**
-  @method addBeforeObserver
+  @method _addBeforeObserver
   @for Ember
   @param obj
   @param {String} path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @deprecated
   @private
 */
-export function addBeforeObserver(obj, path, target, method) {
+export function _addBeforeObserver(obj, path, target, method) {
   addListener(obj, beforeEvent(path), target, method);
   watch(obj, path);
 
@@ -98,7 +99,7 @@ export function _suspendObservers(obj, paths, target, method, callback) {
   return suspendListeners(obj, events, target, method, callback);
 }
 
-export function beforeObserversFor(obj, path) {
+export function _beforeObserversFor(obj, path) {
   return listenersFor(obj, beforeEvent(path));
 }
 
@@ -109,9 +110,10 @@ export function beforeObserversFor(obj, path) {
   @param {String} path
   @param {Object|Function} target
   @param {Function|String} [method]
+  @deprecated
   @private
 */
-export function removeBeforeObserver(obj, path, target, method) {
+export function _removeBeforeObserver(obj, path, target, method) {
   unwatch(obj, path);
   removeListener(obj, beforeEvent(path), target, method);
 
