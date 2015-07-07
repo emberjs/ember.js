@@ -773,16 +773,6 @@ export default Mixin.create({
   anyBy: aliasMethod('isAny'),
 
   /**
-    @method someProperty
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Boolean}
-    @deprecated Use `isAny` instead
-    @private
-  */
-  someProperty: aliasMethod('isAny'),
-
-  /**
     This will combine the values of the enumerator into a single value. It
     is a useful way to collect a summary value from an enumeration. This
     corresponds to the `reduce()` method defined in JavaScript 1.8.

@@ -66,9 +66,4 @@ suite.test('anyBy should be aliased to isAny', function() {
   equal(obj.isAny, obj.anyBy);
 });
 
-suite.test('isAny should be aliased to someProperty', function() {
-  var obj = this.newObject();
-  equal(obj.someProperty, obj.isAny);
-});
-
 export default suite;
