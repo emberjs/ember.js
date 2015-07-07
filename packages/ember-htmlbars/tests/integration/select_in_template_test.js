@@ -11,6 +11,7 @@ import ArrayProxy from 'ember-runtime/system/array_proxy';
 import SelectView from 'ember-views/views/select';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import environment from 'ember-metal/environment';
 
 var dispatcher, view;
 
@@ -152,7 +153,7 @@ QUnit.test('works from a template', function() {
   equal(select.get('selection'), erik, 'Selection was maintained after new option was added');
 });
 
-if (window.navigator.userAgent.indexOf('Firefox') === -1) {
+if (!environment.isFirefox) {
   // firefox has bugs...
   // TODO: figure out a solution
   QUnit.test('upon content change, the DOM should reflect the selection (#481)', function() {
