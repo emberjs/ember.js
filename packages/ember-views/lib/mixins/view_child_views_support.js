@@ -11,7 +11,7 @@ import setProperties from "ember-metal/set_properties";
 
 var EMPTY_ARRAY = [];
 
-var ViewChildViewsSupport = Mixin.create({
+export default Mixin.create({
   /**
     Array of child views. You should never edit this array directly.
     Instead, use `appendChild` and `removeFromParent`.
@@ -90,6 +90,8 @@ var ViewChildViewsSupport = Mixin.create({
 
     var attrs = _attrs || {};
     var view;
+
+    attrs.parentView = this;
     attrs.renderer = this.renderer;
     attrs._viewRegistry = this._viewRegistry;
 
@@ -123,8 +125,11 @@ var ViewChildViewsSupport = Mixin.create({
 
   linkChild(instance) {
     instance.container = this.container;
-    set(instance, 'parentView', this);
-    instance.trigger('parentViewDidChange');
+    if (get(instance, 'parentView') !== this) {
+      // linkChild should be idempotentj
+      set(instance, 'parentView', this);
+      instance.trigger('parentViewDidChange');
+    }
     instance.ownerView = this.ownerView;
   },
 
@@ -133,5 +138,3 @@ var ViewChildViewsSupport = Mixin.create({
     instance.trigger('parentViewDidChange');
   }
 });
-
-export default ViewChildViewsSupport;
