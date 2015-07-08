@@ -958,7 +958,6 @@ EmberRouter.reopenClass({
     @public
   */
   map(callback) {
-
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
       this.reopenClass({ dslCallbacks: this.dslCallbacks });

@@ -66,7 +66,6 @@ QUnit.test('block should work properly even when templates are not hard-coded', 
   runAppend(view);
 
   equal(view.$('div.wrapper div.page-body').length, 1, 'page-body is embedded within wrapping my-page');
-
 });
 
 QUnit.test('templates should yield to block, when the yield is embedded in a hierarchy of virtual views', function() {
@@ -249,7 +248,6 @@ QUnit.test('yield should work for views even if parentView is null', function() 
   });
 
   equal(view.$().text(), 'Layout: View Content');
-
 });
 
 QUnit.test('simple bindings inside of a yielded template should work properly when the yield is nested inside of another view', function() {

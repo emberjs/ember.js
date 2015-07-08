@@ -350,5 +350,4 @@ if (isEnabled('ember-routing-transitioning-classes')) {
     equal(updateCount, 0);
     equal(router.get('location.path'), '', 'url was not updated');
   });
-
 }

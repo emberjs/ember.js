@@ -6,11 +6,9 @@ import isEnabled from 'ember-metal/features';
 */
 
 if (isEnabled('ember-htmlbars-get-helper')) {
-
   var getHelper = function getHelper([value]) {
     return value;
   };
-
 }
 
 export default getHelper;

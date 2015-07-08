@@ -341,7 +341,6 @@ var LinkComponent = EmberComponent.extend({
     @private
   */
   href: computed('models', 'targetRouteName', '_routing.currentState', function computeLinkComponentHref() {
-
     if (get(this, 'tagName') !== 'a') { return; }
 
     var targetRouteName = get(this, 'targetRouteName');

@@ -116,7 +116,6 @@ QUnit.test('watching an object THEN defining it should work also', function() {
   equal(Ember.get(obj, 'foo'), 'bar', 'should have set');
   equal(willCount, 1, 'should have invoked willChange once');
   equal(didCount, 1, 'should have invoked didChange once');
-
 });
 
 QUnit.test('watching a chain then defining the property', function () {

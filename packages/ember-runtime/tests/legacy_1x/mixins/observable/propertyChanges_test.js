@@ -58,7 +58,6 @@ QUnit.module('object.propertyChanges', {
 });
 
 QUnit.test('should observe the changes within the nested begin / end property changes', function() {
-
   //start the outer nest
   ObjectA.beginPropertyChanges();
 
@@ -81,7 +80,6 @@ QUnit.test('should observe the changes within the nested begin / end property ch
 });
 
 QUnit.test('should observe the changes within the begin and end property changes', function() {
-
   ObjectA.beginPropertyChanges();
   ObjectA.set('foo', 'changeFooValue');
 
@@ -119,7 +117,6 @@ QUnit.test('should notify that the property of an object has changed', function(
 });
 
 QUnit.test('should invalidate function property cache when notifyPropertyChange is called', function() {
-
   var a = ObservableObject.extend({
     b: computed({
       get() { return this._b; },
@@ -139,5 +136,4 @@ QUnit.test('should invalidate function property cache when notifyPropertyChange 
   a.notifyPropertyChange('b');
   a.set('b', 'foo');
   equal(a.get('b'), 'foo', 'should have invalidated the cache so that the newly set value is actually set');
-
 });

@@ -26,7 +26,6 @@ function addListeners(obj, keyPath) {
 }
 
 testBoth('unwatching a computed property - regular get/set', function(get, set) {
-
   var obj = {};
   defineProperty(obj, 'foo', computed({
     get: function() {
@@ -53,7 +52,6 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
 
 
 testBoth('unwatching a regular property - regular get/set', function(get, set) {
-
   var obj = { foo: 'BIFF' };
   addListeners(obj, 'foo');
 
@@ -70,7 +68,6 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
 });
 
 QUnit.test('unwatching should be nested', function() {
-
   var obj = { foo: 'BIFF' };
   addListeners(obj, 'foo');
 
@@ -94,7 +91,6 @@ QUnit.test('unwatching should be nested', function() {
 });
 
 testBoth('unwatching "length" property on an object', function(get, set) {
-
   var obj = { foo: 'RUN' };
   addListeners(obj, 'length');
 
@@ -110,5 +106,4 @@ testBoth('unwatching "length" property on an object', function(get, set) {
   set(obj, 'length', '5k');
   equal(willCount, 0, 'should NOT have invoked willCount');
   equal(didCount, 0, 'should NOT have invoked didCount');
-
 });

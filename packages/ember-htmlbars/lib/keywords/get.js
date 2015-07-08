@@ -6,7 +6,6 @@ import { read, isStream } from 'ember-metal/streams/utils';
 import merge from 'ember-metal/merge';
 
 if (isEnabled('ember-htmlbars-get-helper')) {
-
   var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
     var objParam = params[0];
     var pathParam = params[1];
@@ -69,7 +68,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
     }
 
   });
-
 }
 
 export default getKeyword;

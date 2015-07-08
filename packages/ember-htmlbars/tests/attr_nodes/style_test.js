@@ -29,7 +29,6 @@ QUnit.module('ember-htmlbars: style attribute', {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   if (!EmberDev.runningProdBuild) {
     QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
     view = EmberView.create({
@@ -75,6 +74,5 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   deepEqual(warnings, [ ]);
 });
-
 }
 // jscs:enable validateIndentation

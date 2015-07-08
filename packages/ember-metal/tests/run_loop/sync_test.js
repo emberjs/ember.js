@@ -6,7 +6,6 @@ QUnit.test('sync() will immediately flush the sync queue only', function() {
   var cnt = 0;
 
   run(function() {
-
     function cntup() { cnt++; }
 
     function syncfunc() {
@@ -25,7 +24,6 @@ QUnit.test('sync() will immediately flush the sync queue only', function() {
   });
 
   equal(cnt, 10, 'should flush actions now too');
-
 });
 
 QUnit.test('calling sync() outside a run loop does not cause an error', function() {

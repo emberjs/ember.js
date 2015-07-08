@@ -479,7 +479,6 @@ testWithAs('ember-htmlbars: {{#with x as |y|}}', '{{#with person as |tom|}}{{tit
 QUnit.module('Multiple Handlebars {{with foo as |bar|}} helpers', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
-
   },
 
   teardown() {

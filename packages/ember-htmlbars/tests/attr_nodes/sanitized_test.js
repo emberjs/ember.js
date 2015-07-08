@@ -18,7 +18,6 @@ QUnit.module('ember-htmlbars: sanitized attribute', {
 // jscs:disable validateIndentation
 // jscs:disable disallowTrailingWhitespace
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   var badTags = [
     { tag: 'a', attr: 'href',
       unquotedTemplate: compile('<a href={{url}}></a>'),
@@ -122,10 +121,8 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
              'unsafe:javascript://example.com',
              'attribute is output');
     });
-
   })(); //jshint ignore:line
   }
-
 }
 // jscs:enable disallowTrailingWhitespace
 // jscs:enable validateIndentation

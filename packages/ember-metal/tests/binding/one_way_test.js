@@ -40,6 +40,5 @@ QUnit.test('oneWay(true) should only sync one way', function() {
 
   equal(get(MyApp, 'foo.value'), 'BIFF', 'foo synced');
   equal(get(MyApp, 'bar.value'), 'BIFF', 'foo synced');
-
 });
 

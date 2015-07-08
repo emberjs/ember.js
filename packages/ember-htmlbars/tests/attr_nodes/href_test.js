@@ -12,7 +12,6 @@ function appendView(view) {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   QUnit.module('ember-htmlbars: href attribute', {
   teardown() {
     if (view) {
@@ -31,6 +30,5 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equalInnerHTML(view.element, '<a href="http://example.com"></a>',
                  'attribute is output');
 });
-
 }
 // jscs:enable validateIndentation

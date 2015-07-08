@@ -135,7 +135,6 @@ QUnit.test('bound helpers should process `fooBinding` style hash properties [DEP
 });
 
 QUnit.test('bound helpers should support multiple bound properties', function() {
-
   registry.register('helper:x-combine', makeBoundHelper(function(params, hash, options, env) {
     return params.join('');
   }));

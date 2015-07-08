@@ -12,7 +12,6 @@ var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
-
   /**
     The `property` extension of Javascript's Function prototype is available
     when `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Function` is

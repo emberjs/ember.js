@@ -572,7 +572,6 @@ QUnit.test('select with group observes its content', function() {
 });
 
 QUnit.test('select with group whose content is undefined doesn\'t breaks', function() {
-
   var content;
   run(function() {
     select.set('content', content);

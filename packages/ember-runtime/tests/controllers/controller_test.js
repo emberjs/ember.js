@@ -202,7 +202,6 @@ if (!EmberDev.runningProdBuild) {
       registry.register('foo:main', AnObject);
 
       container.lookupFactory('foo:main');
-
     }, /Defining an injected controller property on a non-controller is not allowed./);
   });
 }

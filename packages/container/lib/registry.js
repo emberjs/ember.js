@@ -452,7 +452,6 @@ Registry.prototype = {
 
     if (options && options[optionName] !== undefined) {
       return options[optionName];
-
     } else if (this.fallback) {
       return this.fallback.getOption(fullName, optionName);
     }

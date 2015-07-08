@@ -87,7 +87,6 @@ QUnit.test('If a component is registered, it is used', function() {
 
 
 QUnit.test('Late-registered components can be rendered with custom `template` property (DEPRECATED)', function() {
-
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
 
   expectDeprecation(/Do not specify template on a Component/);
@@ -104,7 +103,6 @@ QUnit.test('Late-registered components can be rendered with custom `template` pr
 });
 
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
-
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>');
 
   boot(function() {
@@ -117,7 +115,6 @@ QUnit.test('Late-registered components can be rendered with template registered 
 });
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
-
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>');
 
   boot(function() {
@@ -129,7 +126,6 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
 });
 
 QUnit.test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
-
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>');
 
   boot(function() {

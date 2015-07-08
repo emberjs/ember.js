@@ -198,7 +198,6 @@ QUnit.test('input type is configurable when creating view', function() {
 });
 
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
-
   run(function() {
     textField.destroy(); // destroy existing textField
     textField = TextField.create({
@@ -363,7 +362,6 @@ QUnit.test('bubbling of handled actions can be enabled via bubbles property', fu
 var dispatcher, StubController;
 QUnit.module('Ember.TextField - Action events', {
   setup() {
-
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
 
@@ -372,7 +370,6 @@ QUnit.module('Ember.TextField - Action events', {
         equal(actionName, 'doSomething', 'text field sent correct action name');
       }
     });
-
   },
 
   teardown() {
@@ -403,7 +400,6 @@ QUnit.test('when the text field is blurred, the `focus-out` action is sent to th
   run(function() {
     textField.$().blur();
   });
-
 });
 
 QUnit.test('when the text field is focused, the `focus-in` action is sent to the controller', function() {
@@ -419,8 +415,6 @@ QUnit.test('when the text field is focused, the `focus-in` action is sent to the
   run(function() {
     textField.$().focusin();
   });
-
-
 });
 
 QUnit.test('when the user presses a key, the `key-press` action is sent to the controller', function() {
@@ -438,7 +432,6 @@ QUnit.test('when the user presses a key, the `key-press` action is sent to the c
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
-
 });
 
 QUnit.test('when the user inserts a new line, the `insert-newline` action is sent to the controller', function() {
@@ -456,7 +449,6 @@ QUnit.test('when the user inserts a new line, the `insert-newline` action is sen
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
-
 });
 
 
@@ -475,7 +467,6 @@ QUnit.test('when the user presses the `enter` key, the `enter` action is sent to
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
-
 });
 
 QUnit.test('when the user hits escape, the `escape-press` action is sent to the controller', function() {
@@ -493,7 +484,6 @@ QUnit.test('when the user hits escape, the `escape-press` action is sent to the 
     event.keyCode = event.which = 27;
     textField.$().trigger(event);
   });
-
 });
 
 QUnit.test('when the user presses a key, the `key-down` action is sent to the controller', function() {

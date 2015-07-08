@@ -116,7 +116,6 @@ function testMap(nameAndFunc) {
   });
 
   QUnit.test('forEach throws without a callback as the first argument', function() {
-
     equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
   });
 
@@ -323,7 +322,6 @@ function testMap(nameAndFunc) {
     });
 
     equal(iteration, 3, 'expected 3 iterations');
-
   });
 
   QUnit.test('forEach basic /w context', function() {
@@ -348,7 +346,6 @@ function testMap(nameAndFunc) {
       equal(map, theMap, 'map being iterated over should be passed in');
 
       iteration++;
-
     }, context);
 
     equal(iteration, 3, 'expected 3 iterations');
@@ -465,7 +462,6 @@ function testMap(nameAndFunc) {
     equal(map.has(NaN), true);
 
     equal(map.get(NaN), 'not-a-number');
-
   });
 
   QUnit.test('NaN Boxed', function() {

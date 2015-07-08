@@ -146,7 +146,6 @@ function testIfArray(array) {
   });
 
   equal(view.$().text(), '');
-
 }
 
 QUnit.test('The `if` helper updates if an array is empty or not', function() {
@@ -811,7 +810,6 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     equal(view.$().text(), 'falsy');
-
   });
 
   QUnit.test('`if` helper with inline form: respects isTruthy when property changes', function() {
@@ -837,7 +835,6 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     equal(view.$().text(), 'falsy');
-
   });
 
   QUnit.test('`if` helper with inline form: respects length test when list content changes', function() {
@@ -863,7 +860,6 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     equal(view.$().text(), 'falsy');
-
   });
 
   QUnit.test('`if` helper with inline form: respects length test when list itself', function() {
@@ -887,7 +883,6 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     equal(view.$().text(), 'falsy');
-
   });
 
   QUnit.test('`if` helper with inline form: updates when given a falsey second argument', function() {

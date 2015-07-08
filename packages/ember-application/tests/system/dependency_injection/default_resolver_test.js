@@ -212,7 +212,6 @@ QUnit.test('lookup description', function() {
   equal(registry.describe('controller:foo'), 'App.FooController', 'Type gets appended at the end');
   equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
   equal(registry.describe('model:foo'), 'App.Foo', 'models don\'t get appended at the end');
-
 });
 
 QUnit.test('assertion for routes without isRouteFactory property', function() {

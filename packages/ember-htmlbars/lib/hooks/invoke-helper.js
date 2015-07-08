@@ -3,7 +3,6 @@ import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
 import subscribe from 'ember-htmlbars/utils/subscribe';
 
 export default function invokeHelper(morph, env, scope, visitor, params, hash, helper, templates, context) {
-
   if (helper.isLegacyViewHelper) {
     Ember.assert('You can only pass attributes (such as name=value) not bare ' +
                  'values to a helper for a View found in \'' + helper.viewClass + '\'', params.length === 0);
@@ -17,7 +16,6 @@ export default function invokeHelper(morph, env, scope, visitor, params, hash, h
 
   // Ember.Helper helpers are pure values, thus linkable
   if (helperStream.linkable) {
-
     if (morph) {
       // When processing an inline expression the params and hash have already
       // been linked. Thus, HTMLBars will not link the returned helperStream.

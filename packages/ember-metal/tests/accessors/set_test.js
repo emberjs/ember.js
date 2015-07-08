@@ -137,7 +137,6 @@ QUnit.test('should call INTERCEPT_GET and INTERCEPT_SET', function() {
 
 
 QUnit.test('should call setUnknownProperty if defined and value is undefined', function() {
-
   var obj = {
     count: 0,
 

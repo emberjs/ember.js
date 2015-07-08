@@ -52,7 +52,6 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // primitive for array support.
   replace(idx, amt, objects) {
-
     if (this.isFrozen) {
       throw FROZEN_ERROR;
     }

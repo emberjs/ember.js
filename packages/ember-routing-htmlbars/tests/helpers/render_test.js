@@ -192,7 +192,6 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
   var modelDidChange = 0;
   runAppend(view);
   equal(modelDidChange, 0, 'model observer did not fire');
-
 });
 
 QUnit.test('{{render}} helper should raise an error when a given controller name does not resolve to a controller', function() {

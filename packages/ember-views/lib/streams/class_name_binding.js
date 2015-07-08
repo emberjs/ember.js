@@ -84,10 +84,8 @@ export function classStringForValue(path, val, className, falsyClassName) {
   if (className || falsyClassName) {
     if (className && !!val) {
       return className;
-
     } else if (falsyClassName && !val) {
       return falsyClassName;
-
     } else {
       return null;
     }

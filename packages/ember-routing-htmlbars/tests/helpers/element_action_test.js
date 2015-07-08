@@ -1004,7 +1004,6 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
 });
 
 if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-
   QUnit.test('a quoteless function parameter should be called, including arguments', function() {
     expect(2);
 
@@ -1030,11 +1029,9 @@ if (isEnabled('ember-routing-htmlbars-improved-actions')) {
       view.$('a').click();
     });
   });
-
 }
 
 QUnit.test('a quoteless parameter that does not resolve to a value asserts', function() {
-
   var controller = EmberController.extend({
     actions: {
       ohNoeNotValid() {}

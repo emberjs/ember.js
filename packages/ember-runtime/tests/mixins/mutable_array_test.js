@@ -17,7 +17,6 @@ var TestMutableArray = EmberObject.extend(MutableArray, {
   },
 
   replace(idx, amt, objects) {
-
     var args = objects ? objects.slice() : [];
     var removeAmt = amt;
     var addAmt    = args.length;

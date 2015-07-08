@@ -1459,5 +1459,4 @@ QUnit.test('should have the correct action target', function() {
   run(function() {
     EmberView.views['x-inner'].sendAction('dismiss');
   });
-
 });

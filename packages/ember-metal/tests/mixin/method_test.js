@@ -6,7 +6,6 @@ import {
 QUnit.module('Mixin Methods');
 
 QUnit.test('defining simple methods', function() {
-
   var MixinA, obj, props;
 
   props = {
@@ -62,7 +61,6 @@ QUnit.test('overriding public methods', function() {
 
 
 QUnit.test('overriding inherited objects', function() {
-
   var cnt = 0;
   var MixinA = Mixin.create({
     foo() { cnt++; }
@@ -184,7 +182,6 @@ QUnit.test('overriding toString', function() {
 QUnit.module('system/mixin/method_test BUGS');
 
 QUnit.test('applying several mixins at once with sup already defined causes infinite loop', function() {
-
   var cnt = 0;
   var MixinA = Mixin.create({
     foo() { cnt++; }

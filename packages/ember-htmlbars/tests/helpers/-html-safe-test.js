@@ -43,7 +43,6 @@ QUnit.test('adds the attribute to the element', function() {
 });
 
 if (!EmberDev.runningProdBuild) {
-
   QUnit.test('no warnings are triggered from setting style attribute', function() {
     component = Component.create({
       container,

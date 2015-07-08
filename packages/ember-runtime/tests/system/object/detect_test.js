@@ -3,7 +3,6 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('system/object/detect');
 
 QUnit.test('detect detects classes correctly', function() {
-
   var A = EmberObject.extend();
   var B = A.extend();
   var C = A.extend();
@@ -27,5 +26,4 @@ QUnit.test('detect detects classes correctly', function() {
   ok(!C.detect(A), 'A is not a C class');
   ok(!C.detect(B), 'B is not a C class');
   ok(C.detect(C), 'C is a C class');
-
 });

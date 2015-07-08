@@ -44,7 +44,6 @@ QUnit.test('calls computed property setters', function() {
 
 if (isEnabled('mandatory-setter')) {
   QUnit.test('sets up mandatory setters for watched simple properties', function() {
-
     var MyClass = EmberObject.extend({
       foo: null,
       bar: null,
@@ -158,7 +157,6 @@ QUnit.test('EmberObject.create can take null as a parameter', function() {
 QUnit.module('EmberObject.createWithMixins', moduleOptions);
 
 QUnit.test('Creates a new object that contains passed properties', function() {
-
   var called = false;
   var obj = EmberObject.extend({
     method() { called=true; }
@@ -176,7 +174,6 @@ QUnit.test('Creates a new object that contains passed properties', function() {
 //
 
 QUnit.test('Creates a new object that includes mixins and properties', function() {
-
   var MixinA = Mixin.create({ mixinA: 'A' });
 
   expectDeprecation(function() {

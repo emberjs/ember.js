@@ -5,7 +5,6 @@ import { mixin, Mixin } from 'ember-metal/mixin';
 QUnit.module('Mixin mergedProperties');
 
 QUnit.test('defining mergedProperties should merge future version', function() {
-
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
     foo: { a: true, b: true, c: true }
@@ -21,7 +20,6 @@ QUnit.test('defining mergedProperties should merge future version', function() {
 });
 
 QUnit.test('defining mergedProperties on future mixin should merged into past', function() {
-
   var MixinA = Mixin.create({
     foo: { a: true, b: true, c: true }
   });
@@ -37,7 +35,6 @@ QUnit.test('defining mergedProperties on future mixin should merged into past', 
 });
 
 QUnit.test('defining mergedProperties with null properties should keep properties null', function() {
-
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
     foo: null
@@ -52,7 +49,6 @@ QUnit.test('defining mergedProperties with null properties should keep propertie
 });
 
 QUnit.test('mergedProperties\' properties can get overwritten', function() {
-
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
     foo: { a: 1 }
@@ -67,7 +63,6 @@ QUnit.test('mergedProperties\' properties can get overwritten', function() {
 });
 
 QUnit.test('mergedProperties should be concatenated', function() {
-
   var MixinA = Mixin.create({
     mergedProperties: ['foo'],
     foo: { a: true, b: true, c: true }
@@ -90,7 +85,6 @@ QUnit.test('mergedProperties should be concatenated', function() {
 });
 
 QUnit.test('mergedProperties should exist even if not explicitly set on create', function() {
-
   var AnObj = Ember.Object.extend({
     mergedProperties: ['options'],
     options: {
@@ -112,7 +106,6 @@ QUnit.test('mergedProperties should exist even if not explicitly set on create',
 });
 
 QUnit.test('mergedProperties\' overwriting methods can call _super', function() {
-
   expect(4);
 
   var MixinA = Mixin.create({
@@ -148,7 +141,6 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', function() 
 });
 
 QUnit.test('Merging an Array should raise an error', function() {
-
   expect(1);
 
   var MixinA = Mixin.create({

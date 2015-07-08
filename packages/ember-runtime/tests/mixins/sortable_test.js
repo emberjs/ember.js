@@ -121,7 +121,6 @@ QUnit.test('changing sortProperties and sortAscending with setProperties, sortPr
 
   equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
   equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
-
 });
 
 QUnit.test('changing sortProperties and sortAscending with setProperties, sortAscending appearing first', function() {
@@ -150,7 +149,6 @@ QUnit.test('changing sortProperties and sortAscending with setProperties, sortAs
 
   equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
   equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
-
 });
 
 QUnit.module('Ember.Sortable with content and sortProperties', {

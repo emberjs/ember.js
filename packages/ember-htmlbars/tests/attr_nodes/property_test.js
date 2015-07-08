@@ -19,7 +19,6 @@ function canSetFalsyMaxLength() {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   QUnit.module('ember-htmlbars: property', {
   teardown() {
     if (view) {
@@ -70,6 +69,5 @@ QUnit.test('array value can be set as property', function() {
   Ember.run(view, view.set, 'context.items', [4,5]);
   ok(true, 'no legacy assertion prohibited setting an array');
 });
-
 }
 // jscs:enable validateIndentation

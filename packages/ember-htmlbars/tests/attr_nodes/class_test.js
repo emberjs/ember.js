@@ -17,7 +17,6 @@ if (isEnabled('ember-htmlbars-inline-if-helper')) {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   QUnit.module('ember-htmlbars: class attribute', {
   teardown() {
     if (view) {
@@ -79,7 +78,6 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 });
 
   if (isInlineIfEnabled) {
-
     QUnit.test('class attribute accepts nested helpers, and updates', function() {
   view = EmberView.create({
     context: {
@@ -99,7 +97,6 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   strictEqual(view.element.firstChild.className, 'large  round', 'classes are updated');
 });
-
   }
 
   QUnit.test('class attribute can accept multiple classes from a single value, and update', function() {
@@ -151,6 +148,5 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   strictEqual(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
-
 }
 // jscs:enable validateIndentation

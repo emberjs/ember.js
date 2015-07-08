@@ -13,7 +13,6 @@ function appendView(view) {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   QUnit.module('ember-htmlbars: svg attribute', {
   teardown() {
     if (view) {
@@ -76,6 +75,5 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', 'attribute is output');
 });
-
 }
 // jscs:enable validateIndentation

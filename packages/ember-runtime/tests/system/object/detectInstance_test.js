@@ -3,7 +3,6 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('system/object/detectInstance');
 
 QUnit.test('detectInstance detects instances correctly', function() {
-
   var A = EmberObject.extend();
   var B = A.extend();
   var C = A.extend();
@@ -32,5 +31,4 @@ QUnit.test('detectInstance detects instances correctly', function() {
   ok(!C.detectInstance(a), 'a is not an instance of C');
   ok(!C.detectInstance(b), 'b is not an instance of C');
   ok(C.detectInstance(c), 'c is an instance of C');
-
 });

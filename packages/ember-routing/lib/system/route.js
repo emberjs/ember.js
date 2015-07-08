@@ -122,8 +122,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
           Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
         }
       }
-
-
     } else if (hasRouterDefinedQueryParams) {
       // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
@@ -1203,7 +1201,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
             set(controller, prop, value);
           }
         });
-
       }
 
       controller._qpDelegate = states.allowOverrides;
@@ -1239,7 +1236,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     if (cache) {
       cache.stash(cacheKey, prop, value);
     }
-
   },
   /**
     This hook is the first of the route entry validation hooks

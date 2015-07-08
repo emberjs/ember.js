@@ -11,7 +11,6 @@ export default EmberObject.extend({
   },
 
   lookupFactory(name, container) {
-
     container = container || this.container;
 
     var fullName = 'component:' + name;

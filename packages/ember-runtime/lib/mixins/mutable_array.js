@@ -141,7 +141,6 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   */
   removeAt(start, len) {
     if ('number' === typeof start) {
-
       if ((start < 0) || (start >= get(this, 'length'))) {
         throw new EmberError(OUT_OF_RANGE_EXCEPTION);
       }

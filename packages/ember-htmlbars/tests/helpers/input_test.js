@@ -312,7 +312,6 @@ QUnit.module('{{input type=\'checkbox\'}}', {
   teardown() {
     runDestroy(view);
     runDestroy(container);
-
   }
 });
 
@@ -358,7 +357,6 @@ QUnit.module('{{input type=\'checkbox\'}} - prevent value= usage', {
   teardown() {
     runDestroy(view);
     runDestroy(container);
-
   }
 });
 

@@ -123,7 +123,6 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
   });
 } else {
   QUnit.test('Undashed helpers registered on the container can not (presently) be invoked', function() {
-
     // Note: the reason we're not allowing undashed helpers is to avoid
     // a possible perf hit in hot code paths, i.e. _triageMustache.
     // We only presently perform container lookups if prop.indexOf('-') >= 0

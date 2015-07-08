@@ -216,7 +216,6 @@ export function generateGuid(obj, prefix) {
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
     return '(undefined)';

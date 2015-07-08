@@ -20,7 +20,6 @@ suite.test('frozen objects should return same instance', function() {
     copy = obj.freeze().frozenCopy();
     equal(copy, obj, 'returns frozen object should be same');
     ok(get(copy, 'isFrozen'), 'returned object should be frozen');
-
   } else {
     ok(!Freezable || !Freezable.detect(obj), 'object should not be freezable');
   }

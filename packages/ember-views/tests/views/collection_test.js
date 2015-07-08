@@ -235,7 +235,6 @@ QUnit.test('can add and replace in the same runloop', function() {
   content.forEach((item, idx) => {
     equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update');
   });
-
 });
 
 QUnit.test('can add and replace the object before the add in the same runloop', function() {
@@ -642,7 +641,6 @@ QUnit.test('should lookup against the container if itemViewClass is given as a s
   });
 
   equal(view.$('.ember-view').length, 4);
-
 });
 
 QUnit.test('should lookup only global path against the container if itemViewClass is given as a string', function() {
@@ -725,5 +723,4 @@ QUnit.test('Collection with style attribute supports changing content', function
   run(function() {
     view.get('content').pushObject('baz');
   });
-
 });

@@ -28,7 +28,6 @@ QUnit.test('should get arbitrary properties on an object', function() {
     }
     equal(get(obj, key), obj[key], key);
   }
-
 });
 
 QUnit.test('should invoke INTERCEPT_GET even if the property exists', function() {
@@ -55,7 +54,6 @@ QUnit.test('should invoke INTERCEPT_GET even if the property exists', function()
     equal(calledWith[0], obj, 'the object was passed');
     equal(calledWith[1], key, 'the key was passed');
   }
-
 });
 
 QUnit.test('should invoke INTERCEPT_GET and accept a return value', function() {
@@ -138,7 +136,6 @@ QUnit.test('warn on attempts to get a falsy property', function() {
 //
 
 QUnit.test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
-
   var MyMixin = Mixin.create({
     someProperty: 'foo',
     propertyDidChange: observer('someProperty', function() {
@@ -179,7 +176,6 @@ QUnit.test('should get arbitrary properties on an object', function() {
 });
 
 QUnit.test('should call unknownProperty if defined and value is undefined', function() {
-
   var obj = {
     count: 0,
     unknownProperty(key) {
@@ -219,7 +215,6 @@ testBoth('if unknownProperty is present, it is called', function(get, set) {
 //
 
 QUnit.test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
-
   var MyMixin = Mixin.create({
     someProperty: 'foo',
     propertyDidChange: observer('someProperty', function() {

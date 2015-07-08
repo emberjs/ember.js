@@ -578,7 +578,6 @@ function propertySort(itemsKey, sortPropertiesKey) {
     });
 
     return Ember.A(items.slice().sort((itemA, itemB) => {
-
       for (var i = 0; i < normalizedSort.length; ++i) {
         var [prop, direction] = normalizedSort[i];
         var result = compare(get(itemA, prop), get(itemB, prop));

@@ -28,7 +28,6 @@ QUnit.test('computed property should be an instance of descriptor', function() {
 });
 
 QUnit.test('defining computed property should invoke property on get', function() {
-
   var obj = {};
   var count = 0;
   defineProperty(obj, 'foo', computed(function(key) {
@@ -254,7 +253,6 @@ testBoth('cacheFor should return the cached value', function(get, set) {
 });
 
 testBoth('cacheFor should return falsy cached values', function(get, set) {
-
   defineProperty(obj, 'falsy', computed(function() {
     return false;
   }));
@@ -386,7 +384,6 @@ testBoth('circular keys should not blow up', function(get, set) {
 });
 
 testBoth('redefining a property should undo old dependent keys', function(get, set) {
-
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1');
   equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
@@ -488,7 +485,6 @@ var moduleOpts = {
 QUnit.module('computed - dependentkey with chained properties', moduleOpts);
 
 testBoth('depending on simple chain', function(get, set) {
-
   // assign computed property
   defineProperty(obj, 'prop',
     computed(func).property('foo.bar.baz.biff'));
@@ -530,11 +526,9 @@ testBoth('depending on simple chain', function(get, set) {
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
   equal(get(obj, 'prop'), 'NONE'); // should do nothing
   equal(count, 8, 'should be not have invoked computed again');
-
 });
 
 testBoth('depending on Global chain', function(get, set) {
-
   // assign computed property
   defineProperty(obj, 'prop', computed(function() {
     count++;
@@ -578,7 +572,6 @@ testBoth('depending on Global chain', function(get, set) {
   set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
   equal(get(obj, 'prop'), 'NONE'); // should do nothing
   equal(count, 8, 'should be not have invoked computed again');
-
 });
 
 testBoth('chained dependent keys should evaluate computed properties lazily', function(get, set) {
@@ -661,7 +654,6 @@ QUnit.test('the return value of the setter gets cached', function() {
 QUnit.module('computed edge cases');
 
 QUnit.test('adding a computed property should show up in key iteration', function() {
-
   var obj = {};
   defineProperty(obj, 'foo', computed(function() {}));
 

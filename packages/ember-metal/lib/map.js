@@ -66,7 +66,6 @@ function copyMap(original, newObject) {
   @private
 */
 function OrderedSet() {
-
   if (this instanceof OrderedSet) {
     this.clear();
     this._silenceRemoveDeprecation = false;

@@ -4,6 +4,7 @@
   "additionalRules": [ "lib/jscs-rules/*.js" ],
   "disallowSpacesInsideArrayBrackets": "all",
   "disallowMultipleVarDeclWithAssignment": true,
+  "disallowPaddingNewlinesInBlocks": true,
   "requireSpaceBeforeObjectValues": true,
   "requireCommaBeforeLineBreak": true,
   "requireBlocksOnNewline": 1,

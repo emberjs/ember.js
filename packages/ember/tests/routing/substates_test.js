@@ -15,7 +15,6 @@ function step(expectedValue, description) {
 }
 
 function bootApplication(startingURL) {
-
   for (var name in templates) {
     Ember.TEMPLATES[name] = compile(templates[name]);
   }
@@ -78,7 +77,6 @@ QUnit.module('Loading/Error Substates', {
 });
 
 QUnit.test('Slow promise from a child route of application enters nested loading state', function() {
-
   var broModel = {};
   var broDeferred = Ember.RSVP.defer();
 
@@ -109,7 +107,6 @@ QUnit.test('Slow promise from a child route of application enters nested loading
 });
 
 QUnit.test('Slow promises waterfall on startup', function() {
-
   expect(7);
 
   var grandmaDeferred = Ember.RSVP.defer();
@@ -164,7 +161,6 @@ QUnit.test('Slow promises waterfall on startup', function() {
 });
 
 QUnit.test('ApplicationRoute#currentPath reflects loading state path', function() {
-
   expect(4);
 
   var momDeferred = Ember.RSVP.defer();
@@ -198,7 +194,6 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
 });
 
 QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter LoadingRoute', function() {
-
   expect(2);
 
   var appDeferred = Ember.RSVP.defer();
@@ -224,7 +219,6 @@ QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter Load
 });
 
 QUnit.test('Don\'t enter loading route unless either route or template defined', function() {
-
   delete templates.loading;
 
   expect(2);
@@ -249,7 +243,6 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 });
 
 QUnit.test('Enter loading route if only LoadingRoute defined', function() {
-
   delete templates.loading;
 
   expect(4);
@@ -279,7 +272,6 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 });
 
 QUnit.test('Enter child loading state of pivot route', function() {
-
   expect(4);
 
   var deferred = Ember.RSVP.defer();
@@ -323,7 +315,6 @@ QUnit.test('Enter child loading state of pivot route', function() {
 });
 
 QUnit.test('Loading actions bubble to root, but don\'t enter substates above pivot', function() {
-
   expect(6);
 
   delete templates.loading;
@@ -379,7 +370,6 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 });
 
 QUnit.test('Default error event moves into nested route', function() {
-
   expect(5);
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
@@ -422,9 +412,7 @@ QUnit.test('Default error event moves into nested route', function() {
 });
 
 if (isEnabled('ember-routing-named-substates')) {
-
   QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
-
     expect(2);
 
     var appDeferred = Ember.RSVP.defer();
@@ -451,7 +439,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
-
     expect(3);
 
     templates['application_loading'] = 'TOPLEVEL LOADING';
@@ -485,7 +472,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
-
     expect(5);
 
     templates['grandma'] = 'GRANDMA {{outlet}}';
@@ -529,7 +515,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized substate entry works with preserved-namespace nested routes', function() {
-
     expect(2);
 
     templates['foo/bar_loading'] = 'FOOBAR LOADING';
@@ -561,7 +546,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized loading substate entry works with preserved-namespace nested routes', function() {
-
     expect(2);
 
     templates['foo/bar_loading'] = 'FOOBAR LOADING';
@@ -592,7 +576,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
-
     expect(1);
 
     templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
@@ -620,7 +603,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized loading substate entry works with auto-generated index routes', function() {
-
     expect(2);
 
     templates['foo/index_loading'] = 'FOO LOADING';
@@ -657,7 +639,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
-
     expect(1);
 
     templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
@@ -691,7 +672,6 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
-
     expect(2);
 
     templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';

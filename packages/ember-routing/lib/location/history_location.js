@@ -28,7 +28,6 @@ export default EmberObject.extend({
   init() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, 'baseURL', jQuery('base').attr('href') || '');
-
   },
 
   /**

@@ -289,7 +289,6 @@ QUnit.test('properly handles old IE\'s zero-scope bug', function() {
 });
 
 if ('namespaceURI' in document.createElement('div')) {
-
   QUnit.module('RenderBuffer namespaces');
 
   QUnit.test('properly makes a content string SVG namespace inside an SVG tag', function() {
@@ -343,5 +342,4 @@ if ('namespaceURI' in document.createElement('div')) {
     ok(element.childNodes[0].tagName, 'DIV', 'element is div');
     equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
   });
-
 }

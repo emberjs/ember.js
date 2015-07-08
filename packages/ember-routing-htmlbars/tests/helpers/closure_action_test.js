@@ -13,7 +13,6 @@ import {
 var innerComponent, outerComponent;
 
 if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-
   QUnit.module('ember-routing-htmlbars: action helper', {
     setup() {
     },
@@ -507,5 +506,4 @@ if (isEnabled('ember-routing-htmlbars-improved-actions')) {
       innerComponent.fireAction();
     });
   });
-
 }

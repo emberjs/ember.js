@@ -30,7 +30,6 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
           params[0] = processHandlebarsCompatDepKeys(params[0], helper._dependentKeys);
         }
     }
-
   }
 
   if (params && params.length) {
