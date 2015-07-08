@@ -758,7 +758,7 @@ export default Mixin.create({
     @param {String} [value] optional value to test against. Defaults to `true`
     @return {Boolean}
     @since 1.3.0
-    @private
+    @public
   */
   isAny(key, value) {
     return this.any(iter.apply(this, arguments));
