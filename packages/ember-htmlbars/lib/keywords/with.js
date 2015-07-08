@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { internal } from 'htmlbars-runtime';
+import { read } from 'ember-metal/streams/utils';
 
 export default {
   setupState(state, env, scope, params, hash) {
@@ -10,7 +11,13 @@ export default {
       if (!state.controller) {
         var context = params[0];
         var controllerFactory = env.container.lookupFactory('controller:' + controller);
-        var parentController = scope.view ? get(scope.view, 'context') : null;
+        var parentController = null;
+
+        if (scope.locals.controller) {
+          parentController = read(scope.locals.controller);
+        } else if (scope.locals.view) {
+          parentController = get(read(scope.locals.view), 'context');
+        }
 
         var controllerInstance = controllerFactory.create({
           model: env.hooks.getValue(context),

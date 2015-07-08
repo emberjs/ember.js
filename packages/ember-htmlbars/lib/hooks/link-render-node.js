@@ -24,7 +24,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
       case 'if': params[0] = shouldDisplay(params[0]); break;
       case 'each': params[0] = eachParam(params[0]); break;
       default:
-        helper = findHelper(path, scope.view, env);
+        helper = findHelper(path, env.view, env);
 
         if (helper && helper.isHandlebarsCompat && params[0]) {
           params[0] = processHandlebarsCompatDepKeys(params[0], helper._dependentKeys);

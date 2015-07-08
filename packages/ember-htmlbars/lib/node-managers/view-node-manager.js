@@ -166,6 +166,10 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   let defaultController = View.proto().controller;
   let hasSuppliedController = 'controller' in attrs || 'controller' in props;
 
+  if (!props.ownerView && options.parentView) {
+    props.ownerView = options.parentView.ownerView;
+  }
+
   props.attrs = snapshot;
   if (component.create) {
     let proto = component.proto();

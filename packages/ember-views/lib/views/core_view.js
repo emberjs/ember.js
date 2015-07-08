@@ -54,7 +54,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       this.renderer = renderer;
     }
 
-    this.isDestroyingSubtree = false;
+    this._destroyingSubtreeForView = null;
     this._dispatching = null;
   },
 
@@ -106,20 +106,19 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   destroy() {
-    var parent = this.parentView;
-
     if (!this._super(...arguments)) { return; }
 
     this.currentState.cleanup(this);
 
-    if (!this.ownerView.isDestroyingSubtree) {
-      this.ownerView.isDestroyingSubtree = true;
-      if (parent) { parent.removeChild(this); }
-      if (this._renderNode) {
-        Ember.assert('BUG: Render node exists without concomitant env.', this.ownerView.env);
-        internal.clearMorph(this._renderNode, this.ownerView.env, true);
-      }
-      this.ownerView.isDestroyingSubtree = false;
+    // If the destroyingSubtreeForView property is not set but we have an
+    // associated render node, it means this view is being destroyed from user
+    // code and not via a change in the templating layer (like an {{if}}
+    // becoming falsy, for example).  In this case, it is our responsibility to
+    // make sure that any render nodes created as part of the rendering process
+    // are cleaned up.
+    if (!this.ownerView._destroyingSubtreeForView && this._renderNode) {
+      Ember.assert('BUG: Render node exists without concomitant env.', this.ownerView.env);
+      internal.clearMorph(this._renderNode, this.ownerView.env, true);
     }
 
     return this;
