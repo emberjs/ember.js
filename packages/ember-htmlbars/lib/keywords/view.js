@@ -18,11 +18,11 @@ export default {
 
     // if parentView exists, use its controller (the default
     // behavior), otherwise use `scope.self` as the controller
-    var controller = scope.view ? null : read(scope.self);
+    var controller = scope.locals.view ? null : read(scope.self);
 
     return {
       manager: state.manager,
-      parentView: scope.view,
+      parentView: env.view,
       controller,
       targetObject,
       viewClassOrInstance
