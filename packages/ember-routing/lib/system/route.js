@@ -2013,6 +2013,10 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     } else {
       outletName = options.outlet;
       parentView = options.parentView;
+
+      if (options && Object.keys(options).indexOf('outlet') !== -1 && typeof options.outlet === 'undefined') {
+        throw new EmberError('You passed undefined as the outlet name.');
+      }
     }
     parentView = parentView && parentView.replace(/\//g, '.');
     outletName = outletName || 'main';
@@ -2121,6 +2125,10 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     if (!controller) {
       throw new EmberError(`You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`);
     }
+  }
+
+  if (options && Object.keys(options).indexOf('outlet') !== -1 && typeof options.outlet === 'undefined') {
+    throw new EmberError('You passed undefined as the outlet name.');
   }
 
   if (options && options.model) {

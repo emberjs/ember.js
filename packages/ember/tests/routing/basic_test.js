@@ -5,6 +5,8 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
+import { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
+
 import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
@@ -3848,4 +3850,61 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
 
   assert.strictEqual(myComponentCounter, 1, 'didInsertElement not invoked on displayed component');
   assert.strictEqual(otherComponentCounter, 1, 'didInsertElement invoked on displayed component');
+});
+
+QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
+  expect(1);
+  Ember.TEMPLATES.application = compile('{{outlet}}');
+  Ember.TEMPLATES.index = compile('index');
+  Ember.TEMPLATES.other = compile('other');
+
+  Router.map(function() {
+    this.route('other', function() {
+    });
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    actions: {
+      willTransition() {
+        throw new Error('boom');
+      }
+    }
+  });
+
+  bootApplication();
+
+  throws(function() {
+    Ember.run(function() {
+      router.handleURL('/other');
+    });
+  }, /boom/, 'expected an exception that didnt happen');
+});
+
+QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
+  App.ApplicationRoute = Ember.Route.extend({
+    actions: {
+      showModal: function() {
+        this.render({
+          outlet: undefined,
+          parentView: 'application'
+        });
+      },
+      hideModal: function() {
+        this.disconnectOutlet({
+          outlet: undefined,
+          parentView: 'application'
+        });
+      }
+    }
+  });
+
+  bootApplication();
+
+  throws(function() {
+    Ember.run(function() { router.send('showModal'); });
+  }, /You passed undefined as the outlet name/);
+
+  throws(function() {
+    Ember.run(function() { router.send('hideModal'); });
+  }, /You passed undefined as the outlet name/);
 });
