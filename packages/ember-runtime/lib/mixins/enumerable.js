@@ -441,7 +441,7 @@ export default Mixin.create({
     @param {String} key the property to test
     @param {*} [value] optional value to test against.
     @return {Array} filtered array
-    @private
+    @public
   */
   filterBy(key, value) {
     return this.filter(iter.apply(this, arguments));
