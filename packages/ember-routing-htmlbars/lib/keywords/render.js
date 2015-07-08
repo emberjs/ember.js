@@ -24,7 +24,7 @@ export default {
     );
 
     return {
-      parentView: scope.view,
+      parentView: env.view,
       manager: prevState.manager,
       controller: prevState.controller,
       childOutletState: childOutletState(name, env)
