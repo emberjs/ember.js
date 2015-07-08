@@ -14,7 +14,7 @@ export default {
     var read = env.hooks.getValue;
 
     return assign({}, state, {
-      parentView: read(scope.locals.view),
+      parentView: env.view,
       viewClassOrInstance: getView(read(params[0]), env.container)
     });
   },
