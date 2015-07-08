@@ -52,3 +52,13 @@ versions of jQuery.
 2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
    run a more comprehensive suite.
 
+## From ember-cli
+
+1. `ember test --server`
+2. connect the browsers you want
+3. if phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`
+
+To run a specific browser, you can use the `--launch` flag
+
+* `ember test --server --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current`

@@ -21,11 +21,28 @@ function shouldPrint(inputString) {
   return true;
 }
 
+var finalhandler = require('finalhandler')
+var http = require('http')
+var serveStatic = require('serve-static')
+
+// Serve up public/ftp folder
+var serve = serveStatic('./dist/', {'index': ['index.html', 'index.htm']})
+
+// Create server
+var server = http.createServer(function(req, res){
+  var done = finalhandler(req, res)
+  serve(req, res, done)
+})
+
+var PORT = 13141;
+// Listen
+server.listen(PORT);
+
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var args = [
       'bower_components/qunit-phantom-runner/runner.js',
-      './dist/tests/index.html?' + queryString
+      'http://localhost:' + PORT + '/tests/?' + queryString
     ];
 
     console.log('Running: phantomjs ' + args.join(' '));
@@ -121,27 +138,34 @@ function generateExtendPrototypeTests() {
 
 switch (process.env.TEST_SUITE) {
   case 'built-tests':
+    console.log('suite: built-tests');
     generateBuiltTests();
     break;
   case 'old-jquery':
+    console.log('suite: old-jquery');
     generateOldJQueryTests();
     break;
   case 'extend-prototypes':
+    console.log('suite: extend-prototypes');
     generateExtendPrototypeTests();
     break;
   case 'all':
+    console.log('suite: all');
     generateBuiltTests();
     generateOldJQueryTests();
     generateExtendPrototypeTests();
     generateEachPackageTests();
     break;
   case 'node':
+    console.log('suite: node');
     require('./run-node-tests');
     return;
   case 'sauce':
+    console.log('suite: sauce');
     require('./run-sauce-tests');
     return;
   default:
+    console.log('suite: default (generate each package)');
     generateEachPackageTests();
 }
 

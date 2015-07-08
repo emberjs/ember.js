@@ -1,0 +1,50 @@
+{
+  "framework": "qunit",
+  "test_page": "dist/tests/index.html?hidepassed",
+  "timeout": 540,
+  "parallel": 4,
+  "disable_watching": true,
+  "launchers": {
+    "SL_Chrome_Current": {
+      "command": "npm run sauce:launch -- -b chrome --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_Firefox_Current": {
+      "command": "npm run sauce:launch -- -b firefox -v 34 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_Safari_Current": {
+      "command": "npm run sauce:launch -- -b safari -v 8 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_Safari_Last": {
+      "command": "npm run sauce:launch -- -b safari -v 7 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_IE_11": {
+      "command": "npm run sauce:launch -- j-b 'internet explorer' -v 11 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_IE_10": {
+      "command": "npm run sauce:launch -- -b 'internet explorer' -v 10 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_IE_9": {
+      "command": "npm run sauce:launch  -- -b 'internet explorer' -v 9 --no-ct -u <url>",
+      "protocol": "tap"
+    },
+    "SL_IE_8": {
+      "command": "npm run sauce:launch -- -b 'internet explorer' -v 8 --no-ct -u <url>",
+      "protocol": "tap"
+    }
+  },
+  "launch_in_dev": ["PhantomJS"],
+  "launch_in_ci": [
+    "SL_Chrome_Current",
+    "SL_Safari_Current",
+    "SL_IE_11",
+    "SL_IE_10",
+    "SL_IE_9",
+    "SL_Firefox_Current"
+  ]
+}

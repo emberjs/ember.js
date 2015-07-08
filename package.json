@@ -7,8 +7,11 @@
     "postinstall": "bower install",
     "pretest": "ember build",
     "test": "bin/run-tests.js",
+    "test:sauce": "bin/run-sauce-tests.js",
+    "test:testem": "testem -f testem.dist.json",
     "start": "ember serve",
-    "docs": "ember ember-cli-yuidoc"
+    "docs": "ember ember-cli-yuidoc",
+    "sauce:launch": "ember sauce:launch"
   },
   "devDependencies": {
     "aws-sdk": "~2.1.5",
@@ -22,6 +25,7 @@
     "ember-publisher": "0.0.7",
     "emberjs-build": "0.2.1",
     "express": "^4.5.0",
+    "finalhandler": "^0.4.0",
     "github": "^0.2.3",
     "glob": "~4.3.2",
     "htmlbars": "0.13.33",
@@ -29,7 +33,8 @@
     "qunitjs": "^1.16.0",
     "route-recognizer": "0.1.5",
     "rsvp": "~3.0.6",
+    "serve-static": "^1.10.0",
     "simple-dom": "^0.2.4",
-    "testem": "^0.8.0-0"
+    "testem": "^0.8.0-1"
   }
 }
