@@ -1,4 +1,5 @@
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
+import buildComponentTemplate from 'ember-views/system/build-component-template';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.state;
@@ -11,25 +12,46 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let tagName = _tagName;
   let isAngleBracket = false;
+  let isTopLevel;
 
-  if (tagName.charAt(0) === '<') {
-    tagName = tagName.slice(1, -1);
+  let angles = tagName.match(/^(@?)<(.*)>$/);
+
+  if (angles) {
+    tagName = angles[2];
     isAngleBracket = true;
+    isTopLevel = !!angles[1];
   }
 
   var parentView = env.view;
 
-  var manager = ComponentNodeManager.create(renderNode, env, {
-    tagName,
-    params,
-    attrs,
-    parentView,
-    templates,
-    isAngleBracket,
-    parentScope: scope
-  });
+  if (!isTopLevel || tagName !== env.view.tagName) {
+    var manager = ComponentNodeManager.create(renderNode, env, {
+      tagName,
+      params,
+      attrs,
+      parentView,
+      templates,
+      isAngleBracket,
+      isTopLevel,
+      parentScope: scope
+    });
 
-  state.manager = manager;
+    state.manager = manager;
+    manager.render(env, visitor);
+  } else {
+    let component = env.view;
+    let templateOptions = {
+      component,
+      isAngleBracket: true,
+      isComponentElement: true,
+      outerAttrs: scope.attrs,
+      parentScope: scope
+    };
 
-  manager.render(env, visitor);
+    let contentOptions = { templates, scope };
+
+    let { block } = buildComponentTemplate(templateOptions, attrs, contentOptions);
+    block(env, [], undefined, renderNode, scope, visitor);
+  }
+
 }

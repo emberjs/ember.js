@@ -28,6 +28,7 @@ import lookupHelper from 'ember-htmlbars/hooks/lookup-helper';
 import hasHelper from 'ember-htmlbars/hooks/has-helper';
 import invokeHelper from 'ember-htmlbars/hooks/invoke-helper';
 import element from 'ember-htmlbars/hooks/element';
+import attributes from 'ember-htmlbars/hooks/attributes';
 
 import helpers from 'ember-htmlbars/helpers';
 import keywords, { registerKeyword } from 'ember-htmlbars/keywords';
@@ -38,30 +39,31 @@ var emberHooks = merge({}, hooks);
 emberHooks.keywords = keywords;
 
 merge(emberHooks, {
-  linkRenderNode: linkRenderNode,
-  createFreshScope: createFreshScope,
-  bindShadowScope: bindShadowScope,
-  bindSelf: bindSelf,
-  bindScope: bindScope,
-  bindLocal: bindLocal,
-  updateSelf: updateSelf,
-  getRoot: getRoot,
-  getChild: getChild,
-  getValue: getValue,
-  getCellOrValue: getCellOrValue,
-  subexpr: subexpr,
-  concat: concat,
-  cleanupRenderNode: cleanupRenderNode,
-  destroyRenderNode: destroyRenderNode,
-  willCleanupTree: willCleanupTree,
-  didCleanupTree: didCleanupTree,
-  didRenderNode: didRenderNode,
-  classify: classify,
-  component: component,
-  lookupHelper: lookupHelper,
-  hasHelper: hasHelper,
-  invokeHelper: invokeHelper,
-  element: element
+  linkRenderNode,
+  createFreshScope,
+  bindShadowScope,
+  bindSelf,
+  bindScope,
+  bindLocal,
+  updateSelf,
+  getRoot,
+  getChild,
+  getValue,
+  getCellOrValue,
+  subexpr,
+  concat,
+  cleanupRenderNode,
+  destroyRenderNode,
+  willCleanupTree,
+  didCleanupTree,
+  didRenderNode,
+  classify,
+  component,
+  lookupHelper,
+  hasHelper,
+  invokeHelper,
+  element,
+  attributes
 });
 
 import debuggerKeyword from 'ember-htmlbars/keywords/debugger';
