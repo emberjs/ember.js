@@ -23,7 +23,6 @@ import locHelper from 'ember-htmlbars/helpers/loc';
 import logHelper from 'ember-htmlbars/helpers/log';
 import eachHelper from 'ember-htmlbars/helpers/each';
 import eachInHelper from 'ember-htmlbars/helpers/each-in';
-import bindAttrClassHelper from 'ember-htmlbars/helpers/-bind-attr-class';
 import normalizeClassHelper from 'ember-htmlbars/helpers/-normalize-class';
 import concatHelper from 'ember-htmlbars/helpers/-concat';
 import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
@@ -51,7 +50,6 @@ registerHelper('each', eachHelper);
 if (isEnabled('ember-htmlbars-each-in')) {
   registerHelper('each-in', eachInHelper);
 }
-registerHelper('-bind-attr-class', bindAttrClassHelper);
 registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);

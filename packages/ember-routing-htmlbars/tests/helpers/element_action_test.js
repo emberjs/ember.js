@@ -906,7 +906,7 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
 
   ignoreDeprecation(function() {
     view = EmberView.create({
-      template: compile('{{#each allactions}}<a {{bind-attr id=\'name\'}} {{action name}}>{{title}}</a>{{/each}}')
+      template: compile('{{#each allactions}}<a id="{{name}}" {{action name}}>{{title}}</a>{{/each}}')
     });
   });
 
@@ -959,7 +959,7 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
 
   ignoreDeprecation(function() {
     view = EmberView.create({
-      template: compile('{{#each item in allactions}}<a {{bind-attr id=\'item.name\'}} {{action item.name}}>{{item.title}}</a>{{/each}}')
+      template: compile('{{#each item in allactions}}<a id="{{item.name}}" {{action item.name}}>{{item.title}}</a>{{/each}}')
     });
   });
 
