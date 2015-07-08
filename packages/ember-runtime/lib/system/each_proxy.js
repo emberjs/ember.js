@@ -13,8 +13,8 @@ import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import {
   addObserver,
-  addBeforeObserver,
-  removeBeforeObserver,
+  _addBeforeObserver,
+  _removeBeforeObserver,
   removeObserver
 } from 'ember-metal/observer';
 import { watchedEvents } from 'ember-metal/events';
@@ -61,7 +61,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
     var item = content.objectAt(loc);
     if (item) {
       Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', typeOf(item) === 'instance' || typeOf(item) === 'object');
-      addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       // keep track of the index each item was found at so we can map
@@ -87,7 +87,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     var item = content.objectAt(loc);
     if (item) {
-      removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      _removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       removeObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       guid = guidFor(item);
