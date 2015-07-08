@@ -3,7 +3,7 @@
 export function buildMustache(path, params, hash, raw, loc) {
   return {
     type: "MustacheStatement",
-    path: path,
+    path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
     escaped: !raw,
@@ -14,7 +14,7 @@ export function buildMustache(path, params, hash, raw, loc) {
 export function buildBlock(path, params, hash, program, inverse, loc) {
   return {
     type: "BlockStatement",
-    path: path,
+    path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
     program: program || null,
@@ -26,7 +26,7 @@ export function buildBlock(path, params, hash, program, inverse, loc) {
 export function buildElementModifier(path, params, hash, loc) {
   return {
     type: "ElementModifierStatement",
-    path: path,
+    path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
     loc: buildLoc(loc)
@@ -101,18 +101,22 @@ export function buildText(chars, loc) {
 export function buildSexpr(path, params, hash) {
   return {
     type: "SubExpression",
-    path: path,
+    path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([])
   };
 }
 
 export function buildPath(original) {
-  return {
-    type: "PathExpression",
-    original: original,
-    parts: original.split('.')
-  };
+  if (typeof original === 'string') {
+    return {
+      type: "PathExpression",
+      original: original,
+      parts: original.split('.')
+    };
+  } else {
+    return original;
+  }
 }
 
 export function buildString(value) {

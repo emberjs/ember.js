@@ -1,19 +1,14 @@
 import { parse, traverse } from '../../htmlbars-syntax';
-import visitorKeys from '../../htmlbars-syntax/types/visitor-keys';
-
-let actualTraversal;
-let assertionVisitor = {};
-
-for (let key in visitorKeys) {
-  assertionVisitor[key] = {
-    enter(node) { actualTraversal.push(['enter', node]); },
-    exit(node) { actualTraversal.push(['exit',  node]); }
-  };
-}
 
 function traversalEqual(node, expectedTraversal) {
-  actualTraversal = [];
-  traverse(node, assertionVisitor);
+  let actualTraversal = [];
+
+  traverse(node, {
+    All: {
+      enter(node) { actualTraversal.push(['enter', node]); },
+      exit(node) { actualTraversal.push(['exit',  node]); }
+    }
+  });
 
   deepEqual(
     actualTraversal.map(a => `${a[0]}:${a[1].type}`),
@@ -30,8 +25,6 @@ function traversalEqual(node, expectedTraversal) {
   }
 
   ok(nodesEqual, "Actual nodes match expected nodes");
-
-  actualTraversal = null;
 }
 
 QUnit.module('[htmlbars-syntax] Traversal - visiting');
