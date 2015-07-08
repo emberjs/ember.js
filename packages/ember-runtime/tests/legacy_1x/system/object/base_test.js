@@ -93,7 +93,6 @@ QUnit.module('EmberObject observers', {
     }).create({
       prop1: null
     });
-
   },
 
   teardown() {

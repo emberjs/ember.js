@@ -89,7 +89,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
   var component = this.component;
 
   return instrument(component, function() {
-
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
@@ -115,7 +114,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
       env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
     }
   }, this);
-
 };
 
 ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {

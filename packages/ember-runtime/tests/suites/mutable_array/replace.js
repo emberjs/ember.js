@@ -5,7 +5,6 @@ var suite = SuiteModuleBuilder.create();
 suite.module('replace');
 
 suite.test('[].replace(0,0,\'X\') => [\'X\'] + notify', function() {
-
   var obj, exp, observer;
   exp = this.newFixture(1);
   obj = this.newObject([]);
@@ -115,7 +114,6 @@ suite.test('[A,B,C,D].replace(2,2) => [A,B] + notify', function() {
 });
 
 suite.test('Adding object should notify enumerable observer', function() {
-
   var fixtures = this.newFixture(4);
   var obj = this.newObject(fixtures);
   var observer = this.newObserver(obj).observeEnumerable(obj);
@@ -128,7 +126,6 @@ suite.test('Adding object should notify enumerable observer', function() {
 });
 
 suite.test('Adding object should notify array observer', function() {
-
   var fixtures = this.newFixture(4);
   var obj = this.newObject(fixtures);
   var observer = this.newObserver(obj).observeArray(obj);

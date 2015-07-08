@@ -32,7 +32,6 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
       MyApplication.initializer({ initialize: Ember.K });
     });
   });
-
 });
 
 QUnit.test('initializers are passed a registry and App', function() {

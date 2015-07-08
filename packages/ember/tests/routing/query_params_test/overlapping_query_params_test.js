@@ -268,7 +268,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Support shared but overridable mixin pattern', function() {
-
     var HasPage = Ember.Mixin.create({
       queryParams: 'page',
       page: 1

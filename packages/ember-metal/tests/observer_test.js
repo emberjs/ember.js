@@ -38,7 +38,6 @@ import {
 QUnit.module('addObserver');
 
 testBoth('observer should fire when property is modified', function(get, set) {
-
   var obj = {};
   var count = 0;
 
@@ -199,7 +198,6 @@ testBoth('nested observers should fire in order', function(get, set) {
   set(obj, 'bar', 'BIFF');
   equal(barCount, 1, 'barCount should have fired');
   equal(fooCount, 1, 'foo should have fired');
-
 });
 
 testBoth('removing an chain observer on change should not fail', function(get, set) {
@@ -558,7 +556,6 @@ testBoth('addObserver should respect targets with methods', function(get, set) {
   set(observed, 'foo', 'BAZ');
   equal(target1.count, 1, 'target1 observer should have fired');
   equal(target2.count, 1, 'target2 observer should have fired');
-
 });
 
 testBoth('addObserver should allow multiple objects to observe a property', function(get, set) {
@@ -595,7 +592,6 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 QUnit.module('removeObserver');
 
 testBoth('removing observer should stop firing', function(get, set) {
-
   var obj = {};
   var count = 0;
   function F() { count++; }
@@ -679,7 +675,6 @@ testBoth('removeObserver should respect targets with methods', function(get, set
 QUnit.module('addBeforeObserver');
 
 testBoth('observer should fire before a property is modified', function(get, set) {
-
   var obj = { foo: 'foo' };
   var count = 0;
 
@@ -858,7 +853,6 @@ testBoth('addBeforeObserver should respect targets with methods', function(get, 
   set(observed, 'foo', 'BAZ');
   equal(target1.count, 1, 'target1 observer should have fired');
   equal(target2.count, 1, 'target2 observer should have fired');
-
 });
 
 // ..........................................................
@@ -920,7 +914,6 @@ testBoth('depending on a chain with a computed property', function (get, set) {
 });
 
 testBoth('depending on a simple chain', function(get, set) {
-
   var val;
   addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
     val = get(target, key);
@@ -1005,7 +998,6 @@ QUnit.module('removeBeforeObserver');
 QUnit.module('props/observer_test - setting identical values');
 
 testBoth('setting simple prop should not trigger', function(get, set) {
-
   var obj = { foo: 'bar' };
   var count = 0;
 

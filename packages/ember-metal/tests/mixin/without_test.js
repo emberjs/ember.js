@@ -1,7 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
 
 QUnit.test('without should create a new mixin excluding named properties', function() {
-
   var MixinA = Mixin.create({
     foo: 'FOO',
     bar: 'BAR'
@@ -14,5 +13,4 @@ QUnit.test('without should create a new mixin excluding named properties', funct
 
   equal(obj.foo, 'FOO', 'should defined foo');
   equal(obj.bar, undefined, 'should not define bar');
-
 });

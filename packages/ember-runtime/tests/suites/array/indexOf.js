@@ -14,7 +14,6 @@ suite.test('should return index of object', function() {
   for (idx=0;idx<len;idx++) {
     equal(obj.indexOf(expected[idx]), idx, fmt('obj.indexOf(%@) should match idx', [expected[idx]]));
   }
-
 });
 
 suite.test('should return -1 when requesting object not in index', function() {

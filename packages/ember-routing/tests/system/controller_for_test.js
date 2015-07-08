@@ -126,7 +126,6 @@ QUnit.test('generateController should create App.ObjectController if provided', 
   controller = generateController(container, 'home', context);
 
   ok(controller instanceof namespace.ObjectController, 'should create controller');
-
 });
 
 QUnit.test('generateController should create App.ArrayController if provided', function() {
@@ -137,5 +136,4 @@ QUnit.test('generateController should create App.ArrayController if provided', f
   controller = generateController(container, 'home', context);
 
   ok(controller instanceof namespace.ArrayController, 'should create controller');
-
 });

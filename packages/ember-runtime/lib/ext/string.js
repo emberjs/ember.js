@@ -19,7 +19,6 @@ import {
 var StringPrototype = String.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
-
   /**
     See [Ember.String.fmt](/api/classes/Ember.String.html#method_fmt).
 

@@ -71,7 +71,6 @@ export function set(obj, keyName, value, tolerant) {
   if (desc) {
     desc.set(obj, keyName, value);
   } else {
-
     if (obj !== null && value !== undefined && typeof obj === 'object' && obj[keyName] === value) {
       return value;
     }

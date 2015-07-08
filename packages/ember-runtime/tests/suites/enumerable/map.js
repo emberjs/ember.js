@@ -53,7 +53,6 @@ suite.test('2nd target parameter', function() {
   obj.map(function() {
     equal(guidFor(this), guidFor(target), 'should pass target as this if context');
   }, target);
-
 });
 
 
@@ -69,7 +68,6 @@ suite.test('callback params', function() {
     equal(guidFor(enumerable), guidFor(obj), 'enumerable param');
     loc++;
   });
-
 });
 
 export default suite;

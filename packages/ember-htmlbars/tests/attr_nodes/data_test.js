@@ -11,7 +11,6 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 var view, originalSetAttribute, setAttributeCalls, renderer;
 
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
-
   QUnit.module('ember-htmlbars: data attribute', {
     teardown() {
       runDestroy(view);

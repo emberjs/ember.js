@@ -5,7 +5,6 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
 QUnit.module('Ember.defineProperty');
 
 QUnit.test('toString', function() {
-
   var obj = {};
   defineProperty(obj, 'toString', undefined, function() { return 'FOO'; });
   equal(obj.toString(), 'FOO', 'should replace toString');

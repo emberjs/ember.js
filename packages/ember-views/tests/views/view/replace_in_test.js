@@ -65,7 +65,6 @@ QUnit.test('should remove previous elements when calling replaceIn()', function(
 
   var newChild = jQuery('#menu').children();
   ok(newChild.length === 1, 'target has new child element');
-
 });
 
 QUnit.test('should move the view to the inDOM state after replacing', function() {

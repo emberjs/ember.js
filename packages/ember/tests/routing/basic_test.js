@@ -442,7 +442,6 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
   });
 
   equal(Ember.$('.alert-box', '#qunit-fixture').text(), 'Invader!', 'Template for alert was render into outlet');
-
 });
 
 QUnit.test('Specifying a name to render should have precedence over everything else', function() {
@@ -919,7 +918,6 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
 });
 
 function testOverridableErrorHandler(handlersName) {
-
   expect(2);
 
   Router.map(function() {
@@ -1321,7 +1319,6 @@ QUnit.asyncTest('Events defined in `events` object are triggered on the current 
 });
 
 QUnit.test('Events can be handled by inherited event handlers', function() {
-
   expect(4);
 
   App.SuperRoute = Ember.Route.extend({
@@ -1469,7 +1466,6 @@ QUnit.test('transitioning multiple times in a single run loop only sets the URL 
 });
 
 QUnit.test('navigating away triggers a url property change', function() {
-
   expect(3);
 
   Router.map(function() {
@@ -1827,7 +1823,6 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
 
   equal(router.container.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
   equal(successCount, 1, 'transitionTo success handler was called once');
-
 });
 
 QUnit.test('Redirecting to the current target with a different context aborts the remainder of the routes', function() {
@@ -2261,7 +2256,6 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
   generatedRoute = container.lookup('route:posts');
 
   ok(generatedRoute instanceof App.Route, 'should extend the correct route');
-
 });
 
 QUnit.test('Nested index route is not overriden by parent\'s implicit index route', function() {
@@ -2466,7 +2460,6 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
 });
 
 QUnit.test('Promises encountered on app load put app into loading state until resolved', function() {
-
   expect(2);
 
   var deferred = Ember.RSVP.defer();
@@ -2546,7 +2539,6 @@ QUnit.test('Route should tear down multiple outlets', function() {
   equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 0, 'The posts/menu template was removed');
   equal(Ember.$('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, 'The posts/index template was removed');
   equal(Ember.$('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, 'The posts/footer template was removed');
-
 });
 
 
@@ -2953,7 +2945,6 @@ QUnit.test('`deactivate` event fires on the route', function() {
 });
 
 QUnit.test('Actions can be handled by inherited action handlers', function() {
-
   expect(4);
 
   App.SuperRoute = Ember.Route.extend({
@@ -2992,7 +2983,6 @@ QUnit.test('Actions can be handled by inherited action handlers', function() {
 });
 
 QUnit.test('currentRouteName is a property installed on ApplicationController that can be used in transitionTo', function() {
-
   expect(24);
 
   Router.map(function() {
@@ -3823,7 +3813,6 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
   equal(Ember.$('#qunit-fixture .foo .index').text(), 'other');
   Ember.run(router, 'send', 'changeToBar');
   equal(Ember.$('#qunit-fixture .foo .index').text(), 'bar');
-
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function() {

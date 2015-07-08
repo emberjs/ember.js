@@ -12,7 +12,6 @@ QUnit.test('scheduling item in queue should defer until finished', function() {
   });
 
   equal(cnt, 2, 'should flush actions now');
-
 });
 
 QUnit.test('nested runs should queue each phase independently', function() {
@@ -26,11 +25,9 @@ QUnit.test('nested runs should queue each phase independently', function() {
       run.schedule('actions', function() { cnt++; });
     });
     equal(cnt, 1, 'should not run action yet');
-
   });
 
   equal(cnt, 2, 'should flush actions now');
-
 });
 
 QUnit.test('prior queues should be flushed before moving on to next queue', function() {

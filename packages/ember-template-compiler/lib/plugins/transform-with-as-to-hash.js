@@ -41,7 +41,6 @@ TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_trans
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {
-
       if (node.program && node.program.blockParams.length) {
         throw new Error('You cannot use keyword (`{{with foo as bar}}`) and block params (`{{with foo as |bar|}}`) at the same time.');
       }

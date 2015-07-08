@@ -42,7 +42,6 @@ TransformEachInToBlockParams.prototype.transform = function TransformEachInToBlo
 
   walker.visit(ast, function(node) {
     if (validate(node)) {
-
       var removedParams = node.params.splice(0, 2);
       var keyword = removedParams[0].original;
       let moduleInfo;

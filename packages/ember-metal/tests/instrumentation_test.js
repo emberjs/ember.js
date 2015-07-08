@@ -6,9 +6,6 @@ import {
 } from 'ember-metal/instrumentation';
 
 QUnit.module('Ember Instrumentation', {
-  setup() {
-
-  },
   teardown() {
     reset();
   }
@@ -53,13 +50,9 @@ QUnit.test('subscribing to a simple path receives the listener', function() {
     }
   });
 
-  instrument('render', sentPayload, function() {
+  instrument('render', sentPayload, function() {});
 
-  });
-
-  instrument('render.handlebars', sentPayload, function() {
-
-  });
+  instrument('render.handlebars', sentPayload, function() {});
 });
 
 QUnit.test('returning a value from the before callback passes it to the after callback', function() {

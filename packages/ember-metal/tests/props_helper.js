@@ -4,7 +4,6 @@ import {set as setFromEmberMetal} from 'ember-metal/property_set';
 
 // used by unit tests to test both accessor mode and non-accessor mode
 var testBoth = function(testname, callback) {
-
   function emberget(x, y) { return getFromEmberMetal(x, y); }
   function emberset(x, y, z) { return setFromEmberMetal(x, y, z); }
   function aget(x, y) { return x[y]; }

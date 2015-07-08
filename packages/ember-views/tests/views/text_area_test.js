@@ -179,7 +179,6 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
 
 ['cut', 'paste', 'input'].forEach(function(eventName) {
   QUnit.test('should update the value on ' + eventName + ' events', function() {
-
     run(function() {
       textArea.append();
     });

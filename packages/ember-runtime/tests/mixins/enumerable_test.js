@@ -183,7 +183,6 @@ var obj, observer;
 QUnit.module('mixins/enumerable/enumerableContentDidChange');
 
 QUnit.test('should notify observers of []', function() {
-
   var obj = EmberObject.extend(Enumerable, {
     nextObject() {}, // avoid exceptions
 
@@ -198,7 +197,6 @@ QUnit.test('should notify observers of []', function() {
   obj.enumerableContentWillChange();
   obj.enumerableContentDidChange();
   equal(obj._count, 1, 'should have invoked');
-
 });
 
 // ..........................................................

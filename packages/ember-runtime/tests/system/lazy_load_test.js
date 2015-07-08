@@ -42,7 +42,6 @@ QUnit.test('if runLoadHooks was already run, it executes newly added hooks immed
 });
 
 QUnit.test('hooks in ENV.EMBER_LOAD_HOOKS[\'hookName\'] get executed', function() {
-
   // Note that the necessary code to perform this test is run before
   // the Ember lib is loaded in tests/index.html
 

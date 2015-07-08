@@ -20,7 +20,6 @@ QUnit.test('RunLoop unwinds despite unhandled exception', function() {
 
   // Prevent a failure in this test from breaking subsequent tests.
   run.currentRunLoop = initialRunLoop;
-
 });
 
 QUnit.test('run unwinds despite unhandled exception', function() {
@@ -36,6 +35,5 @@ QUnit.test('run unwinds despite unhandled exception', function() {
 
   // Prevent a failure in this test from breaking subsequent tests.
   run.currentRunLoop = initialRunLoop;
-
 });
 

@@ -45,7 +45,6 @@ QUnit.test('should raise error if helper not available', function() {
   expectAssertion(function() {
     runAppend(view);
   }, `A helper named 'shouldfail' could not be found`);
-
 });
 
 QUnit.test('basic block params usage', function() {

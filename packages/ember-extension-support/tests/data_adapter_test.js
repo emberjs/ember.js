@@ -53,7 +53,6 @@ QUnit.test('Model types added with DefaultResolver', function() {
   run(App, 'advanceReadiness');
 
   var modelTypesAdded = function(types) {
-
     equal(types.length, 1);
     var postType = types[0];
     equal(postType.name, 'post', 'Correctly sets the name');
@@ -104,7 +103,6 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
   run(App, 'advanceReadiness');
 
   var modelTypesAdded = function(types) {
-
     equal(types.length, 1);
     var postType = types[0];
 
@@ -137,13 +135,11 @@ QUnit.test('Model Types Updated', function() {
   };
 
   var modelTypesUpdated = function(types) {
-
     var postType = types[0];
     equal(postType.count, 4, 'Correctly updates the count');
   };
 
   adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
-
 });
 
 QUnit.test('Records Added', function() {

@@ -81,7 +81,6 @@ QUnit.test('given `Ember.testing = true`, correctly informs the test suite about
       equal(asyncStarted, 1);
       equal(asyncEnded, 1);
     });
-
   }).then(function() {
     equal(asyncStarted, 1);
     equal(asyncEnded, 1);

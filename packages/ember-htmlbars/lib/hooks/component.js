@@ -53,5 +53,4 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let { block } = buildComponentTemplate(templateOptions, attrs, contentOptions);
     block(env, [], undefined, renderNode, scope, visitor);
   }
-
 }

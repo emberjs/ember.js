@@ -249,7 +249,6 @@ function factoryFor(container, fullName) {
     // for now just fallback to create time injection
     cache[fullName] = factory;
     return factory;
-
   } else {
     var injections = injectionsFor(container, fullName);
     var factoryInjections = factoryInjectionsFor(container, fullName);

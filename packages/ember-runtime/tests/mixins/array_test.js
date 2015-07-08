@@ -90,7 +90,6 @@ QUnit.test('slice supports negative index arguments', function() {
   deepEqual(testArray.slice(0, -1), [1,2,3], 'slice(0, -1)');
   deepEqual(testArray.slice(0, -4), [], 'slice(0, -4)');
   deepEqual(testArray.slice(0, -3), [1], 'slice(0, -3)');
-
 });
 
 // ..........................................................
@@ -113,7 +112,6 @@ var obj, observer;
 QUnit.module('mixins/array/arrayContent[Will|Did]Change');
 
 QUnit.test('should notify observers of []', function() {
-
   obj = DummyArray.extend({
     enumerablePropertyDidChange: emberObserver('[]', function() {
       this._count++;
@@ -128,7 +126,6 @@ QUnit.test('should notify observers of []', function() {
   obj.arrayContentDidChange(0, 1, 1);
 
   equal(obj._count, 1, 'should have invoked');
-
 });
 
 // ..........................................................
@@ -331,7 +328,6 @@ QUnit.module('EmberArray.@each support', {
 });
 
 QUnit.test('adding an object should notify (@each)', function() {
-
   var called = 0;
 
   var observerObject = EmberObject.create({
@@ -349,11 +345,9 @@ QUnit.test('adding an object should notify (@each)', function() {
   }));
 
   equal(called, 1, 'calls observer when object is pushed');
-
 });
 
 QUnit.test('adding an object should notify (@each.isDone)', function() {
-
   var called = 0;
 
   var observerObject = EmberObject.create({
@@ -370,11 +364,9 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
   }));
 
   equal(called, 1, 'calls observer when object is pushed');
-
 });
 
 QUnit.test('using @each to observe arrays that does not return objects raise error', function() {
-
   var called = 0;
 
   var observerObject = EmberObject.create({

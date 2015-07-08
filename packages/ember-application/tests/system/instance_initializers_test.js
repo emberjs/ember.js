@@ -37,7 +37,6 @@ if (isEnabled('ember-application-instance-initializers')) {
         MyApplication.instanceInitializer({ initialize: Ember.K });
       });
     });
-
   });
 
   QUnit.test('initializers are passed an app instance', function() {
@@ -278,7 +277,6 @@ if (isEnabled('ember-application-instance-initializers')) {
     firstApp.destroy();
     secondApp.destroy();
   });
-
   });
 
   QUnit.test('initializers are concatenated', function() {

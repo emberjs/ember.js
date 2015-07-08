@@ -45,7 +45,6 @@ QUnit.test('does not bring its own run loop if one is already provided', functio
   application = run(Application, 'create');
 
   run(function() {
-
     application.ready = function() {
       didBecomeReady = true;
     };

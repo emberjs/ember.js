@@ -173,7 +173,6 @@ QUnit.test('classNameBindings should work when the binding property is updated a
   });
 
   equal(view.$().attr('class'), 'ember-view low', 'has a low class');
-
 });
 
 QUnit.test('classNames removed by a classNameBindings observer should not re-appear on rerender', function() {

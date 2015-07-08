@@ -46,7 +46,6 @@ QUnit.module('Basic introspection', {
 });
 
 QUnit.test('Ember.mixins()', function() {
-
   function mapGuids(ary) {
     return ary.map(function(x) { return guidFor(x); });
   }

@@ -5,7 +5,6 @@ import ArrayProxy from 'ember-runtime/system/array_proxy';
 QUnit.module('Ember.ArrayProxy - content update');
 
 QUnit.test('The `contentArrayDidChange` method is invoked after `content` is updated.', function() {
-
   var proxy;
   var observerCalled = false;
 

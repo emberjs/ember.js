@@ -39,7 +39,6 @@ QUnit.module('run.later', {
 });
 
 asyncTest('should invoke after specified period of time - function only', function() {
-
   var invoked = false;
 
   run(function() {
@@ -53,7 +52,6 @@ asyncTest('should invoke after specified period of time - function only', functi
 });
 
 asyncTest('should invoke after specified period of time - target/method', function() {
-
   var obj = { invoked: false };
 
   run(function() {
@@ -67,7 +65,6 @@ asyncTest('should invoke after specified period of time - target/method', functi
 });
 
 asyncTest('should invoke after specified period of time - target/method/args', function() {
-
   var obj = { invoked: 0 };
 
   run(function() {
@@ -167,7 +164,6 @@ asyncTest('should always invoke within a separate runloop', function() {
 // });
 
 asyncTest('inception calls to run.later should run callbacks in separate run loops', function() {
-
   var runLoop, finished;
 
   run(function() {
@@ -194,7 +190,6 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
 });
 
 asyncTest('setTimeout should never run with a negative wait', function() {
-
   // Rationale: The old run loop code was susceptible to an occasional
   // bug where invokeLaterTimers would be scheduled with a setTimeout
   // with a negative wait. Modern browsers normalize this to 0, but
@@ -213,7 +208,6 @@ asyncTest('setTimeout should never run with a negative wait', function() {
 
   var count = 0;
   run(function() {
-
     run.later(function() {
       count++;
 

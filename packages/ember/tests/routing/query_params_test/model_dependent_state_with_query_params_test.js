@@ -698,11 +698,9 @@ QUnit.test('query params have \'model\' stickiness by default', function() {
   equal(this.links['s-3-a-1'].attr('href'), '/site/s-3/a/a-1?q=lol');
   equal(this.links['s-3-a-2'].attr('href'), '/site/s-3/a/a-2');
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3');
-
 });
 
 QUnit.test('query params have \'model\' stickiness by default (url changes)', function() {
-
   this.boot();
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };

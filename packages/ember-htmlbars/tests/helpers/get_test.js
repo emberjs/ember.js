@@ -10,7 +10,6 @@ var view, registry, container;
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-get-helper')) {
-
   QUnit.module('ember-htmlbars: {{get}} helper', {
   setup() {
     registry = new Registry();
@@ -80,7 +79,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   });
 
   equal(view.$().text(), '[green] [green]', 'should return \'green\' for {{get colors key}} (key = \'apple\')');
-
 });
 
   QUnit.test('should be able to get an object value with a GetStream key', function() {
@@ -116,7 +114,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   });
 
   equal(view.$().text(), '[green] [green]', 'should return \'green\'');
-
 });
 
   QUnit.test('should be able to get an object value with a GetStream value and bound/dynamic key', function() {
@@ -167,7 +164,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   });
 
   equal(view.$().text(), '[yellow] [yellow]', 'should return \'yellow\'');
-
 });
 
   QUnit.test('should be able to get an object value with a GetStream value and GetStream key', function() {
@@ -222,7 +218,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   });
 
   equal(view.$().text(), '[yellow] [yellow]', 'should return \'yellow\'');
-
 });
 
   QUnit.test('should handle object values as nulls', function() {
@@ -278,7 +273,6 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   });
 
   equal(view.$().text(), '[] []', 'should return \'\' for {{get colors key}}  (key = null)');
-
 });
 
   QUnit.test('should handle object values and keys as nulls', function() {
@@ -296,6 +290,5 @@ if (isEnabled('ember-htmlbars-get-helper')) {
 
   equal(view.$().text(), '[] []', 'should return \'\' for {{get colors key}}  (colors=null, key = null)');
 });
-
 }
 // jscs:enable validateIndentation

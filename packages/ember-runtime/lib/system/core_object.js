@@ -56,7 +56,6 @@ var reopen = Mixin.prototype.reopen;
 var hasCachedComputedProperties = false;
 
 function makeCtor() {
-
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
@@ -211,7 +210,6 @@ function makeCtor() {
   };
 
   return Class;
-
 }
 
 /**

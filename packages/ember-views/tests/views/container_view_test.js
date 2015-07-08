@@ -52,7 +52,6 @@ QUnit.test('should be able to insert views after the DOM representation is creat
   run(function() {
     container.destroy();
   });
-
 });
 
 QUnit.test('should be able to observe properties that contain child views', function() {
@@ -453,7 +452,6 @@ QUnit.test('if a ContainerView starts with a currentView and then a different cu
 });
 
 QUnit.test('should be able to modify childViews many times during an run loop', function () {
-
   container = ContainerView.create();
 
   run(function() {
@@ -631,14 +629,11 @@ QUnit.test('Child view can only be added to one container at a time', function (
 });
 
 QUnit.test('if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once', function (assert) {
-
   var counter = 0;
   var root = ContainerView.create({});
 
   container = ContainerView.create({
-
     didInsertElement() {
-
       var view = ContainerView.create({
         didInsertElement() {
           counter++;
@@ -646,9 +641,7 @@ QUnit.test('if a containerView appends a child in its didInsertElement event, th
       });
 
       this.pushObject(view);
-
     }
-
   });
 
   run(function() {
@@ -666,7 +659,6 @@ QUnit.test('if a containerView appends a child in its didInsertElement event, th
   run(function() {
     root.destroy();
   });
-
 });
 
 

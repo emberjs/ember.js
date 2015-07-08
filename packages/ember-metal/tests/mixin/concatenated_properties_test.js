@@ -7,7 +7,6 @@ import {
 QUnit.module('Mixin concatenatedProperties');
 
 QUnit.test('defining concatenated properties should concat future version', function() {
-
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
@@ -22,7 +21,6 @@ QUnit.test('defining concatenated properties should concat future version', func
 });
 
 QUnit.test('defining concatenated properties should concat future version', function() {
-
   var MixinA = Mixin.create({
     concatenatedProperties: null
   });
@@ -38,7 +36,6 @@ QUnit.test('defining concatenated properties should concat future version', func
 
 
 QUnit.test('concatenatedProperties should be concatenated', function() {
-
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
@@ -61,7 +58,6 @@ QUnit.test('concatenatedProperties should be concatenated', function() {
 });
 
 QUnit.test('adding a prop that is not an array should make array', function() {
-
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: [1,2,3]
@@ -76,7 +72,6 @@ QUnit.test('adding a prop that is not an array should make array', function() {
 });
 
 QUnit.test('adding a prop that is not an array should make array', function() {
-
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: 'bar'
@@ -87,7 +82,6 @@ QUnit.test('adding a prop that is not an array should make array', function() {
 });
 
 QUnit.test('adding a non-concatenable property that already has a defined value should result in an array with both values', function() {
-
   var mixinA = Mixin.create({
     foo: 1
   });
@@ -102,7 +96,6 @@ QUnit.test('adding a non-concatenable property that already has a defined value 
 });
 
 QUnit.test('adding a concatenable property that already has a defined value should result in a concatenated value', function() {
-
   var mixinA = Mixin.create({
     foobar: 'foo'
   });

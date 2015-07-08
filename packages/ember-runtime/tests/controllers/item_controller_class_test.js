@@ -298,7 +298,6 @@ QUnit.test('target and parentController are set to the concrete parentController
     parent.destroy();
     virtual.destroy();
   });
-
 });
 
 QUnit.test('array observers can invoke `objectAt` without overwriting existing item controllers', function() {

@@ -22,7 +22,6 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
     });
 
     App.Post = EmberObject.extend();
-
   },
 
   teardown() {

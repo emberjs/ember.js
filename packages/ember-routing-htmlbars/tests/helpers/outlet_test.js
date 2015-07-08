@@ -149,7 +149,6 @@ QUnit.test('outlet should assert view is specified as a string [DEPRECATED]', fu
   expectAssertion(function () {
     runAppend(top);
   }, /Using a quoteless view parameter with {{outlet}} is not supported/);
-
 });
 
 QUnit.test('outlet should assert view path is successfully resolved [DEPRECATED]', function() {
@@ -159,7 +158,6 @@ QUnit.test('outlet should assert view path is successfully resolved [DEPRECATED]
   expectAssertion(function () {
     runAppend(top);
   }, /someViewNameHere must be a subclass or an instance of Ember.View/);
-
 });
 
 QUnit.test('outlet should support an optional view class [DEPRECATED]', function() {

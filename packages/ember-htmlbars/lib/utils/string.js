@@ -35,7 +35,6 @@ function htmlSafe(str) {
 
 EmberStringUtils.htmlSafe = htmlSafe;
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
-
   /**
     Mark a string as being safe for unescaped output with Handlebars.
 

@@ -711,7 +711,6 @@ QUnit.test('comopnent should rerender when a property is changed during children
 
   equal(view.$('#inner-value').text(), '3', 'third render of inner');
   equal(view.$('#middle-value').text(), '3', 'third render of middle');
-
 });
 
 QUnit.test('components in template of a yielding component should have the proper parentView', function() {
@@ -874,7 +873,6 @@ QUnit.test('comopnent should rerender when a property (with a default) is change
 
   equal(view.$('#inner-value').text(), '3', 'third render of inner');
   equal(view.$('#middle-value').text(), '3', 'third render of middle');
-
 });
 
 QUnit.test('non-block with each rendering child components', function() {
@@ -904,7 +902,6 @@ QUnit.test('non-block with each rendering child components', function() {
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
-
   QUnit.module('component - invocation (angle brackets)', {
     setup() {
       commonSetup();

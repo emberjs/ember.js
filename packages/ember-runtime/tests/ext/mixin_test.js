@@ -7,7 +7,6 @@ import run from 'ember-metal/run_loop';
 QUnit.module('system/mixin/binding_test');
 
 QUnit.test('Defining a property ending in Binding should setup binding when applied', function() {
-
   var MyMixin = Mixin.create({
     fooBinding: 'bar.baz'
   });
@@ -20,7 +19,6 @@ QUnit.test('Defining a property ending in Binding should setup binding when appl
 
   ok(get(obj, 'fooBinding') instanceof Binding, 'should be a binding object');
   equal(get(obj, 'foo'), 'BIFF', 'binding should be created and synced');
-
 });
 
 QUnit.test('Defining a property ending in Binding should apply to prototype children', function() {
@@ -47,5 +45,4 @@ QUnit.test('Defining a property ending in Binding should apply to prototype chil
 
   ok(get(obj2, 'fooBinding') instanceof Binding, 'should be a binding object');
   equal(get(obj2, 'foo'), 'BARG', 'binding should be created and synced');
-
 });

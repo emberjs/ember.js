@@ -39,7 +39,6 @@ QUnit.test('should render an inserted child view when the child is inserted befo
 });
 
 QUnit.test('should not duplicate childViews when rerendering', function() {
-
   var InnerView = EmberView.extend();
   var InnerView2 = EmberView.extend();
 

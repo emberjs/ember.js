@@ -53,12 +53,10 @@ QUnit.test('listeners should be inherited', function() {
 
   sendEvent(obj, 'event!');
   equal(count, 1, 'should still invoke on parent');
-
 });
 
 
 QUnit.test('adding a listener more than once should only invoke once', function() {
-
   var obj = {};
   var count = 0;
   var F = function() { count++; };
@@ -138,7 +136,6 @@ QUnit.test('adding a listener with string method should lookup method on event d
 });
 
 QUnit.test('calling sendEvent with extra params should be passed to listeners', function() {
-
   var obj = {};
   var params = null;
   addListener(obj, 'event!', function() {
@@ -167,7 +164,6 @@ QUnit.test('implementing sendEvent on object should invoke', function() {
 });
 
 QUnit.test('hasListeners tells you if there are listeners for a given event', function() {
-
   var obj = {};
   var F = function() {};
   var F2 = function() {};
@@ -258,7 +254,6 @@ QUnit.test('a listener can be added as part of a mixin', function() {
 });
 
 QUnit.test('a listener added as part of a mixin may be overridden', function() {
-
   var triggered = 0;
   var FirstMixin = Mixin.create({
     foo: on('bar', function() {

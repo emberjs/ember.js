@@ -314,7 +314,6 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   }).then(function(val) {
     equal(val, 'promise', 'can resolve to a promise resolution value');
   });
-
 });
 
 QUnit.test('`click` triggers appropriate events in order', function() {

@@ -7,7 +7,6 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('EmberObject observer');
 
 testBoth('observer on class', function(get, set) {
-
   var MyClass = EmberObject.extend({
 
     count: 0,
@@ -23,11 +22,9 @@ testBoth('observer on class', function(get, set) {
 
   set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
-
 });
 
 testBoth('observer on subclass', function(get, set) {
-
   var MyClass = EmberObject.extend({
 
     count: 0,
@@ -52,11 +49,9 @@ testBoth('observer on subclass', function(get, set) {
 
   set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
-
 });
 
 testBoth('observer on instance', function(get, set) {
-
   var obj = EmberObject.extend({
     foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
@@ -69,11 +64,9 @@ testBoth('observer on instance', function(get, set) {
 
   set(obj, 'bar', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
-
 });
 
 testBoth('observer on instance overriding class', function(get, set) {
-
   var MyClass = EmberObject.extend({
     count: 0,
 
@@ -95,11 +88,9 @@ testBoth('observer on instance overriding class', function(get, set) {
 
   set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
-
 });
 
 testBoth('observer should not fire after being destroyed', function(get, set) {
-
   var obj = EmberObject.extend({
     count: 0,
     foo: observer('bar', function() {
@@ -127,7 +118,6 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
 
 testBoth('chain observer on class', function(get, set) {
-
   var MyClass = EmberObject.extend({
     count: 0,
 
@@ -158,7 +148,6 @@ testBoth('chain observer on class', function(get, set) {
 
 
 testBoth('chain observer on class', function(get, set) {
-
   var MyClass = EmberObject.extend({
     count: 0,
 

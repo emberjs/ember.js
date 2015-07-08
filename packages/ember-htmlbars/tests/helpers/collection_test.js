@@ -549,7 +549,6 @@ QUnit.test('should render nested collections', function() {
   equal(view.$('ul.outer > li').length, 1, 'renders the outer list with correct number of items');
   equal(view.$('ul.inner').length, 1, 'the inner list exsits');
   equal(view.$('ul.inner > li').length, 3, 'renders the inner list with correct number of items');
-
 });
 
 QUnit.test('should render multiple, bound nested collections (#68)', function() {

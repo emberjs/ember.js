@@ -22,7 +22,6 @@ DeprecateViewAndControllerPaths.prototype.transform = function DeprecateViewAndC
     deprecatePath(moduleName, node, node.path);
     deprecatePaths(moduleName, node, node.params);
     deprecateHash(moduleName, node, node.hash);
-
   });
 
   return ast;

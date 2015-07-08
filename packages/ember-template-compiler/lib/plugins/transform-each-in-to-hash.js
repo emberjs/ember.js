@@ -40,7 +40,6 @@ TransformEachInToHash.prototype.transform = function TransformEachInToHash_trans
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {
-
       if (node.program && node.program.blockParams.length) {
         throw new Error('You cannot use keyword (`{{each foo in bar}}`) and block params (`{{each bar as |foo|}}`) at the same time.');
       }

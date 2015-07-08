@@ -18,9 +18,7 @@ function isVolatile(obj) {
   return !(isObject(obj) && obj.isDescriptor && obj._cacheable);
 }
 
-function Chains() {
-
-}
+function Chains() { }
 
 Chains.prototype = Object.create(null);
 

@@ -9,18 +9,15 @@ function K() { return this; }
 QUnit.module('EmberObject computed property');
 
 testWithDefault('computed property on instance', function(get, set) {
-
   var MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
 
   equal(get(new MyClass(), 'foo'), 'FOO');
-
 });
 
 
 testWithDefault('computed property on subclass', function(get, set) {
-
   var MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -30,12 +27,10 @@ testWithDefault('computed property on subclass', function(get, set) {
   });
 
   equal(get(new Subclass(), 'foo'), 'BAR');
-
 });
 
 
 testWithDefault('replacing computed property with regular val', function(get, set) {
-
   var MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -45,11 +40,9 @@ testWithDefault('replacing computed property with regular val', function(get, se
   });
 
   equal(get(new Subclass(), 'foo'), 'BAR');
-
 });
 
 testWithDefault('complex depndent keys', function(get, set) {
-
   var MyClass = EmberObject.extend({
 
     init() {
@@ -88,9 +81,7 @@ testWithDefault('complex depndent keys', function(get, set) {
 });
 
 testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
-
   var MyClass = EmberObject.extend({
-
     init() {
       this._super.apply(this, arguments);
       set(this, 'bar', { baz: 'BIFF' });
@@ -102,11 +93,9 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
       set(this, 'count', get(this, 'count')+1);
       return emberGet(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
     }).property('bar.baz')
-
   });
 
   var Subclass = MyClass.extend({
-
     init() {
       this._super.apply(this, arguments);
       set(this, 'bar2', { baz: 'BIFF2' });
@@ -159,29 +148,19 @@ QUnit.test('can retrieve metadata for a computed property', function() {
 
 QUnit.test('can iterate over a list of computed properties for a class', function() {
   var MyClass = EmberObject.extend({
-    foo: computed(function() {
+    foo: computed(function() {}),
 
-    }),
+    fooDidChange: observer('foo', function() {}),
 
-    fooDidChange: observer('foo', function() {
-
-    }),
-
-    bar: computed(function() {
-
-    })
+    bar: computed(function() {})
   });
 
   var SubClass = MyClass.extend({
-    baz: computed(function() {
-
-    })
+    baz: computed(function() {})
   });
 
   SubClass.reopen({
-    bat: computed(function() {
-
-    }).meta({ iAmBat: true })
+    bat: computed(function() {}).meta({ iAmBat: true })
   });
 
   var list = [];
@@ -211,9 +190,7 @@ QUnit.test('list of properties updates when an additional property is added (suc
   var MyClass = EmberObject.extend({
     foo: computed(K),
 
-    fooDidChange: observer('foo', function() {
-
-    }),
+    fooDidChange: observer('foo', function() {}),
 
     bar: computed(K)
   });

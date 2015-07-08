@@ -73,7 +73,6 @@ function sharedTeardown() {
 QUnit.module('The {{link-to}} helper', {
   setup() {
     Ember.run(function() {
-
       sharedSetup();
 
       Ember.TEMPLATES.app = compile('{{outlet}}');
@@ -159,7 +158,6 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
 });
 
 QUnit.test('The {{link-to}} helper supports URL replacement', function() {
-
   Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\' replace=true}}About{{/link-to}}');
 
   Router.map(function() {
@@ -249,7 +247,6 @@ QUnit.test('the {{link-to}} helper supports a custom disabledClass', function ()
   });
 
   equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class');
-
 });
 
 QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', function () {
@@ -659,11 +656,9 @@ QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about
   Ember.run(router, 'handleURL', '/lobby/list');
   Ember.run(Ember.$('#lobby-link'), 'click');
   shouldBeActive('#lobby-link');
-
 });
 
 QUnit.test('The {{link-to}} helper unwraps controllers', function() {
-
   if (isEnabled('ember-routing-transitioning-classes')) {
     expect(5);
   } else {
@@ -762,7 +757,6 @@ QUnit.test('Quoteless route param performs property lookup', function() {
 });
 
 QUnit.test('link-to with null/undefined dynamic parameters are put in a loading state', function() {
-
   expect(19);
 
   var oldWarn = Ember.Logger.warn;
@@ -932,7 +926,6 @@ QUnit.test('The {{link-to}} helper is active when a route is active', function()
 
   equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
   equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, 'The item route link is active');
-
 });
 
 QUnit.test('The {{link-to}} helper works in an #each\'d array of string route names', function() {
@@ -1084,7 +1077,6 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
   equal(normalizeUrl(Ember.$('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
   equal(normalizeUrl(Ember.$('li a:contains(Tom)').attr('href')), '/item/tom');
   equal(normalizeUrl(Ember.$('li a:contains(Erik)').attr('href')), '/item/erik');
-
 });
 
 QUnit.test('The non-block form {{link-to}} performs property lookup', function() {
@@ -1231,7 +1223,6 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
   Ember.run(router, 'handleURL', '/things/omg/other');
   shouldBeActive('#omg-link');
   shouldNotBeActive('#lol-link');
-
 });
 
 

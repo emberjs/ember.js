@@ -9,7 +9,6 @@ import { isWatching } from 'ember-metal/watching';
 QUnit.module('Mixin observer');
 
 testBoth('global observer helper', function(get, set) {
-
   var MyMixin = Mixin.create({
 
     count: 0,
@@ -28,7 +27,6 @@ testBoth('global observer helper', function(get, set) {
 });
 
 testBoth('global observer helper takes multiple params', function(get, set) {
-
   var MyMixin = Mixin.create({
 
     count: 0,
@@ -49,7 +47,6 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
 
 testBoth('replacing observer should remove old observer', function(get, set) {
-
   var MyMixin = Mixin.create({
 
     count: 0,
@@ -74,7 +71,6 @@ testBoth('replacing observer should remove old observer', function(get, set) {
 
   set(obj, 'baz', 'BAZ');
   equal(get(obj, 'count'), 10, 'should invoke observer after change');
-
 });
 
 testBoth('observing chain with property before', function(get, set) {

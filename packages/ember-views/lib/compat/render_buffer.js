@@ -533,7 +533,6 @@ RenderBuffer.prototype = {
     @private
   */
   element() {
-
     if (this._element && this.attrNodes.length > 0) {
       var i, l, attrMorph, attrNode;
       for (i=0, l=this.attrNodes.length; i<l; i++) {

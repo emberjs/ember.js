@@ -342,7 +342,6 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
-
   QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
   var middle;
 
@@ -413,6 +412,5 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   assert.strictEqual(view.$('p.bottom').text(), '13');
   assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
-
 }
 // jscs:enable validateIndentation

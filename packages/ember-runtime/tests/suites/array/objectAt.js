@@ -14,7 +14,6 @@ suite.test('should return object at specified index', function() {
   for (idx=0;idx<len;idx++) {
     equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));
   }
-
 });
 
 suite.test('should return undefined when requesting objects beyond index', function() {

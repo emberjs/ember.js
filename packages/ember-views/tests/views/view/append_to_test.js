@@ -150,7 +150,6 @@ QUnit.test('a view calls its children\'s willInsertElement and didInsertElement'
   run(function() {
     parentView.destroy();
   });
-
 });
 
 QUnit.test('replacing a view should invalidate childView elements', function() {

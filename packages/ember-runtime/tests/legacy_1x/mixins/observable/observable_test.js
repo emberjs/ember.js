@@ -401,7 +401,6 @@ QUnit.module('Computed properties', {
 });
 
 QUnit.test('getting values should call function return value', function() {
-
   // get each property twice. Verify return.
   var keys = w('computed computedCached dependent dependentFront dependentCached');
 
@@ -418,23 +417,19 @@ QUnit.test('getting values should call function return value', function() {
   w('computedCachedCalls dependentCachedCalls').forEach((key) => {
     equal(object[key].length, 1, fmt('non-cached property %@ should be called 1x', [key]));
   });
-
 });
 
 QUnit.test('setting values should call function return value', function() {
-
   // get each property twice. Verify return.
   var keys = w('computed dependent dependentFront computedCached dependentCached');
   var values = w('value1 value2');
 
   keys.forEach((key) => {
-
     equal(object.set(key, values[0]), values[0], fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
     equal(object.set(key, values[1]), values[1], fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
 
     equal(object.set(key, values[1]), values[1], fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
-
   });
 
   // verify each call count.  cached should only be called once
@@ -450,11 +445,9 @@ QUnit.test('setting values should call function return value', function() {
       equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
     }
   });
-
 });
 
 QUnit.test('notify change should clear cache', function() {
-
   // call get several times to collect call count
   object.get('computedCached'); // should run func
   object.get('computedCached'); // should not run func
@@ -467,7 +460,6 @@ QUnit.test('notify change should clear cache', function() {
 });
 
 QUnit.test('change dependent should clear cache', function() {
-
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
   equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -478,7 +470,6 @@ QUnit.test('change dependent should clear cache', function() {
 });
 
 QUnit.test('just notifying change of dependent should clear cache', function() {
-
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
   equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -489,7 +480,6 @@ QUnit.test('just notifying change of dependent should clear cache', function() {
 });
 
 QUnit.test('changing dependent should clear nested cache', function() {
-
   // call get several times to collect call count
   var ret1 = object.get('nestedInc'); // should run func
   equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
@@ -497,11 +487,9 @@ QUnit.test('changing dependent should clear nested cache', function() {
   object.set('changer', 'bar');
 
   equal(object.get('nestedInc'), ret1+1, 'should increment after dependent key changes'); // should run again
-
 });
 
 QUnit.test('just notifying change of dependent should clear nested cache', function() {
-
   // call get several times to collect call count
   var ret1 = object.get('nestedInc'); // should run func
   equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
@@ -509,14 +497,12 @@ QUnit.test('just notifying change of dependent should clear nested cache', funct
   object.notifyPropertyChange('changer');
 
   equal(object.get('nestedInc'), ret1+1, 'should increment after dependent key changes'); // should run again
-
 });
 
 
 // This verifies a specific bug encountered where observers for computed
 // properties would fire before their prop caches were cleared.
 QUnit.test('change dependent should clear cache when observers of dependent are called', function() {
-
   // call get several times to collect call count
   var ret1 = object.get('inc'); // should run func
   equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
@@ -528,7 +514,6 @@ QUnit.test('change dependent should clear cache when observers of dependent are 
 
   // now run
   object.set('changer', 'bar');
-
 });
 
 QUnit.test('setting one of two computed properties that depend on a third property should clear the kvo cache', function() {
@@ -654,7 +639,6 @@ QUnit.test('cacheable nested dependent keys should clear after their dependencie
 //
 
 QUnit.module('Observable objects & object properties ', {
-
   setup() {
     object = ObservableObject.extend({
       getEach() {
@@ -687,7 +671,6 @@ QUnit.module('Observable objects & object properties ', {
       normalArray: Ember.A([1,2,3,4,5])
     });
   }
-
 });
 
 QUnit.test('incrementProperty and decrementProperty', function() {
@@ -759,9 +742,7 @@ QUnit.test('should notify array observer when array changes', function() {
 
 QUnit.module('object.addObserver()', {
   setup() {
-
     ObjectC = ObservableObject.create({
-
       objectE: ObservableObject.create({
         propertyVal: 'chainedProperty'
       }),
@@ -782,7 +763,6 @@ QUnit.module('object.addObserver()', {
       chainedObserver() {
         this.normal2 = 'chainedPropertyObserved';
       }
-
     });
   }
 });
@@ -805,7 +785,6 @@ QUnit.test('should register an observer for a property - Special case of chained
 QUnit.module('object.removeObserver()', {
   setup() {
     ObjectD = ObservableObject.create({
-
       objectF: ObservableObject.create({
         propertyVal: 'chainedProperty'
       }),
@@ -840,7 +819,6 @@ QUnit.module('object.removeObserver()', {
         // Just an observer
       }
     });
-
   }
 });
 
@@ -890,7 +868,6 @@ QUnit.test('removing an observer inside of an observer shouldn’t cause any pro
 
 
 QUnit.module('Bind function ', {
-
   setup() {
     originalLookup = Ember.lookup;
     objectA = ObservableObject.create({
@@ -938,7 +915,6 @@ QUnit.test('should bind property with method parameter as undefined', function()
 //
 
 QUnit.test('changing chained observer object to null should not raise exception', function() {
-
   var obj = ObservableObject.create({
     foo: ObservableObject.create({
       bar: ObservableObject.create({ bat: 'BAT' })

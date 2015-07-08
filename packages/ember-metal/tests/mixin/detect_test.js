@@ -3,7 +3,6 @@ import { Mixin } from 'ember-metal/mixin';
 QUnit.module('Mixin.detect');
 
 QUnit.test('detect() finds a directly applied mixin', function() {
-
   var MixinA = Mixin.create();
   var obj = {};
 

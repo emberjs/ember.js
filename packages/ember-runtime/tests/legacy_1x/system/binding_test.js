@@ -79,7 +79,6 @@ QUnit.test('toObject change should propagate to fromObject only after flush', fu
 });
 
 QUnit.test('deferred observing during bindings', function() {
-
   // setup special binding
   fromObject = EmberObject.create({
     value1: 'value1',
@@ -236,7 +235,6 @@ QUnit.module('Custom Binding', {
 });
 
 QUnit.test('two bindings to the same value should sync in the order they are initialized', function() {
-
   run.begin();
 
   var a = EmberObject.create({

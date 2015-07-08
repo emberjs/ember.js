@@ -112,7 +112,6 @@ QUnit.module('Routing with Query Params', {
 });
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
-
   QUnit.test('Single query params can be set on the route', function() {
     Router.map(function() {
       this.route('home', { path: '/' });
@@ -158,7 +157,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.run(router, 'transitionTo', 'home', { queryParams: { page: '4' } });
     equal(controller.get('page'), 4);
-
   });
 
   QUnit.test('Query params can map to different url keys configured on the route', function() {
@@ -532,7 +530,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Subresource naming style is supported when configuration is all on the route', function() {
-
     Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
@@ -1502,7 +1499,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Subresource naming style is supported when configured on the route', function() {
-
     Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
@@ -2711,7 +2707,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Subresource naming style is supported', function() {
-
     Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');

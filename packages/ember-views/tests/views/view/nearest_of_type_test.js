@@ -58,7 +58,6 @@ QUnit.module('View#nearest*', {
 
     childView = view.get('childViews')[0];
     equal(childView.nearestWithProperty('myProp'), view);
-
   });
 
   QUnit.test('nearestChildOf should be deprecated', function() {

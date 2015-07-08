@@ -86,10 +86,6 @@ QUnit.test('should not affect rendering if destroyElement is called before initi
 });
 
 QUnit.module('views/view/view_lifecycle_test - in render', {
-  setup() {
-
-  },
-
   teardown() {
     if (view) {
       run(function() {
