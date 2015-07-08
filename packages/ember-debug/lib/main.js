@@ -187,15 +187,25 @@ Ember.deprecate = function(message, test, options) {
 
   @method deprecateFunc
   @param {String} message A description of the deprecation.
+  @param {Object} [options] The options object for Ember.deprecate.
   @param {Function} func The new function called to replace its deprecated counterpart.
   @return {Function} a new function that wrapped the original function with a deprecation warning
   @private
 */
-Ember.deprecateFunc = function(message, func) {
-  return function() {
-    Ember.deprecate(message);
-    return func.apply(this, arguments);
-  };
+Ember.deprecateFunc = function(...args) {
+  if (args.length === 3) {
+    let [message, options, func] = args;
+    return function() {
+      Ember.deprecate(message, false, options);
+      return func.call(this, arguments);
+    };
+  } else {
+    let [message, func] = args;
+    return function() {
+      Ember.deprecate(message);
+      return func.apply(this, arguments);
+    };
+  }
 };
 
 

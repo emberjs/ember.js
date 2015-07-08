@@ -96,8 +96,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     });
     ```
 
-    In the future this method may become asynchronous. If you want to ensure
-    synchronous behavior, use `observesImmediately`.
+    In the future this method may become asynchronous.
 
     See `Ember.observer`.
 
@@ -110,6 +109,21 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     return observer.apply(this, args);
   };
 
+
+  FunctionPrototype._observesImmediately = function () {
+    Ember.assert('Immediate observers must observe internal properties only, ' +
+                 'not properties on other objects.', function checkIsInternalProperty() {
+      for (var i = 0, l = arguments.length; i < l; i++) {
+        if (arguments[i].indexOf('.') !== -1) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // observes handles property expansion
+    return this.observes(...arguments);
+  };
   /**
     The `observesImmediately` extension of Javascript's Function prototype is
     available when `Ember.EXTEND_PROTOTYPES` or
@@ -134,22 +148,10 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     @method observesImmediately
     @for Function
+    @deprecated
     @private
   */
-  FunctionPrototype.observesImmediately = function () {
-    Ember.assert('Immediate observers must observe internal properties only, ' +
-                 'not properties on other objects.', function checkIsInternalProperty() {
-      for (var i = 0, l = arguments.length; i < l; i++) {
-        if (arguments[i].indexOf('.') !== -1) {
-          return false;
-        }
-      }
-      return true;
-    });
-
-    // observes handles property expansion
-    return this.observes(...arguments);
-  };
+  FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead', FunctionPrototype._observesImmediately);
 
   /**
     The `observesBefore` extension of Javascript's Function prototype is

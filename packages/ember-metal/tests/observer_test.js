@@ -23,7 +23,7 @@ import {
   mixin,
   observer,
   _beforeObserver,
-  immediateObserver
+  _immediateObserver
 } from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
 import {
@@ -1063,7 +1063,7 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
   // trigger deferred behavior
   run(function() {
     mixin = Mixin.create({
-      fooDidChange: immediateObserver('foo', function() {
+      fooDidChange: _immediateObserver('foo', function() {
         observerCalled++;
         equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
       })
@@ -1095,12 +1095,14 @@ if (Ember.EXTEND_PROTOTYPES) {
     // explicitly create a run loop so we do not inadvertently
     // trigger deferred behavior
     run(function() {
-      mixin = Mixin.create({
-        fooDidChange: function() {
-          observerCalled++;
-          equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
-        }.observesImmediately('{foo,bar}')
-      });
+      expectDeprecation(function() {
+        mixin = Mixin.create({
+          fooDidChange: function() {
+            observerCalled++;
+            equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
+          }.observesImmediately('{foo,bar}')
+        });
+      }, /Function#observesImmediately is deprecated. Use Function#observes instead/);
 
       mixin.apply(obj);
 
@@ -1129,7 +1131,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
   // trigger deferred behavior
   run(function() {
     mixin = Mixin.create({
-      fooDidChange: immediateObserver('{foo,bar}', function() {
+      fooDidChange: _immediateObserver('{foo,bar}', function() {
         observerCalled++;
         equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
       })
@@ -1154,7 +1156,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 testBoth("immediate observers are for internal properties only", function(get, set) {
   expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
   expectAssertion(function() {
-    immediateObserver('foo.bar', function() { return this; });
+    _immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
