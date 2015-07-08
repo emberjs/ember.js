@@ -284,7 +284,7 @@ export default Mixin.create({
     @method getEach
     @param {String} key name of the property
     @return {Array} The mapped array.
-    @private
+    @public
   */
   getEach: aliasMethod('mapBy'),
 
