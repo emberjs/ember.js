@@ -464,6 +464,58 @@ QUnit.test('should allow items to access to the CollectionView\'s current index 
   deepEqual(view.$(':nth-child(3)').text(), '2');
 });
 
+QUnit.test('should update the CollectionView items\' content index correctly', function () {
+  var content = Ember.A(['2', '4']);
+  view = CollectionView.create({
+    content: content,
+
+    itemViewClass: View.extend({
+      render: function (buf) {
+        buf.push(this.get('content'));
+      }
+    })
+  });
+
+  run(function () {
+    view.append();
+  });
+
+  var toArray = function(view) {
+    return view.$().children().map(function () { return jQuery(this).text(); }).toArray();
+  };
+
+  deepEqual(toArray(view), ['2', '4'], 'precond - generates pre-existing content correctly');
+  deepEqual(view.get('childViews').mapBy('contentIndex'), [0, 1], 'precond - generates pre-existing content indexes correctly');
+
+  run(function () {
+    content.unshiftObject('1');
+  });
+
+  deepEqual(toArray(view), ['1', '2', '4'], 'update content after unshiftObject');
+  deepEqual(view.get('childViews').mapBy('contentIndex'), [0, 1, 2], 'update content index after unshiftObject');
+
+  run(function () {
+    content.insertAt(2, '3');
+  });
+
+  deepEqual(toArray(view), ['1', '2', '3', '4'], 'update content after insertAt');
+  deepEqual(view.get('childViews').mapBy('contentIndex'), [0, 1, 2, 3], 'update content index after insertAt');
+
+  run(function () {
+    content.removeAt(1);
+  });
+
+  deepEqual(toArray(view), ['1', '3', '4'], 'update content after removeAt');
+  deepEqual(view.get('childViews').mapBy('contentIndex'), [0, 1, 2], 'update content index after removeAt');
+
+  run(function () {
+    content.pushObject('5');
+  });
+
+  deepEqual(toArray(view), ['1', '3', '4', '5'], 'update content after pushObject');
+  deepEqual(view.get('childViews').mapBy('contentIndex'), [0, 1, 2, 3], 'update content index after pushObject');
+});
+
 QUnit.test('should allow declaration of itemViewClass as a string', function() {
   registry.register('view:simple-view', View.extend());
 
