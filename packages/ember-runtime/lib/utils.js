@@ -4,18 +4,18 @@ import EmberObject from 'ember-runtime/system/object';
 // ........................................
 // TYPING & ARRAY MESSAGING
 //
-var TYPE_MAP = {
-  '[object Boolean]':  'boolean',
-  '[object Number]':   'number',
-  '[object String]':   'string',
-  '[object Function]': 'function',
-  '[object Array]':    'array',
-  '[object Date]':     'date',
-  '[object RegExp]':   'regexp',
-  '[object Object]':   'object'
-};
-
+var TYPE_MAP = Object.create(null);
 var toString = Object.prototype.toString;
+
+function getType(item) {
+  var string = toString.call(item);
+  var result = TYPE_MAP[string];
+  if (result) { return result; }
+  result = string.substring(8, string.length - 1).toLowerCase();
+  TYPE_MAP[string] = result;
+  return result;
+}
+
 
 /**
   Returns true if the passed object is an array or Array-like.
@@ -48,7 +48,7 @@ export function isArray(obj) {
 
   let type = typeOf(obj);
   if ('array' === type) { return true; }
-  if ((obj.length !== undefined) && 'object' === type) { return true; }
+  if ((obj.length !== undefined) && 'arguments' === type) { return true; }
   return false;
 }
 
@@ -108,19 +108,24 @@ export function isArray(obj) {
 export function typeOf(item) {
   if (item === null) { return 'null'; }
   if (item === undefined) { return 'undefined'; }
-  var ret = TYPE_MAP[toString.call(item)] || 'object';
+
+  var ret = getType(item);
+
+  // This is for backwards compat
+  if (ret === 'arguments') {
+    return 'object';
+  }
 
   if (ret === 'function') {
     if (EmberObject.detect(item)) {
       ret = 'class';
     }
   } else if (ret === 'object') {
-    if (item instanceof Error) {
-      ret = 'error';
+    // support data mocking libs that use subclassing work
+    if (item instanceof Date) {
+      ret = 'date';
     } else if (item instanceof EmberObject) {
       ret = 'instance';
-    } else if (item instanceof Date) {
-      ret = 'date';
     }
   }
 
