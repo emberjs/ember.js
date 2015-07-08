@@ -147,7 +147,7 @@ export default Mixin.create({
 
     @property firstObject
     @return {Object} the object or undefined
-    @private
+    @public
   */
   firstObject: computed('[]', function() {
     if (get(this, 'length') === 0) {
