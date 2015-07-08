@@ -331,7 +331,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Array} The mapped array.
-    @private
+    @public
   */
   map(callback, target) {
     var ret = Ember.A();
