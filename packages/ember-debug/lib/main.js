@@ -197,7 +197,7 @@ Ember.deprecateFunc = function(...args) {
     let [message, options, func] = args;
     return function() {
       Ember.deprecate(message, false, options);
-      return func.call(this, arguments);
+      return func.apply(this, arguments);
     };
   } else {
     let [message, func] = args;
