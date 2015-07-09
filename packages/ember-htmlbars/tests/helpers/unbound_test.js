@@ -1,6 +1,6 @@
 /*jshint newcap:false*/
 import EmberView from 'ember-views/views/view';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import EmberObject from 'ember-runtime/system/object';
 
 import { A } from 'ember-runtime/system/native_array';
