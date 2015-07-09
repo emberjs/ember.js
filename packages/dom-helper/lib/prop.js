@@ -25,7 +25,9 @@ export function normalizeProperty(element, slotName) {
     }
   }
 
-  if (type === 'prop' && preferAttr(element.tagName, normalized)) {
+  if (type === 'prop' &&
+      (normalized.toLowerCase() === 'style' ||
+       preferAttr(element.tagName, normalized))) {
     type = 'attr';
   }
 
