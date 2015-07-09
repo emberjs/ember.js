@@ -87,3 +87,34 @@ test('type.eventHandlers should all be props: Safari style (which has screwed up
     equal(type, 'prop', `type: ${pair.tagName}.${pair.key}`);
   });
 });
+
+test('test style attr', function() {
+  var { normalized, type } = normalizeProperty({
+    style: undefined,
+    tagName: 'foobar'
+  }, 'style');
+
+  equal(normalized, 'style');
+  equal(type, 'attr');
+});
+
+test('test STYLE attr', function() {
+  var { normalized, type } = normalizeProperty({
+    style: undefined,
+    tagName: 'foobar'
+  }, 'STYLE');
+
+  equal(normalized, 'style');
+  equal(type, 'attr');
+});
+
+test('test StyLE attr', function() {
+  var { normalized, type } = normalizeProperty({
+    style: undefined,
+    tagName: 'foobar'
+  }, 'StyLE');
+
+  equal(normalized, 'style');
+  equal(type, 'attr');
+});
+
