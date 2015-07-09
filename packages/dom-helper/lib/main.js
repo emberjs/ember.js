@@ -282,8 +282,7 @@ prototype.getPropertyStrict = function(element, name) {
 };
 
 prototype.setProperty = function(element, name, value, namespace) {
-  var lowercaseName = name.toLowerCase();
-  if (element.namespaceURI === svgNamespace || lowercaseName === 'style') {
+  if (element.namespaceURI === svgNamespace) {
     if (isAttrRemovalValue(value)) {
       element.removeAttribute(name);
     } else {
