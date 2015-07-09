@@ -600,16 +600,6 @@ export default Mixin.create({
   },
 
   /**
-    @method everyBy
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @deprecated Use `isEvery` instead
-    @return {Boolean}
-    @public
-  */
-  everyBy: aliasMethod('isEvery'),
-
-  /**
     @method everyProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
