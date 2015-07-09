@@ -102,12 +102,4 @@ suite.test('should return first undefined property match', function() {
   equal(obj.findBy('bar', undefined), ary[1], 'findBy(\'bar\', undefined)');
 });
 
-suite.test('should be aliased to findProperty', function() {
-  var obj;
-
-  obj = this.newObject([]);
-
-  equal(obj.findProperty, obj.findBy);
-});
-
 export default suite;
