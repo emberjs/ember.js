@@ -561,22 +561,6 @@ export default Mixin.create({
   },
 
   /**
-    Returns the first item with a property matching the passed value. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
-
-    This method works much like the more generic `find()` method.
-
-    @method findProperty
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Object} found item or `undefined`
-    @deprecated Use `findBy` instead
-    @private
-  */
-  findProperty: aliasMethod('findBy'),
-
-  /**
     Returns `true` if the passed function returns true for every item in the
     enumeration. This corresponds with the `every()` method in JavaScript 1.6.
 
