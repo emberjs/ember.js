@@ -581,6 +581,39 @@ QUnit.test('`fillIn` focuses on the element', function() {
   });
 });
 
+QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
+  expect(1);
+
+  var fillIn, visit, andThen;
+  var events = [];
+  App.IndexController = Ember.Controller.extend({
+    actions: {
+      oninputHandler(e) {
+        events.push(e.type);
+      },
+      onchangeHanlders(e) {
+        events.push(e.type);
+      }
+    }
+  });
+
+  App.IndexView = EmberView.extend({
+    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHanlders"}}>')
+  });
+
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+
+  visit('/');
+  fillIn('#first', 'current value');
+  andThen(function() {
+    deepEqual(events, ['input', 'change'], '`input` and `change` events are fired in the proper order');
+  });
+});
+
 if (isEnabled('ember-testing-checkbox-helpers')) {
   QUnit.test('`check` ensures checkboxes are `checked` state for checkboxes', function() {
     expect(2);
