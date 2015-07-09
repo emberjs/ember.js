@@ -182,7 +182,9 @@ function fillIn(app, selector, contextOrText, text) {
   $el = app.testHelpers.findWithAssert(selector, context);
   focus($el);
   run(function() {
-    $el.val(text).change();
+    $el.val(text);
+    $el.trigger('input');
+    $el.change();
   });
   return app.testHelpers.wait();
 }
