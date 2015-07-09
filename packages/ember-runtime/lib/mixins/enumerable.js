@@ -1134,7 +1134,7 @@ export default Mixin.create({
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
     @since 1.2.0
-    @private
+    @public
   */
   sortBy() {
     var sortKeys = arguments;
