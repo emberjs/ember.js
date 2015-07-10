@@ -2,6 +2,7 @@ import visitorKeys from '../types/visitor-keys';
 import {
   cannotRemoveNode,
   cannotReplaceNode,
+  cannotReplaceOrRemoveInKeyHandlerYet
 } from './errors';
 
 function visitNode(visitor, node) {
@@ -16,7 +17,7 @@ function visitNode(visitor, node) {
     let keys = visitorKeys[node.type];
 
     for (let i = 0; i < keys.length; i++) {
-      visitKey(visitor, node, keys[i]);
+      visitKey(visitor, handler, node, keys[i]);
     }
 
     if (handler && handler.exit) {
@@ -27,9 +28,19 @@ function visitNode(visitor, node) {
   return result;
 }
 
-function visitKey(visitor, node, key) {
+function visitKey(visitor, handler, node, key) {
   let value = node[key];
   if (!value) { return; }
+
+  let keyHandler = handler && (handler.keys[key] || handler.keys.All);
+  let result;
+
+  if (keyHandler && keyHandler.enter) {
+    result = keyHandler.enter.call(null, node, key);
+    if (result !== undefined) {
+      throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
+    }
+  }
 
   if (Array.isArray(value)) {
     visitArray(visitor, value);
@@ -37,6 +48,13 @@ function visitKey(visitor, node, key) {
     let result = visitNode(visitor, value);
     if (result !== undefined) {
       assignKey(node, key, result); 
+    }
+  }
+
+  if (keyHandler && keyHandler.exit) {
+    result = keyHandler.exit.call(null, node, key);
+    if (result !== undefined) {
+      throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
   }
 }
@@ -90,16 +108,37 @@ export function normalizeVisitor(visitor) {
 
   for (let type in visitor) {
     let handler = visitor[type] || visitor.All;
+    let normalizedKeys = {};
 
     if (typeof handler === 'object') {
+      let keys = handler.keys;
+      if (keys) {
+        for (let key in keys) {
+          let keyHandler = keys[key];
+          if (typeof keyHandler === 'object') {
+            normalizedKeys[key] = {
+              enter: (typeof keyHandler.enter === 'function') ? keyHandler.enter : null,
+              exit: (typeof keyHandler.exit === 'function') ? keyHandler.exit : null
+            };
+          } else if (typeof keyHandler === 'function') {
+            normalizedKeys[key] = {
+              enter: keyHandler,
+              exit: null
+            };
+          }
+        }
+      }
+
       normalizedVisitor[type] = {
         enter: (typeof handler.enter === 'function') ? handler.enter : null,
-        exit: (typeof handler.exit === 'function') ? handler.exit : null
+        exit: (typeof handler.exit === 'function') ? handler.exit : null,
+        keys: normalizedKeys
       };
     } else if (typeof handler === 'function') {
       normalizedVisitor[type] = {
         enter: handler,
-        exit: null
+        exit: null,
+        keys: normalizedKeys
       };
     }
   }
