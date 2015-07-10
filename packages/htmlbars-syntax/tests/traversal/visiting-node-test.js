@@ -11,8 +11,8 @@ function traversalEqual(node, expectedTraversal) {
   });
 
   deepEqual(
-    actualTraversal.map(a => `${a[0]}:${a[1].type}`),
-    expectedTraversal.map(a => `${a[0]}:${a[1].type}`)
+    actualTraversal.map(a => `${a[0]} ${a[1].type}`),
+    expectedTraversal.map(a => `${a[0]} ${a[1].type}`)
   );
 
   let nodesEqual = true;
