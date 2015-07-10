@@ -325,7 +325,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
 
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
-      for (idx = start; idx < start+added; idx++) {
+      for (idx = start; idx < start + added; idx++) {
         item = content.objectAt(idx);
         itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
@@ -375,7 +375,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     this._itemViewProps = itemProps;
     var childViews = get(this, 'childViews');
 
-    for (var i=0, l=childViews.length; i<l; i++) {
+    for (var i = 0, l = childViews.length; i<l; i++) {
       childViews[i].setProperties(itemProps);
     }
 

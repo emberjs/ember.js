@@ -12,7 +12,7 @@ QUnit.test('Ember.typeOf', function() {
   var error       = new Error('boum');
   var object      = { a: 'b' };
   var a = null;
-  var arr = [1,2,3];
+  var arr = [1, 2, 3];
   var obj = {};
   var instance = EmberObject.create({ method() {} });
 
@@ -21,7 +21,7 @@ QUnit.test('Ember.typeOf', function() {
   equal(typeOf('Cyril'), 'string', 'Cyril');
   equal(typeOf(101), 'number', '101');
   equal(typeOf(true), 'boolean', 'true');
-  equal(typeOf([1,2,90]), 'array', '[1,2,90]');
+  equal(typeOf([1, 2, 90]), 'array', '[1,2,90]');
   equal(typeOf(/abc/), 'regexp', '/abc/');
   equal(typeOf(date), 'date', 'new Date()');
   equal(typeOf(mockedDate), 'date', 'mocked date');

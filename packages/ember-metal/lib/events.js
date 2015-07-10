@@ -89,8 +89,8 @@ export function accumulateListeners(obj, eventName, otherActions) {
 
   for (var i = actions.length - 3; i >= 0; i -= 3) {
     var target = actions[i];
-    var method = actions[i+1];
-    var flags = actions[i+2];
+    var method = actions[i + 1];
+    var flags = actions[i + 2];
     var actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
@@ -184,7 +184,7 @@ function removeListener(obj, eventName, target, method) {
 
     if (!actions) { return; }
     for (var i = actions.length - 3; i >= 0; i -= 3) {
-      _removeListener(actions[i], actions[i+1]);
+      _removeListener(actions[i], actions[i + 1]);
     }
   }
 }
@@ -217,14 +217,14 @@ export function suspendListener(obj, eventName, target, method, callback) {
   var actionIndex = indexOf(actions, target, method);
 
   if (actionIndex !== -1) {
-    actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
+    actions[actionIndex + 2] |= SUSPENDED; // mark the action as suspended
   }
 
   try {
     return callback.call(target);
   } finally {
     if (actionIndex !== -1) {
-      actions[actionIndex+2] &= ~SUSPENDED;
+      actions[actionIndex + 2] &= ~SUSPENDED;
     }
   }
 }
@@ -251,13 +251,13 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   var suspendedActions = [];
   var actionsList = [];
 
-  for (let i=0, l=eventNames.length; i<l; i++) {
+  for (let i = 0, l = eventNames.length; i<l; i++) {
     let eventName = eventNames[i];
     let actions = actionsFor(obj, eventName);
     let actionIndex = indexOf(actions, target, method);
 
     if (actionIndex !== -1) {
-      actions[actionIndex+2] |= SUSPENDED;
+      actions[actionIndex + 2] |= SUSPENDED;
       suspendedActions.push(actionIndex);
       actionsList.push(actions);
     }
@@ -268,7 +268,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   } finally {
     for (let i = 0, l = suspendedActions.length; i < l; i++) {
       let actionIndex = suspendedActions[i];
-      actionsList[i][actionIndex+2] &= ~SUSPENDED;
+      actionsList[i][actionIndex + 2] &= ~SUSPENDED;
     }
   }
 }
@@ -326,8 +326,8 @@ export function sendEvent(obj, eventName, params, actions) {
 
   for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     var target = actions[i];
-    var method = actions[i+1];
-    var flags = actions[i+2];
+    var method = actions[i + 1];
+    var flags = actions[i + 2];
 
     if (!method) { continue; }
     if (flags & SUSPENDED) { continue; }
@@ -380,7 +380,7 @@ export function listenersFor(obj, eventName) {
 
   for (var i = 0, l = actions.length; i < l; i += 3) {
     var target = actions[i];
-    var method = actions[i+1];
+    var method = actions[i + 1];
     ret.push([target, method]);
   }
 

@@ -237,7 +237,7 @@ QUnit.test('it should wrap context with object controller [DEPRECATED]', functio
       this._super();
     },
     controllerName: computed(function() {
-      return 'controller:'+this.get('model.name') + ' and ' + this.get('parentController.name');
+      return `controller:${this.get('model.name')} and ${this.get('parentController.name')}`;
     }).property('model.name', 'parentController.name')
   });
 

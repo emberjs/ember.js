@@ -10,7 +10,7 @@ MutableArrayTests.extend({
   },
 
   mutate(obj) {
-    obj.pushObject(obj.length+1);
+    obj.pushObject(obj.length + 1);
   },
 
   toArray(obj) {

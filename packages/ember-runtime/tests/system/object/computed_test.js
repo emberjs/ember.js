@@ -53,7 +53,7 @@ testWithDefault('complex depndent keys', function(get, set) {
     count: 0,
 
     foo: computed(function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
       return emberGet(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
     }).property('bar.baz')
 
@@ -90,7 +90,7 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
     count: 0,
 
     foo: computed(function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
       return emberGet(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
     }).property('bar.baz')
   });
@@ -104,7 +104,7 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
     count: 0,
 
     foo: computed(function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
       return emberGet(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
     }).property('bar2.baz')
   });

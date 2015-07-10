@@ -607,8 +607,8 @@ QUnit.test('selection uses the same array when multiple=true', function() {
 
   select.$().trigger('change');
 
-  deepEqual(select.get('selection'), [tom,david], 'On change the selection is updated');
-  deepEqual(selection, [tom,david], 'On change the original selection array is updated');
+  deepEqual(select.get('selection'), [tom, david], 'On change the selection is updated');
+  deepEqual(selection, [tom, david], 'On change the original selection array is updated');
 });
 
 QUnit.test('Ember.SelectedOption knows when it is selected when multiple=false', function() {
@@ -735,7 +735,7 @@ QUnit.test('valueBinding handles 0 as initiated value (issue #2763)', function()
     select.destroy(); // Destroy the existing select
 
     select = EmberSelect.extend({
-      content: Ember.A([1,0]),
+      content: Ember.A([1, 0]),
       indirectData: indirectData,
       valueBinding: 'indirectData.value'
     }).create();

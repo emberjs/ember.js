@@ -121,9 +121,9 @@ if (isEnabled('ember-routing-transitioning-classes')) {
       var i = 1;
       while (i < arguments.length) {
         var $a = arguments[i];
-        var shouldHaveClass = arguments[i+1];
+        var shouldHaveClass = arguments[i + 1];
         equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + ' should ' + (shouldHaveClass ? '' : 'not ') + 'have class ' + className);
-        i +=2;
+        i += 2;
       }
     }
 
@@ -187,9 +187,9 @@ if (isEnabled('ember-routing-transitioning-classes')) {
       var i = 1;
       while (i < arguments.length) {
         var $a = arguments[i];
-        var shouldHaveClass = arguments[i+1];
+        var shouldHaveClass = arguments[i + 1];
         equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + ' should ' + (shouldHaveClass ? '' : 'not ') + 'have class ' + className);
-        i +=2;
+        i += 2;
       }
     }
 

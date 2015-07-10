@@ -443,7 +443,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   toString() {
     var hasToStringExtension = typeof this.toStringExtension === 'function';
     var extension = hasToStringExtension ? ':' + this.toStringExtension() : '';
-    var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+    var ret = '<' + this.constructor.toString() + ':' + guidFor(this) + extension + '>';
 
     this.toString = makeToString(ret);
     return ret;
@@ -737,7 +737,7 @@ var ClassMixinProps = {
   detect(obj) {
     if ('function' !== typeof obj) { return false; }
     while (obj) {
-      if (obj===this) { return true; }
+      if (obj === this) { return true; }
       obj = obj.superclass;
     }
     return false;
@@ -781,7 +781,7 @@ var ClassMixinProps = {
     var possibleDesc = proto[key];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-    Ember.assert('metaForProperty() could not find a computed property with key \''+key+'\'.', !!desc && desc instanceof ComputedProperty);
+    Ember.assert('metaForProperty() could not find a computed property with key \'' + key + '\'.', !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
   },
 

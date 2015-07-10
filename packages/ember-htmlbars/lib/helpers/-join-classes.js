@@ -7,8 +7,9 @@
 export default function joinClasses(classNames) {
   var result = [];
 
-  for (var i=0, l=classNames.length; i<l; i++) {
-    var className = classNames[i];
+  for (let i = 0, l = classNames.length; i < l; i++) {
+    let className = classNames[i];
+
     if (className) {
       result.push(className);
     }

@@ -70,7 +70,7 @@ Ember.assert = function(desc, test) {
 */
 Ember.warn = function(message, test) {
   if (!test) {
-    Logger.warn('WARNING: '+message);
+    Logger.warn('WARNING: ' + message);
     if ('trace' in Logger) {
       Logger.trace();
     }
@@ -90,7 +90,7 @@ Ember.warn = function(message, test) {
   @public
 */
 Ember.debug = function(message) {
-  Logger.debug('DEBUG: '+message);
+  Logger.debug('DEBUG: ' + message);
 };
 
 /**
@@ -168,7 +168,7 @@ Ember.deprecate = function(message, test, options) {
     message = message + stackStr;
   }
 
-  Logger.warn('DEPRECATION: '+message);
+  Logger.warn('DEPRECATION: ' + message);
 };
 
 

@@ -32,7 +32,7 @@ QUnit.test('defining computed property should invoke property on get', function(
   var count = 0;
   defineProperty(obj, 'foo', computed(function(key) {
     count++;
-    return 'computed '+key;
+    return 'computed ' + key;
   }));
 
   equal(get(obj, 'foo'), 'computed foo', 'should return value');
@@ -43,11 +43,11 @@ QUnit.test('defining computed property should invoke property on set', function(
   var obj = {};
   var count = 0;
   defineProperty(obj, 'foo', computed({
-    get: function(key) { return this['__'+key]; },
+    get: function(key) { return this['__' + key]; },
     set: function(key, value) {
       count++;
-      this['__'+key] = 'computed '+value;
-      return this['__'+key];
+      this['__' + key] = 'computed ' + value;
+      return this['__' + key];
     }
   }));
 
@@ -62,11 +62,11 @@ QUnit.module('computed should inherit through prototype', {
     objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed({
       get: function(key) {
-        return this['__'+key];
+        return this['__' + key];
       },
       set: function(key, value) {
-        this['__'+key] = 'computed '+value;
-        return this['__'+key];
+        this['__' + key] = 'computed ' + value;
+        return this['__' + key];
       }
     }));
 
@@ -101,11 +101,11 @@ QUnit.module('redefining computed property to normal', {
     objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed({
       get: function(key) {
-        return this['__'+key];
+        return this['__' + key];
       },
       set: function(key, value) {
-        this['__'+key] = 'computed '+value;
-        return this['__'+key];
+        this['__' + key] = 'computed ' + value;
+        return this['__' + key];
       }
     }));
 
@@ -140,21 +140,21 @@ QUnit.module('redefining computed property to another property', {
     objA = { __foo: 'FOO' };
     defineProperty(objA, 'foo', computed({
       get: function(key) {
-        return this['__'+key];
+        return this['__' + key];
       },
       set: function(key, value) {
-        this['__'+key] = 'A '+value;
-        return this['__'+key];
+        this['__' + key] = 'A ' + value;
+        return this['__' + key];
       }
     }));
 
     objB = Object.create(objA);
     objB.__foo = 'FOO';
     defineProperty(objB, 'foo', computed({
-      get: function(key) { return this['__'+key]; },
+      get: function(key) { return this['__' + key]; },
       set: function(key, value) {
-        this['__'+key] = 'B '+value;
-        return this['__'+key];
+        this['__' + key] = 'B ' + value;
+        return this['__' + key];
       }
     }));
   },
@@ -205,7 +205,7 @@ QUnit.module('computed - cacheable', {
     count = 0;
     var func = function(key, value) {
       count++;
-      return 'bar '+count;
+      return 'bar ' + count;
     };
     defineProperty(obj, 'foo', computed({ get: func, set: func }));
   },
@@ -300,7 +300,7 @@ QUnit.module('computed - dependentkey', {
     var getterAndSetter = function(key, value) {
       count++;
       get(this, 'bar');
-      return 'bar '+count;
+      return 'bar ' + count;
     };
     defineProperty(obj, 'foo', computed({
       get: getterAndSetter,
@@ -342,7 +342,7 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
   defineProperty(obj, 'bar', computed(function() {
     count++;
     get(this, 'baz');
-    return 'baz '+count;
+    return 'baz ' + count;
   }).property('baz'));
 
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
@@ -365,13 +365,13 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
 testBoth('circular keys should not blow up', function(get, set) {
   var func = function(key, value) {
     count++;
-    return 'bar '+count;
+    return 'bar ' + count;
   };
   defineProperty(obj, 'bar', computed({ get: func, set: func }).property('foo'));
 
   defineProperty(obj, 'foo', computed(function(key) {
     count++;
-    return 'foo '+count;
+    return 'foo ' + count;
   }).property('bar'));
 
   equal(get(obj, 'foo'), 'foo 1', 'get once');
@@ -390,7 +390,7 @@ testBoth('redefining a property should undo old dependent keys', function(get, s
 
   defineProperty(obj, 'foo', computed(function() {
     count++;
-    return 'baz '+count;
+    return 'baz ' + count;
   }).property('baz'));
 
   equal(isWatching(obj, 'bar'), false, 'after redefining should not be watching dependent key');
@@ -407,7 +407,7 @@ testBoth('redefining a property should undo old dependent keys', function(get, s
 testBoth('can watch multiple dependent keys specified declaratively via brace expansion', function (get, set) {
   defineProperty(obj, 'foo', computed(function(key) {
     count++;
-    return 'foo '+count;
+    return 'foo ' + count;
   }).property('qux.{bar,baz}'));
 
   equal(get(obj, 'foo'), 'foo 1', 'get once');
@@ -472,7 +472,7 @@ var moduleOpts = {
     count = 0;
     func = function() {
       count++;
-      return get(obj, 'foo.bar.baz.biff')+' '+count;
+      return get(obj, 'foo.bar.baz.biff') + ' ' + count;
     };
   },
 
@@ -532,7 +532,7 @@ testBoth('depending on Global chain', function(get, set) {
   // assign computed property
   defineProperty(obj, 'prop', computed(function() {
     count++;
-    return get('Global.foo.bar.baz.biff')+' '+count;
+    return get('Global.foo.bar.baz.biff') + ' ' + count;
   }).property('Global.foo.bar.baz.biff'));
 
   equal(get(obj, 'prop'), 'BIFF 1');
@@ -599,7 +599,7 @@ QUnit.test('setter and getters are passed using an object', function() {
         equal(keyName, 'aInt', 'setter receives the keyName');
         equal(value, 123, 'setter receives the new value');
         equal(oldValue, 1, 'setter receives the old value');
-        this.set('a', ''+value); // side effect
+        this.set('a', '' + value); // side effect
         return parseInt(this.get('a'));
       }
     })

@@ -60,7 +60,7 @@ DSL.prototype = {
 
   push(url, name, callback) {
     var parts = name.split('.');
-    if (url === '' || url === '/' || parts[parts.length-1] === 'index') { this.explicitIndex = true; }
+    if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
   },
@@ -88,7 +88,7 @@ DSL.prototype = {
     }
 
     return function(match) {
-      for (var i=0, l=dslMatches.length; i<l; i++) {
+      for (var i = 0, l = dslMatches.length; i < l; i++) {
         var dslMatch = dslMatches[i];
         match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }

@@ -11,7 +11,7 @@ suite.test('should return index of object', function() {
   var len      = 3;
   var idx;
 
-  for (idx=0;idx<len;idx++) {
+  for (idx = 0;idx<len;idx++) {
     equal(obj.indexOf(expected[idx]), idx, fmt('obj.indexOf(%@) should match idx', [expected[idx]]));
   }
 });

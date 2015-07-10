@@ -450,7 +450,7 @@ function testMap(nameAndFunc) {
     equal(map.get(-0), 'zero');
 
     map.forEach(function(value, key) {
-      equal(1/key, Infinity, 'spec says key should be positive zero');
+      equal(1 / key, Infinity, 'spec says key should be positive zero');
     });
   });
 

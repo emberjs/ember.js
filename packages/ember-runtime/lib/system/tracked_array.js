@@ -186,8 +186,8 @@ TrackedArray.prototype = {
   // see SubArray for a better implementation.
   _composeInsert(index) {
     var newArrayOperation = this._operations[index];
-    var leftArrayOperation = this._operations[index-1]; // may be undefined
-    var rightArrayOperation = this._operations[index+1]; // may be undefined
+    var leftArrayOperation = this._operations[index - 1]; // may be undefined
+    var rightArrayOperation = this._operations[index + 1]; // may be undefined
     var leftOp = leftArrayOperation && leftArrayOperation.type;
     var rightOp = rightArrayOperation && rightArrayOperation.type;
 
@@ -216,7 +216,7 @@ TrackedArray.prototype = {
   _composeDelete(index) {
     var arrayOperation = this._operations[index];
     var deletesToGo = arrayOperation.count;
-    var leftArrayOperation = this._operations[index-1]; // may be undefined
+    var leftArrayOperation = this._operations[index - 1]; // may be undefined
     var leftOp = leftArrayOperation && leftArrayOperation.type;
     var nextArrayOperation;
     var nextOp;
@@ -270,7 +270,7 @@ TrackedArray.prototype = {
     if (arrayOperation.count > 0) {
       // compose our new delete with possibly several operations to the right of
       // disparate types
-      this._operations.splice(index+1, i-1-index);
+      this._operations.splice(index + 1, i - 1 - index);
     } else {
       // The delete operation can go away; it has merely reduced some other
       // operation, as in d:3 i:4; it may also have eliminated that operation,

@@ -74,10 +74,10 @@ QUnit.test('Mixin sets up controllers if there is needs before calling super', f
 
   registry.register('controller:posts', ArrayController.extend());
 
-  container.lookup('controller:posts').set('model', A(['a','b','c']));
+  container.lookup('controller:posts').set('model', A(['a', 'b', 'c']));
 
-  deepEqual(['a','b','c'], container.lookup('controller:other').toArray());
-  deepEqual(['a','b','c'], container.lookup('controller:another').toArray());
+  deepEqual(['a', 'b', 'c'], container.lookup('controller:other').toArray());
+  deepEqual(['a', 'b', 'c'], container.lookup('controller:another').toArray());
 });
 
 QUnit.test('raises if trying to get a controller that was not pre-defined in `needs`', function() {

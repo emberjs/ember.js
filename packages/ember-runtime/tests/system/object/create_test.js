@@ -159,7 +159,7 @@ QUnit.module('EmberObject.createWithMixins', moduleOptions);
 QUnit.test('Creates a new object that contains passed properties', function() {
   var called = false;
   var obj = EmberObject.extend({
-    method() { called=true; }
+    method() { called = true; }
   }).create({
     prop: 'FOO'
   });

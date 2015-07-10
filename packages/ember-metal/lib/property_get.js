@@ -137,7 +137,7 @@ export function normalizeTuple(target, path) {
   if (isGlobal && isPath(path)) {
     key = path.match(FIRST_KEY)[0];
     target = get(target, key);
-    path   = path.slice(key.length+1);
+    path   = path.slice(key.length + 1);
   }
 
   // must return some kind of path to be valid else other things will break.
@@ -148,7 +148,7 @@ export function normalizeTuple(target, path) {
 
 
 function validateIsPath(path) {
-  if (!path || path.length===0) {
+  if (!path || path.length === 0) {
     throw new EmberError(`Object in path ${path} could not be found or was destroyed.`);
   }
 }

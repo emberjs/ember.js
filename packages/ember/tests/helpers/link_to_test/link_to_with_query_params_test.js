@@ -353,8 +353,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.IndexController = Ember.Controller.extend({
-      pagesArray: [1,2],
-      biggerArray: [1,2,3],
+      pagesArray: [1, 2],
+      biggerArray: [1, 2, 3],
       emptyArray: []
     });
 
@@ -698,8 +698,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexController = Ember.Controller.extend({
       queryParams: ['pages'],
       pages: [],
-      pagesArray: [1,2],
-      biggerArray: [1,2,3],
+      pagesArray: [1, 2],
+      biggerArray: [1, 2, 3],
       emptyArray: []
     });
 

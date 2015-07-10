@@ -149,7 +149,7 @@ function isAllowedEvent(event, allowedKeys) {
     return true;
   }
 
-  for (var i=0, l=MODIFIERS.length;i<l;i++) {
+  for (var i = 0, l = MODIFIERS.length; i < l; i++) {
     if (event[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
       return false;
     }

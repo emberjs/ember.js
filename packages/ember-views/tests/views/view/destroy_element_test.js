@@ -88,5 +88,5 @@ QUnit.test('removes element from parentNode if in DOM', function() {
   });
 
   equal(view.$(), undefined, 'view has no selector');
-  ok(!parent.find('#'+view.get('elementId')).length, 'element no longer in parent node');
+  ok(!parent.find('#' + view.get('elementId')).length, 'element no longer in parent node');
 });

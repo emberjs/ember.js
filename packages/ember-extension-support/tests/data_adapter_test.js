@@ -43,7 +43,7 @@ QUnit.test('Model types added with DefaultResolver', function() {
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords() {
-      return Ember.A([1,2,3]);
+      return Ember.A([1, 2, 3]);
     },
     columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
@@ -93,7 +93,7 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords() {
-      return Ember.A([1,2,3]);
+      return Ember.A([1, 2, 3]);
     },
     columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
@@ -119,7 +119,7 @@ QUnit.test('Model Types Updated', function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
-  var records = Ember.A([1,2,3]);
+  var records = Ember.A([1, 2, 3]);
   adapter.reopen({
     getRecords() {
       return records;

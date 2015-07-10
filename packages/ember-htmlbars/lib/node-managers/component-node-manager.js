@@ -112,7 +112,7 @@ function extractPositionalParams(renderNode, component, params, attrs) {
       attrs[positionalParams] = paramsStream;
     }
 
-    for (let i=0; i < positionalParams.length; i++) {
+    for (let i = 0; i < positionalParams.length; i++) {
       let param = params[paramsStartIndex + i];
       if (isNamed) {
         paramsStream.addDependency(param);

@@ -176,7 +176,7 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 
   if (deps) {
     keys = keysOf(deps);
-    for (i=0; i<keys.length; i++) {
+    for (i = 0; i<keys.length; i++) {
       key = keys[i];
       possibleDesc = obj[key];
       desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
@@ -205,7 +205,7 @@ function chainsWillChange(obj, keyName, m) {
   }
 
   for (i = 0, l = events.length; i < l; i += 2) {
-    propertyWillChange(events[i], events[i+1]);
+    propertyWillChange(events[i], events[i + 1]);
   }
 }
 
@@ -228,7 +228,7 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
   }
 
   for (i = 0, l = events.length; i < l; i += 2) {
-    propertyDidChange(events[i], events[i+1]);
+    propertyDidChange(events[i], events[i + 1]);
   }
 }
 

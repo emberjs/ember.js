@@ -254,12 +254,12 @@ QUnit.module('ember-testing: Helper methods', {
 QUnit.test('`wait` respects registerWaiters', function() {
   expect(3);
 
-  var counter=0;
+  var counter = 0;
   function waiter() {
     return ++counter > 2;
   }
 
-  var other=0;
+  var other = 0;
   function otherWaiter() {
     return ++other > 2;
   }
@@ -416,7 +416,7 @@ QUnit.test('`wait` respects registerWaiters with optional context', function() {
     }
   };
 
-  var other=0;
+  var other = 0;
   function otherWaiter() {
     return ++other > 2;
   }

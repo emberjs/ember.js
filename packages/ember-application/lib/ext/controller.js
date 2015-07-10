@@ -16,7 +16,7 @@ function verifyNeedsDependencies(controller, container, needs) {
   var dependency, i, l;
   var missing = [];
 
-  for (i=0, l=needs.length; i<l; i++) {
+  for (i = 0, l = needs.length; i < l; i++) {
     dependency = needs[i];
 
     Ember.assert(inspect(controller) + '#needs must not specify dependencies with periods in their names (' +
@@ -47,7 +47,7 @@ var defaultControllersComputedProperty = computed(function() {
       var needs = this.needs;
       var dependency, i, l;
 
-      for (i=0, l=needs.length; i<l; i++) {
+      for (i = 0, l = needs.length; i < l; i++) {
         dependency = needs[i];
         if (dependency === controllerName) {
           return this.container.lookup('controller:' + controllerName);

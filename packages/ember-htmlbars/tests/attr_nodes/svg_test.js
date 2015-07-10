@@ -29,7 +29,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<svg viewBox="'+viewBoxString+'"></svg>', 'attribute is output');
+  equalInnerHTML(view.element, `<svg viewBox="${viewBoxString}"></svg>`, 'attribute is output');
 
   Ember.run(view, view.set, 'context.viewBoxString', null);
   equal(view.element.getAttribute('svg'), null, 'attribute is removed');
@@ -43,7 +43,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<svg viewBox="'+viewBoxString+'"></svg>', 'attribute is output');
+  equalInnerHTML(view.element, `<svg viewBox="${viewBoxString}"></svg>`, 'attribute is output');
 });
 
   QUnit.test('quoted viewBox property is concat', function() {
@@ -54,12 +54,12 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<svg viewBox="0 0 '+viewBoxString+'"></svg>', 'attribute is output');
+  equalInnerHTML(view.element, `<svg viewBox="0 0 ${viewBoxString}"></svg>`, 'attribute is output');
 
   var newViewBoxString = '200 200';
   Ember.run(view, view.set, 'context.viewBoxString', newViewBoxString);
 
-  equalInnerHTML(view.element, '<svg viewBox="0 0 '+newViewBoxString+'"></svg>', 'attribute is output');
+  equalInnerHTML(view.element, `<svg viewBox="0 0 ${newViewBoxString}"></svg>`, 'attribute is output');
 });
 
   QUnit.test('class is output', function() {

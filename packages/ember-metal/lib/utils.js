@@ -234,7 +234,7 @@ export function guidFor(obj) {
       ret = numberCache[obj];
 
       if (!ret) {
-        ret = numberCache[obj] = 'nu'+obj;
+        ret = numberCache[obj] = 'nu' + obj;
       }
 
       return ret;
@@ -329,7 +329,7 @@ if (isEnabled('mandatory-setter')) {
 */
 function meta(obj, writable) {
   var ret = obj.__ember_meta__;
-  if (writable===false) {
+  if (writable === false) {
     return ret || EMPTY_META;
   }
 
@@ -418,7 +418,7 @@ export function metaPath(obj, path, writable) {
   var _meta = meta(obj, writable);
   var keyName, value;
 
-  for (var i=0, l=path.length; i<l; i++) {
+  for (var i = 0, l = path.length; i<l; i++) {
     keyName = path[i];
     value = _meta[keyName];
 
@@ -598,7 +598,7 @@ export function inspect(obj) {
   // for non objects
   var type = typeof obj;
   if (type !== 'object' && type !== 'symbol') {
-    return ''+obj;
+    return '' + obj;
   }
   // overridden toString
   if (typeof obj.toString === 'function' && obj.toString !== toString) {

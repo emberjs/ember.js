@@ -130,12 +130,12 @@ QUnit.module('EmberView#isVisible with Container', {
   setup() {
     expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
-    parentBecameVisible=0;
-    childBecameVisible=0;
-    grandchildBecameVisible=0;
-    parentBecameHidden=0;
-    childBecameHidden=0;
-    grandchildBecameHidden=0;
+    parentBecameVisible = 0;
+    childBecameVisible = 0;
+    grandchildBecameVisible = 0;
+    parentBecameHidden = 0;
+    childBecameHidden = 0;
+    grandchildBecameHidden = 0;
 
     View = ContainerView.extend({
       childViews: ['child'],

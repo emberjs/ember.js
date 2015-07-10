@@ -76,7 +76,7 @@ QUnit.test('the return value of slice has Ember.Array applied', function() {
 });
 
 QUnit.test('slice supports negative index arguments', function() {
-  var testArray = new TestArray([1,2,3,4]);
+  var testArray = new TestArray([1, 2, 3, 4]);
 
   deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
   deepEqual(testArray.slice(-2, -1), [3], 'slice(-2, -1');
@@ -84,10 +84,10 @@ QUnit.test('slice supports negative index arguments', function() {
   deepEqual(testArray.slice(-1, -2), [], 'slice(-1, -2)');
 
   deepEqual(testArray.slice(-4, 1), [1], 'slice(-4, 1)');
-  deepEqual(testArray.slice(-4, 5), [1,2,3,4], 'slice(-4, 5)');
-  deepEqual(testArray.slice(-4), [1,2,3,4], 'slice(-4)');
+  deepEqual(testArray.slice(-4, 5), [1, 2, 3, 4], 'slice(-4, 5)');
+  deepEqual(testArray.slice(-4), [1, 2, 3, 4], 'slice(-4)');
 
-  deepEqual(testArray.slice(0, -1), [1,2,3], 'slice(0, -1)');
+  deepEqual(testArray.slice(0, -1), [1, 2, 3], 'slice(0, -1)');
   deepEqual(testArray.slice(0, -4), [], 'slice(0, -4)');
   deepEqual(testArray.slice(0, -3), [1], 'slice(0, -3)');
 });
@@ -99,7 +99,7 @@ QUnit.test('slice supports negative index arguments', function() {
 var DummyArray = EmberObject.extend(EmberArray, {
   nextObject() {},
   length: 0,
-  objectAt(idx) { return 'ITEM-'+idx; }
+  objectAt(idx) { return 'ITEM-' + idx; }
 });
 
 var obj, observer;

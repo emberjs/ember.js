@@ -25,7 +25,7 @@ export function stashParamNames(router, handlerInfos) {
   // keeps separate a handlerInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
-  var targetRouteName = handlerInfos[handlerInfos.length-1].name;
+  var targetRouteName = handlerInfos[handlerInfos.length - 1].name;
   var recogHandlers = router.router.recognizer.handlersFor(targetRouteName);
   var dynamicParent = null;
 
@@ -58,13 +58,15 @@ function _calculateCacheValuePrefix(prefix, part) {
 
   var prefixParts = prefix.split('.');
   var currPrefix = '';
+
   for (var i = 0, len = prefixParts.length; i < len; i++) {
-    var currPart = prefixParts.slice(0, i+1).join('.');
+    var currPart = prefixParts.slice(0, i + 1).join('.');
     if (part.indexOf(currPart) !== 0) {
       break;
     }
     currPrefix = currPart;
   }
+
   return currPrefix;
 }
 

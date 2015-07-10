@@ -38,7 +38,7 @@ QUnit.test('objects without a prototype', function() {
 });
 
 QUnit.test('array', function() {
-  equal(inspect([1,2,3]), '[1,2,3]');
+  equal(inspect([1, 2, 3]), '[1,2,3]');
 });
 
 QUnit.test('regexp', function() {

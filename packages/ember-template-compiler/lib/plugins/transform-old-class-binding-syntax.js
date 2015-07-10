@@ -63,7 +63,7 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 };
 
 function buildSexprs(microsyntax, sexprs, b) {
-  for (var i=0, l=microsyntax.length; i<l; i++) {
+  for (var i = 0, l = microsyntax.length; i<l; i++) {
     let [propName, activeClass, inactiveClass] = microsyntax[i];
     let sexpr;
 
@@ -107,7 +107,7 @@ function validate(node) {
 }
 
 function each(list, callback) {
-  for (var i=0, l=list.length; i<l; i++) {
+  for (var i = 0, l = list.length; i<l; i++) {
     callback(list[i], i);
   }
 }
@@ -115,7 +115,7 @@ function each(list, callback) {
 function parseMicrosyntax(string) {
   var segments = string.split(' ');
 
-  for (var i=0, l=segments.length; i<l; i++) {
+  for (var i = 0, l = segments.length; i<l; i++) {
     segments[i] = segments[i].split(':');
   }
 

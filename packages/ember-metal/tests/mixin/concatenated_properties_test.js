@@ -44,23 +44,23 @@ QUnit.test('concatenatedProperties should be concatenated', function() {
   var MixinB = Mixin.create({
     concatenatedProperties: 'bar',
     foo: ['d', 'e', 'f'],
-    bar: [1,2,3]
+    bar: [1, 2, 3]
   });
 
   var MixinC = Mixin.create({
-    bar: [4,5,6]
+    bar: [4, 5, 6]
   });
 
   var obj = mixin({}, MixinA, MixinB, MixinC);
   deepEqual(get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
   deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
-  deepEqual(get(obj, 'bar'), [1,2,3,4,5,6], 'get bar');
+  deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
 });
 
 QUnit.test('adding a prop that is not an array should make array', function() {
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
-    foo: [1,2,3]
+    foo: [1, 2, 3]
   });
 
   var MixinB = Mixin.create({
@@ -68,7 +68,7 @@ QUnit.test('adding a prop that is not an array should make array', function() {
   });
 
   var obj = mixin({}, MixinA, MixinB);
-  deepEqual(get(obj, 'foo'), [1,2,3,4]);
+  deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
 });
 
 QUnit.test('adding a prop that is not an array should make array', function() {

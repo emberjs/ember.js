@@ -32,7 +32,7 @@ function deprecateHash(moduleName, node, hash) {
     return;
   }
   var i, l, pair, paths;
-  for (i=0, l=hash.pairs.length;i<l;i++) {
+  for (i = 0, l = hash.pairs.length;i<l;i++) {
     pair = hash.pairs[i];
     paths = pair.value.params;
     deprecatePaths(moduleName, pair, paths);
@@ -44,7 +44,7 @@ function deprecatePaths(moduleName, node, paths) {
     return;
   }
   var i, l, path;
-  for (i=0, l=paths.length;i<l;i++) {
+  for (i = 0, l = paths.length;i<l;i++) {
     path = paths[i];
     deprecatePath(moduleName, node, path);
   }

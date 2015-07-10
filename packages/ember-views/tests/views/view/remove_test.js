@@ -142,7 +142,7 @@ QUnit.test('the DOM element is gone after doing append and remove in two separat
     view.remove();
   });
 
-  var viewElem = jQuery('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
@@ -153,7 +153,7 @@ QUnit.test('the DOM element is gone after doing append and remove in a single ru
     view.remove();
   });
 
-  var viewElem = jQuery('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 

@@ -531,7 +531,7 @@ QUnit.test('should render nested collections', function() {
   var container = registry.container();
   registry.register('view:inner-list', CollectionView.extend({
     tagName: 'ul',
-    content: A(['one','two','three'])
+    content: A(['one', 'two', 'three'])
   }));
 
   registry.register('view:outer-list', CollectionView.extend({
@@ -556,7 +556,7 @@ QUnit.test('should render multiple, bound nested collections (#68)', function() 
 
   run(function() {
     TemplateTests.contentController = ArrayProxy.create({
-      content: A(['foo','bar'])
+      content: A(['foo', 'bar'])
     });
 
     var InnerList = CollectionView.extend({
@@ -568,7 +568,7 @@ QUnit.test('should render multiple, bound nested collections (#68)', function() 
       innerListView: InnerList,
       template: compile('{{#collection view.innerListView class="inner"}}{{content}}{{/collection}}{{content}}'),
       innerListContent: computed(function() {
-        return A([1,2,3]);
+        return A([1, 2, 3]);
       })
     });
 
@@ -624,7 +624,7 @@ QUnit.test('should allow view objects to be swapped out without throwing an erro
   run(function() {
     dataset = EmberObject.create({
       ready: true,
-      items: A([1,2,3])
+      items: A([1, 2, 3])
     });
     TemplateTests.datasetController.set('dataset', dataset);
   });

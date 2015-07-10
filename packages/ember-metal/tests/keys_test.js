@@ -17,7 +17,7 @@ QUnit.test('should get a key array for a specified object', function() {
 
   var object2 = Object.keys(object1);
 
-  deepEqual(object2, ['names','age','place']);
+  deepEqual(object2, ['names', 'age', 'place']);
 });
 
 // This test is for IE8.

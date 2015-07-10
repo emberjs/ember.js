@@ -32,7 +32,7 @@ ControllerMixin.reopen({
     @private
   */
   _qpChanged(controller, _prop) {
-    var prop = _prop.substr(0, _prop.length-3);
+    var prop = _prop.substr(0, _prop.length - 3);
 
     var delegate = controller._qpDelegate;
     var value = get(controller, prop);

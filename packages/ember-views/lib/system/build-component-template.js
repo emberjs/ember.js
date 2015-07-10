@@ -138,7 +138,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   var i, l;
 
   if (attributeBindings) {
-    for (i=0, l=attributeBindings.length; i<l; i++) {
+    for (i = 0, l = attributeBindings.length; i<l; i++) {
       var attr = attributeBindings[i];
       var colonIndex = attr.indexOf(':');
 
@@ -231,7 +231,7 @@ function normalizeClass(component, attrs) {
   }
 
   if (classNames) {
-    for (i=0, l=classNames.length; i<l; i++) {
+    for (i = 0, l = classNames.length; i<l; i++) {
       normalizedClass.push(classNames[i]);
     }
   }
@@ -248,7 +248,7 @@ function normalizeClass(component, attrs) {
 function normalizeClasses(classes, output) {
   var i, l;
 
-  for (i=0, l=classes.length; i<l; i++) {
+  for (i = 0, l = classes.length; i<l; i++) {
     var className = classes[i];
     Ember.assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
 

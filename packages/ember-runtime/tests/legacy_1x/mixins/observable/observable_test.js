@@ -441,8 +441,8 @@ QUnit.test('setting values should call function return value', function() {
     // property. Other properties blindly call set.
     expectedLength = 3;
     equal(calls.length, expectedLength, fmt('set(%@) should be called the right amount of times', [key]));
-    for (idx=0;idx<2;idx++) {
-      equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
+    for (idx = 0;idx<2;idx++) {
+      equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx + 1, key, values[idx]]));
     }
   });
 });
@@ -466,7 +466,7 @@ QUnit.test('change dependent should clear cache', function() {
 
   object.set('changer', 'bar');
 
-  equal(object.get('inc'), ret1+1, 'should increment after dependent key changes'); // should run again
+  equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
 });
 
 QUnit.test('just notifying change of dependent should clear cache', function() {
@@ -476,7 +476,7 @@ QUnit.test('just notifying change of dependent should clear cache', function() {
 
   object.notifyPropertyChange('changer');
 
-  equal(object.get('inc'), ret1+1, 'should increment after dependent key changes'); // should run again
+  equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
 });
 
 QUnit.test('changing dependent should clear nested cache', function() {
@@ -486,7 +486,7 @@ QUnit.test('changing dependent should clear nested cache', function() {
 
   object.set('changer', 'bar');
 
-  equal(object.get('nestedInc'), ret1+1, 'should increment after dependent key changes'); // should run again
+  equal(object.get('nestedInc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
 });
 
 QUnit.test('just notifying change of dependent should clear nested cache', function() {
@@ -496,7 +496,7 @@ QUnit.test('just notifying change of dependent should clear nested cache', funct
 
   object.notifyPropertyChange('changer');
 
-  equal(object.get('nestedInc'), ret1+1, 'should increment after dependent key changes'); // should run again
+  equal(object.get('nestedInc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
 });
 
 
@@ -509,7 +509,7 @@ QUnit.test('change dependent should clear cache when observers of dependent are 
 
   // add observer to verify change...
   object.addObserver('inc', this, function() {
-    equal(object.get('inc'), ret1+1, 'should increment after dependent key changes'); // should run again
+    equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
   });
 
   // now run
@@ -642,9 +642,9 @@ QUnit.module('Observable objects & object properties ', {
   setup() {
     object = ObservableObject.extend({
       getEach() {
-        var keys = ['normal','abnormal'];
+        var keys = ['normal', 'abnormal'];
         var ret = [];
-        for (var idx=0; idx<keys.length;idx++) {
+        for (var idx = 0; idx<keys.length;idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
         return ret;
@@ -668,7 +668,7 @@ QUnit.module('Observable objects & object properties ', {
       toggleVal: true,
       observedProperty: 'beingWatched',
       testRemove: 'observerToBeRemoved',
-      normalArray: Ember.A([1,2,3,4,5])
+      normalArray: Ember.A([1, 2, 3, 4, 5])
     });
   }
 });
@@ -699,7 +699,7 @@ QUnit.test('incrementProperty and decrementProperty', function() {
   }, /Must pass a numeric value to incrementProperty/i);
 
   expectAssertion(function() {
-    newValue = object.incrementProperty('numberVal', 1/0); // Increment by Infinity
+    newValue = object.incrementProperty('numberVal', 1 / 0); // Increment by Infinity
   }, /Must pass a numeric value to incrementProperty/i);
 
   equal(25, newValue, 'Attempting to increment by non-numeric values should not increment value');
@@ -723,7 +723,7 @@ QUnit.test('incrementProperty and decrementProperty', function() {
   }, /Must pass a numeric value to decrementProperty/i);
 
   expectAssertion(function() {
-    newValue = object.decrementProperty('numberVal', 1/0); // Decrement by Infinity
+    newValue = object.decrementProperty('numberVal', 1 / 0); // Decrement by Infinity
   }, /Must pass a numeric value to decrementProperty/i);
 
   equal(25, newValue, 'Attempting to decrement by non-numeric values should not decrement value');
@@ -753,11 +753,11 @@ QUnit.module('object.addObserver()', {
       incrementor: 10,
 
       action() {
-        this.normal1= 'newZeroValue';
+        this.normal1 = 'newZeroValue';
       },
 
       observeOnceAction() {
-        this.incrementor= this.incrementor+1;
+        this.incrementor = this.incrementor + 1;
       },
 
       chainedObserver() {
@@ -792,7 +792,7 @@ QUnit.module('object.removeObserver()', {
       normal: 'value',
       normal1: 'zeroValue',
       normal2: 'dependentValue',
-      ArrayKeys: ['normal','normal1'],
+      ArrayKeys: ['normal', 'normal1'],
 
       addAction() {
         this.normal1 = 'newZeroValue';

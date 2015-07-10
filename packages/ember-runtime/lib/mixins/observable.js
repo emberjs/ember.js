@@ -413,7 +413,7 @@ export default Mixin.create({
     @private
   */
   hasObserverFor(key) {
-    return hasListeners(this, key+':change');
+    return hasListeners(this, key + ':change');
   },
 
   /**

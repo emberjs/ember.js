@@ -206,10 +206,10 @@ testBoth('removing an chain observer on change should not fail', function(get, s
   var obj2 = { foo: foo };
   var obj3 = { foo: foo };
   var obj4 = { foo: foo };
-  var count1=0;
-  var count2=0;
-  var count3=0;
-  var count4=0;
+  var count1 = 0;
+  var count2 = 0;
+  var count3 = 0;
+  var count4 = 0;
 
   function observer1() { count1++; }
   function observer2() { count2++; }
@@ -240,10 +240,10 @@ testBoth('removing an chain before observer on change should not fail', function
   var obj2 = { foo: foo };
   var obj3 = { foo: foo };
   var obj4 = { foo: foo };
-  var count1=0;
-  var count2=0;
-  var count3=0;
-  var count4=0;
+  var count1 = 0;
+  var count2 = 0;
+  var count3 = 0;
+  var count4 = 0;
 
   function observer1() { count1++; }
   function observer2() { count2++; }

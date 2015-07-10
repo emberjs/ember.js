@@ -5,7 +5,8 @@ import getValue from 'ember-htmlbars/hooks/get-value';
 export function getArrayValues(params) {
   let l = params.length;
   let out = new Array(l);
-  for (let i=0; i<l; i++) {
+
+  for (let i = 0; i < l; i++) {
     out[i] = getValue(params[i]);
   }
 
@@ -14,6 +15,7 @@ export function getArrayValues(params) {
 
 export function getHashValues(hash) {
   let out = {};
+
   for (let prop in hash) {
     out[prop] = getValue(hash[prop]);
   }

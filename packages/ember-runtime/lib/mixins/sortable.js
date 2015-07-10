@@ -227,7 +227,7 @@ export default Mixin.create(MutableEnumerable, {
 
     if (isSorted) {
       var arrangedContent = get(this, 'arrangedContent');
-      var removedObjects = array.slice(idx, idx+removedCount);
+      var removedObjects = array.slice(idx, idx + removedCount);
       var sortProperties = get(this, 'sortProperties');
 
       removedObjects.forEach((item) => {
@@ -247,7 +247,7 @@ export default Mixin.create(MutableEnumerable, {
     var sortProperties = get(this, 'sortProperties');
 
     if (isSorted) {
-      var addedObjects = array.slice(idx, idx+addedCount);
+      var addedObjects = array.slice(idx, idx + addedCount);
 
       addedObjects.forEach((item) => {
         this.insertItemSorted(item);
@@ -298,7 +298,7 @@ export default Mixin.create(MutableEnumerable, {
     res = this.orderBy(midItem, item);
 
     if (res < 0) {
-      return this._binarySearch(item, mid+1, high);
+      return this._binarySearch(item, mid + 1, high);
     } else if (res > 0) {
       return this._binarySearch(item, low, mid);
     }

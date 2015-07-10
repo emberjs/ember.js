@@ -20,19 +20,19 @@ QUnit.test('overriding computed properties', function() {
 
   MixinB = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super.apply(this, arguments)+'B';
+      return this._super.apply(this, arguments) + 'B';
     })
   });
 
   MixinC = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super.apply(this, arguments)+'C';
+      return this._super.apply(this, arguments) + 'C';
     })
   });
 
   MixinD = Mixin.create({
     aProp: computed(function() {
-      return this._super.apply(this, arguments)+'D';
+      return this._super.apply(this, arguments) + 'D';
     })
   });
 
