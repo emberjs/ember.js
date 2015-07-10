@@ -473,20 +473,6 @@ export default Mixin.create({
   },
 
   /**
-    Returns an array with the items that do not have truthy values for
-    key.  You can pass an optional second argument with the target value.  Otherwise
-    this will match any property that evaluates to false.
-
-    @method rejectProperty
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Array} rejected array
-    @deprecated Use `rejectBy` instead
-    @private
-  */
-  rejectProperty: aliasMethod('rejectBy'),
-
-  /**
     Returns the first item in the array for which the callback returns true.
     This method works similar to the `filter()` method defined in JavaScript 1.6
     except that it will stop working on the array once a match is found.
