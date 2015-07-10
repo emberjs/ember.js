@@ -79,7 +79,7 @@ SubArray.prototype = {
         returnValue = seenInSubArray;
       }
 
-      self._composeAt(self._operations.length-1);
+      self._composeAt(self._operations.length - 1);
     });
 
     return returnValue;
@@ -151,19 +151,19 @@ SubArray.prototype = {
     }
 
     if (index > 0) {
-      otherOp = this._operations[index-1];
+      otherOp = this._operations[index - 1];
       if (otherOp.type === op.type) {
         op.count += otherOp.count;
-        this._operations.splice(index-1, 1);
+        this._operations.splice(index - 1, 1);
         --index;
       }
     }
 
-    if (index < this._operations.length-1) {
-      otherOp = this._operations[index+1];
+    if (index < this._operations.length - 1) {
+      otherOp = this._operations[index + 1];
       if (otherOp.type === op.type) {
         op.count += otherOp.count;
-        this._operations.splice(index+1, 1);
+        this._operations.splice(index + 1, 1);
       }
     }
   },

@@ -10,23 +10,23 @@ var suite = SuiteModuleBuilder.create();
 suite.module('reject');
 
 suite.test('should reject any item that does not meet the condition', function() {
-  var obj = this.newObject([1,2,3,4]);
+  var obj = this.newObject([1, 2, 3, 4]);
   var result;
 
   result = obj.reject(function(i) { return i < 3; });
-  deepEqual(result, [3,4], 'reject the correct items');
+  deepEqual(result, [3, 4], 'reject the correct items');
 });
 
 suite.test('should be the inverse of filter', function() {
-  var obj = this.newObject([1,2,3,4]);
+  var obj = this.newObject([1, 2, 3, 4]);
   var isEven = function(i) { return i % 2 === 0; };
   var filtered, rejected;
 
   filtered = obj.filter(isEven);
   rejected = obj.reject(isEven);
 
-  deepEqual(filtered, [2,4], 'filtered evens');
-  deepEqual(rejected, [1,3], 'rejected evens');
+  deepEqual(filtered, [2, 4], 'filtered evens');
+  deepEqual(rejected, [1, 3], 'rejected evens');
 });
 
 // ..........................................................

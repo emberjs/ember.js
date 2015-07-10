@@ -6,7 +6,7 @@ var suite = SuiteModuleBuilder.create();
 suite.module('sortBy');
 
 suite.test('sort by value of property', function() {
-  var obj = this.newObject([{ a: 2 },{ a: 1 }]);
+  var obj = this.newObject([{ a: 2 }, { a: 1 }]);
   var sorted = obj.sortBy('a');
 
   equal(get(sorted[0], 'a'), 1);

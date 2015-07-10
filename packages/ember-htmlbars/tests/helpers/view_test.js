@@ -87,7 +87,7 @@ QUnit.test('should not enter an infinite loop when binding an attribute in Handl
   // Use match, since old IE appends the whole URL
   var href = parentView.$('a').attr('href');
   var classNames = parentView.$('a').attr('class');
-  ok(href.match(/(^|\/)test$/), 'Expected href to be \'test\' but got "'+href+'"');
+  ok(href.match(/(^|\/)test$/), `Expected href to be 'test' but got "${href}"`);
   equal(classNames, 'ember-view app-link');
 
   runDestroy(parentView);

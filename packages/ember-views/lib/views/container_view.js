@@ -246,7 +246,7 @@ var ContainerView = View.extend(MutableArray, {
     var childViews = get(this, 'childViews');
 
     Ember.assert('You can\'t add a child to a container - the child is already a child of another view', () => {
-      for (var i=0, l=addedViews.length; i<l; i++) {
+      for (var i = 0, l = addedViews.length; i < l; i++) {
         var item = addedViews[i];
         if (item.parentView && item.parentView !== this) { return false; }
       }
@@ -263,7 +263,7 @@ var ContainerView = View.extend(MutableArray, {
     // Because of this, we synchronously fix up the parentView/childViews tree
     // as soon as views are added or removed, despite the fact that this will
     // happen automatically when we render.
-    var removedViews = childViews.slice(idx, idx+removedCount);
+    var removedViews = childViews.slice(idx, idx + removedCount);
     removedViews.forEach(view => this.unlinkChild(view));
     addedViews.forEach(view => this.linkChild(view));
 

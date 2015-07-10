@@ -313,7 +313,7 @@ export default Mixin.create(Enumerable, {
     var idx;
 
     if (startAt === undefined || startAt >= len) {
-      startAt = len-1;
+      startAt = len - 1;
     }
 
     if (startAt < 0) {
@@ -500,7 +500,7 @@ export default Mixin.create(Enumerable, {
       propertyDidChange(this, 'firstObject');
     }
 
-    if (this.objectAt(length-1) !== cachedLast) {
+    if (this.objectAt(length - 1) !== cachedLast) {
       propertyWillChange(this, 'lastObject');
       propertyDidChange(this, 'lastObject');
     }

@@ -22,7 +22,7 @@ export default function lookupPartial(env, templateName) {
 
 function templateFor(env, underscored, name) {
   if (!name) { return; }
-  Ember.assert('templateNames are not allowed to contain periods: '+name, name.indexOf('.') === -1);
+  Ember.assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
   if (!env.container) {
     throw new EmberError('Container was not found when looking up a views template. ' +

@@ -63,7 +63,7 @@ Renderer.prototype.dispatchLifecycleHooks =
     var lifecycleHooks = env.lifecycleHooks;
     var i, hook;
 
-    for (i=0; i<lifecycleHooks.length; i++) {
+    for (i = 0; i < lifecycleHooks.length; i++) {
       hook = lifecycleHooks[i];
       ownerView._dispatching = hook.type;
 

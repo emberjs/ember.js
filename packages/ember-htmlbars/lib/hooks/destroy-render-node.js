@@ -10,7 +10,7 @@ export default function destroyRenderNode(renderNode) {
 
   var streamUnsubscribers = renderNode.streamUnsubscribers;
   if (streamUnsubscribers) {
-    for (let i=0, l=streamUnsubscribers.length; i<l; i++) {
+    for (let i = 0, l = streamUnsubscribers.length; i < l; i++) {
       streamUnsubscribers[i]();
     }
   }

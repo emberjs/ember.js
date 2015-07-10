@@ -281,7 +281,7 @@ RenderBuffer.prototype = {
   pushChildView(view) {
     var index = this.childViews.length;
     this.childViews[index] = view;
-    this.push('<script id=\'morph-'+index+'\' type=\'text/x-placeholder\'>\x3C/script>');
+    this.push('<script id=\'morph-' + index + '\' type=\'text/x-placeholder\'>\x3C/script>');
   },
 
   pushAttrNode(node) {
@@ -292,9 +292,9 @@ RenderBuffer.prototype = {
   hydrateMorphs(contextualElement) {
     var childViews = this.childViews;
     var el = this._element;
-    for (var i=0,l=childViews.length; i<l; i++) {
+    for (var i = 0, l = childViews.length; i < l; i++) {
       var childView = childViews[i];
-      var ref = el.querySelector('#morph-'+i);
+      var ref = el.querySelector('#morph-' + i);
 
       Ember.assert('An error occurred while setting up template bindings. Please check ' +
                    (((childView && childView.parentView && childView._parentView._debugTemplateName ? '"' + childView._parentView._debugTemplateName + '" template ' : ''))
@@ -535,7 +535,7 @@ RenderBuffer.prototype = {
   element() {
     if (this._element && this.attrNodes.length > 0) {
       var i, l, attrMorph, attrNode;
-      for (i=0, l=this.attrNodes.length; i<l; i++) {
+      for (i = 0, l = this.attrNodes.length; i < l; i++) {
         attrNode = this.attrNodes[i];
         attrMorph = this.dom.createAttrMorph(this._element, attrNode.attrName);
         attrNode._morph = attrMorph;

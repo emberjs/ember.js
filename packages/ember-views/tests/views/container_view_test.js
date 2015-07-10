@@ -215,7 +215,7 @@ QUnit.test('should be able to push initial views onto the ContainerView and have
 
   equal(container.lengthSquared(), 4);
 
-  deepEqual(container.mapViewNames(), ['A','B']);
+  deepEqual(container.mapViewNames(), ['A', 'B']);
 
   run(container, 'appendTo', '#qunit-fixture');
 
@@ -230,7 +230,7 @@ QUnit.test('should be able to push initial views onto the ContainerView and have
 
   equal(container.lengthSquared(), 9);
 
-  deepEqual(container.mapViewNames(), ['A','B','C']);
+  deepEqual(container.mapViewNames(), ['A', 'B', 'C']);
 
   equal(container.$().text(), 'ABC');
 

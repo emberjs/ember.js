@@ -13,7 +13,7 @@ MutableArrayTests.extend({
   },
 
   mutate(obj) {
-    obj.pushObject(get(obj, 'length')+1);
+    obj.pushObject(get(obj, 'length') + 1);
   },
 
   toArray(obj) {

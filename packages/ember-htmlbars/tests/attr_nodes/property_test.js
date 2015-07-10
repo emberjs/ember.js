@@ -66,7 +66,7 @@ QUnit.test('array value can be set as property', function() {
 
   appendView(view);
 
-  Ember.run(view, view.set, 'context.items', [4,5]);
+  Ember.run(view, view.set, 'context.items', [4, 5]);
   ok(true, 'no legacy assertion prohibited setting an array');
 });
 }

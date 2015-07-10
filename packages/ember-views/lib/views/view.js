@@ -778,7 +778,7 @@ var View = CoreView.extend(
 
   templateForName(name, type) {
     if (!name) { return; }
-    Ember.assert('templateNames are not allowed to contain periods: '+name, name.indexOf('.') === -1);
+    Ember.assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
     if (!this.container) {
       throw new EmberError('Container was not found when looking up a views template. ' +
@@ -1432,7 +1432,7 @@ var View = CoreView.extend(
     @private
   */
   _register() {
-    Ember.assert('Attempted to register a view with an id already in use: '+this.elementId, !this._viewRegistry[this.elementId]);
+    Ember.assert('Attempted to register a view with an id already in use: ' + this.elementId, !this._viewRegistry[this.elementId]);
     this._viewRegistry[this.elementId] = this;
   },
 

@@ -754,7 +754,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var handlerInfos = transition.state.handlerInfos;
       var router = this.router;
-      var qpMeta = router._queryParamsFor(handlerInfos[handlerInfos.length-1].name);
+      var qpMeta = router._queryParamsFor(handlerInfos[handlerInfos.length - 1].name);
       var changes = router._qpUpdates;
       var replaceUrl;
 
@@ -1473,7 +1473,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     } else if (!name) {
       if (transition.resolveIndex < 1) { return; }
 
-      var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
+      var parentModel = transition.state.handlerInfos[transition.resolveIndex - 1].context;
 
       return parentModel;
     }
@@ -2083,9 +2083,9 @@ function handlerInfoFor(route, handlerInfos, _offset) {
 
   var offset = _offset || 0;
   var current;
-  for (var i=0, l=handlerInfos.length; i<l; i++) {
+  for (var i = 0, l = handlerInfos.length; i < l; i++) {
     current = handlerInfos[i].handler;
-    if (current === route) { return handlerInfos[i+offset]; }
+    if (current === route) { return handlerInfos[i + offset]; }
   }
 }
 
@@ -2161,7 +2161,7 @@ function getFullQueryParams(router, state) {
   state.fullQueryParams = {};
   merge(state.fullQueryParams, state.queryParams);
 
-  var targetRouteName = state.handlerInfos[state.handlerInfos.length-1].name;
+  var targetRouteName = state.handlerInfos[state.handlerInfos.length - 1].name;
   router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
   return state.fullQueryParams;
 }

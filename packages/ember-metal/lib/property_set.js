@@ -124,7 +124,7 @@ function setPath(root, path, value, tolerant) {
   keyName = path.slice(path.lastIndexOf('.') + 1);
 
   // get the first part of the part
-  path    = (path === keyName) ? keyName : path.slice(0, path.length-(keyName.length+1));
+  path    = (path === keyName) ? keyName : path.slice(0, path.length - (keyName.length + 1));
 
   // unless the path is this, look up the first part to
   // get the root
@@ -140,7 +140,7 @@ function setPath(root, path, value, tolerant) {
     if (tolerant) {
       return;
     } else {
-      throw new EmberError('Property set failed: object in path "'+path+'" could not be found or was destroyed.');
+      throw new EmberError('Property set failed: object in path "' + path + '" could not be found or was destroyed.');
     }
   }
 

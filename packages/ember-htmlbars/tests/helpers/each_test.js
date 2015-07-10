@@ -335,7 +335,7 @@ QUnit.test('it works inside a table element', function() {
 QUnit.test('it supports itemController', function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
-      return 'controller:'+this.get('model.name');
+      return `controller:${this.get('model.name')}`;
     })
   });
 
@@ -998,7 +998,7 @@ function testEachWithItem(moduleName, useBlockParams) {
   QUnit.test('itemController specified in template with name binding does not change context [DEPRECATED]', function() {
     var Controller = EmberController.extend({
       controllerName: computed(function() {
-        return 'controller:'+this.get('model.name');
+        return `controller:${this.get('model.name')}`;
       })
     });
 

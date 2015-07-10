@@ -171,7 +171,7 @@ QUnit.test('events should stop propagating if the view is destroyed', function()
 });
 
 QUnit.test('should dispatch events to nearest event manager', function() {
-  var receivedEvent=0;
+  var receivedEvent = 0;
   view = View.create({
     template: compile('<input id="is-done" type="checkbox">'),
 
@@ -195,7 +195,7 @@ QUnit.test('should dispatch events to nearest event manager', function() {
 QUnit.test('event manager should be able to re-dispatch events to view', function() {
   expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
-  var receivedEvent=0;
+  var receivedEvent = 0;
   view = ContainerView.extend({
 
     eventManager: EmberObject.extend({

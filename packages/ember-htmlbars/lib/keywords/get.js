@@ -25,7 +25,7 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   };
 
   var GetStream = function GetStream(obj, path) {
-    this.init('(get '+labelFor(obj)+' '+labelFor(path)+')');
+    this.init(`(get ${labelFor(obj)} ${labelFor(path)})`);
 
     this.objectParam = obj;
     this.pathParam = path;

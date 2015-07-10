@@ -68,7 +68,7 @@ export default Service.extend({
     var router = get(this, 'router');
 
     var handlers = router.router.recognizer.handlersFor(routeName);
-    var leafName = handlers[handlers.length-1].handler;
+    var leafName = handlers[handlers.length - 1].handler;
     var maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
     // NOTE: any ugliness in the calculation of activeness is largely

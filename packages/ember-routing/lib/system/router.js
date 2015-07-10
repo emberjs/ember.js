@@ -85,7 +85,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     function generateDSL() {
       this.route('application', { path: '/', resetNamespace: true, overrideNameAssertion: true }, function() {
-        for (var i=0; i < dslCallbacks.length; i++) {
+        for (var i = 0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
       });
@@ -271,7 +271,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._doURLTransition('transitionTo', args[0]);
     }
 
-    var possibleQueryParams = args[args.length-1];
+    var possibleQueryParams = args[args.length - 1];
     if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
       queryParams = args.pop().queryParams;
     } else {
@@ -985,7 +985,7 @@ EmberRouter.reopenClass({
     }
 
     var name, nameParts, oldNameParts;
-    for (var i=1, l=handlerInfos.length; i<l; i++) {
+    for (var i = 1, l = handlerInfos.length; i < l; i++) {
       name = handlerInfos[i].name;
       nameParts = name.split('.');
       oldNameParts = slice.call(path);

@@ -231,7 +231,7 @@ Registry.prototype = {
     var normalizedName = this.normalize(fullName);
 
     if (this._resolveCache[normalizedName]) {
-      throw new Error('Cannot re-register: `' + fullName +'`, as it has already been resolved.');
+      throw new Error('Cannot re-register: `' + fullName + '`, as it has already been resolved.');
     }
 
     delete this._failCache[normalizedName];

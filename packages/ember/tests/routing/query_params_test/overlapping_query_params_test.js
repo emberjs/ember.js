@@ -171,7 +171,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.ParentChildRoute= Ember.Route.extend({
+    App.ParentChildRoute = Ember.Route.extend({
       queryParams: {
         bar: {
           as: 'shared',

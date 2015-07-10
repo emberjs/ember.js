@@ -219,7 +219,7 @@ QUnit.module('Custom Binding', {
     bon2 = EmberObject.create({
       val1: 'hello',
       val2: 25,
-      arr: [1,2,3,4]
+      arr: [1, 2, 3, 4]
     });
 
     Ember.lookup['TestNamespace'] = TestNamespace = {

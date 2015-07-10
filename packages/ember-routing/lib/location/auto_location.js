@@ -117,7 +117,7 @@ export default EmberObject.extend({
     var rootURL = this.rootURL;
 
     Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
-                 rootURL.charAt(rootURL.length-1) === '/');
+                 rootURL.charAt(rootURL.length - 1) === '/');
 
     var implementation = detectImplementation({
       location: this.location,

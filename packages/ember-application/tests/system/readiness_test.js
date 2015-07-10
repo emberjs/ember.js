@@ -33,7 +33,7 @@ QUnit.module('Application readiness', {
       if (domReadyCalled !== 0) { return; }
       domReadyCalled++;
       var i;
-      for (i=0; i<readyCallbacks.length; i++) {
+      for (i = 0; i < readyCallbacks.length; i++) {
         readyCallbacks[i]();
       }
     };

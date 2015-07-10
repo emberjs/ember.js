@@ -31,7 +31,7 @@ QUnit.test('returns receiver', function() {
 QUnit.test('removes child from parent.childViews array', function() {
   ok(get(parentView, 'childViews').indexOf(child)>=0, 'precond - has child in childViews array before remove');
   parentView.removeChild(child);
-  ok(get(parentView, 'childViews').indexOf(child)<0, 'removed child');
+  ok(get(parentView, 'childViews').indexOf(child) < 0, 'removed child');
 });
 
 QUnit.test('sets parentView property to null', function() {
@@ -103,7 +103,7 @@ QUnit.test('removes view from parent view', function() {
   });
 
   ok(!get(child, 'parentView'), 'no longer has parentView');
-  ok(get(parentView, 'childViews').indexOf(child)<0, 'no longer in parent childViews');
+  ok(get(parentView, 'childViews').indexOf(child) < 0, 'no longer in parent childViews');
   equal(parentView.$('div').length, 0, 'removes DOM element from parent');
 });
 
@@ -142,7 +142,7 @@ QUnit.test('the DOM element is gone after doing append and remove in two separat
     view.remove();
   });
 
-  var viewElem = jQuery('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
@@ -153,7 +153,7 @@ QUnit.test('the DOM element is gone after doing append and remove in a single ru
     view.remove();
   });
 
-  var viewElem = jQuery('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 

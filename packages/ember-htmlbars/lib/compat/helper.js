@@ -135,8 +135,8 @@ export function registerHandlebarsCompatibleHelper(name, value) {
 }
 
 export function handlebarsHelper(name, value) {
-  Ember.assert('You tried to register a component named \'' + name +
-               '\', but component names must include a \'-\'', !Component.detect(value) || name.match(/-/));
+  Ember.assert(`You tried to register a component named '${name}', but component names must include a '-'`,
+    !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
     helpers[name] = makeViewHelper(value);
@@ -149,12 +149,12 @@ export function handlebarsHelper(name, value) {
 }
 
 function applyAttributes(dom, element, innerString) {
-  var string = '<' + element.tagName + ' ' + innerString + '></div>';
+  var string = `<${element.tagName} ${innerString}></div>`;
   var fragment = dom.parseHTML(string, dom.createElement(element.tagName));
 
   var attrs = fragment.firstChild.attributes;
 
-  for (var i=0, l=attrs.length; i<l; i++) {
+  for (let i = 0, l = attrs.length; i < l; i++) {
     element.setAttributeNode(attrs[i].cloneNode());
   }
 }

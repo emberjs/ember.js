@@ -7,7 +7,7 @@ QUnit.module('Ember Type Checking');
 var global = this;
 
 QUnit.test('Ember.isArray', function() {
-  var numarray      = [1,2,3];
+  var numarray      = [1, 2, 3];
   var number        = 23;
   var strarray      = ['Hello', 'Hi'];
   var string        = 'Hello';

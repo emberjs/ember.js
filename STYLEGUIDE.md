@@ -116,6 +116,21 @@ function foo() {
 foo();
 ```
 
++ Spaces are required around binary operators.
+
+```javascript
+// assignments
+var foo = bar + 'a';
+
+// conditionals
+if (foo === 'bara') {
+}
+
+// parameters
+function(test, foo) {
+}
+```
+
 ## Commas
 
 + Skip trailing commas.

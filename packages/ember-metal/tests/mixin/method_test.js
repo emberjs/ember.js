@@ -30,15 +30,15 @@ QUnit.test('overriding public methods', function() {
   });
 
   MixinB = Mixin.create(MixinA, {
-    publicMethod() { return this._super.apply(this, arguments)+'B'; }
+    publicMethod() { return this._super.apply(this, arguments) + 'B'; }
   });
 
   MixinD = Mixin.create(MixinA, {
-    publicMethod() { return this._super.apply(this, arguments)+'D'; }
+    publicMethod() { return this._super.apply(this, arguments) + 'D'; }
   });
 
   MixinF = Mixin.create({
-    publicMethod() { return this._super.apply(this, arguments)+'F'; }
+    publicMethod() { return this._super.apply(this, arguments) + 'F'; }
   });
 
   obj = {};

@@ -26,8 +26,8 @@ QUnit.test('dates should be equal', function() {
 
 QUnit.test('array should be equal', function() {
   // NOTE: We don't test for array contents -- that would be too expensive.
-  ok(!isEqual([1,2], [1,2]), 'two array instances with the same values should not be equal');
-  ok(!isEqual([1,2], [1]), 'two array instances with different values should not be equal');
+  ok(!isEqual([1, 2], [1, 2]), 'two array instances with the same values should not be equal');
+  ok(!isEqual([1, 2], [1]), 'two array instances with different values should not be equal');
 });
 
 QUnit.test('first object implements isEqual should use it', function() {

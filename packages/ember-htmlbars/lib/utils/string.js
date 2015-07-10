@@ -28,7 +28,7 @@ function htmlSafe(str) {
   }
 
   if (typeof str !== 'string') {
-    str = ''+str;
+    str = '' + str;
   }
   return new SafeString(str);
 }

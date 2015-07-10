@@ -21,7 +21,7 @@ function normalizeClassStatement(statements, element) {
   let className = element.getAttribute('class');
   if (!className) { return; }
 
-  for (let i=0, l=statements.length; i<l; i++) {
+  for (let i = 0, l = statements.length; i < l; i++) {
     let statement = statements[i];
 
     if (statement[1] === 'class') {

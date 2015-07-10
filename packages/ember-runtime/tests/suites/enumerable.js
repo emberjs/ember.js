@@ -105,7 +105,7 @@ var ObserverClass = EmberObject.extend({
       return false;
     }
 
-    if (arguments.length>1) {
+    if (arguments.length > 1) {
       return this._values[key] === value;
     } else {
       return true;
@@ -266,11 +266,11 @@ var EnumerableTests = Suite.extend({
   */
   newObserver(obj) {
     var ret = get(this, 'observerClass').create();
-    if (arguments.length>0) {
+    if (arguments.length > 0) {
       ret.observeBefore.apply(ret, arguments);
     }
 
-    if (arguments.length>0) {
+    if (arguments.length > 0) {
       ret.observe.apply(ret, arguments);
     }
 

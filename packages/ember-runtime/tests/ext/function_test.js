@@ -14,7 +14,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
     count: 0,
 
     foo: function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     }.observes('bar', 'baz')
 
   });
@@ -40,7 +40,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
     count: 0,
 
     foo: function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     }.on('bar', 'baz')
 
   });
@@ -64,7 +64,7 @@ testBoth('can be chained with observes', function(get, set) {
     count: 0,
     bay: 'bay',
     foo: function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     }.observes('bay').on('bar')
   });
 

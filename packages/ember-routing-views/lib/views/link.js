@@ -488,7 +488,7 @@ function computeActive(view, routerState) {
 }
 
 function modelsAreLoaded(models) {
-  for (var i=0, l=models.length; i<l; i++) {
+  for (var i = 0, l = models.length; i < l; i++) {
     if (models[i] == null) { return false; }
   }
 

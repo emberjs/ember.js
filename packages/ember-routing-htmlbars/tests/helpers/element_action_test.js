@@ -803,10 +803,10 @@ QUnit.test('it does not trigger action with special clicks', function() {
     event[prop] = value;
     view.$('a').trigger(event);
     if (expected) {
-      ok(showCalled, 'should call action with '+prop+':'+value);
+      ok(showCalled, 'should call action with ' + prop + ':' + value);
       ok(event.isDefaultPrevented(), 'should prevent default');
     } else {
-      ok(!showCalled, 'should not call action with '+prop+':'+value);
+      ok(!showCalled, 'should not call action with ' + prop + ':' + value);
       ok(!event.isDefaultPrevented(), 'should not prevent default');
     }
   }
@@ -911,9 +911,9 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
-                         { title: 'Whomp Whomp',name: 'whompWhomp' },
-                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
+    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+                         { title: 'Whomp Whomp', name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {
       biggityBoom() {
         lastAction = 'biggityBoom';
@@ -939,7 +939,7 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
 
   var testBoundAction = function(propertyValue) {
     run(function() {
-      view.$('#'+propertyValue).click();
+      view.$('#' + propertyValue).click();
     });
 
     equal(lastAction, propertyValue, 'lastAction set to ' + propertyValue);
@@ -964,9 +964,9 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom',name: 'biggityBoom' },
-                         { title: 'Whomp Whomp',name: 'whompWhomp' },
-                         { title: 'Sloopy Dookie',name: 'sloopyDookie' }]),
+    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+                         { title: 'Whomp Whomp', name: 'whompWhomp' },
+                         { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {
       biggityBoom() {
         lastAction = 'biggityBoom';
@@ -990,7 +990,7 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
 
   var testBoundAction = function(propertyValue) {
     run(function() {
-      view.$('#'+propertyValue).click();
+      view.$('#' + propertyValue).click();
     });
 
     equal(lastAction, propertyValue, 'lastAction set to ' + propertyValue);

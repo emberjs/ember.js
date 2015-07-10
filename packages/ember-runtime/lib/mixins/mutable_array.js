@@ -221,8 +221,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       return null;
     }
 
-    var ret = this.objectAt(len-1);
-    this.removeAt(len-1, 1);
+    var ret = this.objectAt(len - 1);
+    this.removeAt(len - 1, 1);
     return ret;
   },
 

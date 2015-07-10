@@ -52,7 +52,7 @@ ObserverSet.prototype.flush = function() {
   var observers = this.observers;
   var i, len, observer, sender;
   this.clear();
-  for (i=0, len=observers.length; i < len; ++i) {
+  for (i = 0, len = observers.length; i < len; ++i) {
     observer = observers[i];
     sender = observer.sender;
     if (sender.isDestroying || sender.isDestroyed) { continue; }

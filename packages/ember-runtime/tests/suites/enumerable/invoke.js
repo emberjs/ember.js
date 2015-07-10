@@ -9,7 +9,7 @@ suite.test('invoke should call on each object that implements', function() {
   var cnt, ary, obj;
 
   function F(amt) {
-    cnt += amt===undefined ? 1 : amt;
+    cnt += amt === undefined ? 1 : amt;
   }
   cnt = 0;
   ary = [

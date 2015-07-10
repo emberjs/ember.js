@@ -214,7 +214,7 @@ QUnit.test('filter is readOnly', function() {
 });
 
 QUnit.test('it filters according to the specified filter function', function() {
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'filter filters by the specified function');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'filter filters by the specified function');
 });
 
 QUnit.test('it passes the index to the callback', function() {
@@ -254,24 +254,24 @@ QUnit.test('it caches properly', function() {
 QUnit.test('it updates as the array is modified', function() {
   var array = obj.get('array');
 
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'precond - filtered array is initially correct');
 
   array.addObject(11);
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'objects not passing the filter are not added');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'objects not passing the filter are not added');
 
   array.addObject(12);
-  deepEqual(obj.get('filtered'), [2,4,6,8,12], 'objects passing the filter are added');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8, 12], 'objects passing the filter are added');
 
   array.removeObject(3);
   array.removeObject(4);
 
-  deepEqual(obj.get('filtered'), [2,6,8,12], 'objects removed from the dependent array are removed from the computed array');
+  deepEqual(obj.get('filtered'), [2, 6, 8, 12], 'objects removed from the dependent array are removed from the computed array');
 });
 
 QUnit.test('the dependent array can be cleared one at a time', function() {
   var array = get(obj, 'array');
 
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'precond - filtered array is initially correct');
 
   // clear 1-8 but in a random order
   array.removeObject(3);
@@ -287,7 +287,7 @@ QUnit.test('the dependent array can be cleared one at a time', function() {
 });
 
 QUnit.test('the dependent array can be `clear`ed directly (#3272)', function() {
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'precond - filtered array is initially correct');
 
   obj.get('array').clear();
 
@@ -295,11 +295,11 @@ QUnit.test('the dependent array can be `clear`ed directly (#3272)', function() {
 });
 
 QUnit.test('it updates as the array is replaced', function() {
-  deepEqual(obj.get('filtered'), [2,4,6,8], 'precond - filtered array is initially correct');
+  deepEqual(obj.get('filtered'), [2, 4, 6, 8], 'precond - filtered array is initially correct');
 
-  obj.set('array', [20,21,22,23,24]);
+  obj.set('array', [20, 21, 22, 23, 24]);
 
-  deepEqual(obj.get('filtered'), [20,22,24], 'computed array is updated when array is changed');
+  deepEqual(obj.get('filtered'), [20, 22, 24], 'computed array is updated when array is changed');
 });
 
 QUnit.module('filterBy', {
@@ -424,37 +424,37 @@ QUnit.test('properties values can be replaced', function() {
     var array = obj.get('array');
     var array2 = obj.get('array2');
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' does not include duplicates');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], name + ' does not include duplicates');
 
     array.pushObject(8);
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' does not add existing items');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], name + ' does not add existing items');
 
     array.pushObject(11);
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10,11], name + ' adds new items');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], name + ' adds new items');
 
     array2.removeAt(6); // remove 7
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10,11], name + ' does not remove items that are still in the dependent array');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], name + ' does not remove items that are still in the dependent array');
 
     array2.removeObject(7);
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,8,9,10,11], name + ' removes items when their last instance is gone');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 8, 9, 10, 11], name + ' removes items when their last instance is gone');
   });
 
   QUnit.test('has set-union semantics', function() {
     var array = obj.get('array');
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], name + ' is initially correct');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], name + ' is initially correct');
 
     array.removeObject(6);
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,2,3,4,5,6,7,8,9,10], 'objects are not removed if they exist in other dependent arrays');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'objects are not removed if they exist in other dependent arrays');
 
     array.clear();
 
-    deepEqual(obj.get('union').sort((x, y) => x - y), [1,4,5,6,7,8,9,10], 'objects are removed when they are no longer in any dependent array');
+    deepEqual(obj.get('union').sort((x, y) => x - y), [1, 4, 5, 6, 7, 8, 9, 10], 'objects are removed when they are no longer in any dependent array');
   });
 });
 
@@ -463,9 +463,9 @@ QUnit.module('computed.intersect', {
     obj = EmberObject.extend({
       intersection: intersect('array', 'array2', 'array3')
     }).create({
-      array: Ember.A([1,2,3,4,5,6]),
-      array2: Ember.A([3,3,3,4,5]),
-      array3: Ember.A([3,5,6,7,8])
+      array: Ember.A([1, 2, 3, 4, 5, 6]),
+      array2: Ember.A([3, 3, 3, 4, 5]),
+      array3: Ember.A([3, 5, 6, 7, 8])
     });
   },
   teardown() {
@@ -483,15 +483,15 @@ QUnit.test('it has set-intersection semantics', function() {
   var array2 = obj.get('array2');
   var array3 = obj.get('array3');
 
-  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'intersection is initially correct');
+  deepEqual(obj.get('intersection').sort((x, y) => x - y), [3, 5], 'intersection is initially correct');
 
   array2.shiftObject();
 
-  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'objects are not removed when they are still in all dependent arrays');
+  deepEqual(obj.get('intersection').sort((x, y) => x - y), [3, 5], 'objects are not removed when they are still in all dependent arrays');
 
   array2.shiftObject();
 
-  deepEqual(obj.get('intersection').sort((x,y) => x - y), [3,5], 'objects are not removed when they are still in all dependent arrays');
+  deepEqual(obj.get('intersection').sort((x, y) => x - y), [3, 5], 'objects are not removed when they are still in all dependent arrays');
 
   array2.shiftObject();
 
@@ -503,7 +503,7 @@ QUnit.test('it has set-intersection semantics', function() {
 
   array3.pushObject(1);
 
-  deepEqual(obj.get('intersection').sort((x,y) => x - y), [1,5], 'objects added once they belong to all dependent arrays');
+  deepEqual(obj.get('intersection').sort((x, y) => x - y), [1, 5], 'objects added once they belong to all dependent arrays');
 });
 
 QUnit.module('setDiff', {
@@ -511,8 +511,8 @@ QUnit.module('setDiff', {
     obj = EmberObject.extend({
       diff: setDiff('array', 'array2')
     }).create({
-      array: Ember.A([1,2,3,4,5,6,7]),
-      array2: Ember.A([3,4,5,10])
+      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
+      array2: Ember.A([3, 4, 5, 10])
     });
   },
   teardown() {
@@ -531,8 +531,8 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
     EmberObject.extend({
       diff: setDiff('array')
     }).create({
-      array: Ember.A([1,2,3,4,5,6,7]),
-      array2: Ember.A([3,4,5])
+      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
+      array2: Ember.A([3, 4, 5])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
@@ -540,8 +540,8 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
     EmberObject.extend({
       diff: setDiff('array', 'array2', 'array3')
     }).create({
-      array: Ember.A([1,2,3,4,5,6,7]),
-      array2: Ember.A([3,4,5]),
+      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
+      array2: Ember.A([3, 4, 5]),
       array3: Ember.A([7])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
@@ -556,7 +556,7 @@ QUnit.test('it has set-diff semantics', function() {
 
   array2.popObject();
 
-  deepEqual(obj.get('diff').sort((x, y) => x - y), [1,2,6,7], 'removing objects from the remove set has no effect if the object is not in the keep set');
+  deepEqual(obj.get('diff').sort((x, y) => x - y), [1, 2, 6, 7], 'removing objects from the remove set has no effect if the object is not in the keep set');
 
   array2.shiftObject();
 
@@ -1204,7 +1204,7 @@ QUnit.module('max', {
     obj = EmberObject.extend({
       max: max('items')
     }).create({
-      items: Ember.A([1,2,3])
+      items: Ember.A([1, 2, 3])
     });
   },
   teardown() {
@@ -1249,7 +1249,7 @@ QUnit.module('min', {
     obj = EmberObject.extend({
       min: min('items')
     }).create({
-      items: Ember.A([1,2,3])
+      items: Ember.A([1, 2, 3])
     });
   },
   teardown() {

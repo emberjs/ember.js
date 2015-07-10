@@ -58,7 +58,7 @@ function detectTopLevel(program) {
   let lastIndex;
   let nodeCount = 0;
 
-  for (let i=0, l=body.length; i<l; i++) {
+  for (let i = 0, l = body.length; i < l; i++) {
     let curr = body[i];
 
     // text node with whitespace only

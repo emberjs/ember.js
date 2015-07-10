@@ -653,6 +653,6 @@ function checkAutoRun() {
 */
 run._addQueue = function(name, after) {
   if (run.queues.indexOf(name) === -1) {
-    run.queues.splice(run.queues.indexOf(after)+1, 0, name);
+    run.queues.splice(run.queues.indexOf(after) + 1, 0, name);
   }
 };

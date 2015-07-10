@@ -25,7 +25,7 @@ QUnit.test('computed properties that depend on multiple properties should run on
 
   defineProperty(obj, 'abc', computed(function(key) {
     cpCount++;
-    return 'computed '+key;
+    return 'computed ' + key;
   }).property('a', 'b', 'c'));
 
   get(obj, 'abc');

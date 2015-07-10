@@ -667,11 +667,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    setAndFlush(controller, 'foo', [1,2]);
+    setAndFlush(controller, 'foo', [1, 2]);
 
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
 
-    setAndFlush(controller, 'foo', [3,4]);
+    setAndFlush(controller, 'foo', [3, 4]);
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
@@ -688,9 +688,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2,3] } });
+    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4,5] } });
+    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
     Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
@@ -709,7 +709,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     var controller = container.lookup('controller:index');
-    deepEqual(controller.get('foo'), ['1','2','3']);
+    deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
   QUnit.test('Url with array query param sets controller property to array when configuration occurs on the route and there is still a controller', function() {
@@ -727,7 +727,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     var controller = container.lookup('controller:index');
-    deepEqual(controller.get('foo'), ['1','2','3']);
+    deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
   QUnit.test('Array query params can be pushed/popped when configuration occurs on the route but there is still a controller', function() {
@@ -1672,11 +1672,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    setAndFlush(controller, 'foo', [1,2]);
+    setAndFlush(controller, 'foo', [1, 2]);
 
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
 
-    setAndFlush(controller, 'foo', [3,4]);
+    setAndFlush(controller, 'foo', [3, 4]);
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
@@ -1693,9 +1693,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2,3] } });
+    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4,5] } });
+    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
     Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
@@ -1714,7 +1714,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     var controller = container.lookup('controller:index');
-    deepEqual(controller.get('foo'), ['1','2','3']);
+    deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
   QUnit.test('Array query params can be pushed/popped when configured on the route', function() {
@@ -2857,11 +2857,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    setAndFlush(controller, 'foo', [1,2]);
+    setAndFlush(controller, 'foo', [1, 2]);
 
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
 
-    setAndFlush(controller, 'foo', [3,4]);
+    setAndFlush(controller, 'foo', [3, 4]);
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
@@ -2875,9 +2875,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2,3] } });
+    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4,5] } });
+    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
     Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
@@ -2893,7 +2893,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     var controller = container.lookup('controller:index');
-    deepEqual(controller.get('foo'), ['1','2','3']);
+    deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
   QUnit.test('Array query params can be pushed/popped', function() {

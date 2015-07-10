@@ -129,7 +129,7 @@ QUnit.test('should allow custom item views by setting itemViewClass', function()
     view.append();
   });
 
-  content.forEach((item) => equal(view.$(':contains("'+item+'")').length, 1));
+  content.forEach((item) => equal(view.$(':contains("' + item + '")').length, 1));
 });
 
 QUnit.test('should insert a new item in DOM when an item is added to the content array', function() {
@@ -148,7 +148,7 @@ QUnit.test('should insert a new item in DOM when an item is added to the content
   });
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(function() {
@@ -172,13 +172,13 @@ QUnit.test('should remove an item from DOM when an item is removed from the cont
   run(() => view.append());
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(() => content.removeAt(1));
 
   content.forEach((item, idx) => {
-    equal(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
+    equal(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text(), item);
   });
 });
 
@@ -197,7 +197,7 @@ QUnit.test('it updates the view if an item is replaced', function() {
   });
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(function() {
@@ -206,7 +206,7 @@ QUnit.test('it updates the view if an item is replaced', function() {
   });
 
   content.forEach((item, idx) => {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update');
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text()), item, 'postcond - correct array update');
   });
 });
 
@@ -223,7 +223,7 @@ QUnit.test('can add and replace in the same runloop', function() {
   run(() => view.append());
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(() => {
@@ -233,7 +233,7 @@ QUnit.test('can add and replace in the same runloop', function() {
   });
 
   content.forEach((item, idx) => {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update');
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text()), item, 'postcond - correct array update');
   });
 });
 
@@ -250,7 +250,7 @@ QUnit.test('can add and replace the object before the add in the same runloop', 
   run(() => view.append());
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(() => {
@@ -260,7 +260,7 @@ QUnit.test('can add and replace the object before the add in the same runloop', 
   });
 
   content.forEach((item, idx) => {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update');
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text()), item, 'postcond - correct array update');
   });
 });
 
@@ -277,7 +277,7 @@ QUnit.test('can add and replace complicatedly', function() {
   run(() => view.append());
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(() => {
@@ -289,7 +289,7 @@ QUnit.test('can add and replace complicatedly', function() {
   });
 
   content.forEach((item, idx) => {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update: '+item.name+'!='+view.$(fmt(':nth-child(%@)', [String(idx+1)])).text());
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text()), item, 'postcond - correct array update: ' + item.name + '!=' + view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text());
   });
 });
 
@@ -308,7 +308,7 @@ QUnit.test('can add and replace complicatedly harder', function() {
   });
 
   content.forEach((item) => {
-    equal(view.$(':contains("'+item+'")').length, 1, 'precond - generates pre-existing items');
+    equal(view.$(':contains("' + item + '")').length, 1, 'precond - generates pre-existing items');
   });
 
   run(function() {
@@ -321,7 +321,7 @@ QUnit.test('can add and replace complicatedly harder', function() {
   });
 
   content.forEach((item, idx) => {
-    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, 'postcond - correct array update');
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx + 1)])).text()), item, 'postcond - correct array update');
   });
 });
 
@@ -404,7 +404,7 @@ QUnit.test('should fire life cycle events when elements are added and removed', 
   equal(trim(view.$().text()), '123');
 
   run(function () {
-    view.set('content', Ember.A([7,8,9]));
+    view.set('content', Ember.A([7, 8, 9]));
   });
 
   equal(didInsertElement, 8);

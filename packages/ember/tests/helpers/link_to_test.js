@@ -954,7 +954,7 @@ QUnit.test('The {{link-to}} helper works in an #each\'d array of string route na
     for (idx = 0; idx < $links.length; idx++) {
       var href = Ember.$($links[idx]).attr('href');
       // Old IE includes the whole hostname as well
-      equal(href.slice(-expected[idx].length), expected[idx], 'Expected link to be \''+expected[idx]+'\', but was \''+href+'\'');
+      equal(href.slice(-expected[idx].length), expected[idx], 'Expected link to be \'' + expected[idx] + '\', but was \'' + href + '\'');
     }
   }
 

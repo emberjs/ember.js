@@ -33,7 +33,7 @@ suite.test('every should stop invoking when you return false', function() {
 
   result = obj.every(function(i) {
     found.push(i);
-    return --cnt>0;
+    return --cnt > 0;
   });
   equal(result, false, 'return value of obj.every');
   equal(found.length, exp, 'should invoke proper number of times');

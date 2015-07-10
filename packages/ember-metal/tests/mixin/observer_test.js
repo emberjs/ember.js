@@ -14,7 +14,7 @@ testBoth('global observer helper', function(get, set) {
     count: 0,
 
     foo: observer('bar', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
 
   });
@@ -32,7 +32,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
     count: 0,
 
     foo: observer('bar', 'baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
 
   });
@@ -52,14 +52,14 @@ testBoth('replacing observer should remove old observer', function(get, set) {
     count: 0,
 
     foo: observer('bar', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
 
   });
 
   var Mixin2 = Mixin.create({
     foo: observer('baz', function() {
-      set(this, 'count', get(this, 'count')+10);
+      set(this, 'count', get(this, 'count') + 10);
     })
   });
 
@@ -80,7 +80,7 @@ testBoth('observing chain with property before', function(get, set) {
     count: 0,
     bar: obj2,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 
@@ -97,7 +97,7 @@ testBoth('observing chain with property after', function(get, set) {
   var MyMixin = Mixin.create({
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     }),
     bar: obj2
   });
@@ -116,7 +116,7 @@ testBoth('observing chain with property in mixin applied later', function(get, s
 
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 
@@ -138,7 +138,7 @@ testBoth('observing chain with existing property', function(get, set) {
   var MyMixin = Mixin.create({
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 
@@ -156,7 +156,7 @@ testBoth('observing chain with property in mixin before', function(get, set) {
   var MyMixin = Mixin.create({
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 
@@ -174,7 +174,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   var MyMixin = Mixin.create({
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 
@@ -194,7 +194,7 @@ testBoth('observing chain with overriden property', function(get, set) {
   var MyMixin = Mixin.create({
     count: 0,
     foo: observer('bar.baz', function() {
-      set(this, 'count', get(this, 'count')+1);
+      set(this, 'count', get(this, 'count') + 1);
     })
   });
 

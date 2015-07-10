@@ -10,23 +10,23 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
 }
 
 QUnit.test('\'one two three\'.w() => [\'one\',\'two\',\'three\']', function() {
-  deepEqual(w('one two three'), ['one','two','three']);
+  deepEqual(w('one two three'), ['one', 'two', 'three']);
   if (Ember.EXTEND_PROTOTYPES) {
-    deepEqual('one two three'.w(), ['one','two','three']);
+    deepEqual('one two three'.w(), ['one', 'two', 'three']);
   }
 });
 
 QUnit.test('\'one    two    three\'.w() with extra spaces between words => [\'one\',\'two\',\'three\']', function() {
-  deepEqual(w('one   two  three'), ['one','two','three']);
+  deepEqual(w('one   two  three'), ['one', 'two', 'three']);
   if (Ember.EXTEND_PROTOTYPES) {
-    deepEqual('one   two  three'.w(), ['one','two','three']);
+    deepEqual('one   two  three'.w(), ['one', 'two', 'three']);
   }
 });
 
 QUnit.test('\'one two three\'.w() with tabs', function() {
-  deepEqual(w('one\ttwo  three'), ['one','two','three']);
+  deepEqual(w('one\ttwo  three'), ['one', 'two', 'three']);
   if (Ember.EXTEND_PROTOTYPES) {
-    deepEqual('one\ttwo  three'.w(), ['one','two','three']);
+    deepEqual('one\ttwo  three'.w(), ['one', 'two', 'three']);
   }
 });
 

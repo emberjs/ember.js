@@ -58,7 +58,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
       multipartTemplate: compile('<iframe src=\'{{protocol}}{{path}}\'></iframe>') }
   ];
 
-  for (var i=0, l=badTags.length; i<l; i++) {
+  for (var i = 0, l = badTags.length; i < l; i++) {
     (function() {
     var subject = badTags[i];
 
@@ -66,7 +66,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
       return;
     }
 
-    QUnit.test(subject.tag +' '+subject.attr+' is sanitized when using blacklisted protocol', function() {
+    QUnit.test(`${subject.tag} ${subject.attr} is sanitized when using blacklisted protocol`, function() {
       view = EmberView.create({
         context: { url: 'javascript://example.com' },
         template: subject.unquotedTemplate
@@ -79,7 +79,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
              'attribute is output');
     });
 
-    QUnit.test(subject.tag +' '+subject.attr+' is sanitized when using quoted non-whitelisted protocol', function() {
+    QUnit.test(`${subject.tag} ${subject.attr} is sanitized when using quoted non-whitelisted protocol`, function() {
       view = EmberView.create({
         context: { url: 'javascript://example.com' },
         template: subject.quotedTemplate
@@ -92,7 +92,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
              'attribute is output');
     });
 
-    QUnit.test(subject.tag +' '+subject.attr+' is not sanitized when using non-whitelisted protocol with a SafeString', function() {
+    QUnit.test(`${subject.tag} ${subject.attr} is not sanitized when using non-whitelisted protocol with a SafeString`, function() {
       view = EmberView.create({
         context: { url: new SafeString('javascript://example.com') },
         template: subject.unquotedTemplate
@@ -106,11 +106,11 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
                'attribute is output');
       } catch(e) {
         // IE does not allow javascript: to be set on img src
-        ok(true, 'caught exception '+e);
+        ok(true, 'caught exception ' + e);
       }
     });
 
-    QUnit.test(subject.tag+' '+subject.attr+' is sanitized when using quoted+concat non-whitelisted protocol', function() {
+    QUnit.test(`${subject.tag} ${subject.attr} is sanitized when using quoted+concat non-whitelisted protocol`, function() {
       view = EmberView.create({
         context: { protocol: 'javascript:', path: '//example.com' },
         template: subject.multipartTemplate

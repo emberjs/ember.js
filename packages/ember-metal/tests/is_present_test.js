@@ -22,5 +22,5 @@ QUnit.test('Ember.isPresent', function() {
   equal(false, isPresent([]), 'for an empty Array');
   equal(true, isPresent({}), 'for an empty Object');
   equal(false, isPresent(object), 'for an Object that has zero \'length\'');
-  equal(true, isPresent([1,2,3]), 'for a non-empty array');
+  equal(true, isPresent([1, 2, 3]), 'for a non-empty array');
 });

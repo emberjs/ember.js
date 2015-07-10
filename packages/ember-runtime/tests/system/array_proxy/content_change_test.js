@@ -8,7 +8,7 @@ QUnit.module('ArrayProxy - content change');
 
 QUnit.test('should update length for null content', function() {
   var proxy = ArrayProxy.create({
-        content: Ember.A([1,2,3])
+        content: Ember.A([1, 2, 3])
       });
 
   equal(proxy.get('length'), 3, 'precond - length is 3');
