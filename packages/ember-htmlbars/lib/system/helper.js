@@ -1,13 +1,8 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
-/**
-  @class Helper
-  @namespace Ember.HTMLBars
-  @private
-*/
 function Helper(helper) {
   this.helperFunction = helper;
 

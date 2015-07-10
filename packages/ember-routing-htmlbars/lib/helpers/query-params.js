@@ -7,17 +7,19 @@ import Ember from 'ember-metal/core'; // assert
 import QueryParams from 'ember-routing/system/query_params';
 
 /**
-  This is a sub-expression to be used in conjunction with the link-to helper.
+  This is a helper to be used in conjunction with the link-to helper.
   It will supply url query parameters to the target route.
 
   Example
 
+  ```handlebars
   {{#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
+  ```
 
   @method query-params
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @param {Object} hash takes a hash of query parameters
-  @return {String} HTML string
+  @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
 export function queryParamsHelper(params, hash) {
