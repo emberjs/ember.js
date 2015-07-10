@@ -24,3 +24,10 @@ export function cannotReplaceNode(node, parent, key) {
     node, parent, key
   );
 }
+
+export function cannotReplaceOrRemoveInKeyHandlerYet(node, key) {
+  return new TraversalError(
+    "Replacing and removing in key handlers is not yet supported.",
+    node, null, key
+  );
+}
