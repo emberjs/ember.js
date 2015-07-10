@@ -441,7 +441,7 @@ QUnit.test('setting values should call function return value', function() {
     // property. Other properties blindly call set.
     expectedLength = 3;
     equal(calls.length, expectedLength, fmt('set(%@) should be called the right amount of times', [key]));
-    for (idx = 0;idx<2;idx++) {
+    for (idx = 0;idx < 2;idx++) {
       equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx + 1, key, values[idx]]));
     }
   });
@@ -644,7 +644,7 @@ QUnit.module('Observable objects & object properties ', {
       getEach() {
         var keys = ['normal', 'abnormal'];
         var ret = [];
-        for (var idx = 0; idx<keys.length;idx++) {
+        for (var idx = 0; idx < keys.length;idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
         return ret;

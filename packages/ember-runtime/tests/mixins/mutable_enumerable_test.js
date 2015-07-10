@@ -24,7 +24,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
 
   removeObject(obj) {
     var idx = this._content.indexOf(obj);
-    if (idx<0) {
+    if (idx < 0) {
       return this;
     }
 

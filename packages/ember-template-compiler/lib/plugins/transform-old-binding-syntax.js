@@ -44,7 +44,7 @@ function validate(node) {
 }
 
 function each(list, callback) {
-  for (var i = 0, l = list.length; i<l; i++) {
+  for (var i = 0, l = list.length; i < l; i++) {
     callback(list[i]);
   }
 }

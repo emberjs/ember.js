@@ -246,7 +246,7 @@ var ContainerView = View.extend(MutableArray, {
     var childViews = get(this, 'childViews');
 
     Ember.assert('You can\'t add a child to a container - the child is already a child of another view', () => {
-      for (var i = 0, l = addedViews.length; i<l; i++) {
+      for (var i = 0, l = addedViews.length; i < l; i++) {
         var item = addedViews[i];
         if (item.parentView && item.parentView !== this) { return false; }
       }

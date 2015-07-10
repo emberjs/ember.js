@@ -11,7 +11,7 @@ function incrementAjaxPendingRequests(_, xhr) {
 }
 
 function decrementAjaxPendingRequests(_, xhr) {
-  for (var i = 0;i<requests.length;i++) {
+  for (var i = 0;i < requests.length;i++) {
     if (xhr === requests[i]) {
       requests.splice(i, 1);
     }

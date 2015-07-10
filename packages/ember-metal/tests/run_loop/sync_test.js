@@ -9,7 +9,7 @@ QUnit.test('sync() will immediately flush the sync queue only', function() {
     function cntup() { cnt++; }
 
     function syncfunc() {
-      if (++cnt<5) {
+      if (++cnt < 5) {
         run.schedule('sync', syncfunc);
       }
       run.schedule('actions', cntup);

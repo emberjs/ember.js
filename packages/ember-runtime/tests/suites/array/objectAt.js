@@ -11,7 +11,7 @@ suite.test('should return object at specified index', function() {
   var len      = expected.length;
   var idx;
 
-  for (idx = 0;idx<len;idx++) {
+  for (idx = 0;idx < len;idx++) {
     equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));
   }
 });

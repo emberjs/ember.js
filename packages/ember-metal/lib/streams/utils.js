@@ -198,7 +198,7 @@ export function concat(array, separator) {
 export function labelsFor(streams) {
   var labels =  [];
 
-  for (var i = 0, l = streams.length; i<l; i++) {
+  for (var i = 0, l = streams.length; i < l; i++) {
     var stream = streams[i];
     labels.push(labelFor(stream));
   }
@@ -264,7 +264,7 @@ export function zip(streams, callback, label) {
     return `${label}(${labelsFor(streams)})`;
   });
 
-  for (var i = 0, l = streams.length; i<l; i++) {
+  for (var i = 0, l = streams.length; i < l; i++) {
     stream.addDependency(streams[i]);
   }
 

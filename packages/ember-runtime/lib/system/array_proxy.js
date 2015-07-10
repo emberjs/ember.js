@@ -314,7 +314,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       }
 
       // Get a list of indices in original content to remove
-      for (i = start; i<start + len; i++) {
+      for (i = start; i < start + len; i++) {
         // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
         indices.push(content.indexOf(arrangedContent.objectAt(i)));
       }
@@ -323,7 +323,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       indices.sort(function(a, b) { return b - a; });
 
       beginPropertyChanges();
-      for (i = 0; i<indices.length; i++) {
+      for (i = 0; i < indices.length; i++) {
         this._replace(indices[i], 1, EMPTY);
       }
       endPropertyChanges();

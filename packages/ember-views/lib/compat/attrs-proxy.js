@@ -77,7 +77,7 @@ let AttrsProxyMixin = {
 
     var keys = Object.keys(this.attrs);
 
-    for (var i = 0, l = keys.length; i<l; i++) {
+    for (var i = 0, l = keys.length; i < l; i++) {
       // Only issue the deprecation if it wasn't already issued when
       // setting attributes initially.
       if (!(keys[i] in this)) {

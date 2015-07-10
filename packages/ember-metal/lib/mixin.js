@@ -283,7 +283,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     delete values[keyName];
   }
 
-  for (var i = 0, l = mixins.length; i<l; i++) {
+  for (var i = 0, l = mixins.length; i < l; i++) {
     currentMixin = mixins[i];
     Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
                  typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]');
@@ -405,7 +405,7 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
   var paths = observerOrListener[pathsKey];
 
   if (paths) {
-    for (var i = 0, l = paths.length; i<l; i++) {
+    for (var i = 0, l = paths.length; i < l; i++) {
       updateMethod(obj, paths[i], null, key);
     }
   }
@@ -816,7 +816,7 @@ export function observer(...args) {
 
   paths = [];
 
-  for (var i = 0; i<_paths.length; ++i) {
+  for (var i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 
@@ -856,7 +856,7 @@ export function observer(...args) {
 export function _immediateObserver() {
   Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.');
 
-  for (var i = 0, l = arguments.length; i<l; i++) {
+  for (var i = 0, l = arguments.length; i < l; i++) {
     var arg = arguments[i];
     Ember.assert('Immediate observers must observe internal properties only, not properties on other objects.',
                  typeof arg !== 'string' || arg.indexOf('.') === -1);
@@ -926,7 +926,7 @@ export function _beforeObserver(...args) {
 
   paths = [];
 
-  for (var i = 0; i<_paths.length; ++i) {
+  for (var i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 

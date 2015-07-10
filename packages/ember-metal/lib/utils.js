@@ -418,7 +418,7 @@ export function metaPath(obj, path, writable) {
   var _meta = meta(obj, writable);
   var keyName, value;
 
-  for (var i = 0, l = path.length; i<l; i++) {
+  for (var i = 0, l = path.length; i < l; i++) {
     keyName = path[i];
     value = _meta[keyName];
 

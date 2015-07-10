@@ -206,7 +206,7 @@ function processAllNamespaces() {
     var namespaces = Namespace.NAMESPACES;
     var namespace;
 
-    for (var i = 0, l = namespaces.length; i<l; i++) {
+    for (var i = 0, l = namespaces.length; i < l; i++) {
       namespace = namespaces[i];
       processNamespace([namespace.toString()], namespace, {});
     }

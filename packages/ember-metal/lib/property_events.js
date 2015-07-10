@@ -176,7 +176,7 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 
   if (deps) {
     keys = keysOf(deps);
-    for (i = 0; i<keys.length; i++) {
+    for (i = 0; i < keys.length; i++) {
       key = keys[i];
       possibleDesc = obj[key];
       desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;

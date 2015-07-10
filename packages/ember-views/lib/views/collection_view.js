@@ -375,7 +375,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     this._itemViewProps = itemProps;
     var childViews = get(this, 'childViews');
 
-    for (var i = 0, l = childViews.length; i<l; i++) {
+    for (var i = 0, l = childViews.length; i < l; i++) {
       childViews[i].setProperties(itemProps);
     }
 

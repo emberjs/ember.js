@@ -251,7 +251,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   var suspendedActions = [];
   var actionsList = [];
 
-  for (let i = 0, l = eventNames.length; i<l; i++) {
+  for (let i = 0, l = eventNames.length; i < l; i++) {
     let eventName = eventNames[i];
     let actions = actionsFor(obj, eventName);
     let actionIndex = indexOf(actions, target, method);
