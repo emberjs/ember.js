@@ -2,7 +2,7 @@ import EmberView from 'ember-views/views/view';
 import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import RenderEnv from 'ember-htmlbars/system/render-env';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';

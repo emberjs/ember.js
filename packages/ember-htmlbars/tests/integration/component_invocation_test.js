@@ -5,7 +5,7 @@ import Registry from 'container/registry';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';

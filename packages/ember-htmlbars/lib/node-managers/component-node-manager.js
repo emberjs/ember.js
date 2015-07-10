@@ -9,7 +9,7 @@ import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import SafeString from 'htmlbars-util/safe-string';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import Stream from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
 

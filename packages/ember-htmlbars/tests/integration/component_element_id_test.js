@@ -3,7 +3,7 @@ import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 
 var registry, container, view;
 

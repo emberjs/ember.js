@@ -3,7 +3,7 @@ import run from 'ember-metal/run_loop';
 import Logger from 'ember-metal/logger';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import View from 'ember-views/views/view';
 import Service from 'ember-runtime/system/service';
 import EmberObject from 'ember-runtime/system/object';

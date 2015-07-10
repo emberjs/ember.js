@@ -1,7 +1,7 @@
 /*globals EmberDev */
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
 import run from 'ember-metal/run_loop';

@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import { Registry } from 'ember-runtime/system/container';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import { helper as makeHelper } from 'ember-htmlbars/helper';
 

@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 
 export default function bindShadowScope(env, parentScope, shadowScope, options) {
   if (!options) { return; }

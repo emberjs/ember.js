@@ -1,5 +1,5 @@
 import isEnabled from 'ember-metal/features';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import run from 'ember-metal/run_loop';
 
