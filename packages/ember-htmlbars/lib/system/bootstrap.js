@@ -15,7 +15,7 @@ import environment from 'ember-metal/environment';
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-htmlbars
 */
 
 /**
@@ -24,13 +24,13 @@ import environment from 'ember-metal/environment';
   as as jQuery DOM-ready callback.
 
   Script tags with `text/x-handlebars` will be compiled
-  with Ember's Handlebars and are suitable for use as a view's template.
+  with Ember's template compiler and are suitable for use as a view's template.
   Those with type `text/x-raw-handlebars` will be compiled with regular
   Handlebars and are suitable for use in views' computed properties.
 
   @private
   @method bootstrap
-  @for Ember.Handlebars
+  @for Ember.HTMLBars
   @static
   @param ctx
 */

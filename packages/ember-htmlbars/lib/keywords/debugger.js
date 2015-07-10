@@ -45,7 +45,7 @@ import Logger from 'ember-metal/logger';
   ```
 
   @method debugger
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @public
 */
 export default function debuggerKeyword(morph, env, scope) {
