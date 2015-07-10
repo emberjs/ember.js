@@ -10,6 +10,10 @@
     "start": "ember serve",
     "docs": "ember ember-cli-yuidoc"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emberjs/ember.js.git"
+  },
   "devDependencies": {
     "aws-sdk": "~2.1.5",
     "babel-plugin-feature-flags": "~0.2.0",
