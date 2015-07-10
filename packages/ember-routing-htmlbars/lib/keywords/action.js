@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 import { keyword } from "htmlbars-runtime/hooks";
@@ -164,7 +164,7 @@ import closureAction from "ember-routing-htmlbars/keywords/closure-action";
   with the value of `person` as a parameter.
 
   @method action
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {

@@ -53,7 +53,7 @@ import EmptyViewSupport from "ember-views/mixins/empty_view_support";
     classNames: ['a-collection'],
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
-      template: Ember.Handlebars.compile("the letter: {{view.content}}")
+      template: Ember.HTMLBars.compile("the letter: {{view.content}}")
     })
   });
   ```
@@ -88,7 +88,7 @@ import EmptyViewSupport from "ember-views/mixins/empty_view_support";
     tagName: 'ul',
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
-      template: Ember.Handlebars.compile("the letter: {{view.content}}")
+      template: Ember.HTMLBars.compile("the letter: {{view.content}}")
     })
   });
   ```
@@ -148,7 +148,7 @@ import EmptyViewSupport from "ember-views/mixins/empty_view_support";
     classNames: ['nothing'],
     content: null,
     emptyView: Ember.View.extend({
-      template: Ember.Handlebars.compile("The collection is empty")
+      template: Ember.HTMLBars.compile("The collection is empty")
     })
   });
   ```

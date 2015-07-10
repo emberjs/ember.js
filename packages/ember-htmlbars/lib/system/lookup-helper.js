@@ -37,7 +37,7 @@ function isLegacyBareHelper(helper) {
   @private
   @method resolveHelper
   @param {String} name the name of the helper to lookup
-  @return {Handlebars Helper}
+  @return {Helper}
 */
 export function findHelper(name, view, env) {
   var helper = env.helpers[name];

@@ -343,11 +343,11 @@ Ember.TEMPLATES = {};
   template. Templates can be any function that accepts an optional context
   parameter and returns a string of HTML that will be inserted within the
   view's tag. Most typically in Ember this function will be a compiled
-  `Ember.Handlebars` template.
+  template.
 
   ```javascript
   AView = Ember.View.extend({
-    template: Ember.Handlebars.compile('I am the template')
+    template: Ember.HTMLBars.compile('I am the template')
   });
   ```
 
@@ -390,18 +390,18 @@ Ember.TEMPLATES = {};
   });
   ```
 
-  Using a value for `templateName` that does not have a Handlebars template
+  Using a value for `templateName` that does not have a template
   with a matching `data-template-name` attribute will throw an error.
 
   For views classes that may have a template later defined (e.g. as the block
-  portion of a `{{view}}` Handlebars helper call in another template or in
+  portion of a `{{view}}` helper call in another template or in
   a subclass), you can provide a `defaultTemplate` property set to compiled
   template function. If a template is not later provided for the view instance
   the `defaultTemplate` value will be used:
 
   ```javascript
   AView = Ember.View.extend({
-    defaultTemplate: Ember.Handlebars.compile('I was the default'),
+    defaultTemplate: Ember.HTMLBars.compile('I was the default'),
     template: null,
     templateName: null
   });
@@ -418,11 +418,11 @@ Ember.TEMPLATES = {};
 
   ```javascript
   AView = Ember.View.extend({
-    defaultTemplate: Ember.Handlebars.compile('I was the default')
+    defaultTemplate: Ember.HTMLBars.compile('I was the default')
   });
 
   aView = AView.create({
-    template: Ember.Handlebars.compile('I was the template, not default')
+    template: Ember.HTMLBars.compile('I was the template, not default')
   });
   ```
 
@@ -438,7 +438,7 @@ Ember.TEMPLATES = {};
 
   ```javascript
   AView = Ember.View.extend({
-    template: Ember.Handlebars.compile('Hello {{excitedGreeting}}')
+    template: Ember.HTMLBars.compile('Hello {{excitedGreeting}}')
   });
 
   aController = Ember.Object.create({
@@ -471,20 +471,19 @@ Ember.TEMPLATES = {};
   view's tag. Views whose HTML element is self closing (e.g. `<input />`)
   cannot have a layout and this property will be ignored.
 
-  Most typically in Ember a layout will be a compiled `Ember.Handlebars`
-  template.
+  Most typically in Ember a layout will be a compiled template.
 
   A view's layout can be set directly with the `layout` property or reference
-  an existing Handlebars template by name with the `layoutName` property.
+  an existing template by name with the `layoutName` property.
 
-  A template used as a layout must contain a single use of the Handlebars
+  A template used as a layout must contain a single use of the
   `{{yield}}` helper. The HTML contents of a view's rendered `template` will be
   inserted at this location:
 
   ```javascript
   AViewWithLayout = Ember.View.extend({
-    layout: Ember.Handlebars.compile("<div class='my-decorative-class'>{{yield}}</div>"),
-    template: Ember.Handlebars.compile("I got wrapped")
+    layout: Ember.HTMLBars.compile("<div class='my-decorative-class'>{{yield}}</div>"),
+    template: Ember.HTMLBars.compile("I got wrapped")
   });
   ```
 
@@ -498,7 +497,7 @@ Ember.TEMPLATES = {};
   </div>
   ```
 
-  See [Ember.Handlebars.helpers.yield](/api/classes/Ember.Handlebars.helpers.html#method_yield)
+  See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
   for more information.
 
   ## Responding to Browser Events
@@ -572,7 +571,7 @@ Ember.TEMPLATES = {};
   ```javascript
   var App = Ember.Application.create();
   App.OuterView = Ember.View.extend({
-    template: Ember.Handlebars.compile("outer {{#view 'inner'}}inner{{/view}} outer"),
+    template: Ember.HTMLBars.compile("outer {{#view 'inner'}}inner{{/view}} outer"),
     eventManager: Ember.Object.create({
       mouseEnter: function(event, view) {
         // view might be instance of either
@@ -595,9 +594,9 @@ Ember.TEMPLATES = {};
   });
   ```
 
-  ### Handlebars `{{action}}` Helper
+  ### `{{action}}` Helper
 
-  See [Handlebars.helpers.action](/api/classes/Ember.Handlebars.helpers.html#method_action).
+  See [Ember.Templates.helpers.action](/api/classes/Ember.Templates.helpers.html#method_action).
 
   ### Event Names
 
@@ -650,10 +649,10 @@ Ember.TEMPLATES = {};
   * `dragEnd`
   * `drop`
 
-  ## Handlebars `{{view}}` Helper
+  ## `{{view}}` Helper
 
   Other `Ember.View` instances can be included as part of a view's template by
-  using the `{{view}}` Handlebars helper. See [Ember.Handlebars.helpers.view](/api/classes/Ember.Handlebars.helpers.html#method_view)
+  using the `{{view}}` helper. See [Ember.Templates.helpers.view](/api/classes/Ember.Templates.helpers.html#method_view)
   for additional information.
 
   @class View

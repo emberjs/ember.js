@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
@@ -59,7 +59,7 @@ import shouldDisplay from "ember-views/streams/should_display";
   ```
 
   @method if
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @public
 */
 function ifHelper(params, hash, options) {
@@ -72,7 +72,7 @@ function ifHelper(params, hash, options) {
   helper can also be used with `unless`.
 
   @method unless
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @public
 */
 function unlessHelper(params, hash, options) {

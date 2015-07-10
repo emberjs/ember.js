@@ -9,8 +9,6 @@ import {
 @submodule ember-htmlbars
 */
 
-//import Helper from "ember-htmlbars/system/helper";
-
 /**
   A helper function used by `registerBoundHelper`. Takes the
   provided Handlebars helper function fn and returns it in wrapped

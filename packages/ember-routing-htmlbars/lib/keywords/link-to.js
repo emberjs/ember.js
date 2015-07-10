@@ -272,7 +272,7 @@ import merge from "ember-metal/merge";
   ```
 
   @method link-to
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @param {String} routeName
   @param {Object} [context]*
   @param [options] {Object} Handlebars key/value pairs of options, you can override any property of Ember.LinkComponent

@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 import Logger from "ember-metal/logger";
@@ -8,11 +8,13 @@ import Logger from "ember-metal/logger";
 /**
   `log` allows you to output the value of variables in the current rendering
   context. `log` also accepts primitive types such as strings or numbers.
+
   ```handlebars
   {{log "myVariable:" myVariable }}
   ```
+
   @method log
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @param {*} values
   @public
 */

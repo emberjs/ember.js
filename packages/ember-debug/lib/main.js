@@ -214,10 +214,10 @@ Ember.deprecateFunc = function(...args) {
   `Ember.runInDebug()` when doing a production build.
 
   ```javascript
-  Ember.runInDebug(function() {
-    Ember.Handlebars.EachView.reopen({
-      didInsertElement: function() {
-        console.log('I\'m happy');
+  Ember.runInDebug(() => {
+    Ember.Component.reopen({
+      didInsertElement() {
+        console.log("I'm happy");
       }
     });
   });

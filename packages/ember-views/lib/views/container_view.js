@@ -72,10 +72,10 @@ containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
     classNames: ['the-container'],
     childViews: ['aView', 'bView'],
     aView: Ember.View.create({
-      template: Ember.Handlebars.compile("A")
+      template: Ember.HTMLBars.compile("A")
     }),
     bView: Ember.View.create({
-      template: Ember.Handlebars.compile("B")
+      template: Ember.HTMLBars.compile("B")
     })
   });
 
@@ -117,10 +117,10 @@ containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
     classNames: ['the-container'],
     childViews: ['aView', 'bView'],
     aView: Ember.View.create({
-      template: Ember.Handlebars.compile("A")
+      template: Ember.HTMLBars.compile("A")
     }),
     bView: Ember.View.create({
-      template: Ember.Handlebars.compile("B")
+      template: Ember.HTMLBars.compile("B")
     })
   });
 
@@ -140,7 +140,7 @@ containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
   ```javascript
   AnotherViewClass = Ember.View.extend({
-    template: Ember.Handlebars.compile("Another view")
+    template: Ember.HTMLBars.compile("Another view")
   });
 
   aContainer.toArray();  // [aContainer.aView, aContainer.bView]
