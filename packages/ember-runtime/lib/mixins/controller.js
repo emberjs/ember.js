@@ -5,8 +5,7 @@ import ControllerContentModelAliasDeprecation from 'ember-runtime/mixins/control
 
 /**
   `Ember.ControllerMixin` provides a standard interface for all classes that
-  compose Ember's controller layer: `Ember.Controller`,
-  `Ember.ArrayController`, and `Ember.ObjectController`.
+  compose Ember's controller layer: `Ember.Controller` and `Ember.ArrayController`.
 
   @class ControllerMixin
   @namespace Ember

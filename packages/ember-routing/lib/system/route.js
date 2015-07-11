@@ -1627,9 +1627,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     });
     ```
 
-    This means that your template will get a proxy for the model as its
-    context, and you can act as though the model itself was the context.
-
     The provided controller will be one resolved based on the name
     of this route.
 
@@ -1638,7 +1635,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     * if the model is an `Ember.Array` (including record arrays from Ember
       Data), the controller is an `Ember.ArrayController`.
-    * otherwise, the controller is an `Ember.ObjectController`.
+    * otherwise, the controller is basic `Ember.Controller`.
 
     As an example, consider the router:
 
@@ -1649,7 +1646,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     For the `post` route, a controller named `App.PostController` would
-    be used if it is defined. If it is not defined, an `Ember.ObjectController`
+    be used if it is defined. If it is not defined, a basic `Ember.Controller`
     instance would be used.
 
     Example

@@ -61,7 +61,6 @@ import {
 } from 'ember-runtime/computed/reduce_computed_macros';
 
 import ArrayController from 'ember-runtime/controllers/array_controller';
-import ObjectController from 'ember-runtime/controllers/object_controller';
 import Controller from 'ember-runtime/controllers/controller';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
@@ -139,7 +138,6 @@ Ember.onLoad = onLoad;
 Ember.runLoadHooks = runLoadHooks;
 
 Ember.ArrayController = ArrayController;
-Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 

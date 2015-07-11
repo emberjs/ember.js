@@ -3,7 +3,6 @@ import Ember from 'ember-metal/core';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 
-import { objectControllerDeprecation } from 'ember-runtime/controllers/object_controller';
 import EmberHandlebars from 'ember-htmlbars/compat';
 import EmberView from 'ember-views/views/view';
 
@@ -874,35 +873,6 @@ QUnit.test('The {{link-to}} helper refreshes href element when one of params cha
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });
 
-QUnit.test('The {{link-to}} helper\'s bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller', function() {
-  expectDeprecation(objectControllerDeprecation);
-
-  Router.map(function() {
-    this.route('post', { path: '/posts/:post_id' });
-  });
-
-  var post = Ember.Object.create({ id: '1' });
-  var secondPost = Ember.Object.create({ id: '2' });
-
-  Ember.TEMPLATES = {
-    index: compile(' '),
-    post:  compile('{{#link-to "post" this id="self-link"}}selflink{{/link-to}}')
-  };
-
-  App.PostController = Ember.ObjectController.extend();
-  var postController = container.lookup('controller:post');
-
-  bootApplication();
-
-  Ember.run(router, 'transitionTo', 'post', post);
-
-  var $link = Ember.$('#self-link', '#qunit-fixture');
-  equal(normalizeUrl($link.attr('href')), '/posts/1', 'self link renders post 1');
-
-  Ember.run(postController, 'set', 'model', secondPost);
-
-  equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');
-});
 
 QUnit.test('The {{link-to}} helper is active when a route is active', function() {
   Router.map(function() {

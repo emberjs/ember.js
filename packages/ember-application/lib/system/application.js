@@ -15,7 +15,6 @@ import DefaultResolver from 'ember-application/system/resolver';
 import run from 'ember-metal/run_loop';
 import { canInvoke } from 'ember-metal/utils';
 import Controller from 'ember-runtime/controllers/controller';
-import ObjectController from 'ember-runtime/controllers/object_controller';
 import ArrayController from 'ember-runtime/controllers/array_controller';
 import Renderer from 'ember-metal-views/renderer';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
@@ -1016,7 +1015,6 @@ Application.reopenClass({
     registry.register('application:main', namespace, { instantiate: false });
 
     registry.register('controller:basic', Controller, { instantiate: false });
-    registry.register('controller:object', ObjectController, { instantiate: false });
     registry.register('controller:array', ArrayController, { instantiate: false });
 
     registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });

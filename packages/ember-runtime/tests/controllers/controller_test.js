@@ -2,11 +2,7 @@
 
 import Controller from 'ember-runtime/controllers/controller';
 import Service from 'ember-runtime/system/service';
-import ObjectController from 'ember-runtime/controllers/object_controller';
 import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
-import {
-  objectControllerDeprecation
-} from 'ember-runtime/controllers/object_controller';
 import Mixin from 'ember-metal/mixin';
 import Object from 'ember-runtime/system/object';
 import { Registry } from 'ember-runtime/system/container';
@@ -58,22 +54,6 @@ QUnit.test('When `_actions` is provided, `actions` is left alone', function() {
   equal('foo', controller.get('actions')[0], 'actions property is not untouched');
 });
 
-QUnit.test('Actions object doesn\'t shadow a proxied object\'s \'actions\' property', function() {
-  expectDeprecation(objectControllerDeprecation);
-
-  var TestController = ObjectController.extend({
-    model: {
-      actions: 'foo'
-    },
-    actions: {
-      poke() {
-        console.log('ouch');
-      }
-    }
-  });
-  var controller = TestController.create({});
-  equal(controller.get('actions'), 'foo', 'doesn\'t shadow the content\'s actions property');
-});
 
 QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
   expect(2);
@@ -218,25 +198,6 @@ QUnit.test('controllers can be injected into controllers', function() {
 
   var postController = container.lookup('controller:post');
   var postsController = container.lookup('controller:posts');
-
-  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
-});
-
-QUnit.test('controllers can be injected into ObjectControllers', function() {
-  var registry = new Registry();
-  var container = registry.container();
-
-  registry.register('controller:post', Controller.extend({
-    postsController: inject.controller('posts')
-  }));
-
-  registry.register('controller:posts', ObjectController.extend());
-
-  var postController = container.lookup('controller:post');
-  var postsController;
-  expectDeprecation(function() {
-    postsController = container.lookup('controller:posts');
-  }, objectControllerDeprecation);
 
   equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
