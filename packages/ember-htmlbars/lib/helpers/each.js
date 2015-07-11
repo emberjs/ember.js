@@ -68,7 +68,7 @@ import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
   ```
 
   @method each
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @public
 */
 export default function eachHelper(params, hash, blocks) {

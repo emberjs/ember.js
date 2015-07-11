@@ -1,3 +1,25 @@
+/**
+
+  &nbsp;
+
+@module ember
+@submodule ember-templates
+@main ember-templates
+*/
+
+/**
+
+  [HTMLBars](https://github.com/tildeio/htmlbars) is a [Handlebars](http://handlebarsjs.com/)
+  compatible templating engine used by Ember.js. The classes and namespaces
+  covered by this documentation attempt to focus on APIs for interacting
+  with HTMLBars itself. For more general guidance on Ember.js templates and
+  helpers, please see the [ember-templates](/api/modules/ember-templates.html)
+  package.
+
+@module ember
+@submodule ember-htmlbars
+@main ember-htmlbars
+*/
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 

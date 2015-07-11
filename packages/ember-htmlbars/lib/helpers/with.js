@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
@@ -33,7 +33,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
   the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
 
   @method with
-  @for Ember.Handlebars.helpers
+  @for Ember.Templates.helpers
   @param {Object} options
   @return {String} HTML string
   @public
