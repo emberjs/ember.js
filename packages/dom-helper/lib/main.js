@@ -172,11 +172,34 @@ prototype.appendChild = function(element, childElement) {
   return element.appendChild(childElement);
 };
 
+var itemAt;
+
+// It appears that sometimes, in yet to be itentified scenarios PhantomJS 2.0
+// crashes on childNodes.item(index), but works as expected with childNodes[index];
+//
+// Although it would be nice to move to childNodes[index] in all scenarios,
+// this would require SimpleDOM to maintain the childNodes array. This would be
+// quite costly, in both dev time and runtime.
+//
+// So instead, we choose the best possible method and call it a day.
+//
+/*global navigator */
+if (typeof navigator !== 'undefined' &&
+    navigator.userAgent.indexOf('PhantomJS')) {
+  itemAt = function(nodes, index) {
+    return nodes[index];
+  };
+} else {
+  itemAt = function(nodes, index) {
+    return nodes.item(index);
+  };
+}
+
 prototype.childAt = function(element, indices) {
   var child = element;
 
   for (var i = 0; i < indices.length; i++) {
-    child = child.childNodes.item(indices[i]);
+    child = itemAt(child.childNodes, indices[i]);
   }
 
   return child;
