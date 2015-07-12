@@ -1,5 +1,37 @@
 # Ember Changelog
 
+### 2.0.0-beta.2 (July 12, 2015)
+
+- [#11213](https://github.com/emberjs/ember.js/pull/11213) [CLEANUP] Remove chaining in Observable.set
+- [#11438](https://github.com/emberjs/ember.js/pull/11438) [CLEANUP] Remove CP semantics
+- [#11447](https://github.com/emberjs/ember.js/pull/11447) [CLEANUP] Remove `Ember.Set` (**not** `Ember.set`).
+- [#11443](https://github.com/emberjs/ember.js/pull/11443) [CLEANUP] Remove `Ember.LinkView`.
+- [#11439](https://github.com/emberjs/ember.js/pull/11439) [CLEANUP] Remove computed macros.
+- [#11648](https://github.com/emberjs/ember.js/pull/11648) [CLEANUP] Remove `Ember.computed.mapProperty`.
+- [#11460](https://github.com/emberjs/ember.js/pull/11460) [CLEANUP] Remove `Object.create` polyfill.
+- [#11448](https://github.com/emberjs/ember.js/pull/11448) [CLEANUP] Remove `Ember.DeferredMixin`.
+- [#11458](https://github.com/emberjs/ember.js/pull/11458) [CLEANUP] Remove `Ember.ArrayPolyfils`.
+- [#11449](https://github.com/emberjs/ember.js/pull/11449) [CLEANUP] Remove `Ember.RSVP.prototype.fail`.
+- [#11459](https://github.com/emberjs/ember.js/pull/11459) [CLEANUP] Remove `Ember.keys`.
+- [#11456](https://github.com/emberjs/ember.js/pull/11456) [CLEANUP] Remove `Ember.View.prototype.state & `Ember.View.prototype._states`.
+- [#11455](https://github.com/emberjs/ember.js/pull/11455) [CLEANUP] Remove `Ember.EnumerableUtils`.
+- [#11462](https://github.com/emberjs/ember.js/pull/11462) [CLEANUP] Remove `Object.defineProperty` polyfill.
+- [#11517](https://github.com/emberjs/ember.js/pull/11517) [DEPRECATION] Deprecate `this.resource` in `Router.map`.
+- [#11479](https://github.com/emberjs/ember.js/pull/11479) [CLEANUP] Remove `Ember.ObjectController`.
+- [#11513](https://github.com/emberjs/ember.js/pull/11513) [BUGFIX] Replace array computed macros with plain array versions.
+- [#11513](https://github.com/emberjs/ember.js/pull/11513) [CLEANUP] Remove `Ember.arrayComputed`, `Ember.reduceComputed`, `Ember.ArrayComputed`, and `Ember.ReduceComputed`.
+- [#11547](https://github.com/emberjs/ember.js/pull/11547) [CLEANUP] Remove work around for Safari's double finally on error bug.
+- [#11528](https://github.com/emberjs/ember.js/pull/11528) [BUGFIX] Add helpful assertion when using `Ember.computed.map` without a function callback.
+- [#11528](https://github.com/emberjs/ember.js/pull/11528) [BUGFIX] Add helpful assertion when using `Ember.computed.mapBy` without a string property name.
+- [#11587](https://github.com/emberjs/ember.js/pull/11587) [CLEANUP] Remove `{{bind-attr}}`.
+- [#11611](https://github.com/emberjs/ember.js/pull/11611) [CLEANUP] Remove `Ember.computed.filterProperty`.
+- [#11608](https://github.com/emberjs/ember.js/pull/11608) [CLEANUP] Remove `{{linkTo}}` helper (**not** `{{link-to}}`).
+- [#11706](https://github.com/emberjs/ember.js/pull/11706) [CLEANUP] Remove `Enumerable.rejectProperty`.
+- [#11708](https://github.com/emberjs/ember.js/pull/11708) [BUGFIX] Update `fillIn` test helper to trigger the `input` event.
+- [#11710](https://github.com/emberjs/ember.js/pull/11710) Add repository field to package.json
+- [#11700](https://github.com/emberjs/ember.js/pull/11700) [CLEANUP] Removes `Enumerable.findProperty`.
+- [#11707](https://github.com/emberjs/ember.js/pull/11707) [CLEANUP] Remove `Enumerable.everyBy`.
+
 ### 2.0.0-beta.1 (June 12, 2015)
 
 - [#10701](https://github.com/emberjs/ember.js/pull/10701) Refactor `lazyGet`.
