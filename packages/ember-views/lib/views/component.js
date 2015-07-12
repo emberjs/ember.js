@@ -210,17 +210,16 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   }),
 
   /**
-    Triggers a named action on the controller context where the component is used if
-    this controller has registered for notifications of the action.
+    Calls a action passed to a component.
 
     For example a component for playing or pausing music may translate click events
     into action notifications of "play" or "stop" depending on some internal state
     of the component:
 
-
     ```javascript
-    App.PlayButtonComponent = Ember.Component.extend({
-      click: function() {
+    // app/components/play-button.js
+    export default Ember.Component.extend({
+      click() {
         if (this.get('isPlaying')) {
           this.sendAction('play');
         } else {
@@ -230,28 +229,26 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     });
     ```
 
-    When used inside a template these component actions are configured to
-    trigger actions in the outer application context:
+    The actions "play" and "stop" must be passed to this `play-button` component:
 
     ```handlebars
-    {{! application.hbs }}
-    {{play-button play="musicStarted" stop="musicStopped"}}
+    {{! app/templates/application.hbs }}
+    {{play-button play=(action "musicStarted") stop=(action "musicStopped")}}
     ```
 
     When the component receives a browser `click` event it translate this
     interaction into application-specific semantics ("play" or "stop") and
-    triggers the specified action name on the controller for the template
-    where the component is used:
-
+    calls the specified action.
 
     ```javascript
-    App.ApplicationController = Ember.Controller.extend({
+    // app/controller/application.js
+    export default Ember.Controller.extend({
       actions: {
-        musicStarted: function() {
+        musicStarted() {
           // called when the play button is clicked
           // and the music started playing
         },
-        musicStopped: function() {
+        musicStopped() {
           // called when the play button is clicked
           // and the music stopped playing
         }
@@ -259,26 +256,28 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     });
     ```
 
-    If no action name is passed to `sendAction` a default name of "action"
+    If no action is passed to `sendAction` a default name of "action"
     is assumed.
 
     ```javascript
-    App.NextButtonComponent = Ember.Component.extend({
-      click: function() {
+    // app/components/next-button.js
+    export default Ember.Component.extend({
+      click() {
         this.sendAction();
       }
     });
     ```
 
     ```handlebars
-    {{! application.hbs }}
-    {{next-button action="playNextSongInAlbum"}}
+    {{! app/templates/application.hbs }}
+    {{next-button action=(action "playNextSongInAlbum")}}
     ```
 
     ```javascript
+    // app/controllers/application.js
     App.ApplicationController = Ember.Controller.extend({
       actions: {
-        playNextSongInAlbum: function() {
+        playNextSongInAlbum() {
           ...
         }
       }
@@ -286,8 +285,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     ```
 
     @method sendAction
-    @param [action] {String} the action to trigger
-    @param [context] {*} a context to send with the action
+    @param [action] {String} the action to call
+    @param [params] {*} arguments for the action
     @public
   */
   sendAction(action, ...contexts) {
