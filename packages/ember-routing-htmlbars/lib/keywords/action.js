@@ -8,59 +8,150 @@ import { keyword } from 'htmlbars-runtime/hooks';
 import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
 /**
-  The `{{action}}` helper provides a useful shortcut for registering an HTML
-  element within a template for a single DOM event and forwarding that
-  interaction to the template's controller or specified `target` option.
+  The `{{action}}` helper provides a way to pass triggers for behavior (usually
+  just a function) between components, and into components from controllers.
 
-  If the controller does not implement the specified action, the event is sent
-  to the current route, and it bubbles up the route hierarchy from there.
+  ### Passing functions with the action helper
 
-  For more advanced event handling see [Ember.Component](/api/classes/Ember.Component.html)
-
-
-  ### Use
-  Given the following application Handlebars template on the page
+  There are three contexts an action helper can be used in. The first two
+  contexts to discuss are attribute context, and Handlebars value context.
 
   ```handlebars
-  <div {{action 'anActionName'}}>
-    click me
-  </div>
+  {{! An example of attribute context }}
+  <div onclick={{action "save"}}></div>
+  {{! Examples of Handlebars value context }}
+  {{input on-input=(action "save")}}
+  {{yield (action "refreshData") andAnotherParam}}
   ```
 
-  And application code
+  In these contexts,
+  the helper is called a "closure action" helper. It's behavior is simple:
+  If passed a function name, read that function off the `actions` property
+  of the current context. Once that function is read (or if a function was
+  passed), create a closure over that function and any arguments.
 
-  ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  The resulting value of an action helper used this way is simply a function.
+  For example with this attribute context example:
+
+  ```handlebars
+  {{! An example of attribute context }}
+  <div onclick={{action "save"}}></div>
+  ```
+
+  The resulting template render logic would be:
+
+  ```js
+  var div = document.createElement('div');
+  var actionFunction = (function(context){
+    return function() {
+      return context.actions.save.apply(context, arguments);
+    };
+  })(context);
+  div.onclick = actionFunction;
+  ```
+
+  Thus when the div is clicked, the action on that context is called.
+  Becuase the `actionFunction` is just a function, closure actions can be
+  passed between components the still execute in the correct context.
+
+  Here is an example action handler on a component:
+
+  ```js
+  export default Ember.Component.extend({
     actions: {
-      anActionName: function() {
+      save(/* event *\/) {
+        this.get('model').save();
       }
     }
   });
   ```
 
-  Will result in the following rendered HTML
+  Actions are always looked up on the `actions` property of the current context.
+  This avoids collisions in the naming of common actions, such as `destroy`.
 
-  ```html
-  <div class="ember-view">
-    <div data-ember-action="1">
-      click me
-    </div>
-  </div>
+  Two options can be passed to the `action` helper when it is used in this way.
+
+  * `target=someProperty` will look to `someProperty` instead of the current
+    context for the `actions` hash. This can be useful when targetting a
+    service for actions.
+  * `value="target.value"` will read the path `target.value` off the first
+    argument to the action when it is called and rewrite the first argument
+    to be that value. This is useful when attaching actions to event listeners.
+
+  ### Invoking an action
+
+  Closure actions curry both their scope and any arguments. When invoked, any
+  additional arguments are added to the already curried list.
+
+  Actions should be invoked using the [sendAction](/api/classes/Ember.Component.html#method_sendAction)
+  method. The first argument to `sendAction` is the action to be called, and
+  additional arguments are passed to the action function. This has interesting
+  properties combined with currying of arguments. For example:
+
+  ```js
+  export default Ember.Component.extend({
+    actions: {
+      // Usage {{input on-input=(action (action 'setName' model) value="target.value")}}
+      setName(model, name) {
+        model.set('name', name);
+      }
+    }
+  });
   ```
 
-  Clicking "click me" will trigger the `anActionName` action of the
-  `App.ApplicationController`. In this case, no additional parameters will be passed.
+  The first argument (`model`) was curried over, and the run-time argument (`event`)
+  becomes a second argument. Action calls be nested this way because each simply
+  returns a function. Any function can be passed to the `{{action` helper, including
+  other actions.
 
-  If you provide additional parameters to the helper:
+  Actions invoked with `sendAction` have the same currying behavior as demonstrated
+  with `on-input` above. For example:
+
+  ```js
+  export default Ember.Component.extend({
+    actions: {
+      setName(model, name) {
+        model.set('name', name);
+      }
+    }
+  });
+  ```
 
   ```handlebars
-  <button {{action 'edit' post}}>Edit</button>
+  {{my-input submit=(action 'setName' model)}}
   ```
 
-  Those parameters will be passed along as arguments to the JavaScript
-  function implementing the action.
+  ```js
+  // app/components/my-component.js
+  export default Ember.Component.extend({
+    click() {
+      // Note that model is not passed, it was curried in the template
+      this.sendAction('submit', 'bob');
+    }
+  });
+  ```
+
+  ### Attaching actions to DOM
+
+  The third context the `{{action` helper can be used in we call "element space".
+  For example:
+
+  ```handlebars
+  {{! An example of element space }}
+  <div {{action "save"}}></div>
+  ```
+
+  Used this way, the `{{action}}` helper provides a useful shortcut for
+  registering an HTML element within a template for a single DOM event and
+  forwarding that interaction to the template's context (controller or component).
+
+  If the context of a template is a controller, actions used this way will
+  bubble to routes when the controller does not implement the specified action.
+  Once an action hits a route, it will bubble through the route hierarchy.
 
   ### Event Propagation
+
+  `{{action` helpers called in element space can control event bubbling.
 
   Events triggered through the action helper will automatically have
   `.preventDefault()` called on them. You do not need to do so in your event
@@ -86,6 +177,8 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Specifying DOM event type
 
+  `{{action` helpers called in element space can specify an event type.
+
   By default the `{{action}}` helper registers for DOM `click` events. You can
   supply an `on` option to the helper to specify a different DOM event name:
 
@@ -95,10 +188,12 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   </div>
   ```
 
-  See `Ember.View` 'Responding to Browser Events' for a list of
+  See [Event Names](/api/classes/Ember.View.html#toc_event-names) for a list of
   acceptable DOM event names.
 
   ### Specifying whitelisted modifier keys
+
+  `{{action` helpers called in element space can specify modifier keys.
 
   By default the `{{action}}` helper will ignore click event with pressed modifier
   keys. You can supply an `allowedKeys` option to specify which keys should not be ignored.
@@ -121,48 +216,23 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Specifying a Target
 
-  There are several possible target objects for `{{action}}` helpers:
-
-  In a typical Ember application, where templates are managed through use of the
-  `{{outlet}}` helper, actions will bubble to the current controller, then
-  to the current route, and then up the route hierarchy.
-
-  Alternatively, a `target` option can be provided to the helper to change
+  A `target` option can be provided to the helper to change
   which object will receive the method call. This option must be a path
   to an object, accessible in the current context:
 
   ```handlebars
-  {{! the application template }}
-  <div {{action "anActionName" target=view}}>
+  {{! app/templates/application.hbs }}
+  <div {{action "anActionName" target=someService}}>
     click me
   </div>
   ```
 
   ```javascript
-  App.ApplicationView = Ember.View.extend({
-    actions: {
-      anActionName: function() {}
-    }
+  // app/controllers/application.js
+  export default Ember.Controller.extend({
+    someService: Ember.inject.service()
   });
-
   ```
-
-  ### Additional Parameters
-
-  You may specify additional parameters to the `{{action}}` helper. These
-  parameters are passed along as the arguments to the JavaScript function
-  implementing the action.
-
-  ```handlebars
-  {{#each people as |person|}}
-    <div {{action "edit" person}}>
-      click me
-    </div>
-  {{/each}}
-  ```
-
-  Clicking "click me" will trigger the `edit` method on the current controller
-  with the value of `person` as a parameter.
 
   @method action
   @for Ember.Templates.helpers
