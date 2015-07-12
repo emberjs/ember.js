@@ -5,9 +5,16 @@ import { registerDebugFunction } from 'ember-metal/assert';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
-import deprecationManager, { deprecationLevels } from 'ember-debug/deprecation-manager';
-
 import environment from 'ember-metal/environment';
+import deprecate, {
+  registerHandler as registerDeprecationHandler
+} from 'ember-debug/deprecate';
+import warn, {
+  registerHandler as registerWarnHandler
+} from 'ember-debug/warn';
+import isPlainFunction from 'ember-debug/is-plain-function';
+
+Ember.deprecate = deprecate;
 
 /**
 @module ember
@@ -19,9 +26,6 @@ import environment from 'ember-metal/environment';
 @public
 */
 
-function isPlainFunction(test) {
-  return typeof test === 'function' && test.PrototypeMixin === undefined;
-}
 
 /**
   Define an assertion that will throw an exception if the condition is not
@@ -58,26 +62,6 @@ function assert(desc, test) {
   }
 }
 
-
-/**
-  Display a warning with the provided message. Ember build tools will
-  remove any calls to `Ember.warn()` when doing a production build.
-
-  @method warn
-  @param {String} message A warning to display.
-  @param {Boolean} test An optional boolean. If falsy, the warning
-    will be displayed.
-  @public
-*/
-function warn(message, test) {
-  if (!test) {
-    Logger.warn('WARNING: ' + message);
-    if ('trace' in Logger) {
-      Logger.trace();
-    }
-  }
-}
-
 /**
   Display a debug notice. Ember build tools will remove any calls to
   `Ember.debug()` when doing a production build.
@@ -93,86 +77,6 @@ function warn(message, test) {
 function debug(message) {
   Logger.debug('DEBUG: ' + message);
 }
-
-/**
-  Display a deprecation warning with the provided message and a stack trace
-  (Chrome and Firefox only). Ember build tools will remove any calls to
-  `Ember.deprecate()` when doing a production build.
-
-  @method deprecate
-  @param {String} message A description of the deprecation.
-  @param {Boolean|Function} test An optional boolean. If falsy, the deprecation
-    will be displayed. If this is a function, it will be executed and its return
-    value will be used as condition.
-  @param {Object} options An optional object that can be used to pass
-    in a `url` to the transition guide on the emberjs.com website, and a unique
-    `id` for this deprecation. The `id` can be used by Ember debugging tools
-    to change the behavior (raise, log or silence) for that specific deprecation.
-    The `id` should be namespaced by dots, e.g. "view.helper.select".
-  @public
-*/
-function deprecate(message, test, options) {
-  if (Ember.ENV.RAISE_ON_DEPRECATION) {
-    deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
-  }
-  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.SILENCE) {
-    return;
-  }
-
-  var noDeprecation;
-
-  if (isPlainFunction(test)) {
-    noDeprecation = test();
-  } else {
-    noDeprecation = test;
-  }
-
-  if (noDeprecation) { return; }
-
-  if (options && options.id) {
-    message = message + ` [deprecation id: ${options.id}]`;
-  }
-
-  if (deprecationManager.getLevel(options && options.id) === deprecationLevels.RAISE) {
-    throw new EmberError(message);
-  }
-
-  var error;
-
-  // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
-  try { __fail__.fail(); } catch (e) { error = e; }
-
-  if (arguments.length === 3) {
-    Ember.assert('options argument to Ember.deprecate should be an object', options && typeof options === 'object');
-    if (options.url) {
-      message += ' See ' + options.url + ' for more details.';
-    }
-  }
-
-  if (Ember.LOG_STACKTRACE_ON_DEPRECATION && error.stack) {
-    var stack;
-    var stackStr = '';
-
-    if (error['arguments']) {
-      // Chrome
-      stack = error.stack.replace(/^\s+at\s+/gm, '').
-                          replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2').
-                          replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)').split('\n');
-      stack.shift();
-    } else {
-      // Firefox
-      stack = error.stack.replace(/(?:\n@:0)?\s+$/m, '').
-                          replace(/^\(/gm, '{anonymous}(').split('\n');
-    }
-
-    stackStr = '\n    ' + stack.slice(2).join('\n    ');
-    message = message + stackStr;
-  }
-
-  Logger.warn('DEPRECATION: ' + message);
-}
-
-
 
 /**
   Alias an old, deprecated method with its new counterpart.
@@ -297,13 +201,12 @@ if (!Ember.testing) {
   }
 }
 
-Ember.Debug = {
-  _addDeprecationLevel(id, level) {
-    deprecationManager.setLevel(id, level);
-  },
-  _deprecationLevels: deprecationLevels
-};
+Ember.Debug = { };
 
+if (isEnabled('ember-debug-handlers')) {
+  Ember.Debug.registerDeprecationHandler = registerDeprecationHandler;
+  Ember.Debug.registerWarnHandler = registerWarnHandler;
+}
 /*
   We are transitioning away from `ember.js` to `ember.debug.js` to make
   it much clearer that it is only for local development purposes.

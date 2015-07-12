@@ -401,6 +401,13 @@ Ember.runInDebug = runInDebug;
 // This needs to be called before any deprecateFunc
 if (Ember.__loader.registry['ember-debug']) {
   requireModule('ember-debug');
+} else {
+  Ember.Debug = { };
+
+  if (isEnabled('ember-debug-handlers')) {
+    Ember.Debug.registerDeprecationHandler = function() { };
+    Ember.Debug.registerWarnHandler = function() { };
+  }
 }
 
 Ember.create = Ember.deprecateFunc('Ember.create is deprecated in favor of Object.create', Object.create);
