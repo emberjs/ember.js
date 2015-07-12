@@ -34,7 +34,7 @@ function tap(proxy, promise) {
 }
 
 /**
-  A low level mixin making ObjectProxy or ArrayControllers promise-aware.
+  A low level mixin making ObjectProxy promise-aware.
 
   ```javascript
   var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);

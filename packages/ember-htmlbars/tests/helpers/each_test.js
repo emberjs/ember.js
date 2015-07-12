@@ -4,13 +4,10 @@ import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import LegacyEachView from 'ember-views/views/legacy_each_view';
-import { computed } from 'ember-metal/computed';
-import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { A } from 'ember-runtime/system/native_array';
 import EmberController from 'ember-runtime/controllers/controller';
 import { Registry } from 'ember-runtime/system/container';
 
-import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
@@ -331,81 +328,6 @@ QUnit.test('it works inside a table element', function() {
   runDestroy(tableView);
 });
 
-QUnit.test('it supports itemController', function() {
-  var Controller = EmberController.extend({
-    controllerName: computed(function() {
-      return `controller:${this.get('model.name')}`;
-    })
-  });
-
-  runDestroy(view);
-
-  var parentController = {
-    container: container
-  };
-
-  registry.register('controller:array', ArrayController.extend());
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
-    people: people,
-    controller: parentController
-  });
-
-  registry.register('controller:person', Controller);
-
-  runAppend(view);
-
-  equal(view.$().text(), 'controller:Steve Holtcontroller:Annabelle');
-
-  run(function() {
-    view.rerender();
-  });
-
-  assertText(view, 'controller:Steve Holtcontroller:Annabelle');
-
-  run(function() {
-    people.pushObject({ name: 'Yehuda Katz' });
-  });
-
-  assertText(view, 'controller:Steve Holtcontroller:Annabellecontroller:Yehuda Katz');
-
-  run(function() {
-    set(view, 'people', A([{ name: 'Trek Glowacki' }, { name: 'Geoffrey Grosenbach' }]));
-  });
-
-  assertText(view, 'controller:Trek Glowackicontroller:Geoffrey Grosenbach');
-
-  strictEqual(view.childViews[0].get('_arrayController.target'), parentController, 'the target property of the child controllers are set correctly');
-});
-
-QUnit.test('itemController should not affect the DOM structure', function() {
-  var Controller = EmberController.extend({
-    name: computed.alias('model.name')
-  });
-
-  runDestroy(view);
-
-  registry.register('controller:array', ArrayController.extend());
-
-  view = EmberView.create({
-    container: container,
-    template: compile(
-      '<div id="a">{{#each view.people itemController="person" as |person|}}{{person.name}}{{/each}}</div>' +
-        '<div id="b">{{#each view.people as |person|}}{{person.name}}{{/each}}</div>'
-    ),
-    people: people
-  });
-
-  registry.register('controller:person', Controller);
-
-  runAppend(view);
-
-  equal(view.$('#a').html(), view.$('#b').html());
-});
-
-
 QUnit.test('it supports {{itemView=}}', function() {
   var itemView = EmberView.extend({
     template: compile('itemView:{{name}}')
@@ -715,25 +637,6 @@ QUnit.test('it can move to and from {{else}} properly when the backing array gai
   assertHTML(view, 'Nothing');
 });
 
-QUnit.test('it works with the controller keyword', function() {
-  runDestroy(view);
-
-  var controller = ArrayController.create({
-    model: A(['foo', 'bar', 'baz'])
-  });
-
-  runDestroy(view);
-  view = EmberView.create({
-    container: container,
-    controller: controller,
-    template: compile('{{#view}}{{#each controller}}{{this}}{{/each}}{{/view}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'foobarbaz');
-});
-
 QUnit.test('views inside #each preserve the new context [DEPRECATED]', function() {
   runDestroy(view);
 
@@ -875,23 +778,6 @@ function testEachWithItem(moduleName, useBlockParams) {
     });
   }
 
-  QUnit.test('controller is assignable inside an #each', function() {
-    expectDeprecation(arrayControllerDeprecation);
-    var controller = ArrayController.create({
-      model: A([{ name: 'Adam' }, { name: 'Steve' }])
-    });
-
-    view = EmberView.create({
-      container: container,
-      controller: controller,
-      template: templateFor('{{#EACH|this|personController}}{{#view controller=personController}}{{name}}{{/view}}{{/each}}', useBlockParams)
-    });
-
-    runAppend(view);
-
-    equal(view.$().text(), 'AdamSteve');
-  });
-
   QUnit.test('it doesn\'t assert when the morph tags have the same parent', function() {
     view = EmberView.create({
       controller: A(['Cyril', 'David']),
@@ -902,94 +788,6 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     ok(true, 'No assertion from valid template');
   });
-
-  QUnit.test('itemController specified in template with name binding does not change context [DEPRECATED]', function() {
-    var Controller = EmberController.extend({
-      controllerName: computed(function() {
-        return `controller:${this.get('model.name')}`;
-      })
-    });
-
-    registry = new Registry();
-    registry.register('view:-legacy-each', LegacyEachView);
-    container = registry.container();
-
-    people = A([{ name: 'Steve Holt' }, { name: 'Annabelle' }]);
-
-    var parentController = {
-      container: container,
-      people: people,
-      controllerName: 'controller:parentController'
-    };
-
-    registry.register('controller:array', ArrayController.extend());
-
-    var template;
-    expectDeprecation(function() {
-      template = templateFor('{{#EACH|people|person|itemController="person"}}{{controllerName}} - {{person.controllerName}} - {{/each}}', useBlockParams);
-    }, /Using 'itemController' with '{{each}}'/);
-
-    view = EmberView.create({
-      template,
-      container: container,
-      controller: parentController
-    });
-
-    registry.register('controller:person', Controller);
-
-    runAppend(view);
-
-    equal(view.$().text(), 'controller:parentController - controller:Steve Holt - controller:parentController - controller:Annabelle - ');
-
-    run(function() {
-      people.pushObject({ name: 'Yehuda Katz' });
-    });
-
-    assertText(view, 'controller:parentController - controller:Steve Holt - controller:parentController - controller:Annabelle - controller:parentController - controller:Yehuda Katz - ');
-
-    run(function() {
-      set(parentController, 'people', A([{ name: 'Trek Glowacki' }, { name: 'Geoffrey Grosenbach' }]));
-    });
-
-    assertText(view, 'controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ');
-
-    strictEqual(view.childViews[0].get('_arrayController.target'), parentController, 'the target property of the child controllers are set correctly');
-  });
-
-  QUnit.test('itemController specified in ArrayController with name binding does not change context', function() {
-    expectDeprecation(arrayControllerDeprecation);
-    people = A([{ name: 'Steve Holt' }, { name: 'Annabelle' }]);
-
-    var PersonController = EmberController.extend({
-          controllerName: computed(function() {
-            return 'controller:' + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
-          })
-        });
-    var PeopleController = ArrayController.extend({
-          model: people,
-          itemController: 'person',
-          company: 'Yapp',
-          controllerName: 'controller:people'
-        });
-    registry = new Registry();
-    registry.register('view:-legacy-each', LegacyEachView);
-    container = registry.container();
-
-    registry.register('controller:people', PeopleController);
-    registry.register('controller:person', PersonController);
-
-    view = EmberView.create({
-      container: container,
-      template: templateFor('{{#EACH|this|person}}{{controllerName}} - {{person.controllerName}} - {{/each}}', useBlockParams),
-      controller: container.lookup('controller:people')
-    });
-
-
-    runAppend(view);
-
-    equal(view.$().text(), 'controller:people - controller:Steve Holt of Yapp - controller:people - controller:Annabelle of Yapp - ');
-  });
-
 
   QUnit.test('locals in stable loops update when the list is updated', function() {
     expect(3);

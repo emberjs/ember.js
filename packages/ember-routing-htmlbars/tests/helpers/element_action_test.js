@@ -8,7 +8,6 @@ import ActionManager from 'ember-views/system/action_manager';
 import { Registry } from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
-import EmberArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
@@ -131,39 +130,6 @@ QUnit.test('Inside a yield, the target points at the original target', function(
   equal(watted, true, 'The action was called on the right context');
 });
 
-QUnit.test('should target the current controller inside an {{each}} loop [DEPRECATED]', function() {
-  expectDeprecation(arrayControllerDeprecation);
-  var registeredTarget;
-
-  ActionHelper.registerAction = function({ node }) {
-    registeredTarget = node.state.target;
-  };
-
-  var itemController = EmberController.create();
-
-  var ArrayController = EmberArrayController.extend({
-    itemController: 'stub',
-    controllerAt(idx, object) {
-      return itemController;
-    }
-  });
-
-  var controller = ArrayController.create({
-    model: Ember.A([1])
-  });
-
-  view = EmberView.create({
-    controller: controller,
-    template: compile('{{#each controller}}<button {{action "editTodo"}}>Edit</button>{{/each}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, eachDeprecation);
-
-  equal(registeredTarget, itemController, 'the item controller is the target of action');
-});
-
 QUnit.test('should target the with-controller inside an {{#with controller=\'person\'}} [DEPRECATED]', function() {
   var registeredTarget;
 
@@ -194,44 +160,6 @@ QUnit.test('should target the with-controller inside an {{#with controller=\'per
   ok(registeredTarget instanceof PersonController, 'the with-controller is the target of action');
 });
 
-QUnit.skip('should target the with-controller inside an {{each}} in a {{#with controller=\'person\'}} [DEPRECATED]', function() {
-  expectDeprecation(eachDeprecation);
-  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
-  expectDeprecation(arrayControllerDeprecation);
-
-  var eventsCalled = [];
-
-  var PeopleController = EmberArrayController.extend({
-    actions: {
-      robert() { eventsCalled.push('robert'); },
-      brian() { eventsCalled.push('brian'); }
-    }
-  });
-
-  var registry = new Registry();
-  var container = registry.container();
-  var parentController = EmberObject.create({
-    container: container,
-    people: Ember.A([
-      { name: 'robert' },
-      { name: 'brian' }
-    ])
-  });
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#with people controller="people"}}{{#each}}<a href="#" {{action name}}>{{name}}</a>{{/each}}{{/with}}'),
-    controller: parentController
-  });
-
-  registry.register('controller:people', PeopleController);
-
-  runAppend(view);
-
-  view.$('a').trigger('click');
-
-  deepEqual(eventsCalled, ['robert', 'brian'], 'the events are fired properly');
-});
 
 QUnit.test('should allow a target to be specified', function() {
   var registeredTarget;

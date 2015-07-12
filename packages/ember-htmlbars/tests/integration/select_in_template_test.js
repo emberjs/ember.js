@@ -6,10 +6,10 @@ import EventDispatcher from 'ember-views/system/event_dispatcher';
 
 import { computed } from 'ember-metal/computed';
 import Namespace from 'ember-runtime/system/namespace';
-import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import SelectView from 'ember-views/views/select';
 import compile from 'ember-template-compiler/system/compile';
+import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import environment from 'ember-metal/environment';
 
@@ -28,7 +28,6 @@ QUnit.module('ember-htmlbars: Ember.Select - usage inside templates', {
 });
 
 QUnit.test('works from a template with bindings [DEPRECATED]', function() {
-  expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -43,7 +42,7 @@ QUnit.test('works from a template with bindings [DEPRECATED]', function() {
 
   var application = Namespace.create();
 
-  application.peopleController = ArrayController.create({
+  application.peopleController = Controller.create({
     content: Ember.A([
       Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
       Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
@@ -61,7 +60,7 @@ QUnit.test('works from a template with bindings [DEPRECATED]', function() {
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    content=view.app.peopleController' +
+      '    content=view.app.peopleController.content' +
       '    optionLabelPath="content.fullName"' +
       '    optionValuePath="content.id"' +
       '    prompt="Pick a person:"' +
@@ -83,7 +82,7 @@ QUnit.test('works from a template with bindings [DEPRECATED]', function() {
 
   equal(select.get('selection'), erik, 'Selection was updated through binding');
   run(function() {
-    application.peopleController.pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
+    application.peopleController.get('content').pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
   });
 
   equal(select.$('option').length, 6, 'New option was added');
@@ -91,7 +90,6 @@ QUnit.test('works from a template with bindings [DEPRECATED]', function() {
 });
 
 QUnit.test('works from a template', function() {
-  expectDeprecation(arrayControllerDeprecation);
   var Person = EmberObject.extend({
     id: null,
     firstName: null,
@@ -106,7 +104,7 @@ QUnit.test('works from a template', function() {
 
   var application = Namespace.create();
 
-  application.peopleController = ArrayController.create({
+  application.peopleController = Controller.create({
     content: Ember.A([
       Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
       Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
@@ -124,7 +122,7 @@ QUnit.test('works from a template', function() {
     selectView: SelectView,
     template: compile(
       '{{view view.selectView viewName="select"' +
-      '    content=view.app.peopleController' +
+      '    content=view.app.peopleController.content' +
       '    optionLabelPath="content.fullName"' +
       '    optionValuePath="content.id"' +
       '    prompt="Pick a person:"' +
@@ -146,7 +144,7 @@ QUnit.test('works from a template', function() {
 
   equal(select.get('selection'), erik, 'Selection was updated through binding');
   run(function() {
-    application.peopleController.pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
+    application.peopleController.get('content').pushObject(Person.create({ id: 5, firstName: 'James', lastName: 'Rosen' }));
   });
 
   equal(select.$('option').length, 6, 'New option was added');

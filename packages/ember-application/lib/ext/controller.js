@@ -84,7 +84,7 @@ ControllerMixin.reopen({
     For example, when you define a controller:
 
     ```javascript
-    App.CommentsController = Ember.ArrayController.extend({
+    App.CommentsController = Ember.Controller.extend({
       needs: ['post']
     });
     ```
@@ -165,7 +165,7 @@ ControllerMixin.reopen({
     property will be accessible by name through this property.
 
     ```javascript
-    App.CommentsController = Ember.ArrayController.extend({
+    App.CommentsController = Ember.Controller.extend({
       needs: ['post'],
       postTitle: function() {
         var currentPost = this.get('controllers.post'); // instance of App.PostController

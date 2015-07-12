@@ -43,7 +43,6 @@ import MutableArray from 'ember-runtime/mixins/mutable_array';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import Evented from 'ember-runtime/mixins/evented';
 import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
-import SortableMixin from 'ember-runtime/mixins/sortable';
 
 import {
   sum,
@@ -60,7 +59,6 @@ import {
   intersect
 } from 'ember-runtime/computed/reduce_computed_macros';
 
-import ArrayController from 'ember-runtime/controllers/array_controller';
 import Controller from 'ember-runtime/controllers/controller';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
@@ -84,8 +82,6 @@ Ember.Array = EmberArray;
 
 Ember.Comparable = Comparable;
 Ember.Copyable = Copyable;
-
-Ember.SortableMixin = SortableMixin;
 
 Ember.Freezable = Freezable;
 Ember.FROZEN_ERROR = FROZEN_ERROR;
@@ -137,7 +133,6 @@ Ember.NativeArray = NativeArray;
 Ember.onLoad = onLoad;
 Ember.runLoadHooks = runLoadHooks;
 
-Ember.ArrayController = ArrayController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 

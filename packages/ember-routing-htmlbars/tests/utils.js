@@ -8,7 +8,6 @@ import {
 
 import Registry from 'container/registry';
 import Controller from 'ember-runtime/controllers/controller';
-import ArrayController from 'ember-runtime/controllers/array_controller';
 
 import EmberView from 'ember-views/views/view';
 import EmberRouter from 'ember-routing/system/router';
@@ -52,7 +51,6 @@ function buildRegistry(namespace) {
   registry.register('location:hash', HashLocation);
 
   registry.register('controller:basic', Controller, { instantiate: false });
-  registry.register('controller:array', ArrayController, { instantiate: false });
 
   registry.register('view:toplevel', EmberView.extend());
   registry.register('view:-outlet', OutletView);

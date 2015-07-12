@@ -2,7 +2,6 @@
 
 import Controller from 'ember-runtime/controllers/controller';
 import Service from 'ember-runtime/system/service';
-import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import Mixin from 'ember-metal/mixin';
 import Object from 'ember-runtime/system/object';
 import { Registry } from 'ember-runtime/system/container';
@@ -201,24 +200,6 @@ QUnit.test('controllers can be injected into controllers', function() {
 
   equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
-
-QUnit.test('controllers can be injected into ArrayControllers', function() {
-  expectDeprecation(arrayControllerDeprecation);
-  var registry = new Registry();
-  var container = registry.container();
-
-  registry.register('controller:post', Controller.extend({
-    postsController: inject.controller('posts')
-  }));
-
-  registry.register('controller:posts', ArrayController.extend());
-
-  var postController = container.lookup('controller:post');
-  var postsController = container.lookup('controller:posts');
-
-  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
-});
-
 
 QUnit.test('services can be injected into controllers', function() {
   var registry = new Registry();
