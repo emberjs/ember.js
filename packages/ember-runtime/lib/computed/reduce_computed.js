@@ -14,8 +14,8 @@ import expandProperties from 'ember-metal/expand_properties';
 import {
   addObserver,
   removeObserver,
-  addBeforeObserver,
-  removeBeforeObserver
+  _addBeforeObserver,
+  _removeBeforeObserver
 } from 'ember-metal/observer';
 import {
   ComputedProperty,
@@ -152,7 +152,7 @@ DependentArraysObserver.prototype = {
       observerContexts[index] = observerContext;
 
       forEach(itemPropertyKeys, function (propertyKey) {
-        addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
+        _addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
         addObserver(item, propertyKey, this, observerContext.observer);
       }, this);
     }, this);
@@ -175,7 +175,7 @@ DependentArraysObserver.prototype = {
         item = observerContext.item;
 
         forEach(itemPropertyKeys, function (propertyKey) {
-          removeBeforeObserver(item, propertyKey, dependentArrayObserver, beforeObserver);
+          _removeBeforeObserver(item, propertyKey, dependentArrayObserver, beforeObserver);
           removeObserver(item, propertyKey, dependentArrayObserver, observer);
         });
       });
@@ -261,7 +261,7 @@ DependentArraysObserver.prototype = {
 
     function removeObservers(propertyKey) {
       observerContexts[sliceIndex].destroyed = true;
-      removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
+      _removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
       removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
     }
 
@@ -300,7 +300,7 @@ DependentArraysObserver.prototype = {
         observerContexts[sliceIndex] = observerContext;
 
         forEach(itemPropertyKeys, function (propertyKey) {
-          addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
+          _addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
           addObserver(item, propertyKey, this, observerContext.observer);
         }, this);
       }
