@@ -23,9 +23,9 @@ function InjectedProperty(type, name) {
 }
 
 function injectedPropertyGet(keyName) {
-  var possibleDesc = this[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  var desc = this[keyName];
 
+  Ember.assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
   Ember.assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
 
   return this.container.lookup(desc.type + ':' + (desc.name || keyName));
