@@ -51,7 +51,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   ```
 
   Thus when the div is clicked, the action on that context is called.
-  Becuase the `actionFunction` is just a function, closure actions can be
+  Because the `actionFunction` is just a function, closure actions can be
   passed between components the still execute in the correct context.
 
   Here is an example action handler on a component:
