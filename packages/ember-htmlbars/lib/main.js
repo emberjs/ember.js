@@ -2,9 +2,10 @@
 
   &nbsp;
 
-@module ember
-@submodule ember-templates
-@main ember-templates
+  @module ember
+  @submodule ember-templates
+  @main ember-templates
+  @public
 */
 
 /**
@@ -16,9 +17,10 @@
   helpers, please see the [ember-templates](/api/modules/ember-templates.html)
   package.
 
-@module ember
-@submodule ember-htmlbars
-@main ember-htmlbars
+  @module ember
+  @submodule ember-htmlbars
+  @main ember-htmlbars
+  @public
 */
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
