@@ -21,7 +21,8 @@
     "ember-routing-htmlbars-improved-actions": true,
     "ember-htmlbars-get-helper": true,
     "ember-htmlbars-helper": true,
-    "ember-htmlbars-dashless-helpers": true
+    "ember-htmlbars-dashless-helpers": true,
+    "ember-metal-computed-macros-blank": null
   },
   "debugStatements": [
     "Ember.warn",
