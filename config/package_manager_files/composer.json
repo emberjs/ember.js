@@ -3,6 +3,7 @@
   "description": "A framework for creating ambitious web applications.",
   "type": "component",
   "license": "MIT",
+  "homepage": "https://github.com/emberjs/ember.js",
   "require": {
     "components/jquery": ">=1.7.0, < 2.2.0"
   },

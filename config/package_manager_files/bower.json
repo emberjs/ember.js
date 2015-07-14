@@ -1,6 +1,8 @@
 {
   "name": "ember",
   "version": "VERSION_STRING_PLACEHOLDER",
+  "license": "MIT",
+  "homepage": "https://github.com/emberjs/ember.js",
   "main": [
     "./ember.debug.js",
     "./ember-template-compiler.js"
