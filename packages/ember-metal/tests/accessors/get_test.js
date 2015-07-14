@@ -97,6 +97,24 @@ testBoth('should call unknownProperty on watched values if the value is undefine
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 
+QUnit.test('warn on attemps to call get with no arguments', function() {
+  expectAssertion(function() {
+    get('aProperty');
+  }, /Get must be called with two arguments;/i);
+});
+
+QUnit.test('warn on attemps to call get with only one argument', function() {
+  expectAssertion(function() {
+    get('aProperty');
+  }, /Get must be called with two arguments;/i);
+});
+
+QUnit.test('warn on attemps to call get with more then two arguments', function() {
+  expectAssertion(function() {
+    get({}, 'aProperty', true);
+  }, /Get must be called with two arguments;/i);
+});
+
 QUnit.test('warn on attempts to get a property of undefined', function() {
   expectAssertion(function() {
     get(undefined, 'aProperty');
@@ -109,28 +127,35 @@ QUnit.test('warn on attempts to get a property path of undefined', function() {
   }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
-QUnit.test('returns null when fetching a complex local path on a null context', function() {
-  equal(get(null, 'aProperty.on.aPath'), null);
+QUnit.test('warn on attempts to get a property of null', function() {
+  expectAssertion(function() {
+    get(null, 'aProperty');
+  }, /Cannot call get with 'aProperty' on an undefined object/);
 });
 
-QUnit.test('returns null when fetching a simple local path on a null context', function() {
-  equal(get(null, 'aProperty'), null);
+QUnit.test('warn on attempts to get a property path of null', function() {
+  expectAssertion(function() {
+    get(null, 'aProperty.on.aPath');
+  }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
-QUnit.test('warn on attempts to get a falsy property', function() {
+QUnit.test('warn on attempts to use get with an unsupported property path', function() {
   var obj = {};
   expectAssertion(function() {
     get(obj, null);
-  }, /Cannot call get with null key/);
+  }, /The key provided to get must be a string, you passed null/);
   expectAssertion(function() {
     get(obj, NaN);
-  }, /Cannot call get with NaN key/);
+  }, /The key provided to get must be a string, you passed NaN/);
   expectAssertion(function() {
     get(obj, undefined);
-  }, /Cannot call get with undefined key/);
+  }, /The key provided to get must be a string, you passed undefined/);
   expectAssertion(function() {
     get(obj, false);
-  }, /Cannot call get with false key/);
+  }, /The key provided to get must be a string, you passed false/);
+  expectAssertion(function() {
+    get(obj, 42);
+  }, /The key provided to get must be a string, you passed 42/);
 });
 
 // ..........................................................
