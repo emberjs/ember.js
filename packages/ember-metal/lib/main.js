@@ -310,20 +310,16 @@ Ember.cacheFor = cacheFor;
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
 Ember.removeObserver = removeObserver;
-Ember.addBeforeObserver = Ember.deprecateFunc('Ember.addBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _addBeforeObserver);
 Ember._suspendBeforeObserver = _suspendBeforeObserver;
 Ember._suspendBeforeObservers = _suspendBeforeObservers;
 Ember._suspendObserver = _suspendObserver;
 Ember._suspendObservers = _suspendObservers;
-Ember.beforeObserversFor = Ember.deprecateFunc('Ember.beforeObserversFor is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserversFor);
-Ember.removeBeforeObserver = Ember.deprecateFunc('Ember.removeBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _removeBeforeObserver);
 
 Ember.IS_BINDING = IS_BINDING;
 Ember.required = required;
 Ember.aliasMethod = aliasMethod;
 Ember.observer = observer;
 Ember.immediateObserver = _immediateObserver;
-Ember.beforeObserver = Ember.deprecateFunc('Ember.beforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserver);
 Ember.mixin = mixin;
 Ember.Mixin = Mixin;
 
@@ -400,11 +396,17 @@ Ember.onerror = null;
 
 // do this for side-effects of updating Ember.assert, warn, etc when
 // ember-debug is present
+// This needs to be called before any deprecateFunc
 if (Ember.__loader.registry['ember-debug']) {
   requireModule('ember-debug');
 }
 
 Ember.create = Ember.deprecateFunc('Ember.create is deprecated in favor of Object.create', Object.create);
 Ember.keys = Ember.deprecateFunc('Ember.keys is deprecated in favor of Object.keys', Object.keys);
+
+Ember.addBeforeObserver = Ember.deprecateFunc('Ember.addBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _addBeforeObserver);
+Ember.removeBeforeObserver = Ember.deprecateFunc('Ember.removeBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _removeBeforeObserver);
+Ember.beforeObserversFor = Ember.deprecateFunc('Ember.beforeObserversFor is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserversFor);
+Ember.beforeObserver = Ember.deprecateFunc('Ember.beforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserver);
 
 export default Ember;
