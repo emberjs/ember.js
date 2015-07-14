@@ -1,4 +1,6 @@
 {
+  "namespace": ["_emberMetalCore", "_emberMetal", "Ember"],
+
   "features": {
     "features-stripped-test": false,
     "ember-routing-named-substates": true,
