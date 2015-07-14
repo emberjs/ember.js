@@ -83,6 +83,22 @@ QUnit.test('it maps simple unshifted properties', function() {
   deepEqual(obj.get('mapped'), ['A', 'B'], 'properties unshifted in sequence are mapped correctly');
 });
 
+QUnit.test('it has the correct `this`', function() {
+  obj = EmberObject.extend({
+    mapped: map('array', function(item)  {
+      equal(this, obj, 'should have correct context');
+      return this.upperCase(item);
+    }),
+    upperCase(string) {
+      return string.toUpperCase();
+    }
+  }).create({
+    array: ['a', 'b', 'c']
+  });
+
+  deepEqual(obj.get('mapped'), ['A', 'B', 'C'], 'properties unshifted in sequence are mapped correctly');
+});
+
 QUnit.test('it passes the index to the callback', function() {
   var array = ['a', 'b', 'c'];
 
@@ -220,6 +236,22 @@ QUnit.test('it filters according to the specified filter function', function() {
 QUnit.test('it passes the index to the callback', function() {
   obj = EmberObject.extend({
     filtered: filter('array', (item, index) => index === 1)
+  }).create({
+    array: ['a', 'b', 'c']
+  });
+
+  deepEqual(get(obj, 'filtered'), ['b'], 'index is passed to callback correctly');
+});
+
+QUnit.test('it has the correct `this`', function() {
+  obj = EmberObject.extend({
+    filtered: filter('array', function(item, index) {
+      equal(this, obj);
+      return this.isOne(index);
+    }),
+    isOne(value) {
+      return value === 1;
+    }
   }).create({
     array: ['a', 'b', 'c']
   });
@@ -1096,6 +1128,27 @@ QUnit.module('sort - sort function', {
   }
 });
 
+QUnit.test('sort has correct `this`', function() {
+  var obj = EmberObject.extend({
+    sortedItems: sort('items.@each.fname', function(a, b) {
+      equal(this, obj, 'expected the object to be `this`');
+      return this.sortByLastName(a, b);
+    }),
+    sortByLastName(a, b) {
+      return sortByFnameAsc(a, b);
+    }
+  }).create({
+    items: Ember.A([
+      { fname: 'Jaime', lname: 'Lannister', age: 34 },
+      { fname: 'Cersei', lname: 'Lannister', age: 34 },
+      { fname: 'Robb', lname: 'Stark', age: 16 },
+      { fname: 'Bran', lname: 'Stark', age: 8 }
+    ])
+  });
+
+  obj.get('sortedItems');
+});
+
 QUnit.test('sort (with function) is readOnly', function() {
   QUnit.throws(function() {
     obj.set('sortedItems', 1);
@@ -1156,6 +1209,7 @@ QUnit.test('sorts correctly as only one property changes', function() {
 
   deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'final');
 });
+
 
 QUnit.module('sort - concurrency', {
   setup() {
