@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 1.13.4 (July 13, 2015)
+
+- [#11651](https://github.com/emberjs/ember.js/pull/11651) [BUGFIX] Ensure child views of non-dirty components get the correct parentView when rerendered.
+- [#11662](https://github.com/emberjs/ember.js/pull/11662) [BUGFIX] Prevent ArrayController deprecation on generated controllers.
+- [#11655](https://github.com/emberjs/ember.js/pull/11655) [BUGFIX] Fix issue with blockless link-to with only query params.
+- [#11664](https://github.com/emberjs/ember.js/pull/11664) [BUGFIX] Ensure Route actions can be unit tested.
+- [#11667](https://github.com/emberjs/ember.js/pull/11667) [BUGFIX] Fix memory leak in rendering engine.
+
 ### 1.13.3 (July 5, 2015)
 
 - [#11510](https://github.com/emberjs/ember.js/pull/11510) [DEPRECATION] Deprecate `Ember.Object.createWithMixins`.
