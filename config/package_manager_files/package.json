@@ -2,6 +2,8 @@
   "name": "components-ember",
   "version": "VERSION_STRING_PLACEHOLDER",
   "description": "Ember Application Framework",
+  "license": "MIT",
+  "homepage": "https://github.com/emberjs/ember.js",
   "keywords": [
     "ember"
   ],

@@ -2,6 +2,8 @@
   "name": "ember",
   "repo": "components/ember",
   "version": "VERSION_STRING_PLACEHOLDER",
+  "license": "MIT",
+  "homepage": "https://github.com/emberjs/ember.js",
   "main": "ember.debug.js",
   "scripts": [
     "ember.debug.js"
