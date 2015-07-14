@@ -155,29 +155,10 @@ QUnit.test('raise if the provided object is undefined', function() {
 });
 
 QUnit.test('should work when object is Ember (used in Ember.get)', function() {
-  equal(get('Ember.RunLoop'), Ember.RunLoop, 'Ember.get');
   equal(get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
 
-QUnit.module('Ember.get() with paths', {
-  setup() {
-    lookup = Ember.lookup = {};
-  },
-
-  teardown() {
-    Ember.lookup = originalLookup;
-  }
-});
-
-QUnit.test('should return a property at a given path relative to the lookup', function() {
-  lookup.Foo = ObservableObject.extend({
-    Bar: ObservableObject.extend({
-      Baz: computed(function() { return 'blargh'; }).volatile()
-    }).create()
-  }).create();
-
-  equal(get('Foo.Bar.Baz'), 'blargh');
-});
+QUnit.module('Ember.get() with paths');
 
 QUnit.test('should return a property at a given path relative to the passed object', function() {
   var foo = ObservableObject.create({
@@ -187,16 +168,6 @@ QUnit.test('should return a property at a given path relative to the passed obje
   });
 
   equal(get(foo, 'bar.baz'), 'blargh');
-});
-
-QUnit.test('should return a property at a given path relative to the lookup - JavaScript hash', function() {
-  lookup.Foo = {
-    Bar: {
-      Baz: 'blargh'
-    }
-  };
-
-  equal(get('Foo.Bar.Baz'), 'blargh');
 });
 
 QUnit.test('should return a property at a given path relative to the passed object - JavaScript hash', function() {
