@@ -46,7 +46,7 @@ export default Mixin.create({
     ```javascript
     // Applies the 'high' class to the view element
     Ember.View.extend({
-      classNameBindings: ['priority']
+      classNameBindings: ['priority'],
       priority: 'high'
     });
     ```
@@ -57,7 +57,7 @@ export default Mixin.create({
     ```javascript
     // Applies the 'is-urgent' class to the view element
     Ember.View.extend({
-      classNameBindings: ['isUrgent']
+      classNameBindings: ['isUrgent'],
       isUrgent: true
     });
     ```
@@ -68,7 +68,7 @@ export default Mixin.create({
     ```javascript
     // Applies the 'urgent' class to the view element
     Ember.View.extend({
-      classNameBindings: ['isUrgent:urgent']
+      classNameBindings: ['isUrgent:urgent'],
       isUrgent: true
     });
     ```
