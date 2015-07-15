@@ -156,3 +156,33 @@ QUnit.test('should call setUnknownProperty if defined and value is undefined', f
   equal(obj.count, 1, 'should have invoked');
 });
 
+QUnit.test('warn on attempts to call set with undefined as object', function() {
+  expectAssertion(function() {
+    set(undefined, 'aProperty', 'BAM');
+  }, /Cannot call set with 'aProperty' on an undefined object./);
+});
+
+QUnit.test('warn on attempts to call set with null as object', function() {
+  expectAssertion(function() {
+    set(null, 'aProperty', 'BAM');
+  }, /Cannot call set with 'aProperty' on an undefined object./);
+});
+
+QUnit.test('warn on attempts to use set with an unsupported property path', function() {
+  var obj = {};
+  expectAssertion(function() {
+    set(obj, null, 42);
+  }, /The key provided to set must be a string, you passed null/);
+  expectAssertion(function() {
+    set(obj, NaN, 42);
+  }, /The key provided to set must be a string, you passed NaN/);
+  expectAssertion(function() {
+    set(obj, undefined, 42);
+  }, /The key provided to set must be a string, you passed undefined/);
+  expectAssertion(function() {
+    set(obj, false, 42);
+  }, /The key provided to set must be a string, you passed false/);
+  expectAssertion(function() {
+    set(obj, 42, 42);
+  }, /The key provided to set must be a string, you passed 42/);
+});
