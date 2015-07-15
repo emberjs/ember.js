@@ -14,7 +14,7 @@ export default function shouldDisplay(predicate) {
 
   if (type === 'boolean') { return predicate; }
 
-  if (type && type === 'object') {
+  if (type && type === 'object' && predicate !== null) {
     var isTruthy = get(predicate, 'isTruthy');
     if (typeof isTruthy === 'boolean') {
       return isTruthy;
