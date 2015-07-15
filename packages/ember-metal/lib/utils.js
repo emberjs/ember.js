@@ -3,7 +3,6 @@
 //
 'REMOVE_USE_STRICT: true';
 
-import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -368,74 +367,6 @@ function meta(obj, writable) {
     obj['__ember_meta__'] = ret;
   }
   return ret;
-}
-
-export function getMeta(obj, property) {
-  var _meta = meta(obj, false);
-  return _meta[property];
-}
-
-export function setMeta(obj, property, value) {
-  var _meta = meta(obj, true);
-  _meta[property] = value;
-  return value;
-}
-
-/**
-  @deprecated
-  @private
-
-  In order to store defaults for a class, a prototype may need to create
-  a default meta object, which will be inherited by any objects instantiated
-  from the class's constructor.
-
-  However, the properties of that meta object are only shallow-cloned,
-  so if a property is a hash (like the event system's `listeners` hash),
-  it will by default be shared across all instances of that class.
-
-  This method allows extensions to deeply clone a series of nested hashes or
-  other complex objects. For instance, the event system might pass
-  `['listeners', 'foo:change', 'ember157']` to `prepareMetaPath`, which will
-  walk down the keys provided.
-
-  For each key, if the key does not exist, it is created. If it already
-  exists and it was inherited from its constructor, the constructor's
-  key is cloned.
-
-  You can also pass false for `writable`, which will simply return
-  undefined if `prepareMetaPath` discovers any part of the path that
-  shared or undefined.
-
-  @method metaPath
-  @for Ember
-  @param {Object} obj The object whose meta we are examining
-  @param {Array} path An array of keys to walk down
-  @param {Boolean} writable whether or not to create a new meta
-    (or meta property) if one does not already exist or if it's
-    shared with its constructor
-*/
-export function metaPath(obj, path, writable) {
-  Ember.deprecate('Ember.metaPath is deprecated and will be removed from future releases.');
-  var _meta = meta(obj, writable);
-  var keyName, value;
-
-  for (var i=0, l=path.length; i<l; i++) {
-    keyName = path[i];
-    value = _meta[keyName];
-
-    if (!value) {
-      if (!writable) { return undefined; }
-      value = _meta[keyName] = { __ember_source__: obj };
-    } else if (value.__ember_source__ !== obj) {
-      if (!writable) { return undefined; }
-      value = _meta[keyName] = Object.create(value);
-      value.__ember_source__ = obj;
-    }
-
-    _meta = value;
-  }
-
-  return value;
 }
 
 /**
