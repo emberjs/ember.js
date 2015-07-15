@@ -260,7 +260,7 @@ QUnit.test('factory for non extendables resolves are cached', function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
-QUnit.test('registry.container creates an associated container', function() {
+QUnit.test('registry.container creates a container', function() {
   var registry = new Registry();
   var PostController = factory();
   registry.register('controller:post', PostController);
@@ -269,7 +269,6 @@ QUnit.test('registry.container creates an associated container', function() {
   var postController = container.lookup('controller:post');
 
   ok(postController instanceof PostController, 'The lookup is an instance of the registered factory');
-  strictEqual(registry._defaultContainer, container, '_defaultContainer is set to the first created container and used for Ember 1.x Container compatibility');
 });
 
 QUnit.test('`resolve` can be handled by a fallback registry', function() {
