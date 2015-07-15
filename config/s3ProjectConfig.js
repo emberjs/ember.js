@@ -13,7 +13,7 @@ function fileMap(revision,tag,date) {
   };
 };
 
-function fileObject(baseName, extension, contentType, currentRevision, tag, date){
+function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
   var fullName = "/" + baseName + extension;
   var obj =  {
     contentType: contentType,
