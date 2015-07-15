@@ -18,8 +18,7 @@ import {
   _addBeforeObserver
 } from 'ember-metal/observer';
 
-var originalLookup = Ember.lookup;
-var obj, count, Global, lookup;
+var obj, count;
 
 QUnit.module('computed');
 
@@ -444,9 +443,6 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
 var func;
 var moduleOpts = {
   setup() {
-    originalLookup = Ember.lookup;
-    lookup = Ember.lookup = {};
-
     obj = {
       foo: {
         bar: {
@@ -457,18 +453,6 @@ var moduleOpts = {
       }
     };
 
-    Global = {
-      foo: {
-        bar: {
-          baz: {
-            biff: 'BIFF'
-          }
-        }
-      }
-    };
-
-    lookup['Global'] = Global;
-
     count = 0;
     func = function() {
       count++;
@@ -477,8 +461,7 @@ var moduleOpts = {
   },
 
   teardown() {
-    obj = count = func = Global = null;
-    Ember.lookup = originalLookup;
+    obj = count = func = null;
   }
 };
 
@@ -524,52 +507,6 @@ testBoth('depending on simple chain', function(get, set) {
   equal(get(obj, 'prop'), 'NONE');
 
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'NONE'); // should do nothing
-  equal(count, 8, 'should be not have invoked computed again');
-});
-
-testBoth('depending on Global chain', function(get, set) {
-  // assign computed property
-  defineProperty(obj, 'prop', computed(function() {
-    count++;
-    return get('Global.foo.bar.baz.biff') + ' ' + count;
-  }).property('Global.foo.bar.baz.biff'));
-
-  equal(get(obj, 'prop'), 'BIFF 1');
-
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-
-  set(get(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
-  equal(get(obj, 'prop'), 'BLOB 3');
-  equal(get(obj, 'prop'), 'BLOB 3');
-
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(get(obj, 'prop'), 'BOOM 5');
-  equal(get(obj, 'prop'), 'BOOM 5');
-
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 6');
-  equal(get(obj, 'prop'), 'BUZZ 6');
-
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'BLARG 7');
-  equal(get(obj, 'prop'), 'BLARG 7');
-
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 8');
-  equal(get(obj, 'prop'), 'BUZZ 8');
-
-  defineProperty(obj, 'prop');
-  set(obj, 'prop', 'NONE');
-  equal(get(obj, 'prop'), 'NONE');
-
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
   equal(get(obj, 'prop'), 'NONE'); // should do nothing
   equal(count, 8, 'should be not have invoked computed again');
 });

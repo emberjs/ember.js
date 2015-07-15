@@ -11,7 +11,6 @@ import {
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
 import { symbol } from 'ember-metal/utils';
-import isNone from 'ember-metal/is_none';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -51,24 +50,17 @@ export let UNHANDLED_GET = symbol('UNHANDLED_GET');
   @public
 */
 export function get(obj, keyName) {
+  Ember.assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
+  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  Ember.assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
+  Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {
     return obj;
   }
 
-  if (!keyName && 'string' === typeof obj) {
-    keyName = obj;
-    obj = Ember.lookup;
-  }
-
-  Ember.assert(`Cannot call get with ${keyName} key.`, !!keyName);
-  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined);
-
-  if (isNone(obj)) {
-    return _getPath(obj, keyName);
-  }
-
-  if (obj && typeof obj[INTERCEPT_GET] === 'function') {
+  if (typeof obj[INTERCEPT_GET] === 'function') {
     let result = obj[INTERCEPT_GET](obj, keyName);
     if (result !== UNHANDLED_GET) { return result; }
   }
@@ -169,7 +161,7 @@ export function _getPath(root, path) {
   parts = path.split('.');
   len = parts.length;
   for (idx = 0; root != null && idx < len; idx++) {
-    root = get(root, parts[idx], true);
+    root = get(root, parts[idx]);
     if (root && root.isDestroyed) { return undefined; }
   }
   return root;
