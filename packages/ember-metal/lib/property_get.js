@@ -3,16 +3,11 @@
 */
 
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
-import EmberError from 'ember-metal/error';
 import {
-  isGlobal as detectIsGlobal,
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
 import { symbol } from 'ember-metal/utils';
-
-var FIRST_KEY = /^([^\.]+)/;
 
 export let INTERCEPT_GET = symbol('INTERCEPT_GET');
 export let UNHANDLED_GET = symbol('UNHANDLED_GET');
@@ -49,122 +44,61 @@ export let UNHANDLED_GET = symbol('UNHANDLED_GET');
   @return {Object} the property value or `null`.
   @public
 */
-export function get(obj, keyName) {
+export function get(obj, key) {
   Ember.assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
-  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
-  Ember.assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+  Ember.assert(`Cannot call get with '${key}' on an undefined object.`, obj !== undefined && obj !== null);
+  Ember.assert(`The key provided to get must be a string, you passed ${key}`, typeof key === 'string');
+  Ember.assert(`'this' in paths is not supported`, !pathHasThis(key));
 
-  // Helpers that operate with 'this' within an #each
-  if (keyName === '') {
-    return obj;
+
+  var value = obj[key];
+  if (value === undefined && isPath(key)) {
+    return _getPath(obj, key);
   }
+  if (typeof obj !== 'function' && typeof obj !== 'object') {
+    return value;
+  }
+  return _get(obj, key, obj.__ember_meta__);
+}
 
+function _descriptor(value) {
+  if (value !== null && typeof value === 'object' && value.isDescriptor) {
+    return value;
+  }
+}
+
+function _get(obj, key, meta) {
   if (typeof obj[INTERCEPT_GET] === 'function') {
-    let result = obj[INTERCEPT_GET](obj, keyName);
+    let result = obj[INTERCEPT_GET](obj, key);
     if (result !== UNHANDLED_GET) { return result; }
   }
 
-  var meta = obj['__ember_meta__'];
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-  var ret;
-
-  if (desc === undefined && isPath(keyName)) {
-    return _getPath(obj, keyName);
-  }
-
+  var ret = obj[key];
+  var desc = _descriptor(ret);
   if (desc) {
-    return desc.get(obj, keyName);
-  } else {
-    if (isEnabled('mandatory-setter')) {
-      if (meta && meta.watching[keyName] > 0) {
-        ret = meta.values[keyName];
-      } else {
-        ret = obj[keyName];
-      }
-    } else {
-      ret = obj[keyName];
-    }
-
-    if (ret === undefined &&
-        'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
-      return obj.unknownProperty(keyName);
-    }
-
-    return ret;
-  }
-}
-
-/**
-  Normalizes a target/path pair to reflect that actual target/path that should
-  be observed, etc. This takes into account passing in global property
-  paths (i.e. a path beginning with a capital letter not defined on the
-  target).
-
-  @private
-  @method normalizeTuple
-  @for Ember
-  @param {Object} target The current target. May be `null`.
-  @param {String} path A path on the target or a global property path.
-  @return {Array} a temporary array with the normalized target/path pair.
-*/
-export function normalizeTuple(target, path) {
-  var hasThis  = pathHasThis(path);
-  var isGlobal = !hasThis && detectIsGlobal(path);
-  var key;
-
-  if (!target && !isGlobal) {
-    return [undefined, ''];
+    return desc.get(obj, key);
   }
 
-  if (hasThis) {
-    path = path.slice(5);
+  if (ret === undefined && 'function' === typeof obj.unknownProperty && !(key in obj)) {
+    return obj.unknownProperty(key);
   }
 
-  if (!target || isGlobal) {
-    target = Ember.lookup;
-  }
-
-  if (isGlobal && isPath(path)) {
-    key = path.match(FIRST_KEY)[0];
-    target = get(target, key);
-    path   = path.slice(key.length + 1);
-  }
-
-  // must return some kind of path to be valid else other things will break.
-  validateIsPath(path);
-
-  return [target, path];
-}
-
-
-function validateIsPath(path) {
-  if (!path || path.length === 0) {
-    throw new EmberError(`Object in path ${path} could not be found or was destroyed.`);
-  }
+  return ret;
 }
 
 export function _getPath(root, path) {
-  var hasThis, parts, tuple, idx, len;
-
-  // detect complicated paths and normalize them
-  hasThis = pathHasThis(path);
-
-  if (!root || hasThis) {
-    tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
+  var obj = root;
+  var parts = path.split('.');
+  var value;
+  for (var idx = 0; obj != null && idx < parts.length; idx++) {
+    if (typeof obj !== 'object' && obj !== 'function') {
+      value = _get(obj, parts[idx], obj.__ember_meta__);
+    } else {
+      value = obj[parts[idx]];
+    }
+    obj = value;
   }
-
-  parts = path.split('.');
-  len = parts.length;
-  for (idx = 0; root != null && idx < len; idx++) {
-    root = get(root, parts[idx]);
-    if (root && root.isDestroyed) { return undefined; }
-  }
-  return root;
+  return value;
 }
 
 export function getWithDefault(root, key, defaultValue) {

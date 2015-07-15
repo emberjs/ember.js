@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core'; // warn, assert, etc;
-import { get, normalizeTuple } from 'ember-metal/property_get';
+import { get } from 'ember-metal/property_get';
 import { meta as metaFor } from 'ember-metal/utils';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
 
@@ -182,62 +182,27 @@ ChainNode.prototype = {
 
   // called on the root node of a chain to setup watchers on the specified
   // path.
-  add(path) {
-    var obj, tuple, key, src, paths;
+  add(_path) {
+    var paths = this._paths;
+    paths[_path] = (paths[_path] || 0) + 1;
 
-    paths = this._paths;
-    paths[path] = (paths[path] || 0) + 1;
+    var key  = firstKey(_path);
+    var path = _path.slice(key.length + 1);
 
-    obj = this.value();
-    tuple = normalizeTuple(obj, path);
-
-    // the path was a local path
-    if (tuple[0] && tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
-
-    // global path, but object does not exist yet.
-    // put into a queue and try to connect later.
-    } else if (!tuple[0]) {
-      pendingQueue.push([this, path]);
-      tuple.length = 0;
-      return;
-
-    // global path, and object already exists
-    } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
-    }
-
-    tuple.length = 0;
-    this.chain(key, path, src);
+    this.chain(key, path, undefined);
   },
 
   // called on the root node of a chain to teardown watcher on the specified
   // path
-  remove(path) {
-    var obj, tuple, key, src, paths;
-
-    paths = this._paths;
-    if (paths[path] > 0) {
-      paths[path]--;
+  remove(_path) {
+    var paths = this._paths;
+    if (paths[_path] > 0) {
+      paths[_path]--;
     }
 
-    obj = this.value();
-    tuple = normalizeTuple(obj, path);
-    if (tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
-    } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
-    }
+    var key  = firstKey(_path);
+    var path = _path.slice(key.length + 1);
 
-    tuple.length = 0;
     this.unchain(key, path);
   },
 
