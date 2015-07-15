@@ -21,13 +21,10 @@ import {
   applyStr,
   canInvoke,
   generateGuid,
-  getMeta,
   guidFor,
   inspect,
   makeArray,
   meta,
-  metaPath,
-  setMeta,
   deprecatedTryCatchFinally,
   tryInvoke,
   uuid,
@@ -232,9 +229,6 @@ Ember.guidFor         = guidFor;
 Ember.META_DESC       = META_DESC;
 Ember.EMPTY_META      = EMPTY_META;
 Ember.meta            = meta;
-Ember.getMeta         = getMeta;
-Ember.setMeta         = setMeta;
-Ember.metaPath        = metaPath;
 Ember.inspect         = inspect;
 Ember.tryCatchFinally = deprecatedTryCatchFinally;
 Ember.makeArray       = makeArray;
