@@ -11,11 +11,11 @@ function run(command, _args) {
 
     var child = spawn(command, args);
 
-    child.stdout.on('data', function (data) {
+    child.stdout.on('data', function(data) {
       console.log(data.toString());
     });
 
-    child.stderr.on('data', function (data) {
+    child.stderr.on('data', function(data) {
       console.error(data.toString());
     });
 
