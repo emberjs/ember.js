@@ -1064,7 +1064,7 @@ QUnit.test('property paths in sort properties update the sorted array', function
     sansa
   ], 'precond - array is initially sorted');
 
-  get(cersei, 'status', 3);
+  set(cersei, 'status', 3);
 
   deepEqual(obj.get('sortedPeople'), [
     jaime,
