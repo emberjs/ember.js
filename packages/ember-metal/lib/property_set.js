@@ -10,7 +10,7 @@ import { defineProperty } from 'ember-metal/properties';
 import EmberError from 'ember-metal/error';
 import {
   isPath,
-  isGlobalPath
+  hasThis as pathHasThis
 } from 'ember-metal/path_cache';
 
 import { symbol } from 'ember-metal/utils';
@@ -32,18 +32,12 @@ export let UNHANDLED_SET = symbol('UNHANDLED_SET');
   @public
 */
 export function set(obj, keyName, value, tolerant) {
-  if (typeof obj === 'string') {
-    Ember.assert(`Path '${obj}' must be global if no obj is given.`, isGlobalPath(obj));
-    value = keyName;
-    keyName = obj;
-    obj = Ember.lookup;
-  }
-
-  Ember.assert(`Cannot call set with '${keyName}' key.`, !!keyName);
-
-  if (obj === Ember.lookup) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  Ember.assert(
+    `Set must be called with tree or four arguments; an object, a property key, a value and tolerant true/false`,
+    arguments.length === 3 || arguments.length === 4);
+  Ember.assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  Ember.assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
+  Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
 
   // This path exists purely to implement backwards-compatible
   // effects (specifically, setting a property on a view may
@@ -61,18 +55,16 @@ export function set(obj, keyName, value, tolerant) {
   }
 
   var isUnknown, currentValue;
-  if ((!obj || desc === undefined) && isPath(keyName)) {
+  if (desc === undefined && isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  Ember.assert('You need to provide an object and key to `set`.', !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
   if (desc) {
     desc.set(obj, keyName, value);
   } else {
-
-    if (obj !== null && value !== undefined && typeof obj === 'object' && obj[keyName] === value) {
+    if (value !== undefined && typeof obj === 'object' && obj[keyName] === value) {
       return value;
     }
 
