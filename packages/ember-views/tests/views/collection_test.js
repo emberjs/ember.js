@@ -564,32 +564,6 @@ QUnit.test('should render the emptyView if content array is empty and emptyView 
   ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, 'displays empty view');
 });
 
-QUnit.test('should render the emptyView if content array is empty and emptyView is given as global string [DEPRECATED]', function() {
-  expectDeprecation(/Resolved the view "App.EmptyView" on the global context/);
-
-  Ember.lookup = {
-    App: {
-      EmptyView: View.extend({
-        tagName: 'kbd',
-        template: compile('THIS IS AN EMPTY VIEW')
-      })
-    }
-  };
-
-  view = CollectionView.create({
-    tagName: 'del',
-    content: Ember.A(),
-
-    emptyView: 'App.EmptyView'
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, 'displays empty view');
-});
-
 QUnit.test('should lookup against the container if itemViewClass is given as a string', function() {
   var ItemView = View.extend({
     template: compile('{{view.content}}')
