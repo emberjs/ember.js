@@ -48,6 +48,23 @@ QUnit.test('is notified when the observed object\'s property is mutated', functi
   equal(nameStream.value(), 'wycats', 'Stream value is correct');
 });
 
+QUnit.test('is notified when properties on functions are mutated', function() {
+  var fn = function() {};
+  fn.foo = 'mmun';
+  source = new Stream(function() { return fn; });
+
+  var nameStream = source.get('foo');
+  nameStream.subscribe(incrementCount);
+
+  equal(count, 0, 'Subscribers called correct number of times');
+  equal(nameStream.value(), 'mmun', 'Stream value is correct');
+
+  set(fn, 'foo', 'wycats');
+
+  equal(count, 1, 'Subscribers called correct number of times');
+  equal(nameStream.value(), 'wycats', 'Stream value is correct');
+});
+
 QUnit.test('is notified when the source stream\'s value changes to a new object', function() {
   var nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
