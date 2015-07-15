@@ -7,11 +7,8 @@ var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 var defeatureifyConfig = require(path.join(__dirname, '../../features.json'));
 
-var canUseInstanceInitializers, canUseApplicationVisit;
-
-if (defeatureifyConfig.features['ember-application-instance-initializers'] !== false) {
-  canUseInstanceInitializers = true;
-}
+var canUseInstanceInitializers = true;
+var canUseApplicationVisit;
 
 if (defeatureifyConfig.features['ember-application-visit'] !== false) {
   canUseApplicationVisit = true;
@@ -21,7 +18,6 @@ var features = {};
 for (var feature in defeatureifyConfig.features) {
   features[feature] = defeatureifyConfig.features[feature];
 }
-features['ember-application-instance-initializers'] = true;
 features['ember-application-visit'] =true;
 
 /*jshint -W079 */

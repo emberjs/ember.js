@@ -36,7 +36,6 @@ function Container(registry, options) {
 Container.prototype = {
   /**
    @private
-
    @property _registry
    @type Registry
    @since 1.11.0
@@ -45,7 +44,6 @@ Container.prototype = {
 
   /**
    @private
-
    @property cache
    @type InheritingDict
    */
