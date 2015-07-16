@@ -370,7 +370,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 });
 
 QUnit.test('Default error event moves into nested route', function() {
-  expect(5);
+  expect(6);
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
@@ -401,7 +401,9 @@ QUnit.test('Default error event moves into nested route', function() {
     }
   });
 
-  bootApplication('/grandma/mom/sally');
+  throws(function() {
+    bootApplication('/grandma/mom/sally');
+  }, function(err) { return err.msg === 'did it broke?';});
 
   step(3, 'App finished booting');
 
@@ -472,7 +474,7 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
-    expect(5);
+    expect(6);
 
     templates['grandma'] = 'GRANDMA {{outlet}}';
     templates['grandma/error'] = 'ERROR: {{model.msg}}';
@@ -504,7 +506,9 @@ if (isEnabled('ember-routing-named-substates')) {
       }
     });
 
-    bootApplication('/grandma/mom/sally');
+    throws(function() {
+      bootApplication('/grandma/mom/sally');
+    }, function(err) { return err.msg === 'did it broke?'; });
 
     step(3, 'App finished booting');
 
@@ -576,7 +580,7 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
-    expect(1);
+    expect(2);
 
     templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
     templates['foo/bar'] = 'YAY';
@@ -597,7 +601,9 @@ if (isEnabled('ember-routing-named-substates')) {
       }
     });
 
-    bootApplication('/foo/bar');
+    throws(function() {
+      bootApplication('/foo/bar');
+    }, function(err) { return err.msg === 'did it broke?'; });
 
     equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
   });
@@ -639,7 +645,7 @@ if (isEnabled('ember-routing-named-substates')) {
   });
 
   QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
-    expect(1);
+    expect(2);
 
     templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
     templates['foo/index'] = 'YAY';
@@ -666,13 +672,15 @@ if (isEnabled('ember-routing-named-substates')) {
       }
     });
 
-    bootApplication('/foo');
+    throws(function() {
+      bootApplication('/foo');
+    }, function(err) { return err.msg === 'did it broke?'; });
 
     equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
   });
 
   QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
-    expect(2);
+    expect(3);
 
     templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 
@@ -687,7 +695,9 @@ if (isEnabled('ember-routing-named-substates')) {
       }
     });
 
-    bootApplication();
+    throws(function() {
+      bootApplication();
+    }, function(err) { return err.msg === 'BAD NEWS BEARS'; });
 
     equal(Ember.$('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 
