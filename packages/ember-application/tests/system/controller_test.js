@@ -8,7 +8,7 @@ import { A } from 'ember-runtime/system/native_array';
 import ArrayController, { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
 import { computed } from 'ember-metal/computed';
 
-QUnit.module('Controller dependencies');
+QUnit.module('Controller dependencies [DEPRECATED]');
 
 QUnit.test('If a controller specifies a dependency, but does not have a container it should error', function() {
   var AController = Controller.extend({
@@ -30,7 +30,11 @@ QUnit.test('If a controller specifies a dependency, it is accessible', function(
 
   registry.register('controller:posts', Controller.extend());
 
-  var postController = container.lookup('controller:post');
+  var postController;
+  expectDeprecation(function() {
+    postController = container.lookup('controller:post');
+  }, /Controller#needs is deprecated, please use Ember.inject.controller\(\) instead/);
+
   var postsController = container.lookup('controller:posts');
 
   equal(postsController, postController.get('controllers.posts'), 'controller.posts must be auto synthesized');
@@ -76,8 +80,15 @@ QUnit.test('Mixin sets up controllers if there is needs before calling super', f
 
   container.lookup('controller:posts').set('model', A(['a','b','c']));
 
-  deepEqual(['a','b','c'], container.lookup('controller:other').toArray());
-  deepEqual(['a','b','c'], container.lookup('controller:another').toArray());
+  container.lookup('controller:posts').set('model', A(['a', 'b', 'c']));
+
+  expectDeprecation(function() {
+    deepEqual(['a', 'b', 'c'], container.lookup('controller:other').get('model.model').toArray());
+  }, /Controller#needs is deprecated, please use Ember.inject.controller\(\) instead/);
+
+  expectDeprecation(function() {
+    deepEqual(['a', 'b', 'c'], container.lookup('controller:another').get('model.model').toArray());
+  }, /Controller#needs is deprecated, please use Ember.inject.controller\(\) instead/);
 });
 
 QUnit.test('raises if trying to get a controller that was not pre-defined in `needs`', function() {
@@ -90,7 +101,10 @@ QUnit.test('raises if trying to get a controller that was not pre-defined in `ne
   }));
 
   var fooController = container.lookup('controller:foo');
-  var barController = container.lookup('controller:bar');
+  var barController;
+  expectDeprecation(function() {
+    barController = container.lookup('controller:bar');
+  }, /Controller#needs is deprecated, please use Ember.inject.controller\(\) instead/);
 
   throws(function() {
     fooController.get('controllers.bar');
@@ -115,7 +129,11 @@ QUnit.test('setting the value of a controller dependency should not be possible'
 
   registry.register('controller:posts', Controller.extend());
 
-  var postController = container.lookup('controller:post');
+  var postController;
+  expectDeprecation(function() {
+    postController = container.lookup('controller:post');
+  }, /Controller#needs is deprecated, please use Ember.inject.controller\(\) instead/);
+
   container.lookup('controller:posts');
 
   throws(function() {
