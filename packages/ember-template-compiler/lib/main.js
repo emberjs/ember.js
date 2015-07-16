@@ -6,7 +6,6 @@ import { registerPlugin } from 'ember-template-compiler/plugins';
 
 import TransformWithAsToHash from 'ember-template-compiler/plugins/transform-with-as-to-hash';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
-import TransformSingleArgEach from 'ember-template-compiler/plugins/transform-single-arg-each';
 import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
 import TransformOldClassBindingSyntax from 'ember-template-compiler/plugins/transform-old-class-binding-syntax';
 import TransformItemClass from 'ember-template-compiler/plugins/transform-item-class';
@@ -22,7 +21,6 @@ import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-
 import 'ember-template-compiler/compat';
 
 registerPlugin('ast', TransformWithAsToHash);
-registerPlugin('ast', TransformSingleArgEach);
 registerPlugin('ast', TransformEachIntoCollection);
 registerPlugin('ast', TransformOldBindingSyntax);
 registerPlugin('ast', TransformOldClassBindingSyntax);

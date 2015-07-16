@@ -640,37 +640,6 @@ QUnit.test('views inside #each preserve the new context [DEPRECATED]', function(
   equal(view.$().text(), 'AdamSteve');
 });
 
-QUnit.test('single-arg each defaults to current context [DEPRECATED]', function() {
-  runDestroy(view);
-
-  view = EmberView.create({
-    context: A([{ name: 'Adam' }, { name: 'Steve' }]),
-    template: compile('{{#each}}{{name}}{{/each}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, eachDeprecation);
-
-  equal(view.$().text(), 'AdamSteve');
-});
-
-QUnit.test('single-arg each will iterate over controller if present [DEPRECATED]', function() {
-  runDestroy(view);
-
-  view = EmberView.create({
-    controller: A([{ name: 'Adam' }, { name: 'Steve' }]),
-    template: compile('{{#each}}{{name}}{{/each}}'),
-    container: container
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, eachDeprecation);
-
-  equal(view.$().text(), 'AdamSteve');
-});
-
 function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
     setup() {
@@ -799,38 +768,6 @@ function testEachWithItem(moduleName, useBlockParams) {
 
     equal(view.$().text(), 'BobSteve');
   });
-
-  if (!useBlockParams) {
-    QUnit.test('{{each}} without arguments [DEPRECATED]', function() {
-      expect(2);
-
-      view = EmberView.create({
-        controller: A([{ name: 'Adam' }, { name: 'Steve' }]),
-        template: compile('{{#each}}{{name}}{{/each}}')
-      });
-
-      expectDeprecation(function() {
-        runAppend(view);
-      }, eachDeprecation);
-
-      equal(view.$().text(), 'AdamSteve');
-    });
-
-    QUnit.test('{{each this}} without keyword [DEPRECATED]', function() {
-      expect(2);
-
-      view = EmberView.create({
-        controller: A([{ name: 'Adam' }, { name: 'Steve' }]),
-        template: compile('{{#each this}}{{name}}{{/each}}')
-      });
-
-      expectDeprecation(function() {
-        runAppend(view);
-      }, eachDeprecation);
-
-      equal(view.$().text(), 'AdamSteve');
-    });
-  }
 
   if (useBlockParams) {
     QUnit.test('the index is passed as the second parameter to #each blocks', function() {
