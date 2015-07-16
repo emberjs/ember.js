@@ -1521,9 +1521,9 @@ QUnit.test("it can filter and sort when both depend on the same item property", 
     todos = get(obj, 'todos');
   });
 
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos initially correct");
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'D', 'E'], "precond - sorted initially correct");
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E'], "precond - filtered initially correct");
+  deepEqual(todos.mapBy('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos initially correct");
+  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D', 'E'], "precond - sorted initially correct");
+  deepEqual(filtered.mapBy('name'), ['A', 'C', 'E'], "precond - filtered initially correct");
 
   run(function() {
     beginPropertyChanges();
@@ -1539,9 +1539,9 @@ QUnit.test("it can filter and sort when both depend on the same item property", 
     endPropertyChanges();
   });
 
-  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos remain correct");
-  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
-  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
+  deepEqual(todos.mapBy('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos remain correct");
+  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
+  deepEqual(filtered.mapBy('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
 });
 
 QUnit.module('Chaining array and reduced CPs', {

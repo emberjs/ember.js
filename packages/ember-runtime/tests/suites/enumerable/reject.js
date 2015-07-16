@@ -144,10 +144,12 @@ suite.test('should match undefined, null, or false properties without second arg
   deepEqual(obj.rejectBy('foo'), ary.slice(2), "rejectBy('foo')')");
 });
 
+/*
 suite.test('should be aliased to rejectProperty', function() {
   var ary =[];
 
   equal(ary.rejectProperty, ary.rejectBy);
 });
+*/
 
 export default suite;

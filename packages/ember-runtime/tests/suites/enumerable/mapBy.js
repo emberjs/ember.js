@@ -14,9 +14,11 @@ suite.test('should work also through getEach alias', function() {
   equal(obj.getEach('a').join(''), '12');
 });
 
+/*
 suite.test('should be aliased to mapProperty', function() {
   var obj = this.newObject([]);
   equal(obj.mapProperty, obj.mapBy);
 });
+*/
 
 export default suite;

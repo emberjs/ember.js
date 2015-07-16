@@ -345,7 +345,7 @@ QUnit.module('Model Dep Query Params', {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
           self.expectedModelHookParams = null;
         }
-        return articles.findProperty('id', params.id);
+        return articles.findBy('id', params.id);
       }
     });
 
@@ -421,7 +421,7 @@ QUnit.module('Model Dep Query Params (nested)', {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
           self.expectedModelHookParams = null;
         }
-        return site_articles.findProperty('id', params.id);
+        return site_articles.findBy('id', params.id);
       }
     });
 
@@ -511,7 +511,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
           deepEqual(params, self.expectedSiteModelHookParams, 'the SiteRoute model hook received the expected merged dynamic segment + query params hash');
           self.expectedSiteModelHookParams = null;
         }
-        return sites.findProperty('id', params.site_id);
+        return sites.findBy('id', params.site_id);
       }
     });
     App.SiteArticleRoute = Ember.Route.extend({
@@ -520,7 +520,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
           deepEqual(params, self.expectedArticleModelHookParams, 'the SiteArticleRoute model hook received the expected merged dynamic segment + query params hash');
           self.expectedArticleModelHookParams = null;
         }
-        return site_articles.findProperty('id', params.article_id);
+        return site_articles.findBy('id', params.article_id);
       }
     });
 

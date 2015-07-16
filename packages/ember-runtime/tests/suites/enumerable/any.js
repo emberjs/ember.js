@@ -67,7 +67,7 @@ suite.test('any should produce correct results even if the matching element is u
   equal(result, true, 'return value of obj.any');
 });
 
-
+/*
 suite.test('any should be aliased to some', function() {
   var obj = this.newObject();
   var ary = this.toArray(obj);
@@ -102,5 +102,6 @@ suite.test('any should be aliased to some', function() {
 
   equal(someResult, anyResult);
 });
+*/
 
 export default suite;
