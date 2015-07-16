@@ -47,7 +47,6 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
 
-
 testBoth('replacing observer should remove old observer', function(get, set) {
 
   var MyMixin = Mixin.create({
@@ -213,4 +212,15 @@ testBoth('observing chain with overriden property', function(get, set) {
 
   set(obj3, 'baz', 'BEAR');
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
+});
+
+testBoth('providing the arguments in reverse order is deprecated', function(get, set) {
+  expectDeprecation(/Passing the dependentKeys after the callback function in Ember\.observer is deprecated. Ensure the callback function is the last argument/);
+
+  Mixin.create({
+    count: 0,
+    foo: observer(function() {
+      set(this, 'count', get(this, 'count') + 1);
+    }, 'bar.baz')
+  });
 });

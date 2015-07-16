@@ -809,6 +809,7 @@ export function observer(...args) {
 
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
+    Ember.deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.');
 
     func  = args[0];
     _paths = args.slice(1);
