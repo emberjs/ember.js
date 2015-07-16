@@ -90,7 +90,7 @@ function registerControllers(app, controllers) {
 
     initialize: function(app) {
       for (var key in controllers) {
-        app.registry.register('controller:' + key, controllers[key]);
+        app.register('controller:' + key, controllers[key]);
       }
     }
   });
