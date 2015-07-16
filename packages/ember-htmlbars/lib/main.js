@@ -52,7 +52,6 @@ import concatHelper from 'ember-htmlbars/helpers/-concat';
 import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import legacyEachWithControllerHelper from 'ember-htmlbars/helpers/-legacy-each-with-controller';
 import legacyEachWithKeywordHelper from 'ember-htmlbars/helpers/-legacy-each-with-keyword';
-import getHelper from 'ember-htmlbars/helpers/-get';
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
@@ -79,9 +78,6 @@ registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
 registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);
-if (isEnabled('ember-htmlbars-get-helper')) {
-  registerHelper('-get', getHelper);
-}
 registerHelper('-html-safe', htmlSafeHelper);
 
 Ember.HTMLBars = {
