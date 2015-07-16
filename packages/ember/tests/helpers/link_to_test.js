@@ -1147,8 +1147,8 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   Ember.TEMPLATES.application = compile('{{#link-to \'index\' id=\'home-link\'}}Home{{/link-to}}{{#link-to \'post\' defaultPost id=\'default-post-link\'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to \'post\' id=\'post-link\'}}Post{{/link-to}}{{/if}}');
 
   App.ApplicationController = Ember.Controller.extend({
-    needs: ['post'],
-    currentPost: Ember.computed.alias('controllers.post.model')
+    postController: Ember.inject.controller('post'),
+    currentPost: Ember.computed.alias('postController.model')
   });
 
   App.PostController = Ember.Controller.extend({
