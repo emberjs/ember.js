@@ -36,9 +36,6 @@ test('uses plugins with precompile', function() {
   var templateOutput;
   var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
 
-  templateOutput = templateCompiler.precompile('{{#each foo in bar}}{{/each}}');
-  ok(templateOutput.match(/locals: \["foo"\]/), 'transform each in to block params');
-
   templateOutput = templateCompiler.precompile('{{#with foo as bar}}{{/with}}');
   ok(templateOutput.match(/locals: \["bar"\]/), 'transform with as to block params');
 });
