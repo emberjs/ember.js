@@ -57,7 +57,7 @@ export default Mixin.create({
     @private
   */
   frozenCopy() {
-    Ember.deprecate('`frozenCopy` is deprecated, use Object.freeze instead.');
+    Ember.deprecate('`frozenCopy` is deprecated, use `Object.freeze` instead.');
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {

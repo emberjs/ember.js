@@ -1,9 +1,24 @@
 import CopyableTests from 'ember-runtime/tests/suites/copyable';
 import Copyable from 'ember-runtime/mixins/copyable';
+import {Freezable} from 'ember-runtime/mixins/freezable';
 import EmberObject from 'ember-runtime/system/object';
 import {generateGuid} from 'ember-metal/utils';
 import {set} from 'ember-metal/property_set';
 import {get} from 'ember-metal/property_get';
+
+QUnit.module('Ember.Copyable.frozenCopy');
+
+QUnit.test('should be deprecated', function() {
+  expectDeprecation('`frozenCopy` is deprecated, use `Object.freeze` instead.');
+
+  var Obj = EmberObject.extend(Freezable, Copyable, {
+    copy() {
+      return Obj.create();
+    }
+  });
+
+  Obj.create().frozenCopy();
+});
 
 var CopyableObject = EmberObject.extend(Copyable, {
 
