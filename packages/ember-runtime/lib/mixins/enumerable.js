@@ -50,6 +50,13 @@ function iter(key, value) {
   return i;
 }
 
+function deprecatingAliasMethod(oldName, newName) {
+  return function() {
+    Ember.deprecate(`Ember.Enumerable.${oldName} is deprecated. Use ${newName} instead.`);
+    return this[newName](...arguments);
+  };
+}
+
 /**
   This mixin defines the common interface implemented by enumerable objects
   in Ember. Most of these methods follow the standard Array iteration
@@ -369,8 +376,7 @@ export default Mixin.create({
     @deprecated Use `mapBy` instead
     @private
   */
-
-  mapProperty: aliasMethod('mapBy'),
+  mapProperty: deprecatingAliasMethod('mapProperty', 'mapBy'),
 
   /**
     Returns an array with all of the items in the enumeration that the passed
@@ -473,7 +479,7 @@ export default Mixin.create({
     @deprecated Use `filterBy` instead
     @private
   */
-  filterProperty: aliasMethod('filterBy'),
+  filterProperty: deprecatingAliasMethod('filterProperty', 'filterBy'),
 
   /**
     Returns an array with the items that do not have truthy values for
@@ -512,7 +518,7 @@ export default Mixin.create({
     @deprecated Use `rejectBy` instead
     @private
   */
-  rejectProperty: aliasMethod('rejectBy'),
+  rejectProperty: deprecatingAliasMethod('rejectProperty', 'rejectBy'),
 
   /**
     Returns the first item in the array for which the callback returns true.
@@ -602,7 +608,7 @@ export default Mixin.create({
     @deprecated Use `findBy` instead
     @private
   */
-  findProperty: aliasMethod('findBy'),
+  findProperty: deprecatingAliasMethod('findProperty', 'findBy'),
 
   /**
     Returns `true` if the passed function returns true for every item in the
@@ -653,7 +659,7 @@ export default Mixin.create({
     @return {Boolean}
     @public
   */
-  everyBy: aliasMethod('isEvery'),
+  everyBy: deprecatingAliasMethod('everyBy', 'isEvery'),
 
   /**
     @method everyProperty
@@ -663,7 +669,7 @@ export default Mixin.create({
     @return {Boolean}
     @private
   */
-  everyProperty: aliasMethod('isEvery'),
+  everyProperty: deprecatingAliasMethod('everyProperty', 'isEvery'),
 
   /**
     Returns `true` if the passed property resolves to the value of the second
@@ -776,7 +782,7 @@ export default Mixin.create({
     @deprecated Use `any` instead
     @private
   */
-  some: aliasMethod('any'),
+  some: deprecatingAliasMethod('some', 'any'),
 
   /**
     Returns `true` if the passed property resolves to the value of the second
@@ -802,7 +808,7 @@ export default Mixin.create({
     @deprecated Use `isAny` instead
     @private
   */
-  anyBy: aliasMethod('isAny'),
+  anyBy: deprecatingAliasMethod('anyBy', 'isAny'),
 
   /**
     @method someProperty
@@ -812,7 +818,7 @@ export default Mixin.create({
     @deprecated Use `isAny` instead
     @private
   */
-  someProperty: aliasMethod('isAny'),
+  someProperty: deprecatingAliasMethod('someProperty', 'isAny'),
 
   /**
     This will combine the values of the enumerator into a single value. It

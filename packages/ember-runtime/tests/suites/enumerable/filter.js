@@ -137,10 +137,12 @@ suite.test('should not match undefined properties without second argument', func
   deepEqual(obj.filterBy('foo'), ary.slice(0, 2), "filterBy('foo', 3)')");
 });
 
+/*
 suite.test('should be aliased to filterProperty', function() {
   var ary = [];
 
   equal(ary.filterProperty, ary.filterBy);
 });
+*/
 
 export default suite;

@@ -77,6 +77,7 @@ suite.test('should return true if every property matches null', function() {
   equal(obj.isEvery('bar', null), false, "isEvery('bar', null)");
 });
 
+/*
 suite.test('everyBy should be aliased to isEvery', function() {
   var obj = this.newObject();
   equal(obj.isEvery, obj.everyBy);
@@ -86,6 +87,7 @@ suite.test('everyProperty should be aliased to isEvery', function() {
   var obj = this.newObject();
   equal(obj.isEvery, obj.everyProperty);
 });
+*/
 
 suite.test('should return true if every property is undefined', function() {
   var obj = this.newObject([
