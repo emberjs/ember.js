@@ -22,7 +22,7 @@ import { isArray } from "ember-metal/utils";
   @param {Object} obj
   @param {String...|Array} list of keys to get
   @return {Object}
-  @private
+  @public
 */
 export default function getProperties(obj) {
   var ret = {};
