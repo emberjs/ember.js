@@ -330,6 +330,7 @@ mixinProperties(Binding, {
       binding `oneWay`. You can instead pass `false` to disable `oneWay`, making the
       binding two way again.
     @return {Ember.Binding} `this`
+    @deprecated
     @public
   */
   oneWay(from, flag) {
