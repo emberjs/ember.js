@@ -40,6 +40,8 @@ function verifyNeedsDependencies(controller, container, needs) {
 var defaultControllersComputedProperty = computed(function() {
   var controller = this;
 
+  Ember.deprecate('Controller#needs is deprecated, please use Ember.inject.controller() instead');
+
   return {
     needs: get(controller, 'needs'),
     container: get(controller, 'container'),
@@ -151,11 +153,11 @@ ControllerMixin.reopen({
   /**
     @method controllerFor
     @see {Ember.Route#controllerFor}
-    @deprecated Use `needs` instead
+    @deprecated Use `Ember.inject.controller()` instead.
     @public
   */
   controllerFor(controllerName) {
-    Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
+    Ember.deprecate('Controller#controllerFor is deprecated, please use Ember.inject.controller() instead');
     return controllerFor(get(this, 'container'), controllerName);
   },
 
@@ -175,6 +177,7 @@ ControllerMixin.reopen({
     ```
 
     @see {Ember.ControllerMixin#needs}
+    @deprecated Use `Ember.inject.controller()` instead.
     @property {Object} controllers
     @default null
     @public
