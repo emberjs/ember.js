@@ -394,6 +394,22 @@ Ember.FEATURES.isEnabled = isEnabled;
 Ember.onerror = null;
 // END EXPORTS
 
+import {
+  assert,
+  warn,
+  debug,
+  deprecate,
+  deprecateFunc,
+  runInDebug
+} from 'ember-metal/assert';
+
+Ember.assert = assert;
+Ember.warn = warn;
+Ember.debug = debug;
+Ember.deprecate = deprecate;
+Ember.deprecateFunc = deprecateFunc;
+Ember.runInDebug = runInDebug;
+
 // do this for side-effects of updating Ember.assert, warn, etc when
 // ember-debug is present
 // This needs to be called before any deprecateFunc
