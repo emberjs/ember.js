@@ -11,7 +11,6 @@ import {
   Resolver
 } from 'ember-application/system/resolver';
 import Application from 'ember-application/system/application';
-import 'ember-application/ext/controller'; // side effect of extending ControllerMixin
 
 Ember.Application = Application;
 Ember.Resolver = Resolver;
