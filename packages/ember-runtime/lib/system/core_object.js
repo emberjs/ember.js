@@ -794,7 +794,7 @@ var ClassMixinProps = {
     for (var name in proto) {
       property = proto[name];
 
-      if (property instanceof ComputedProperty) {
+      if (property && property.isDescriptor) {
         properties.push({
           name: name,
           meta: property._meta

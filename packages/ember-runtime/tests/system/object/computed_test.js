@@ -1,3 +1,4 @@
+import alias from 'ember-metal/alias';
 import { computed } from 'ember-metal/computed';
 import { get as emberGet } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
@@ -152,7 +153,9 @@ QUnit.test('can iterate over a list of computed properties for a class', functio
 
     fooDidChange: observer('foo', function() {}),
 
-    bar: computed(function() {})
+    bar: computed(function() {}),
+
+    qux: alias('foo')
   });
 
   var SubClass = MyClass.extend({
@@ -169,7 +172,7 @@ QUnit.test('can iterate over a list of computed properties for a class', functio
     list.push(name);
   });
 
-  deepEqual(list.sort(), ['bar', 'foo'], 'watched and unwatched computed properties are iterated');
+  deepEqual(list.sort(), ['bar', 'foo', 'qux'], 'watched and unwatched computed properties are iterated');
 
   list = [];
 
@@ -183,7 +186,7 @@ QUnit.test('can iterate over a list of computed properties for a class', functio
     }
   });
 
-  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], 'all inherited properties are included');
+  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo', 'qux'], 'all inherited properties are included');
 });
 
 QUnit.test('list of properties updates when an additional property is added (such cache busting)', function() {
