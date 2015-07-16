@@ -526,22 +526,6 @@ QUnit.test('it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)', fu
   equal(view.$().text(), 'No records!');
 });
 
-QUnit.test('it supports non-context switching with {{itemViewClass=}} (DEPRECATED)', function() {
-  runDestroy(view);
-  registry.register('view:foo-view', EmberView.extend({
-    template: compile(`{{person.name}}`)
-  }));
-
-  view = EmberView.create({
-    template: compile(`{{each person in view.people itemViewClass="foo-view"}}`),
-    people: people,
-    container: container
-  });
-
-  runAppend(view);
-  equal(view.$().text(), 'Steve HoltAnnabelle');
-});
-
 QUnit.test('it supports {{emptyView=}}', function() {
   var emptyView = EmberView.extend({
     template: compile('emptyView:sad panda')
@@ -1244,5 +1228,4 @@ QUnit.test('pushing a new duplicate key will trigger a useful error (temporary u
   );
 });
 
-testEachWithItem('{{#each foo in bar}}', false);
 testEachWithItem('{{#each bar as |foo|}}', true);

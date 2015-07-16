@@ -957,10 +957,8 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   var lastAction;
   var actionOrder = [];
 
-  ignoreDeprecation(function() {
-    view = EmberView.create({
-      template: compile('{{#each item in allactions}}<a id="{{item.name}}" {{action item.name}}>{{item.title}}</a>{{/each}}')
-    });
+  view = EmberView.create({
+    template: compile('{{#each allactions as |item|}}<a id="{{item.name}}" {{action item.name}}>{{item.title}}</a>{{/each}}')
   });
 
   var controller = EmberController.extend({
