@@ -38,7 +38,7 @@ import LinkToComponent from 'ember-routing-views/views/link';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
-import RegistryProxy from "ember-runtime/mixins/registry_proxy";
+import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import environment from 'ember-metal/environment';
 
 function props(obj) {
@@ -573,7 +573,7 @@ var Application = Namespace.extend(RegistryProxy, {
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
       if (initializer.initialize.length === 2) {
-        Ember.deprecate("The `initialize` method for Application initializer '" + name + "' should take only one argument - `App`, an instance of an `Application`.");
+        Ember.deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.');
         initializer.initialize(App.__registry__, App);
       } else {
         initializer.initialize(App);

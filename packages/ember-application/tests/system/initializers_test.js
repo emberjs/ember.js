@@ -32,13 +32,13 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
   });
 });
 
-QUnit.test("initializers are passed an App", function() {
+QUnit.test('initializers are passed an App', function() {
   var MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'initializer',
     initialize(App) {
-      ok(App instanceof Application, "initialize is passed an Application");
+      ok(App instanceof Application, 'initialize is passed an Application');
     }
   });
 
@@ -350,7 +350,7 @@ QUnit.test('initializers should be executed in their own context', function() {
   });
 });
 
-QUnit.test("initializers should throw a deprecation warning when receiving a second argument", function() {
+QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
   expect(1);
 
   var MyApplication = Application.extend();

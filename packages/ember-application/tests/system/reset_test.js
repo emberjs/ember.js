@@ -241,7 +241,7 @@ QUnit.test('With ember-data like initializer and constant', function() {
   };
 
   Application.initializer({
-    name: "store",
+    name: 'store',
     initialize(application) {
       application.unregister('store:main');
       application.register('store:main', application.Store);
