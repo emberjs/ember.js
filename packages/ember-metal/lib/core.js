@@ -170,7 +170,7 @@ if ('undefined' === typeof Ember.debug) { Ember.debug = K; }
 if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = K; }
 if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = K; }
 if ('undefined' === typeof Ember.deprecateFunc) {
-  Ember.deprecateFunc = function(_, func) { return func; };
+  Ember.deprecateFunc = function(...args) { return args[args.length - 1]; };
 }
 
 export default Ember;
