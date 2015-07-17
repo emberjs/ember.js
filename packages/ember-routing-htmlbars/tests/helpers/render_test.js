@@ -532,36 +532,6 @@ QUnit.test('{{render}} works with dot notation', function() {
   equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
 });
 
-QUnit.test('{{render}} works with slash notation', function() {
-  var template = '{{render "blog/post"}}';
-
-  var ContextController = EmberController.extend({ container: container });
-
-  var controller;
-  var id = 0;
-  var BlogPostController = EmberController.extend({
-    init() {
-      this._super.apply(this, arguments);
-      controller = this;
-      this.uniqueId = id++;
-    }
-  });
-  container._registry.register('controller:blog.post', BlogPostController);
-
-  view = EmberView.create({
-    container: container,
-    controller: ContextController.create(),
-    template: compile(template)
-  });
-
-  Ember.TEMPLATES['blog.post'] = compile('{{uniqueId}}');
-
-  expectDeprecation(() => { runAppend(view); }, /Using a slash for namespacing/);
-
-  var singletonController = container.lookup('controller:blog.post');
-  equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
-});
-
 QUnit.test('throws an assertion if {{render}} is called with an unquoted template name', function() {
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({ container: container });
