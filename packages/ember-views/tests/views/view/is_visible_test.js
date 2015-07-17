@@ -6,12 +6,17 @@ import { computed } from 'ember-metal/computed';
 import EmberView from 'ember-views/views/view';
 import ContainerView from 'ember-views/views/container_view';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 var warnings, originalWarn;
+var originalViewKeyword;
 
 QUnit.module('EmberView#isVisible', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     warnings = [];
     originalWarn = Ember.warn;
     Ember.warn = function(message, test) {
@@ -25,6 +30,7 @@ QUnit.module('EmberView#isVisible', {
     if (view) {
       run(function() { view.destroy(); });
     }
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -128,6 +134,7 @@ QUnit.test('doesn\'t overwrite existing style attribute bindings', function() {
 
 QUnit.module('EmberView#isVisible with Container', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     parentBecameVisible = 0;
@@ -160,6 +167,7 @@ QUnit.module('EmberView#isVisible with Container', {
     if (view) {
       run(function() { view.destroy(); });
     }
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

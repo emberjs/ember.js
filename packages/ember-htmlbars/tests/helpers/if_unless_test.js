@@ -14,12 +14,17 @@ import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-runtime/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var originalLookup = Ember.lookup;
 
-var view, lookup, registry, container, TemplateTests;
+var view, lookup, registry, container, TemplateTests, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -35,6 +40,8 @@ QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

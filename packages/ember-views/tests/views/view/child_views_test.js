@@ -4,10 +4,15 @@ import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/views/component';
 import { compile } from 'ember-template-compiler';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var originalViewKeyword;
 var parentView, childView;
 
 QUnit.module('tests/views/view/child_views_tests.js', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     childView = EmberView.create({
       template: compile('ber')
     });
@@ -23,6 +28,7 @@ QUnit.module('tests/views/view/child_views_tests.js', {
       parentView.destroy();
       childView.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

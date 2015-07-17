@@ -3,12 +3,19 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import View from 'ember-views/views/view';
 
-var view, parentView;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, parentView, originalViewKeyword;
 
 QUnit.module('ember-views: View#render hook', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     runDestroy(view);
     runDestroy(parentView);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

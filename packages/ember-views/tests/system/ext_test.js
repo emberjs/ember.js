@@ -2,7 +2,19 @@ import run from 'ember-metal/run_loop';
 import View from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 
-QUnit.module('Ember.View additions to run queue');
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var originalViewKeyword;
+
+QUnit.module('Ember.View additions to run queue', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
+  teardown() {
+    resetKeyword('view', originalViewKeyword);
+  }
+});
 
 QUnit.test('View hierarchy is done rendering to DOM when functions queued in afterRender execute', function() {
   var didInsert = 0;

@@ -3,14 +3,22 @@ import { Mixin as EmberMixin } from 'ember-metal/mixin';
 import View from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var parentView, view;
+var originalViewKeyword;
 
 QUnit.module('View#nearest*', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
       if (view) { view.destroy(); }
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

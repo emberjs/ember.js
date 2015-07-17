@@ -6,10 +6,14 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 import { set } from 'ember-metal/property_set';
 
-var view, registry, container;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, registry, container, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
@@ -19,6 +23,7 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   teardown() {
     runDestroy(container);
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
     registry = container = view = null;
   }
 });

@@ -15,8 +15,12 @@ import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var App;
 var originalAdapter = Test.adapter;
+var originalViewKeyword;
 
 function cleanup() {
   // Teardown setupForTesting
@@ -244,10 +248,12 @@ QUnit.test('Ember.Application#removeTestHelpers resets the helperContainer\'s or
 
 QUnit.module('ember-testing: Helper methods', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     setupApp();
   },
   teardown() {
     cleanup();
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

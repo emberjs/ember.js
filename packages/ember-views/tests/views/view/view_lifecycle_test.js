@@ -6,11 +6,16 @@ import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 import { registerHelper } from 'ember-htmlbars/helpers';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var originalLookup = Ember.lookup;
+var originalViewKeyword;
 var lookup, view;
 
 QUnit.module('views/view/view_lifecycle_test - pre-render', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     Ember.lookup = lookup = {};
   },
 
@@ -21,6 +26,7 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
       });
     }
     Ember.lookup = originalLookup;
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -86,12 +92,16 @@ QUnit.test('should not affect rendering if destroyElement is called before initi
 });
 
 QUnit.module('views/view/view_lifecycle_test - in render', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     if (view) {
       run(function() {
         view.destroy();
       });
     }
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

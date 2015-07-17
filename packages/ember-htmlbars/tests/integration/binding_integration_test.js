@@ -12,12 +12,16 @@ import { registerHelper } from 'ember-htmlbars/helpers';
 
 import { set } from 'ember-metal/property_set';
 
-var view, MyApp, originalLookup, lookup;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, MyApp, originalLookup, lookup, originalViewKeyword;
 
 var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: binding integration', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -28,6 +32,7 @@ QUnit.module('ember-htmlbars: binding integration', {
     Ember.lookup = originalLookup;
 
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
     view = null;
 
     MyApp = null;
