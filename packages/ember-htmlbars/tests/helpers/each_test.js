@@ -17,6 +17,9 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
 
+import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
+import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
+
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
@@ -88,6 +91,8 @@ QUnit.module('the #each helper [DEPRECATED]', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
+    registerAstPlugin(TransformEachIntoCollection);
+
     template = compile('{{#each view.people}}{{name}}{{/each}}');
     people = A([{ name: 'Steve Holt' }, { name: 'Annabelle' }]);
 
@@ -126,6 +131,8 @@ QUnit.module('the #each helper [DEPRECATED]', {
     registry = container = view = null;
 
     Ember.lookup = originalLookup;
+
+    removeAstPlugin(TransformEachIntoCollection);
   }
 });
 

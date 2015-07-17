@@ -2,14 +2,24 @@ import EmberComponent from 'ember-views/views/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 
+import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
+import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
+import DeprecateViewAndControllerPaths from 'ember-template-compiler/plugins/deprecate-view-and-controller-paths';
+
 let component;
 
 QUnit.module('ember-htmlbars: compat - controller keyword (use as a path)', {
   setup() {
+    registerAstPlugin(TransformEachIntoCollection);
+    registerAstPlugin(DeprecateViewAndControllerPaths);
+
     component = null;
   },
   teardown() {
     runDestroy(component);
+
+    removeAstPlugin(TransformEachIntoCollection);
+    removeAstPlugin(DeprecateViewAndControllerPaths);
   }
 });
 
