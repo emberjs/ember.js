@@ -1,6 +1,16 @@
 import { compile } from 'ember-template-compiler';
 
-QUnit.module('ember-template-compiler: transform-each-into-collection');
+import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
+import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
+
+QUnit.module('ember-template-compiler: transform-each-into-collection', {
+  setup() {
+    registerAstPlugin(TransformEachIntoCollection);
+  },
+  teardown() {
+    removeAstPlugin(TransformEachIntoCollection);
+  }
+});
 
 let deprecatedAttrs = ['itemController', 'itemView', 'itemViewClass', 'tagName', 'emptyView', 'emptyViewClass'];
 
