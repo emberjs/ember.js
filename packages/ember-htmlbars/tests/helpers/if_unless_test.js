@@ -38,20 +38,6 @@ QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
   }
 });
 
-QUnit.test('unless should keep the current context (#784) [DEPRECATED]', function() {
-  view = EmberView.create({
-    o: EmberObject.create({ foo: '42' }),
-
-    template: compile('{{#with view.o}}{{#view}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  equal(view.$().text(), 'foo: 42');
-});
-
 QUnit.test('The `if` helper tests for `isTruthy` if available', function() {
   view = EmberView.create({
     truthy: EmberObject.create({ isTruthy: true }),

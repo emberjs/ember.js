@@ -139,27 +139,6 @@ QUnit.test('yield uses the outer context', function() {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, 'Yield points at the right context');
 });
 
-
-QUnit.test('yield inside a conditional uses the outer context [DEPRECATED]', function() {
-  var component = Component.extend({
-    boundText: 'inner',
-    truthy: true,
-    obj: {},
-    layout: compile('<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>')
-  });
-
-  view = EmberView.create({
-    controller: { boundText: 'outer', truthy: true, obj: { component: component, truthy: true, boundText: 'insideWith' } },
-    template: compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, 'Yield points at the right context');
-});
-
 QUnit.test('outer keyword doesn\'t mask inner component property', function () {
   var component = Component.extend({
     item: 'inner',

@@ -3,7 +3,6 @@
 @submodule ember-templates
 */
 
-import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
 import shouldDisplay from 'ember-views/streams/should_display';
 
 /**
@@ -41,26 +40,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
 
 export default function withHelper(params, hash, options) {
   if (shouldDisplay(params[0])) {
-    var preserveContext = false;
-
-    if (options.template.arity !== 0) {
-      preserveContext = true;
-    }
-
-    if (preserveContext) {
-      this.yield([params[0]]);
-    } else {
-      let self = normalizeSelf(params[0]);
-      if (hash.controller) {
-        self = {
-          hasBoundController: true,
-          controller: hash.controller,
-          self: self
-        };
-      }
-
-      this.yield([], self);
-    }
+    this.yield([params[0]]);
   } else if (options.inverse && options.inverse.yield) {
     options.inverse.yield([]);
   }
