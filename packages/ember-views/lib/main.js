@@ -62,16 +62,24 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-Ember.CoreView = DeprecatedCoreView;
-Ember.View = DeprecatedView;
-Ember.View.states = states;
-Ember.View.cloneStates = cloneStates;
-Ember.View._Renderer = Renderer;
+if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  Ember.CoreView = DeprecatedCoreView;
+  Ember.View = DeprecatedView;
+  Ember.View.states = states;
+  Ember.View.cloneStates = cloneStates;
+  Ember.View._Renderer = Renderer;
+}
+
+Ember._Renderer = Renderer;
+
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
-Ember.Select = DeprecatedSelect;
+if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  Ember.Select = DeprecatedSelect;
+}
+
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
 
@@ -83,9 +91,11 @@ Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
 
 // Deprecated:
-Ember._Metamorph = _Metamorph;
-Ember._MetamorphView = _MetamorphView;
-Ember._LegacyEachView = LegacyEachView;
+if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  Ember._Metamorph = _Metamorph;
+  Ember._MetamorphView = _MetamorphView;
+  Ember._LegacyEachView = LegacyEachView;
+}
 
 // END EXPORTS
 
