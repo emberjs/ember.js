@@ -868,10 +868,6 @@ export function _immediateObserver() {
   App.PersonView = Ember.View.extend({
     friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
 
-    valueWillChange: Ember.beforeObserver('content.value', function(obj, keyName) {
-      this.changingFrom = obj.get(keyName);
-    }),
-
     valueDidChange: Ember.observer('content.value', function(obj, keyName) {
         // only run if updating a value already in the DOM
         if (this.get('state') === 'inDOM') {

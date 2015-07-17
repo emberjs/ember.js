@@ -21,7 +21,6 @@ import {
 } from 'ember-metal/property_events';
 import {
   addObserver,
-  _addBeforeObserver,
   removeObserver,
   observersFor
 } from 'ember-metal/observer';
@@ -327,11 +326,6 @@ export default Mixin.create({
     this.propertyWillChange(keyName);
     this.propertyDidChange(keyName);
     return this;
-  },
-
-  _addBeforeObserver(key, target, method) {
-    Ember.deprecate('Before observers are deprecated and will be removed in a future release. If you want to keep track of previous values you have to implement it yourself.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-beforeobservers' });
-    _addBeforeObserver(this, key, target, method);
   },
 
   /**
