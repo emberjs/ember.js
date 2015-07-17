@@ -51,7 +51,7 @@ export default {
 
     Ember.assert(
       '{{#with foo}} must be called with a single argument or the use the ' +
-      '{{#with foo as bar}} syntax',
+      '{{#with foo as |bar|}} syntax',
       params.length === 1
     );
 
