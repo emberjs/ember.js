@@ -155,24 +155,14 @@ var ActionHandler = Mixin.create({
     @method willMergeMixin
   */
   willMergeMixin(props) {
-    var hashName;
-
     if (!props._actions) {
       Ember.assert('\'actions\' should not be a function', typeof(props.actions) !== 'function');
 
       if (!!props.actions && typeof props.actions === 'object') {
-        hashName = 'actions';
-      } else if (!!props.events && typeof props.events === 'object') {
-        Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor' +
-                        ' of putting them in an `actions` object', false);
-        hashName = 'events';
-      }
-
-      if (hashName) {
+        let hashName = 'actions';
         props._actions = merge(props._actions || {}, props[hashName]);
+        delete props[hashName];
       }
-
-      delete props[hashName];
     }
   },
 
