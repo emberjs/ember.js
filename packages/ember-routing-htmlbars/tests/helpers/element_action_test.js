@@ -5,7 +5,6 @@ import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ActionManager from 'ember-views/system/action_manager';
 
-import { Registry } from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
 
@@ -129,37 +128,6 @@ QUnit.test('Inside a yield, the target points at the original target', function(
 
   equal(watted, true, 'The action was called on the right context');
 });
-
-QUnit.test('should target the with-controller inside an {{#with controller=\'person\'}} [DEPRECATED]', function() {
-  var registeredTarget;
-
-  ActionHelper.registerAction = function({ node }) {
-    registeredTarget = node.state.target;
-  };
-
-  var PersonController = EmberController.extend();
-  var registry = new Registry();
-  var container = registry.container();
-  var parentController = EmberObject.create({
-    container: container
-  });
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#with view.person controller="person"}}<div {{action "editTodo"}}></div>{{/with}}'),
-    person: EmberObject.create(),
-    controller: parentController
-  });
-
-  registry.register('controller:person', PersonController);
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  ok(registeredTarget instanceof PersonController, 'the with-controller is the target of action');
-});
-
 
 QUnit.test('should allow a target to be specified', function() {
   var registeredTarget;
@@ -405,28 +373,6 @@ QUnit.test('should work properly in a {{#with foo as |bar|}} block', function() 
   });
 
   runAppend(view);
-
-  view.$('a').trigger('click');
-
-  ok(eventHandlerWasCalled, 'The event handler was called');
-});
-
-QUnit.test('should work properly in a #with block [DEPRECATED]', function() {
-  var eventHandlerWasCalled = false;
-
-  var controller = EmberController.extend({
-    actions: { edit() { eventHandlerWasCalled = true; } }
-  }).create();
-
-  view = EmberView.create({
-    controller: controller,
-    something: { ohai: 'there' },
-    template: compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
 
   view.$('a').trigger('click');
 

@@ -219,43 +219,7 @@ QUnit.test('it should support #with this as qux', function() {
   runDestroy(view);
 });
 
-QUnit.module('Handlebars {{#with foo}} with defined controller');
-
-QUnit.test('destroys the controller generated with {{with foo controller=\'blah\'}} [DEPRECATED]', function() {
-  var destroyed = false;
-  var Controller = EmberController.extend({
-    willDestroy() {
-      this._super.apply(this, arguments);
-      destroyed = true;
-    }
-  });
-
-  var person = EmberObject.create({ name: 'Steve Holt' });
-  var registry = new Registry();
-  var container = registry.container();
-
-  var parentController = EmberObject.create({
-    container: container,
-    person: person,
-    name: 'Bob Loblaw'
-  });
-
-  view = EmberView.create({
-    container: container,
-    template: compile('{{#with person controller="person"}}{{controllerName}}{{/with}}'),
-    controller: parentController
-  });
-
-  registry.register('controller:person', Controller);
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  runDestroy(view);
-
-  ok(destroyed, 'controller was destroyed properly');
-});
+QUnit.module('Handlebars {{#with foo as bar}} with defined controller');
 
 QUnit.test('destroys the controller generated with {{with foo as bar controller=\'blah\'}}', function() {
   var destroyed = false;
