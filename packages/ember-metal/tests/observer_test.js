@@ -712,6 +712,7 @@ testBoth('observer should fire before dependent property is modified', function(
 
 if (Ember.EXTEND_PROTOTYPES) {
   testBoth('before observer added declaratively via brace expansion should fire when property changes', function (get, set) {
+    expectDeprecation(/Function#observesBefore is deprecated and will be removed in the near future/);
     var obj = {};
     var count = 0;
 
@@ -732,6 +733,7 @@ if (Ember.EXTEND_PROTOTYPES) {
   });
 
   testBoth('before observer specified declaratively via brace expansion should fire when dependent property changes', function (get, set) {
+    expectDeprecation(/Function#observesBefore is deprecated and will be removed in the near future/);
     var obj = { baz: 'Initial' };
     var count = 0;
 
