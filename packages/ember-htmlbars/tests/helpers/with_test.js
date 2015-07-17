@@ -77,9 +77,7 @@ function testWithAs(moduleName, templateString, deprecated) {
   });
 }
 
-testWithAs('ember-htmlbars: {{#with}} helper', '{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}', true);
-
-QUnit.module('Multiple Handlebars {{with foo as bar}} helpers', {
+QUnit.module('Multiple Handlebars {{with foo as |bar|}} helpers', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
   },
@@ -147,7 +145,7 @@ QUnit.module('Handlebars {{#with}} globals helper [DEPRECATED]', {
   }
 });
 
-QUnit.test('it should support #with Foo.bar as qux [DEPRECATED]', function() {
+QUnit.test('it should support #with Foo.bar as |qux| [DEPRECATED]', function() {
   expectDeprecation(function() {
     runAppend(view);
   }, /Global lookup of Foo from a Handlebars template is deprecated/);
@@ -163,7 +161,7 @@ QUnit.test('it should support #with Foo.bar as qux [DEPRECATED]', function() {
 
 QUnit.module('Handlebars {{#with keyword as |foo|}}');
 
-QUnit.test('it should support #with view as foo', function() {
+QUnit.test('it should support #with view as |foo|', function() {
   var view = EmberView.create({
     template: compile('{{#with view as |myView|}}{{myView.name}}{{/with}}'),
     name: 'Sonics'
@@ -181,7 +179,7 @@ QUnit.test('it should support #with view as foo', function() {
   runDestroy(view);
 });
 
-QUnit.test('it should support #with name as foo, then #with foo as bar', function() {
+QUnit.test('it should support #with name as |foo|, then #with foo as |bar|', function() {
   var view = EmberView.create({
     template: compile('{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}'),
     context: { name: 'caterpillar' }
@@ -201,7 +199,7 @@ QUnit.test('it should support #with name as foo, then #with foo as bar', functio
 
 QUnit.module('Handlebars {{#with this as |foo|}}');
 
-QUnit.test('it should support #with this as qux', function() {
+QUnit.test('it should support #with this as |qux|', function() {
   var view = EmberView.create({
     template: compile('{{#with this as |person|}}{{person.name}}{{/with}}'),
     controller: EmberObject.create({ name: 'Los Pivots' })
@@ -219,9 +217,9 @@ QUnit.test('it should support #with this as qux', function() {
   runDestroy(view);
 });
 
-QUnit.module('Handlebars {{#with foo as bar}} with defined controller');
+QUnit.module('Handlebars {{#with foo as |bar|}} with defined controller');
 
-QUnit.test('destroys the controller generated with {{with foo as bar controller=\'blah\'}}', function() {
+QUnit.test('destroys the controller generated with {{with foo as |bar| controller=\'blah\'}}', function() {
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy() {
