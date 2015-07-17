@@ -9,7 +9,6 @@ import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
-import { deprecatingAlias } from 'ember-metal/computed_macros';
 import { isSimpleClick } from 'ember-views/system/utils';
 import EmberComponent from 'ember-views/views/component';
 import inject from 'ember-runtime/inject';
@@ -44,16 +43,9 @@ var LinkComponent = EmberComponent.extend({
   tagName: 'a',
 
   /**
-    @deprecated Use current-when instead.
-    @property currentWhen
-    @private
-  */
-  currentWhen: deprecatingAlias('current-when', { id: 'ember-routing-view.deprecated-current-when', until: '3.0.0' }),
-
-  /**
     Used to determine when this LinkComponent is active.
 
-    @property currentWhen
+    @property current-when
     @private
   */
   'current-when': null,
@@ -247,11 +239,11 @@ var LinkComponent = EmberComponent.extend({
     Accessed as a classname binding to apply the `LinkComponent`'s `activeClass`
     CSS `class` to the element when the link is active.
 
-    A `LinkComponent` is considered active when its `currentWhen` property is `true`
+    A `LinkComponent` is considered active when its `current-when` property is `true`
     or the application's current route is the route the `LinkComponent` would trigger
     transitions into.
 
-    The `currentWhen` property can match against multiple routes by separating
+    The `current-when` property can match against multiple routes by separating
     route names using the ` ` (space) character.
 
     @property active
@@ -466,8 +458,7 @@ LinkComponent.toString = function() { return 'LinkComponent'; };
 
 function computeActive(view, routerState) {
   if (get(view, 'loading')) { return false; }
-
-  var currentWhen = get(view, 'current-when');
+  var currentWhen = get(view, 'attrs.current-when');
   var isCurrentWhenSpecified = !!currentWhen;
   currentWhen = currentWhen || get(view, 'targetRouteName');
   currentWhen = currentWhen.split(' ');
