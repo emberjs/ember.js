@@ -1505,22 +1505,24 @@ var View = CoreView.extend(
 // once the view has been inserted into the DOM, legal manipulations
 // are done on the DOM element.
 
-/**
-  Global views hash
+View.reopenClass({
+  /**
+    Global views hash
 
-  @property views
-  @static
-  @type Object
-  @private
-*/
-View.views = {};
+    @property views
+    @static
+    @type Object
+    @private
+  */
+  views: {},
 
-// If someone overrides the child views computed property when
-// defining their class, we want to be able to process the user's
-// supplied childViews and then restore the original computed property
-// at view initialization time. This happens in Ember.ContainerView's init
-// method.
-View.childViewsProperty = childViewsProperty;
+  // If someone overrides the child views computed property when
+  // defining their class, we want to be able to process the user's
+  // supplied childViews and then restore the original computed property
+  // at view initialization time. This happens in Ember.ContainerView's init
+  // method.
+  childViewsProperty
+});
 
 var DeprecatedView = View.extend({
   init() {
