@@ -152,6 +152,21 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
   */
   FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead', FunctionPrototype._observesImmediately);
 
+
+  FunctionPrototype._observesBefore = function () {
+    var watched = [];
+    var addWatchedProperty = function (obs) {
+      watched.push(obs);
+    };
+
+    for (var i = 0, l = arguments.length; i < l; ++i) {
+      expandProperties(arguments[i], addWatchedProperty);
+    }
+
+    this.__ember_observesBefore__ = watched;
+
+    return this;
+  };
   /**
     The `observesBefore` extension of Javascript's Function prototype is
     available when `Ember.EXTEND_PROTOTYPES` or
@@ -175,20 +190,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
     @private
   */
-  FunctionPrototype.observesBefore = function () {
-    var watched = [];
-    var addWatchedProperty = function (obs) {
-      watched.push(obs);
-    };
-
-    for (var i = 0, l = arguments.length; i < l; ++i) {
-      expandProperties(arguments[i], addWatchedProperty);
-    }
-
-    this.__ember_observesBefore__ = watched;
-
-    return this;
-  };
+  FunctionPrototype.observesBefore = Ember.deprecateFunc('Function#observesBefore is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, FunctionPrototype._observesBefore);
 
   /**
     The `on` extension of Javascript's Function prototype is available
