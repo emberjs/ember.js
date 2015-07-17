@@ -391,7 +391,7 @@ helper('find', find);
   the DOM
   @return {Object} jQuery object representing the results of the query
   @throws {Error} throws error if jQuery object returned has a length of 0
-  @private
+  @public
 */
 helper('findWithAssert', findWithAssert);
 
