@@ -1,3 +1,4 @@
+import _Ember from 'ember-metal';
 import isEnabled from 'ember-metal/features';
 import environment from 'ember-metal/environment';
 
@@ -89,7 +90,6 @@ registerKeyword('outlet', outlet);
 registerKeyword('@real_outlet', realOutlet);
 registerKeyword('@customized_outlet', customizedOutlet);
 registerKeyword('unbound', unbound);
-registerKeyword('view', view);
 registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
 registerKeyword('template', templateKeyword);
@@ -101,6 +101,11 @@ registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
 registerKeyword('each', each);
 registerKeyword('readonly', readonly);
+
+if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  registerKeyword('view', view);
+}
+
 if (isEnabled('ember-htmlbars-get-helper')) {
   registerKeyword('get', getKeyword);
 }

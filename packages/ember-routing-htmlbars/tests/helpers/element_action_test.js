@@ -17,16 +17,20 @@ import jQuery from 'ember-views/system/jquery';
 import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
 import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 import {
   runAppend,
   runDestroy
 } from 'ember-runtime/tests/utils';
 
-var dispatcher, view;
+var dispatcher, view, originalViewKeyword;
 var originalRegisterAction = ActionHelper.registerAction;
 
 QUnit.module('ember-routing-htmlbars: action helper', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
@@ -34,6 +38,7 @@ QUnit.module('ember-routing-htmlbars: action helper', {
   teardown() {
     runDestroy(view);
     runDestroy(dispatcher);
+    resetKeyword('view', originalViewKeyword);
 
     ActionHelper.registerAction = originalRegisterAction;
   }

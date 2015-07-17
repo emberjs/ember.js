@@ -167,20 +167,26 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function(assert) {
+  QUnit.test("It is possible to render a view with a nested {{component}} helper in Node", function(assert) {
+    var registry = new Ember.Application.buildRegistry({ get: function(path) { return Ember.get(this, path); } });
+    registry.register('component-lookup:main', Ember.ComponentLookup);
+    var container = registry.container();
+
     var View = Ember.Component.extend({
+      container: container,
       renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
-      layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
+      layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{component 'foo-bar'}}</div>"),
       location: "World",
-      hasExistence: true,
-      bar: Ember.Component.extend({
-        template: compile("<p>The files are *inside* the computer?!</p>")
-      })
+      hasExistence: true
     });
+
+    registry.register('component:foo-bar', Ember.Component.extend({
+      template: compile("<p>The files are *inside* the computer?!</p>")
+    }));
 
     var view = View.create();
 
-    run(view, view.createElement);
+    run(view, function() { view.createElement(); });
 
     var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
     assert.ok(serializer.serialize(view.element).match(/<h1>Hello World<\/h1> <div><div id="(.*)" class="ember-view"><p>The files are \*inside\* the computer\?\!<\/p><\/div><\/div>/));

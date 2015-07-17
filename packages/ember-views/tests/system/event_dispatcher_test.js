@@ -9,11 +9,15 @@ import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
 
-var view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, originalViewKeyword;
 var dispatcher;
 
 QUnit.module('EventDispatcher', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     run(function() {
       dispatcher = EventDispatcher.create();
       dispatcher.setup();
@@ -25,6 +29,7 @@ QUnit.module('EventDispatcher', {
       if (view) { view.destroy(); }
       dispatcher.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

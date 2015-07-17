@@ -3,7 +3,10 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
-var App, registry;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var App, registry, originalViewKeyword;
 
 function setupExample() {
   // setup templates
@@ -23,6 +26,7 @@ function handleURL(path) {
 
 QUnit.module('View Integration', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     run(function() {
       App = Ember.Application.create({
         rootElement: '#qunit-fixture'
@@ -41,6 +45,7 @@ QUnit.module('View Integration', {
 
   teardown() {
     run(App, 'destroy');
+    resetKeyword('view', originalViewKeyword);
     App = null;
     Ember.TEMPLATES = {};
   }

@@ -8,16 +8,21 @@ import { get } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
 
-var view, registry, container;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, registry, container, originalViewKeyword;
 
 QUnit.module('ember-views: attrs-proxy', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
     container = registry.container();
   },
 
   teardown() {
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

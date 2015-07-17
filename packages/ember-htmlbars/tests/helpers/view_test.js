@@ -23,7 +23,10 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 
-var view, originalLookup, registry, container, lookup;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, originalLookup, registry, container, lookup, originalViewKeyword;
 
 var trim = jQuery.trim;
 
@@ -44,6 +47,8 @@ var firstChild = nthChild;
 
 QUnit.module('ember-htmlbars: {{#view}} helper', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
@@ -60,6 +65,8 @@ QUnit.module('ember-htmlbars: {{#view}} helper', {
     registry = container = view = null;
 
     Ember.lookup = lookup = originalLookup;
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

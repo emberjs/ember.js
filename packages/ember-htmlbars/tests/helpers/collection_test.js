@@ -15,13 +15,15 @@ import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 
-var trim = jQuery.trim;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
 
+var trim = jQuery.trim;
 
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, registry, container, lookup;
+var TemplateTests, registry, container, lookup, originalViewKeyword;
 
 
 function nthChild(view, nth) {
@@ -36,6 +38,8 @@ function firstGrandchild(view) {
 
 QUnit.module('collection helper', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
     registry = new Registry();
@@ -52,6 +56,8 @@ QUnit.module('collection helper', {
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

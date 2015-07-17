@@ -5,13 +5,20 @@ import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 
-var view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, originalViewKeyword;
 
 QUnit.module('Ember.View', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     run(function() {
       view.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

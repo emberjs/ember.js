@@ -5,13 +5,16 @@ import EmberHandlebars from 'ember-htmlbars/compat';
 import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 import Helper from 'ember-htmlbars/helper';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var compile, helpers, makeBoundHelper;
 compile = EmberHandlebars.compile;
 helpers = EmberHandlebars.helpers;
 makeBoundHelper = EmberHandlebars.makeBoundHelper;
 var makeViewHelper = EmberHandlebars.makeViewHelper;
 
-var App, registry, container;
+var App, registry, container, originalViewKeyword;
 
 function reverseHelper(value) {
   return arguments.length > 1 ? value.split('').reverse().join('') : '--';
@@ -19,6 +22,9 @@ function reverseHelper(value) {
 
 
 QUnit.module('Application Lifecycle - Helper Registration', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     Ember.run(function() {
       if (App) {
@@ -28,6 +34,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
       App = null;
       Ember.TEMPLATES = {};
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

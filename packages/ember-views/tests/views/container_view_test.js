@@ -10,11 +10,15 @@ import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var trim = jQuery.trim;
-var container, registry, view, otherContainer;
+var container, registry, view, otherContainer, originalViewKeyword;
 
 QUnit.module('ember-views/views/container_view_test', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
   },
   teardown() {
@@ -23,6 +27,7 @@ QUnit.module('ember-views/views/container_view_test', {
       if (view) { view.destroy(); }
       if (otherContainer) { otherContainer.destroy(); }
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

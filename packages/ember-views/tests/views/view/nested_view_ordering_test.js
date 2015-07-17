@@ -4,10 +4,15 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var registry, container, view;
+var originalViewKeyword;
 
 QUnit.module('EmberView - Nested View Ordering', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
     container = registry.container();
   },
@@ -16,6 +21,7 @@ QUnit.module('EmberView - Nested View Ordering', {
       if (view) { view.destroy(); }
       container.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
     registry = container = view = null;
   }
 });

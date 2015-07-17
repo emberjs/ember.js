@@ -7,16 +7,22 @@ import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
 import { runDestroy } from 'ember-runtime/tests/utils';
 
-var View, view, otherView, willDestroyCalled, childView;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var View, view, otherView, willDestroyCalled, childView, originalViewKeyword;
+
 
 QUnit.module('EmberView - append() and appendTo()', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     View = EmberView.extend({});
   },
 
   teardown() {
     runDestroy(view);
     runDestroy(otherView);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -265,6 +271,7 @@ QUnit.test('destroy more forcibly removes the view', function() {
 
 QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     View = ContainerView.extend({
@@ -279,6 +286,7 @@ QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -314,6 +322,7 @@ QUnit.test('should be added to the document body when calling append()', functio
 
 QUnit.module('EmberView - removing views in a view hierarchy', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     willDestroyCalled = 0;
@@ -334,6 +343,7 @@ QUnit.module('EmberView - removing views in a view hierarchy', {
     run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

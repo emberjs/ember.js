@@ -4,10 +4,14 @@ import EmberView from 'ember-views/views/view';
 import { on } from 'ember-metal/events';
 import { observer } from 'ember-metal/mixin';
 
-var view, myViewClass, newView, container;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, myViewClass, newView, container, originalViewKeyword;
 
 QUnit.module('EmberView#createChildView', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     container = { };
 
     view = EmberView.create({
@@ -22,6 +26,7 @@ QUnit.module('EmberView#createChildView', {
       view.destroy();
       if (newView) { newView.destroy(); }
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

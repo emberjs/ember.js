@@ -6,12 +6,17 @@ import jQuery from 'ember-views/system/jquery';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var trim = jQuery.trim;
 
 var dispatcher, select;
+var originalViewKeyword;
 
 QUnit.module('Ember.Select', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
     select = EmberSelect.create();
@@ -22,6 +27,7 @@ QUnit.module('Ember.Select', {
       dispatcher.destroy();
       select.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

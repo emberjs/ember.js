@@ -20,9 +20,12 @@ import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
 import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
+var originalViewKeyword;
 
 // This function lets us write {{#EACH|people|p}} {{p}} {{/each}}
 // and generate:
@@ -91,6 +94,8 @@ QUnit.module('the #each helper [DEPRECATED]', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     registerAstPlugin(TransformEachIntoCollection);
 
     template = compile('{{#each view.people}}{{name}}{{/each}}');
@@ -133,6 +138,8 @@ QUnit.module('the #each helper [DEPRECATED]', {
     Ember.lookup = originalLookup;
 
     removeAstPlugin(TransformEachIntoCollection);
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

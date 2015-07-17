@@ -4,10 +4,15 @@ import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import ContainerView from 'ember-views/views/container_view';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var View, view;
+var originalViewKeyword;
 
 QUnit.module('EmberView - replaceIn()', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     View = EmberView.extend({});
   },
 
@@ -15,6 +20,7 @@ QUnit.module('EmberView - replaceIn()', {
     run(function() {
       view.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -81,6 +87,7 @@ QUnit.test('should move the view to the inDOM state after replacing', function()
 
 QUnit.module('EmberView - replaceIn() in a view hierarchy', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
     View = ContainerView.extend({
@@ -95,6 +102,7 @@ QUnit.module('EmberView - replaceIn() in a view hierarchy', {
     run(function() {
       view.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

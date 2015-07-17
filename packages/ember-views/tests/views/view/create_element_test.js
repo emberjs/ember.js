@@ -5,13 +5,20 @@ import ContainerView from 'ember-views/views/container_view';
 import { equalHTML } from 'ember-views/tests/test-helpers/equal-html';
 import compile from 'ember-template-compiler/system/compile';
 
-var view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, originalViewKeyword;
 
 QUnit.module('Ember.View#createElement', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     run(function() {
       view.destroy();
     });
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
