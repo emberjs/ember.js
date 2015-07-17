@@ -74,7 +74,10 @@ export default {
     }
 
     // # legacy namespace
+    let originalName = name;
     name = name.replace(/\//g, '.');
+    Ember.deprecate(`Using a slash for namespacing with the {{render}} render helper has been deprecated.
+                     Please replace "${originalName}" with "${name}" in your call to the {{render}} helper.`, !originalName.match(/\//g));
     // \ legacy slash as namespace support
 
     var templateName = 'template:' + name;

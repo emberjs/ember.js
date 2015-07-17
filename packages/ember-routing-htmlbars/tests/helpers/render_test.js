@@ -552,7 +552,7 @@ QUnit.test('{{render}} works with slash notation', function() {
 
   Ember.TEMPLATES['blog.post'] = compile('{{uniqueId}}');
 
-  runAppend(view);
+  expectDeprecation(() => { runAppend(view); }, /Using a slash for namespacing/);
 
   var singletonController = container.lookup('controller:blog.post');
   equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
