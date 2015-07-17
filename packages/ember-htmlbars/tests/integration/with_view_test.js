@@ -1,5 +1,3 @@
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { Registry } from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
@@ -9,7 +7,6 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { set } from 'ember-metal/property_set';
 
 var view, registry, container;
-var trim = jQuery.trim;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup() {
@@ -24,80 +21,6 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
     runDestroy(view);
     registry = container = view = null;
   }
-});
-
-QUnit.test('View should update when the property used with the #with helper changes [DEPRECATED]', function() {
-  registry.register('template:foo', compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'foo',
-
-    content: EmberObject.create({
-      wham: 'bam',
-      thankYou: 'ma\'am'
-    })
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  equal(view.$('#first').text(), 'bam', 'precond - view renders Handlebars template');
-
-  run(function() {
-    set(view, 'content', EmberObject.create({
-      wham: 'bazam'
-    }));
-  });
-
-  equal(view.$('#first').text(), 'bazam', 'view updates when a bound property changes');
-});
-
-QUnit.test('should expose a view keyword [DEPRECATED]', function() {
-  var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
-  view = EmberView.create({
-    container: container,
-    differentContent: {
-      view: {
-        foo: 'WRONG',
-        baz: 'WRONG'
-      }
-    },
-
-    foo: 'bar',
-
-    template: compile(templateString)
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  equal(view.$().text(), 'barbang', 'renders values from view and child view');
-});
-
-QUnit.test('bindings can be `this`, in which case they *are* the current context [DEPRECATED]', function() {
-  view = EmberView.create({
-    museumOpen: true,
-
-    museumDetails: EmberObject.create({
-      name: 'SFMoMA',
-      price: 20,
-      museumView: EmberView.extend({
-        template: compile('Name: {{view.museum.name}} Price: ${{view.museum.price}}')
-      })
-    }),
-
-
-    template: compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museum=this}} {{/with}}{{/if}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the block param form (`{{#with bar as |foo|}}`) instead.');
-
-  equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
 
 QUnit.test('child views can be inserted inside a bind block', function() {
