@@ -25,9 +25,7 @@ import Object from 'ember-runtime/system/object';
 
   ```js
   export default Ember.Helper.extend({
-    compute(params, hash) {
-      let cents = params[0];
-      let currency = hash.currency;
+    compute([ cents ], { currency }) {
       return `${currency}${cents * 0.01}`;
     }
   });
@@ -95,9 +93,7 @@ Helper.reopenClass({
 
   ```js
   // app/helpers/format-currency.js
-  export default Ember.Helper.helper(function(params, hash) {
-    let cents = params[0];
-    let currency = hash.currency;
+  export default Ember.Helper.helper(function([ cents ], { currency }) {
     return `${currency}${cents * 0.01}`;
   });
   ```
