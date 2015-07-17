@@ -779,17 +779,6 @@ var Application = Namespace.extend({
 
   initializer(options) {
     this.constructor.initializer(options);
-  },
-
-  /**
-    @method then
-    @private
-    @deprecated
-  */
-  then() {
-    Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.', false, { url: 'http://emberjs.com/guides/deprecations/#toc_deprecate-code-then-code-on-ember-application' });
-
-    this._super(...arguments);
   }
 });
 
