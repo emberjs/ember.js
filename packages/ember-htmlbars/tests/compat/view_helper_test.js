@@ -5,16 +5,22 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import Registry from 'container/registry';
 
+import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
+import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-helper';
+
 let component, registry, container;
 
 QUnit.module('ember-htmlbars: compat - view helper', {
   setup() {
+    registerAstPlugin(DeprecateViewHelper);
+
     registry = new Registry();
     container = registry.container();
   },
   teardown() {
     runDestroy(component);
     runDestroy(container);
+    removeAstPlugin(DeprecateViewHelper);
     registry = container = component = null;
   }
 });

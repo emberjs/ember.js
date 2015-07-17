@@ -3,6 +3,9 @@ import Ember from 'ember-metal/core';
 import EmberHandlebars from 'ember-htmlbars/compat';
 import EmberView from 'ember-views/views/view';
 
+import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
+import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
+
 /*
  In Ember 1.x, controllers subtly affect things like template scope
  and action targets in exciting and often inscrutable ways. This test
@@ -14,8 +17,13 @@ import EmberView from 'ember-views/views/view';
 var compile = EmberHandlebars.compile;
 var App, $fixture, templates;
 
+let originalAstPlugins;
+
 QUnit.module('Template scoping examples', {
   setup() {
+    originalAstPlugins = plugins['ast'].slice(0);
+    registerPlugin('ast', TransformEachIntoCollection);
+
     Ember.run(function() {
       templates = Ember.TEMPLATES;
       App = Ember.Application.create({
@@ -42,6 +50,8 @@ QUnit.module('Template scoping examples', {
     App = null;
 
     Ember.TEMPLATES = {};
+
+    plugins['ast'] = originalAstPlugins;
   }
 });
 
