@@ -961,12 +961,6 @@ QUnit.test('ApplicationRoute\'s default error handler can be overridden', functi
   testOverridableErrorHandler('actions');
 });
 
-QUnit.test('ApplicationRoute\'s default error handler can be overridden (with DEPRECATED `events`)', function() {
-  ignoreDeprecation(function() {
-    testOverridableErrorHandler('events');
-  });
-});
-
 asyncTest('Moving from one page to another triggers the correct callbacks', function() {
   expect(3);
 
@@ -1232,80 +1226,6 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
     '<a {{action \'showStuff\' model}}>{{model.name}}</a>'
   );
 
-  bootApplication();
-
-  var actionId = Ember.$('#qunit-fixture a').data('ember-action');
-  var [ action ] = ActionManager.registeredActions[actionId];
-  var event = new Ember.$.Event('click');
-  action.handler(event);
-});
-
-QUnit.asyncTest('Events are triggered on the current state when defined in `events` object (DEPRECATED)', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  var model = { name: 'Tom Dale' };
-
-  App.HomeRoute = Ember.Route.extend({
-    model() {
-      return model;
-    },
-
-    events: {
-      showStuff(obj) {
-        ok(this instanceof App.HomeRoute, 'the handler is an App.HomeRoute');
-        // Using Ember.copy removes any private Ember vars which older IE would be confused by
-        deepEqual(Ember.copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
-        QUnit.start();
-      }
-    }
-  });
-
-  Ember.TEMPLATES.home = compile(
-    '<a {{action \'showStuff\' model}}>{{name}}</a>'
-  );
-
-  expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
-  bootApplication();
-
-  var actionId = Ember.$('#qunit-fixture a').data('ember-action');
-  var [ action ] = ActionManager.registeredActions[actionId];
-  var event = new Ember.$.Event('click');
-  action.handler(event);
-});
-
-QUnit.asyncTest('Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)', function() {
-  Router.map(function() {
-    this.route('root', { path: '/' }, function() {
-      this.route('index', { path: '/' });
-    });
-  });
-
-  var model = { name: 'Tom Dale' };
-
-  App.RootRoute = Ember.Route.extend({
-    events: {
-      showStuff(obj) {
-        ok(this instanceof App.RootRoute, 'the handler is an App.HomeRoute');
-        // Using Ember.copy removes any private Ember vars which older IE would be confused by
-        deepEqual(Ember.copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
-        QUnit.start();
-      }
-    }
-  });
-
-  App.RootIndexRoute = Ember.Route.extend({
-    model() {
-      return model;
-    }
-  });
-
-  Ember.TEMPLATES['root/index'] = compile(
-    '<a {{action \'showStuff\' model}}>{{name}}</a>'
-  );
-
-  expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
   bootApplication();
 
   var actionId = Ember.$('#qunit-fixture a').data('ember-action');
