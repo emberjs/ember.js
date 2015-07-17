@@ -32,14 +32,6 @@ test('can be required', function() {
   ok(typeof templateCompiler.template === 'function', 'template function is present');
 });
 
-test('uses plugins with precompile', function() {
-  var templateOutput;
-  var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
-
-  templateOutput = templateCompiler.precompile('{{#with foo as bar}}{{/with}}');
-  ok(templateOutput.match(/locals: \["bar"\]/), 'transform with as to block params');
-});
-
 test('allows enabling of features', function() {
   var templateOutput;
   var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));

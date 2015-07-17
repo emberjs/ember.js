@@ -4,7 +4,6 @@ import compile from 'ember-template-compiler/system/compile';
 import template from 'ember-template-compiler/system/template';
 import { registerPlugin } from 'ember-template-compiler/plugins';
 
-import TransformWithAsToHash from 'ember-template-compiler/plugins/transform-with-as-to-hash';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
 import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
 import TransformOldClassBindingSyntax from 'ember-template-compiler/plugins/transform-old-class-binding-syntax';
@@ -20,7 +19,6 @@ import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-
 // used for adding Ember.Handlebars.compile for backwards compat
 import 'ember-template-compiler/compat';
 
-registerPlugin('ast', TransformWithAsToHash);
 registerPlugin('ast', TransformEachIntoCollection);
 registerPlugin('ast', TransformOldBindingSyntax);
 registerPlugin('ast', TransformOldClassBindingSyntax);

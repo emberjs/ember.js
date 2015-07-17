@@ -39,13 +39,3 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
 
   ok(actual.meta.revision !== expected.meta.revision, 'revision differs from default');
 });
-
-QUnit.test('{{with}} template deprecation includes moduleName if provided', function() {
-  var templateString = '{{#with foo as bar}} {{bar}} {{/with}}';
-
-  expectDeprecation(function() {
-    compile(templateString, {
-      moduleName: 'foo/bar/baz'
-    });
-  }, /foo\/bar\/baz/);
-});
