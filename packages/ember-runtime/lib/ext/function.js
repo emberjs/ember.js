@@ -4,7 +4,6 @@
 */
 
 import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
-import expandProperties from 'ember-metal/expand_properties';
 import { computed } from 'ember-metal/computed';
 import { observer } from 'ember-metal/mixin';
 
@@ -152,46 +151,6 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @private
   */
   FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead', FunctionPrototype._observesImmediately);
-
-
-  FunctionPrototype._observesBefore = function () {
-    var watched = [];
-    var addWatchedProperty = function (obs) {
-      watched.push(obs);
-    };
-
-    for (var i = 0, l = arguments.length; i < l; ++i) {
-      expandProperties(arguments[i], addWatchedProperty);
-    }
-
-    this.__ember_observesBefore__ = watched;
-
-    return this;
-  };
-  /**
-    The `observesBefore` extension of Javascript's Function prototype is
-    available when `Ember.EXTEND_PROTOTYPES` or
-    `Ember.EXTEND_PROTOTYPES.Function` is true, which is the default.
-
-    You can get notified when a property change is about to happen by
-    adding the `observesBefore` call to the end of your method
-    declarations in classes that you write. For example:
-
-    ```javascript
-    Ember.Object.extend({
-      valueObserver: function() {
-        // Executes whenever the "value" property is about to change
-      }.observesBefore('value')
-    });
-    ```
-
-    See `Ember.beforeObserver`.
-
-    @method observesBefore
-    @for Function
-    @private
-  */
-  FunctionPrototype.observesBefore = Ember.deprecateFunc('Function#observesBefore is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, FunctionPrototype._observesBefore);
 
   /**
     The `on` extension of Javascript's Function prototype is available

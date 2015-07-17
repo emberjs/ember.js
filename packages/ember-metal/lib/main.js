@@ -157,22 +157,16 @@ computed.any = any;
 computed.collect = collect;
 
 import {
-  _suspendBeforeObserver,
-  _suspendBeforeObservers,
   _suspendObserver,
   _suspendObservers,
-  _addBeforeObserver,
   addObserver,
-  _beforeObserversFor,
   observersFor,
-  _removeBeforeObserver,
   removeObserver
 } from 'ember-metal/observer';
 import {
   IS_BINDING,
   Mixin,
   aliasMethod,
-  _beforeObserver,
   _immediateObserver,
   mixin,
   observer,
@@ -310,8 +304,6 @@ Ember.cacheFor = cacheFor;
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
 Ember.removeObserver = removeObserver;
-Ember._suspendBeforeObserver = _suspendBeforeObserver;
-Ember._suspendBeforeObservers = _suspendBeforeObservers;
 Ember._suspendObserver = _suspendObserver;
 Ember._suspendObservers = _suspendObservers;
 
@@ -403,10 +395,5 @@ if (Ember.__loader.registry['ember-debug']) {
 
 Ember.create = Ember.deprecateFunc('Ember.create is deprecated in favor of Object.create', Object.create);
 Ember.keys = Ember.deprecateFunc('Ember.keys is deprecated in favor of Object.keys', Object.keys);
-
-Ember.addBeforeObserver = Ember.deprecateFunc('Ember.addBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _addBeforeObserver);
-Ember.removeBeforeObserver = Ember.deprecateFunc('Ember.removeBeforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _removeBeforeObserver);
-Ember.beforeObserversFor = Ember.deprecateFunc('Ember.beforeObserversFor is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserversFor);
-Ember.beforeObserver = Ember.deprecateFunc('Ember.beforeObserver is deprecated and will be removed in the near future.', { url: 'http://emberjs.com/deprecations/v1.x/#toc_beforeobserver' }, _beforeObserver);
 
 export default Ember;
