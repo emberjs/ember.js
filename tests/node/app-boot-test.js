@@ -64,7 +64,7 @@ function registerDOMHelper(app) {
     initialize: function(app) {
       app.registry.register('renderer:-dom', {
         create: function() {
-          return new Ember.View._Renderer(domHelper, false);
+          return new Ember._Renderer(domHelper, false);
         }
       });
     }
@@ -134,8 +134,8 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   });
 
   QUnit.test("It is possible to render a view in Node", function(assert) {
-    var View = Ember.View.extend({
-      renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
+    var View = Ember.Component.extend({
+      renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
       template: compile("<h1>Hello</h1>")
     });
 
@@ -151,7 +151,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
 
   QUnit.test("It is possible to render a view with curlies in Node", function(assert) {
     var View = Ember.Component.extend({
-      renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
+      renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{location}}</h1>"),
       location: "World"
     });
@@ -169,11 +169,11 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
 
   QUnit.test("It is possible to render a view with a nested {{view}} helper in Node", function(assert) {
     var View = Ember.Component.extend({
-      renderer: new Ember.View._Renderer(new DOMHelper(new SimpleDOM.Document())),
+      renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
       layout: compile("<h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1> <div>{{view bar}}</div>"),
       location: "World",
       hasExistence: true,
-      bar: Ember.View.extend({
+      bar: Ember.Component.extend({
         template: compile("<p>The files are *inside* the computer?!</p>")
       })
     });
