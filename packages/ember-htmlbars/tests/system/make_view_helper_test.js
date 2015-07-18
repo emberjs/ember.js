@@ -4,15 +4,20 @@ import { compile } from 'ember-template-compiler';
 import Registry from 'container/registry';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
-var registry, container, view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var registry, container, view, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: makeViewHelper', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
     container = registry.container();
   },
   teardown() {
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

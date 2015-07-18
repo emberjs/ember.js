@@ -5,10 +5,15 @@ import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
 import Component from 'ember-views/views/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
-var registry, container, view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var registry, container, view, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: compat - makeViewHelper compat', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     registry = new Registry();
     container = registry.container();
   },
@@ -17,6 +22,8 @@ QUnit.module('ember-htmlbars: compat - makeViewHelper compat', {
     runDestroy(container);
     runDestroy(view);
     registry = container = view = null;
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

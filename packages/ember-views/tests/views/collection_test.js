@@ -10,15 +10,19 @@ import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
 var trim = jQuery.trim;
 var registry;
 var view;
 
-var originalLookup;
+var originalLookup, originalViewKeyword;
 
 QUnit.module('CollectionView', {
   setup() {
     CollectionView.CONTAINER_MAP.del = 'em';
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     originalLookup = Ember.lookup;
     registry = new Registry();
   },
@@ -29,6 +33,7 @@ QUnit.module('CollectionView', {
     });
 
     Ember.lookup = originalLookup;
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

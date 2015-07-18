@@ -3,10 +3,17 @@ import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/views/component';
 import compile from 'ember-template-compiler/system/compile';
 
-var view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, originalViewKeyword;
 QUnit.module('ember-htmlbars: appendTemplatedView', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
   teardown() {
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

@@ -9,16 +9,21 @@ import {
   runDestroy
 } from 'ember-runtime/tests/utils';
 
-var innerComponent, outerComponent;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var innerComponent, outerComponent, originalViewKeyword;
 
 if (isEnabled('ember-routing-htmlbars-improved-actions')) {
   QUnit.module('ember-routing-htmlbars: action helper', {
     setup() {
+      originalViewKeyword = registerKeyword('view',  viewKeyword);
     },
 
     teardown() {
       runDestroy(innerComponent);
       runDestroy(outerComponent);
+      resetKeyword('view', originalViewKeyword);
     }
   });
 

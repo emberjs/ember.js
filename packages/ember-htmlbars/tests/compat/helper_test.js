@@ -13,10 +13,15 @@ import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
 import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
-var view, registry, container;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var view, registry, container, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('component', { singleton: false });
@@ -29,6 +34,8 @@ QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
 
     delete helpers.test;
     delete helpers['view-helper'];
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

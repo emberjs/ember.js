@@ -13,10 +13,14 @@ import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import environment from 'ember-metal/environment';
 
-var dispatcher, view;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var dispatcher, view, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: Ember.Select - usage inside templates', {
   setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
@@ -24,6 +28,7 @@ QUnit.module('ember-htmlbars: Ember.Select - usage inside templates', {
   teardown() {
     runDestroy(dispatcher);
     runDestroy(view);
+    resetKeyword('view', originalViewKeyword);
   }
 });
 

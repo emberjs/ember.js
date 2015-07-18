@@ -3,7 +3,19 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import ContainerView from 'ember-views/views/container_view';
 
-QUnit.module('EmberView - context property');
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+var originalViewKeyword;
+
+QUnit.module('EmberView - context property', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+  },
+  teardown() {
+    resetKeyword('view', originalViewKeyword);
+  }
+});
 
 QUnit.test('setting a controller on an inner view should change it context', function() {
   var App = {};

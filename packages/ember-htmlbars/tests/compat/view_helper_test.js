@@ -8,11 +8,16 @@ import Registry from 'container/registry';
 import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
 import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-helper';
 
-let component, registry, container;
+import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import viewKeyword from 'ember-htmlbars/keywords/view';
+
+let component, registry, container, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: compat - view helper', {
   setup() {
     registerAstPlugin(DeprecateViewHelper);
+
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
 
     registry = new Registry();
     container = registry.container();
@@ -22,6 +27,8 @@ QUnit.module('ember-htmlbars: compat - view helper', {
     runDestroy(container);
     removeAstPlugin(DeprecateViewHelper);
     registry = container = component = null;
+
+    resetKeyword('view', originalViewKeyword);
   }
 });
 
