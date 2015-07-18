@@ -120,21 +120,6 @@ OrderedSet.prototype = {
   },
 
   /**
-    @deprecated
-
-    @method remove
-    @param obj
-    @param _guid (optional and for internal use only)
-    @return {Boolean}
-    @private
-  */
-  remove(obj, _guid) {
-    Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
-
-    return this.delete(obj, _guid);
-  },
-
-  /**
     @since 1.8.0
     @method delete
     @param obj
@@ -340,21 +325,6 @@ Map.prototype = {
     this.size = keys.size;
 
     return this;
-  },
-
-  /**
-    @deprecated see delete
-    Removes a value from the map for an associated key.
-
-    @method remove
-    @param {*} key
-    @return {Boolean} true if an item was removed, false otherwise
-    @private
-  */
-  remove(key) {
-    Ember.deprecate('Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
-
-    return this.delete(key);
   },
 
   /**
