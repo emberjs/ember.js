@@ -1,6 +1,7 @@
 /*global __fail__*/
 
 import Ember from 'ember-metal/core';
+import { registerDebugFunction } from 'ember-metal/assert';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
@@ -43,7 +44,7 @@ function isPlainFunction(test) {
     its return value will be used as condition.
   @public
 */
-Ember.assert = function(desc, test) {
+function assert(desc, test) {
   var throwAssertion;
 
   if (isPlainFunction(test)) {
@@ -55,7 +56,7 @@ Ember.assert = function(desc, test) {
   if (throwAssertion) {
     throw new EmberError('Assertion Failed: ' + desc);
   }
-};
+}
 
 
 /**
@@ -68,14 +69,14 @@ Ember.assert = function(desc, test) {
     will be displayed.
   @public
 */
-Ember.warn = function(message, test) {
+function warn(message, test) {
   if (!test) {
     Logger.warn('WARNING: ' + message);
     if ('trace' in Logger) {
       Logger.trace();
     }
   }
-};
+}
 
 /**
   Display a debug notice. Ember build tools will remove any calls to
@@ -89,9 +90,9 @@ Ember.warn = function(message, test) {
   @param {String} message A debug message to display.
   @public
 */
-Ember.debug = function(message) {
+function debug(message) {
   Logger.debug('DEBUG: ' + message);
-};
+}
 
 /**
   Display a deprecation warning with the provided message and a stack trace
@@ -110,7 +111,7 @@ Ember.debug = function(message) {
     The `id` should be namespaced by dots, e.g. "view.helper.select".
   @public
 */
-Ember.deprecate = function(message, test, options) {
+function deprecate(message, test, options) {
   if (Ember.ENV.RAISE_ON_DEPRECATION) {
     deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
   }
@@ -169,7 +170,7 @@ Ember.deprecate = function(message, test, options) {
   }
 
   Logger.warn('DEPRECATION: ' + message);
-};
+}
 
 
 
@@ -193,7 +194,7 @@ Ember.deprecate = function(message, test, options) {
   @return {Function} a new function that wrapped the original function with a deprecation warning
   @private
 */
-Ember.deprecateFunc = function(...args) {
+function deprecateFunc(...args) {
   if (args.length === 3) {
     let [message, options, func] = args;
     return function() {
@@ -207,7 +208,7 @@ Ember.deprecateFunc = function(...args) {
       return func.apply(this, arguments);
     };
   }
-};
+}
 
 
 /**
@@ -229,9 +230,16 @@ Ember.deprecateFunc = function(...args) {
   @since 1.5.0
   @public
 */
-Ember.runInDebug = function(func) {
+function runInDebug(func) {
   func();
-};
+}
+
+registerDebugFunction('assert', assert);
+registerDebugFunction('warn', warn);
+registerDebugFunction('debug', debug);
+registerDebugFunction('deprecate', deprecate);
+registerDebugFunction('deprecateFunc', deprecateFunc);
+registerDebugFunction('runInDebug', runInDebug);
 
 /**
   Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or
