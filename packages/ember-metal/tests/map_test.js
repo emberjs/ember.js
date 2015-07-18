@@ -119,23 +119,6 @@ function testMap(nameAndFunc) {
     equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
   });
 
-  QUnit.test('remove', function() {
-    map.set(object, 'winning');
-    map.set(number, 'winning');
-    map.set(string, 'winning');
-
-    expectDeprecation(function() {
-      map.remove(object);
-      map.remove(number);
-      map.remove(string);
-
-      // doesn't explode
-      map.remove({});
-    }, 'Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
-
-    mapHasEntries([]);
-  });
-
   QUnit.test('has empty collection', function() {
     equal(map.has('foo'), false);
     equal(map.has(), false);
