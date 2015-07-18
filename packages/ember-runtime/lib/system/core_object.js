@@ -573,24 +573,6 @@ var ClassMixinProps = {
   },
 
   /**
-    Equivalent to doing `extend(arguments).create()`.
-    If possible use the normal `create` method instead.
-
-    @method createWithMixins
-    @static
-    @param [arguments]*
-    @private
-    @deprecated
-  */
-  createWithMixins: Ember.deprecateFunc('.createWithMixins is deprecated, please use .create or .extend accordingly', function(...args) {
-    var C = this;
-    if (args.length > 0) {
-      this._initMixins(args);
-    }
-    return new C();
-  }),
-
-  /**
     Creates an instance of a class. Accepts either no arguments, or an object
     containing values to initialize the newly instantiated object with.
 

@@ -1,9 +1,7 @@
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-import {get} from 'ember-metal/property_get';
 import {computed} from 'ember-metal/computed';
 import {Mixin, observer} from 'ember-metal/mixin';
-import {on} from 'ember-metal/events';
 import EmberObject from 'ember-runtime/system/object';
 
 var moduleOptions, originalLookup;
@@ -152,73 +150,4 @@ QUnit.test('EmberObject.create can take undefined as a parameter', function() {
 QUnit.test('EmberObject.create can take null as a parameter', function() {
   var o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
-});
-
-QUnit.module('EmberObject.createWithMixins', moduleOptions);
-
-QUnit.test('Creates a new object that contains passed properties', function() {
-  var called = false;
-  var obj = EmberObject.extend({
-    method() { called = true; }
-  }).create({
-    prop: 'FOO'
-  });
-
-  equal(get(obj, 'prop'), 'FOO', 'obj.prop');
-  obj.method();
-  ok(called, 'method executed');
-});
-
-// ..........................................................
-// WORKING WITH MIXINS
-//
-
-QUnit.test('Creates a new object that includes mixins and properties', function() {
-  var MixinA = Mixin.create({ mixinA: 'A' });
-
-  expectDeprecation(function() {
-    EmberObject.createWithMixins(MixinA, { prop: 'FOO' });
-  }, '.createWithMixins is deprecated, please use .create or .extend accordingly');
-});
-
-// ..........................................................
-// LIFECYCLE
-//
-
-QUnit.test('Configures _super() on methods with override', function() {
-  var MixinA = Mixin.create({ method() {} });
-  expectDeprecation(function() {
-    EmberObject.createWithMixins(MixinA, {
-      method() {
-        this._super.apply(this, arguments);
-      }
-    });
-  }, '.createWithMixins is deprecated, please use .create or .extend accordingly');
-});
-
-QUnit.test('Calls all mixin inits if defined', function() {
-  var Mixin1 = Mixin.create({
-    init() {
-      this._super.apply(this, arguments);
-    }
-  });
-
-  var Mixin2 = Mixin.create({
-    init() {
-      this._super.apply(this, arguments);
-    }
-  });
-
-  expectDeprecation(function() {
-    EmberObject.createWithMixins(Mixin1, Mixin2);
-  }, '.createWithMixins is deprecated, please use .create or .extend accordingly');
-});
-
-QUnit.test('Triggers init', function() {
-  expectDeprecation(function() {
-    EmberObject.createWithMixins({
-      markAsCompleted: on('init', function() {
-      })
-    });
-  }, '.createWithMixins is deprecated, please use .create or .extend accordingly');
 });
