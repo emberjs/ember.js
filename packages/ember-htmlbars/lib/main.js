@@ -76,9 +76,12 @@ if (isEnabled('ember-htmlbars-each-in')) {
 registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
-registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
-registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);
 registerHelper('-html-safe', htmlSafeHelper);
+
+if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);
+  registerHelper('-legacy-each-with-keyword', legacyEachWithKeywordHelper);
+}
 
 Ember.HTMLBars = {
   _registerHelper: registerHelper,
