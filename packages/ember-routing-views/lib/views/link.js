@@ -43,13 +43,6 @@ var LinkComponent = EmberComponent.extend({
   tagName: 'a',
 
   /**
-    @deprecated Use current-when instead.
-    @property currentWhen
-    @private
-  */
-  currentWhen: null,
-
-  /**
     Used to determine when this LinkComponent is active.
 
     @property currentWhen
