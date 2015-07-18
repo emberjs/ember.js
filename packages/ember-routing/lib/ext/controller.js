@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // FEATURES, deprecate
 import { get } from 'ember-metal/property_get';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
@@ -119,17 +118,6 @@ ControllerMixin.reopen({
   },
 
   /**
-    @deprecated
-    @for Ember.ControllerMixin
-    @method transitionTo
-    @private
-  */
-  transitionTo() {
-    Ember.deprecate('transitionTo is deprecated. Please use transitionToRoute.');
-    return this.transitionToRoute(...arguments);
-  },
-
-  /**
     Transition into another route while replacing the current URL, if possible.
     This will replace the current history entry instead of adding a new one.
     Beside that, it is identical to `transitionToRoute` in all other respects.
@@ -190,17 +178,6 @@ ControllerMixin.reopen({
     var target = get(this, 'target');
     var method = target.replaceRoute || target.replaceWith;
     return method.apply(target, arguments);
-  },
-
-  /**
-    @deprecated
-    @for Ember.ControllerMixin
-    @method replaceWith
-    @private
-  */
-  replaceWith() {
-    Ember.deprecate('replaceWith is deprecated. Please use replaceRoute.');
-    return this.replaceRoute(...arguments);
   }
 });
 
