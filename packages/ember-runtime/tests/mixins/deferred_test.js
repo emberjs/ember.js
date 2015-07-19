@@ -351,7 +351,9 @@ if (!EmberDev.runningProdBuild) {
     var obj = {};
 
     Ember.deprecate = function(message) {
-      deprecationMade = message;
+      if (message === 'Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.') {
+        deprecationMade = true;
+      }
     };
 
     deferred = EmberObject.extend(Deferred).create();
@@ -360,7 +362,7 @@ if (!EmberDev.runningProdBuild) {
     deferred.then(function(value) {
       equal(value, obj, "successfully resolved to given value");
     });
-    equal(deprecationMade, 'Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.');
+    equal(deprecationMade, true, 'the deprecation was made');
 
     run(deferred, 'resolve', obj);
   });

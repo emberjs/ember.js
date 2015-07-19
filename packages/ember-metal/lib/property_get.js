@@ -51,12 +51,15 @@ export let UNHANDLED_GET = symbol("UNHANDLED_GET");
   @public
 */
 export function get(obj, keyName) {
+  Ember.deprecate(`Get must be called with two arguments; an object and a property key`,
+                  arguments.length === 2);
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {
     return obj;
   }
 
   if (!keyName && 'string' === typeof obj) {
+    Ember.deprecate('Calling Ember.get with only a property key has been deprecated, please also specify a target object.');
     keyName = obj;
     obj = Ember.lookup;
   }
@@ -65,6 +68,7 @@ export function get(obj, keyName) {
   Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined);
 
   if (isNone(obj)) {
+    Ember.deprecate('Calling Ember.get without a target object has been deprecated, please specify a target object.');
     return _getPath(obj, keyName);
   }
 
@@ -159,6 +163,8 @@ export function _getPath(root, path) {
   // detect complicated paths and normalize them
   hasThis = pathHasThis(path);
 
+  Ember.deprecate(`Ember.get with 'this' in the path has been deprecated. Please use the same path without 'this'.`, !hasThis);
+
   if (!root || hasThis) {
     tuple = normalizeTuple(root, path);
     root = tuple[0];
@@ -169,7 +175,7 @@ export function _getPath(root, path) {
   parts = path.split(".");
   len = parts.length;
   for (idx = 0; root != null && idx < len; idx++) {
-    root = get(root, parts[idx], true);
+    root = get(root, parts[idx]);
     if (root && root.isDestroyed) { return undefined; }
   }
   return root;

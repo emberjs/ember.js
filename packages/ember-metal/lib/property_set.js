@@ -34,12 +34,16 @@ export let UNHANDLED_SET = symbol("UNHANDLED_SET");
 export function set(obj, keyName, value, tolerant) {
   if (typeof obj === 'string') {
     Ember.assert(`Path '${obj}' must be global if no obj is given.`, isGlobalPath(obj));
+    Ember.deprecate('Calling Ember.set with only a property key and a value has been deprecated, please also specify a target object.');
     value = keyName;
     keyName = obj;
     obj = Ember.lookup;
   }
 
+  Ember.deprecate(`Set must be called with tree or four arguments; an object, a property key, a value and tolerant true/false`,
+                  arguments.length === 3 || arguments.length === 4);
   Ember.assert(`Cannot call set with '${keyName}' key.`, !!keyName);
+
 
   if (obj === Ember.lookup) {
     return setPath(obj, keyName, value, tolerant);
@@ -62,6 +66,7 @@ export function set(obj, keyName, value, tolerant) {
 
   var isUnknown, currentValue;
   if ((!obj || desc === undefined) && isPath(keyName)) {
+    Ember.deprecate('Calling Ember.set without a target object has been deprecated, please specify a target object.', !!obj);
     return setPath(obj, keyName, value, tolerant);
   }
 
@@ -139,6 +144,8 @@ function setPath(root, path, value, tolerant) {
   // get the root
   if (path !== 'this') {
     root = getPath(root, path);
+  } else {
+    Ember.deprecate(`Ember.set with 'this' in the path has been deprecated. Please use the same path without 'this'.`);
   }
 
   if (!keyName || keyName.length === 0) {

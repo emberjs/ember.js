@@ -111,10 +111,12 @@ QUnit.test('warn on attempts to get a property path of undefined', function() {
 });
 
 QUnit.test('returns null when fetching a complex local path on a null context', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   equal(get(null, 'aProperty.on.aPath'), null);
 });
 
 QUnit.test('returns null when fetching a simple local path on a null context', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   equal(get(null, 'aProperty'), null);
 });
 

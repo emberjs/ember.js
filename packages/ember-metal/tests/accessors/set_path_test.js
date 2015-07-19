@@ -63,11 +63,13 @@ QUnit.test('[obj, foo.bar] -> obj.foo.bar', function() {
 });
 
 QUnit.test('[obj, this.foo] -> obj.foo', function() {
+  expectDeprecation(/Ember.set with 'this' in the path has been deprecated. Please use the same path without 'this'./);
   set(obj, 'this.foo', "BAM");
   equal(get(obj, 'foo'), "BAM");
 });
 
 QUnit.test('[obj, this.foo.bar] -> obj.foo.bar', function() {
+  expectDeprecation(/Ember.get with 'this' in the path has been deprecated. Please use the same path without 'this'./);
   set(obj, 'this.foo.bar', "BAM");
   equal(get(obj, 'foo.bar'), "BAM");
 });
@@ -77,7 +79,14 @@ QUnit.test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 //
 
 QUnit.test('[null, Foo.bar] -> Foo.bar', function() {
+  expectDeprecation(/Calling Ember.set without a target object has been deprecated, please specify a target object./);
   set(null, 'Foo.bar', "BAM");
+  equal(get(Ember.lookup.Foo, 'bar'), "BAM");
+});
+
+QUnit.test('[Foo.bar] -> Foo.bar', function() {
+  expectDeprecation(/Calling Ember.set with only a property key and a value has been deprecated, please also specify a target object./);
+  set('Foo.bar', "BAM");
   equal(get(Ember.lookup.Foo, 'bar'), "BAM");
 });
 

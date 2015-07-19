@@ -581,6 +581,7 @@ testBoth('depending on simple chain', function(get, set) {
 });
 
 testBoth('depending on Global chain', function(get, set) {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
 
   // assign computed property
   defineProperty(obj, 'prop', computed(function() {
