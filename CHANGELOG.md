@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 1.13.5 (July 19, 2015)
+
+- [#11767](https://github.com/emberjs/ember.js/pull/11767) [DEPRECATION] Deprecate Controller#needs
+- [#11468](https://github.com/emberjs/ember.js/pull/11468) [DEPRECATION] Deprecate `Ember.Freezable` and `frozenCopy`.
+- [#11762](https://github.com/emberjs/ember.js/pull/11762) / [#11744](https://github.com/emberjs/ember.js/pull/11744) [BUGFIX] Ensure deprecated `Ember.beforeObserver` is available in production.
+- [#11765](https://github.com/emberjs/ember.js/pull/11765) [DEPRECATION] Mark `Ember.oneWay` as deprecated
+- [#11774](https://github.com/emberjs/ember.js/pull/11774) [BUGFIX] Add deprecation warnings to deprecated Enumerable methods.
+- [#11778](https://github.com/emberjs/ember.js/pull/11778) [DEPRECATION] Deprecate reverse argument ordering in `Ember.observer`.
+- [#11787](https://github.com/emberjs/ember.js/pull/11787) [DEPRECATION] Deprecate slash for a namespace in the `{{render}}` helper.
+- [#11798](https://github.com/emberjs/ember.js/pull/11798) [DEPRECATION] Deprecate `Function#observesBefore`.
+- [#11812](https://github.com/emberjs/ember.js/pull/11812) [DEPRECATION] Add deprecation messages when using `Ember.get` / `Ember.set` in a certain ways.
+
 ### 1.13.4 (July 13, 2015)
 
 - [#11651](https://github.com/emberjs/ember.js/pull/11651) [BUGFIX] Ensure child views of non-dirty components get the correct parentView when rerendered.
