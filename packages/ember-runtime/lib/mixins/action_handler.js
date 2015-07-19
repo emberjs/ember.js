@@ -209,6 +209,20 @@ var ActionHandler = Mixin.create({
                    ') does not have a `send` method', typeof target.send === 'function');
       target.send(...arguments);
     }
+  },
+
+  /**
+   Check if controller has any subscriptions for named event.
+
+   @method hasAction
+   @param {String} actionName The action to trigger
+   @public
+   */
+  hasAction(actionName) {
+    if (this._actions && actionName) {
+      return this._actions.hasOwnProperty(actionName);
+    }
+    return false;
   }
 });
 
