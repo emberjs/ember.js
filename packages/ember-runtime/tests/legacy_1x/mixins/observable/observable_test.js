@@ -158,6 +158,7 @@ QUnit.test("raise if the provided object is undefined", function() {
 });
 
 QUnit.test("should work when object is Ember (used in Ember.get)", function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   equal(get('Ember.RunLoop'), Ember.RunLoop, 'Ember.get');
   equal(get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
@@ -173,6 +174,7 @@ QUnit.module("Ember.get() with paths", {
 });
 
 QUnit.test('should return a property at a given path relative to the lookup', function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   lookup.Foo = ObservableObject.extend({
     Bar: ObservableObject.extend({
       Baz: computed(function() { return 'blargh'; }).volatile()
@@ -193,6 +195,7 @@ QUnit.test("should return a property at a given path relative to the passed obje
 });
 
 QUnit.test("should return a property at a given path relative to the lookup - JavaScript hash", function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   lookup.Foo = {
     Bar: {
       Baz: "blargh"

@@ -65,14 +65,17 @@ QUnit.test('[obj, foothis.bar] -> obj.foothis.bar', function() {
 });
 
 QUnit.test('[obj, this.foo] -> obj.foo', function() {
+  expectDeprecation(/Ember.get with 'this' in the path has been deprecated. Please use the same path without 'this'./);
   deepEqual(get(obj, 'this.foo'), obj.foo);
 });
 
 QUnit.test('[obj, this.foo.bar] -> obj.foo.bar', function() {
+  expectDeprecation(/Ember.get with 'this' in the path has been deprecated. Please use the same path without 'this'./);
   deepEqual(get(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 QUnit.test('[obj, this.Foo.bar] -> (undefined)', function() {
+  expectDeprecation(/Ember.get with 'this' in the path has been deprecated. Please use the same path without 'this'./);
   equal(get(obj, 'this.Foo.bar'), undefined);
 });
 
@@ -109,18 +112,22 @@ QUnit.test('[obj, Foo.bar] -> (undefined)', function() {
 //
 
 QUnit.test('[null, Foo] -> Foo', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   equal(get(null, 'Foo'), Foo);
 });
 
 QUnit.test('[null, Foo.bar] -> Foo.bar', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   deepEqual(get(null, 'Foo.bar'), Foo.bar);
 });
 
 QUnit.test('[null, $foo] -> $foo', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   equal(get(null, '$foo'), window.$foo);
 });
 
 QUnit.test('[null, aProp] -> null', function() {
+  expectDeprecation(/Calling Ember.get without a target object has been deprecated, please specify a target object./);
   equal(get(null, 'aProp'), null);
 });
 
@@ -129,13 +136,16 @@ QUnit.test('[null, aProp] -> null', function() {
 //
 
 QUnit.test('[Foo] -> Foo', function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   deepEqual(get('Foo'), Foo);
 });
 
 QUnit.test('[aProp] -> aProp', function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   deepEqual(get('aProp'), window.aProp);
 });
 
 QUnit.test('[Foo.bar] -> Foo.bar', function() {
+  expectDeprecation(/Calling Ember.get with only a property key has been deprecated, please also specify a target object/);
   deepEqual(get('Foo.bar'), Foo.bar);
 });
