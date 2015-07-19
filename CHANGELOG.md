@@ -1,5 +1,44 @@
 # Ember Changelog
 
+### 2.0.0-beta.3 (July 19, 2015)
+
+- [#11777](https://github.com/emberjs/ember.js/pull/11777) [CLEANUP] Remove context switching form of `{{#each model}}{{/each}}`, use `{{#each model as |item|}}{{/each}}` instead.
+- [#11484](https://github.com/emberjs/ember.js/pull/11484) [CLEANUP] Remove `Ember.ArrayController` support, use `ember-legacy-controllers` addon for support until 2.4.
+- [#11782](https://github.com/emberjs/ember.js/pull/11782) [CLEANUP] Remove support for reversed args in `Ember.observer`.
+- [#11722](https://github.com/emberjs/ember.js/pull/11722) [BUGFIX] Provide a better error when `InjectedProperty` is misused.
+- [#11691](https://github.com/emberjs/ember.js/pull/11691) [BUGFIX] `{{get}}` helper subscribes to values and can be updated.
+- [#11792](https://github.com/emberjs/ember.js/pull/11792) [CLEANUP] Remove `Application#then` support.
+- [#11737](https://github.com/emberjs/ember.js/pull/11737) [BUGFIX] Ensure `this` context inside former reduced computed macros is correct.
+- [#11790](https://github.com/emberjs/ember.js/pull/11790) [CLEANUP] Remove context switching `{{with foo}}` support.
+- [#11754](https://github.com/emberjs/ember.js/pull/11754) [CLEANUP] Remove `emptyView="Global.foo"` for Ember.View instances.
+- [#11746](https://github.com/emberjs/ember.js/pull/11746) [CLEANUP] Cleanup `Ember.get`:
+  - Remove support for globals: `Ember.get('App.foo')` and `Ember.get(null, 'App.foo')`.
+  - Remove support for `this`: `Ember.get(object, 'this.foo')`.
+  - Enforce strict usage with two arguments: `Ember.get(object, path)`.
+  - Assert object is a non-null object & path is a string.
+- [#11761](https://github.com/emberjs/ember.js/pull/11761) [CLEANUP] Cleanup `Ember.set`:
+  - Removes support for set with global paths.
+  - Removes support for set with 'this' paths.
+  - Removes support for set with null as first parameter.
+  - Path must be a string.
+  - Requires set to be passed in three or four arguments.
+- [#11797](https://github.com/emberjs/ember.js/pull/11797) [CLEANUP] Move support of `itemController`, `itemViewClass`, `itemView`, etc into `ember-legacy-views` addon.
+- [#11776](https://github.com/emberjs/ember.js/pull/11776) [CLEANUP] Remove deprecated support for `{{each foo as bar}}`.
+- [#11770](https://github.com/emberjs/ember.js/pull/11770) [CLEANUP] Remove deprecated `Controller#needs`, use `Ember.inject.controller()` instead.
+- [#11800](https://github.com/emberjs/ember.js/pull/11800) [CLEANUP] Move support of `{{view}}` helper into `ember-legacy-views` addon.
+- [#11804](https://github.com/emberjs/ember.js/pull/11804) [CLEANUP] Remove `EmberObject.createWithMixins`.
+- [#11786](https://github.com/emberjs/ember.js/pull/11786) [CLEANUP] Remove `{{with foo as bar}}` support.
+- [#11805](https://github.com/emberjs/ember.js/pull/11805) [CLEANUP] Remove deprecated `anyBy`, `everyProperty`, and `some`.
+- [#11788](https://github.com/emberjs/ember.js/pull/11788) [CLEANUP] Remove slash for a namespace in the `{{render}}` helper
+- [#11791](https://github.com/emberjs/ember.js/pull/11791) [CLEANUP] Remove support for actions in `events` key.
+- [#11794](https://github.com/emberjs/ember.js/pull/11794) [CLEANUP] Move `Ember.View` and `Ember.CoreView` into `ember-legacy-views` addon.
+- [#11796](https://github.com/emberjs/ember.js/pull/11796) [CLEANUP] Remove  `Ember.beforeObserver`, `Ember.addBeforeObserver`, `Ember.removeBeforeObserver`, `Ember.beforeObserversFor`, `Ember._suspendBeforeObserver`, `Ember._suspendBeforeObservers`, and `Function.prototype.observesBefore`.
+- [#11806](https://github.com/emberjs/ember.js/pull/11806) [CLEANUP] Remove deprecated `Controller#transitionTo` and `Controller#replaceWith`.
+- [#11807](https://github.com/emberjs/ember.js/pull/11807) [CLEANUP] Remove deprecated `Ember.Handlebars.get`.
+- [#11808](https://github.com/emberjs/ember.js/pull/11808) [CLEANUP] Remove deprecated `Binding#oneWay`.
+- [#11809](https://github.com/emberjs/ember.js/pull/11809) [CLEANUP] Remove deprecated `Map#remove`.
+
+
 ### 2.0.0-beta.2 (July 12, 2015)
 
 - [#11213](https://github.com/emberjs/ember.js/pull/11213) [CLEANUP] Remove chaining in Observable.set
