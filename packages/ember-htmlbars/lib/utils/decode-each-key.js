@@ -2,12 +2,12 @@ import Ember from 'ember-metal/core';
 import { get } from "ember-metal/property_get";
 import { guidFor } from "ember-metal/utils";
 
-function identity(item) {
+function identity(item, index) {
   let key;
   let type = typeof item;
 
   if (type === 'string' || type === 'number') {
-    key = item;
+    key = '' + item + '-' + index;
   } else {
     key = guidFor(item);
   }
@@ -30,13 +30,13 @@ export default function decodeEachKey(item, keyPath, index) {
     key = item;
     break;
   case '@identity':
-    key = identity(item);
+    key = identity(item, index);
     break;
   default:
     if (keyPath) {
       key = get(item, keyPath);
     } else {
-      key = identity(item);
+      key = identity(item, index);
     }
   }
 
