@@ -61,9 +61,4 @@ suite.test('should not match undefined properties without second argument', func
   equal(obj.isAny('foo'), false, 'isAny(\'foo\', undefined)');
 });
 
-suite.test('anyBy should be aliased to isAny', function() {
-  var obj = this.newObject();
-  equal(obj.isAny, obj.anyBy);
-});
-
 export default suite;

@@ -586,16 +586,6 @@ export default Mixin.create({
   },
 
   /**
-    @method everyProperty
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @deprecated Use `isEvery` instead
-    @return {Boolean}
-    @private
-  */
-  everyProperty: aliasMethod('isEvery'),
-
-  /**
     Returns `true` if the passed property resolves to the value of the second
     argument for all items in the enumerable. This method is often simpler/faster
     than using a callback.
@@ -670,45 +660,6 @@ export default Mixin.create({
   },
 
   /**
-    Returns `true` if the passed function returns true for any item in the
-    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
-
-    The callback method you provide should have the following signature (all
-    parameters are optional):
-
-    ```javascript
-    function(item, index, enumerable);
-    ```
-
-    - `item` is the current item in the iteration.
-    - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
-
-    It should return the `true` to include the item in the results, `false`
-    otherwise.
-
-    Note that in addition to a callback, you can also pass an optional target
-    object that will be set as `this` on the context. This is a good way
-    to give your iterator function access to the current object.
-
-    Usage Example:
-
-    ```javascript
-    if (people.some(isManager)) {
-      Paychecks.addBiggerBonus();
-    }
-    ```
-
-    @method some
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Boolean} `true` if the passed function returns `true` for any item
-    @deprecated Use `any` instead
-    @private
-  */
-  some: aliasMethod('any'),
-
-  /**
     Returns `true` if the passed property resolves to the value of the second
     argument for any item in the enumerable. This method is often simpler/faster
     than using a callback.
@@ -723,16 +674,6 @@ export default Mixin.create({
   isAny(key, value) {
     return this.any(iter.apply(this, arguments));
   },
-
-  /**
-    @method anyBy
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Boolean}
-    @deprecated Use `isAny` instead
-    @private
-  */
-  anyBy: aliasMethod('isAny'),
 
   /**
     This will combine the values of the enumerator into a single value. It
