@@ -12,6 +12,7 @@ import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
 import jQuery from "ember-views/system/jquery";
 import compile from "ember-template-compiler/system/compile";
+import { _loaded } from 'ember-runtime/system/lazy_load';
 
 var trim = jQuery.trim;
 
@@ -343,4 +344,12 @@ QUnit.test("registers controls onto to container", function() {
   });
 
   ok(app.__container__.lookup('view:select'), "Select control is registered into views");
+});
+
+QUnit.test('does not leak itself in onLoad._loaded', function() {
+  equal(_loaded.application, undefined);
+  var app = run(Application, 'create');
+  equal(_loaded.application, app);
+  run(app, 'destroy');
+  equal(_loaded.application, undefined);
 });

@@ -41,7 +41,7 @@ import LegacyEachView from "ember-views/views/legacy_each_view";
 import LinkToComponent from "ember-routing-views/views/link";
 import RoutingService from "ember-routing/services/routing";
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
-
+import { _loaded } from 'ember-runtime/system/lazy_load';
 import environment from 'ember-metal/environment';
 
 function props(obj) {
@@ -777,7 +777,14 @@ var Application = Namespace.extend(DeferredMixin, {
     Ember.BOOTED = false;
     this._bootPromise = null;
     this._bootResolver = null;
-    this.__deprecatedInstance__.destroy();
+
+    if (_loaded.application === this) {
+      _loaded.application = undefined;
+    }
+
+    if (this.__deprecatedInstance__) {
+      this.__deprecatedInstance__.destroy();
+    }
   },
 
   initializer(options) {
