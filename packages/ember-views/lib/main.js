@@ -21,7 +21,7 @@ import {
 import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from 'ember-views/views/core_view';
 import { DeprecatedView } from 'ember-views/views/view';
-import ContainerView from 'ember-views/views/container_view';
+import { DeprecatedContainerView } from 'ember-views/views/container_view';
 import CollectionView from 'ember-views/views/collection_view';
 import Component from 'ember-views/views/component';
 
@@ -85,7 +85,7 @@ Ember.SelectOptgroup = SelectOptgroup;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
-Ember.ContainerView = ContainerView;
+Ember.ContainerView = DeprecatedContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
