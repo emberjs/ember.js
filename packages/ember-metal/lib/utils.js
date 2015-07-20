@@ -287,20 +287,16 @@ export function guidFor(obj) {
 function Meta(obj) {
   this.watching = {};
   this.cache = undefined;
-  this.cacheMeta = undefined;
   this.source = obj;
   this.deps = undefined;
   this.listeners = undefined;
   this.mixins = undefined;
   this.bindings = undefined;
   this.chains = undefined;
+  this.chainWatchers = undefined;
   this.values = undefined;
   this.proto = undefined;
 }
-
-Meta.prototype = {
-  chainWatchers: null // FIXME
-};
 
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
@@ -357,7 +353,6 @@ function meta(obj, writable) {
     ret = Object.create(ret);
     ret.watching  = Object.create(ret.watching);
     ret.cache     = undefined;
-    ret.cacheMeta = undefined;
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {

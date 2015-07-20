@@ -51,7 +51,8 @@ function addChainWatcher(obj, keyName, node) {
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
 
-  if (!m.hasOwnProperty('chainWatchers')) { // FIXME?!
+  // TODO remove hasOwnProperty check
+  if (nodes === undefined || !m.hasOwnProperty('chainWatchers')) {
     nodes = m.chainWatchers = new Chains();
   }
 
