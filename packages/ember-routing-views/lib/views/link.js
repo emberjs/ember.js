@@ -299,7 +299,8 @@ var LinkView = EmberComponent.extend({
   **/
   active: computed('loadedParams', function computeLinkViewActive() {
     var router = get(this, 'router');
-    if (!router) { return; }
+    if (!router || !router.router) { return false; }
+
     return computeActive(this, router.currentState);
   }),
 
@@ -338,6 +339,9 @@ var LinkView = EmberComponent.extend({
     @property loading
   **/
   loading: computed('loadedParams', function computeLinkViewLoading() {
+    var router = get(this, 'router');
+    if (!router || !router.router) { return false; }
+
     if (!get(this, 'loadedParams')) { return get(this, 'loadingClass'); }
   }),
 
@@ -495,7 +499,7 @@ var LinkView = EmberComponent.extend({
   **/
   loadedParams: computed('resolvedParams', function computeLinkViewRouteArgs() {
     var router = get(this, 'router');
-    if (!router) { return; }
+    if (!router || !router.router) { return; }
 
     var resolvedParams = get(this, 'resolvedParams');
     var namedRoute = resolvedParams.targetRouteName;
