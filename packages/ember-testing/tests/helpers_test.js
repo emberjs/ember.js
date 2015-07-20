@@ -94,18 +94,28 @@ QUnit.module("ember-testing: Helper setup", {
   teardown() { cleanup(); }
 });
 
-QUnit.test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
+function registerHelper() {
+  Test.registerHelper('LeakyMcLeakLeak', function(app) {
+  });
+}
+
+QUnit.test('Ember.Application#injectTestHelpers/#removeTestHelpers', function() {
   App = run(EmberApplication, EmberApplication.create);
   assertNoHelpers(App);
 
+  registerHelper();
+
   App.injectTestHelpers();
   assertHelpers(App);
+  ok(Ember.Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
 
   App.removeTestHelpers();
   assertNoHelpers(App);
+
+  equal(Ember.Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
 });
 
-QUnit.test("Ember.Application#setupForTesting", function() {
+QUnit.test('Ember.Application#setupForTesting', function() {
   run(function() {
     App = EmberApplication.create();
     App.setupForTesting();

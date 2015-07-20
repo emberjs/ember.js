@@ -454,6 +454,7 @@ EmberApplication.reopen({
 
     for (var name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
+      delete Test.Promise.prototype[name];
       delete this.testHelpers[name];
       delete this.originalMethods[name];
     }
