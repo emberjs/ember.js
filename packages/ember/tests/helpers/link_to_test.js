@@ -305,7 +305,7 @@ QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes
 });
 
 QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function() {
-  expectDeprecation('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.');
+  expectDeprecation('Usage of `currentWhen` is deprecated, use `current-when` instead.');
 
   Router.map(function(match) {
     this.route('index', { path: '/' }, function() {

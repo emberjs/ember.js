@@ -9,6 +9,7 @@ import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
+import { deprecatingAlias } from 'ember-metal/computed_macros';
 import { isSimpleClick } from 'ember-views/system/utils';
 import EmberComponent from 'ember-views/views/component';
 import inject from 'ember-runtime/inject';
@@ -47,7 +48,7 @@ var LinkComponent = EmberComponent.extend({
     @property currentWhen
     @private
   */
-  currentWhen: null,
+  currentWhen: deprecatingAlias('current-when'),
 
   /**
     Used to determine when this LinkComponent is active.
@@ -215,8 +216,6 @@ var LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
-
-    Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
 
     // Map desired event name to invoke function
     var eventName = get(this, 'eventName');
@@ -421,17 +420,6 @@ var LinkComponent = EmberComponent.extend({
       this.set('disabled', attrs.disabledWhen);
     }
 
-    var currentWhen = attrs['current-when'];
-
-    if (attrs.currentWhen) {
-      Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !attrs.currentWhen);
-      currentWhen = attrs.currentWhen;
-    }
-
-    if (currentWhen) {
-      this.set('currentWhen', currentWhen);
-    }
-
     // TODO: Change to built-in hasBlock once it's available
     if (!attrs.hasBlock) {
       this.set('linkTitle', params.shift());
@@ -474,7 +462,7 @@ LinkComponent.toString = function() { return 'LinkComponent'; };
 function computeActive(view, routerState) {
   if (get(view, 'loading')) { return false; }
 
-  var currentWhen = get(view, 'currentWhen');
+  var currentWhen = get(view, 'current-when');
   var isCurrentWhenSpecified = !!currentWhen;
   currentWhen = currentWhen || get(view, 'targetRouteName');
   currentWhen = currentWhen.split(' ');
