@@ -94,6 +94,19 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   queryParams: {},
 
   /**
+    The name of the route, dot-delimited.
+
+    For example, a route found at `app/routes/posts/post.js` or
+    `app/posts/post/route.js` (with pods) will have a `routeName` of
+    `posts.post`.
+
+    @property routeName
+    @for Ember.Route
+    @type String
+    @public
+  */
+
+  /**
     @private
 
     @property _qp
