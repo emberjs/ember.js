@@ -149,23 +149,6 @@ QUnit.test('calling sendEvent with extra params should be passed to listeners', 
   deepEqual(params, ['foo', 'bar'], 'params should be saved');
 });
 
-QUnit.test('implementing sendEvent on object should invoke', function() {
-  var obj = {
-    sendEvent(eventName, params) {
-      equal(eventName, 'event!', 'eventName');
-      deepEqual(params, ['foo', 'bar']);
-      this.count++;
-    },
-
-    count: 0
-  };
-
-  addListener(obj, 'event!', obj, function() { this.count++; });
-
-  sendEvent(obj, 'event!', ['foo', 'bar']);
-  equal(obj.count, 2, 'should have invoked method & listener');
-});
-
 QUnit.test('hasListeners tells you if there are listeners for a given event', function() {
 
   var obj = {};

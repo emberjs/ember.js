@@ -312,11 +312,6 @@ export function watchedEvents(obj) {
   @public
 */
 export function sendEvent(obj, eventName, params, actions) {
-  // first give object a chance to handle it
-  if (obj !== Ember && 'function' === typeof obj.sendEvent) {
-    obj.sendEvent(eventName, params);
-  }
-
   if (!actions) {
     var meta = obj['__ember_meta__'];
     actions = meta && meta.listeners && meta.listeners[eventName];
