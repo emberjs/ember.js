@@ -191,12 +191,14 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 }
 
 function chainsWillChange(obj, keyName, m) {
-  if (!(m.hasOwnProperty('chainWatchers') &&
-        m.chainWatchers[keyName])) {
+  if (m.chainWatchers === undefined ||
+     !m.hasOwnProperty('chainWatchers')) {
     return;
   }
-
   var nodes = m.chainWatchers[keyName];
+  if (nodes === undefined) {
+    return;
+  }
   var events = [];
   var i, l;
 
@@ -210,12 +212,14 @@ function chainsWillChange(obj, keyName, m) {
 }
 
 function chainsDidChange(obj, keyName, m, suppressEvents) {
-  if (!(m && m.hasOwnProperty('chainWatchers') &&
-        m.chainWatchers[keyName])) {
+  if (m.chainWatchers === undefined ||
+     !m.hasOwnProperty('chainWatchers')) {
     return;
   }
-
   var nodes = m.chainWatchers[keyName];
+  if (nodes === undefined) {
+    return;
+  }
   var events = suppressEvents ? null : [];
   var i, l;
 
