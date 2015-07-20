@@ -10,6 +10,7 @@ import 'ember-runtime/system/native_array'; // make sure Ember.A is setup.
 
 var loadHooks = Ember.ENV.EMBER_LOAD_HOOKS || {};
 var loaded = {};
+export var _loaded = loaded;
 
 /**
   Detects when a specific package of Ember (e.g. 'Ember.Application')
@@ -31,12 +32,12 @@ var loaded = {};
   @private
 */
 export function onLoad(name, callback) {
-  var object;
+  var object = loaded[name];
 
   loadHooks[name] = loadHooks[name] || Ember.A();
   loadHooks[name].pushObject(callback);
 
-  if (object = loaded[name]) {
+  if (object) {
     callback(object);
   }
 }
