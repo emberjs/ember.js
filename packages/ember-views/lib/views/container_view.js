@@ -168,6 +168,7 @@ containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @class ContainerView
   @namespace Ember
   @extends Ember.View
+  @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-containerview
   @private
 */
 var ContainerView = View.extend(MutableArray, {
@@ -301,6 +302,13 @@ var ContainerView = View.extend(MutableArray, {
       }
     }
   })
+});
+
+export var DeprecatedContainerView = ContainerView.extend({
+  init() {
+    Ember.deprecate('Ember.ContainerView is deprecated.', !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT , { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-containerview' });
+    this._super.apply(this, arguments);
+  }
 });
 
 export default ContainerView;
