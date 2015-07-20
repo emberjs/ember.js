@@ -191,53 +191,26 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 }
 
 function chainsWillChange(obj, keyName, m) {
-  if (m.chainWatchers === undefined ||
-     !m.hasOwnProperty('chainWatchers')) {
+  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
     return;
   }
-  var nodes = m.chainWatchers[keyName];
-  if (nodes === undefined) {
-    return;
-  }
-  var events = [];
-  var i, l;
 
-  for (i = 0, l = nodes.length; i < l; i++) {
-    nodes[i].willChange(events);
-  }
-
-  for (i = 0, l = events.length; i < l; i += 2) {
-    propertyWillChange(events[i], events[i+1]);
-  }
+  m.chainWatchers.notify(keyName, false, propertyWillChange);
 }
 
-function chainsDidChange(obj, keyName, m, suppressEvents) {
-  if (m.chainWatchers === undefined ||
-     !m.hasOwnProperty('chainWatchers')) {
-    return;
-  }
-  var nodes = m.chainWatchers[keyName];
-  if (nodes === undefined) {
-    return;
-  }
-  var events = suppressEvents ? null : [];
-  var i, l;
-
-  for (i = 0, l = nodes.length; i < l; i++) {
-    nodes[i].didChange(events);
-  }
-
-  if (suppressEvents) {
+function chainsDidChange(obj, keyName, m) {
+  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
     return;
   }
 
-  for (i = 0, l = events.length; i < l; i += 2) {
-    propertyDidChange(events[i], events[i+1]);
-  }
+  m.chainWatchers.notify(keyName, true, propertyDidChange);
 }
 
 function overrideChains(obj, keyName, m) {
-  chainsDidChange(obj, keyName, m, true);
+  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
+    return;
+  }
+  m.chainWatchers.revalidate(keyName);
 }
 
 /**
