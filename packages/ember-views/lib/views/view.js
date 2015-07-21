@@ -40,7 +40,9 @@ function K() { return this; }
 @submodule ember-views
 */
 
-Ember.warn('The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.', Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
+Ember.warn('The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.',
+           Ember.ENV.VIEW_PRESERVES_CONTEXT !== false,
+           { id: 'ember-views.view-preserves-context-flag', until: '2.0.0' });
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -1334,15 +1336,21 @@ var View = CoreView.extend(
   scheduleRevalidate(node, label, manualRerender) {
     if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
       if (manualRerender) {
-        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`);
+        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,
+                        false,
+                        { id: 'ember-views.manual-parent-rerender', until: '3.0.0' });
       } else {
-        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`);
+        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`,
+                        false,
+                        { id: 'ember-views.render-double-modify', until: '3.0.0' });
       }
       run.scheduleOnce('render', this, this.revalidate);
       return;
     }
 
-    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`, !this._dispatching);
+    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
+                    !this._dispatching,
+                    { id: 'ember-views.dispatching-modify-property', until: '3.0.0' });
 
     if (!this.scheduledRevalidation || this._dispatching) {
       this.scheduledRevalidation = true;
@@ -1525,7 +1533,13 @@ View.childViewsProperty = childViewsProperty;
 var DeprecatedView = View.extend({
   init() {
     this._super(...arguments);
-    Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' });
+    Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+                    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                    {
+                      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view',
+                      id: 'ember-views.view-deprecated',
+                      until: '2.4.0'
+                    });
   }
 });
 
