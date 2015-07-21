@@ -102,7 +102,9 @@ function tagNameFor(view) {
 
   if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
     tagName = get(view, 'tagName');
-    Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.', !tagName);
+    Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.',
+                    !tagName,
+                    { id: 'ember-views.computed-tag-name', until: '2.0.0' });
   }
 
   if (tagName === null || tagName === undefined) {

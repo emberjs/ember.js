@@ -94,7 +94,7 @@ let AttrsProxyMixin = {
     if (attrs && key in attrs) {
       // do not deprecate accessing `this[key]` at this time.
       // add this back when we have a proper migration path
-      // Ember.deprecate(deprecation(key));
+      // Ember.deprecate(deprecation(key), { id: 'ember-views.', until: '3.0.0' });
       let possibleCell = get(attrs, key);
 
       if (possibleCell && possibleCell[MUTABLE_CELL]) {

@@ -131,7 +131,8 @@ export function renderComponentWithBuffer(component, contextualElement, dom) {
 */
 
 export default function RenderBuffer(domHelper) {
-  Ember.deprecate('`Ember.RenderBuffer` is deprecated.');
+  Ember.deprecate('`Ember.RenderBuffer` is deprecated.', false,
+                  { id: 'ember-views.render-buffer', until: '3.0.0' });
   this.buffer = null;
   this.childViews = [];
   this.attrNodes = [];
@@ -597,7 +598,9 @@ RenderBuffer.prototype = {
     if (this._outerContextualElement === undefined) {
       Ember.deprecate('The render buffer expects an outer contextualElement to exist.' +
                       ' This ensures DOM that requires context is correctly generated (tr, SVG tags).' +
-                      ' Defaulting to document.body, but this will be removed in the future');
+                      ' Defaulting to document.body, but this will be removed in the future',
+                      false,
+                      { id: 'ember-views.render-buffer-contextual-element', until: '3.0.0' });
       this.outerContextualElement = document.body;
     }
     return this._outerContextualElement;
