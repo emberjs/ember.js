@@ -542,24 +542,6 @@ var Application = Namespace.extend({
   },
 
   /**
-    Calling initialize manually is not supported.
-
-    Please see Ember.Application#advanceReadiness and
-    Ember.Application#deferReadiness.
-
-    @private
-    @deprecated
-    @method initialize
-   **/
-  initialize() {
-    Ember.deprecate(
-      'Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness',
-      false,
-      { id: 'ember-application.initialize', until: '3.0.0' }
-    );
-  },
-
-  /**
     Initialize the application. This happens automatically.
 
     Run any initializers and run the application load hook. These hooks may
