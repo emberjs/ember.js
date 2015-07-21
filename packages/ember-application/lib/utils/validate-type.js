@@ -27,7 +27,8 @@ export default function validateType(resolvedType, parsedName) {
       `property set to true. You registered ${resolvedType} as a ${parsedName.type} ` +
       `factory. Either add the \`${factoryFlag}\` property to this factory or ` +
       `extend from ${expectedType}.`,
-      resolvedType[factoryFlag]
+      resolvedType[factoryFlag],
+      { id: 'ember-application.validate-type', until: '3.0.0' }
     );
   } else {
     Ember.assert(
