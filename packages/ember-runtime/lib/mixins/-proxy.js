@@ -78,7 +78,8 @@ export default Mixin.create({
       Ember.deprecate(
         fmt('You attempted to access `%@` from `%@`, but object proxying is deprecated. ' +
             'Please use `model.%@` instead.', [key, this, key]),
-        !this.isController
+        !this.isController,
+        { id: 'ember-runtime.unknown-property', until: '3.0.0' }
       );
       return get(content, key);
     }
@@ -100,7 +101,8 @@ export default Mixin.create({
     Ember.deprecate(
       fmt('You attempted to set `%@` from `%@`, but object proxying is deprecated. ' +
           'Please use `model.%@` instead.', [key, this, key]),
-      !this.isController
+      !this.isController,
+      { id: 'ember-runtime.set-unknown-property', until: '3.0.0' }
     );
     return set(content, key, value);
   }
