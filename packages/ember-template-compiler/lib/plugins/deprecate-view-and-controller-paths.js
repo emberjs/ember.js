@@ -62,7 +62,7 @@ function deprecatePath(moduleName, node, path) {
     }
 
     return noDeprecate;
-  }, { url: 'http://emberjs.com/deprecations/v1.x#toc_view-and-controller-template-keywords', id: (path.parts && path.parts[0] === 'view' ? 'view.keyword.view' : 'view.keyword.controller') });
+  }, { url: 'http://emberjs.com/deprecations/v1.x#toc_view-and-controller-template-keywords', id: (path.parts && path.parts[0] === 'view' ? 'view.keyword.view' : 'view.keyword.controller'), until: '2.0.0' });
 }
 
 function validate(node) {

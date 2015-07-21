@@ -26,7 +26,11 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
       if (key.substr(-7) === 'Binding') {
         let newKey = key.slice(0, -7);
 
-        Ember.deprecate(`You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`);
+        Ember.deprecate(
+          `You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`,
+          false,
+          { id: 'ember-template-compiler.transform-old-binding-syntax', until: '3.0.0' }
+        );
 
         pair.key = newKey;
         if (value.type === 'StringLiteral') {

@@ -36,12 +36,16 @@ function deprecateHelper(moduleName, node) {
   } else if (paramValue === 'select') {
     deprecateSelect(moduleName, node);
   } else {
-    Ember.deprecate(`Using the \`{{view "string"}}\` helper is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`, false, { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-view', id: 'view.helper' });
+    Ember.deprecate(`Using the \`{{view "string"}}\` helper is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`,
+                    false,
+                    { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-view', id: 'view.helper', until: '2.0.0' });
   }
 }
 
 function deprecateSelect(moduleName, node) {
-  Ember.deprecate(`Using \`{{view "select"}}\` is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`, false, { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-select', id: 'view.helper.select' });
+  Ember.deprecate(`Using \`{{view "select"}}\` is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`,
+                  false,
+                  { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-select', id: 'view.helper.select', until: '2.0.0' });
 }
 
 function validate(node) {
