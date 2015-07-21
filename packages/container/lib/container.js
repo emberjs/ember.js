@@ -1,10 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import dictionary from 'ember-metal/dictionary';
 
-// TODO - Temporary workaround for v0.4.0 of the ES6 transpiler, which lacks support for circular dependencies.
-// See the below usage of requireModule. Instead, it should be possible to simply `import Registry from './registry';`
-var Registry;
-
 /**
  A container used to instantiate and cache objects.
 
@@ -19,17 +15,9 @@ var Registry;
  @class Container
  */
 function Container(registry, options) {
-  this._registry = registry || (function() {
-    Ember.deprecate('A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.', false, { id: 'container.instantiate-without-registry', until: '3.0.0' });
-
-    // TODO - See note above about transpiler import workaround.
-    if (!Registry) { Registry = requireModule('container/registry')['default']; }
-
-    return new Registry();
-  }());
-
-  this.cache        = dictionary(options && options.cache ? options.cache : null);
-  this.factoryCache = dictionary(options && options.factoryCache ? options.factoryCache : null);
+  this._registry       = registry;
+  this.cache           = dictionary(options && options.cache ? options.cache : null);
+  this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
 }
 
@@ -157,33 +145,6 @@ Container.prototype = {
     }
   }
 };
-
-(function exposeRegistryMethods() {
-  var methods = [
-    'register',
-    'unregister',
-    'resolve',
-    'normalize',
-    'typeInjection',
-    'injection',
-    'factoryInjection',
-    'factoryTypeInjection',
-    'has',
-    'options',
-    'optionsForType'
-  ];
-
-  function exposeRegistryMethod(method) {
-    Container.prototype[method] = function() {
-      Ember.deprecate(method + ' should be called on the registry instead of the container', false, { id: 'container.deprecated-registry-method-on-container', until: '3.0.0' });
-      return this._registry[method].apply(this._registry, arguments);
-    };
-  }
-
-  for (var i = 0, l = methods.length; i < l; i++) {
-    exposeRegistryMethod(methods[i]);
-  }
-})();
 
 function lookup(container, fullName, options) {
   options = options || {};
