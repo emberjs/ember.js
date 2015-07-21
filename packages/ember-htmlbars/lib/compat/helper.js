@@ -96,10 +96,7 @@ function HandlebarsCompatibleHelper(fn) {
 
     fnResult = fn.apply(this, args);
 
-    if (options.element) {
-      Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.', false, { id: 'ember-htmlbars.handlebars-compat-helper', until: '3.0.0' });
-      applyAttributes(env.dom, options.element, fnResult);
-    } else if (!options.template.yield) {
+    if (!options.template.yield) {
       return fnResult;
     }
   };
@@ -145,17 +142,6 @@ export function handlebarsHelper(name, value) {
     var boundFn = makeBoundHelper.apply(this, boundHelperArgs);
 
     helpers[name] = boundFn;
-  }
-}
-
-function applyAttributes(dom, element, innerString) {
-  var string = `<${element.tagName} ${innerString}></div>`;
-  var fragment = dom.parseHTML(string, dom.createElement(element.tagName));
-
-  var attrs = fragment.firstChild.attributes;
-
-  for (let i = 0, l = attrs.length; i < l; i++) {
-    element.setAttributeNode(attrs[i].cloneNode());
   }
 }
 
