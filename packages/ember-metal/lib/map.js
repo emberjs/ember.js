@@ -224,8 +224,6 @@ OrderedSet.prototype = {
   }
 };
 
-deprecateProperty(OrderedSet.prototype, 'length', 'size', { id: 'ember-metal.ordered-set-length', until: '3.0.0' });
-
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
   default Objects, the keys of a Map can be any JavaScript
