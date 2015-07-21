@@ -1190,44 +1190,38 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       this.controller = controller;
     }
 
-    if (this.setupControllers) {
-      Ember.deprecate('Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.', false, { id: 'ember-routing.route-setup-controllers', until: '3.0.0' });
-      this.setupControllers(controller, context);
-    } else {
-      var queryParams = get(this, '_qp');
+    var queryParams = get(this, '_qp');
 
-      var states = queryParams.states;
-      if (transition) {
-        // Update the model dep values used to calculate cache keys.
-        stashParamNames(this.router, transition.state.handlerInfos);
+    var states = queryParams.states;
+    if (transition) {
+      // Update the model dep values used to calculate cache keys.
+      stashParamNames(this.router, transition.state.handlerInfos);
 
-        var params = transition.params;
-        var allParams = queryParams.propertyNames;
-        var cache = this._bucketCache;
+      var params = transition.params;
+      var allParams = queryParams.propertyNames;
+      var cache = this._bucketCache;
 
-        allParams.forEach(function(prop) {
-          var aQp = queryParams.map[prop];
+      allParams.forEach(function(prop) {
+        var aQp = queryParams.map[prop];
 
-          aQp.values = params;
-          var cacheKey = calculateCacheKey(aQp.prefix, aQp.parts, aQp.values);
+        aQp.values = params;
+        var cacheKey = calculateCacheKey(aQp.prefix, aQp.parts, aQp.values);
 
-          if (cache) {
-            var value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
-            set(controller, prop, value);
-          }
-        });
-
-      }
-
-      controller._qpDelegate = states.allowOverrides;
-
-      if (transition) {
-        var qpValues = getQueryParamsFor(this, transition.state);
-        controller.setProperties(qpValues);
-      }
-
-      this.setupController(controller, context, transition);
+        if (cache) {
+          var value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
+          set(controller, prop, value);
+        }
+      });
     }
+
+    controller._qpDelegate = states.allowOverrides;
+
+    if (transition) {
+      var qpValues = getQueryParamsFor(this, transition.state);
+      controller.setProperties(qpValues);
+    }
+
+    this.setupController(controller, context, transition);
 
     this.renderTemplate(controller, context);
   },
