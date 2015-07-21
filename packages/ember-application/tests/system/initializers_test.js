@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
@@ -333,70 +332,22 @@ QUnit.test('initializers are per-app', function() {
   });
 });
 
-if (isEnabled('ember-application-initializer-context')) {
-  QUnit.test('initializers should be executed in their own context', function() {
-    expect(1);
-    var MyApplication = Application.extend();
+QUnit.test('initializers should be executed in their own context', function() {
+  expect(1);
+  var MyApplication = Application.extend();
 
-    MyApplication.initializer({
-      name: 'coolBabeInitializer',
-      myProperty: 'coolBabe',
-      initialize(registry, application) {
-        equal(this.myProperty, 'coolBabe', 'should have access to its own context');
-      }
-    });
-
-    run(function() {
-      app = MyApplication.create({
-        router: false,
-        rootElement: '#qunit-fixture'
-      });
-    });
-  });
-}
-
-if (isEnabled('ember-application-instance-initializers')) {
-  QUnit.test('initializers should throw a deprecation warning when performing a lookup on the registry', function() {
-    expect(1);
-
-    var MyApplication = Application.extend();
-
-    MyApplication.initializer({
-      name: 'initializer',
-      initialize(registry, application) {
-        registry.lookup('router:main');
-      }
-    });
-
-    expectDeprecation(function() {
-      run(function() {
-        app = MyApplication.create({
-          router: false,
-          rootElement: '#qunit-fixture'
-        });
-      });
-    }, /`lookup` was called on a Registry\. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container\./);
+  MyApplication.initializer({
+    name: 'coolBabeInitializer',
+    myProperty: 'coolBabe',
+    initialize(registry, application) {
+      equal(this.myProperty, 'coolBabe', 'should have access to its own context');
+    }
   });
 
-  QUnit.test('initializers should throw a deprecation warning when performing a factory lookup on the registry', function() {
-    expect(1);
-
-    var MyApplication = Application.extend();
-
-    MyApplication.initializer({
-      name: 'initializer',
-      initialize(registry, application) {
-        registry.lookupFactory('application:controller');
-      }
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
     });
-
-    expectDeprecation(function() {
-      run(function() {
-        app = MyApplication.create({
-          router: false,
-          rootElement: '#qunit-fixture'
-        });
-      });
-    }, /`lookupFactory` was called on a Registry\. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container\./);
   });
-}
+});

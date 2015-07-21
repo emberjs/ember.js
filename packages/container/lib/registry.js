@@ -1,15 +1,9 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-import isEnabled from 'ember-metal/features';
 import dictionary from 'ember-metal/dictionary';
 import { assign } from 'ember-metal/merge';
 import Container from './container';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
-
-var instanceInitializersFeatureEnabled;
-if (isEnabled('ember-application-instance-initializers')) {
-  instanceInitializersFeatureEnabled = true;
-}
 
 /**
  A registry used to store factory and option information keyed
@@ -134,18 +128,6 @@ Registry.prototype = {
   _typeOptions: null,
 
   /**
-   The first container created for this registry.
-
-   This allows deprecated access to `lookup` and `lookupFactory` to avoid
-   breaking compatibility for Ember 1.x initializers.
-
-   @private
-   @property _defaultContainer
-   @type Container
-   */
-  _defaultContainer: null,
-
-  /**
    Creates a container based on this registry.
 
    @private
@@ -154,52 +136,7 @@ Registry.prototype = {
    @return {Container} created container
    */
   container(options) {
-    var container = new Container(this, options);
-
-    // 2.0TODO - remove `registerContainer`
-    this.registerContainer(container);
-
-    return container;
-  },
-
-  /**
-   Register the first container created for a registery to allow deprecated
-   access to its `lookup` and `lookupFactory` methods to avoid breaking
-   compatibility for Ember 1.x initializers.
-
-   2.0TODO: Remove this method. The bookkeeping is only needed to support
-            deprecated behavior.
-
-   @private
-   @param {Container} newly created container
-   */
-  registerContainer(container) {
-    if (!this._defaultContainer) {
-      this._defaultContainer = container;
-    }
-    if (this.fallback) {
-      this.fallback.registerContainer(container);
-    }
-  },
-
-  lookup(fullName, options) {
-    Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
-
-    if (instanceInitializersFeatureEnabled) {
-      Ember.deprecate('`lookup` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: 'http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers' });
-    }
-
-    return this._defaultContainer.lookup(fullName, options);
-  },
-
-  lookupFactory(fullName) {
-    Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
-
-    if (instanceInitializersFeatureEnabled) {
-      Ember.deprecate('`lookupFactory` was called on a Registry. The `initializer` API no longer receives a container, and you should use an `instanceInitializer` to look up objects from the container.', false, { url: 'http://emberjs.com/guides/deprecations#toc_deprecate-access-to-instances-in-initializers' });
-    }
-
-    return this._defaultContainer.lookupFactory(fullName);
+    return new Container(this, options);
   },
 
   /**
@@ -455,11 +392,6 @@ Registry.prototype = {
     } else if (this.fallback) {
       return this.fallback.getOption(fullName, optionName);
     }
-  },
-
-  option(fullName, optionName) {
-    Ember.deprecate('`Registry.option()` has been deprecated. Call `Registry.getOption()` instead.');
-    return this.getOption(fullName, optionName);
   },
 
   /**
