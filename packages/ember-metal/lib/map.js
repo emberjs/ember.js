@@ -23,7 +23,6 @@
 
 import Ember from 'ember-metal/core';
 import { guidFor } from 'ember-metal/utils';
-import { deprecateProperty } from 'ember-metal/deprecate_property';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -223,8 +222,6 @@ OrderedSet.prototype = {
   }
 };
 
-deprecateProperty(OrderedSet.prototype, 'length', 'size', { id: 'ember-metal.ordered-set-length', until: '3.0.0' });
-
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
   default Objects, the keys of a Map can be any JavaScript
@@ -421,8 +418,6 @@ Map.prototype = {
     return copyMap(this, new Map());
   }
 };
-
-deprecateProperty(Map.prototype, 'length', 'size', { id: 'ember-metal.map-length', until: '3.0.0' });
 
 /**
   @class MapWithDefault

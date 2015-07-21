@@ -185,41 +185,6 @@ function testMap(nameAndFunc) {
     mapHasEntries([], map2);
   });
 
-  QUnit.test('length', function() {
-    expectDeprecation('Usage of `length` is deprecated, use `size` instead.');
-
-    //Add a key twice
-    equal(map.length, 0);
-    map.set(string, 'a string');
-    equal(map.length, 1);
-    map.set(string, 'the same string');
-    equal(map.length, 1);
-
-    //Add another
-    map.set(number, 'a number');
-    equal(map.length, 2);
-
-    //Remove one that doesn't exist
-    map.delete('does not exist');
-    equal(map.length, 2);
-
-    //Check copy
-    var copy = map.copy();
-    equal(copy.length, 2);
-
-    //Remove a key twice
-    map.delete(number);
-    equal(map.length, 1);
-    map.delete(number);
-    equal(map.length, 1);
-
-    //Remove the last key
-    map.delete(string);
-    equal(map.length, 0);
-    map.delete(string);
-    equal(map.length, 0);
-  });
-
   QUnit.test('size', function() {
     //Add a key twice
     equal(map.size, 0);

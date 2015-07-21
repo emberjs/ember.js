@@ -156,35 +156,6 @@ export default {
     return implementationClass.create(...arguments);
   },
 
-  /**
-   This is deprecated in favor of using the container to register the
-   location implementation as desired.
-
-   Example:
-
-   ```javascript
-   Application.initializer({
-    name: "history-test-location",
-
-    initialize: function(container, application) {
-      application.register('location:history-test', HistoryTestLocation);
-    }
-   });
-   ```
-
-   @method registerImplementation
-   @param {String} name
-   @param {Object} implementation of the `location` API
-   @deprecated Register your custom location implementation with the
-   container directly.
-   @private
-  */
-  registerImplementation(name, implementation) {
-    Ember.deprecate(`Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.`, false, { id: 'ember-routing.register-implementation', until: '3.0.0' });
-
-    this.implementations[name] = implementation;
-  },
-
   implementations: {},
   _location: environment.location,
 
