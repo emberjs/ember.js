@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
 
@@ -12,6 +13,11 @@ registerHandler(function logWarning(message, options) {
   }
 });
 
+export let missingOptionsDeprecation = 'When calling `Ember.warn` you ' +
+  'must provide an `options` hash as the third parameter.  ' +
+  '`options` should include an `id` property.';
+export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must provide `id` in options.';
+
 /**
   Display a warning with the provided message. Ember build tools will
   remove any calls to `Ember.warn()` when doing a production build.
@@ -22,6 +28,22 @@ registerHandler(function logWarning(message, options) {
     will be displayed.
   @public
 */
-export default function warn() {
+export default function warn(message, test, options) {
+  if (!options) {
+    Ember.deprecate(
+      missingOptionsDeprecation,
+      false,
+      { id: 'ember-debug.warn-options-missing', until: '3.0.0' }
+    );
+  }
+
+  if (options && !options.id) {
+    Ember.deprecate(
+      missingOptionsIdDeprecation,
+      false,
+      { id: 'ember-debug.warn-id-missing', until: '3.0.0' }
+    );
+  }
+
   invoke('warn', ...arguments);
 }
