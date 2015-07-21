@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { guidFor } from 'ember-metal/utils';
 
@@ -15,19 +14,11 @@ function identity(item) {
   return key;
 }
 export default function decodeEachKey(item, keyPath, index) {
-  var key, deprecatedSpecialKey;
+  var key;
 
   switch (keyPath) {
   case '@index':
     key = index;
-    break;
-  case '@guid':
-    deprecatedSpecialKey = '@guid';
-    key = guidFor(item);
-    break;
-  case '@item':
-    deprecatedSpecialKey = '@item';
-    key = item;
     break;
   case '@identity':
     key = identity(item);
@@ -43,8 +34,6 @@ export default function decodeEachKey(item, keyPath, index) {
   if (typeof key === 'number') {
     key = String(key);
   }
-
-  Ember.deprecate(`Using '${deprecatedSpecialKey}' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`, !deprecatedSpecialKey, { id: 'ember-htmlbars.deprecated-special-each-key', until: '3.0.0' });
 
   return key;
 }

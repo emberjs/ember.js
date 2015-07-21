@@ -723,44 +723,6 @@ QUnit.test('can specify `@index` to represent the items index in the array being
   equal(view.$().text(), '123');
 });
 
-QUnit.test('can specify `@guid` to represent the items GUID [DEPRECATED]', function() {
-  expectDeprecation(`Using '@guid' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`);
-
-  runDestroy(view);
-  view = EmberView.create({
-    items: [
-      { id: 1 },
-      { id: 2 },
-      { id: 3 }
-    ],
-    template: compile('{{#each view.items key=\'@guid\' as |item|}}{{item.id}}{{/each}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), '123');
-});
-
-QUnit.test('can specify `@item` to represent primitive items', function() {
-  expectDeprecation(`Using '@item' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`);
-
-  runDestroy(view);
-  view = EmberView.create({
-    items: [1, 2, 3],
-    template: compile('{{#each view.items key=\'@item\' as |item|}}{{item}}{{/each}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), '123');
-
-  run(function() {
-    set(view, 'items', ['foo', 'bar', 'baz']);
-  });
-
-  equal(view.$().text(), 'foobarbaz');
-});
-
 QUnit.test('can specify `@identity` to represent primitive items', function() {
   runDestroy(view);
   view = EmberView.create({
@@ -830,4 +792,3 @@ QUnit.test('pushing a new duplicate key will trigger a useful error (temporary u
     `Duplicate key found ('a') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`
   );
 });
-
