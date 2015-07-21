@@ -48,7 +48,7 @@ var LinkComponent = EmberComponent.extend({
     @property currentWhen
     @private
   */
-  currentWhen: deprecatingAlias('current-when'),
+  currentWhen: deprecatingAlias('current-when', { id: 'ember-routing-view.deprecated-current-when', until: '3.0.0' }),
 
   /**
     Used to determine when this LinkComponent is active.

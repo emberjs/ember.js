@@ -387,7 +387,7 @@ if (Ember.__loader.registry['ember-debug']) {
   requireModule('ember-debug');
 }
 
-Ember.create = Ember.deprecateFunc('Ember.create is deprecated in favor of Object.create', Object.create);
-Ember.keys = Ember.deprecateFunc('Ember.keys is deprecated in favor of Object.keys', Object.keys);
+Ember.create = Ember.deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
+Ember.keys = Ember.deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
 
 export default Ember;

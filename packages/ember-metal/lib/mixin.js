@@ -738,7 +738,7 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @private
 */
 export function required() {
-  Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false);
+  Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false, { id: 'ember-metal.required', until: '3.0.0' });
   return REQUIRED;
 }
 
@@ -809,7 +809,7 @@ export function observer(...args) {
 
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
-    Ember.deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.');
+    Ember.deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
 
     func  = args[0];
     _paths = args.slice(1);
@@ -855,7 +855,7 @@ export function observer(...args) {
   @private
 */
 export function _immediateObserver() {
-  Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.');
+  Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
