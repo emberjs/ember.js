@@ -180,32 +180,6 @@ QUnit.test('bound ordered params are provided with their original paths', functi
   runAppend(view);
 });
 
-QUnit.test('allows unbound usage within an element', function() {
-  expect(4);
-
-  function someHelper(param1, param2, options) {
-    equal(param1, 'blammo');
-    equal(param2, 'blazzico');
-
-    return 'class=\'foo\'';
-  }
-
-  registerHandlebarsCompatibleHelper('test', someHelper);
-
-  view = EmberView.create({
-    controller: {
-      value: 'foo'
-    },
-    template: compile('<div {{test "blammo" "blazzico"}}>Bar</div>')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Returning a string of attributes from a helper inside an element is deprecated.');
-
-  equal(view.$('.foo').length, 1, 'class attribute was added by helper');
-});
-
 QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
   expect(1);
 
