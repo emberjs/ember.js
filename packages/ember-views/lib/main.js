@@ -68,6 +68,7 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember.View.states = states;
   Ember.View.cloneStates = cloneStates;
   Ember.View._Renderer = Renderer;
+  Ember.ContainerView = DeprecatedContainerView;
 }
 
 Ember._Renderer = Renderer;
@@ -85,7 +86,6 @@ Ember.SelectOptgroup = SelectOptgroup;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
-Ember.ContainerView = DeprecatedContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
