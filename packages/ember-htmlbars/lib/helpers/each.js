@@ -89,7 +89,7 @@ export default function eachHelper(params, hash, blocks) {
       }
 
       var key = decodeEachKey(item, keyPath, i);
-      if (seenKeys[key] === true) {
+      if (seenKeys[key]) {
         seenKeys[key] = seenKeys[key]++;
       } else {
         seenKeys[key] = 1;
