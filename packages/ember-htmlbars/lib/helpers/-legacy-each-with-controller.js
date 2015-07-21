@@ -17,7 +17,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
     var self;
 
     if (blocks.template.arity === 0) {
-      Ember.deprecate(deprecation, false, { id: 'ember-htmlbars.each-with-controller-helper', until: '3.0.0' });
+      Ember.deprecate(deprecation, false, { id: 'ember-htmlbars.each-with-controller-helper', until: '2.4.0' });
       self = normalizeSelf(item);
       self = bindController(self, true);
     }
@@ -36,4 +36,3 @@ function bindController(controller, isSelf) {
 }
 
 export var deprecation = 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.';
-
