@@ -32,7 +32,8 @@ proto._deprecateEscapedStyle = function EmberAttrMorph_deprecateEscapedStyle(val
       }
 
       return !escaped;
-    }(this.attrName, value, this.escaped))
+    }(this.attrName, value, this.escaped)),
+    { id: 'ember-htmlbars.style-xss-warning' }
   );
 };
 

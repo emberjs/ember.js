@@ -49,7 +49,7 @@ export function findHelper(name, view, env) {
       if (container._registry.has(helperName)) {
         helper = container.lookupFactory(helperName);
         if (isLegacyBareHelper(helper)) {
-          Ember.deprecate(`The helper "${name}" is a deprecated bare function helper. Please use Ember.Helper.build to wrap helper functions.`);
+          Ember.deprecate(`The helper "${name}" is a deprecated bare function helper. Please use Ember.Helper.build to wrap helper functions.`, false, { id: 'ember-htmlbars.legacy-bare-helper', until: '3.0.0' });
           helper = new HandlebarsCompatibleHelper(helper);
         }
       }

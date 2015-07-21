@@ -147,7 +147,7 @@ function extractComponentTemplates(component, _templates) {
     // as the layout.
     layout = componentTemplate;
     templates = _templates;
-    Ember.deprecate('Using deprecated `template` property on a Component.');
+    Ember.deprecate('Using deprecated `template` property on a Component.', false, { id: 'ember-htmlbars.extract-component-templates', until: '3.0.0' });
   }
 
   return { layout, templates };
@@ -160,7 +160,7 @@ function extractLegacyTemplate(_templates, componentTemplate) {
   // There is no block template provided but the component has a
   // `template` property.
   if ((!_templates || !_templates.default) && componentTemplate) {
-    Ember.deprecate('Using deprecated `template` property on a Component.');
+    Ember.deprecate('Using deprecated `template` property on a Component.', false, { id: 'ember-htmlbars.extract-legacy-template', until: '3.0.0' });
     templates = { default: componentTemplate.raw };
   } else {
     templates = _templates;
@@ -279,7 +279,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
 
   if (!isAngleBracket) {
     let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
-    Ember.deprecate('controller= is deprecated', !hasSuppliedController);
+    Ember.deprecate('controller= is deprecated', !hasSuppliedController, { id: 'ember-htmlbars.create-component', until: '3.0.0' });
 
     let snapshot = takeSnapshot(attrs);
     props.attrs = snapshot;
@@ -347,7 +347,7 @@ function mergeBindings(target, attrs) {
     // set `"blah"` to the root of the target because
     // that would replace all attrs with `attrs.attrs`
     if (prop === 'attrs') {
-      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`);
+      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.component-unsupported-attrs' });
       continue;
     }
     let value = attrs[prop];
