@@ -14,7 +14,6 @@ import EmberComponent from 'ember-views/views/component';
 import jQuery from 'ember-views/system/jquery';
 
 import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
-import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -779,13 +778,13 @@ QUnit.test('a quoteless parameter should allow dynamic lookup of the actionName'
 });
 
 QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATED]', function() {
-  expect(5);
+  expect(4);
   var lastAction;
   var actionOrder = [];
 
   ignoreDeprecation(function() {
     view = EmberView.create({
-      template: compile('{{#each allactions}}<a id="{{name}}" {{action name}}>{{title}}</a>{{/each}}')
+      template: compile('{{#each allactions as |allacation|}}<a id="{{allacation.name}}" {{action allacation.name}}>{{allacation.title}}</a>{{/each}}')
     });
   });
 
@@ -809,12 +808,10 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
     }
   }).create();
 
-  expectDeprecation(function() {
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-  }, eachDeprecation);
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
 
   var testBoundAction = function(propertyValue) {
     run(function() {

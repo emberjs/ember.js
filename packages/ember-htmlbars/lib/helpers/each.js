@@ -1,6 +1,4 @@
-import Ember from 'ember-metal/core';
 import Error from 'ember-metal/error';
-import normalizeSelf from 'ember-htmlbars/utils/normalize-self';
 import shouldDisplay from 'ember-views/streams/should_display';
 import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
@@ -75,25 +73,16 @@ export default function eachHelper(params, hash, blocks) {
   var list = params[0];
   var keyPath = hash.key;
 
-  if (blocks.template.arity === 0) {
-    Ember.deprecate(deprecation, false, { id: 'ember-htmlbars.each-helper-arity', until: '3.0.0' });
-  }
-
   if (shouldDisplay(list)) {
     let seenKeys = {};
     forEach(list, (item, i) => {
-      var self;
-      if (blocks.template.arity === 0) {
-        self = normalizeSelf(item);
-      }
-
       var key = decodeEachKey(item, keyPath, i);
       if (seenKeys[key] === true) {
         throw new Error(`Duplicate key found ('${key}') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`);
       } else {
         seenKeys[key] = true;
       }
-      blocks.template.yieldItem(key, [item, i], self);
+      blocks.template.yieldItem(key, [item, i]);
     });
   } else if (blocks.inverse.yield) {
     blocks.inverse.yield();
@@ -103,5 +92,3 @@ export default function eachHelper(params, hash, blocks) {
 function forEach(iterable, cb) {
   return iterable.forEach ? iterable.forEach(cb) : Array.prototype.forEach.call(iterable, cb);
 }
-
-export var deprecation = 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.';

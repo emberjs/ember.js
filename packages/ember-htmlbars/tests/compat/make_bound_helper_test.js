@@ -13,7 +13,6 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { dasherize } from 'ember-runtime/system/string';
 
 import EmberHandlebars from 'ember-htmlbars/compat';
-import { deprecation as eachDeprecation } from 'ember-htmlbars/helpers/each';
 
 var compile, helpers, helper;
 compile = EmberHandlebars.compile;
@@ -52,12 +51,10 @@ QUnit.module('ember-htmlbars: compat - makeBoundHelper', {
 });
 
 QUnit.test('primitives should work correctly [DEPRECATED]', function() {
-  expectDeprecation(eachDeprecation);
-
   view = EmberView.create({
     prims: Ember.A(['string', 12]),
 
-    template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{/each}}')
+    template: compile('{{#each view.prims as |prim|}}{{#if prim}}inside-if{{/if}}{{/each}}')
   });
 
   runAppend(view);
@@ -486,12 +483,10 @@ QUnit.test('bound helpers can handle nulls in array (with primitives) [DEPRECATE
     controller: EmberObject.create({
       things: A([null, 0, undefined, false, 'OMG'])
     }),
-    template: compile('{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each things as |thing|}}{{thing}}|{{reverse thing}} {{/each}}')
+    template: compile('{{#each things as |thing|}}{{thing}}|{{reverse thing}} {{/each}}{{#each things as |thing|}}{{thing}}|{{reverse thing}} {{/each}}')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, eachDeprecation);
+  runAppend(view);
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', 'helper output is correct');
 
@@ -514,12 +509,10 @@ QUnit.test('bound helpers can handle nulls in array (with objects)', function() 
     controller: EmberObject.create({
       things: A([null, { foo: 5 }])
     }),
-    template: compile('{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each things as |thing|}}{{thing.foo}}|{{print-foo thing}} {{/each}}')
+    template: compile('{{#each things as |thing|}}{{thing.foo}}|{{print-foo thing}} {{/each}}{{#each things as |thing|}}{{thing.foo}}|{{print-foo thing}} {{/each}}')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, eachDeprecation);
+  runAppend(view);
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', 'helper output is correct');
 
