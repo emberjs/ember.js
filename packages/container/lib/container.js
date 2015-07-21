@@ -20,7 +20,7 @@ var Registry;
  */
 function Container(registry, options) {
   this._registry = registry || (function() {
-    Ember.deprecate('A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.');
+    Ember.deprecate('A container should only be created for an already instantiated registry. For backward compatibility, an isolated registry will be instantiated just for this container.', false, { id: 'container.instantiate-without-registry', until: '3.0.0' });
 
     // TODO - See note above about transpiler import workaround.
     if (!Registry) { Registry = requireModule('container/registry')['default']; }
@@ -177,7 +177,7 @@ Container.prototype = {
 
   function exposeRegistryMethod(method) {
     Container.prototype[method] = function() {
-      Ember.deprecate(method + ' should be called on the registry instead of the container');
+      Ember.deprecate(method + ' should be called on the registry instead of the container', false, { id: 'container.deprecated-registry-method-on-container', until: '3.0.0' });
       return this._registry[method].apply(this._registry, arguments);
     };
   }
