@@ -69,7 +69,9 @@ import { set } from 'ember-metal/property_set';
 export var Freezable = Mixin.create({
 
   init() {
-    Ember.deprecate('`Ember.Freezable` is deprecated, use `Object.freeze` instead.');
+    Ember.deprecate('`Ember.Freezable` is deprecated, use `Object.freeze` instead.',
+                    false,
+                    { id: 'ember-runtime.freezable-init', until: '3.0.0' });
     this._super.apply(this, arguments);
   },
 

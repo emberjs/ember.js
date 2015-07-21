@@ -149,7 +149,9 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @deprecated
     @private
   */
-  FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead', FunctionPrototype._observesImmediately);
+  FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead',
+                                                              { id: 'ember-runtime.ext-function', until: '3.0.0' },
+                                                              FunctionPrototype._observesImmediately);
 
   /**
     The `on` extension of Javascript's Function prototype is available

@@ -18,7 +18,9 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
     let moduleInfo = calculateLocationDisplay(moduleName, legacyHashKey.loc);
 
     Ember.deprecate(
-      `Using '${legacyHashKey.key}' with '{{each}}' ${moduleInfo}is deprecated.  Please refactor to a component.`
+      `Using '${legacyHashKey.key}' with '{{each}}' ${moduleInfo}is deprecated.  Please refactor to a component.`,
+      false,
+      { id: 'ember-template-compiler.transform-each-into-collection', until: '2.0.0' }
     );
 
     let list = node.params.shift();

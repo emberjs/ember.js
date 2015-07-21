@@ -51,7 +51,9 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
 
       if (normalizedOn && normalizedOn.value.type !== 'StringLiteral') {
         Ember.deprecate(
-          `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo}is deprecated.`
+          `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo}is deprecated.`,
+          false,
+          { id: 'ember-template-compiler.transform-input-on-to-onEvent.dynamic-value', until: '3.0.0' }
         );
 
         normalizedOn.key = 'onEvent';
@@ -63,7 +65,9 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
 
       if (!action) {
         Ember.deprecate(
-          `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo}will do nothing.`
+          `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo}will do nothing.`,
+          false,
+          { id: 'ember-template-compiler.transform-input-on-to-onEvent.no-action', until: '3.0.0' }
         );
 
         return; // exit early, if no action was available there is nothing to do
@@ -80,7 +84,9 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       let expected = `${normalizedOn ? normalizedOn.value.value : 'enter'}="${action.value.original}"`;
 
       Ember.deprecate(
-        `Using '{{input ${specifiedOn}action="${action.value.original}"}}' ${moduleInfo}is deprecated. Please use '{{input ${expected}}}' instead.`
+        `Using '{{input ${specifiedOn}action="${action.value.original}"}}' ${moduleInfo}is deprecated. Please use '{{input ${expected}}}' instead.`,
+        false,
+        { id: 'ember-template-compiler.transform-input-on-to-onEvent.normalized-on', until: '3.0.0' }
       );
       if (!normalizedOn) {
         normalizedOn = b.pair('onEvent', b.string('enter'));
