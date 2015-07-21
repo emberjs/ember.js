@@ -23,7 +23,6 @@
 
 import Ember from 'ember-metal/core';
 import { guidFor } from 'ember-metal/utils';
-import { deprecateProperty } from 'ember-metal/deprecate_property';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -419,8 +418,6 @@ Map.prototype = {
     return copyMap(this, new Map());
   }
 };
-
-deprecateProperty(Map.prototype, 'length', 'size', { id: 'ember-metal.map-length', until: '3.0.0' });
 
 /**
   @class MapWithDefault
