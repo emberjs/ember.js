@@ -97,7 +97,7 @@ function HandlebarsCompatibleHelper(fn) {
     fnResult = fn.apply(this, args);
 
     if (options.element) {
-      Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.');
+      Ember.deprecate('Returning a string of attributes from a helper inside an element is deprecated.', false, { id: 'ember-htmlbars.handlebars-compat-helper', until: '3.0.0' });
       applyAttributes(env.dom, options.element, fnResult);
     } else if (!options.template.yield) {
       return fnResult;

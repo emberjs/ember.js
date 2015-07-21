@@ -44,7 +44,7 @@ export default function decodeEachKey(item, keyPath, index) {
     key = String(key);
   }
 
-  Ember.deprecate(`Using '${deprecatedSpecialKey}' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`, !deprecatedSpecialKey);
+  Ember.deprecate(`Using '${deprecatedSpecialKey}' with the {{each}} helper, is deprecated. Switch to '@identity' or remove 'key=' from your template.`, !deprecatedSpecialKey, { id: 'ember-htmlbars.deprecated-special-each-key', until: '3.0.0' });
 
   return key;
 }

@@ -63,7 +63,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
         let template = getTemplate(component);
 
         if (template) {
-          Ember.deprecate('Using deprecated `template` property on a ' + (component.isView ? 'View' : 'Component') + '.');
+          Ember.deprecate('Using deprecated `template` property on a ' + (component.isView ? 'View' : 'Component') + '.', false, { id: 'ember-htmlbars.view-node-manager-create', until: '3.0.0' });
           contentTemplate = template.raw;
         }
       }
@@ -240,7 +240,7 @@ function mergeBindings(target, attrs) {
     // set `"blah"` to the root of the target because
     // that would replace all attrs with `attrs.attrs`
     if (prop === 'attrs') {
-      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`);
+      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.view-unsupported-attrs' });
       continue;
     }
     let value = attrs[prop];
