@@ -71,6 +71,12 @@ registerHandler(function raiseOnDeprecation(message, options, next) {
   }
 });
 
+export let missingOptionsDeprecation = 'When calling `Ember.deprecate` you ' +
+  'must provide an `options` hash as the third parameter.  ' +
+  '`options` should include `id` and `until` properties.';
+export let missingOptionsIdDeprecation = 'When calling `Ember.deprecate` you must provide `id` in options.';
+export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you must provide `until` in options.';
+
 /**
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only). Ember build tools will remove any calls to
@@ -78,16 +84,40 @@ registerHandler(function raiseOnDeprecation(message, options, next) {
 
   @method deprecate
   @param {String} message A description of the deprecation.
-  @param {Boolean|Function} test An optional boolean. If falsy, the deprecation
+  @param {Boolean|Function} test A boolean. If falsy, the deprecation
     will be displayed. If this is a function, it will be executed and its return
     value will be used as condition.
-  @param {Object} options An optional object that can be used to pass
+  @param {Object} options An object that can be used to pass
     in a `url` to the transition guide on the emberjs.com website, and a unique
     `id` for this deprecation. The `id` can be used by Ember debugging tools
     to change the behavior (raise, log or silence) for that specific deprecation.
     The `id` should be namespaced by dots, e.g. "view.helper.select".
   @public
 */
-export default function() {
+export default function deprecate(message, test, options) {
+  if (!options || (!options.id && !options.until)) {
+    deprecate(
+      missingOptionsDeprecation,
+      false,
+      { id: 'ember-debug.deprecate-options-missing', until: '3.0.0' }
+    );
+  }
+
+  if (options && !options.id) {
+    deprecate(
+      missingOptionsIdDeprecation,
+      false,
+      { id: 'ember-debug.deprecate-id-missing', until: '3.0.0' }
+    );
+  }
+
+  if (options && !options.until) {
+    deprecate(
+      missingOptionsUntilDeprecation,
+      options && options.until,
+      { id: 'ember-debug.deprecate-until-missing', until: '3.0.0' }
+    );
+  }
+
   invoke('deprecate', ...arguments);
 }
