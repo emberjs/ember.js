@@ -1,5 +1,3 @@
-/*global __fail__*/
-
 import Ember from 'ember-metal/core';
 import { registerDebugFunction } from 'ember-metal/assert';
 import isEnabled, { FEATURES } from 'ember-metal/features';
