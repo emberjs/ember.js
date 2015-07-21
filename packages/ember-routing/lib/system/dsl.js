@@ -76,7 +76,7 @@ DSL.prototype = {
     }
 
     options.resetNamespace = true;
-    Ember.deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
+    Ember.deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.', false, { id: 'ember-routing.router-resource', until: '3.0.0' });
     this.route(name, options, callback);
   },
 
