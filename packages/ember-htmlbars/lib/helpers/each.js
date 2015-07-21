@@ -90,10 +90,11 @@ export default function eachHelper(params, hash, blocks) {
 
       var key = decodeEachKey(item, keyPath, i);
       if (seenKeys[key] === true) {
-        throw new Error(`Duplicate key found ('${key}') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`);
+        seenKeys[key] = seenKeys[key]++;
       } else {
-        seenKeys[key] = true;
+        seenKeys[key] = 1;
       }
+      key = key + '-' + seenKeys[key];
       blocks.template.yieldItem(key, [item, i], self);
     });
   } else if (blocks.inverse.yield) {
