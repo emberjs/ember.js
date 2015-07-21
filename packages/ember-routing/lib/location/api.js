@@ -180,7 +180,7 @@ export default {
    @private
   */
   registerImplementation(name, implementation) {
-    Ember.deprecate(`Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.`, false);
+    Ember.deprecate(`Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.`, false, { id: 'ember-routing.register-implementation', until: '3.0.0' });
 
     this.implementations[name] = implementation;
   },
