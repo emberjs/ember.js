@@ -1226,12 +1226,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       this.setupController(controller, context, transition);
     }
 
-    if (this.renderTemplates) {
-      Ember.deprecate('Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.', false, { id: 'ember-routing.route-render-templates', until: '3.0.0' });
-      this.renderTemplates(context);
-    } else {
-      this.renderTemplate(controller, context);
-    }
+    this.renderTemplate(controller, context);
   },
 
   /*
