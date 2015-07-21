@@ -439,7 +439,7 @@ QUnit.test('should work inside a bound {{#if}}', function() {
 
 QUnit.test('should pass content as context when using {{#each}} helper [DEPRECATED]', function() {
   view = EmberView.create({
-    template: compile('{{#each view.releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
+    template: compile('{{#each view.releases as |release|}}Mac OS X {{release.version}}: {{release.name}} {{/each}}'),
 
     releases: A([
                 { version: '10.7',
@@ -451,9 +451,7 @@ QUnit.test('should pass content as context when using {{#each}} helper [DEPRECAT
               ])
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each items as |item|}}`) instead.');
+  runAppend(view);
 
   equal(view.$().text(), 'Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ', 'prints each item in sequence');
 });
