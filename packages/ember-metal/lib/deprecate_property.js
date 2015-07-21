@@ -20,9 +20,9 @@ import { set } from 'ember-metal/property_set';
   @since 1.7.0
 */
 
-export function deprecateProperty(object, deprecatedKey, newKey) {
+export function deprecateProperty(object, deprecatedKey, newKey, options) {
   function deprecate() {
-    Ember.deprecate(`Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`);
+    Ember.deprecate(`Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`, false, options);
   }
 
   Object.defineProperty(object, deprecatedKey, {

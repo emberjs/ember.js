@@ -223,7 +223,7 @@ OrderedSet.prototype = {
   }
 };
 
-deprecateProperty(OrderedSet.prototype, 'length', 'size');
+deprecateProperty(OrderedSet.prototype, 'length', 'size', { id: 'ember-metal.ordered-set-length', until: '3.0.0' });
 
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
@@ -422,7 +422,7 @@ Map.prototype = {
   }
 };
 
-deprecateProperty(Map.prototype, 'length', 'size');
+deprecateProperty(Map.prototype, 'length', 'size', { id: 'ember-metal.map-length', until: '3.0.0' });
 
 /**
   @class MapWithDefault
