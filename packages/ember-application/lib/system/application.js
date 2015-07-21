@@ -552,7 +552,11 @@ var Application = Namespace.extend({
     @method initialize
    **/
   initialize() {
-    Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
+    Ember.deprecate(
+      'Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness',
+      false,
+      { id: 'ember-application.initialize', until: '3.0.0' }
+    );
   },
 
   /**
@@ -1081,7 +1085,11 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
+  Ember.deprecate(
+    'Application.resolver is deprecated in favor of Application.Resolver',
+    !namespace.get('resolver'),
+    { id: 'ember-application.resolverFor', until: '3.0.0' }
+  );
 
   var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
   var resolver = ResolverClass.create({
@@ -1104,7 +1112,11 @@ function resolverFor(namespace) {
     if (resolver.normalize) {
       return resolver.normalize(fullName);
     } else {
-      Ember.deprecate('The Resolver should now provide a \'normalize\' function', false);
+      Ember.deprecate(
+        'The Resolver should now provide a \'normalize\' function',
+        false,
+        { id: 'ember-application.resolve-normalize', until: '3.0.0' }
+      );
       return fullName;
     }
   };
