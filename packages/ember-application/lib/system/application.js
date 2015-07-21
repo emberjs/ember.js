@@ -659,6 +659,15 @@ var Application = Namespace.extend({
     run.join(this, handleReset);
   },
 
+
+  /**
+    @private
+    @method instanceInitializer
+  */
+  instanceInitializer(options) {
+    this.constructor.instanceInitializer(options);
+  },
+
   /**
     @private
     @method runInitializers
@@ -667,13 +676,7 @@ var Application = Namespace.extend({
     var App = this;
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
-
-      if (isEnabled('ember-application-initializer-context')) {
-        initializer.initialize(registry, App);
-      } else {
-        var ref = initializer.initialize;
-        ref(registry, App);
-      }
+      initializer.initialize(registry, App);
     });
   },
 
@@ -772,17 +775,9 @@ var Application = Namespace.extend({
   }
 });
 
-if (isEnabled('ember-application-instance-initializers')) {
-  Application.reopen({
-    instanceInitializer(options) {
-      this.constructor.instanceInitializer(options);
-    }
-  });
-
-  Application.reopenClass({
-    instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
-  });
-}
+Application.reopenClass({
+  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+});
 
 if (isEnabled('ember-application-visit')) {
   Application.reopen({
