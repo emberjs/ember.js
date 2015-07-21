@@ -40,7 +40,7 @@ function getKey(scope, key) {
 }
 
 function getGlobal(name) {
-  Ember.deprecate('Global lookup of ' + name + ' from a Handlebars template is deprecated.');
+  Ember.deprecate('Global lookup of ' + name + ' from a Handlebars template is deprecated.', false, { id: 'ember-htmlbars.get-global', until: '3.0.0' });
 
   // This stream should be memoized, but this path is deprecated and
   // will be removed soon so it's not worth the trouble.

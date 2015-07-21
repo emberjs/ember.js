@@ -17,7 +17,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
     var self;
 
     if (blocks.template.arity === 0) {
-      Ember.deprecate(deprecation);
+      Ember.deprecate(deprecation, false, { id: 'ember-htmlbars.each-with-controller-helper', until: '3.0.0' });
       self = normalizeSelf(item);
       self = bindController(self, true);
     }
