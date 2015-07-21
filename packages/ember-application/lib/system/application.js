@@ -330,7 +330,7 @@ var Application = Namespace.extend({
     return ApplicationInstance.create({
       customEvents: get(this, 'customEvents'),
       rootElement: get(this, 'rootElement'),
-      applicationRegistry: this.registry
+      applicationRegistry: this.buildRegistry()
     });
   },
 
