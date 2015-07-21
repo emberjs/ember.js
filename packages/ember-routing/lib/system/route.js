@@ -132,7 +132,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       if (isEnabled('ember-routing-route-configured-query-params')) {
         if (controllerDefinedQueryParameterConfiguration.length) {
-          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`);
+          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`, false, { id: 'ember-routing.controller-configured-query-params', until: '3.0.0' });
         }
       }
 
@@ -1191,7 +1191,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.setupControllers) {
-      Ember.deprecate('Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.');
+      Ember.deprecate('Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.', false, { id: 'ember-routing.route-setup-controllers', until: '3.0.0' });
       this.setupControllers(controller, context);
     } else {
       var queryParams = get(this, '_qp');
@@ -1230,7 +1230,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     if (this.renderTemplates) {
-      Ember.deprecate('Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.');
+      Ember.deprecate('Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.', false, { id: 'ember-routing.route-render-templates', until: '3.0.0' });
       this.renderTemplates(context);
     } else {
       this.renderTemplate(controller, context);
@@ -2265,7 +2265,7 @@ function addQueryParamsObservers(controller, propNames) {
 }
 
 function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeName, propName) {
-  Ember.deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`);
+  Ember.deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`, false, { id: 'ember-routing.deprecate-query-param-default-values-set-on-controller', until: '3.0.0' });
 }
 
 export default Route;
