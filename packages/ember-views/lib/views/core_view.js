@@ -135,7 +135,9 @@ CoreView.reopenClass({
 
 export var DeprecatedCoreView = CoreView.extend({
   init() {
-    Ember.deprecate('Ember.CoreView is deprecated. Please use Ember.View.', false);
+    Ember.deprecate('Ember.CoreView is deprecated. Please use Ember.View.',
+                    false,
+                    { id: 'ember-views.core-view', until: '2.4.0' });
     this._super.apply(this, arguments);
   }
 });

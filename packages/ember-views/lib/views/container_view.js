@@ -174,7 +174,8 @@ var ContainerView = View.extend(MutableArray, {
   willWatchProperty(prop) {
     Ember.deprecate(
       'ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.',
-      !prop.match(/\[]/) && prop.indexOf('@') !== 0
+      !prop.match(/\[]/) && prop.indexOf('@') !== 0,
+      { id: 'ember-views.container-views-array-observed', until: '2.4.0' }
     );
   },
 
@@ -182,7 +183,9 @@ var ContainerView = View.extend(MutableArray, {
     this._super(...arguments);
 
     var userChildViews = get(this, 'childViews');
-    Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(userChildViews));
+    Ember.deprecate('Setting `childViews` on a Container is deprecated.',
+                    Ember.isEmpty(userChildViews),
+                    { id: 'ember-views.container-child-views', until: '2.4.0' });
 
     // redefine view's childViews property that was obliterated
     // 2.0TODO: Don't Ember.A() this so users disabling prototype extensions
@@ -305,7 +308,13 @@ var ContainerView = View.extend(MutableArray, {
 
 export var DeprecatedContainerView = ContainerView.extend({
   init() {
-    Ember.deprecate('Ember.ContainerView is deprecated.', !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT , { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-containerview' });
+    Ember.deprecate('Ember.ContainerView is deprecated.',
+                    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                    {
+                      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-containerview',
+                      id: 'ember-views.container-view',
+                      until: '2.4.0'
+                    });
     this._super.apply(this, arguments);
   }
 });

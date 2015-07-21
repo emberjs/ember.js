@@ -26,9 +26,12 @@ export var _Metamorph = Mixin.create({
   init() {
     this._super.apply(this, arguments);
     Ember.deprecate('Supplying a tagName to Metamorph views is unreliable and is deprecated.' +
-                    ' You may be setting the tagName on a Handlebars helper that creates a Metamorph.', !this.tagName);
+                    ' You may be setting the tagName on a Handlebars helper that creates a Metamorph.',
+                    !this.tagName,
+                    { id: 'ember-views.metamorph-tag-name', until: '2.4.0' });
 
-    Ember.deprecate(`Using ${this.__metamorphType} is deprecated.`);
+    Ember.deprecate(`Using ${this.__metamorphType} is deprecated.`, false,
+                    { id: 'ember-views.metamorph', until: '2.4.0' });
   }
 });
 

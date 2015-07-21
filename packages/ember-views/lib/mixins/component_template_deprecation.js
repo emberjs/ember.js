@@ -51,6 +51,8 @@ export default Mixin.create({
       delete props['template'];
     }
 
-    Ember.deprecate('Do not specify ' + deprecatedProperty + ' on a Component, use ' + replacementProperty + ' instead.', !deprecatedProperty);
+    Ember.deprecate('Do not specify ' + deprecatedProperty + ' on a Component, use ' + replacementProperty + ' instead.',
+                    !deprecatedProperty,
+                    { id: 'ember-views.component-deprecated-template-layout-properties', until: '3.0.0' });
   }
 });
