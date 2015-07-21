@@ -320,3 +320,8 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/58, adding support for
   dashless helpers.
+
+* `ember-debug-handlers`
+
+  Implemencts RFC https://github.com/emberjs/rfcs/pull/65, adding support for
+  custom deprecation and warning handlers.

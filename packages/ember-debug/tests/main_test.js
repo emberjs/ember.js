@@ -1,30 +1,29 @@
 import Ember from 'ember-metal/core';
-import deprecationManager, { deprecationLevels } from 'ember-debug/deprecation-manager';
+import { HANDLERS } from 'ember-debug/handlers';
+import { registerHandler } from 'ember-debug/deprecate';
 
 let originalEnvValue;
-let originalDeprecationDefault;
-let originalDeprecationLevels;
+let originalDeprecateHandler;
 
 QUnit.module('ember-debug', {
   setup() {
-    originalDeprecationDefault = deprecationManager.defaultLevel;
-    originalDeprecationLevels = deprecationManager.individualLevels;
     originalEnvValue = Ember.ENV.RAISE_ON_DEPRECATION;
+    originalDeprecateHandler = HANDLERS.deprecate;
 
-    Ember.ENV.RAISE_ON_DEPRECATION = false;
-    deprecationManager.setDefaultLevel(deprecationLevels.RAISE);
+    Ember.ENV.RAISE_ON_DEPRECATION = true;
   },
 
   teardown() {
-    deprecationManager.defaultLevel = originalDeprecationDefault;
-    deprecationManager.individualLevels = originalDeprecationLevels;
+    HANDLERS.deprecate = originalDeprecateHandler;
+
     Ember.ENV.RAISE_ON_DEPRECATION = originalEnvValue;
   }
 });
 
-QUnit.test('Ember.deprecate does not throw if default level is silence', function(assert) {
+QUnit.test('Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false', function(assert) {
   assert.expect(1);
-  deprecationManager.setDefaultLevel(deprecationLevels.SILENCE);
+
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
 
   try {
     Ember.deprecate('Should not throw', false);
@@ -37,23 +36,31 @@ QUnit.test('Ember.deprecate does not throw if default level is silence', functio
 QUnit.test('Ember.deprecate re-sets deprecation level to RAISE if ENV.RAISE_ON_DEPRECATION is set', function(assert) {
   assert.expect(2);
 
-  deprecationManager.setDefaultLevel(deprecationLevels.SILENCE);
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
+
+  try {
+    Ember.deprecate('Should not throw', false);
+    assert.ok(true, 'Ember.deprecate did not throw');
+  } catch(e) {
+    assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
+  }
 
   Ember.ENV.RAISE_ON_DEPRECATION = true;
 
   assert.throws(function() {
     Ember.deprecate('Should throw', false);
   }, /Should throw/);
-
-  assert.equal(deprecationManager.defaultLevel, deprecationLevels.RAISE,
-               'default level re-set to RAISE');
 });
 
 QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silence a deprecation by id', function(assert) {
   assert.expect(3);
 
   Ember.ENV.RAISE_ON_DEPRECATION = true;
-  deprecationManager.setLevel('my-deprecation', deprecationLevels.SILENCE);
+  registerHandler(function(message, options, next) {
+    if (!options || options.id !== 'my-deprecation') {
+      next(...arguments);
+    }
+  });
 
   try {
     Ember.deprecate('should be silenced with matching id', false, { id: 'my-deprecation' });
@@ -173,9 +180,17 @@ QUnit.test('Ember.assert does not throw if second argument is an object', functi
 
 QUnit.test('Ember.deprecate does not throw a deprecation at log and silence levels', function() {
   expect(4);
-  var id = 'ABC';
+  let id = 'ABC';
+  let shouldThrow = false;
 
-  deprecationManager.setLevel(id, deprecationLevels.LOG);
+  registerHandler(function(message, options, next) {
+    if (options && options.id === id) {
+      if (shouldThrow) {
+        throw new Error(message);
+      }
+    }
+  });
+
   try {
     Ember.deprecate('Deprecation for testing purposes', false, { id });
     ok(true, 'Deprecation did not throw');
@@ -183,7 +198,6 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
     ok(false, 'Deprecation was thrown despite being added to blacklist');
   }
 
-  deprecationManager.setLevel(id, deprecationLevels.SILENCE);
   try {
     Ember.deprecate('Deprecation for testing purposes', false, { id });
     ok(true, 'Deprecation did not throw');
@@ -191,13 +205,13 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
     ok(false, 'Deprecation was thrown despite being added to blacklist');
   }
 
-  deprecationManager.setLevel(id, deprecationLevels.RAISE);
+  shouldThrow = true;
 
   throws(function() {
     Ember.deprecate('Deprecation is thrown', false, { id });
   });
 
-  deprecationManager.setLevel(id, null);
+
 
   throws(function() {
     Ember.deprecate('Deprecation is thrown', false, { id });
