@@ -2969,34 +2969,6 @@ QUnit.test('Route model hook finds the same model as a manual find', function() 
   equal(App.Post, Post);
 });
 
-QUnit.test('Can register an implementation via Ember.Location.registerImplementation (DEPRECATED)', function() {
-  var TestLocation = Ember.NoneLocation.extend({
-    implementation: 'test'
-  });
-
-  expectDeprecation(/Using the Ember.Location.registerImplementation is no longer supported/);
-
-  Ember.Location.registerImplementation('test', TestLocation);
-
-  Router.reopen({
-    location: 'test'
-  });
-
-  bootApplication();
-
-  equal(router.get('location.implementation'), 'test', 'custom location implementation can be registered with registerImplementation');
-});
-
-QUnit.test('Ember.Location.registerImplementation is deprecated', function() {
-  var TestLocation = Ember.NoneLocation.extend({
-    implementation: 'test'
-  });
-
-  expectDeprecation(function() {
-    Ember.Location.registerImplementation('test', TestLocation);
-  }, 'Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.');
-});
-
 QUnit.test('Routes can refresh themselves causing their model hooks to be re-run', function() {
   Router.map(function() {
     this.route('parent', { path: '/parent/:parent_id' }, function() {
