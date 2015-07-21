@@ -11,7 +11,6 @@ import {
   getViewClientRects,
   getViewBoundingClientRect
 } from 'ember-views/system/utils';
-import RenderBuffer from 'ember-views/compat/render_buffer';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 import {
   cloneStates,
@@ -55,7 +54,6 @@ import LegacyEachView from 'ember-views/views/legacy_each_view';
 Ember.$ = jQuery;
 
 Ember.ViewTargetActionSupport = ViewTargetActionSupport;
-Ember.RenderBuffer = RenderBuffer;
 
 var ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
