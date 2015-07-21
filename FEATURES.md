@@ -267,7 +267,7 @@ for a detailed explanation.
   {{/if}}
   ```
 
-  Addd in [#10461](https://github.com/emberjs/ember.js/pull/10461)
+  Added in [#10461](https://github.com/emberjs/ember.js/pull/10461)
 
 * `ember-routing-htmlbars-improved-actions`
 
@@ -309,7 +309,7 @@ for a detailed explanation.
   and `displayedPropertyKey` to render a list for a single property
   for each person.. E.g. a list of all `firstNames`, or `lastNames`, or `ages`.
 
-  Addd in [#11196](https://github.com/emberjs/ember.js/pull/11196)
+  Added in [#11196](https://github.com/emberjs/ember.js/pull/11196)
 
 * `ember-htmlbars-helper`
 
@@ -320,3 +320,9 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/58, adding support for
   dashless helpers.
+
+* `ember-metal-computed-macros-blank`
+
+  Adds `Ember.computed.blank` and `Ember.computed.present` as computed property macros.
+
+  Added in [#11745](https://github.com/emberjs/ember.js/pull/11745)

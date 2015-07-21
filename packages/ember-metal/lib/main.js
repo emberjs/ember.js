@@ -112,6 +112,8 @@ import alias from 'ember-metal/alias';
 import {
   empty,
   notEmpty,
+  blank,
+  present,
   none,
   not,
   bool,
@@ -133,6 +135,10 @@ import {
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;
+if (isEnabled('ember-metal-computed-macros-blank')) {
+  computed.blank = blank;
+  computed.present = present;
+}
 computed.none = none;
 computed.not = not;
 computed.bool = bool;

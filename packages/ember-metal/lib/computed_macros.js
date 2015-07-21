@@ -2,9 +2,12 @@ import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
+import isBlank from 'ember-metal/is_blank';
 import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
+import isPresent from 'ember-metal/is_present';
 import alias from 'ember-metal/alias';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -93,6 +96,77 @@ export function notEmpty(dependentKey) {
     return !isEmpty(get(this, dependentKey));
   });
 }
+
+let blank, present;
+if (isEnabled('ember-metal-computed-macros-blank')) {
+  /**
+   A computed property that returns true if the value of the dependent
+   property is empty or a whitespace string
+
+   Example
+
+   ```javascript
+   var Hamster = Ember.Object.extend({
+    isNameless: Ember.computed.blank('name')
+  });
+
+   var hamster = Hamster.create({
+    name: 'Tomster'
+ });
+
+   todoList.get('isNameless'); // false
+   todoList.set('name', '   ');
+   todoList.get('isNameless'); // true
+   ```
+
+   @method blank
+   @for Ember.computed
+   @param {String} dependentKey
+   @return {Ember.ComputedProperty} computed property which returns true if
+   the original value for property is blank
+   @public
+   */
+  blank = function blank(dependentKey) {
+    return computed(dependentKey + '.length', function () {
+      return isBlank(get(this, dependentKey));
+    });
+  };
+
+  /**
+   A computed property that returns true if the value of the dependent
+   property is NOT empty or a whitespace string.
+
+   Example
+
+   ```javascript
+   var Hamster = Ember.Object.extend({
+    hasName: Ember.computed.present('name')
+  });
+
+   var hamster = Hamster.create({
+    name: 'Tomster'
+ });
+
+   todoList.get('isNameless'); // true
+   todoList.set('name', '   ');
+   todoList.get('isNameless'); // false
+   ```
+
+   @method present
+   @for Ember.computed
+   @param {String} dependentKey
+   @return {Ember.ComputedProperty} computed property which returns true if
+   original value for property is not blank.
+   @public
+   */
+  present = function present(dependentKey) {
+    return computed(dependentKey + '.length', function () {
+      return isPresent(get(this, dependentKey));
+    });
+  };
+}
+export default blank;
+export default present;
 
 /**
   A computed property that returns true if the value of the dependent
