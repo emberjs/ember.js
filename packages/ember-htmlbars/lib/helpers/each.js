@@ -1,4 +1,3 @@
-import Error from 'ember-metal/error';
 import shouldDisplay from 'ember-views/streams/should_display';
 import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
@@ -74,14 +73,9 @@ export default function eachHelper(params, hash, blocks) {
   var keyPath = hash.key;
 
   if (shouldDisplay(list)) {
-    let seenKeys = {};
     forEach(list, (item, i) => {
       var key = decodeEachKey(item, keyPath, i);
-      if (seenKeys[key] === true) {
-        throw new Error(`Duplicate key found ('${key}') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`);
-      } else {
-        seenKeys[key] = true;
-      }
+
       blocks.template.yieldItem(key, [item, i]);
     });
   } else if (blocks.inverse.yield) {
