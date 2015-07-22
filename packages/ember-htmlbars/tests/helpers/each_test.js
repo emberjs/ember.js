@@ -759,22 +759,19 @@ QUnit.test('can specify `@identity` to represent mixed object and primitive item
   equal(view.$().text(), 'foobarbaz');
 });
 
-QUnit.test('duplicate keys trigger a useful error (temporary until we can deal with this properly in HTMLBars)', function() {
+QUnit.test('duplicate keys work properly with primitive items', function() {
   runDestroy(view);
   view = EmberView.create({
     items: ['a', 'a', 'a'],
     template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
   });
 
-  throws(
-    function() {
-      runAppend(view);
-    },
-    `Duplicate key found ('a') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`
-  );
+  runAppend(view);
+
+  equal(view.$().text(), 'aaa');
 });
 
-QUnit.test('pushing a new duplicate key will trigger a useful error (temporary until we can deal with this properly in HTMLBars)', function() {
+QUnit.test('pushing a new duplicate key will render properly with primitive items', function() {
   runDestroy(view);
   view = EmberView.create({
     items: A(['a', 'b', 'c']),
@@ -783,12 +780,49 @@ QUnit.test('pushing a new duplicate key will trigger a useful error (temporary u
 
   runAppend(view);
 
-  throws(
-    function() {
-      run(function() {
-        view.get('items').pushObject('a');
-      });
-    },
-    `Duplicate key found ('a') for '{{each}}' helper, please use a unique key or switch to '{{#each model key="@index"}}{{/each}}'.`
-  );
+  run(function() {
+    view.get('items').pushObject('a');
+  });
+
+  equal(view.$().text(), 'abca');
+});
+
+QUnit.test('duplicate keys work properly with objects', function() {
+  runDestroy(view);
+  let duplicateItem = { display: 'foo' };
+  view = EmberView.create({
+    items: [
+      duplicateItem,
+      duplicateItem,
+      { display: 'bar' },
+      { display: 'qux' }
+    ],
+    template: compile('{{#each view.items as |item|}}{{item.display}}{{/each}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'foofoobarqux');
+});
+
+QUnit.test('pushing a new duplicate key will render properly with objects', function() {
+  runDestroy(view);
+
+  let duplicateItem = { display: 'foo' };
+  view = EmberView.create({
+    items: A([
+      duplicateItem,
+      { display: 'bar' },
+      { display: 'qux' }
+    ]),
+    template: compile('{{#each view.items as |item|}}{{item.display}}{{/each}}')
+  });
+
+  runAppend(view);
+
+  run(function() {
+    view.get('items').pushObject(duplicateItem);
+  });
+
+  equal(view.$().text(), 'foobarquxfoo');
 });
