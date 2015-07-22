@@ -228,13 +228,19 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     let key;
 
     if (handledMorphs[_key]) {
+      // In this branch we are dealing with a duplicate key. The strategy
+      // is to take the original key and append a counter to it that is
+      // incremented every time the key is reused. In order to greatly
+      // reduce the chance of colliding with another valid key we also add
+      // an extra string "--z8mS2hvDW0A--" to the new key.
       let collisions = renderState.collisions;
       if (collisions === undefined) {
         collisions = renderState.collisions = {};
       }
       let count = collisions[_key] | 0;
       collisions[_key] = ++count;
-      key = _key + '-11c3fd46-300c-11e5-932c-5cf9388a6f6c-' + count;
+
+      key = _key + '--z8mS2hvDW0A--' + count;
     } else {
       key = _key;
     }
