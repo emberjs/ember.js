@@ -199,9 +199,9 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     return seek;
   }
 
-  return function(key, blockArguments, self) {
-    if (typeof key !== 'string') {
-      throw new Error("You must provide a string key when calling `yieldItem`; you provided " + key);
+  return function(_key, blockArguments, self) {
+    if (typeof _key !== 'string') {
+      throw new Error("You must provide a string key when calling `yieldItem`; you provided " + _key);
     }
 
     // At least one item has been yielded, so we do not wholesale
@@ -224,7 +224,20 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     // rendering pass. Any morphs that do not make it into
     // this list will be pruned from the MorphList during the cleanup
     // process.
-    var handledMorphs = renderState.handledMorphs;
+    let handledMorphs = renderState.handledMorphs;
+    let key;
+
+    if (handledMorphs[_key]) {
+      let collisions = renderState.collisions;
+      if (collisions === undefined) {
+        collisions = renderState.collisions = {};
+      }
+      let count = collisions[_key] | 0;
+      collisions[_key] = ++count;
+      key = _key + '-11c3fd46-300c-11e5-932c-5cf9388a6f6c-' + count;
+    } else {
+      key = _key;
+    }
 
     if (currentMorph && currentMorph.key === key) {
       yieldTemplate(template, env, parentScope, currentMorph, renderState, visitor)(blockArguments, self);
