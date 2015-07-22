@@ -97,7 +97,6 @@ QUnit.module('ember-testing Acceptance', {
   },
 
   teardown() {
-    App.removeTestHelpers();
     Test.unregisterHelper('slowHelper');
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
@@ -378,4 +377,29 @@ QUnit.test('visiting a URL and then visiting a second URL with a transition shou
   andThen(function () {
     equal(currentURL(), '/comments', 'Redirected to Comments URL');
   });
+});
+
+QUnit.module('ember-testing Acceptance – teardown');
+
+QUnit.test('that the setup/teardown happens correct', function() {
+  expect(2);
+
+  jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
+  jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
+
+  run(function() {
+    indexHitCount = 0;
+    App = EmberApplication.create({
+      rootElement: '#ember-testing'
+    });
+  });
+  App.injectTestHelpers();
+
+  jQuery('#ember-testing-container, #ember-testing').remove();
+  ok(typeof Test.Promise.prototype.click === 'function');
+  run(App, App.destroy);
+  equal(Test.Promise.prototype.click, undefined);
+  App = null;
+  Test.adapter = originalAdapter;
+  indexHitCount = 0;
 });
