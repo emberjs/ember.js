@@ -4,6 +4,8 @@
 @private
 */
 
+import Ember from 'ember-metal'; // Ember.deprecate
+import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
@@ -36,7 +38,7 @@ import ContainerProxy from 'ember-runtime/mixins/container_proxy';
   @public
 */
 
-export default EmberObject.extend(RegistryProxy, ContainerProxy, {
+let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   /**
     The `Application` for which this is an instance.
 
@@ -201,3 +203,39 @@ export default EmberObject.extend(RegistryProxy, ContainerProxy, {
 function isResolverModuleBased(applicationInstance) {
   return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
 }
+
+if (isEnabled('ember-registry-container-reform')) {
+  Object.defineProperty(ApplicationInstance, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      var instance = this;
+      return {
+        lookup() {
+          Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+                          false,
+                          { id: 'ember-application.app-instance-container', until: '3.0.0' });
+          return instance.lookup(...arguments);
+        }
+      };
+    }
+  });
+} else {
+  Object.defineProperty(ApplicationInstance, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return this.__container__;
+    }
+  });
+
+  Object.defineProperty(ApplicationInstance, 'registry', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return this.__registry__;
+    }
+  });
+}
+
+export default ApplicationInstance;

@@ -573,7 +573,11 @@ var Application = Namespace.extend(RegistryProxy, {
     this._runInitializer('initializers', function(name, initializer) {
       Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
       if (initializer.initialize.length === 2) {
-        Ember.deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.');
+        if (isEnabled('ember-registry-container-reform')) {
+          Ember.deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
+                          false,
+                          { id: 'ember-application.app-initializer-initialize-arguments', until: '3.0.0' });
+        }
         initializer.initialize(App.__registry__, App);
       } else {
         initializer.initialize(App);
