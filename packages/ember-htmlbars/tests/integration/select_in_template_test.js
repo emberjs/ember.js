@@ -12,6 +12,7 @@ import compile from 'ember-template-compiler/system/compile';
 import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import environment from 'ember-metal/environment';
+import { compile } from 'ember-template-compiler/main';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -338,7 +339,7 @@ QUnit.test('select element should correctly initialize and update selectedIndex 
     collection: Ember.A([{ name: 'Wes', val: 'w' }, { name: 'Gordon', val: 'g' }]),
     selection: { name: 'Gordon', val: 'g' },
     selectView: SelectView,
-    template: Ember.Handlebars.compile(templateString)
+    template: compile(templateString)
   });
 
   run(function() {

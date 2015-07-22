@@ -3,9 +3,7 @@ import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import { capitalize } from 'ember-runtime/system/string';
 
-import EmberHandlebars from 'ember-htmlbars/compat';
-
-var compile = EmberHandlebars.compile;
+import { compile } from 'ember-template-compiler/main';
 
 var App, Router, container, router, registry;
 var expectedReplaceURL, expectedPushURL;

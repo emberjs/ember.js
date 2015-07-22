@@ -1,11 +1,10 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import EmberHandlebars from 'ember-htmlbars/compat';
+import { compile } from 'ember-template-compiler/main';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view;
-var compile = EmberHandlebars.compile;
 
 QUnit.module('ember-htmlbars: tagless views should be able to add/remove child views', {
   teardown() {

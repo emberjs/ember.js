@@ -1,6 +1,6 @@
 import 'ember';
 import Ember from 'ember-metal/core';
-import EmberHandlebars from 'ember-htmlbars/compat';
+import { compile } from 'ember-template-compiler/main';
 import EmberView from 'ember-views/views/view';
 
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
@@ -14,7 +14,6 @@ import TransformEachIntoCollection from 'ember-template-compiler/plugins/transfo
  from the runtime up to the templating layer.
 */
 
-var compile = EmberHandlebars.compile;
 var App, $fixture, templates;
 
 let originalAstPlugins;

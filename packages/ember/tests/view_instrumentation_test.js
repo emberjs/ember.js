@@ -1,10 +1,8 @@
 import Ember from 'ember-metal/core';
-import EmberHandlebars from 'ember-htmlbars/compat';
 import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
-
-var compile = EmberHandlebars.compile;
+import { compile } from 'ember-template-compiler/main';
 
 var App, $fixture;
 

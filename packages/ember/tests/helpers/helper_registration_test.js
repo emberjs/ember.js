@@ -1,18 +1,12 @@
 import 'ember';
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-import EmberHandlebars from 'ember-htmlbars/compat';
-import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
-import Helper from 'ember-htmlbars/helper';
+import helpers from 'ember-htmlbars/helpers';
+import { compile } from 'ember-template-compiler/main';
+import { helper }, Helper from 'ember-htmlbars/helper';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-
-var compile, helpers, makeBoundHelper;
-compile = EmberHandlebars.compile;
-helpers = EmberHandlebars.helpers;
-makeBoundHelper = EmberHandlebars.makeBoundHelper;
-var makeViewHelper = EmberHandlebars.makeViewHelper;
 
 var App, registry, container, originalViewKeyword;
 
@@ -67,19 +61,18 @@ var boot = function(callback) {
 
 QUnit.test('Unbound dashed helpers registered on the container can be late-invoked', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-borf}} {{x-borf \'YES\'}}</div>');
-  let helper = new HandlebarsCompatibleHelper(function(val) {
+  let myHelper = helper(function(val) {
     return arguments.length > 1 ? val : 'BORF';
   });
 
   boot(() => {
-    registry.register('helper:x-borf', helper);
+    registry.register('helper:x-borf', myHelper);
   });
 
   equal(Ember.$('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
   ok(!helpers['x-borf'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
-// need to make `makeBoundHelper` for HTMLBars
 QUnit.test('Bound helpers registered on the container can be late-invoked', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
 
@@ -87,27 +80,11 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
     registry.register('controller:application', Ember.Controller.extend({
       foo: 'alex'
     }));
-    registry.register('helper:x-reverse', makeBoundHelper(reverseHelper));
+    registry.register('helper:x-reverse', helper(reverseHelper));
   });
 
   equal(Ember.$('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
   ok(!helpers['x-reverse'], 'Container-registered helper doesn\'t wind up on global helpers hash');
-});
-
-QUnit.test('Bound `makeViewHelper` helpers registered on the container can be used', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-foo}} {{x-foo name=foo}}</div>');
-
-  boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
-      foo: 'alex'
-    }));
-
-    registry.register('helper:x-foo', makeViewHelper(Ember.Component.extend({
-      layout: compile('woot!!{{attrs.name}}')
-    })));
-  });
-
-  equal(Ember.$('#wrapper').text(), 'woot!! woot!!alex', 'The helper was invoked from the container');
 });
 
 if (isEnabled('ember-htmlbars-dashless-helpers')) {
@@ -120,7 +97,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
           return 'OMG';
         });
 
-        registry.register('helper:yorp', makeBoundHelper(function(value) {
+        registry.register('helper:yorp', helper(function(value) {
           return value;
         }));
       }, /Please use Ember.Helper.build to wrap helper functions./);
@@ -141,7 +118,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
         registry.register('helper:omg', function() {
           return 'OMG';
         });
-        registry.register('helper:yorp', makeBoundHelper(function() {
+        registry.register('helper:yorp', helper(function() {
           return 'YORP';
         }));
       });
