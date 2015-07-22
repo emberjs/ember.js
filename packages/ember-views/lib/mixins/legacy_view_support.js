@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 import Ember from 'ember-metal/core';
-import { Mixin } from 'ember-metal/mixin';
+import { Mixin, observer } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 
 /**
@@ -100,7 +100,19 @@ var LegacyViewSupport = Mixin.create({
       if (view instanceof klass) { return view; }
       view = get(view, 'parentView');
     }
-  }
+  },
+
+  /**
+    If a value that affects template rendering changes, the view should be
+    re-rendered to reflect the new value.
+
+    @method _contextDidChange
+    @private
+    @private
+  */
+  _contextDidChange: observer('context', function() {
+    this.rerender();
+  })
 });
 
 export default LegacyViewSupport;

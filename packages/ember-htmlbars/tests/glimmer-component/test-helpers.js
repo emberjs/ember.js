@@ -1,11 +1,9 @@
 export function moduleForGlimmerComponent(name, options) {
-  let beforeEach = () => {
-    
-  };
+  function beforeEach() {
+  }
 
-  let afterEach = () => {
-
-  };
+  function afterEach() {
+  }
 
   QUnit.module(`Glimmer Component - ${name}`, { beforeEach, afterEach });
 }

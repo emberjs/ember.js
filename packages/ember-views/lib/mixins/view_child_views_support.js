@@ -125,16 +125,11 @@ export default Mixin.create({
 
   linkChild(instance) {
     instance.container = this.container;
-    if (get(instance, 'parentView') !== this) {
-      // linkChild should be idempotentj
-      set(instance, 'parentView', this);
-      instance.trigger('parentViewDidChange');
-    }
+    instance.parentView = this;
     instance.ownerView = this.ownerView;
   },
 
   unlinkChild(instance) {
-    set(instance, 'parentView', null);
-    instance.trigger('parentViewDidChange');
+    instance.parentView = null;
   }
 });

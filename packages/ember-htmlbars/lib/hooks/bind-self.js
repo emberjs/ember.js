@@ -19,7 +19,13 @@ export default function bindSelf(env, scope, _self) {
   if (self && self.isView) {
     newStream(scope.locals, 'view', self, null);
     newStream(scope.locals, 'controller', scope.locals.view.getKey('controller'));
-    newStream(scope, 'self', scope.locals.view.getKey('context'), null, true);
+
+    if (self.isGlimmerComponent) {
+      newStream(scope, 'self', self, null, true);
+    } else {
+      newStream(scope, 'self', scope.locals.view.getKey('context'), null, true);
+    }
+
     return;
   }
 

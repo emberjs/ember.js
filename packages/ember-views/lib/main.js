@@ -67,7 +67,7 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember.View.cloneStates = cloneStates;
   Ember.View._Renderer = Renderer;
   Ember.ContainerView = DeprecatedContainerView;
-  Ember.CollectionView = DeprecatedCollectionView;
+  Ember.CollectionView = CollectionView;
 }
 
 Ember._Renderer = Renderer;

@@ -6,6 +6,7 @@ import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
+import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -1131,11 +1132,11 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     //equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
   });
 
-  QUnit.skip('attributes are not installed on the top level', function() {
+  QUnit.test('attributes are not installed on the top level', function() {
     let component;
 
-    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
-    registry.register('component:non-block', Component.extend({
+    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}}</non-block>'));
+    registry.register('component:non-block', GlimmerComponent.extend({
       text: null,
       dynamic: null,
 
@@ -1166,8 +1167,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     strictEqual(get(component, 'dynamic'), null);
   });
 
-    QUnit.test('non-block with properties on attrs and component class', function() {
-    registry.register('component:non-block', Component.extend());
+  QUnit.test('non-block with properties on attrs and component class', function() {
+    registry.register('component:non-block', GlimmerComponent.extend());
     registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
 
     view = appendViewFor('<non-block someProp="something here" />');
@@ -1179,7 +1180,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     var willUpdate = 0;
     var didReceiveAttrs = 0;
 
-    registry.register('component:non-block', Component.extend({
+    registry.register('component:non-block', GlimmerComponent.extend({
       didReceiveAttrs() {
         didReceiveAttrs++;
       },
