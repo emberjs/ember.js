@@ -13,6 +13,7 @@ export function RenderState(renderNode, morphList) {
   // rendering pass. Any morphs in the DOM but not in this map
   // will be pruned during cleanup.
   this.handledMorphs = {};
+  this.collisions = undefined;
 
   // The morph to clear once rendering is complete. By
   // default, we set this to the previous morph (to catch
@@ -79,6 +80,7 @@ export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
   // yieldTemplate), we detect what was rendered and how it differs from
   // the previous render, cleaning up old state in DOM as appropriate.
   var renderState = options.renderState;
+  renderState.collisions = undefined;
   renderState.shadowOptions = shadowOptions;
 
   // Invoke the callback, instructing it to save information about what it
