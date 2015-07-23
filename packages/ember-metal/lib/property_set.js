@@ -33,7 +33,7 @@ export let UNHANDLED_SET = symbol('UNHANDLED_SET');
 */
 export function set(obj, keyName, value, tolerant) {
   Ember.assert(
-    `Set must be called with tree or four arguments; an object, a property key, a value and tolerant true/false`,
+    `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4);
   Ember.assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   Ember.assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
