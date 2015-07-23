@@ -423,6 +423,13 @@ EmberApplication.reopen({
       this.helperContainer = window;
     }
 
+    this.reopen({
+      willDestroy() {
+        this._super(...arguments);
+        this.removeTestHelpers();
+      }
+    });
+
     this.testHelpers = {};
     for (var name in helpers) {
       this.originalMethods[name] = this.helperContainer[name];
