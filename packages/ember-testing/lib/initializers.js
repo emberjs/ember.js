@@ -7,7 +7,7 @@ onLoad('Ember.Application', function(Application) {
     Application.initializer({
       name: name,
 
-      initialize(registry, application) {
+      initialize(application) {
         if (application.testing) {
           application.deferReadiness();
         }

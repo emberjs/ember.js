@@ -479,7 +479,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        container._registry.register(routeName, DefaultRoute.extend());
+        container.registry.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
@@ -832,7 +832,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 function routeHasBeenDefined(router, name) {
   var container = router.container;
   return router.hasRoute(name) &&
-         (container._registry.has(`template:${name}`) || container._registry.has(`route:${name}`));
+         (container.registry.has(`template:${name}`) || container.registry.has(`route:${name}`));
 }
 
 function triggerEvent(handlerInfos, ignoreFailure, args) {

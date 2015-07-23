@@ -26,7 +26,7 @@ export function generateControllerFactory(container, controllerName, context) {
 
   fullName = `controller:${controllerName}`;
 
-  container._registry.register(fullName, Factory);
+  container.registry.register(fullName, Factory);
 
   return Factory;
 }

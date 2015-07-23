@@ -50,7 +50,7 @@ QUnit.module('Ember.controllerFor', {
   setup() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
-    container._registry.register('controller:app', Controller.extend());
+    container.registry.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
   teardown() {

@@ -56,7 +56,7 @@ function boot(callback, startURL='/') {
       location: 'none'
     });
 
-    registry = App.registry;
+    registry = App.__registry__;
     container = App.__container__;
 
     if (callback) { callback(); }

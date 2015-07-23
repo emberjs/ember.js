@@ -93,7 +93,7 @@ QUnit.test('{{render}} helper should have assertion if neither template nor view
 QUnit.test('{{render}} helper should not have assertion if template is supplied in block-form', function() {
   var template = '<h1>HI</h1>{{#render \'good\'}} {{name}}{{/render}}';
   var controller = EmberController.extend({ container: container });
-  container._registry.register('controller:good', EmberController.extend({ name: 'Rob' }));
+  container.registry.register('controller:good', EmberController.extend({ name: 'Rob' }));
   view = EmberView.create({
     container: container,
     controller: controller.create(),
@@ -114,7 +114,7 @@ QUnit.test('{{render}} helper should not have assertion if view exists without a
     template: compile(template)
   });
 
-  container._registry.register('view:oops', EmberView.extend());
+  container.registry.register('view:oops', EmberView.extend());
 
   runAppend(view);
 
@@ -148,7 +148,7 @@ QUnit.test('{{render}} helper should render given template with a supplied model
       postController = this;
     }
   });
-  container._registry.register('controller:post', PostController);
+  container.registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
 
@@ -184,7 +184,7 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
     })
   });
 
-  container._registry.register('controller:post', PostController);
+  container.registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
 
@@ -196,7 +196,7 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
 QUnit.test('{{render}} helper should raise an error when a given controller name does not resolve to a controller', function() {
   var template = '<h1>HI</h1>{{render "home" controller="postss"}}';
   var controller = EmberController.extend({ container: container });
-  container._registry.register('controller:posts', EmberController.extend());
+  container.registry.register('controller:posts', EmberController.extend());
   view = EmberView.create({
     container: container,
     controller: controller.create(),
@@ -214,7 +214,7 @@ QUnit.test('{{render}} helper should render with given controller', function() {
   var template = '{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
   var id = 0;
-  container._registry.register('controller:posts', EmberController.extend({
+  container.registry.register('controller:posts', EmberController.extend({
     init() {
       this._super.apply(this, arguments);
       this.uniqueId = id++;
@@ -285,7 +285,7 @@ QUnit.test('{{render}} helper should render templates with models multiple times
       }
     }
   });
-  container._registry.register('controller:post', PostController, { singleton: false });
+  container.registry.register('controller:post', PostController, { singleton: false });
 
   Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
 
@@ -327,7 +327,7 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
       postController = this;
     }
   });
-  container._registry.register('controller:post', PostController);
+  container.registry.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
 
@@ -361,7 +361,7 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
       }
     }
   });
-  container._registry.register('controller:post', PostController, { singleton: false });
+  container.registry.register('controller:post', PostController, { singleton: false });
 
   Ember.TEMPLATES['post'] = compile('<p>{{#unless model}}NOTHING{{/unless}}</p>');
 
@@ -402,7 +402,7 @@ QUnit.test('{{render}} helper should render templates both with and without mode
       }
     }
   });
-  container._registry.register('controller:post', PostController, { singleton: false });
+  container.registry.register('controller:post', PostController, { singleton: false });
 
   Ember.TEMPLATES['post'] = compile('<p>Title:{{model.title}}</p>');
 
@@ -432,7 +432,7 @@ QUnit.test('{{render}} helper should link child controllers to the parent contro
     role: 'Mom'
   });
 
-  container._registry.register('controller:posts', EmberController.extend());
+  container.registry.register('controller:posts', EmberController.extend());
 
   view = EmberView.create({
     container: container,
@@ -512,7 +512,7 @@ QUnit.test('{{render}} works with dot notation', function() {
       this.uniqueId = id++;
     }
   });
-  container._registry.register('controller:blog.post', BlogPostController);
+  container.registry.register('controller:blog.post', BlogPostController);
 
   view = EmberView.create({
     container: container,
@@ -569,10 +569,10 @@ QUnit.test('{{render}} helper should let view provide its own template', functio
     template: compile(template)
   });
 
-  container._registry.register('template:fish', compile('Hello fish!'));
-  container._registry.register('template:other', compile('Hello other!'));
+  container.registry.register('template:fish', compile('Hello fish!'));
+  container.registry.register('template:other', compile('Hello other!'));
 
-  container._registry.register('view:fish', EmberView.extend({
+  container.registry.register('view:fish', EmberView.extend({
     templateName: 'other'
   }));
 
@@ -590,9 +590,9 @@ QUnit.test('{{render}} helper should not require view to provide its own templat
     template: compile(template)
   });
 
-  container._registry.register('template:fish', compile('Hello fish!'));
+  container.registry.register('template:fish', compile('Hello fish!'));
 
-  container._registry.register('view:fish', EmberView.extend());
+  container.registry.register('view:fish', EmberView.extend());
 
   runAppend(view);
 

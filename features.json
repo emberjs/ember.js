@@ -22,7 +22,8 @@
     "ember-htmlbars-get-helper": true,
     "ember-htmlbars-helper": true,
     "ember-htmlbars-dashless-helpers": true,
-    "ember-debug-handlers": null
+    "ember-debug-handlers": null,
+    "ember-registry-container-reform": null
   },
   "debugStatements": [
     "Ember.warn",

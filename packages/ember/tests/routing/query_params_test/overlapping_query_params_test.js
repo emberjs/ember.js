@@ -57,7 +57,7 @@ function sharedSetup() {
 
     App.deferReadiness();
 
-    registry = App.registry;
+    registry = App.__registry__;
     container = App.__container__;
 
     registry.register('location:test', TestLocation);

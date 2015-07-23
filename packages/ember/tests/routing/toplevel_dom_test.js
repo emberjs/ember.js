@@ -59,7 +59,7 @@ QUnit.test('Topmost template always get an element', function() {
 });
 
 QUnit.test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
-  App.registry.register('view:application', EmberView.extend({
+  App.register('view:application', EmberView.extend({
     classNames: ['im-special']
   }));
   bootApplication();

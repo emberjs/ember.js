@@ -17,7 +17,7 @@ function startApp(rootElement) {
       location: 'none'
     });
 
-    var registry = application.__container__._registry;
+    var registry = application.__registry__;
 
     registry.register('component:special-button', Ember.Component.extend({
       actions: {

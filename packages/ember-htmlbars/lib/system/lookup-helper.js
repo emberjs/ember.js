@@ -46,7 +46,7 @@ export function findHelper(name, view, env) {
     var container = env.container;
     if (validateLazyHelperName(name, container, env.hooks.keywords, env.knownHelpers)) {
       var helperName = 'helper:' + name;
-      if (container._registry.has(helperName)) {
+      if (container.registry.has(helperName)) {
         helper = container.lookupFactory(helperName);
         if (isLegacyBareHelper(helper)) {
           Ember.deprecate(`The helper "${name}" is a deprecated bare function helper. Please use Ember.Helper.build to wrap helper functions.`, false, { id: 'ember-htmlbars.legacy-bare-helper', until: '3.0.0' });

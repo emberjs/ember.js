@@ -65,7 +65,7 @@ if (isEnabled('ember-application-visit')) {
       app.instanceInitializer({
         name: 'register-application-template',
         initialize(app) {
-          app.registry.register('template:application', compile('<h1>Hello world</h1>'));
+          app.register('template:application', compile('<h1>Hello world</h1>'));
         }
       });
     });
@@ -97,11 +97,11 @@ if (isEnabled('ember-application-visit')) {
       app.instanceInitializer({
         name: 'register-application-template',
         initialize(app) {
-          app.registry.register('template:application', compile('<h1>Hello world</h1> {{view "child"}}'));
-          app.registry.register('view:application', View.extend({
+          app.register('template:application', compile('<h1>Hello world</h1> {{view "child"}}'));
+          app.register('view:application', View.extend({
             elementId: 'my-cool-app'
           }));
-          app.registry.register('view:child', View.extend({
+          app.register('view:child', View.extend({
             elementId: 'child-view'
           }));
         }

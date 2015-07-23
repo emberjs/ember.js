@@ -63,7 +63,7 @@ function registerDOMHelper(app) {
   app.instanceInitializer({
     name: 'register-dom-helper',
     initialize: function(app) {
-      app.registry.register('renderer:-dom', {
+      app.register('renderer:-dom', {
         create: function() {
           return new Ember._Renderer(domHelper, false);
         }
@@ -78,7 +78,7 @@ function registerTemplates(app, templates) {
 
     initialize: function(app) {
       for (var key in templates) {
-        app.registry.register('template:' + key, compile(templates[key]));
+        app.register('template:' + key, compile(templates[key]));
       }
     }
   });
@@ -90,7 +90,7 @@ function registerControllers(app, controllers) {
 
     initialize: function(app) {
       for (var key in controllers) {
-        app.registry.register('controller:' + key, controllers[key]);
+        app.register('controller:' + key, controllers[key]);
       }
     }
   });

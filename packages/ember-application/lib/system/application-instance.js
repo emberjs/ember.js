@@ -4,12 +4,16 @@
 @private
 */
 
+import Ember from 'ember-metal'; // Ember.deprecate
+import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
+import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -34,33 +38,14 @@ import Registry from 'container/registry';
   @public
 */
 
-export default EmberObject.extend({
+let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   /**
-    The application instance's container. The container stores all of the
-    instance-specific state for this application run.
+    The `Application` for which this is an instance.
 
-    @property {Ember.Container} container
-    @public
-  */
-  container: null,
-
-  /**
-    The application's registry. The registry contains the classes, templates,
-    and other code that makes up the application.
-
-    @property {Ember.Registry} registry
+    @property {Ember.Application} application
     @private
   */
-  applicationRegistry: null,
-
-  /**
-    The registry for this application instance. It should use the
-    `applicationRegistry` as a fallback.
-
-    @property {Ember.Registry} registry
-    @private
-  */
-  registry: null,
+  application: null,
 
   /**
     The DOM events for which the event dispatcher should listen.
@@ -88,17 +73,22 @@ export default EmberObject.extend({
   init() {
     this._super(...arguments);
 
+    var application = get(this, 'application');
+
+    set(this, 'customEvents', get(application, 'customEvents'));
+    set(this, 'rootElement', get(application, 'rootElement'));
+
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
-    this.registry = new Registry({
-      fallback: this.applicationRegistry,
-      resolver: this.applicationRegistry.resolver
+    var applicationRegistry = get(application, '__registry__');
+    var registry = this.__registry__ = new Registry({
+      fallback: applicationRegistry
     });
-    this.registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
-    this.registry.makeToString = this.applicationRegistry.makeToString;
+    registry.normalizeFullName = applicationRegistry.normalizeFullName;
+    registry.makeToString = applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
-    this.container = this.registry.container();
+    this.__container__ = registry.container();
 
     // Register this instance in the per-instance registry.
     //
@@ -107,11 +97,11 @@ export default EmberObject.extend({
     // to notify us when it has created the root-most view. That view is then
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
-    this.registry.register('-application-instance:main', this, { instantiate: false });
+    this.register('-application-instance:main', this, { instantiate: false });
   },
 
   router: computed(function() {
-    return this.container.lookup('router:main');
+    return this.lookup('router:main');
   }).readOnly(),
 
   /**
@@ -155,9 +145,7 @@ export default EmberObject.extend({
   */
   startRouting() {
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
-
-    router.startRouting(isModuleBasedResolver);
+    router.startRouting(isResolverModuleBased(this));
     this._didSetupRouter = true;
   },
 
@@ -175,8 +163,7 @@ export default EmberObject.extend({
     this._didSetupRouter = true;
 
     var router = get(this, 'router');
-    var isModuleBasedResolver = !!this.registry.resolver.moduleBasedResolver;
-    router.setupRouter(isModuleBasedResolver);
+    router.setupRouter(isResolverModuleBased(this));
   },
 
   /**
@@ -198,7 +185,7 @@ export default EmberObject.extend({
     @private
   */
   setupEventDispatcher() {
-    var dispatcher = this.container.lookup('event_dispatcher:main');
+    var dispatcher = this.lookup('event_dispatcher:main');
     dispatcher.setup(this.customEvents, this.rootElement);
 
     return dispatcher;
@@ -209,6 +196,46 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._super(...arguments);
-    run(this.container, 'destroy');
+    run(this.__container__, 'destroy');
   }
 });
+
+function isResolverModuleBased(applicationInstance) {
+  return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
+}
+
+if (isEnabled('ember-registry-container-reform')) {
+  Object.defineProperty(ApplicationInstance, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      var instance = this;
+      return {
+        lookup() {
+          Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+                          false,
+                          { id: 'ember-application.app-instance-container', until: '3.0.0' });
+          return instance.lookup(...arguments);
+        }
+      };
+    }
+  });
+} else {
+  Object.defineProperty(ApplicationInstance, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return this.__container__;
+    }
+  });
+
+  Object.defineProperty(ApplicationInstance, 'registry', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return this.__registry__;
+    }
+  });
+}
+
+export default ApplicationInstance;
