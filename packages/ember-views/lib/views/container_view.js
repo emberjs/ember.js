@@ -306,17 +306,27 @@ var ContainerView = View.extend(MutableArray, {
   })
 });
 
+function containerViewDeprecationMessage() {
+  Ember.deprecate('Ember.ContainerView is deprecated.',
+                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                  {
+                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-containerview',
+                    id: 'ember-views.container-view',
+                    until: '2.4.0'
+                  });
+}
+
 export var DeprecatedContainerView = ContainerView.extend({
   init() {
-    Ember.deprecate('Ember.ContainerView is deprecated.',
-                    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-                    {
-                      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-containerview',
-                      id: 'ember-views.container-view',
-                      until: '2.4.0'
-                    });
+    containerViewDeprecationMessage();
     this._super.apply(this, arguments);
   }
 });
+
+DeprecatedContainerView.reopen = function() {
+  containerViewDeprecationMessage();
+  ContainerView.reopen(...arguments);
+  return this;
+};
 
 export default ContainerView;

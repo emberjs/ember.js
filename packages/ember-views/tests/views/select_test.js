@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
-import EmberSelect from 'ember-views/views/select';
+import EmberSelect, { DeprecatedSelect } from 'ember-views/views/select';
 import jQuery from 'ember-views/system/jquery';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
@@ -804,4 +804,20 @@ QUnit.test('should be able to set the current selection by value', function() {
 
   equal(select.get('value'), 'ebryn');
   equal(select.get('selection'), ebryn);
+});
+
+QUnit.module('DeprecatedSelect');
+
+QUnit.test('calling reopen on DeprecatedSelect delegates to Select', function() {
+  expect(2);
+  var originalReopen = EmberSelect.reopen;
+  var obj = {};
+
+  EmberSelect.reopen = function(arg) { ok(arg === obj); };
+
+  expectDeprecation(() => {
+    DeprecatedSelect.reopen(obj);
+  }, /Ember.Select is deprecated./);
+
+  EmberSelect.reopen = originalReopen;
 });
