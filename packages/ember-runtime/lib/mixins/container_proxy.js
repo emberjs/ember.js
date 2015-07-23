@@ -1,5 +1,4 @@
 import run from 'ember-metal/run_loop';
-import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
 
 export default Mixin.create({
@@ -81,7 +80,6 @@ export default Mixin.create({
 
 function containerAlias(name) {
   return function () {
-    var container = get(this, '__container__');
-    return container[name](...arguments);
+    return this.__container__[name](...arguments);
   };
 }

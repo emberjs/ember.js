@@ -1,4 +1,3 @@
-import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
 
 export default Mixin.create({
@@ -244,7 +243,6 @@ export default Mixin.create({
 
 function registryAlias(name) {
   return function () {
-    var registry = get(this, '__registry__');
-    return registry[name](...arguments);
+    return this.__registry__[name](...arguments);
   };
 }
