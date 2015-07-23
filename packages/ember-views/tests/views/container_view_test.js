@@ -5,7 +5,7 @@ import { computed } from "ember-metal/computed";
 import Controller from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
+import ContainerView, { DeprecatedContainerView } from 'ember-views/views/container_view';
 import Registry from "container/registry";
 import compile from "ember-template-compiler/system/compile";
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
@@ -798,4 +798,20 @@ QUnit.test("renders contained view with omitted start tag and parent view contex
 
   equal(view.element.tagName, 'TABLE', 'container view is table');
   equal(view.element.childNodes[2].tagName, 'TR', 'inner view is tr');
+});
+
+QUnit.module('DeprecatedContainerView');
+
+QUnit.test('calling reopen on DeprecatedContainerView delegates to ContainerView', function() {
+  expect(2);
+  var originalReopen = ContainerView.reopen;
+  var obj = {};
+
+  ContainerView.reopen = function(arg) { ok(arg === obj); };
+
+  expectDeprecation(() => {
+    DeprecatedContainerView.reopen(obj);
+  }, /Ember.ContainerView is deprecated./);
+
+  ContainerView.reopen = originalReopen;
 });

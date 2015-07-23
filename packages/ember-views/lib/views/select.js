@@ -675,12 +675,32 @@ var Select = View.extend({
   }
 });
 
+function selectViewDeprecationMessage() {
+  Ember.deprecate(`Ember.Select is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                  {
+                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-select',
+                    id: 'ember-views.select-deprecated',
+                    until: '2.4.0'
+                  });
+}
+
 var DeprecatedSelect = Select.extend({
   init() {
+    selectViewDeprecationMessage();
     this._super(...arguments);
-    Ember.deprecate(`Ember.Select is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-select' });
   }
 });
+
+DeprecatedSelect.reopen = function() {
+  selectViewDeprecationMessage();
+  Select.reopen(...arguments);
+  return this;
+};
+
+function indexesOf(iterable, elements) {
+  return elements === undefined ? [] : elements.map((item) => iterable.indexOf(item));
+}
 
 export default Select;
 export {

@@ -1543,12 +1543,28 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+function viewDeprecationMessage() {
+  Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                  {
+                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view',
+                    id: 'ember-views.view-deprecated',
+                    until: '2.4.0'
+                  });
+}
+
 var DeprecatedView = View.extend({
   init() {
+    viewDeprecationMessage();
     this._super(...arguments);
-    Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`, !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT, { url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' });
   }
 });
+
+DeprecatedView.reopen = function() {
+  viewDeprecationMessage();
+  View.reopen(...arguments);
+  return this;
+};
 
 export default View;
 

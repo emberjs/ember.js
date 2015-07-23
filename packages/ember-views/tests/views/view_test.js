@@ -1,7 +1,7 @@
 import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
-import EmberView from "ember-views/views/view";
+import EmberView, { DeprecatedView } from 'ember-views/views/view';
 import { compile } from "ember-template-compiler";
 
 var view;
@@ -130,7 +130,7 @@ QUnit.test("propagates dependent-key invalidated bindings upstream", function() 
     template: compile('{{view view.childView childProp=view.parentProp}}'),
     childView: EmberView.extend({
       template: compile('child template'),
-      childProp: Ember.computed('dependencyProp', {
+      childProp: computed('dependencyProp', {
         get(key) {
           return this.get('dependencyProp');
         },
@@ -150,4 +150,20 @@ QUnit.test("propagates dependent-key invalidated bindings upstream", function() 
   run(() => childView.set('dependencyProp', 'new-value'));
   equal(childView.get('childProp'), 'new-value', 'pre-cond - new value is propagated to CP');
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
+});
+
+QUnit.module('DeprecatedView');
+
+QUnit.test('calling reopen on DeprecatedView delegates to View', function() {
+  expect(2);
+  var originalReopen = EmberView.reopen;
+  var obj = {};
+
+  EmberView.reopen = function(arg) { ok(arg === obj); };
+
+  expectDeprecation(() => {
+    DeprecatedView.reopen(obj);
+  }, /Ember.View is deprecated./);
+
+  EmberView.reopen = originalReopen;
 });
