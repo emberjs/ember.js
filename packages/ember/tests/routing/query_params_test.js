@@ -3086,7 +3086,7 @@ QUnit.test('warn user that routes query params configuration must be an Object, 
   }, 'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array');
 });
 
-QUnit.test('handle routes names that class with Object.prototype properties', function() {
+QUnit.test('handle routes names that clash with Object.prototype properties', function() {
   expect(1);
 
   Router.map(function() {
