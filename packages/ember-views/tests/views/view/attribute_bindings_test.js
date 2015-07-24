@@ -466,3 +466,14 @@ QUnit.test("role attribute is not included if not provided", function() {
 
   ok(!view.element.hasAttribute('role'), 'role attribute is not present');
 });
+
+QUnit.test('can set id initially via attributeBindings', function() {
+  view = EmberView.create({
+    attributeBindings: ['specialSauce:id'],
+    specialSauce: 'special-sauces-id'
+  });
+
+  appendView();
+
+  equal(view.$().attr('id'), 'special-sauces-id', 'id properly used from attributeBindings');
+});
