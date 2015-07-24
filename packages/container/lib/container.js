@@ -335,7 +335,7 @@ function resetMember(container, fullName) {
 // Once registry / container reform is enabled, we no longer need to expose
 // Container#_registry, since Container itself will be fully private.
 if (!isEnabled('ember-registry-container-reform')) {
-  Object.defineProperty(Container, '_registry', {
+  Object.defineProperty(Container.prototype, '_registry', {
     configurable: true,
     enumerable: false,
     get() {
