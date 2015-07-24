@@ -98,6 +98,8 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
     this.register('-application-instance:main', this, { instantiate: false });
+
+    assignAliases(this);
   },
 
   router: computed(function() {
@@ -204,38 +206,27 @@ function isResolverModuleBased(applicationInstance) {
   return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
 }
 
-if (isEnabled('ember-registry-container-reform')) {
-  Object.defineProperty(ApplicationInstance, 'container', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      var instance = this;
-      return {
-        lookup() {
-          Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-                          false,
-                          { id: 'ember-application.app-instance-container', until: '3.0.0' });
-          return instance.lookup(...arguments);
-        }
-      };
-    }
-  });
-} else {
-  Object.defineProperty(ApplicationInstance, 'container', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      return this.__container__;
-    }
-  });
-
-  Object.defineProperty(ApplicationInstance, 'registry', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      return this.__registry__;
-    }
-  });
+function assignAliases(applicationInstance) {
+  if (isEnabled('ember-registry-container-reform')) {
+    Object.defineProperty(applicationInstance, 'container', {
+      configurable: true,
+      enumerable: false,
+      get() {
+        var instance = this;
+        return {
+          lookup() {
+            Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+                            false,
+                            { id: 'ember-application.app-instance-container', until: '3.0.0' });
+            return instance.lookup(...arguments);
+          }
+        };
+      }
+    });
+  } else {
+    applicationInstance.container = applicationInstance.__container__;
+    applicationInstance.registry = applicationInstance.__registry__;
+  }
 }
 
 export default ApplicationInstance;
