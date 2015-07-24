@@ -121,6 +121,14 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   var attributeBindings = component.attributeBindings;
   var i, l;
 
+  if (attrs.id && getValue(attrs.id)) {
+    // Do not allow binding to the `id`
+    normalized.id = getValue(attrs.id);
+    component.elementId = normalized.id;
+  } else {
+    normalized.id = component.elementId;
+  }
+
   if (attributeBindings) {
     for (i=0, l=attributeBindings.length; i<l; i++) {
       var attr = attributeBindings[i];
@@ -158,14 +166,6 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
         normalized[prop] = ['value', val];
       }
     }
-  }
-
-  if (attrs.id && getValue(attrs.id)) {
-    // Do not allow binding to the `id`
-    normalized.id = getValue(attrs.id);
-    component.elementId = normalized.id;
-  } else {
-    normalized.id = component.elementId;
   }
 
   if (attrs.tagName) {
