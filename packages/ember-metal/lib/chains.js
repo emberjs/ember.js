@@ -440,4 +440,4 @@ export function finishChains(obj) {
 export {
   removeChainWatcher,
   ChainNode
-};;
+};
