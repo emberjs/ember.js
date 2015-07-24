@@ -274,12 +274,6 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   }
 };
 
-function finishChains(chainNodes) {
-  for (var i = 0, l = chainNodes.length; i < l; i++) {
-    chainNodes[i].didChange(null);
-  }
-}
-
 /**
   Access the value of the function backing the computed property.
   If this property has already been cached, return the cached result.
@@ -308,7 +302,7 @@ function finishChains(chainNodes) {
   @public
 */
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache, meta, chainNodes;
+  var ret, cache, meta;
   if (this._cacheable) {
     meta = metaFor(obj);
     cache = meta.cache;
@@ -332,9 +326,8 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
       cache[keyName] = ret;
     }
 
-    chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
-    if (chainNodes) {
-      finishChains(chainNodes);
+    if (meta.chainWatchers) {
+      meta.chainWatchers.revalidate(keyName);
     }
     addDependentKeys(this, obj, keyName, meta);
   } else {
