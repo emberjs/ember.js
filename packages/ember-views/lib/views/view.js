@@ -718,7 +718,7 @@ var View = CoreView.extend(
     @property layoutName
     @type String
     @default null
-    @private
+    @public
   */
   layoutName: null,
 
@@ -760,7 +760,7 @@ var View = CoreView.extend(
 
     @property layout
     @type Function
-    @private
+    @public
   */
   layout: computed('layoutName', {
     get(key) {
