@@ -102,7 +102,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   init() {
     this._activeViews = {};
-    this._qpCache = {};
+    this._qpCache = Object.create(null);
     this._resetQueuedQueryParameterChanges();
   },
 
