@@ -698,10 +698,6 @@ DeprecatedSelect.reopen = function() {
   return this;
 };
 
-function indexesOf(iterable, elements) {
-  return elements === undefined ? [] : elements.map((item) => iterable.indexOf(item));
-}
-
 export default Select;
 export {
   Select,
