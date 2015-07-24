@@ -548,7 +548,7 @@ export var collect = generateComputedWithProperties(function(properties) {
   data flow, `computed.oneWay` only provides an aliased `get`. The `set` will
   not mutate the upstream property, rather causes the current property to
   become the value set. This causes the downstream property to permanently
-  diverge from the upstream property.
+  diverge from the upstream property. This can only be used on a property, not an object.
 
   Example
 
