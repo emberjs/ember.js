@@ -3085,3 +3085,28 @@ QUnit.test('warn user that routes query params configuration must be an Object, 
     bootApplication();
   }, 'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array');
 });
+
+QUnit.test('handle routes names that class with Object.prototype properties', function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route('constructor');
+  });
+
+  App.ConstructorRoute = Ember.Route.extend({
+    queryParams: {
+      foo: {
+        defaultValue: '123'
+      }
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'transitionTo', 'constructor', { queryParams: { foo: '999' } });
+
+  var controller = container.lookup('controller:constructor');
+  equal(get(controller, 'foo'), '999');
+});
+
+
