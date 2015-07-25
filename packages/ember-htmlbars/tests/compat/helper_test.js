@@ -200,13 +200,17 @@ QUnit.test('allows unbound usage within an element', function() {
 });
 
 QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
-  expect(1);
+  expect(2);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
   });
 
-  var helper = makeViewHelper(ViewHelperComponent);
+  var helper;
+  expectDeprecation(function() {
+    helper = makeViewHelper(ViewHelperComponent);
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
+
   registerHandlebarsCompatibleHelper('view-helper', helper);
 
   view = EmberView.extend({
@@ -218,8 +222,8 @@ QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` 
   equal(view.$().text(), 'woot!');
 });
 
-QUnit.test("makes helpful assertion when called with invalid arguments", function() {
-  expect(1);
+QUnit.test('makes helpful assertion when called with invalid arguments', function() {
+  expect(2);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
@@ -227,7 +231,10 @@ QUnit.test("makes helpful assertion when called with invalid arguments", functio
 
   ViewHelperComponent.toString = function() { return "Some Random Class"; };
 
-  var helper = makeViewHelper(ViewHelperComponent);
+  var helper;
+  expectDeprecation(function() {
+    helper = makeViewHelper(ViewHelperComponent);
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
   registerHandlebarsCompatibleHelper('view-helper', helper);
 
   view = EmberView.extend({

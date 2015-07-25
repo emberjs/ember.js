@@ -126,7 +126,11 @@ QUnit.test("the default resolver resolves helpers on the namespace", function() 
   let LegacyBareFunctionHelper = function() {};
   let LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
   let LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
-  let ViewHelper = makeViewHelper(function() {});
+  let ViewHelper;
+
+  expectDeprecation(function() {
+    ViewHelper = makeViewHelper(function() {});
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
 
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;
