@@ -80,26 +80,6 @@ QUnit.test('Collection views that specify an example view class have their child
   ok(firstGrandchild(view).isCustom, 'uses the example view class');
 });
 
-QUnit.test('itemViewClass works in the #collection helper with a global (DEPRECATED)', function() {
-  TemplateTests.ExampleItemView = EmberView.extend({
-    isAlsoCustom: true
-  });
-
-  view = EmberView.create({
-    exampleController: ArrayProxy.create({
-      content: A(['alpha'])
-    }),
-    template: compile('{{#collection content=view.exampleController itemViewClass=TemplateTests.ExampleItemView}}beta{{/collection}}')
-  });
-
-  var deprecation = /Global lookup of TemplateTests from a Handlebars template is deprecated/;
-  expectDeprecation(function() {
-    runAppend(view);
-  }, deprecation);
-
-  ok(firstGrandchild(view).isAlsoCustom, 'uses the example view class specified in the #collection helper');
-});
-
 QUnit.test('itemViewClass works in the #collection helper with a property', function() {
   var ExampleItemView = EmberView.extend({
     isAlsoCustom: true
