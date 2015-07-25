@@ -28,12 +28,17 @@ QUnit.module('ember-htmlbars: compat - makeViewHelper compat', {
 });
 
 QUnit.test('makeViewHelper', function() {
-  expect(1);
+  expect(2);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
   });
-  var helper = makeViewHelper(ViewHelperComponent);
+
+  var helper;
+  expectDeprecation(function() {
+    helper = makeViewHelper(ViewHelperComponent);
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
+
   registry.register('helper:view-helper', helper);
 
   view = EmberView.extend({
