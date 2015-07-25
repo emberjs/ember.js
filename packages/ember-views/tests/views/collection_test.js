@@ -7,7 +7,7 @@ import { fmt } from "ember-runtime/system/string";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import ArrayController, { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
-import CollectionView from "ember-views/views/collection_view";
+import CollectionView, { DeprecatedCollectionView } from 'ember-views/views/collection_view';
 import View from "ember-views/views/view";
 import Registry from "container/registry";
 import compile from "ember-template-compiler/system/compile";
@@ -739,4 +739,20 @@ QUnit.test('Collection with style attribute supports changing content', function
     view.get('content').pushObject('baz');
   });
 
+});
+
+QUnit.module('DeprecatedCollectionView');
+
+QUnit.test('calling reopen on DeprecatedCollectionView delegates to CollectionView', function() {
+  expect(2);
+  var originalReopen = CollectionView.reopen;
+  var obj = {};
+
+  CollectionView.reopen = function(arg) { ok(arg === obj); };
+
+  expectDeprecation(() => {
+    DeprecatedCollectionView.reopen(obj);
+  }, /Ember.CollectionView is deprecated./);
+
+  CollectionView.reopen = originalReopen;
 });

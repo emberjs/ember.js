@@ -22,8 +22,8 @@ import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from "ember-views/views/core_view";
 import { DeprecatedView } from "ember-views/views/view";
 import { DeprecatedContainerView } from 'ember-views/views/container_view';
-import CollectionView from "ember-views/views/collection_view";
-import Component from "ember-views/views/component";
+import { DeprecatedCollectionView } from 'ember-views/views/collection_view';
+import Component from 'ember-views/views/component';
 
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
@@ -62,8 +62,6 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-Ember.CoreView = DeprecatedCoreView;
-Ember.View = DeprecatedView;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 Ember.View._Renderer = Renderer;
@@ -71,18 +69,20 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
-Ember.Select = DeprecatedSelect;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
-Ember.ContainerView = DeprecatedContainerView;
-Ember.CollectionView = CollectionView;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
 
 // Deprecated:
+Ember.Select = DeprecatedSelect;
+Ember.CoreView = DeprecatedCoreView;
+Ember.View = DeprecatedView;
+Ember.ContainerView = DeprecatedContainerView;
+Ember.CollectionView = DeprecatedCollectionView;
 Ember._Metamorph = _Metamorph;
 Ember._MetamorphView = _MetamorphView;
 Ember._LegacyEachView = LegacyEachView;
