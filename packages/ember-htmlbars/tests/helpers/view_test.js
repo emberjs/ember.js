@@ -15,7 +15,7 @@ import compile from 'ember-template-compiler/system/compile';
 import template from 'ember-template-compiler/system/template';
 import { observersFor } from 'ember-metal/observer';
 import Controller from 'ember-runtime/controllers/controller';
-import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
+import { helper as makeHelper } from 'ember-htmlbars/helper';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { set } from 'ember-metal/property_set';
@@ -392,7 +392,7 @@ QUnit.test('Should apply classes when bound property specified', function() {
 });
 
 QUnit.test('Should apply a class from a sub expression', function() {
-  registry.register('helper:string-concat', makeBoundHelper(function(params) {
+  registry.register('helper:string-concat', makeHelper(function(params) {
     return params.join('');
   }));
 
