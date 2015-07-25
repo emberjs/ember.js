@@ -19,6 +19,7 @@ function registerRepeatHelper() {
 
 QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup() {
+    expectDeprecation('Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.');
     registry = new Registry();
     container = registry.container();
   },
