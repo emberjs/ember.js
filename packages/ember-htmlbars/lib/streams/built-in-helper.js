@@ -5,7 +5,7 @@ import {
   getHashValues
 } from 'ember-htmlbars/streams/utils';
 
-export default function BuiltInHelperStream(helper, params, hash, templates, env, scope, context, label) {
+export default function BuiltInHelperStream(helper, params, hash, templates, env, scope, label) {
   this.init(label);
   this.helper = helper;
   this.params = params;
@@ -13,14 +13,12 @@ export default function BuiltInHelperStream(helper, params, hash, templates, env
   this.env = env;
   this.scope = scope;
   this.hash = hash;
-  this.context = context;
 }
 
 BuiltInHelperStream.prototype = Object.create(Stream.prototype);
 
 merge(BuiltInHelperStream.prototype, {
   compute() {
-    // Using call and undefined is probably not needed, these are only internal
-    return this.helper.call(this.context, getArrayValues(this.params), getHashValues(this.hash), this.templates, this.env, this.scope);
+    return this.helper(getArrayValues(this.params), getHashValues(this.hash), this.templates, this.env, this.scope);
   }
 });

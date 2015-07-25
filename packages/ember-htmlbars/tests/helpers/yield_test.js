@@ -11,7 +11,6 @@ import helpers from 'ember-htmlbars/helpers';
 import {
   registerHelper
 } from 'ember-htmlbars/helpers';
-import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
 
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -279,13 +278,13 @@ QUnit.test('yield with nested components (#3220)', function() {
     layout: compile('{{yield}}')
   });
 
-  registerHelper('inner-component', makeViewHelper(InnerComponent));
+  registry.register('component:inner-component', InnerComponent);
 
   var OuterComponent = Component.extend({
     layout: compile('{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}')
   });
 
-  registerHelper('outer-component', makeViewHelper(OuterComponent));
+  registry.register('component:outer-component', OuterComponent);
 
   view = EmberView.extend({
     template: compile(

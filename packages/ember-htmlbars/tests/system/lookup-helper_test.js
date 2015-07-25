@@ -2,7 +2,6 @@ import lookupHelper, { findHelper } from 'ember-htmlbars/system/lookup-helper';
 import ComponentLookup from 'ember-views/component_lookup';
 import Registry from 'container/registry';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 function generateEnv(helpers, container) {
   return {
@@ -124,8 +123,7 @@ QUnit.test('fails with a useful error when resolving a function', function() {
   view.container.registry.register('helper:some-name', someName);
 
   var actual;
-  expectDeprecation(function() {
+  expectAssertion(function() {
     actual = lookupHelper('some-name', view, env);
-  }, /helper "some-name" is a deprecated bare function helper/);
-  ok(actual instanceof HandlebarsCompatibleHelper, 'function looks up as compat helper');
+  }, 'Expected to find an Ember.Helper with the name some-name, but found something else instead.');
 });

@@ -23,12 +23,6 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
       case 'unless':
       case 'if': params[0] = shouldDisplay(params[0]); break;
       case 'each': params[0] = eachParam(params[0]); break;
-      default:
-        helper = findHelper(path, env.view, env);
-
-        if (helper && helper.isHandlebarsCompat && params[0]) {
-          params[0] = processHandlebarsCompatDepKeys(params[0], helper._dependentKeys);
-        }
     }
   }
 
@@ -94,27 +88,4 @@ function getKey(obj, key) {
   } else {
     return obj && obj[key];
   }
-}
-
-function processHandlebarsCompatDepKeys(base, additionalKeys) {
-  if (!isStream(base) || additionalKeys.length === 0) {
-    return base;
-  }
-
-  var depKeyStreams = [];
-
-  var stream = chain(base, function() {
-    readArray(depKeyStreams);
-
-    return read(base);
-  }, 'HandlebarsCompatHelper');
-
-  for (var i = 0, l = additionalKeys.length; i < l; i++) {
-    var depKeyStream = base.get(additionalKeys[i]);
-
-    depKeyStreams.push(depKeyStream);
-    stream.addDependency(depKeyStream);
-  }
-
-  return stream;
 }
