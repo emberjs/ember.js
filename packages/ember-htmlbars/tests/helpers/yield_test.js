@@ -12,6 +12,7 @@ import {
   registerHelper
 } from 'ember-htmlbars/helpers';
 import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
+import ComponentLookup from 'ember-views/component_lookup';
 
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -21,20 +22,29 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var view, registry, container, originalViewKeyword;
 
+function setupContainer() {
+  registry = new Registry();
+  container = registry.container();
+  registry.optionsForType('template', { instantiate: false });
+  registry.register('component-lookup:main', ComponentLookup);
+}
+
+function teardownContainer() {
+  runDestroy(container);
+  registry = container = view = null;
+}
+
 QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
   setup() {
+    setupContainer();
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
   },
   teardown() {
     run(function() {
       Ember.TEMPLATES = {};
     });
     runDestroy(view);
-    runDestroy(container);
-    registry = container = view = null;
+    teardownContainer();
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -266,6 +276,7 @@ QUnit.test('nested simple bindings inside of a yielded template should work prop
 
 QUnit.module('ember-htmlbars: Component {{yield}}', {
   setup() {
+    setupContainer();
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
@@ -281,15 +292,17 @@ QUnit.test('yield with nested components (#3220)', function() {
     layout: compile('{{yield}}')
   });
 
-  registerHelper('inner-component', makeViewHelper(InnerComponent));
+  registry.register('component:inner-component', InnerComponent);
 
   var OuterComponent = Component.extend({
     layout: compile('{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}')
   });
 
-  registerHelper('outer-component', makeViewHelper(OuterComponent));
+  registry.register('component:outer-component', OuterComponent);
 
   view = EmberView.extend({
+    container,
+
     template: compile(
       '{{#outer-component}}Hello world{{/outer-component}}'
     )

@@ -30,7 +30,10 @@ QUnit.test('makes helpful assertion when called with invalid arguments', functio
     return 'Some Random Class';
   };
 
-  var helper = makeViewHelper(SomeRandom);
+  var helper;
+  expectDeprecation(function() {
+    helper = makeViewHelper(SomeRandom);
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
   registry.register('helper:some-random', helper);
 
   view = EmberView.create({
@@ -48,7 +51,10 @@ QUnit.test('can properly yield', function() {
     layout: compile('Some Random Class - {{yield}}')
   });
 
-  var helper = makeViewHelper(SomeRandom);
+  var helper;
+  expectDeprecation(function() {
+    helper = makeViewHelper(SomeRandom);
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
   registry.register('helper:some-random', helper);
 
   view = EmberView.create({

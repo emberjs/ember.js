@@ -102,9 +102,11 @@ QUnit.test('Bound `makeViewHelper` helpers registered on the container can be us
       foo: 'alex'
     }));
 
-    registry.register('helper:x-foo', makeViewHelper(Ember.Component.extend({
-      layout: compile('woot!!{{attrs.name}}')
-    })));
+    expectDeprecation(function() {
+      registry.register('helper:x-foo', makeViewHelper(Ember.Component.extend({
+        layout: compile('woot!!{{attrs.name}}')
+      })));
+    }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
   });
 
   equal(Ember.$('#wrapper').text(), 'woot!! woot!!alex', 'The helper was invoked from the container');
