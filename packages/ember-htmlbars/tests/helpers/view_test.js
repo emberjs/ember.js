@@ -7,7 +7,6 @@ import ComponentLookup from 'ember-views/component_lookup';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import TextField from 'ember-views/views/text_field';
-import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import ContainerView from 'ember-views/views/container_view';
 import SafeString from 'htmlbars-util/safe-string';
@@ -128,27 +127,6 @@ QUnit.test('By default, without a container, EmberView is used', function() {
   runAppend(view);
 
   ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
-});
-
-QUnit.test('View lookup - App.FuView (DEPRECATED)', function() {
-  Ember.lookup = {
-    App: {
-      FuView: viewClass({
-        elementId: 'fu',
-        template: compile('bro')
-      })
-    }
-  };
-
-  view = viewClass({
-    template: compile('{{view App.FuView}}')
-  }).create();
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /Global lookup of App from a Handlebars template is deprecated./);
-
-  equal(jQuery('#fu').text(), 'bro');
 });
 
 QUnit.test('View lookup - \'fu\'', function() {
@@ -848,46 +826,6 @@ QUnit.test('{{view}} should be able to point to a local view', function() {
   equal(view.$().text(), 'common', 'tries to look up view name locally');
 });
 
-QUnit.test('{{view}} should evaluate class bindings set to global paths DEPRECATED', function() {
-  var App;
-
-  run(function() {
-    lookup.App = App = Namespace.create({
-      isApp:       true,
-      isGreat:     true,
-      directClass: 'app-direct',
-      isEnabled:   true
-    });
-  });
-
-  view = EmberView.create({
-    textField: TextField,
-    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  });
-
-  ok(view.$('input').hasClass('unbound'), 'sets unbound classes directly');
-  ok(view.$('input').hasClass('great'), 'evaluates classes bound to global paths');
-  ok(view.$('input').hasClass('app-direct'), 'evaluates classes bound directly to global paths');
-  ok(view.$('input').hasClass('is-app'), 'evaluates classes bound directly to booleans in global paths - dasherizes and sets class when true');
-  ok(view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
-
-  run(function() {
-    App.set('isApp', false);
-    App.set('isEnabled', false);
-  });
-
-  ok(!view.$('input').hasClass('is-app'), 'evaluates classes bound directly to booleans in global paths - removes class when false');
-  ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
-
-  runDestroy(lookup.App);
-});
-
 QUnit.test('{{view}} should evaluate class bindings set in the current context', function() {
   view = EmberView.create({
     isView:      true,
@@ -915,71 +853,6 @@ QUnit.test('{{view}} should evaluate class bindings set in the current context',
   ok(!view.$('input').hasClass('is-view'), 'evaluates classes bound directly to booleans in the current context - removes class when false');
   ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
   ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
-});
-
-QUnit.test('{{view}} should evaluate class bindings set with either classBinding or classNameBindings from globals DEPRECATED', function() {
-  var App;
-
-  run(function() {
-    lookup.App = App = Namespace.create({
-      isGreat: true,
-      isEnabled: true
-    });
-  });
-
-  view = EmberView.create({
-    textField: TextField,
-    template: compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  });
-
-  ok(view.$('input').hasClass('unbound'), 'sets unbound classes directly');
-  ok(view.$('input').hasClass('great'), 'evaluates classBinding');
-  ok(view.$('input').hasClass('really-great'), 'evaluates classNameBinding');
-  ok(view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('really-enabled'), 'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('really-disabled'), 'evaluates ternary operator in classBindings');
-
-  run(function() {
-    App.set('isEnabled', false);
-  });
-
-  ok(!view.$('input').hasClass('enabled'), 'evaluates ternary operator in classBindings');
-  ok(!view.$('input').hasClass('really-enabled'), 'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('disabled'), 'evaluates ternary operator in classBindings');
-  ok(view.$('input').hasClass('really-disabled'), 'evaluates ternary operator in classBindings');
-
-  runDestroy(lookup.App);
-});
-
-QUnit.test('{{view}} should evaluate other attribute bindings set to global paths [DEPRECATED]', function() {
-  run(function() {
-    lookup.App = Namespace.create({
-      name: 'myApp'
-    });
-  });
-
-  var template;
-  expectDeprecation(function() {
-    template = compile('{{view view.textField valueBinding="App.name"}}');
-  }, /You're using legacy binding syntax: valueBinding/);
-
-  view = EmberView.create({
-    textField: TextField,
-    template
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Global lookup of App from a Handlebars template is deprecated.');
-
-  equal(view.$('input').val(), 'myApp', 'evaluates attributes bound to global paths');
-
-  runDestroy(lookup.App);
 });
 
 QUnit.test('{{view}} should evaluate other attributes bindings set in the current context', function() {
