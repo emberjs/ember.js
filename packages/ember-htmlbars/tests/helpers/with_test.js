@@ -129,36 +129,6 @@ QUnit.test('nested {{with}} blocks shadow the outer scoped variable properly.', 
   equal(view.$().text(), 'Limbo-Wrath-Treachery-Wrath-Limbo', 'should be properly scoped after updating');
 });
 
-QUnit.module('Handlebars {{#with}} globals helper [DEPRECATED]', {
-  setup() {
-    Ember.lookup = lookup = { Ember: Ember };
-
-    lookup.Foo = { bar: 'baz' };
-    view = EmberView.create({
-      template: compile('{{#with Foo.bar as |qux|}}{{qux}}{{/with}}')
-    });
-  },
-
-  teardown() {
-    runDestroy(view);
-    Ember.lookup = originalLookup;
-  }
-});
-
-QUnit.test('it should support #with Foo.bar as |qux| [DEPRECATED]', function() {
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /Global lookup of Foo from a Handlebars template is deprecated/);
-
-  equal(view.$().text(), 'baz', 'should be properly scoped');
-
-  run(function() {
-    set(lookup.Foo, 'bar', 'updated');
-  });
-
-  equal(view.$().text(), 'updated', 'should update');
-});
-
 QUnit.module('Handlebars {{#with keyword as |foo|}}');
 
 QUnit.test('it should support #with view as |foo|', function() {

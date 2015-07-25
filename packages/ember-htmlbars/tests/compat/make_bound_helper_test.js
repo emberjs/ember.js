@@ -169,26 +169,6 @@ QUnit.test('bound helpers should support keywords', function() {
   equal(view.$().text(), 'AB', 'helper output is correct');
 });
 
-QUnit.test('bound helpers should support global paths [DEPRECATED]', function() {
-  expectDeprecationInHTMLBars();
-
-  helper('capitalize', function(value) {
-    return value.toUpperCase();
-  });
-
-  Ember.lookup = { Text: 'ab' };
-
-  view = EmberView.create({
-    template: compile('{{capitalize Text}}')
-  });
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, /Global lookup of Text from a Handlebars template is deprecated/);
-
-  equal(view.$().text(), 'AB', 'helper output is correct');
-});
-
 QUnit.test('bound helper should support this keyword', function() {
   expectDeprecationInHTMLBars();
 

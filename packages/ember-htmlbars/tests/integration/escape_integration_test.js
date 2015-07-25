@@ -7,7 +7,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view;
 
-QUnit.module('ember-htmlbars: Integration with Globals', {
+QUnit.module('ember-htmlbars: Escaped Integration', {
   teardown() {
     runDestroy(view);
 

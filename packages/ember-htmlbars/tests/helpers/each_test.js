@@ -288,24 +288,6 @@ QUnit.test('it defers all normalization of itemView names to the resolver', func
   assertText(view, 'itemView:Steve HoltitemView:Annabelle');
 });
 
-QUnit.test('it supports {{itemViewClass=}} with global (DEPRECATED)', function() {
-  expectDeprecation(() => {
-    view = EmberView.create({
-      template: compile('{{each view.people itemViewClass=MyView}}'),
-      people: people,
-      container: container
-    });
-  }, /Using 'itemViewClass' with '{{each}}'/);
-
-  var deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, deprecation);
-
-  assertText(view, 'Steve HoltAnnabelle');
-});
-
 QUnit.test('it supports {{itemViewClass=}} via container', function() {
   expectDeprecation(() => {
     view = EmberView.create({
@@ -323,7 +305,7 @@ QUnit.test('it supports {{itemViewClass=}} via container', function() {
 QUnit.test('it supports {{itemViewClass=}} with each view tagName (DEPRECATED)', function() {
   expectDeprecation(() => {
     view = EmberView.create({
-      template: compile('{{each view.people itemViewClass=MyView tagName="ul"}}'),
+      template: compile('{{each view.people itemViewClass="my-view" tagName="ul"}}'),
       people: people,
       container: container
     });
@@ -414,24 +396,6 @@ QUnit.test('it defers all normalization of emptyView names to the resolver', fun
   assertText(view, 'emptyView:sad panda');
 });
 
-QUnit.test('it supports {{emptyViewClass=}} with global (DEPRECATED)', function() {
-  expectDeprecation(() => {
-    view = EmberView.create({
-      template: compile('{{each view.people emptyViewClass=MyEmptyView}}'),
-      people: A(),
-      container: container
-    });
-  }, /Using 'emptyViewClass' with '{{each}}'/);
-
-  var deprecation = /Global lookup of MyEmptyView from a Handlebars template is deprecated/;
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, deprecation);
-
-  assertText(view, 'I\'m empty');
-});
-
 QUnit.test('it supports {{emptyViewClass=}} via container', function() {
   expectDeprecation(() => {
     view = EmberView.create({
@@ -449,7 +413,7 @@ QUnit.test('it supports {{emptyViewClass=}} via container', function() {
 QUnit.test('it supports {{emptyViewClass=}} with tagName (DEPRECATED)', function() {
   expectDeprecation(() => {
     view = EmberView.create({
-      template: compile('{{each view.people emptyViewClass=MyEmptyView tagName="b"}}'),
+      template: compile('{{each view.people emptyViewClass="my-empty-view" tagName="b"}}'),
       people: A(),
       container: container
     });
