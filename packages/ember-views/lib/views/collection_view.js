@@ -450,4 +450,29 @@ function buildItemViewProps(template, attrs) {
   return props;
 }
 
+function viewDeprecationMessage() {
+  Ember.deprecate(`Ember.CollectionView is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                  {
+                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-collectionview',
+                    id: 'ember-views.collection-view-deprecated',
+                    until: '2.4.0'
+                  });
+}
+
+var DeprecatedCollectionView = CollectionView.extend({
+  init() {
+    viewDeprecationMessage();
+    this._super(...arguments);
+  }
+});
+
+DeprecatedCollectionView.reopen = function() {
+  viewDeprecationMessage();
+  CollectionView.reopen(...arguments);
+  return this;
+};
+
 export default CollectionView;
+
+export { DeprecatedCollectionView };
