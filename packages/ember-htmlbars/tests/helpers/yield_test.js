@@ -8,10 +8,6 @@ import { Registry } from 'ember-runtime/system/container';
 import { A } from 'ember-runtime/system/native_array';
 import Component from 'ember-views/views/component';
 import helpers from 'ember-htmlbars/helpers';
-import {
-  registerHelper
-} from 'ember-htmlbars/helpers';
-import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
 import ComponentLookup from 'ember-views/component_lookup';
 
 import compile from 'ember-template-compiler/system/compile';

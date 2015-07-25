@@ -7,10 +7,9 @@ import Helper from 'ember-htmlbars/helper';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-
-var compile, helpers, makeBoundHelper;
+import helpers from 'ember-htmlbars/helpers';
+var compile, makeBoundHelper;
 compile = EmberHandlebars.compile;
-helpers = EmberHandlebars.helpers;
 makeBoundHelper = EmberHandlebars.makeBoundHelper;
 var makeViewHelper = EmberHandlebars.makeViewHelper;
 
@@ -19,7 +18,6 @@ var App, registry, container, originalViewKeyword;
 function reverseHelper(value) {
   return arguments.length > 1 ? value.split('').reverse().join('') : '--';
 }
-
 
 QUnit.module('Application Lifecycle - Helper Registration', {
   setup() {
@@ -34,6 +32,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
       App = null;
       Ember.TEMPLATES = {};
     });
+    delete helpers['foo-bar-baz-widget'];
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -171,4 +170,12 @@ QUnit.test('Helpers can receive injections', function() {
   });
 
   ok(serviceCalled, 'service was injected, method called');
+});
+
+QUnit.test('Ember.HTMLBars._registerHelper is deprecated', function() {
+  expectDeprecation(function() {
+    Ember.HTMLBars._registerHelper('foo-bar-baz-widget', function() {});
+  });
+
+  ok(helpers['foo-bar-baz-widget'], 'helper was registered');
 });
