@@ -1,5 +1,5 @@
 import {
-  registerHandlebarsCompatibleHelper
+  registerHandlebarsCompatibleHelper as registerHelper
 } from 'ember-htmlbars/compat/helper';
 
 import EmberView from 'ember-views/views/view';
@@ -17,6 +17,12 @@ import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var view, registry, container, originalViewKeyword;
+
+function registerHandlebarsCompatibleHelper() {
+  expectDeprecation('Ember.Handlebars.registerHelper is deprecated, please refactor to Ember.Helper.helper.');
+
+  return registerHelper(...arguments);
+}
 
 QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
   setup() {
@@ -40,7 +46,7 @@ QUnit.module('ember-htmlbars: compat - Handlebars compatible helpers', {
 });
 
 QUnit.test('wraps provided function so that original path params are provided to the helper', function() {
-  expect(2);
+  expect(3);
 
   function someHelper(param1, param2, options) {
     equal(param1, 'blammo');
@@ -60,7 +66,7 @@ QUnit.test('wraps provided function so that original path params are provided to
 });
 
 QUnit.test('combines `env` and `options` for the wrapped helper', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     equal(options.data.view, view);
@@ -79,7 +85,7 @@ QUnit.test('combines `env` and `options` for the wrapped helper', function() {
 });
 
 QUnit.test('combines `env` and `options` for the wrapped helper', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     equal(options.data.view, view);
@@ -122,7 +128,7 @@ QUnit.test('has the correct options.data.view within a components layout', funct
 });
 
 QUnit.test('adds `hash` into options `options` for the wrapped helper', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     equal(options.hash.bestFriend, 'Jacquie');
@@ -141,7 +147,7 @@ QUnit.test('adds `hash` into options `options` for the wrapped helper', function
 });
 
 QUnit.test('bound `hash` params are provided with their original paths', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     equal(options.hash.bestFriend, 'value');
@@ -160,7 +166,7 @@ QUnit.test('bound `hash` params are provided with their original paths', functio
 });
 
 QUnit.test('bound ordered params are provided with their original paths', function() {
-  expect(2);
+  expect(3);
 
   function someHelper(param1, param2, options) {
     equal(param1, 'first');
@@ -181,7 +187,7 @@ QUnit.test('bound ordered params are provided with their original paths', functi
 });
 
 QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` does not double wrap the helper', function() {
-  expect(2);
+  expect(3);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
@@ -204,7 +210,7 @@ QUnit.test('registering a helper created from `Ember.Handlebars.makeViewHelper` 
 });
 
 QUnit.test('makes helpful assertion when called with invalid arguments', function() {
-  expect(2);
+  expect(3);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
@@ -228,7 +234,7 @@ QUnit.test('makes helpful assertion when called with invalid arguments', functio
 });
 
 QUnit.test('does not add `options.fn` if no block was specified', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     ok(!options.fn, '`options.fn` is not present when block is not specified');
@@ -247,7 +253,7 @@ QUnit.test('does not add `options.fn` if no block was specified', function() {
 });
 
 QUnit.test('does not return helper result if block was specified', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     return 'asdf';
@@ -268,7 +274,7 @@ QUnit.test('does not return helper result if block was specified', function() {
 });
 
 QUnit.test('allows usage of the template fn', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     options.fn();
@@ -289,7 +295,7 @@ QUnit.test('allows usage of the template fn', function() {
 });
 
 QUnit.test('allows usage of the template inverse', function() {
-  expect(1);
+  expect(2);
 
   function someHelper(options) {
     options.inverse();
@@ -310,7 +316,7 @@ QUnit.test('allows usage of the template inverse', function() {
 });
 
 QUnit.test('ordered param types are added to options.types', function() {
-  expect(3);
+  expect(4);
 
   function someHelper(param1, param2, param3, options) {
     equal(options.types[0], 'NUMBER');
@@ -332,7 +338,7 @@ QUnit.test('ordered param types are added to options.types', function() {
 });
 
 QUnit.test('`hash` params are to options.hashTypes', function() {
-  expect(3);
+  expect(4);
 
   function someHelper(options) {
     equal(options.hashTypes.string, 'STRING');
