@@ -62,6 +62,7 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
+Ember.View = DeprecatedView;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 Ember.View._Renderer = Renderer;
@@ -80,7 +81,6 @@ Ember.EventDispatcher = EventDispatcher;
 // Deprecated:
 Ember.Select = DeprecatedSelect;
 Ember.CoreView = DeprecatedCoreView;
-Ember.View = DeprecatedView;
 Ember.ContainerView = DeprecatedContainerView;
 Ember.CollectionView = DeprecatedCollectionView;
 Ember._Metamorph = _Metamorph;

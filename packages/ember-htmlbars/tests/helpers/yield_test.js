@@ -14,7 +14,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, registry, container;
 
-var view, registry, container, originalViewKeyword;
+var view, registry, container;
 
 function setupContainer() {
   registry = new Registry();
@@ -31,7 +31,6 @@ function teardownContainer() {
 QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
   setup() {
     setupContainer();
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
     run(function() {
@@ -39,7 +38,6 @@ QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
     });
     runDestroy(view);
     teardownContainer();
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -292,7 +290,6 @@ QUnit.test("nested simple bindings inside of a yielded template should work prop
 QUnit.module('ember-htmlbars: Component {{yield}}', {
   setup() {
     setupContainer();
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
     runDestroy(view);

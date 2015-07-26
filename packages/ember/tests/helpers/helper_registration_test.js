@@ -12,9 +12,6 @@ var makeViewHelper = EmberHandlebars.makeViewHelper;
 var App, registry, container;
 
 QUnit.module("Application Lifecycle - Helper Registration", {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-  },
   teardown() {
     Ember.run(function() {
       if (App) {

@@ -180,7 +180,7 @@ QUnit.test('bound ordered params are provided with their original paths', functi
 });
 
 QUnit.test('allows unbound usage within an element', function() {
-  expect(4);
+  expect(6);
 
   function someHelper(param1, param2, options) {
     equal(param1, 'blammo');
