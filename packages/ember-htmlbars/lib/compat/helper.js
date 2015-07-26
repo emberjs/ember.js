@@ -132,8 +132,14 @@ export function registerHandlebarsCompatibleHelper(name, value) {
 }
 
 export function handlebarsHelper(name, value) {
-  Ember.assert('You tried to register a component named \'' + name +
-               '\', but component names must include a \'-\'', !Component.detect(value) || name.match(/-/));
+  Ember.deprecate(
+    'Ember.Handlebars.helper is deprecated, please refactor to Ember.Helper.helper',
+    false,
+    { id: 'ember-htmlbars.handlebars-helper', until: '2.0.0' }
+  );
+
+  Ember.assert(`You tried to register a component named '${name}', but component names must include a '-'`,
+    !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
     helpers[name] = makeViewHelper(value);
