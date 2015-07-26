@@ -1,13 +1,22 @@
+/* globals EmberDev */
 import isEnabled from 'ember-metal/features';
 import EmberRouter from 'ember-routing/system/router';
+import { HANDLERS } from 'ember-debug/handlers';
+import {
+  registerHandler as registerWarnHandler
+} from 'ember-debug/warn';
 
-var Router;
+
+
+var Router, outerWarnHandler;
 
 QUnit.module('Ember Router DSL', {
   setup() {
     Router = EmberRouter.extend();
+    outerWarnHandler = HANDLERS.warn;
   },
   teardown() {
+    HANDLERS.warn = outerWarnHandler;
     Router = null;
   }
 });
@@ -42,6 +51,33 @@ QUnit.test('should fail when using a reserved route name', function() {
     }, `'${reservedName}' cannot be used as a route name.`);
   });
 });
+
+// jscs:disable validateIndentation
+if (EmberDev && !EmberDev.runningProdBuild) {
+  QUnit.test('should warn when using a dangerous select route name', function(assert) {
+    expect(1);
+
+    var originalWarnHandler = HANDLERS.warn;
+
+    registerWarnHandler(function(message) {
+      assert.equal(message,
+                   `Using a route named 'select' (and defining a App.SelectView) will prevent you from using {{view 'select'}}`,
+                   'select route warning is triggered');
+    });
+
+    Router = EmberRouter.extend();
+
+    Router.map(function() {
+      this.route('select');
+    });
+
+    var router = Router.create();
+    router._initRouterJs();
+
+    HANDLERS.warn = originalWarnHandler;
+  });
+}
+// jscs:enable validateIndentation
 
 QUnit.test('should reset namespace if nested with resource', function() {
   expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
