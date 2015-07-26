@@ -111,6 +111,12 @@ HandlebarsCompatibleHelper.prototype = {
 };
 
 export function registerHandlebarsCompatibleHelper(name, value) {
+  Ember.deprecate(
+    'Ember.Handlebars.registerHelper is deprecated, please refactor to Ember.Helper.helper.',
+    false,
+    { id: 'ember-htmlbars.handlebars-register-helper', until: '2.0.0' }
+  );
+
   if (value && value.isLegacyViewHelper) {
     registerKeyword(name, function(morph, env, scope, params, hash, template, inverse, visitor) {
       Ember.assert("You can only pass attributes (such as name=value) not bare " +
