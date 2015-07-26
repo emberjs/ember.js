@@ -134,6 +134,8 @@ QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
+    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
+
     registerBoundHelper('capitalize', function(value) {
       return value.toUpperCase();
     });
@@ -178,6 +180,9 @@ QUnit.test('it should re-render if the parent view rerenders', function() {
 QUnit.module('ember-htmlbars: {{#unbound}} subexpression - helper form', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
+
+
+    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
 
     registerBoundHelper('capitalize', function(value) {
       return value.toUpperCase();
@@ -229,6 +234,8 @@ QUnit.module('ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
     expectDeprecationInHTMLBars();
+
+    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
 
     registerBoundHelper('surround', function(prefix, value, suffix) {
       return prefix + '-' + value + '-' + suffix;
@@ -495,6 +502,7 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper -- Container Lookup', {
 QUnit.test('should lookup helpers in the container', function() {
   expectDeprecationInHTMLBars();
 
+  expectDeprecation('Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
   registry.register('helper:up-case', makeBoundHelper(function(value) {
     return value.toUpperCase();
   }));

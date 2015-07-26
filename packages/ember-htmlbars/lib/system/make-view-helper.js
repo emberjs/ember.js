@@ -1,3 +1,5 @@
+import Ember from 'ember-metal/core';
+
 /**
 @module ember
 @submodule ember-htmlbars
@@ -15,6 +17,12 @@
   @since 1.2.0
 */
 export default function makeViewHelper(ViewClass) {
+  Ember.deprecate(
+    '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.',
+    false,
+    { id: 'ember-htmlbars.make-view-helper', until: '2.0.0' }
+  );
+
   return {
     isLegacyViewHelper: true,
     isHTMLBars: true,

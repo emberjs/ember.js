@@ -3,8 +3,9 @@
 @submodule ember-htmlbars
 */
 
+import Ember from 'ember-metal/core';
 import helpers from 'ember-htmlbars/helpers';
-import makeBoundHelper from 'ember-htmlbars/compat/make-bound-helper';
+import { makeBoundHelper } from 'ember-htmlbars/compat/make-bound-helper';
 
 var slice = [].slice;
 
@@ -118,9 +119,20 @@ var slice = [].slice;
   @param {String} dependentKeys*
   @private
 */
-export default function registerBoundHelper(name, fn) {
+
+export function registerBoundHelper(name, fn) {
   var boundHelperArgs = slice.call(arguments, 1);
   var boundFn = makeBoundHelper.apply(this, boundHelperArgs);
 
   helpers[name] = boundFn;
+}
+
+export default function deprecatedRegisterBoundHelper() {
+  Ember.deprecate(
+    '`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.',
+    false,
+    { id: 'ember-htmlbars.register-bound-helper', until: '2.0.0' }
+  );
+
+  return registerBoundHelper(...arguments);
 }

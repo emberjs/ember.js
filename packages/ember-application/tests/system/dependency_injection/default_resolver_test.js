@@ -124,9 +124,19 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
   let ShorthandHelper = makeHelper(function() {});
   let CompleteHelper = Helper.extend();
   let LegacyBareFunctionHelper = function() {};
-  let LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
-  let LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
-  let ViewHelper = makeViewHelper(function() {});
+  let ViewHelper, LegacyHandlebarsBoundHelper, LegacyHTMLBarsBoundHelper;
+
+  expectDeprecation(function() {
+    LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
+  }, 'Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
+
+  expectDeprecation(function() {
+    LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
+  }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.');
+
+  expectDeprecation(function() {
+    ViewHelper = makeViewHelper(function() {});
+  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
 
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;

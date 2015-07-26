@@ -43,23 +43,12 @@ function expectDeprecationInHTMLBars() {
 
 QUnit.module('ember-htmlbars: compat - makeBoundHelper', {
   setup() {
+    expectDeprecation('Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
   },
   teardown() {
     runDestroy(view);
     Ember.lookup = originalLookup;
   }
-});
-
-QUnit.test('primitives should work correctly [DEPRECATED]', function() {
-  view = EmberView.create({
-    prims: Ember.A(['string', 12]),
-
-    template: compile('{{#each view.prims as |prim|}}{{#if prim}}inside-if{{/if}}{{/each}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'inside-ifinside-if');
 });
 
 QUnit.test('should update bound helpers when properties change', function() {
