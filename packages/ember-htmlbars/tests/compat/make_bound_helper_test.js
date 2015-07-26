@@ -45,6 +45,7 @@ function expectDeprecationInHTMLBars() {
 
 QUnit.module("ember-htmlbars: compat - makeBoundHelper", {
   setup() {
+    expectDeprecation('Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
   },
   teardown() {
     runDestroy(view);
@@ -52,22 +53,7 @@ QUnit.module("ember-htmlbars: compat - makeBoundHelper", {
   }
 });
 
-QUnit.test("primitives should work correctly [DEPRECATED]", function() {
-  expectDeprecation(eachDeprecation);
-  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead.');
-
-  view = EmberView.create({
-    prims: Ember.A(["string", 12]),
-
-    template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{#with this}}inside-with{{/with}}{{/each}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'inside-ifinside-withinside-ifinside-with');
-});
-
-QUnit.test("should update bound helpers when properties change", function() {
+QUnit.test('should update bound helpers when properties change', function() {
   expectDeprecationInHTMLBars();
 
   helper('capitalize', function(value) {

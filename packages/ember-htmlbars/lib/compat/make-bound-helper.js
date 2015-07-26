@@ -36,7 +36,8 @@ import {
   @deprecated
   @private
 */
-export default function makeBoundHelper(fn, ...dependentKeys) {
+
+export function makeBoundHelper(fn, ...dependentKeys) {
   return {
     _dependentKeys: dependentKeys,
 
@@ -63,4 +64,14 @@ export default function makeBoundHelper(fn, ...dependentKeys) {
       return fn.apply(undefined, args);
     }
   };
+}
+
+export default function deprecatedMakeBoundHelper(fn, ...dependentKeys) {
+  Ember.deprecate(
+    'Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.',
+    false,
+    { id: 'ember-htmlbars.handlebars-make-bound-helper', until: '2.0.0' }
+  );
+
+  return makeBoundHelper(...arguments);
 }

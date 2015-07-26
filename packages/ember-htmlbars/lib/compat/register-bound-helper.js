@@ -3,8 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import helpers from "ember-htmlbars/helpers";
-import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
+import helpers from 'ember-htmlbars/helpers';
+import { makeBoundHelper } from 'ember-htmlbars/compat/make-bound-helper';
 
 var slice = [].slice;
 
