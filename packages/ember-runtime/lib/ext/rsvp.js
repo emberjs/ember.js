@@ -66,6 +66,11 @@ export function onerrorDefault(e) {
   }
 }
 
+export function after (cb) {
+  Ember.run.schedule(Ember.run.queues[Ember.run.queues.length - 1], cb);
+}
+
 RSVP.on('error', onerrorDefault);
+RSVP.configure('after', after);
 
 export default RSVP;

@@ -10,8 +10,8 @@
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
   "devDependencies": {
-    "backburner": "https://github.com/ebryn/backburner.js.git#4a0105a4a0bc4cf73bdf3e554aea14f3f438876c",
-    "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.14",
+    "backburner": "https://github.com/ebryn/backburner.js.git#ea82b6d703a7b65b4c4c65671843edb8d67f2a6c",
+    "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.20",
     "router.js": "https://github.com/tildeio/router.js.git#ed45bc5c5e055af0ab875ef2c52feda792ee23e4",
     "dag-map": "https://github.com/krisselden/dag-map.git#e307363256fe918f426e5a646cb5f5062d3245be",
     "ember-dev": "https://github.com/emberjs/ember-dev.git#a064f0cd2f4c225ffd023b63d4cb31a79db04aaf"
