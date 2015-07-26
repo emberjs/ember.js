@@ -3,21 +3,16 @@ import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import EmberHandlebars from 'ember-htmlbars/compat';
 import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
-import Helper from 'ember-htmlbars/helper';
+import Helper, { helper } from 'ember-htmlbars/helper';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import helpers from 'ember-htmlbars/helpers';
-var compile, makeBoundHelper;
+var compile;
 compile = EmberHandlebars.compile;
-makeBoundHelper = EmberHandlebars.makeBoundHelper;
 var makeViewHelper = EmberHandlebars.makeViewHelper;
 
 var App, registry, container, originalViewKeyword;
-
-function reverseHelper(value) {
-  return arguments.length > 1 ? value.split('').reverse().join('') : '--';
-}
 
 QUnit.module('Application Lifecycle - Helper Registration', {
   setup() {
@@ -78,7 +73,6 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
   ok(!helpers['x-borf'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
-// need to make `makeBoundHelper` for HTMLBars
 QUnit.test('Bound helpers registered on the container can be late-invoked', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
 
@@ -86,7 +80,10 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
     registry.register('controller:application', Ember.Controller.extend({
       foo: 'alex'
     }));
-    registry.register('helper:x-reverse', makeBoundHelper(reverseHelper));
+
+    registry.register('helper:x-reverse', helper(function([ value ]) {
+      return value ? value.split('').reverse().join('') : '--';
+    }));
   });
 
   equal(Ember.$('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
@@ -121,7 +118,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
           return 'OMG';
         });
 
-        registry.register('helper:yorp', makeBoundHelper(function(value) {
+        registry.register('helper:yorp', helper(function([ value ]) {
           return value;
         }));
       }, /Please use Ember.Helper.build to wrap helper functions./);
@@ -143,7 +140,7 @@ if (isEnabled('ember-htmlbars-dashless-helpers')) {
         registry.register('helper:omg', function() {
           return 'OMG';
         });
-        registry.register('helper:yorp', makeBoundHelper(function() {
+        registry.register('helper:yorp', helper(function() {
           return 'YORP';
         }));
       });

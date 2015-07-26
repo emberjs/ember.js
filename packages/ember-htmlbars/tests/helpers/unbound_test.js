@@ -495,6 +495,7 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper -- Container Lookup', {
 QUnit.test('should lookup helpers in the container', function() {
   expectDeprecationInHTMLBars();
 
+  expectDeprecation('Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
   registry.register('helper:up-case', makeBoundHelper(function(value) {
     return value.toUpperCase();
   }));
