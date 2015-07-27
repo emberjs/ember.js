@@ -142,7 +142,6 @@ QUnit.test('rejections like jqXHR which have errorThrown property work', functio
   }
 });
 
-
 QUnit.test('rejections where the errorThrown is a string should wrap the sting in an error object', function() {
   expect(2);
 
@@ -166,4 +165,129 @@ QUnit.test('rejections where the errorThrown is a string should wrap the sting i
     Ember.onerror = wasOnError;
     Ember.testing = wasEmberTesting;
   }
+});
+
+var wasTesting;
+var reason = 'i failed';
+QUnit.module('Ember.test: rejection assertions', {
+  before() {
+    wasTesting = Ember.testing;
+    Ember.testing = true;
+  },
+  after() {
+    Ember.testing = wasTesting;
+  }
+});
+
+function ajax(something) {
+  return RSVP.Promise(function(resolve) {
+    QUnit.stop();
+    setTimeout(function() {
+      QUnit.start();
+      resolve();
+    }, 0); // fake true / foreign async
+  });
+}
+
+QUnit.test('unambigiously unhandled rejection', function() {
+  QUnit.throws(function() {
+    Ember.run(function() {
+      RSVP.Promise.reject(reason);
+    }); // something is funky, we should likely assert
+  }, reason);
+});
+
+QUnit.test('sync handled', function() {
+  Ember.run(function() {
+    RSVP.Promise.reject(reason).catch(function() { });
+  }); // handled, we shouldn't need to assert.
+  ok(true, 'reached end of test');
+});
+
+QUnit.test('handled within the same micro-task (via Ember.RVP.Promise)', function() {
+  Ember.run(function() {
+    var rejection = RSVP.Promise.reject(reason);
+    RSVP.Promise.resolve(1).then(() => rejection.catch(function() { }));
+  }); // handled, we shouldn't need to assert.
+  ok(true, 'reached end of test');
+});
+
+QUnit.test('handled within the same micro-task (via direct run-loop)', function() {
+  Ember.run(function() {
+    var rejection = RSVP.Promise.reject(reason);
+
+    Ember.run.schedule('afterRender', () => rejection.catch(function() { }));
+  }); // handled, we shouldn't need to assert.
+  ok(true, 'reached end of test');
+});
+
+QUnit.test('handled in the next microTask queue flush (Ember.run.next)', function() {
+  expect(2);
+
+  QUnit.throws(function() {
+    Ember.run(function() {
+      var rejection = RSVP.Promise.reject(reason);
+
+      QUnit.stop();
+      Ember.run.next(() => {
+        QUnit.start();
+        rejection.catch(function() { });
+        ok(true, 'reached end of test');
+      });
+    });
+  }, reason);
+
+  // a promise rejection survived a full flush of the run-loop without being handled
+  // this is very likely an issue.
+});
+
+QUnit.test('handled in the same microTask Queue flush do to data locality', function() {
+  // an ambiguous scenario, this may or may not assert
+  // it depends on the locality of `user#1`
+  var store = {
+    find() {
+      return Promise.resolve(1);
+    }
+  };
+
+  Ember.run(function() {
+    var rejection = RSVP.Promise.reject(reason);
+
+    store.find('user', 1).then(() => rejection.catch(function() { }));
+  });
+
+  ok(true, 'reached end of test');
+});
+
+QUnit.test('handled in a different microTask Queue flush do to data locality', function() {
+  // an ambiguous scenario, this may or may not assert
+  // it depends on the locality of `user#1`
+  var store = {
+    find() {
+      return ajax();
+    }
+  };
+
+  QUnit.throws(function() {
+    Ember.run(function() {
+      var rejection = RSVP.Promise.reject(reason);
+
+      store.find('user', 1).then(() => {
+        rejection.catch(function() { });
+        ok(true, 'reached end of test');
+      });
+    });
+  }, reason);
+});
+
+QUnit.test('handled in the next microTask queue flush (ajax example)', function() {
+  QUnit.throws(function() {
+    Ember.run(function() {
+      var rejection = RSVP.Promise.reject(reason);
+      ajax('/something/').then(() => {
+        rejection.catch(function() { });
+        ok(true, 'reached end of test');
+      });
+    });
+  }, reason);
 });
