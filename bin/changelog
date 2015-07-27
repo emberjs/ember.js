@@ -38,8 +38,8 @@ function getCommitMessage(commitInfo) {
   var message = commitInfo.commit.message;
 
   if (message.indexOf('cherry picked from commit') > -1) {
-    var originalCommit = message.split('cherry picked from commit ').slice(-1); // find the last instance of `cherry picked from`
-    originalCommit = originalCommit[0].slice(0, -1); // remove the trailing `)`
+    var cherryPickRegex = /cherry picked from commit ([a-z0-9]+)/;
+    var originalCommit = cherryPickRegex.exec(message)[1];
 
     try {
       // command from http://stackoverflow.com/questions/8475448/find-merge-commit-which-include-a-specific-commit
