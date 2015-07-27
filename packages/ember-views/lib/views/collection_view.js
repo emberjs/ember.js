@@ -473,6 +473,8 @@ DeprecatedCollectionView.reopen = function() {
   return this;
 };
 
+DeprecatedCollectionView.CONTAINER_MAP = CONTAINER_MAP;
+
 export default CollectionView;
 
 export { DeprecatedCollectionView };
