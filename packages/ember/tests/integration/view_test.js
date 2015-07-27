@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
+import EmberComponent from 'ember-views/views/component';
 import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
@@ -51,20 +52,21 @@ QUnit.module('View Integration', {
   }
 });
 
-QUnit.test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct controller to the view instance`', function(assert) {
+QUnit.test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct index controller to the view instance`', function(assert) {
   var controllerInMyFoo, indexController;
 
-  Ember.TEMPLATES.index = compile('{{view "my-foo"}}', { moduleName: 'my-foo' });
+  Ember.TEMPLATES.index = compile('{{view "my-foo" aProperty=thisProperty}}', { moduleName: 'index' });
 
   registry.register('view:my-foo', EmberView.extend({
+    aProperty: null,
     init() {
       this._super(...arguments);
-
       controllerInMyFoo = this.get('controller');
     }
   }));
 
   registry.register('controller:index', Ember.Controller.extend({
+    thisProperty: 'foo',
     init() {
       this._super(...arguments);
 
@@ -76,4 +78,73 @@ QUnit.test('invoking `{{view}} from a non-view backed (aka only template) templa
   handleURL('/');
 
   assert.strictEqual(controllerInMyFoo, indexController, 'controller is provided to `{{view}}`');
+
+  run(indexController, 'set', 'thisProperty', 'bar');
+
+  assert.strictEqual(controllerInMyFoo, indexController, 'the same controller is still provided to `{{view}}`');
+});
+
+QUnit.test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct application controller to the view instance`', function(assert) {
+  var controllerInMyFoo, applicationController;
+
+  Ember.TEMPLATES.application = compile('{{view "my-foo" aProperty=thisProperty}}', { moduleName: 'application' });
+
+  registry.register('view:my-foo', EmberView.extend({
+    aProperty: null,
+    init() {
+      this._super(...arguments);
+      controllerInMyFoo = this.get('controller');
+    }
+  }));
+
+  registry.register('controller:application', Ember.Controller.extend({
+    thisProperty: 'foo',
+    init() {
+      this._super(...arguments);
+
+      applicationController = this;
+    }
+  }));
+
+  run(App, 'advanceReadiness');
+  handleURL('/');
+
+  assert.strictEqual(controllerInMyFoo, applicationController, 'controller is provided to `{{view}}`');
+
+  run(applicationController, 'set', 'thisProperty', 'bar');
+
+  assert.strictEqual(controllerInMyFoo, applicationController, 'the same controller is still provided to `{{view}}`');
+});
+
+QUnit.test('invoking `{{view}} from a component block provides the correct application controller to the view instance`', function(assert) {
+  var controllerInMyFoo, applicationController;
+
+  Ember.TEMPLATES.application = compile('{{#x-foo}}{{view "my-foo" aProperty=thisProperty}}{{/x-foo}}', { moduleName: 'application' });
+
+  registry.register('component:x-foo', EmberComponent.extend());
+
+  registry.register('view:my-foo', EmberView.extend({
+    aProperty: null,
+    init() {
+      this._super(...arguments);
+      controllerInMyFoo = this.get('controller');
+    }
+  }));
+
+  registry.register('controller:application', Ember.Controller.extend({
+    thisProperty: 'foo',
+    init() {
+      this._super(...arguments);
+      applicationController = this;
+    }
+  }));
+
+  run(App, 'advanceReadiness');
+  handleURL('/');
+
+  assert.strictEqual(controllerInMyFoo, applicationController, 'controller is provided to `{{view}}`');
+
+  run(applicationController, 'set', 'thisProperty', 'bar');
+
+  assert.strictEqual(controllerInMyFoo, applicationController, 'the same controller is still provided to `{{view}}`');
 });
