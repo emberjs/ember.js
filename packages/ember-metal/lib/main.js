@@ -172,8 +172,7 @@ import {
 import {
   Binding,
   bind,
-  isGlobalPath,
-  oneWay
+  isGlobalPath
 } from 'ember-metal/binding';
 import run from 'ember-metal/run_loop';
 import Libraries from 'ember-metal/libraries';
@@ -309,7 +308,6 @@ Ember.immediateObserver = _immediateObserver;
 Ember.mixin = mixin;
 Ember.Mixin = Mixin;
 
-Ember.oneWay = oneWay;
 Ember.bind = bind;
 Ember.Binding = Binding;
 Ember.isGlobalPath = isGlobalPath;
