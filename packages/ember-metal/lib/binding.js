@@ -466,21 +466,6 @@ export function bind(obj, to, from) {
   return new Binding(to, from).connect(obj);
 }
 
-/**
-  @method oneWay
-  @for Ember
-  @param {Object} obj The root object of the transform.
-  @param {String} to The path to the 'to' side of the binding.
-    Must be relative to obj.
-  @param {String} from The path to the 'from' side of the binding.
-    Must be relative to obj or a global path.
-  @return {Ember.Binding} binding instance
-  @public
-*/
-export function oneWay(obj, to, from) {
-  return new Binding(to, from).oneWay().connect(obj);
-}
-
 export {
   Binding,
   isGlobalPath
