@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 import {
   registerHandlebarsCompatibleHelper as registerHelper
 } from 'ember-htmlbars/compat/helper';
@@ -180,7 +182,11 @@ QUnit.test('bound ordered params are provided with their original paths', functi
 });
 
 QUnit.test('allows unbound usage within an element', function() {
-  expect(6);
+  if (EmberDev && EmberDev.runningProdBuild) {
+    expect(4);
+  } else {
+    expect(5);
+  }
 
   function someHelper(param1, param2, options) {
     equal(param1, 'blammo');
@@ -198,9 +204,9 @@ QUnit.test('allows unbound usage within an element', function() {
     template: compile('<div {{test "blammo" "blazzico"}}>Bar</div>')
   });
 
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Returning a string of attributes from a helper inside an element is deprecated.');
+  expectDeprecation('Returning a string of attributes from a helper inside an element is deprecated.');
+
+  runAppend(view);
 
   equal(view.$('.foo').length, 1, 'class attribute was added by helper');
 });
