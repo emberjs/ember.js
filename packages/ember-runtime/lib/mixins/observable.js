@@ -320,7 +320,7 @@ export default Mixin.create({
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
     @return {Ember.Observable}
-    @private
+    @public
   */
   notifyPropertyChange(keyName) {
     this.propertyWillChange(keyName);
