@@ -1817,7 +1817,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @method renderTemplate
     @param {Object} controller the route's controller
     @param {Object} model the route's model
-    @private
+    @public
   */
   renderTemplate(controller, model) {
     this.render();
