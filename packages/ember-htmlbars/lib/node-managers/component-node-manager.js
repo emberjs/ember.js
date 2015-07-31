@@ -213,13 +213,11 @@ function configureCreateOptions(attrs, createOptions) {
 }
 
 ComponentNodeManager.prototype.render = function(_env, visitor) {
-  var { component, attrs } = this;
+  var { component } = this;
 
   return instrument(component, function() {
     let env = _env.childWithView(component);
 
-    var snapshot = takeSnapshot(attrs);
-    env.renderer.componentInitAttrs(this.component, snapshot);
     env.renderer.componentWillRender(component);
     env.renderedViews.push(component.elementId);
 
@@ -302,15 +300,16 @@ ComponentNodeManager.prototype.destroy = function() {
 
 export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}, proto = _component.proto()) {
   let props = assign({}, _props);
+  let attrsSnapshot;
 
   if (!isAngleBracket) {
     let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
     Ember.deprecate('controller= is deprecated', !hasSuppliedController, { id: 'ember-htmlbars.create-component', until: '3.0.0' });
 
-    let snapshot = takeSnapshot(attrs);
-    props.attrs = snapshot;
+    attrsSnapshot = takeSnapshot(attrs);
+    props.attrs = attrsSnapshot;
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, shadowedAttrs(proto, attrsSnapshot));
   } else {
     props._isAngleBracket = true;
   }
@@ -319,6 +318,8 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.container.lookup('-view-registry:main');
 
   let component = _component.create(props);
+
+  env.renderer.componentInitAttrs(component, attrsSnapshot);
 
   // for the fallback case
   component.container = component.container || env.container;
