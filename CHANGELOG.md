@@ -1,5 +1,40 @@
 # Ember Changelog
 
+### 2.0.0-beta.4 (July 31, 2015)
+
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `length` from `OrderedSet` and `Map`.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `OrderedSet.prototype.length`.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `Ember.libraries.each`.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove deprecated special `{{each}}` keys.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove Ember.Location.registerImplementation.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `{{template}}` support.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove Ember.Route#setupControllers deprecation.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove Ember.Route#renderTemplates deprecation.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove Ember.Application#initialize.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove support for `Ember.Application.resolver`.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove support for resolver without `normalize`.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove IE6 & IE7 deprecation.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove returning string of attrs from helper support.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove support for returning string of attrs from helper.
+- [#11845](https://github.com/emberjs/ember.js/pull/11845) [CLEANUP] Remove support for `view` and `viewClass` with `{{outlet}}`.
+- [#11771](https://github.com/emberjs/ember.js/pull/11771) [CLEANUP] Remove deprecated `Controller#controllerFor`.
+- [#11750](https://github.com/emberjs/ember.js/pull/11750) [CLEANUP] Remove `metaPath`, `getMeta` and `setMeta`.
+- [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Lots of deprecation removals.
+- [#11820](https://github.com/emberjs/ember.js/pull/11820) [CLEANUP] Remove sendEvent hook.
+- [#11815](https://github.com/emberjs/ember.js/pull/11815) [CLEANUP] Remove `{chainWatchers: null}` from `Meta.prototype`.
+- [#11819](https://github.com/emberjs/ember.js/pull/11819) [CLEANUP] Abstract chainWatchers into an object.
+- [#11824](https://github.com/emberjs/ember.js/pull/11824) Revert "[CLEANUP] Remove support for reversed args in `Ember.observer`.
+- [#11822](https://github.com/emberjs/ember.js/pull/11822) [BUGFIX] Deprecate `currentWhen` with `{{link-to}}`.
+- [#11838](https://github.com/emberjs/ember.js/pull/11838) [CLEANUP] Only register `Ember.ContainerView` when legacy view support enabled.
+- [#11852](https://github.com/emberjs/ember.js/pull/11852) [CLEANUP] Remove `Ember.RenderBuffer`.
+- [#11853](https://github.com/emberjs/ember.js/pull/11853) [CLEANUP] Remove deprecated `Registry` and `Container` behavior.
+- [#11850](https://github.com/emberjs/ember.js/pull/11850) [CLEANUP] Remove context switching `{{each}}` helper variant.
+- [#11878](https://github.com/emberjs/ember.js/pull/11878) [BUGFIX] Fix issue with QP routes named after `Object.prototype` properties.
+- [#11903](https://github.com/emberjs/ember.js/pull/11903) [BUGFIX] Upgrade RSVP + Backburner. Fixes a number of scenarios around testing rejected promise scenarios.
+- [#11914](https://github.com/emberjs/ember.js/pull/11914) [CLEANUP] Remove `Ember.oneWay`.
+- [#11895](https://github.com/emberjs/ember.js/pull/11895) [BUGFIX] Properly detect if the environment is Node.
+- [#11897](https://github.com/emberjs/ember.js/pull/11897) [CLEANUP] Remove globals lookup from templates.
+
 ### 2.0.0-beta.3 (July 19, 2015)
 
 - [#11777](https://github.com/emberjs/ember.js/pull/11777) [CLEANUP] Remove context switching form of `{{#each model}}{{/each}}`, use `{{#each model as |item|}}{{/each}}` instead.
