@@ -136,11 +136,14 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
     attrs[positionalParams] = paramsStream;
   }
 
-  for (let i = 0; i < positionalParams.length; i++) {
-    let param = params[paramsStartIndex + i];
-    if (isNamed) {
+  if (isNamed) {
+    for (let i = paramsStartIndex; i < params.length; i++) {
+      let param = params[i];
       paramsStream.addDependency(param);
-    } else {
+    }
+  } else {
+    for (let i = 0; i < positionalParams.length; i++) {
+      let param = params[paramsStartIndex + i];
       attrs[positionalParams[i]] = param;
     }
   }
