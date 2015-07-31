@@ -572,9 +572,9 @@ QUnit.test('static arbitrary number of positional parameters', function() {
 QUnit.test('dynamic arbitrary number of positional parameters', function() {
   var SampleComponent = Component.extend();
   SampleComponent.reopenClass({
-    positionalParams: 'names'
+    positionalParams: 'n'
   });
-  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('template:components/sample-component', compile('{{#each attrs.n as |name|}}{{name}}{{/each}}'));
   registry.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
@@ -597,6 +597,13 @@ QUnit.test('dynamic arbitrary number of positional parameters', function() {
 
   equal(view.$('#direct').text(), 'Bar5');
   equal(view.$('#helper').text(), 'Bar5');
+
+  run(function() {
+    set(view.context, 'user2', '6');
+  });
+
+  equal(view.$('#direct').text(), 'Bar6');
+  equal(view.$('#helper').text(), 'Bar6');
 });
 
 QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
