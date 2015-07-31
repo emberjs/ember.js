@@ -1,5 +1,27 @@
 # Ember Changelog
 
+### 1.13.6 (July 31, 2015)
+
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.makeViewHelper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars.makeViewHelper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars._registerHelper` (manual registration is no longer needed).
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars.makeBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.makeBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.registerBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.helper` in favor of `Ember.Helper.helper` and automatic helper resolution.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.registerHelper` in favor of `Ember.Helper.helper` and automatic helper resolution.
+- [#11832](https://github.com/emberjs/ember.js/pull/11832) [BUGFIX] Fix memory leaks with application creation and acceptance test helpers.
+- [#11826](https://github.com/emberjs/ember.js/pull/11826) [DEPRECATION] Deprecate Ember.ContainerView
+- [#11864](https://github.com/emberjs/ember.js/pull/11864) [BUGFIX] Ensure acceptance test helpers are removed during teardown.
+- [#11861](https://github.com/emberjs/ember.js/pull/11861) [BUGFIX] Update HTMLBars to allow duplicate {{each}} keys.
+- [#11889](https://github.com/emberjs/ember.js/pull/11889) [BUGFIX] Fix `attributeBindings` for `id` attribute.
+- [#11866](https://github.com/emberjs/ember.js/pull/11866) [BUGFIX] Fix DeprecatedView (and friends) reopen function to delegate to original.
+- [#11891](https://github.com/emberjs/ember.js/pull/11891) [DEPRECATION] Deprecate Ember.CollectionView
+- [#11910](https://github.com/emberjs/ember.js/pull/11910) [BUGFIX] Ensure `Ember.CollectionView.CONTAINER_MAP` is present on deprecated `CollectionView`.
+- [#11917](https://github.com/emberjs/ember.js/pull/11917) [BUGFIX] Ensure `"use strict";` is properly added for modules.
+- [#11934](https://github.com/emberjs/ember.js/pull/11934) [DEPRECATION] Deprecate specifying `positionalParams` at extend time in favor of using static factory properties.
+- [#11935](https://github.com/emberjs/ember.js/pull/11935) [BUGFIX] Avoid unnecessary change events during initial render.
+
 ### 1.13.5 (July 19, 2015)
 
 - [#11767](https://github.com/emberjs/ember.js/pull/11767) [DEPRECATION] Deprecate Controller#needs
