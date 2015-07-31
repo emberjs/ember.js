@@ -24,10 +24,10 @@ fixed your bug.
 2. Search for similar issues. It's possible somebody has encountered
 this bug already.
 
-3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
+3. Provide Ember Twiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
-Preconfigured starting points for the latest Ember: [JSFiddle](https://jsfiddle.net/dfcaus7t/1/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
+preconfigured starting points for the latest Ember: [Ember Twiddle](http://ember-twiddle.com/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
 If it is not possible to produce a fiddle, please make sure you provide very
 specific steps to reproduce the error. If we cannot reproduce it, we will
 close the ticket.
