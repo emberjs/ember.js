@@ -342,7 +342,7 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
 
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
-  QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
+QUnit.skip('mutable bindings work as angle-bracket component attributes', function(assert) {
   var middle;
 
   registry.register('component:middle-mut', Component.extend({
@@ -375,7 +375,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
 });
 
-  QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
+  QUnit.skip('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
   var middle, bottom;
 
   registry.register('component:middle-mut', Component.extend({
