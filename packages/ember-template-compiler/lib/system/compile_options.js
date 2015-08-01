@@ -4,7 +4,7 @@
 */
 
 import isEnabled from 'ember-metal/features';
-import { assign } from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import defaultPlugins from 'ember-template-compiler/plugins';
 
 /**

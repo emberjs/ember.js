@@ -3,7 +3,7 @@
   @submodule ember-templates
   @public
 */
-import { assign } from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a

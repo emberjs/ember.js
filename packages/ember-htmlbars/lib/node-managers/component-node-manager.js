@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { assign } from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';

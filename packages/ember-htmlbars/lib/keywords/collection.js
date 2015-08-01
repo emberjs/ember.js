@@ -6,7 +6,7 @@
 import { readViewFactory } from 'ember-views/streams/utils';
 import CollectionView from 'ember-views/views/collection_view';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
-import { assign } from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 export default {
   setupState(state, env, scope, params, hash) {
