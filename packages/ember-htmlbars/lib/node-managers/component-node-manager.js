@@ -300,16 +300,15 @@ ComponentNodeManager.prototype.destroy = function() {
 
 export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}, proto = _component.proto()) {
   let props = assign({}, _props);
-  let attrsSnapshot;
 
   if (!isAngleBracket) {
     let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
     Ember.deprecate("controller= is deprecated", !hasSuppliedController);
 
-    attrsSnapshot = takeSnapshot(attrs);
-    props.attrs = attrsSnapshot;
+    let snapshot = takeSnapshot(attrs);
+    props.attrs = snapshot;
 
-    mergeBindings(props, shadowedAttrs(proto, attrsSnapshot));
+    mergeBindings(props, shadowedAttrs(proto, snapshot));
   } else {
     props._isAngleBracket = true;
   }
@@ -318,8 +317,6 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.container.lookup('-view-registry:main');
 
   let component = _component.create(props);
-
-  env.renderer.componentInitAttrs(component, attrsSnapshot);
 
   // for the fallback case
   component.container = component.container || env.container;

@@ -1,18 +1,7 @@
-import { get } from "ember-metal/property_get";
-//import { set } from "ember-metal/property_set";
-import { Mixin } from "ember-metal/mixin";
-import { on } from "ember-metal/events";
-import { symbol } from "ember-metal/utils";
-import objectKeys from "ember-metal/keys";
-import { PROPERTY_DID_CHANGE } from "ember-metal/property_events";
-//import run from "ember-metal/run_loop";
-
-import {
-  addObserver,
-  removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver
-} from 'ember-metal/observer';
+import { Mixin } from 'ember-metal/mixin';
+import { symbol } from 'ember-metal/utils';
+import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
+import { on } from 'ember-metal/events';
 
 export function deprecation(key) {
   return `You tried to look up an attribute directly on the component. This is deprecated. Use attrs.${key} instead.`;
@@ -22,16 +11,6 @@ export let MUTABLE_CELL = symbol("MUTABLE_CELL");
 
 function isCell(val) {
   return val && val[MUTABLE_CELL];
-}
-
-function attrsWillChange(view, attrsKey) {
-  let key = attrsKey.slice(6);
-  view.currentState.legacyAttrWillChange(view, key);
-}
-
-function attrsDidChange(view, attrsKey) {
-  let key = attrsKey.slice(6);
-  view.currentState.legacyAttrDidChange(view, key);
 }
 
 let AttrsProxyMixin = {
@@ -59,46 +38,37 @@ let AttrsProxyMixin = {
     val.update(value);
   },
 
-  willWatchProperty(key) {
-    if (this._isAngleBracket || key === 'attrs') { return; }
-
-    let attrsKey = `attrs.${key}`;
-    _addBeforeObserver(this, attrsKey, null, attrsWillChange);
-    addObserver(this, attrsKey, null, attrsDidChange);
-  },
-
-  didUnwatchProperty(key) {
-    if (this._isAngleBracket || key === 'attrs') { return; }
-
-    let attrsKey = `attrs.${key}`;
-    _removeBeforeObserver(this, attrsKey, null, attrsWillChange);
-    removeObserver(this, attrsKey, null, attrsDidChange);
-  },
-
-  legacyDidReceiveAttrs: on('didReceiveAttrs', function() {
-    if (this._isAngleBracket) { return; }
-
-    var keys = objectKeys(this.attrs);
-
-    for (var i=0, l=keys.length; i<l; i++) {
-      // Only issue the deprecation if it wasn't already issued when
-      // setting attributes initially.
-      if (!(keys[i] in this)) {
-        this.notifyPropertyChange(keys[i]);
+  _propagateAttrsToThis() {
+    let attrs = this.attrs;
+    let values = {};
+    for (let prop in attrs) {
+      if (prop !== 'attrs') {
+        values[prop] = this.getAttr(prop);
       }
     }
+    this.setProperties(values);
+  },
+
+  initializeShape: on('init', function() {
+    this._isDispatchingAttrs = false;
   }),
+
+  didReceiveAttrs() {
+    this._super();
+    this._isDispatchingAttrs = true;
+    this._propagateAttrsToThis();
+    this._isDispatchingAttrs = false;
+  },
 
   unknownProperty(key) {
     if (this._isAngleBracket) { return; }
 
-    var attrs = get(this, 'attrs');
+    var attrs = this.attrs;
 
     if (attrs && key in attrs) {
       // do not deprecate accessing `this[key]` at this time.
       // add this back when we have a proper migration path
-      // Ember.deprecate(deprecation(key));
-      let possibleCell = get(attrs, key);
+      let possibleCell = attrs.key;
 
       if (possibleCell && possibleCell[MUTABLE_CELL]) {
         return possibleCell.value;
@@ -115,6 +85,7 @@ let AttrsProxyMixin = {
 
 AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
   if (this._isAngleBracket) { return; }
+  if (this._isDispatchingAttrs) { return; }
 
   if (this.currentState) {
     this.currentState.legacyPropertyDidChange(this, key);

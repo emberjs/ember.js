@@ -10,8 +10,6 @@ import merge from "ember-metal/merge";
 let preRender = create(_default);
 
 merge(preRender, {
-  legacyAttrWillChange(view, key) {},
-  legacyAttrDidChange(view, key) {},
   legacyPropertyDidChange(view, key) {}
 });
 

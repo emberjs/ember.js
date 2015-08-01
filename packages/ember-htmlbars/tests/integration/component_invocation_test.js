@@ -808,57 +808,6 @@ QUnit.test('implementing `render` allows pushing into a string buffer', function
   equal(view.$('#zomg').text(), 'Whoop!');
 });
 
-QUnit.test("comopnent should rerender when a property is changed during children's rendering", function() {
-  expectDeprecation(/twice in a single render/);
-
-  var outer, middle;
-
-  registry.register('component:x-outer', Component.extend({
-    value: 1,
-    grabReference: Ember.on('init', function() {
-      outer = this;
-    })
-  }));
-
-  registry.register('component:x-middle', Component.extend({
-    grabReference: Ember.on('init', function() {
-      middle = this;
-    })
-  }));
-
-  registry.register('component:x-inner', Component.extend({
-    pushDataUp: Ember.observer('value', function() {
-      middle.set('value', this.get('value'));
-    })
-  }));
-
-  registry.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
-  registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
-  registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
-
-
-  view = EmberView.extend({
-    template: compile('{{x-outer}}'),
-    container: container
-  }).create();
-
-  runAppend(view);
-
-  equal(view.$('#inner-value').text(), '1', 'initial render of inner');
-  equal(view.$('#middle-value').text(), '1', 'initial render of middle');
-
-  run(() => outer.set('value', 2));
-
-  equal(view.$('#inner-value').text(), '2', 'second render of inner');
-  equal(view.$('#middle-value').text(), '2', 'second render of middle');
-
-  run(() => outer.set('value', 3));
-
-  equal(view.$('#inner-value').text(), '3', 'third render of inner');
-  equal(view.$('#middle-value').text(), '3', 'third render of middle');
-
-});
-
 QUnit.test("components in template of a yielding component should have the proper parentView", function() {
   var outer, innerTemplate, innerLayout;
 
@@ -969,7 +918,7 @@ QUnit.test("components should receive the viewRegistry from the parent view", fu
   equal(outer._viewRegistry, viewRegistry);
 });
 
-QUnit.test("comopnent should rerender when a property (with a default) is changed during children's rendering", function() {
+QUnit.test('comopnent should rerender when a property is changed during children\'s rendering', function() {
   expectDeprecation(/modified value twice in a single render/);
 
   var outer, middle;

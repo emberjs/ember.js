@@ -1324,6 +1324,8 @@ var View = CoreView.extend(
     if (!this._viewRegistry) {
       this._viewRegistry = View.views;
     }
+
+    this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
   __defineNonEnumerable(property) {

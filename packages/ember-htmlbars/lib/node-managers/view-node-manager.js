@@ -96,8 +96,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     }
 
     if (component) {
-      var snapshot = takeSnapshot(attrs);
-      env.renderer.setAttrs(this.component, snapshot);
       env.renderer.willRender(component);
       env.renderedViews.push(component.elementId);
     }
@@ -132,7 +130,7 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderer.willUpdate(component, snapshot);
 
       if (component._renderNode.shouldReceiveAttrs) {
-        env.renderer.updateAttrs(component, snapshot);
+        env.renderer.componentUpdateAttrs(component, snapshot);
         setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
         component._renderNode.shouldReceiveAttrs = false;
       }
@@ -189,6 +187,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
     component = component.create(props);
   } else {
+    env.renderer.componentUpdateAttrs(component, snapshot);
     mergeBindings(props, shadowedAttrs(component, snapshot));
     setProperties(component, props);
   }
