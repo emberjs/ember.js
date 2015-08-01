@@ -97,11 +97,11 @@ if (isEnabled('ember-application-visit')) {
       app.instanceInitializer({
         name: 'register-application-template',
         initialize(app) {
-          app.register('template:application', compile('<h1>Hello world</h1> {{view "child"}}'));
+          app.register('template:application', compile('<h1>Hello world</h1> {{component "x-child"}}'));
           app.register('view:application', View.extend({
             elementId: 'my-cool-app'
           }));
-          app.register('view:child', View.extend({
+          app.register('component:x-child', View.extend({
             elementId: 'child-view'
           }));
         }
@@ -117,8 +117,17 @@ if (isEnabled('ember-application-visit')) {
       run(instance.view, 'appendTo', '#qunit-fixture');
       assert.equal(Ember.$('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
       assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
-      ok(instance.container.lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
-      ok(instance.container.lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
+
+      function lookup(fullName) {
+        if (isEnabled('ember-registry-container-reform')) {
+          return instance.lookup(fullName);
+        } else {
+          return instance.container.lookup(fullName);
+        }
+      }
+
+      ok(lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
+      ok(lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
 
       instance.destroy();
     }, function(error) {

@@ -1,4 +1,6 @@
 import Ember from 'ember-metal/core';
+import assign from 'ember-metal/assign';
+
 /**
   The hash of enabled Canary features. Add to this, any canary features
   before creating your application.
@@ -12,7 +14,7 @@ import Ember from 'ember-metal/core';
   @since 1.1.0
   @public
 */
-export var FEATURES = Ember.ENV.FEATURES || {};
+export var FEATURES = assign(DEFAULT_FEATURES, Ember.ENV.FEATURES); // jshint ignore:line
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's
