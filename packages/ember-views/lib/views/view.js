@@ -1358,10 +1358,6 @@ var View = CoreView.extend(
     }
   },
 
-  appendAttr(node, buffer) {
-    return this.currentState.appendAttr(this, node, buffer);
-  },
-
   templateRenderer: null,
 
   /**
