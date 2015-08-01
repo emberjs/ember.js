@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { assign } from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import setProperties from 'ember-metal/set_properties';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 
