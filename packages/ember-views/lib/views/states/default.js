@@ -1,11 +1,5 @@
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
-
-import {
-  propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 /**
@@ -26,21 +20,8 @@ export default {
     return null;
   },
 
-  legacyAttrWillChange(view, key) {
-    if (key in view.attrs && !(key in view)) {
-      propertyWillChange(view, key);
-    }
-  },
-
-  legacyAttrDidChange(view, key) {
-    if (key in view.attrs && !(key in view)) {
-      propertyDidChange(view, key);
-    }
-  },
-
   legacyPropertyDidChange(view, key) {
     let attrs = view.attrs;
-
     if (attrs && key in attrs) {
       let possibleCell = attrs[key];
 
