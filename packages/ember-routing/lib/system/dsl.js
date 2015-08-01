@@ -34,6 +34,12 @@ DSL.prototype = {
       })()
     );
 
+    Ember.warn(
+      `Using a route named 'select' (and defining a App.SelectView) will prevent you from using {{view 'select'}}`,
+      name !== 'select',
+      { id: 'ember-routing.dsl-select-route' }
+    );
+
     if (isEnabled('ember-routing-named-substates')) {
       if (this.enableLoadingSubstates) {
         createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
