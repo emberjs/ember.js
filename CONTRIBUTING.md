@@ -162,6 +162,44 @@ And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md
 
+# Travis CI Tests
+
+We use [Travis CI](https://travis-ci.org/emberjs/ember.js/pull_requests) to test each PR before it is merged.
+
+When you submit your PR (or later change that code), a Travis build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
+
+Within the Travis build, you can see that we (currently) run six different test suites.
+
+* The `each-package-tests` test suite is closest to what you normally run locally on your machine.
+* The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
+* The `sauce` test suite runs tests against various supported browsers.
+
+## Common Travis CI Build Issues
+
+### Production Build Failures
+
+If your build is failing on the 'production' suite, you may be relying on a debug-only function that does not even exist in a production build (`Ember.warn`, `Ember.deprecate`, `Ember.assert`, etc.).  These will pass on the 'each-package-tests' suite (and locally) because those functions are present in development builds.
+
+There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
+
+If your tests can't aren't covered a helper, one common solution is the use of `EmberDev.runningProdBuild`.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+```
+if (EmberDev && !EmberDev.runningProdBuild) {
+  // Development-only test goes here
+}
+```
+Note: before using this approach, please be certain your test is really depending on a debug-only function and not truly failing in production.
+
+To recreate this build environment locally:
+* Run `ember serve --environment=production` in a terminal (takes much much longer than a default `ember s`)
+* Browse to `localhost:4200/tests/index.html?skipPackage=container,ember-testing,ember-debug&dist=prod&prod=true`
+
+### Single Unexplained Test Suite Failure
+
+Sometimes a single test suite will fail, without giving any indication of a real error.  Sometimes this is just a phantom crash.
+* Try to recreate the test environment locally (see above for production builds)
+* Restart all the test suites on Travis CI by doing another push
+* Ask a repo collab to restart that single test suite
 
 # Appendix
 
