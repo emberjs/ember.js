@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import { fmt } from 'ember-runtime/system/string';
 import { read, isStream } from 'ember-metal/streams/utils';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
@@ -15,7 +14,7 @@ export function readViewFactory(object, container) {
     viewClass = value;
   }
 
-  Ember.assert(fmt(value + ' must be a subclass or an instance of Ember.View, not %@', [viewClass]), (function(viewClass) {
+  Ember.assert(`${value} must be a subclass or an instance of Ember.View, not ${viewClass}`, (function(viewClass) {
     return viewClass && (viewClass.isViewFactory || viewClass.isView || viewClass.isComponentFactory || viewClass.isComponent);
   })(viewClass));
 
