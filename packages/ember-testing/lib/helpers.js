@@ -98,9 +98,13 @@ function check(app, selector, context) {
   Ember.assert('To check \'' + selector +
       '\', the input must be a checkbox', type === 'checkbox');
 
-  if (!$el.prop('checked')) {
-    app.testHelpers.click(selector, context);
-  }
+  Ember.assert('Expected \'' + selector +
+      '\'to be unchecked before click, but was checked', !$el.prop('checked'));
+
+  app.testHelpers.click(selector, context);
+
+  Ember.assert('Expected \'' + selector +
+      '\'to be checked after click, but was unchecked', $el.prop('checked'));
 
   return app.testHelpers.wait();
 }
@@ -111,10 +115,13 @@ function uncheck(app, selector, context) {
 
   Ember.assert('To uncheck \'' + selector +
       '\', the input must be a checkbox', type === 'checkbox');
+  Ember.assert('Expected \'' + selector +
+      '\'to be checked before click, but was unchecked', $el.prop('checked'));
 
-  if ($el.prop('checked')) {
-    app.testHelpers.click(selector, context);
-  }
+  app.testHelpers.click(selector, context);
+
+  Ember.assert('Expected \'' + selector +
+      '\'to be unchecked after click, but was checked', !$el.prop('checked'));
 
   return app.testHelpers.wait();
 }
