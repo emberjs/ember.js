@@ -301,12 +301,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     actionName = get(this, 'attrs.' + action) || get(this, action);
     actionName = validateAction(this, actionName);
 
-    // If no action name for that action could be found, just abort.
-    if (actionName === undefined) { return; }
-
     if (typeof actionName === 'function') {
       actionName.apply(null, contexts);
-    } else {
+    } else if (typeof actionName === 'undefined' && typeof action === 'string') {
+      try {
+        this.triggerAction({
+          action: action,
+          actionContext: contexts
+        });
+      } catch (exception) {
+        // Some sort of messaging needed here?
+      }
+    } else if (typeof actionName === 'string') {
       this.triggerAction({
         action: actionName,
         actionContext: contexts
