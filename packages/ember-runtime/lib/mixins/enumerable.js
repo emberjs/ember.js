@@ -1047,6 +1047,9 @@ export default Mixin.create({
 
     You may provide multiple arguments to sort by multiple properties.
 
+    Default order is ascending, but you can specify descending by
+    appending :desc to the key, e.g. sortBy('name:desc')
+
     @method sortBy
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
@@ -1058,14 +1061,15 @@ export default Mixin.create({
 
     return this.toArray().sort(function(a, b) {
       for (var i = 0; i < sortKeys.length; i++) {
-        var key = sortKeys[i];
-        var propA = get(a, key);
-        var propB = get(b, key);
+        var sortKey = sortKeys[i].split(':');
+        var valA = get(a, sortKey[0]);
+        var valB = get(b, sortKey[0]);
+        var desc = (sortKey[1] && sortKey[1] === 'desc') ? -1 : 1;
         // return 1 or -1 else continue to the next sortKey
-        var compareValue = compare(propA, propB);
+        var compareValue = compare(valA, valB);
 
         if (compareValue) {
-          return compareValue;
+          return compareValue * desc;
         }
       }
       return 0;
