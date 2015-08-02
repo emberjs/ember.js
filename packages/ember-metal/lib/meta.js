@@ -160,7 +160,10 @@ export function meta(obj, writable) {
     let newRet = Object.create(ret);
     newRet.parentMeta = ret;
     ret = newRet;
-    ret._cache = undefined;
+    for (let i = 0; i < memberNames.length; i++) {
+      let name = memberNames[i];
+      ret['_' + name] = undefined;
+    }
     // end temporary dance
 
     ret.watching  = Object.create(ret.watching);
