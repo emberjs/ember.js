@@ -82,6 +82,9 @@ function visit(app, url) {
 function click(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
+  if(document.activeElement){
+    Ember.run(app.$(document.activeElement), 'blur');    
+  }
 
   focus($el);
 
