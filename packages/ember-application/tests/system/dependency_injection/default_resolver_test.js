@@ -160,6 +160,12 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
   equal(resolvedLegacyHandlebars, LegacyHandlebarsBoundHelper, 'resolves legacy Handlebars bound helper');
 });
 
+QUnit.test('the default resolver resolves to the same instance no matter the notation ', function() {
+  application.NestedPostController = Controller.extend({});
+
+  equal(locator.lookup('controller:nested-post'), locator.lookup('controller:nested_post'), 'looks up NestedPost controller on application');
+});
+
 QUnit.test('the default resolver throws an error if the fullName to resolve is invalid', function() {
   throws(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
   throws(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
