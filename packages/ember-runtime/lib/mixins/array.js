@@ -76,7 +76,7 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   membership of an array changes by using `.observes('myArray.[]')`.
 
   To support `Ember.Array` in your own class, you must override two
-  primitives to use it: `replace()` and `objectAt()`.
+  primitives to use it: `length()` and `objectAt()`.
 
   Note that the Ember.Array mixin also incorporates the `Ember.Enumerable`
   mixin. All `Ember.Array`-like objects are also enumerable.
