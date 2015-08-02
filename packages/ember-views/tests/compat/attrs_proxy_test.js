@@ -83,7 +83,6 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
 
     barObserver: on('init', observer('bar', function() {
       var count = get(this, 'observerFiredCount');
-
       set(this, 'observerFiredCount', count + 1);
     })),
 
