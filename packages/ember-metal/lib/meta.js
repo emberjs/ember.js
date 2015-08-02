@@ -112,10 +112,10 @@ function inheritedMap(name, Meta) {
     return ret;
   };
 
-  Meta.prototype['get' + capitalized] = getOrCreate;
+  let getId = Meta.prototype['get' + capitalized] = getOrCreate;
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = getOrCreate.apply(this);
+    let map = getId.apply(this);
     if (map) {
       return map[subkey];
     }
