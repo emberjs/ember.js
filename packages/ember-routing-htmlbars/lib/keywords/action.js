@@ -233,10 +233,6 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
     someService: Ember.inject.service()
   });
   ```
-
-  @method action
-  @for Ember.Templates.helpers
-  @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
   if (isEnabled('ember-routing-htmlbars-improved-actions')) {
