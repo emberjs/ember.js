@@ -154,7 +154,7 @@ export function addListener(obj, eventName, target, method, once) {
   @param {Function|String} method A function or the name of a function to be called on `target`
   @public
 */
-function removeListener(obj, eventName, target, method) {
+export function removeListener(obj, eventName, target, method) {
   Ember.assert('You must pass at least an object and event name to Ember.removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -412,7 +412,3 @@ export function on(...args) {
   func.__ember_listens__ = events;
   return func;
 }
-
-export {
-  removeListener
-};
