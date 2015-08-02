@@ -13,10 +13,6 @@ import {
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
 
-import { symbol } from 'ember-metal/utils';
-export let INTERCEPT_SET = symbol('INTERCEPT_SET');
-export let UNHANDLED_SET = symbol('UNHANDLED_SET');
-
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
@@ -38,14 +34,6 @@ export function set(obj, keyName, value, tolerant) {
   Ember.assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   Ember.assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
   Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
-
-  // This path exists purely to implement backwards-compatible
-  // effects (specifically, setting a property on a view may
-  // invoke a mutator on `attrs`).
-  if (obj && typeof obj[INTERCEPT_SET] === 'function') {
-    let result = obj[INTERCEPT_SET](obj, keyName, value, tolerant);
-    if (result !== UNHANDLED_SET) { return result; }
-  }
 
   var meta, possibleDesc, desc;
   if (obj) {

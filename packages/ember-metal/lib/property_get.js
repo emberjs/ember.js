@@ -10,12 +10,8 @@ import {
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
-import { symbol } from 'ember-metal/utils';
 
 var FIRST_KEY = /^([^\.]+)/;
-
-export let INTERCEPT_GET = symbol('INTERCEPT_GET');
-export let UNHANDLED_GET = symbol('UNHANDLED_GET');
 
 // ..........................................................
 // GET AND SET
@@ -58,11 +54,6 @@ export function get(obj, keyName) {
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {
     return obj;
-  }
-
-  if (typeof obj[INTERCEPT_GET] === 'function') {
-    let result = obj[INTERCEPT_GET](obj, keyName);
-    if (result !== UNHANDLED_GET) { return result; }
   }
 
   var meta = obj['__ember_meta__'];
