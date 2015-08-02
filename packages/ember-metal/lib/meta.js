@@ -12,7 +12,8 @@ import isEnabled from 'ember-metal/features';
 let members = {
   cache: ownMap,
   watching: inheritedMap,
-  mixins: inheritedMap
+  mixins: inheritedMap,
+  bindings: inheritedMap
 };
 
 let memberNames = Object.keys(members);
@@ -35,10 +36,6 @@ function Meta(obj, parentMeta) {
   // also has a __source__property. Both levels are inherited on
   // demand with o_create.
   this.listeners = undefined;
-
-  // o_create inherited on demand. May also get wiped out with a
-  // direct `m.bindings = {}` after they're handled.
-  this.bindings = undefined;
 
   // instance of ChainNode, inherited on demand via ChainNode.copy
   this.chains = undefined;
@@ -126,6 +123,10 @@ function inheritedMap(name, Meta) {
       return map[subkey];
     }
   };
+
+  Meta.prototype['clear' + capitalized] = function() {
+    this[key] = Object.create(null);
+  };
 }
 
 function memberProperty(name) {
@@ -189,7 +190,6 @@ export function meta(obj, writable) {
 
   if (!ret) {
     ret = new Meta(obj);
-    //ret._watching = {}; //fixme
     if (isEnabled('mandatory-setter')) {
       ret.values = {};
     }
@@ -201,7 +201,6 @@ export function meta(obj, writable) {
     for (let i = 0; i < memberNames.length; i++) {
       newRet[memberProperty(memberNames[i])] = undefined;
     }
-    //newRet._watching = Object.create(ret._watching); // fixme
     ret = newRet;
     // end temporary dance
 

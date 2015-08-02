@@ -309,13 +309,7 @@ var IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
-    var bindings = m.bindings;
-    if (!bindings) {
-      bindings = m.bindings = {};
-    } else if (!m.hasOwnProperty('bindings')) {
-      bindings = m.bindings = Object.create(m.bindings);
-    }
-    bindings[key] = value;
+    m.getOrCreateBindings()[key] = value;
   }
 }
 
@@ -346,7 +340,7 @@ function connectStreamBinding(obj, key, stream) {
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  var bindings = m.bindings;
+  var bindings = m.getBindings();
   var key, binding, to;
   if (bindings) {
     for (key in bindings) {
@@ -367,7 +361,7 @@ function connectBindings(obj, m) {
       }
     }
     // mark as applied
-    m.bindings = {};
+    m.clearBindings();
   }
 }
 

@@ -104,13 +104,7 @@ function makeCtor() {
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
-            var bindings = m.bindings;
-            if (!bindings) {
-              bindings = m.bindings = {};
-            } else if (!m.hasOwnProperty('bindings')) {
-              bindings = m.bindings = Object.create(m.bindings);
-            }
-            bindings[keyName] = value;
+            m.getOrCreateBindings()[keyName] = value;
           }
 
           var possibleDesc = this[keyName];
