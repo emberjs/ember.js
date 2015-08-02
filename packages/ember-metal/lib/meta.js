@@ -72,18 +72,18 @@ function Meta(obj, parentMeta) {
 function ownMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-
   Meta.prototype['getOrCreate' + capitalized] = function() {
-    let ret = this[key];
-    if (!ret) {
-      ret = this[key] = Object.create(null);
-    }
-    return ret;
+    return getOrCreateOwnMap.call(this, key);
   };
+  Meta.prototype['get' + capitalized] = function() { return this[key]; };
+}
 
-  Meta.prototype['get' + capitalized] = function() {
-    return this[key];
-  };
+function getOrCreateOwnMap(key) {
+  let ret = this[key];
+  if (!ret) {
+    ret = this[key] = Object.create(null);
+  }
+  return ret;
 }
 
 // Implements a member that is a lazily created POJO with inheritable
@@ -93,30 +93,16 @@ function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  let getOrCreate = Meta.prototype['getOrCreate' + capitalized] = function() {
-    let ret = this[key];
-    if (!ret) {
-      if (this.parent) {
-        ret = this[key] = Object.create(getOrCreate.apply(this.parent));
-      } else {
-        ret = this[key] = Object.create(null);
-      }
-    }
-    return ret;
+  Meta.prototype['getOrCreate' + capitalized] = function() {
+    return getOrCreateInheritedMap.call(this, key);
   };
 
-  let getIt = Meta.prototype['get' + capitalized] = function() {
-    let pointer = this;
-    while (pointer) {
-      if (pointer[key]) {
-        return pointer[key];
-      }
-      pointer = pointer.parent;
-    }
+  Meta.prototype['get' + capitalized] = function() {
+    return getInheritedMap.call(this, key);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = getIt.apply(this);
+    let map = getInheritedMap.call(this, key);
     if (map) {
       return map[subkey];
     }
@@ -125,6 +111,28 @@ function inheritedMap(name, Meta) {
   Meta.prototype['clear' + capitalized] = function() {
     this[key] = Object.create(null);
   };
+}
+
+function getOrCreateInheritedMap(key) {
+  let ret = this[key];
+  if (!ret) {
+    if (this.parent) {
+      ret = this[key] = Object.create(getOrCreateInheritedMap.call(this.parent, key));
+    } else {
+      ret = this[key] = Object.create(null);
+    }
+  }
+  return ret;
+}
+
+function getInheritedMap(key) {
+  let pointer = this;
+  while (pointer) {
+    if (pointer[key]) {
+      return pointer[key];
+    }
+    pointer = pointer.parent;
+  }
 }
 
 function memberProperty(name) {
