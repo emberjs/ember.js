@@ -14,7 +14,8 @@ let members = {
   watching: inheritedMap,
   mixins: inheritedMap,
   bindings: inheritedMap,
-  values: inheritedMap
+  values: inheritedMap,
+  listeners: inheritedMapOfLists
 };
 
 let memberNames = Object.keys(members);
@@ -31,12 +32,6 @@ function Meta(obj, parentMeta) {
 
   // map of maps, with two-level prototypical inheritance, cloned on access
   this.deps = undefined;
-
-  // map from keys to lists. Has own __source__ property that's used
-  // to distinguish whether it is being inherited or not. Each list
-  // also has a __source__property. Both levels are inherited on
-  // demand with o_create.
-  this.listeners = undefined;
 
   // instance of ChainNode, inherited on demand via ChainNode.copy
   this.chains = undefined;
@@ -133,6 +128,35 @@ function getInheritedMap(key) {
     }
     pointer = pointer.parent;
   }
+}
+
+// Implements a member that provides a lazily created mapping from
+// keys to lists, with inheritance at both levels.
+function inheritedMapOfLists(name, Meta) {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+
+  Meta.prototype['getOrCreate' + capitalized] = function(subkey) {
+    let map = getOrCreateInheritedMap.call(this, key);
+    let list = map[subkey];
+    if (!list) {
+      list = map[subkey] = [];
+    } else if (!Object.hasOwnProperty.call(map, subkey)) {
+      list = map[subkey] = list.slice();
+    }
+    return list;
+  };
+
+  Meta.prototype['get' + capitalized] = function(subkey) {
+    let map = getInheritedMap.call(this, key);
+    if (map) {
+      return map[subkey];
+    }
+  };
+
+  Meta.prototype['getAll' + capitalized] = function() {
+    return getInheritedMap.call(this, key);
+  };
 }
 
 function memberProperty(name) {
