@@ -15,7 +15,8 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  listeners: inheritedMapOfLists
+  listeners: inheritedMapOfLists,
+  deps: inheritedMapOfMaps
 };
 
 let memberNames = Object.keys(members);
@@ -29,9 +30,6 @@ function Meta(obj, parentMeta) {
   // used only internally by meta() to distinguish meta-from-prototype
   // from instance's own meta
   this.source = obj;
-
-  // map of maps, with two-level prototypical inheritance, cloned on access
-  this.deps = undefined;
 
   // instance of ChainNode, inherited on demand via ChainNode.copy
   this.chains = undefined;
@@ -145,6 +143,36 @@ function inheritedMapOfLists(name, Meta) {
       list = map[subkey] = list.slice();
     }
     return list;
+  };
+
+  Meta.prototype['get' + capitalized] = function(subkey) {
+    let map = getInheritedMap.call(this, key);
+    if (map) {
+      return map[subkey];
+    }
+  };
+
+  Meta.prototype['getAll' + capitalized] = function() {
+    return getInheritedMap.call(this, key);
+  };
+}
+
+
+// Implements a member that provides a lazily created map of maps,
+// with inheritance at both levels.
+function inheritedMapOfMaps(name, Meta) {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+
+  Meta.prototype['getOrCreate' + capitalized] = function(subkey) {
+    let outerMap = getOrCreateInheritedMap.call(this, key);
+    let innerMap = outerMap[subkey];
+    if (!innerMap) {
+      innerMap = outerMap[subkey] = Object.create(null);
+    } else if (!Object.hasOwnProperty.call(outerMap, subkey)) {
+      innerMap = outerMap[subkey] = Object.create(innerMap);
+    }
+    return innerMap;
   };
 
   Meta.prototype['get' + capitalized] = function(subkey) {
