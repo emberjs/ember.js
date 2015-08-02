@@ -1107,7 +1107,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       transitioning to the route.
     @return {Transition} the transition object associated with this
       attempted transition
-    @private
+    @public
   */
   replaceWith() {
     var router = this.router;
