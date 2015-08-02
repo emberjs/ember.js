@@ -10,16 +10,46 @@ import isEnabled from 'ember-metal/features';
 */
 
 function Meta(obj) {
+  // map from strings to integer, with plain prototypical inheritance,
+  // cloned at meta creation.
   this.watching = {};
+
+  // plain map with no inheritance
   this.cache = undefined;
+
+  // used only internally by meta() to distinguish meta-from-prototype
+  // from instance's own meta
   this.source = obj;
+
+  // map of maps, with two-level prototypical inheritance, cloned on access
   this.deps = undefined;
+
+  // map from keys to lists. Has own __source__ property that's used
+  // to distinguish whether it is being inherited or not. Each list
+  // also has a __source__property. Both levels are inherited on
+  // demand with o_create.
   this.listeners = undefined;
+
+  // o_create inherited on demand
   this.mixins = undefined;
+
+  // o_create inherited on demand. May also get wiped out with a
+  // direct `m.bindings = {}` after they're handled.
   this.bindings = undefined;
+
+  // instance of ChainNode, inherited on demand via ChainNode.copy
   this.chains = undefined;
+
+  // instanceof ChainWatchers. Created on demand with a fresh new
+  // ChainWatchers at each level in prototype chain, by testing
+  // m.chainWatchers.obj.
   this.chainWatchers = undefined;
+
+  // plain inheritance, cloned at meta creation
   this.values = undefined;
+
+  // when meta(obj).proto === obj, the object is intended to be only a
+  // prototype and doesn't need to actually be observable itself
   this.proto = undefined;
 }
 
