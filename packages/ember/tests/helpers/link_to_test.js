@@ -196,7 +196,6 @@ QUnit.test('the {{link-to}} helper doesn\'t add an href when the tagName isn\'t 
   equal(Ember.$('#about-link').attr('href'), undefined, 'there is no href attribute');
 });
 
-
 QUnit.test('the {{link-to}} applies a \'disabled\' class when disabled', function () {
   Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable"}}About{{/link-to}}');
   App.IndexController = Ember.Controller.extend({
@@ -302,29 +301,6 @@ QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes
   Ember.run(router, 'handleURL', '/about/item');
 
   equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
-});
-
-QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function() {
-  expectDeprecation('Usage of `currentWhen` is deprecated, use `current-when` instead.');
-
-  Router.map(function(match) {
-    this.route('index', { path: '/' }, function() {
-      this.route('about');
-    });
-
-    this.route('item');
-  });
-
-  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{outlet}}');
-  Ember.TEMPLATES['index/about'] = compile('{{#link-to \'item\' id=\'other-link\' currentWhen=\'index\'}}ITEM{{/link-to}}');
-
-  bootApplication();
-
-  Ember.run(function() {
-    router.handleURL('/about');
-  });
-
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
 });
 
 QUnit.test('The {{link-to}} helper supports custom, nested, current-when', function() {
