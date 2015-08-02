@@ -48,7 +48,7 @@ if (isEnabled('mandatory-setter')) {
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
-      m.values[keyName] = obj[keyName];
+      m.getOrCreateValues()[keyName] = obj[keyName];
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
@@ -91,7 +91,7 @@ export function unwatchKey(obj, keyName, meta) {
               enumerable: true,
               value: val
             });
-            delete m.values[keyName];
+            delete m.getOrCreateValues()[keyName];
           },
           get: DEFAULT_GETTER_FUNCTION(keyName)
         });

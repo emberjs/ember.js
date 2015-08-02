@@ -13,7 +13,8 @@ let members = {
   cache: ownMap,
   watching: inheritedMap,
   mixins: inheritedMap,
-  bindings: inheritedMap
+  bindings: inheritedMap,
+  values: inheritedMap
 };
 
 let memberNames = Object.keys(members);
@@ -44,9 +45,6 @@ function Meta(obj, parentMeta) {
   // ChainWatchers at each level in prototype chain, by testing
   // m.chainWatchers.obj.
   this.chainWatchers = undefined;
-
-  // plain inheritance, cloned at meta creation
-  this.values = undefined;
 
   // when meta(obj).proto === obj, the object is intended to be only a
   // prototype and doesn't need to actually be observable itself
@@ -155,7 +153,7 @@ var EMBER_META_PROPERTY = {
 export var EMPTY_META = new Meta(null);
 
 if (isEnabled('mandatory-setter')) {
-  EMPTY_META.values = {};
+  EMPTY_META.getOrCreateValues();
 }
 
 /**
@@ -191,7 +189,7 @@ export function meta(obj, writable) {
   if (!ret) {
     ret = new Meta(obj);
     if (isEnabled('mandatory-setter')) {
-      ret.values = {};
+      ret.getOrCreateValues();
     }
   } else if (ret.source !== obj) {
     // temporary dance until I can eliminate remaining uses of
@@ -205,10 +203,6 @@ export function meta(obj, writable) {
     // end temporary dance
 
     ret.source    = obj;
-
-    if (isEnabled('mandatory-setter')) {
-      ret.values = Object.create(ret.values);
-    }
   }
   obj.__ember_meta__ = ret;
   return ret;

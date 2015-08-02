@@ -34,7 +34,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
     var meta = this['__ember_meta__'];
-    return meta && meta.values[name];
+    return meta && meta.peekValues(name);
   };
 }
 
@@ -122,7 +122,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
       if (isEnabled('mandatory-setter')) {
         if (watching) {
-          meta.values[keyName] = data;
+          meta.getOrCreateValues()[keyName] = data;
           Object.defineProperty(obj, keyName, {
             configurable: true,
             enumerable: true,

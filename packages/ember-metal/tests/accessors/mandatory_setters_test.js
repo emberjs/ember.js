@@ -8,8 +8,8 @@ QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
   var meta = metaFor(object);
-
-  return property in meta.values;
+  let values = meta.getValues();
+  return values && property in values;
 }
 
 if (isEnabled('mandatory-setter')) {
@@ -114,7 +114,7 @@ if (isEnabled('mandatory-setter')) {
     });
 
     watch(obj, 'someProp');
-    ok(!('someProp' in meta.values), 'blastix');
+    ok(!('someProp' in meta.getValues()), 'blastix');
   });
 
   QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
@@ -131,7 +131,7 @@ if (isEnabled('mandatory-setter')) {
     watch(obj2, 'someProp');
     var meta = metaFor(obj2);
 
-    ok(('someProp' in meta.values), 'mandatory setter has been setup');
+    ok(('someProp' in meta.getValues()), 'mandatory setter has been setup');
 
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';

@@ -70,7 +70,7 @@ export function get(obj, keyName) {
   } else {
     if (isEnabled('mandatory-setter')) {
       if (meta && meta.peekWatching(keyName) > 0) {
-        ret = meta.values[keyName];
+        ret = meta.peekValues(keyName);
       } else {
         ret = obj[keyName];
       }
