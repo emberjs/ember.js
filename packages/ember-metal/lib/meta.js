@@ -86,7 +86,7 @@ function ownMap(name, Meta) {
   };
 }
 
-// Implements a member that is lazily created POJO with inheritable
+// Implements a member that is a lazily created POJO with inheritable
 // values. For member `thing` you get methods `getThing`,
 // `getOrCreateThing`, and `peekThing`.
 function inheritedMap(name, Meta) {
@@ -105,7 +105,7 @@ function inheritedMap(name, Meta) {
     return ret;
   };
 
-  let getId = Meta.prototype['get' + capitalized] = function() {
+  let getIt = Meta.prototype['get' + capitalized] = function() {
     let pointer = this;
     while (pointer) {
       if (pointer[key]) {
@@ -116,7 +116,7 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = getId.apply(this);
+    let map = getIt.apply(this);
     if (map) {
       return map[subkey];
     }
