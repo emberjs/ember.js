@@ -751,6 +751,29 @@ QUnit.test('pushing a new duplicate key will render properly with primitive item
   equal(view.$().text(), 'abca');
 });
 
+QUnit.test('pushing primitive item twice will render properly', function() {
+  runDestroy(view);
+  view = EmberView.create({
+    items: A(),
+    template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
+  });
+
+  runAppend(view);
+
+  run(function() {
+    view.get('items').pushObject('a');
+  });
+
+  equal(view.$().text(), 'a');
+
+  run(function() {
+    view.get('items').pushObject('a');
+  });
+
+  equal(view.$().text(), 'aa');
+});
+
+
 QUnit.test('duplicate keys work properly with objects', function() {
   runDestroy(view);
   let duplicateItem = { display: 'foo' };
