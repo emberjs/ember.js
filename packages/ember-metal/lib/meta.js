@@ -18,7 +18,7 @@ let memberNames = Object.keys(members);
 function Meta(obj, parentMeta) {
   // preallocate a slot for each member
   for (let i = 0; i < memberNames.length; i++) {
-    this['_' + memberNames[i]] = undefined;
+    this[memberProperty(memberNames[i])] = undefined;
   }
 
   // map from strings to integer, with plain prototypical inheritance,
@@ -80,11 +80,8 @@ function Meta(obj, parentMeta) {
 // POJO. For member `thing` you get methods `getThing` and
 // `getOrCreateThing`.
 function ownMap(name, Meta) {
-  // This underscored name is preallocated in our constructor, so
-  // don't go changing it without updating that too.
-  let key = '_' + name;
-
-  let capitalized = name.replace(/^\w/, m => m.toUpperCase());
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
 
   Meta.prototype['getOrCreate' + capitalized] = function() {
     let ret = this[key];
@@ -97,6 +94,45 @@ function ownMap(name, Meta) {
   Meta.prototype['get' + capitalized] = function() {
     return this[key];
   };
+}
+
+// Implements a member that is lazily created POJO with inheritable
+// values. For member `thing` you get methods `getThing`,
+// `getOrCreateThing`, and `peekThing`.
+function inheritedMap(name, Meta) {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+
+  let getOrCreate = Meta.prototype['getOrCreate' + capitalized] = function() {
+    let ret = this[key];
+    if (!ret) {
+      if (this.parent && this.parent[key]) {
+        ret = this[key] = Object.create(this.parent[key]);
+      } else {
+        ret = this[key] = Object.create(null);
+      }
+    }
+    return ret;
+  };
+
+  Meta.prototype['get' + capitalized] = getOrCreate;
+
+  Meta.prototype['peek' + capitalized] = function(subkey) {
+    let map = getOrCreate.apply(this);
+    if (map) {
+      return map[subkey];
+    }
+  };
+}
+
+function memberProperty(name) {
+  return '_' + name;
+}
+
+// there's a more general-purpose capitalize in ember-runtime, but we
+// don't want to make ember-metal depend on ember-runtime.
+function capitalize(name) {
+  return name.replace(/^\w/, m => m.toUpperCase());
 }
 
 export var META_DESC = {
@@ -158,11 +194,10 @@ export function meta(obj, writable) {
     // temporary dance until I can eliminate remaining uses of
     // prototype chain
     let newRet = Object.create(ret);
-    newRet.parentMeta = ret;
+    newRet.parent = ret;
     ret = newRet;
     for (let i = 0; i < memberNames.length; i++) {
-      let name = memberNames[i];
-      ret['_' + name] = undefined;
+      ret[memberProperty(memberNames[i])] = undefined;
     }
     // end temporary dance
 
