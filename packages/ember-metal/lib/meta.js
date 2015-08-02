@@ -112,7 +112,15 @@ function inheritedMap(name, Meta) {
     return ret;
   };
 
-  let getId = Meta.prototype['get' + capitalized] = getOrCreate;
+  let getId = Meta.prototype['get' + capitalized] = function() {
+    let pointer = this;
+    while (pointer) {
+      if (pointer[key]) {
+        return pointer[key];
+      }
+      pointer = pointer.parent;
+    }
+  };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
     let map = getId.apply(this);

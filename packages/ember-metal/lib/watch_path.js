@@ -34,12 +34,12 @@ export function watchPath(obj, keyPath, meta) {
 
 export function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.getWatching();
+  var watching = m.getOrCreateWatching();
 
-  if (watching && watching[keyPath] === 1) {
+  if (watching[keyPath] === 1) {
     watching[keyPath] = 0;
     chainsFor(obj, m).remove(keyPath);
-  } else if (watching && watching[keyPath] > 1) {
+  } else if (watching[keyPath] > 1) {
     watching[keyPath]--;
   }
 }
