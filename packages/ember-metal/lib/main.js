@@ -14,9 +14,7 @@ import {
   unsubscribe as instrumentationUnsubscribe
 } from 'ember-metal/instrumentation';
 import {
-  EMPTY_META,
   GUID_KEY,
-  META_DESC,
   apply,
   applyStr,
   canInvoke,
@@ -24,12 +22,16 @@ import {
   guidFor,
   inspect,
   makeArray,
-  meta,
   deprecatedTryCatchFinally,
   tryInvoke,
   uuid,
   wrap
 } from 'ember-metal/utils';
+import {
+  EMPTY_META,
+  META_DESC,
+  meta
+} from 'ember-metal/meta';
 import EmberError from 'ember-metal/error';
 import Cache from 'ember-metal/cache';
 import Logger from 'ember-metal/logger';
