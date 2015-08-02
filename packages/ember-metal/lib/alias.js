@@ -47,14 +47,14 @@ AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
 AliasedProperty.prototype.setup = function(obj, keyName) {
   Ember.assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
   var m = meta(obj);
-  if (m.watching[keyName]) {
+  if (m.peekWatching(keyName)) {
     addDependentKeys(this, obj, keyName, m);
   }
 };
 
 AliasedProperty.prototype.teardown = function(obj, keyName) {
   var m = meta(obj);
-  if (m.watching[keyName]) {
+  if (m.peekWatching(keyName)) {
     removeDependentKeys(this, obj, keyName, m);
   }
 };

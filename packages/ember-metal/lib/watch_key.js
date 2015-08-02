@@ -12,7 +12,7 @@ export function watchKey(obj, keyName, meta) {
   if (keyName === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
-  var watching = m.watching;
+  var watching = m.getOrCreateWatching();
 
   // activate watching first time
   if (!watching[keyName]) {
@@ -65,9 +65,9 @@ if (isEnabled('mandatory-setter')) {
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.watching;
+  var watching = m.getWatching();
 
-  if (watching[keyName] === 1) {
+  if (watching && watching[keyName] === 1) {
     watching[keyName] = 0;
 
     var possibleDesc = obj[keyName];
@@ -97,7 +97,7 @@ export function unwatchKey(obj, keyName, meta) {
         });
       }
     }
-  } else if (watching[keyName] > 1) {
+  } else if (watching && watching[keyName] > 1) {
     watching[keyName]--;
   }
 }

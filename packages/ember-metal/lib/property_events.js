@@ -36,7 +36,7 @@ var deferred = 0;
 */
 function propertyWillChange(obj, keyName) {
   var m = obj['__ember_meta__'];
-  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
@@ -76,7 +76,7 @@ function propertyWillChange(obj, keyName) {
 */
 function propertyDidChange(obj, keyName) {
   var m = obj['__ember_meta__'];
-  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;

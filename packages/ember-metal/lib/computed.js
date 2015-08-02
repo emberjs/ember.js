@@ -425,7 +425,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 
   if (hadCachedValue && cachedValue === ret) { return; }
 
-  var watched = meta.watching[keyName];
+  var watched = meta.peekWatching(keyName);
   if (watched) {
     propertyWillChange(obj, keyName);
   }

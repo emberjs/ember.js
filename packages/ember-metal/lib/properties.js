@@ -89,7 +89,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) {
     meta = metaFor(obj);
   }
-  var watchEntry = meta.watching[keyName];
+  var watchEntry = meta.peekWatching(keyName);
   possibleDesc = obj[keyName];
   existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 

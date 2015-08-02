@@ -10,7 +10,8 @@ import isEnabled from 'ember-metal/features';
 */
 
 let members = {
-  cache: ownMap
+  cache: ownMap,
+  watching: inheritedMap
 };
 
 let memberNames = Object.keys(members);
@@ -20,10 +21,6 @@ function Meta(obj, parentMeta) {
   for (let i = 0; i < memberNames.length; i++) {
     this[memberProperty(memberNames[i])] = undefined;
   }
-
-  // map from strings to integer, with plain prototypical inheritance,
-  // cloned at meta creation.
-  this.watching = {};
 
   // used only internally by meta() to distinguish meta-from-prototype
   // from instance's own meta
@@ -106,8 +103,8 @@ function inheritedMap(name, Meta) {
   let getOrCreate = Meta.prototype['getOrCreate' + capitalized] = function() {
     let ret = this[key];
     if (!ret) {
-      if (this.parent && this.parent[key]) {
-        ret = this[key] = Object.create(this.parent[key]);
+      if (this.parent) {
+        ret = this[key] = Object.create(getOrCreate.apply(this.parent));
       } else {
         ret = this[key] = Object.create(null);
       }
@@ -186,7 +183,7 @@ export function meta(obj, writable) {
 
   if (!ret) {
     ret = new Meta(obj);
-
+    //ret._watching = {}; //fixme
     if (isEnabled('mandatory-setter')) {
       ret.values = {};
     }
@@ -195,13 +192,13 @@ export function meta(obj, writable) {
     // prototype chain
     let newRet = Object.create(ret);
     newRet.parent = ret;
-    ret = newRet;
     for (let i = 0; i < memberNames.length; i++) {
-      ret[memberProperty(memberNames[i])] = undefined;
+      newRet[memberProperty(memberNames[i])] = undefined;
     }
+    //newRet._watching = Object.create(ret._watching); // fixme
+    ret = newRet;
     // end temporary dance
 
-    ret.watching  = Object.create(ret.watching);
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {

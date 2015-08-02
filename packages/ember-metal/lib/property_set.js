@@ -63,7 +63,7 @@ export function set(obj, keyName, value, tolerant) {
     // `setUnknownProperty` method exists on the object
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
-    } else if (meta && meta.watching[keyName] > 0) {
+    } else if (meta && meta.peekWatching(keyName) > 0) {
       if (meta.proto !== obj) {
         if (isEnabled('mandatory-setter')) {
           currentValue = meta.values[keyName];
