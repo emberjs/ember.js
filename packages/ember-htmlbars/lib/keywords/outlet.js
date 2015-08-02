@@ -7,6 +7,8 @@ import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
+import isEnabled from 'ember-metal/features';
+
 topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 export default {
@@ -58,18 +60,33 @@ export default {
       ViewClass = env.container.lookupFactory('view:toplevel');
     }
 
-    var options = {
-      component: ViewClass,
-      self: toRender.controller,
-      createOptions: {
-        controller: toRender.controller
+    var Component;
+
+    if (isEnabled('ember-routing-routable-components')) {
+      Component = outletState.render.Component;
+    }
+
+    var options;
+    var attrs = {};
+    if (Component) {
+      options = {
+        component: Component
+      };
+      attrs = toRender.attrs;
+    } else {
+      options = {
+        component: ViewClass,
+        self: toRender.controller,
+        createOptions: {
+          controller: toRender.controller
+        }
+      };
+
+      template = template || toRender.template && toRender.template.raw;
+
+      if (LOG_VIEW_LOOKUPS && ViewClass) {
+        Ember.Logger.info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
       }
-    };
-
-    template = template || toRender.template && toRender.template.raw;
-
-    if (LOG_VIEW_LOOKUPS && ViewClass) {
-      Ember.Logger.info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
     }
 
     if (state.manager) {
@@ -77,7 +94,7 @@ export default {
       state.manager = null;
     }
 
-    var nodeManager = ViewNodeManager.create(renderNode, env, {}, options, parentView, null, null, template);
+    var nodeManager = ViewNodeManager.create(renderNode, env, attrs, options, parentView, null, null, template);
     state.manager = nodeManager;
 
     nodeManager.render(env, hash, visitor);

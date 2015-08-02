@@ -303,6 +303,116 @@ QUnit.test('Model passed via renderTemplate model is set as controller\'s model'
   equal(Ember.$('p:contains(emberjs)', '#qunit-fixture').length, 1, 'Passed model was set as controllers model');
 });
 
+if (isEnabled('ember-routing-routable-components')) {
+  QUnit.test('Renders the GlimmerComponent for the route', function() {
+    Ember.TEMPLATES['home'] = null;
+    Ember.TEMPLATES['components/home'] = compile('<p>{{name}}</p>');
+
+    Router.map(function() {
+      this.route('home', { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend();
+
+    App.HomeComponent = Ember.Component.extend({
+      isGlimmerComponent: true,
+      name: 'Home'
+    });
+
+    bootApplication();
+
+    equal(Ember.$('p:contains(Home)', '#qunit-fixture').length, 1, 'The home component was rendered');
+  });
+
+  QUnit.test('Must be a GlimmerComponent to prevent component naming collisions', function() {
+    Ember.TEMPLATES['home'] = null;
+    Ember.TEMPLATES['components/home'] = compile('<p>{{name}}</p>');
+
+    Router.map(function() {
+      this.route('home', { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend();
+
+    // Not a GlimmerComponent, shouldn't be rendered
+    App.HomeComponent = Ember.Component.extend({
+      name: 'Home'
+    });
+
+    bootApplication();
+
+    equal(Ember.$('p:contains(Home)', '#qunit-fixture').length, 0, 'The home component was not rendered');
+  });
+
+  QUnit.test('Favors existing templates/views over the component for the route', function() {
+    Ember.TEMPLATES['home'] = compile('PASS');
+    Ember.TEMPLATES['components/home'] = compile('FAIL');
+
+    Router.map(function() {
+      this.route('home', { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend();
+
+    App.HomeComponent = Ember.Component.extend({
+      isGlimmerComponent: true
+    });
+
+    bootApplication();
+
+    equal(Ember.$('#qunit-fixture').text(), 'PASS', 'The home view was rendered instead of the component');
+  });
+
+  QUnit.test('Renders the component given in the component option', function() {
+    Ember.TEMPLATES['home'] = null;
+    Ember.TEMPLATES['components/home'] = compile('<p>{{name}}</p>');
+
+    Router.map(function() {
+      this.route('home', { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend({
+      renderTemplate() {
+        this.render({ component: 'home' });
+      }
+    });
+
+    App.HomeComponent = Ember.Component.extend({
+      isGlimmerComponent: true,
+      name: 'Home'
+    });
+
+    bootApplication();
+
+    equal(Ember.$('p:contains(Home)', '#qunit-fixture').length, 1, 'The home component was rendered');
+  });
+
+  QUnit.test('Routable components get passed model in their attrs', function() {
+    Ember.TEMPLATES['home'] = null;
+    Ember.TEMPLATES['components/home'] = compile('<p>{{attrs.model.name}}</p>');
+
+    Router.map(function() {
+      this.route('home', { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend({
+      model() {
+        return {
+          name: 'Home'
+        };
+      }
+    });
+
+    App.HomeComponent = Ember.Component.extend({
+      isGlimmerComponent: true
+    });
+
+    bootApplication();
+
+    equal(Ember.$('p:contains(Home)', '#qunit-fixture').length, 1, 'The model was present');
+  });
+}
+
 QUnit.test('Renders correct view with slash notation', function() {
   Ember.TEMPLATES['home/page'] = compile('<p>{{view.name}}</p>');
 
