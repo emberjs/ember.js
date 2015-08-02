@@ -328,27 +328,19 @@ function meta(obj, writable) {
     return ret || EMPTY_META;
   }
 
-  if (!ret) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, '__ember_meta__', META_DESC);
-    }
+  if (obj.__defineNonEnumerable) {
+    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+  } else {
+    Object.defineProperty(obj, '__ember_meta__', META_DESC);
+  }
 
+  if (!ret) {
     ret = new Meta(obj);
 
     if (isEnabled('mandatory-setter')) {
       ret.values = {};
     }
-
-    obj.__ember_meta__ = ret;
   } else if (ret.source !== obj) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, '__ember_meta__', META_DESC);
-    }
-
     ret = Object.create(ret);
     ret.watching  = Object.create(ret.watching);
     ret.cache     = undefined;
@@ -357,9 +349,8 @@ function meta(obj, writable) {
     if (isEnabled('mandatory-setter')) {
       ret.values = Object.create(ret.values);
     }
-
-    obj['__ember_meta__'] = ret;
   }
+  obj.__ember_meta__ = ret;
   return ret;
 }
 
