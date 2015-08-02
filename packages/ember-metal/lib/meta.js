@@ -11,7 +11,8 @@ import isEnabled from 'ember-metal/features';
 
 let members = {
   cache: ownMap,
-  watching: inheritedMap
+  watching: inheritedMap,
+  mixins: inheritedMap
 };
 
 let memberNames = Object.keys(members);
@@ -34,9 +35,6 @@ function Meta(obj, parentMeta) {
   // also has a __source__property. Both levels are inherited on
   // demand with o_create.
   this.listeners = undefined;
-
-  // o_create inherited on demand
-  this.mixins = undefined;
 
   // o_create inherited on demand. May also get wiped out with a
   // direct `m.bindings = {}` after they're handled.

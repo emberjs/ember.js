@@ -74,14 +74,7 @@ superFunction.call(primer, 1, 2);
 superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
-  var m = metaFor(obj, true);
-  var ret = m.mixins;
-  if (!ret) {
-    ret = m.mixins = {};
-  } else if (!m.hasOwnProperty('mixins')) {
-    ret = m.mixins = Object.create(ret);
-  }
-  return ret;
+  return metaFor(obj, true).getOrCreateMixins();
 }
 
 function isMethod(obj) {
@@ -667,12 +660,9 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj['__ember_meta__'];
-  var mixins = m && m.mixins;
-  if (mixins) {
-    return !!mixins[guidFor(this)];
-  }
-  return false;
+  var m = obj.__ember_meta__;
+  if (!m) { return false; }
+  return !!m.peekMixins(guidFor(this));
 };
 
 MixinPrototype.without = function(...args) {
@@ -712,7 +702,7 @@ MixinPrototype.keys = function() {
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
   var m = obj['__ember_meta__'];
-  var mixins = m && m.mixins;
+  var mixins = m && m.getMixins();
   var ret = [];
 
   if (!mixins) { return ret; }
