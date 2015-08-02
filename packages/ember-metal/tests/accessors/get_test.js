@@ -1,9 +1,7 @@
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   get,
-  getWithDefault,
-  INTERCEPT_GET,
-  UNHANDLED_GET
+  getWithDefault
 } from 'ember-metal/property_get';
 import {
   Mixin,
@@ -30,54 +28,6 @@ QUnit.test('should get arbitrary properties on an object', function() {
     equal(get(obj, key), obj[key], key);
   }
 
-});
-
-QUnit.test('should invoke INTERCEPT_GET even if the property exists', function() {
-  var obj = {
-    string: 'string',
-    number: 23,
-    boolTrue: true,
-    boolFalse: false,
-    nullValue: null
-  };
-
-  let calledWith;
-  obj[INTERCEPT_GET] = function(obj, key) {
-    calledWith = [obj, key];
-    return UNHANDLED_GET;
-  };
-
-  for (var key in obj) {
-    if (!obj.hasOwnProperty(key)) {
-      continue;
-    }
-    calledWith = undefined;
-    equal(get(obj, key), obj[key], key);
-    equal(calledWith[0], obj, 'the object was passed');
-    equal(calledWith[1], key, 'the key was passed');
-  }
-
-});
-
-QUnit.test('should invoke INTERCEPT_GET and accept a return value', function() {
-  var obj = {
-    string: 'string',
-    number: 23,
-    boolTrue: true,
-    boolFalse: false,
-    nullValue: null
-  };
-
-  obj[INTERCEPT_GET] = function(obj, key) {
-    return key;
-  };
-
-  for (var key in obj) {
-    if (!obj.hasOwnProperty(key) || key === INTERCEPT_GET) {
-      continue;
-    }
-    equal(get(obj, key), key, key);
-  }
 });
 
 testBoth("should call unknownProperty on watched values if the value is undefined", function(get, set) {
@@ -235,4 +185,3 @@ QUnit.test('(regression) watched properties on unmodified inherited objects shou
 
   equal(getWithDefault(theRealObject, 'someProperty', "fail"), 'foo', 'should return the set value, not false');
 });
-

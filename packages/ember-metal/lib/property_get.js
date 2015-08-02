@@ -10,13 +10,9 @@ import {
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
 import { hasPropertyAccessors } from "ember-metal/platform/define_property";
-import { symbol } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
 
 var FIRST_KEY = /^([^\.]+)/;
-
-export let INTERCEPT_GET = symbol("INTERCEPT_GET");
-export let UNHANDLED_GET = symbol("UNHANDLED_GET");
 
 // ..........................................................
 // GET AND SET
@@ -70,11 +66,6 @@ export function get(obj, keyName) {
   if (isNone(obj)) {
     Ember.deprecate('Calling Ember.get without a target object has been deprecated, please specify a target object.');
     return _getPath(obj, keyName);
-  }
-
-  if (obj && typeof obj[INTERCEPT_GET] === 'function') {
-    let result = obj[INTERCEPT_GET](obj, keyName);
-    if (result !== UNHANDLED_GET) { return result; }
   }
 
   var meta = obj['__ember_meta__'];
