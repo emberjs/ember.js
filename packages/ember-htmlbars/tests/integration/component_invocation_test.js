@@ -1136,7 +1136,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.skip('attributes are not installed on the top level', function() {
     let component;
 
-    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}}</non-block>'));
+    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
     registry.register('component:non-block', Component.extend({
       text: null,
       dynamic: null,
@@ -1153,7 +1153,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     let el = view.$('non-block.ember-view');
     ok(el, 'precond - the view was rendered');
 
-    equal(el.text(), 'In layout - texting');
+    equal(el.text(), 'In layout - texting -- ');
     equal(component.attrs.text, 'texting');
     equal(component.attrs.dynamic, 'dynamic');
     strictEqual(get(component, 'text'), null);
@@ -1161,7 +1161,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     run(() => view.rerender());
 
-    equal(el.text(), 'In layout - texting');
+    equal(el.text(), 'In layout - texting -- ');
     equal(component.attrs.text, 'texting');
     equal(component.attrs.dynamic, 'dynamic');
     strictEqual(get(component, 'text'), null);
