@@ -222,8 +222,9 @@ function lazyGet(obj, key) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
-    if (meta.cache && key in meta.cache) {
-      return meta.cache[key];
+    let cache = meta.getCache();
+    if (cache && key in cache) {
+      return cache[key];
     }
   }
 }

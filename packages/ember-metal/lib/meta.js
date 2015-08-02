@@ -9,13 +9,21 @@ import isEnabled from 'ember-metal/features';
 @module ember-metal
 */
 
-function Meta(obj) {
+let members = {
+  cache: ownMap
+};
+
+let memberNames = Object.keys(members);
+
+function Meta(obj, parentMeta) {
+  // preallocate a slot for each member
+  for (let i = 0; i < memberNames.length; i++) {
+    this['_' + memberNames[i]] = undefined;
+  }
+
   // map from strings to integer, with plain prototypical inheritance,
   // cloned at meta creation.
   this.watching = {};
-
-  // plain map with no inheritance
-  this.cache = undefined;
 
   // used only internally by meta() to distinguish meta-from-prototype
   // from instance's own meta
@@ -51,6 +59,44 @@ function Meta(obj) {
   // when meta(obj).proto === obj, the object is intended to be only a
   // prototype and doesn't need to actually be observable itself
   this.proto = undefined;
+
+  // The next meta in our inheritance chain. We (will) track this
+  // explicitly instead of using prototypical inheritance because we
+  // have detailed knowledge of how each property should really be
+  // inherited, and we can optimize it much better than JS runtimes.
+  this.parent = parentMeta;
+}
+
+(function setupMembers() {
+  for (let i = 0; i < memberNames.length; i++) {
+    let name = memberNames[i];
+    let implementation = members[name];
+    implementation(name, Meta);
+  }
+})();
+
+
+// Implements a member that is a lazily created, non-inheritable
+// POJO. For member `thing` you get methods `getThing` and
+// `getOrCreateThing`.
+function ownMap(name, Meta) {
+  // This underscored name is preallocated in our constructor, so
+  // don't go changing it without updating that too.
+  let key = '_' + name;
+
+  let capitalized = name.replace(/^\w/, m => m.toUpperCase());
+
+  Meta.prototype['getOrCreate' + capitalized] = function() {
+    let ret = this[key];
+    if (!ret) {
+      ret = this[key] = Object.create(null);
+    }
+    return ret;
+  };
+
+  Meta.prototype['get' + capitalized] = function() {
+    return this[key];
+  };
 }
 
 export var META_DESC = {
@@ -109,9 +155,15 @@ export function meta(obj, writable) {
       ret.values = {};
     }
   } else if (ret.source !== obj) {
-    ret = Object.create(ret);
+    // temporary dance until I can eliminate remaining uses of
+    // prototype chain
+    let newRet = Object.create(ret);
+    newRet.parentMeta = ret;
+    ret = newRet;
+    ret._cache = undefined;
+    // end temporary dance
+
     ret.watching  = Object.create(ret.watching);
-    ret.cache     = undefined;
     ret.source    = obj;
 
     if (isEnabled('mandatory-setter')) {

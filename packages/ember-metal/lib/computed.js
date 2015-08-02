@@ -266,9 +266,10 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
-    var meta = metaFor(obj);
-    if (meta.cache && meta.cache[keyName] !== undefined) {
-      meta.cache[keyName] = undefined;
+    let meta = metaFor(obj);
+    let cache = meta.getCache();
+    if (cache && cache[keyName] !== undefined) {
+      cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
@@ -305,9 +306,9 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta;
   if (this._cacheable) {
     meta = metaFor(obj);
-    cache = meta.cache;
+    cache = meta.getOrCreateCache();
 
-    var result = cache && cache[keyName];
+    var result = cache[keyName];
 
     if (result === UNDEFINED) {
       return undefined;
@@ -316,10 +317,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     }
 
     ret = this._getter.call(obj, keyName);
-    cache = meta.cache;
-    if (!cache) {
-      cache = meta.cache = {};
-    }
+
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
     } else {
@@ -401,7 +399,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   var cacheable      = this._cacheable;
   var setter         = this._setter;
   var meta           = metaFor(obj, cacheable);
-  var cache          = meta.cache;
+  var cache          = meta.getCache();
   var hadCachedValue = false;
 
   var cachedValue, ret;
@@ -441,7 +439,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
       addDependentKeys(this, obj, keyName, meta);
     }
     if (!cache) {
-      cache = meta.cache = {};
+      cache = meta.getOrCreateCache();
     }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
@@ -460,13 +458,13 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 /* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
-
-  if (meta.cache) {
-    if (keyName in meta.cache) {
+  let cache = meta.getCache();
+  if (cache) {
+    if (keyName in cache) {
       removeDependentKeys(this, obj, keyName, meta);
     }
 
-    if (this._cacheable) { delete meta.cache[keyName]; }
+    if (this._cacheable) { delete cache[keyName]; }
   }
 
   return null; // no value to restore
@@ -560,7 +558,7 @@ export default function computed(func) {
 */
 function cacheFor(obj, key) {
   var meta = obj['__ember_meta__'];
-  var cache = meta && meta.cache;
+  var cache = meta && meta.getCache();
   var ret = cache && cache[key];
 
   if (ret === UNDEFINED) {
