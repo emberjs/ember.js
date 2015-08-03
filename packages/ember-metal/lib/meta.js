@@ -9,16 +9,26 @@ import isEnabled from 'ember-metal/features';
 @module ember-metal
 */
 
+/*
+ This declares the members on the Meta class. All access to Meta needs
+ to go through them.
+
+ In general, the `readable` variants will give you an object (if it
+ already exists) that you can read but should not modify. The
+ `writable` variants will give you a mutable object, and they will
+ create it if it didn't already exist.
+
+*/
 let members = {
-  cache: ownMap,
-  watching: inheritedMap,
-  mixins: inheritedMap,
-  bindings: inheritedMap,
-  values: inheritedMap,
-  listeners: inheritedMapOfLists,
-  deps: inheritedMapOfMaps,
-  chainWatchers: ownCustomObject,
-  chains: inheritedCustomObject
+  cache: ownMap,                  // writableCache, readableCache
+  watching: inheritedMap,         // writableWatching, readableWatching, peakWatching, clearWatching
+  mixins: inheritedMap,           // writableMixins, readableMixins, peakMixins, clearMixins
+  bindings: inheritedMap,         // writableBindings, readableBindings, peakBindings, clearBindings
+  values: inheritedMap,           // writableValues, readableValues, peakValues, clearValues
+  listeners: inheritedMapOfLists, // writableListeners, readableListeners, getAllListeners
+  deps: inheritedMapOfMaps,       // writableDeps, readableDeps, getAllDeps
+  chainWatchers: ownCustomObject, // writableChainWatchers, readableChainWatchers
+  chains: inheritedCustomObject   // writableChains, readableChains
 };
 
 let memberNames = Object.keys(members);
