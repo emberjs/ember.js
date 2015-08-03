@@ -288,7 +288,7 @@ QUnit.test("The {{link-to}} helper supports a custom activeClass", function() {
   equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
 });
 
-QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom values', function() {
+QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom values [GH #11699]', function() {
   Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\' classNameBindings=\'foo:foo-is-true:foo-is-false\'}}About{{/link-to}}');
 
   Router.map(function() {
