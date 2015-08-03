@@ -21,10 +21,10 @@ import isEnabled from 'ember-metal/features';
 */
 let members = {
   cache: ownMap,                  // writableCache, readableCache
-  watching: inheritedMap,         // writableWatching, readableWatching, peakWatching, clearWatching
-  mixins: inheritedMap,           // writableMixins, readableMixins, peakMixins, clearMixins
-  bindings: inheritedMap,         // writableBindings, readableBindings, peakBindings, clearBindings
-  values: inheritedMap,           // writableValues, readableValues, peakValues, clearValues
+  watching: inheritedMap,         // writableWatching, readableWatching, peekWatching, clearWatching
+  mixins: inheritedMap,           // writableMixins, readableMixins, peekMixins, clearMixins
+  bindings: inheritedMap,         // writableBindings, readableBindings, peekBindings, clearBindings
+  values: inheritedMap,           // writableValues, readableValues, peekValues, clearValues
   listeners: inheritedMapOfLists, // writableListeners, readableListeners, getAllListeners
   deps: inheritedMapOfMaps,       // writableDeps, readableDeps, getAllDeps
   chainWatchers: ownCustomObject, // writableChainWatchers, readableChainWatchers
