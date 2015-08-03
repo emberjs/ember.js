@@ -97,6 +97,21 @@ QUnit.test('should become disabled if the disabled attribute is true', function(
   ok(textField.$().is(':not(:disabled)'));
 });
 
+['placeholder', 'name', 'title', 'size', 'maxlength', 'tabindex'].forEach(function(attributeName) {
+  QUnit.test(`text field ${attributeName} is updated when setting ${attributeName} property of view`, function() {
+    run(function() {
+      set(textField, attributeName, '1');
+      textField.append();
+    });
+
+    equal(textField.$().attr(attributeName), '1', `renders text field with ${attributeName}`);
+
+    run(function() { set(textField, attributeName, '2'); });
+
+    equal(textField.$().attr(attributeName), '2', `updates text field after ${attributeName} changes`);
+  });
+});
+
 QUnit.test('input value is updated when setting value property of view', function() {
   run(function() {
     set(textField, 'value', 'foo');
@@ -108,84 +123,6 @@ QUnit.test('input value is updated when setting value property of view', functio
   run(function() { set(textField, 'value', 'bar'); });
 
   equal(textField.$().val(), 'bar', 'updates text field after value changes');
-});
-
-QUnit.test('input placeholder is updated when setting placeholder property of view', function() {
-  run(function() {
-    set(textField, 'placeholder', 'foo');
-    textField.append();
-  });
-
-  equal(textField.$().attr('placeholder'), 'foo', 'renders text field with placeholder');
-
-  run(function() { set(textField, 'placeholder', 'bar'); });
-
-  equal(textField.$().attr('placeholder'), 'bar', 'updates text field after placeholder changes');
-});
-
-QUnit.test('input name is updated when setting name property of view', function() {
-  run(function() {
-    set(textField, 'name', 'foo');
-    textField.append();
-  });
-
-  equal(textField.$().attr('name'), 'foo', 'renders text field with name');
-
-  run(function() { set(textField, 'name', 'bar'); });
-
-  equal(textField.$().attr('name'), 'bar', 'updates text field after name changes');
-});
-
-QUnit.test('input maxlength is updated when setting maxlength property of view', function() {
-  run(function() {
-    set(textField, 'maxlength', '30');
-    textField.append();
-  });
-
-  equal(textField.$().attr('maxlength'), '30', 'renders text field with maxlength');
-
-  run(function() { set(textField, 'maxlength', '40'); });
-
-  equal(textField.$().attr('maxlength'), '40', 'updates text field after maxlength changes');
-});
-
-QUnit.test('input size is updated when setting size property of view', function() {
-  run(function() {
-    set(textField, 'size', '30');
-    textField.append();
-  });
-
-  equal(textField.$().attr('size'), '30', 'renders text field with size');
-
-  run(function() { set(textField, 'size', '40'); });
-
-  equal(textField.$().attr('size'), '40', 'updates text field after size changes');
-});
-
-QUnit.test('input tabindex is updated when setting tabindex property of view', function() {
-  run(function() {
-    set(textField, 'tabindex', '5');
-    textField.append();
-  });
-
-  equal(textField.$().attr('tabindex'), '5', 'renders text field with the tabindex');
-
-  run(function() { set(textField, 'tabindex', '3'); });
-
-  equal(textField.$().attr('tabindex'), '3', 'updates text field after tabindex changes');
-});
-
-QUnit.test('input title is updated when setting title property of view', function() {
-  run(function() {
-    set(textField, 'title', 'FooTitle');
-    textField.append();
-  });
-
-  equal(textField.$().attr('title'), 'FooTitle', 'renders text field with the title');
-
-  run(function() { set(textField, 'title', 'BarTitle'); });
-
-  equal(textField.$().attr('title'), 'BarTitle', 'updates text field after title changes');
 });
 
 QUnit.test('input type is configurable when creating view', function() {
