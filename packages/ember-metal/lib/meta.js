@@ -99,8 +99,7 @@ function getOrCreateOwnMap(key) {
 }
 
 // Implements a member that is a lazily created POJO with inheritable
-// values. For member `thing` you get methods `getThing`,
-// `getOrCreateThing`, and `peekThing`.
+// values.
 function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
