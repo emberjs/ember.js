@@ -227,7 +227,7 @@ function yieldItem(template, env, parentScope, morph, renderState, visitor) {
     let handledMorphs = renderState.handledMorphs;
     let key;
 
-    if (handledMorphs[_key]) {
+    if (_key in handledMorphs) {
       // In this branch we are dealing with a duplicate key. The strategy
       // is to take the original key and append a counter to it that is
       // incremented every time the key is reused. In order to greatly

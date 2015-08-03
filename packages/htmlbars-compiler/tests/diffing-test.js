@@ -80,3 +80,18 @@ test("Morph order is preserved when rerendering with duplicate keys", function()
   equalTokens(result.fragment, `<ul><li>B1</li><li>A2</li></ul>`);
   deepEqual(getNames(), ['B1', 'A1']);
 });
+
+test("duplicate keys are allowed when duplicate is last morph", function() {
+  var template = compile(`<ul>{{#each items as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`);
+
+  let a1 = { key: "a", name: "A1" };
+  let a2 = { key: "a", name: "A2" };
+
+  var result = template.render({ items: [ ] }, env);
+
+  result.rerender(env, { items: [ a1 ] });
+  equalTokens(result.fragment, `<ul><li>A1</li></ul>`);
+
+  result.rerender(env, { items: [a1, a2] });
+  equalTokens(result.fragment, `<ul><li>A1</li><li>A2</li></ul>`);
+});
