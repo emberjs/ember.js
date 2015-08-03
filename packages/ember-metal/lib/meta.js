@@ -285,17 +285,7 @@ export function meta(obj, writable) {
       ret.getOrCreateValues();
     }
   } else if (ret.source !== obj) {
-    // temporary dance until I can eliminate remaining uses of
-    // prototype chain
-    let newRet = Object.create(ret);
-    newRet.parent = ret;
-    for (let i = 0; i < memberNames.length; i++) {
-      newRet[memberProperty(memberNames[i])] = undefined;
-    }
-    ret = newRet;
-    // end temporary dance
-
-    ret.source    = obj;
+    ret = new Meta(obj, ret);
   }
   obj.__ember_meta__ = ret;
   return ret;
