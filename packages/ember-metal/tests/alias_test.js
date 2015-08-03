@@ -37,9 +37,9 @@ QUnit.test('basic lifecycle', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
   var m = meta(obj);
   addObserver(obj, 'bar', incrementCount);
-  equal(m.getDeps('foo.faz').bar, 1);
+  equal(m.readableDeps('foo.faz').bar, 1);
   removeObserver(obj, 'bar', incrementCount);
-  equal(m.getDeps('foo.faz').bar, 0);
+  equal(m.readableDeps('foo.faz').bar, 0);
 });
 
 QUnit.test('begins watching alt key as soon as alias is watched', function() {

@@ -156,7 +156,7 @@ function inheritedMapOfMaps(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['getOrCreate' + capitalized] = function(subkey) {
+  Meta.prototype['writable' + capitalized] = function(subkey) {
     let outerMap = getOrCreateInheritedMap.call(this, key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
@@ -167,7 +167,7 @@ function inheritedMapOfMaps(name, Meta) {
     return innerMap;
   };
 
-  Meta.prototype['get' + capitalized] = function(subkey) {
+  Meta.prototype['readable' + capitalized] = function(subkey) {
     let map = getInherited.call(this, key);
     if (map) {
       return map[subkey];

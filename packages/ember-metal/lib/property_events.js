@@ -98,7 +98,7 @@ function propertyDidChange(obj, keyName) {
     return;
   }
 
-  if (m && m.getDeps(keyName)) {
+  if (m && m.readableDeps(keyName)) {
     dependentKeysDidChange(obj, keyName, m);
   }
 
@@ -112,7 +112,7 @@ function dependentKeysWillChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   var deps;
-  if (meta && (deps = meta.getDeps(depKey))) {
+  if (meta && (deps = meta.readableDeps(depKey))) {
     var seen = WILL_SEEN;
     var top = !seen;
 
@@ -133,7 +133,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   var deps;
-  if (meta && (deps = meta.getDeps(depKey))) {
+  if (meta && (deps = meta.readableDeps(depKey))) {
     var seen = DID_SEEN;
     var top = !seen;
 

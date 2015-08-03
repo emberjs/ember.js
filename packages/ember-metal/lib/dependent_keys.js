@@ -29,7 +29,7 @@ export function addDependentKeys(desc, obj, keyName, meta) {
   for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
     // Lookup keys meta for depKey
-    keys = meta.getOrCreateDeps(depKey);
+    keys = meta.writableDeps(depKey);
     // Increment the number of times depKey depends on keyName.
     keys[keyName] = (keys[keyName] || 0) + 1;
     // Watch the depKey
@@ -49,7 +49,7 @@ export function removeDependentKeys(desc, obj, keyName, meta) {
   for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
     // Lookup keys meta for depKey
-    keys = meta.getOrCreateDeps(depKey);
+    keys = meta.writableDeps(depKey);
     // Decrement the number of times depKey depends on keyName.
     keys[keyName] = (keys[keyName] || 0) - 1;
     // Unwatch the depKey
