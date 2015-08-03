@@ -25,6 +25,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method fmt
     @for String
     @private
+    @deprecated
   */
   StringPrototype.fmt = function (...args) {
     return fmt(this, args);
