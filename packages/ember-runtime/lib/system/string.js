@@ -60,7 +60,7 @@ var DECAMELIZE_CACHE = new Cache(1000, function(str) {
   return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
 });
 
-function fmt(str, formats) {
+function _fmt(str, formats) {
   var cachedFormats = formats;
 
   if (!isArray(cachedFormats) || arguments.length > 2) {
@@ -80,13 +80,22 @@ function fmt(str, formats) {
   });
 }
 
+function fmt(str, formats) {
+  Ember.deprecate(
+    'Ember.String.fmt is deprecated, use ES6 template strings instead.',
+    false,
+    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'https://babeljs.io/docs/learn-es6/#template-strings' }
+  );
+  return _fmt(...arguments);
+}
+
 function loc(str, formats) {
   if (!isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
 
   str = Ember.STRINGS[str] || str;
-  return fmt(str, formats);
+  return _fmt(str, formats);
 }
 
 function w(str) {
