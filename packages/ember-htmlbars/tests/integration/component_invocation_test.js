@@ -342,67 +342,65 @@ QUnit.test('template specified inline is available from Views looked up as compo
   equal(view.$().text(), 'Whoop, whoop!', 'template inline works properly');
 });
 
-if (isEnabled('ember-views-component-block-info')) {
-  QUnit.test('hasBlock is true when block supplied', function() {
-    expect(1);
+QUnit.test('hasBlock is true when block supplied', function() {
+  expect(1);
 
-    registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
+  registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
 
-    view = EmberView.extend({
-      template: compile('{{#with-block}}In template{{/with-block}}'),
-      container: container
-    }).create();
+  view = EmberView.extend({
+    template: compile('{{#with-block}}In template{{/with-block}}'),
+    container: container
+  }).create();
 
-    runAppend(view);
+  runAppend(view);
 
-    equal(jQuery('#qunit-fixture').text(), 'In template');
-  });
+  equal(jQuery('#qunit-fixture').text(), 'In template');
+});
 
-  QUnit.test('hasBlock is false when no block supplied', function() {
-    expect(1);
+QUnit.test('hasBlock is false when no block supplied', function() {
+  expect(1);
 
-    registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
+  registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
 
-    view = EmberView.extend({
-      template: compile('{{with-block}}'),
-      container: container
-    }).create();
+  view = EmberView.extend({
+    template: compile('{{with-block}}'),
+    container: container
+  }).create();
 
-    runAppend(view);
+  runAppend(view);
 
-    equal(jQuery('#qunit-fixture').text(), 'No Block!');
-  });
+  equal(jQuery('#qunit-fixture').text(), 'No Block!');
+});
 
-  QUnit.test('hasBlockParams is true when block param supplied', function() {
-    expect(1);
+QUnit.test('hasBlockParams is true when block param supplied', function() {
+  expect(1);
 
-    registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
+  registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
 
-    view = EmberView.extend({
-      template: compile('{{#with-block as |something|}}In template{{/with-block}}'),
-      container: container
-    }).create();
+  view = EmberView.extend({
+    template: compile('{{#with-block as |something|}}In template{{/with-block}}'),
+    container: container
+  }).create();
 
-    runAppend(view);
+  runAppend(view);
 
-    equal(jQuery('#qunit-fixture').text(), 'In template - In Component');
-  });
+  equal(jQuery('#qunit-fixture').text(), 'In template - In Component');
+});
 
-  QUnit.test('hasBlockParams is false when no block param supplied', function() {
-    expect(1);
+QUnit.test('hasBlockParams is false when no block param supplied', function() {
+  expect(1);
 
-    registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}}{{else}}{{yield}} No Block Param!{{/if}}'));
+  registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}}{{else}}{{yield}} No Block Param!{{/if}}'));
 
-    view = EmberView.extend({
-      template: compile('{{#with-block}}In block{{/with-block}}'),
-      container: container
-    }).create();
+  view = EmberView.extend({
+    template: compile('{{#with-block}}In block{{/with-block}}'),
+    container: container
+  }).create();
 
-    runAppend(view);
+  runAppend(view);
 
-    equal(jQuery('#qunit-fixture').text(), 'In block No Block Param!');
-  });
-}
+  equal(jQuery('#qunit-fixture').text(), 'In block No Block Param!');
+});
 
 QUnit.test('static named positional parameters [DEPRECATED]', function() {
   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
