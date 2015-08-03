@@ -52,7 +52,7 @@ var LinkComponent = EmberComponent.extend({
     Used to determine when this LinkComponent is active.
 
     @property currentWhen
-    @private
+    @public
   */
   'current-when': null,
 
@@ -61,7 +61,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property title
     @default null
-    @private
+    @public
   **/
   title: null,
 
@@ -70,7 +70,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property rel
     @default null
-    @private
+    @public
   **/
   rel: null,
 
@@ -79,7 +79,7 @@ var LinkComponent = EmberComponent.extend({
 
     @property tabindex
     @default null
-    @private
+    @public
   **/
   tabindex: null,
 
@@ -89,7 +89,7 @@ var LinkComponent = EmberComponent.extend({
     @since 1.8.0
     @property target
     @default null
-    @private
+    @public
   **/
   target: null,
 
@@ -134,7 +134,7 @@ var LinkComponent = EmberComponent.extend({
     @property replace
     @type Boolean
     @default false
-    @private
+    @public
   **/
   replace: false,
 
@@ -146,7 +146,7 @@ var LinkComponent = EmberComponent.extend({
     @property attributeBindings
     @type Array | String
     @default ['title', 'rel', 'tabindex', 'target']
-     @private
+    @public
   */
   attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
@@ -157,7 +157,7 @@ var LinkComponent = EmberComponent.extend({
     @property classNameBindings
     @type Array
     @default ['active', 'loading', 'disabled']
-     @private
+    @public
   */
   classNameBindings: linkComponentClassNameBindings,
 
