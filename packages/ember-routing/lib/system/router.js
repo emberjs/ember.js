@@ -7,7 +7,6 @@ import { defineProperty } from 'ember-metal/properties';
 import { computed } from 'ember-metal/computed';
 import merge from 'ember-metal/merge';
 import run from 'ember-metal/run_loop';
-import { fmt } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
 import EmberRouterDSL from 'ember-routing/system/dsl';
@@ -546,12 +545,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     for (var key in groupedByUrlKey) {
       var qps = groupedByUrlKey[key];
-      Ember.assert(fmt('You\'re not allowed to have more than one controller ' +
-                       'property map to the same query param key, but both ' +
-                       '`%@` and `%@` map to `%@`. You can fix this by mapping ' +
-                       'one of the controller properties to a different query ' +
-                       'param key via the `as` config option, e.g. `%@: { as: \'other-%@\' }`',
-                       [qps[0].qp.scopedPropertyName, qps[1] ? qps[1].qp.scopedPropertyName : '', qps[0].qp.urlKey, qps[0].qp.prop, qps[0].qp.prop]), qps.length <= 1);
+      Ember.assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${qps[0].qp.scopedPropertyName}\` and \`${qps[1] ? qps[1].qp.scopedPropertyName : ''}\` map to \`${qps[0].qp.urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${qps[0].qp.prop}: { as: \'other-${qps[0].qp.prop}\' }\``, qps.length <= 1);
       var qp = qps[0].qp;
       queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
     }

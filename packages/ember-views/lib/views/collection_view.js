@@ -9,7 +9,6 @@ import View from 'ember-views/views/view';
 import EmberArray from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { fmt } from 'ember-runtime/system/string';
 import { computed } from 'ember-metal/computed';
 import {
   observer,
@@ -258,7 +257,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @method _assertArrayLike
   */
   _assertArrayLike(content) {
-    Ember.assert(fmt('an Ember.CollectionView\'s content must implement Ember.Array. You passed %@', [content]), EmberArray.detect(content));
+    Ember.assert(`an Ember.CollectionView's content must implement Ember.Array. You passed ${content}`, EmberArray.detect(content));
   },
 
   /**
