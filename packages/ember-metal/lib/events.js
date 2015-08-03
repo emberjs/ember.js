@@ -52,12 +52,12 @@ function indexOf(array, target, method) {
 }
 
 function actionsFor(obj, eventName) {
-  return metaFor(obj, true).getOrCreateListeners(eventName);
+  return metaFor(obj, true).writableListeners(eventName);
 }
 
 export function accumulateListeners(obj, eventName, otherActions) {
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.getListeners(eventName);
+  var actions = meta && meta.readableListeners(eventName);
 
   if (!actions) { return; }
 
@@ -156,7 +156,7 @@ export function removeListener(obj, eventName, target, method) {
     _removeListener(target, method);
   } else {
     var meta = obj['__ember_meta__'];
-    var actions = meta && meta.getListeners(eventName);
+    var actions = meta && meta.readableListeners(eventName);
 
     if (!actions) { return; }
     for (var i = actions.length - 3; i >= 0; i -= 3) {
@@ -290,7 +290,7 @@ export function watchedEvents(obj) {
 export function sendEvent(obj, eventName, params, actions) {
   if (!actions) {
     var meta = obj['__ember_meta__'];
-    actions = meta && meta.getListeners(eventName);
+    actions = meta && meta.readableListeners(eventName);
   }
 
   if (!actions) { return; }
@@ -330,7 +330,7 @@ export function sendEvent(obj, eventName, params, actions) {
 */
 export function hasListeners(obj, eventName) {
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.getListeners(eventName);
+  var actions = meta && meta.readableListeners(eventName);
 
   return !!(actions && actions.length);
 }
@@ -345,7 +345,7 @@ export function hasListeners(obj, eventName) {
 export function listenersFor(obj, eventName) {
   var ret = [];
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.getListeners(eventName);
+  var actions = meta && meta.readableListeners(eventName);
 
   if (!actions) { return ret; }
 

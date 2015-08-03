@@ -126,7 +126,7 @@ function inheritedMapOfLists(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['getOrCreate' + capitalized] = function(subkey) {
+  Meta.prototype['writable' + capitalized] = function(subkey) {
     let map = getOrCreateInheritedMap.call(this, key);
     let list = map[subkey];
     if (!list) {
@@ -137,7 +137,7 @@ function inheritedMapOfLists(name, Meta) {
     return list;
   };
 
-  Meta.prototype['get' + capitalized] = function(subkey) {
+  Meta.prototype['readable' + capitalized] = function(subkey) {
     let map = getInherited.call(this, key);
     if (map) {
       return map[subkey];
