@@ -45,7 +45,7 @@ import Object from 'ember-runtime/system/object';
   @public
 */
 var Helper = Object.extend({
-  isHelper: true,
+  isHelperInstance: true,
 
   /**
     On a class-based helper, it may be useful to force a recomputation of that

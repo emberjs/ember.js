@@ -40,7 +40,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
 
 export default function withHelper(params, hash, options) {
   if (shouldDisplay(params[0])) {
-    this.yield([params[0]]);
+    options.template.yield([params[0]]);
   } else if (options.inverse && options.inverse.yield) {
     options.inverse.yield([]);
   }

@@ -5,7 +5,6 @@
 
 import Ember from 'ember-metal/core';
 import Cache from 'ember-metal/cache';
-import HandlebarsCompatibleHelper from 'ember-htmlbars/compat/helper';
 
 export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;
@@ -19,10 +18,6 @@ export function validateLazyHelperName(helperName, container, keywords, knownHel
   if (knownHelpers[helperName] || CONTAINS_DASH_CACHE.get(helperName)) {
     return true;
   }
-}
-
-function isLegacyBareHelper(helper) {
-  return helper && (!helper.isHelperFactory && !helper.isHelperInstance && !helper.isHTMLBars);
 }
 
 /**
@@ -48,10 +43,7 @@ export function findHelper(name, view, env) {
       var helperName = 'helper:' + name;
       if (container.registry.has(helperName)) {
         helper = container.lookupFactory(helperName);
-        if (isLegacyBareHelper(helper)) {
-          Ember.deprecate(`The helper "${name}" is a deprecated bare function helper. Please use Ember.Helper.build to wrap helper functions.`, false, { id: 'ember-htmlbars.legacy-bare-helper', until: '3.0.0' });
-          helper = new HandlebarsCompatibleHelper(helper);
-        }
+        Ember.assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
       }
     }
   }
