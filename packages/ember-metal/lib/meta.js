@@ -17,7 +17,8 @@ let members = {
   values: inheritedMap,
   listeners: inheritedMapOfLists,
   deps: inheritedMapOfMaps,
-  chainWatchers: ownCustomObject
+  chainWatchers: ownCustomObject,
+  chains: inheritedCustomObject
 };
 
 let memberNames = Object.keys(members);
@@ -30,9 +31,6 @@ function Meta(obj, parentMeta) {
 
   // used only internally
   this.source = obj;
-
-  // instance of ChainNode, inherited on demand via ChainNode.copy
-  this.chains = undefined;
 
   // when meta(obj).proto === obj, the object is intended to be only a
   // prototype and doesn't need to actually be observable itself
@@ -86,11 +84,11 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['get' + capitalized] = function() {
-    return getInheritedMap.call(this, key);
+    return getInherited.call(this, key);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = getInheritedMap.call(this, key);
+    let map = getInherited.call(this, key);
     if (map) {
       return map[subkey];
     }
@@ -113,7 +111,7 @@ function getOrCreateInheritedMap(key) {
   return ret;
 }
 
-function getInheritedMap(key) {
+function getInherited(key) {
   let pointer = this;
   while (pointer) {
     if (pointer[key]) {
@@ -141,14 +139,14 @@ function inheritedMapOfLists(name, Meta) {
   };
 
   Meta.prototype['get' + capitalized] = function(subkey) {
-    let map = getInheritedMap.call(this, key);
+    let map = getInherited.call(this, key);
     if (map) {
       return map[subkey];
     }
   };
 
   Meta.prototype['getAll' + capitalized] = function() {
-    return getInheritedMap.call(this, key);
+    return getInherited.call(this, key);
   };
 }
 
@@ -171,26 +169,26 @@ function inheritedMapOfMaps(name, Meta) {
   };
 
   Meta.prototype['get' + capitalized] = function(subkey) {
-    let map = getInheritedMap.call(this, key);
+    let map = getInherited.call(this, key);
     if (map) {
       return map[subkey];
     }
   };
 
   Meta.prototype['getAll' + capitalized] = function() {
-    return getInheritedMap.call(this, key);
+    return getInherited.call(this, key);
   };
 }
 
 // Implements a member that provides a non-heritable, lazily-created
-// object using the class you provide.
+// object using the method you provide.
 function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['getOrCreate' + capitalized] = function(Klass) {
+  Meta.prototype['getOrCreate' + capitalized] = function(create) {
     let ret = this[key];
     if (!ret) {
-      ret = this[key] = new Klass(this.source);
+      ret = this[key] = create(this.source);
     }
     return ret;
   };
@@ -198,6 +196,29 @@ function ownCustomObject(name, Meta) {
     return this[key];
   };
 }
+
+// Implements a member that provides an inheritable, lazily-created
+// object using the method you provide. We will derived children from
+// their parents by calling your object's `copy()` method.
+function inheritedCustomObject(name, Meta) {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+  let getOrCreate = Meta.prototype['getOrCreate' + capitalized] = function(create) {
+    let ret = this[key];
+    if (!ret) {
+      if (this.parent) {
+        ret = this[key] = getOrCreate.call(this.parent, create).copy(this.source);
+      } else {
+        ret = this[key] = create(this.source);
+      }
+    }
+    return ret;
+  };
+  Meta.prototype['get' + capitalized] = function() {
+    return getInherited.call(this, key);
+  };
+}
+
 
 function memberProperty(name) {
   return '_' + name;

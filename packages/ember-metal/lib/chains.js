@@ -131,13 +131,17 @@ export function flushPendingChains() {
   );
 }
 
+function makeChainWatcher(obj) {
+  return new ChainWatchers(obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   if (!isObject(obj)) {
     return;
   }
 
   let m = metaFor(obj);
-  m.getOrCreateChainWatchers(ChainWatchers).add(keyName, node);
+  m.getOrCreateChainWatchers(makeChainWatcher).add(keyName, node);
   watchKey(obj, keyName, m);
 }
 
@@ -417,16 +421,17 @@ export function finishChains(obj) {
   // We only create meta if we really have to
   let m = obj.__ember_meta__;
   if (m) {
+    m = metaFor(obj);
+
     // finish any current chains node watchers that reference obj
     let chainWatchers = m.getChainWatchers();
     if (chainWatchers) {
       chainWatchers.revalidateAll();
     }
-    // copy chains from prototype
-    let chains = m.chains;
-    if (chains && chains.value() !== obj) {
-      // need to check if meta is writable
-      metaFor(obj).chains = chains.copy(obj);
+    // ensure that if we have inherited any chains they have been
+    // copied onto our own meta.
+    if (m.getChains()) {
+      m.getOrCreateChains();
     }
   }
 }

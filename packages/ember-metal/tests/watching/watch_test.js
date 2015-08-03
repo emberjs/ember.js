@@ -203,7 +203,7 @@ QUnit.test('when watching a global object, destroy should remove chain watchers 
   watch(obj, 'Global.foo');
 
   var meta_Global = Ember.meta(Global);
-  var chainNode = Ember.meta(obj).chains._chains.Global._chains.foo;
+  var chainNode = Ember.meta(obj).getChains()._chains.Global._chains.foo;
 
   equal(meta_Global.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_Global.getChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
@@ -225,7 +225,7 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
   watch(objA, 'b.foo');
 
   var meta_objB = Ember.meta(objB);
-  var chainNode = Ember.meta(objA).chains._chains.b._chains.foo;
+  var chainNode = Ember.meta(objA).getChains()._chains.b._chains.foo;
 
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_objB.getChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
