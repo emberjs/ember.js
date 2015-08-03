@@ -9,6 +9,7 @@ import Ember from 'ember-metal'; // Ember.deprecate, Ember.assert, Ember.librari
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import EmptyObject from 'ember-metal/empty_object';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import Namespace from 'ember-runtime/system/namespace';
 import DefaultResolver from 'ember-application/system/resolver';
@@ -722,8 +723,8 @@ if (isEnabled('ember-application-visit')) {
 }
 
 Application.reopenClass({
-  initializers: Object.create(null),
-  instanceInitializers: Object.create(null),
+  initializers: new EmptyObject(),
+  instanceInitializers: new EmptyObject(),
 
   /**
     Initializer receives an object which has the following attributes:

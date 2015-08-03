@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core'; // assert
 import { get } from 'ember-metal/property_get';
+import EmptyObject from 'ember-metal/empty_object';
 import EmberError from 'ember-metal/error';
 import { isStream, read } from 'ember-metal/streams/utils';
 import { camelize } from 'ember-runtime/system/string';
@@ -186,7 +187,7 @@ function childOutletState(name, env) {
   if (!selectedOutletState) { return; }
   var matched = selectedOutletState.outlets[name];
   if (matched) {
-    var childState = Object.create(null);
+    var childState = new EmptyObject();
     childState[matched.render.outlet] = matched;
     matched.wasUsed = true;
     return childState;

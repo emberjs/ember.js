@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core'; // warn, assert, etc;
 import { get, normalizeTuple } from 'ember-metal/property_get';
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
+import EmptyObject from 'ember-metal/empty_object';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -19,7 +20,7 @@ function isVolatile(obj) {
 
 function Chains() { }
 
-Chains.prototype = Object.create(null);
+Chains.prototype = new EmptyObject();
 
 function ChainWatchers(obj) {
   // this obj would be the referencing chain node's parent node's value

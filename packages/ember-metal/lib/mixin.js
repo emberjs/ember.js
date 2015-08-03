@@ -10,6 +10,7 @@
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import merge from 'ember-metal/merge';
+import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
 import {
@@ -332,7 +333,7 @@ function connectStreamBinding(obj, key, stream) {
   stream.subscribe(onNotify);
 
   if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = Object.create(null);
+    obj._streamBindingSubscriptions = new EmptyObject();
   }
 
   obj._streamBindingSubscriptions[key] = onNotify;
