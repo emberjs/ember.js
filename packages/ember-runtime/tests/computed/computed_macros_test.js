@@ -277,6 +277,10 @@ testBoth('computed.or', function(get, set) {
 
   equal(get(obj, 'oneOrTwo'), false, 'nore one nore two');
 
+  set(obj, 'two', null);
+
+  equal(get(obj, 'oneOrTwo'), null, 'returns last falsy value as in ||');
+
   set(obj, 'two', true);
 
   equal(get(obj, 'oneOrTwo'), true, 'one or two');
