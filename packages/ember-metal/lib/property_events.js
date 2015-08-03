@@ -191,21 +191,21 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 }
 
 function chainsWillChange(obj, keyName, m) {
-  let c = m.getChainWatchers();
+  let c = m.readableChainWatchers();
   if (c) {
     c.notify(keyName, false, propertyWillChange);
   }
 }
 
 function chainsDidChange(obj, keyName, m) {
-  let c = m.getChainWatchers();
+  let c = m.readableChainWatchers();
   if (c) {
     c.notify(keyName, true, propertyDidChange);
   }
 }
 
 function overrideChains(obj, keyName, m) {
-  let c = m.getChainWatchers();
+  let c = m.readableChainWatchers();
   if (c) {
     c.revalidate(keyName);
   }

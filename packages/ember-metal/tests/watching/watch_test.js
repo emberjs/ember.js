@@ -206,12 +206,12 @@ QUnit.test('when watching a global object, destroy should remove chain watchers 
   var chainNode = Ember.meta(obj).getChains()._chains.Global._chains.foo;
 
   equal(meta_Global.peekWatching('foo'), 1, 'should be watching foo');
-  equal(meta_Global.getChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
+  equal(meta_Global.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
 
   destroy(obj);
 
   equal(meta_Global.peekWatching('foo'), 0, 'should not be watching foo');
-  equal(meta_Global.getChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
+  equal(meta_Global.readableChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
 
   lookup['Global'] = Global = null; // reset
 });
@@ -228,12 +228,12 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
   var chainNode = Ember.meta(objA).getChains()._chains.b._chains.foo;
 
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
-  equal(meta_objB.getChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
+  equal(meta_objB.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
 
   destroy(objA);
 
   equal(meta_objB.peekWatching('foo'), 0, 'should not be watching foo');
-  equal(meta_objB.getChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
+  equal(meta_objB.readableChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
 });
 
 // TESTS for length property

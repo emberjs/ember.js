@@ -141,7 +141,7 @@ function addChainWatcher(obj, keyName, node) {
   }
 
   let m = metaFor(obj);
-  m.getOrCreateChainWatchers(makeChainWatcher).add(keyName, node);
+  m.writableChainWatchers(makeChainWatcher).add(keyName, node);
   watchKey(obj, keyName, m);
 }
 
@@ -152,14 +152,14 @@ function removeChainWatcher(obj, keyName, node) {
 
   let m = obj.__ember_meta__;
 
-  if (!m || !m.getChainWatchers()) {
+  if (!m || !m.readableChainWatchers()) {
     return;
   }
 
   // make meta writable
   m = metaFor(obj);
 
-  m.getChainWatchers().remove(keyName, node);
+  m.readableChainWatchers().remove(keyName, node);
 
   unwatchKey(obj, keyName, m);
 }
@@ -424,7 +424,7 @@ export function finishChains(obj) {
     m = metaFor(obj);
 
     // finish any current chains node watchers that reference obj
-    let chainWatchers = m.getChainWatchers();
+    let chainWatchers = m.readableChainWatchers();
     if (chainWatchers) {
       chainWatchers.revalidateAll();
     }

@@ -184,14 +184,14 @@ function inheritedMapOfMaps(name, Meta) {
 function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['getOrCreate' + capitalized] = function(create) {
+  Meta.prototype['writable' + capitalized] = function(create) {
     let ret = this[key];
     if (!ret) {
       ret = this[key] = create(this.source);
     }
     return ret;
   };
-  Meta.prototype['get' + capitalized] = function() {
+  Meta.prototype['readable' + capitalized] = function() {
     return this[key];
   };
 }
