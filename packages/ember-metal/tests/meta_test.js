@@ -1,6 +1,6 @@
 import {
   meta
-} from 'ember-metal/utils';
+} from 'ember-metal/meta';
 
 QUnit.module('Ember.meta');
 
@@ -12,8 +12,6 @@ QUnit.test('should return the same hash for an object', function() {
   equal(meta(obj).foo, 'bar', 'returns same hash with multiple calls to Ember.meta()');
 });
 
-QUnit.module('Ember.meta enumerable');
-
 QUnit.test('meta is not enumerable', function () {
   var proto, obj, props, prop;
   proto = { foo: 'bar' };
@@ -54,4 +52,33 @@ QUnit.test('meta is not enumerable', function () {
       ok(false, 'meta should not fail JSON.stringify');
     }
   }
+});
+
+QUnit.skip('meta.listeners basics', function(assert) {
+  let t = {};
+  let m = meta({});
+  m.addToListeners({ eventName: 'hello', target: t, method: 'm', flags: 0 });
+  let matching = m.matchingListeners(e => e.eventName === 'hello');
+  assert.equal(matching.length, 1);
+  assert.equal(matching[0].target, t);
+  m.removeFromListeners({ eventName: 'hello', target: t, method: 'm'});
+  matching = m.matchingListeners(e => e.eventName === 'hello');
+  assert.equal(matching.length, 0);
+});
+
+QUnit.skip('meta.listeners inheritance', function(assert) {
+  let target = {};
+  let parent = {};
+  let parentMeta = meta(parent);
+  parentMeta.addToListeners({ eventName: 'hello', target, method: 'm', flags: 0 });
+
+  let child = Object.create(parent);
+  let m = meta(child);
+
+  let matching = m.matchingListeners(e => e.eventName === 'hello');
+  assert.equal(matching.length, 1);
+  assert.equal(matching[0].target, target);
+  m.removeFromListeners({ eventName: 'hello', target, method: 'm'});
+  matching = m.matchingListeners(e => e.eventName === 'hello');
+  assert.equal(matching.length, 0);
 });
