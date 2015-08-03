@@ -66,7 +66,7 @@ function K() { return this; }
   @namespace Ember
   @extends Ember.Object
   @uses Ember.MutableArray
-  @private
+  @public
 */
 var ArrayProxy = EmberObject.extend(MutableArray, {
 
