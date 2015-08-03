@@ -53,15 +53,14 @@ function Meta(obj, parentMeta) {
 
 
 // Implements a member that is a lazily created, non-inheritable
-// POJO. For member `thing` you get methods `getThing` and
-// `getOrCreateThing`.
+// POJO.
 function ownMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['getOrCreate' + capitalized] = function() {
+  Meta.prototype['writable' + capitalized] = function() {
     return getOrCreateOwnMap.call(this, key);
   };
-  Meta.prototype['get' + capitalized] = function() { return this[key]; };
+  Meta.prototype['readable' + capitalized] = function() { return this[key]; };
 }
 
 function getOrCreateOwnMap(key) {

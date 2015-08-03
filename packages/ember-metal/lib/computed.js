@@ -267,7 +267,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
     let meta = metaFor(obj);
-    let cache = meta.getCache();
+    let cache = meta.readableCache();
     if (cache && cache[keyName] !== undefined) {
       cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
@@ -306,7 +306,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta;
   if (this._cacheable) {
     meta = metaFor(obj);
-    cache = meta.getOrCreateCache();
+    cache = meta.writableCache();
 
     var result = cache[keyName];
 
@@ -400,7 +400,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   var cacheable      = this._cacheable;
   var setter         = this._setter;
   var meta           = metaFor(obj, cacheable);
-  var cache          = meta.getCache();
+  var cache          = meta.readableCache();
   var hadCachedValue = false;
 
   var cachedValue, ret;
@@ -440,7 +440,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
       addDependentKeys(this, obj, keyName, meta);
     }
     if (!cache) {
-      cache = meta.getOrCreateCache();
+      cache = meta.writableCache();
     }
     if (ret === undefined) {
       cache[keyName] = UNDEFINED;
@@ -459,7 +459,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 /* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
-  let cache = meta.getCache();
+  let cache = meta.readableCache();
   if (cache) {
     if (keyName in cache) {
       removeDependentKeys(this, obj, keyName, meta);
@@ -559,7 +559,7 @@ export default function computed(func) {
 */
 function cacheFor(obj, key) {
   var meta = obj['__ember_meta__'];
-  var cache = meta && meta.getCache();
+  var cache = meta && meta.readableCache();
   var ret = cache && cache[key];
 
   if (ret === UNDEFINED) {

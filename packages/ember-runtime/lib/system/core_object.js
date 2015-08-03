@@ -853,7 +853,7 @@ CoreObject.reopen({
   didDefineProperty(proto, key, value) {
     if (hasCachedComputedProperties === false) { return; }
     if (value instanceof Ember.ComputedProperty) {
-      var cache = Ember.meta(this.constructor).getCache();
+      var cache = Ember.meta(this.constructor).readableCache();
 
       if (cache && cache._computedProperties !== undefined) {
         cache._computedProperties = undefined;
