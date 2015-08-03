@@ -14,10 +14,10 @@ import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
-  meta as metaFor,
   wrap,
   makeArray
 } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import {
   Descriptor,

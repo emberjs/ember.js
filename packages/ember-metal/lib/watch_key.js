@@ -1,7 +1,7 @@
 import isEnabled from 'ember-metal/features';
 import {
   meta as metaFor
-} from 'ember-metal/utils';
+} from 'ember-metal/meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION

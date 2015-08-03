@@ -26,9 +26,9 @@ import {
   generateGuid,
   GUID_KEY_PROPERTY,
   NEXT_SUPER_PROPERTY,
-  meta,
   makeArray
 } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import { finishChains } from 'ember-metal/chains';
 import { sendEvent } from 'ember-metal/events';
 import {

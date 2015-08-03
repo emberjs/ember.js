@@ -61,7 +61,7 @@ QUnit.skip('meta.listeners basics', function(assert) {
   let matching = m.matchingListeners(e => e.eventName === 'hello');
   assert.equal(matching.length, 1);
   assert.equal(matching[0].target, t);
-  m.removeFromListeners({ eventName: 'hello', target: t, method: 'm'});
+  m.removeFromListeners({ eventName: 'hello', target: t, method: 'm' });
   matching = m.matchingListeners(e => e.eventName === 'hello');
   assert.equal(matching.length, 0);
 });
@@ -78,7 +78,7 @@ QUnit.skip('meta.listeners inheritance', function(assert) {
   let matching = m.matchingListeners(e => e.eventName === 'hello');
   assert.equal(matching.length, 1);
   assert.equal(matching[0].target, target);
-  m.removeFromListeners({ eventName: 'hello', target, method: 'm'});
+  m.removeFromListeners({ eventName: 'hello', target, method: 'm' });
   matching = m.matchingListeners(e => e.eventName === 'hello');
   assert.equal(matching.length, 0);
 });

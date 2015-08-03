@@ -1,6 +1,6 @@
 import {
   meta as metaFor
-} from 'ember-metal/utils';
+} from 'ember-metal/meta';
 import { ChainNode } from 'ember-metal/chains';
 
 // get the chains for the current object. If the current object has

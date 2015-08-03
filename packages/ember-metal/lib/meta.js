@@ -18,17 +18,29 @@ import isEnabled from 'ember-metal/features';
  `writable` variants will give you a mutable object, and they will
  create it if it didn't already exist.
 
+ The following methods will get generated metaprogrammatically, and
+ I'm including them here for greppability:
+
+ writableCache, readableCache, writableWatching, readableWatching,
+ peekWatching, clearWatching, writableMixins, readableMixins,
+ peekMixins, clearMixins, writableBindings, readableBindings,
+ peekBindings, clearBindings, writableValues, readableValues,
+ peekValues, clearValues, writableListeners, readableListeners,
+ getAllListeners, writableDeps, readableDeps, getAllDeps
+ writableChainWatchers, readableChainWatchers, writableChains,
+ readableChains
+
 */
 let members = {
-  cache: ownMap,                  // writableCache, readableCache
-  watching: inheritedMap,         // writableWatching, readableWatching, peekWatching, clearWatching
-  mixins: inheritedMap,           // writableMixins, readableMixins, peekMixins, clearMixins
-  bindings: inheritedMap,         // writableBindings, readableBindings, peekBindings, clearBindings
-  values: inheritedMap,           // writableValues, readableValues, peekValues, clearValues
-  listeners: inheritedMapOfLists, // writableListeners, readableListeners, getAllListeners
-  deps: inheritedMapOfMaps,       // writableDeps, readableDeps, getAllDeps
-  chainWatchers: ownCustomObject, // writableChainWatchers, readableChainWatchers
-  chains: inheritedCustomObject   // writableChains, readableChains
+  cache: ownMap,
+  watching: inheritedMap,
+  mixins: inheritedMap,
+  bindings: inheritedMap,
+  values: inheritedMap,
+  listeners: inheritedMapOfLists,
+  deps: inheritedMapOfMaps,
+  chainWatchers: ownCustomObject,
+  chains: inheritedCustomObject
 };
 
 let memberNames = Object.keys(members);
@@ -76,7 +88,7 @@ function ownMap(name, Meta) {
 function getOrCreateOwnMap(key) {
   let ret = this[key];
   if (!ret) {
-    ret = this[key] = Object.create(null);
+    ret = this[key] = {};
   }
   return ret;
 }
@@ -104,7 +116,7 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['clear' + capitalized] = function() {
-    this[key] = Object.create(null);
+    this[key] = {};
   };
 }
 
@@ -114,7 +126,7 @@ function getOrCreateInheritedMap(key) {
     if (this.parent) {
       ret = this[key] = Object.create(getOrCreateInheritedMap.call(this.parent, key));
     } else {
-      ret = this[key] = Object.create(null);
+      ret = this[key] = {};
     }
   }
   return ret;
@@ -170,7 +182,7 @@ function inheritedMapOfMaps(name, Meta) {
     let outerMap = getOrCreateInheritedMap.call(this, key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
-      innerMap = outerMap[subkey] = Object.create(null);
+      innerMap = outerMap[subkey] = {};
     } else if (!Object.hasOwnProperty.call(outerMap, subkey)) {
       innerMap = outerMap[subkey] = Object.create(innerMap);
     }

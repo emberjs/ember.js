@@ -2,7 +2,7 @@ import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import { isWatching } from 'ember-metal/watching';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 

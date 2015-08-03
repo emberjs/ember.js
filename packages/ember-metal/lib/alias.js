@@ -7,10 +7,8 @@ import {
   defineProperty
 } from 'ember-metal/properties';
 import { ComputedProperty } from 'ember-metal/computed';
-import {
-  meta,
-  inspect
-} from 'ember-metal/utils';
+import { inspect } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import {
   addDependentKeys,
   removeDependentKeys

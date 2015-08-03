@@ -3,8 +3,6 @@
 //
 'REMOVE_USE_STRICT: true';
 
-import { meta } from 'ember-metal/meta';
-
 /**
 @module ember-metal
 */
@@ -500,6 +498,5 @@ export function applyStr(t, m, a) {
 export {
   GUID_KEY,
   makeArray,
-  canInvoke,
-  meta // this is temporary until I can refactor all the import sites
+  canInvoke
 };

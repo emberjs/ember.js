@@ -9,10 +9,10 @@
 */
 import Ember from 'ember-metal/core';
 import {
-  meta as metaFor,
   apply,
   applyStr
 } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 
 /* listener flags */
 var ONCE = 1;

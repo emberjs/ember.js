@@ -1,9 +1,7 @@
 import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
-import {
-  meta,
-  inspect
-} from 'ember-metal/utils';
+import { inspect } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import EmberError from 'ember-metal/error';
 import {

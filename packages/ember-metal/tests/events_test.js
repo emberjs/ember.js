@@ -1,5 +1,5 @@
 import { Mixin } from 'ember-metal/mixin';
-import { meta } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 
 import {
   on,
