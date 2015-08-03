@@ -268,10 +268,8 @@ export function meta(obj, writable) {
     return ret || EMPTY_META;
   }
 
-  if (obj.__defineNonEnumerable) {
-    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-  } else {
-    Object.defineProperty(obj, '__ember_meta__', META_DESC);
+  if (ret && ret.source === obj) {
+    return ret;
   }
 
   if (!ret) {
@@ -279,9 +277,16 @@ export function meta(obj, writable) {
     if (isEnabled('mandatory-setter')) {
       ret.writableValues();
     }
-  } else if (ret.source !== obj) {
+  } else {
     ret = new Meta(obj, ret);
   }
+
+  if (obj.__defineNonEnumerable) {
+    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+  } else {
+    Object.defineProperty(obj, '__ember_meta__', META_DESC);
+  }
   obj.__ember_meta__ = ret;
+
   return ret;
 }
