@@ -122,7 +122,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
       if (isEnabled('mandatory-setter')) {
         if (watching) {
-          meta.getOrCreateValues()[keyName] = data;
+          meta.writableValues()[keyName] = data;
           Object.defineProperty(obj, keyName, {
             configurable: true,
             enumerable: true,

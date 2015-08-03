@@ -78,11 +78,11 @@ function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['getOrCreate' + capitalized] = function() {
+  Meta.prototype['writable' + capitalized] = function() {
     return getOrCreateInheritedMap.call(this, key);
   };
 
-  Meta.prototype['get' + capitalized] = function() {
+  Meta.prototype['readable' + capitalized] = function() {
     return getInherited.call(this, key);
   };
 
@@ -245,7 +245,7 @@ var EMBER_META_PROPERTY = {
 export var EMPTY_META = new Meta(null);
 
 if (isEnabled('mandatory-setter')) {
-  EMPTY_META.getOrCreateValues();
+  EMPTY_META.writableValues();
 }
 
 /**
@@ -281,7 +281,7 @@ export function meta(obj, writable) {
   if (!ret) {
     ret = new Meta(obj);
     if (isEnabled('mandatory-setter')) {
-      ret.getOrCreateValues();
+      ret.writableValues();
     }
   } else if (ret.source !== obj) {
     ret = new Meta(obj, ret);

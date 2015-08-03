@@ -74,7 +74,7 @@ superFunction.call(primer, 1, 2);
 superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
-  return metaFor(obj, true).getOrCreateMixins();
+  return metaFor(obj, true).writableMixins();
 }
 
 function isMethod(obj) {
@@ -309,7 +309,7 @@ var IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
-    m.getOrCreateBindings()[key] = value;
+    m.writableBindings()[key] = value;
   }
 }
 
@@ -340,7 +340,7 @@ function connectStreamBinding(obj, key, stream) {
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  var bindings = m.getBindings();
+  var bindings = m.readableBindings();
   var key, binding, to;
   if (bindings) {
     for (key in bindings) {
@@ -696,7 +696,7 @@ MixinPrototype.keys = function() {
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
   var m = obj['__ember_meta__'];
-  var mixins = m && m.getMixins();
+  var mixins = m && m.readableMixins();
   var ret = [];
 
   if (!mixins) { return ret; }

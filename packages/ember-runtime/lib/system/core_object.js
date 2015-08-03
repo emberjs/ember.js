@@ -104,7 +104,7 @@ function makeCtor() {
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
-            m.getOrCreateBindings()[keyName] = value;
+            m.writableBindings()[keyName] = value;
           }
 
           var possibleDesc = this[keyName];

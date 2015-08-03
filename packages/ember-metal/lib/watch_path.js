@@ -19,7 +19,7 @@ export function watchPath(obj, keyPath, meta) {
   if (keyPath === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
-  var watching = m.getOrCreateWatching();
+  var watching = m.writableWatching();
 
   if (!watching[keyPath]) { // activate watching first time
     watching[keyPath] = 1;
@@ -31,7 +31,7 @@ export function watchPath(obj, keyPath, meta) {
 
 export function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.getOrCreateWatching();
+  var watching = m.writableWatching();
 
   if (watching[keyPath] === 1) {
     watching[keyPath] = 0;

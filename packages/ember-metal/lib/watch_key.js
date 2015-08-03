@@ -12,7 +12,7 @@ export function watchKey(obj, keyName, meta) {
   if (keyName === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
-  var watching = m.getOrCreateWatching();
+  var watching = m.writableWatching();
 
   // activate watching first time
   if (!watching[keyName]) {
@@ -48,7 +48,7 @@ if (isEnabled('mandatory-setter')) {
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
-      m.getOrCreateValues()[keyName] = obj[keyName];
+      m.writableValues()[keyName] = obj[keyName];
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
@@ -65,7 +65,7 @@ if (isEnabled('mandatory-setter')) {
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.getOrCreateWatching();
+  var watching = m.writableWatching();
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
@@ -91,7 +91,7 @@ export function unwatchKey(obj, keyName, meta) {
               enumerable: true,
               value: val
             });
-            delete m.getOrCreateValues()[keyName];
+            delete m.writableValues()[keyName];
           },
           get: DEFAULT_GETTER_FUNCTION(keyName)
         });
