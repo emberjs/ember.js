@@ -286,6 +286,33 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {
   equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
+QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom values [GH #11699]', function() {
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\' classNameBindings=\'foo:foo-is-true:foo-is-false\'}}About{{/link-to}}');
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    foo: false
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL('/');
+  });
+
+  equal(Ember.$('#about-link.foo-is-false', '#qunit-fixture').length, 1, 'The about-link was rendered with the falsy class');
+
+  var controller = container.lookup('controller:index');
+  Ember.run(function() {
+    controller.set('foo', true);
+  });
+
+  equal(Ember.$('#about-link.foo-is-true', '#qunit-fixture').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
+});
+
 QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes', function() {
   Router.map(function() {
     this.route('about', function() {
