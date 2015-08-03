@@ -137,13 +137,7 @@ function addChainWatcher(obj, keyName, node) {
   }
 
   let m = metaFor(obj);
-
-  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
-    m.chainWatchers = new ChainWatchers(obj);
-  }
-
-  m.chainWatchers.add(keyName, node);
-
+  m.getOrCreateChainWatchers(ChainWatchers).add(keyName, node);
   watchKey(obj, keyName, m);
 }
 
@@ -154,15 +148,14 @@ function removeChainWatcher(obj, keyName, node) {
 
   let m = obj.__ember_meta__;
 
-  if (!m ||
-      m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
+  if (!m || !m.getChainWatchers()) {
     return;
   }
 
   // make meta writable
   m = metaFor(obj);
 
-  m.chainWatchers.remove(keyName, node);
+  m.getChainWatchers().remove(keyName, node);
 
   unwatchKey(obj, keyName, m);
 }
@@ -425,7 +418,7 @@ export function finishChains(obj) {
   let m = obj.__ember_meta__;
   if (m) {
     // finish any current chains node watchers that reference obj
-    let chainWatchers = m.chainWatchers;
+    let chainWatchers = m.getChainWatchers();
     if (chainWatchers) {
       chainWatchers.revalidateAll();
     }

@@ -16,7 +16,8 @@ let members = {
   bindings: inheritedMap,
   values: inheritedMap,
   listeners: inheritedMapOfLists,
-  deps: inheritedMapOfMaps
+  deps: inheritedMapOfMaps,
+  chainWatchers: ownCustomObject
 };
 
 let memberNames = Object.keys(members);
@@ -27,17 +28,11 @@ function Meta(obj, parentMeta) {
     this[memberProperty(memberNames[i])] = undefined;
   }
 
-  // used only internally by meta() to distinguish meta-from-prototype
-  // from instance's own meta
+  // used only internally
   this.source = obj;
 
   // instance of ChainNode, inherited on demand via ChainNode.copy
   this.chains = undefined;
-
-  // instanceof ChainWatchers. Created on demand with a fresh new
-  // ChainWatchers at each level in prototype chain, by testing
-  // m.chainWatchers.obj.
-  this.chainWatchers = undefined;
 
   // when meta(obj).proto === obj, the object is intended to be only a
   // prototype and doesn't need to actually be observable itself
@@ -184,6 +179,23 @@ function inheritedMapOfMaps(name, Meta) {
 
   Meta.prototype['getAll' + capitalized] = function() {
     return getInheritedMap.call(this, key);
+  };
+}
+
+// Implements a member that provides a non-heritable, lazily-created
+// object using the class you provide.
+function ownCustomObject(name, Meta) {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+  Meta.prototype['getOrCreate' + capitalized] = function(Klass) {
+    let ret = this[key];
+    if (!ret) {
+      ret = this[key] = new Klass(this.source);
+    }
+    return ret;
+  };
+  Meta.prototype['get' + capitalized] = function() {
+    return this[key];
   };
 }
 

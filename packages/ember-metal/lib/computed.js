@@ -324,8 +324,9 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
       cache[keyName] = ret;
     }
 
-    if (meta.chainWatchers) {
-      meta.chainWatchers.revalidate(keyName);
+    let chainWatchers = meta.getChainWatchers();
+    if (chainWatchers) {
+      chainWatchers.revalidate(keyName);
     }
     addDependentKeys(this, obj, keyName, meta);
   } else {

@@ -191,26 +191,24 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 }
 
 function chainsWillChange(obj, keyName, m) {
-  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
-    return;
+  let c = m.getChainWatchers();
+  if (c) {
+    c.notify(keyName, false, propertyWillChange);
   }
-
-  m.chainWatchers.notify(keyName, false, propertyWillChange);
 }
 
 function chainsDidChange(obj, keyName, m) {
-  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
-    return;
+  let c = m.getChainWatchers();
+  if (c) {
+    c.notify(keyName, true, propertyDidChange);
   }
-
-  m.chainWatchers.notify(keyName, true, propertyDidChange);
 }
 
 function overrideChains(obj, keyName, m) {
-  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
-    return;
+  let c = m.getChainWatchers();
+  if (c) {
+    c.revalidate(keyName);
   }
-  m.chainWatchers.revalidate(keyName);
 }
 
 /**
