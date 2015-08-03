@@ -430,8 +430,8 @@ export function finishChains(obj) {
     }
     // ensure that if we have inherited any chains they have been
     // copied onto our own meta.
-    if (m.getChains()) {
-      m.getOrCreateChains();
+    if (m.readableChains()) {
+      m.writableChains();
     }
   }
 }

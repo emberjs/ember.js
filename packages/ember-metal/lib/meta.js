@@ -202,18 +202,18 @@ function ownCustomObject(name, Meta) {
 function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  let getOrCreate = Meta.prototype['getOrCreate' + capitalized] = function(create) {
+  let writable = Meta.prototype['writable' + capitalized] = function(create) {
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
-        ret = this[key] = getOrCreate.call(this.parent, create).copy(this.source);
+        ret = this[key] = writable.call(this.parent, create).copy(this.source);
       } else {
         ret = this[key] = create(this.source);
       }
     }
     return ret;
   };
-  Meta.prototype['get' + capitalized] = function() {
+  Meta.prototype['readable' + capitalized] = function() {
     return getInherited.call(this, key);
   };
 }

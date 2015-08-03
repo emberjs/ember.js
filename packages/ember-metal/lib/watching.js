@@ -81,7 +81,7 @@ export function destroy(obj) {
   if (meta) {
     obj['__ember_meta__'] = null;
     // remove chainWatchers to remove circular references that would prevent GC
-    node = meta.getChains();
+    node = meta.readableChains();
     if (node) {
       NODE_STACK.push(node);
       // process tree

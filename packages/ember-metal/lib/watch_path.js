@@ -7,7 +7,7 @@ import { ChainNode } from 'ember-metal/chains';
 // chains inherited from the proto they will be cloned and reconfigured for
 // the current object.
 function chainsFor(obj, meta) {
-  return (meta || metaFor(obj)).getOrCreateChains(makeChainNode);
+  return (meta || metaFor(obj)).writableChains(makeChainNode);
 }
 
 function makeChainNode(obj) {
