@@ -3,7 +3,7 @@
 @submodule ember-routing-htmlbars
 */
 
-import { readArray, readHash } from 'ember-metal/streams/utils';
+import { readArray } from 'ember-metal/streams/utils';
 import Ember from 'ember-metal/core'; // assert
 import merge from 'ember-metal/merge';
 
@@ -286,7 +286,9 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    var attrs = merge({}, readHash(hash));
+    var attrs = merge({}, hash);
+
+    // TODO: Rewrite link-to to use arbitrary length positional params.
     attrs.params = readArray(params);
 
     // Used for deprecations (to tell the user what view the deprecated syntax
