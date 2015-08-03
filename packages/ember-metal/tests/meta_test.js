@@ -54,31 +54,45 @@ QUnit.test('meta is not enumerable', function () {
   }
 });
 
-QUnit.skip('meta.listeners basics', function(assert) {
+QUnit.test('meta.listeners basics', function(assert) {
   let t = {};
   let m = meta({});
-  m.addToListeners({ eventName: 'hello', target: t, method: 'm', flags: 0 });
-  let matching = m.matchingListeners(e => e.eventName === 'hello');
-  assert.equal(matching.length, 1);
-  assert.equal(matching[0].target, t);
-  m.removeFromListeners({ eventName: 'hello', target: t, method: 'm' });
-  matching = m.matchingListeners(e => e.eventName === 'hello');
+  m.addToListeners('hello', t, 'm', 0);
+  let matching = m.matchingListeners('hello');
+  assert.equal(matching.length, 3);
+  assert.equal(matching[0], t);
+  m.removeFromListeners('hello', t, 'm');
+  matching = m.matchingListeners('hello');
   assert.equal(matching.length, 0);
 });
 
-QUnit.skip('meta.listeners inheritance', function(assert) {
+QUnit.test('meta.listeners inheritance', function(assert) {
   let target = {};
   let parent = {};
   let parentMeta = meta(parent);
-  parentMeta.addToListeners({ eventName: 'hello', target, method: 'm', flags: 0 });
+  parentMeta.addToListeners('hello', target, 'm', 0);
 
   let child = Object.create(parent);
   let m = meta(child);
 
-  let matching = m.matchingListeners(e => e.eventName === 'hello');
-  assert.equal(matching.length, 1);
-  assert.equal(matching[0].target, target);
-  m.removeFromListeners({ eventName: 'hello', target, method: 'm' });
-  matching = m.matchingListeners(e => e.eventName === 'hello');
+  let matching = m.matchingListeners('hello');
+  assert.equal(matching.length, 3);
+  assert.equal(matching[0], target);
+  assert.equal(matching[1], 'm');
+  assert.equal(matching[2], 0);
+  m.removeFromListeners('hello', target, 'm');
+  matching = m.matchingListeners('hello');
   assert.equal(matching.length, 0);
+  matching = parentMeta.matchingListeners('hello');
+  assert.equal(matching.length, 3);
+});
+
+QUnit.test('meta.listeners deduplication', function(assert) {
+  let t = {};
+  let m = meta({});
+  m.addToListeners('hello', t, 'm', 0);
+  m.addToListeners('hello', t, 'm', 0);
+  let matching = m.matchingListeners('hello');
+  assert.equal(matching.length, 3);
+  assert.equal(matching[0], t);
 });

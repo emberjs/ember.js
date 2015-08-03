@@ -4,14 +4,15 @@
 'REMOVE_USE_STRICT: true';
 
 import isEnabled from 'ember-metal/features';
+import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
 
 /**
 @module ember-metal
 */
 
 /*
- This declares the members on the Meta class. All access to Meta needs
- to go through them.
+ This declares several meta-programmed members on the Meta class. Such
+ meta!
 
  In general, the `readable` variants will give you an object (if it
  already exists) that you can read but should not modify. The
@@ -25,8 +26,7 @@ import isEnabled from 'ember-metal/features';
  peekWatching, clearWatching, writableMixins, readableMixins,
  peekMixins, clearMixins, writableBindings, readableBindings,
  peekBindings, clearBindings, writableValues, readableValues,
- peekValues, clearValues, writableListeners, readableListeners,
- getAllListeners, writableDeps, readableDeps, getAllDeps
+ peekValues, clearValues, writableDeps, readableDeps, getAllDeps
  writableChainWatchers, readableChainWatchers, writableChains,
  readableChains
 
@@ -37,7 +37,6 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  listeners: inheritedMapOfLists,
   deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject
@@ -63,6 +62,12 @@ function Meta(obj, parentMeta) {
   // have detailed knowledge of how each property should really be
   // inherited, and we can optimize it much better than JS runtimes.
   this.parent = parentMeta;
+
+  this._initializeListeners();
+}
+
+for (let name in listenerMethods) {
+  Meta.prototype[name] = listenerMethods[name];
 }
 
 (function setupMembers() {
@@ -141,36 +146,6 @@ function getInherited(key) {
     pointer = pointer.parent;
   }
 }
-
-// Implements a member that provides a lazily created mapping from
-// keys to lists, with inheritance at both levels.
-function inheritedMapOfLists(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-
-  Meta.prototype['writable' + capitalized] = function(subkey) {
-    let map = getOrCreateInheritedMap.call(this, key);
-    let list = map[subkey];
-    if (!list) {
-      list = map[subkey] = [];
-    } else if (!Object.hasOwnProperty.call(map, subkey)) {
-      list = map[subkey] = list.slice();
-    }
-    return list;
-  };
-
-  Meta.prototype['readable' + capitalized] = function(subkey) {
-    let map = getInherited.call(this, key);
-    if (map) {
-      return map[subkey];
-    }
-  };
-
-  Meta.prototype['getAll' + capitalized] = function() {
-    return getInherited.call(this, key);
-  };
-}
-
 
 // Implements a member that provides a lazily created map of maps,
 // with inheritance at both levels.

@@ -14,9 +14,7 @@ import {
 } from 'ember-metal/utils';
 import { meta as metaFor } from 'ember-metal/meta';
 
-/* listener flags */
-var ONCE = 1;
-var SUSPENDED = 2;
+import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
 
 
 /*
@@ -51,16 +49,10 @@ function indexOf(array, target, method) {
   return index;
 }
 
-function actionsFor(obj, eventName) {
-  return metaFor(obj, true).writableListeners(eventName);
-}
-
 export function accumulateListeners(obj, eventName, otherActions) {
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.readableListeners(eventName);
-
-  if (!actions) { return; }
-
+  if (!meta) { return; }
+  var actions = meta.matchingListeners(eventName);
   var newActions = [];
 
   for (var i = actions.length - 3; i >= 0; i -= 3) {
@@ -98,19 +90,12 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  var actions = actionsFor(obj, eventName);
-  var actionIndex = indexOf(actions, target, method);
   var flags = 0;
-
   if (once) {
     flags |= ONCE;
   }
 
-  if (actionIndex !== -1) {
-    return;
-  }
-
-  actions.push(target, method, flags);
+  metaFor(obj).addToListeners(eventName, target, method, flags);
 
   if ('function' === typeof obj.didAddListener) {
     obj.didAddListener(eventName, target, method);
@@ -138,31 +123,11 @@ export function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  function _removeListener(target, method) {
-    var actions = actionsFor(obj, eventName);
-    var actionIndex = indexOf(actions, target, method);
-
-    // action doesn't exist, give up silently
-    if (actionIndex === -1) { return; }
-
-    actions.splice(actionIndex, 3);
-
+  metaFor(obj).removeFromListeners(eventName, target, method, (...args) => {
     if ('function' === typeof obj.didRemoveListener) {
-      obj.didRemoveListener(eventName, target, method);
+      obj.didRemoveListener(...args);
     }
-  }
-
-  if (method) {
-    _removeListener(target, method);
-  } else {
-    var meta = obj['__ember_meta__'];
-    var actions = meta && meta.readableListeners(eventName);
-
-    if (!actions) { return; }
-    for (var i = actions.length - 3; i >= 0; i -= 3) {
-      _removeListener(actions[i], actions[i + 1]);
-    }
-  }
+  });
 }
 
 /**
@@ -184,25 +149,7 @@ export function removeListener(obj, eventName, target, method) {
   @param {Function} callback
 */
 export function suspendListener(obj, eventName, target, method, callback) {
-  if (!method && 'function' === typeof target) {
-    method = target;
-    target = null;
-  }
-
-  var actions = actionsFor(obj, eventName);
-  var actionIndex = indexOf(actions, target, method);
-
-  if (actionIndex !== -1) {
-    actions[actionIndex + 2] |= SUSPENDED; // mark the action as suspended
-  }
-
-  try {
-    return callback.call(target);
-  } finally {
-    if (actionIndex !== -1) {
-      actions[actionIndex + 2] &= ~SUSPENDED;
-    }
-  }
+  return suspendListeners(obj, [eventName], target, method, callback);
 }
 
 /**
@@ -223,30 +170,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
     method = target;
     target = null;
   }
-
-  var suspendedActions = [];
-  var actionsList = [];
-
-  for (let i = 0, l = eventNames.length; i < l; i++) {
-    let eventName = eventNames[i];
-    let actions = actionsFor(obj, eventName);
-    let actionIndex = indexOf(actions, target, method);
-
-    if (actionIndex !== -1) {
-      actions[actionIndex + 2] |= SUSPENDED;
-      suspendedActions.push(actionIndex);
-      actionsList.push(actions);
-    }
-  }
-
-  try {
-    return callback.call(target);
-  } finally {
-    for (let i = 0, l = suspendedActions.length; i < l; i++) {
-      let actionIndex = suspendedActions[i];
-      actionsList[i][actionIndex + 2] &= ~SUSPENDED;
-    }
-  }
+  return metaFor(obj).suspendListeners(eventNames, target, method, callback);
 }
 
 /**
@@ -258,18 +182,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  var listeners = obj['__ember_meta__'].getAllListeners();
-  var ret = [];
-
-  if (listeners) {
-    for (var eventName in listeners) {
-      if (eventName !== '__source__' &&
-          listeners[eventName]) {
-        ret.push(eventName);
-      }
-    }
-  }
-  return ret;
+  return metaFor(obj).watchedEvents();
 }
 
 /**
@@ -290,7 +203,7 @@ export function watchedEvents(obj) {
 export function sendEvent(obj, eventName, params, actions) {
   if (!actions) {
     var meta = obj['__ember_meta__'];
-    actions = meta && meta.readableListeners(eventName);
+    actions = meta && meta.matchingListeners(eventName);
   }
 
   if (!actions) { return; }
@@ -330,9 +243,8 @@ export function sendEvent(obj, eventName, params, actions) {
 */
 export function hasListeners(obj, eventName) {
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.readableListeners(eventName);
-
-  return !!(actions && actions.length);
+  if (!meta) { return false; }
+  return meta.matchingListeners(eventName).length > 0;
 }
 
 /**
@@ -345,7 +257,7 @@ export function hasListeners(obj, eventName) {
 export function listenersFor(obj, eventName) {
   var ret = [];
   var meta = obj['__ember_meta__'];
-  var actions = meta && meta.readableListeners(eventName);
+  var actions = meta && meta.matchingListeners(eventName);
 
   if (!actions) { return ret; }
 
