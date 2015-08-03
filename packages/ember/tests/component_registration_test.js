@@ -24,11 +24,11 @@ function cleanup() {
     App = null;
     Ember.TEMPLATES = {};
 
-    cleanupHandlebarsHelpers();
+    cleanupHelpers();
   });
 }
 
-function cleanupHandlebarsHelpers() {
+function cleanupHelpers() {
   var currentHelpers = Ember.A(keys(helpers));
 
   currentHelpers.forEach(function(name) {

@@ -246,6 +246,19 @@ QUnit.test('dashed helper not usable with a block', function() {
   }, /Helpers may not be used in the block form/);
 });
 
+QUnit.test('dashed helper not usable within element', function() {
+  var SomeHelper = makeHelper(function() {});
+  registry.register('helper:some-helper', SomeHelper);
+  component = Component.extend({
+    container,
+    layout: compile(`<div {{some-helper}}></div>`)
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(component);
+  }, /Helpers may not be used in the element form/);
+});
+
 QUnit.test('dashed helper is torn down', function() {
   var destroyCalled = 0;
   var SomeHelper = Helper.extend({

@@ -2,6 +2,7 @@ import run from 'ember-metal/run_loop';
 import { Registry } from 'ember-runtime/system/container';
 import Component from 'ember-views/views/component';
 import compile from 'ember-template-compiler/system/compile';
+import { helper as makeHelper } from 'ember-htmlbars/helper';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
@@ -63,8 +64,7 @@ QUnit.test('can be used as a sub-expression', function() {
   function eq([ actual, expected ]) {
     return actual === expected;
   }
-  eq.isHTMLBars = true;
-  registry.register('helper:x-eq', eq);
+  registry.register('helper:x-eq', makeHelper(eq));
 
   component = Component.create({
     container,

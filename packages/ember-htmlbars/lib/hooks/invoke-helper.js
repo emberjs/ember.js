@@ -13,7 +13,7 @@ export default function invokeHelper(morph, env, scope, visitor, params, hash, h
     return { handled: true };
   }
 
-  var helperStream = buildHelperStream(helper, params, hash, templates, env, scope, context);
+  var helperStream = buildHelperStream(helper, params, hash, templates, env, scope);
 
   // Ember.Helper helpers are pure values, thus linkable
   if (helperStream.linkable) {
@@ -40,6 +40,6 @@ export default function invokeHelper(morph, env, scope, visitor, params, hash, h
     return { link: true, value: helperStream };
   }
 
-  // Legacy helpers are not linkable, they must run every rerender
+  // Built-in helpers are not linkable, they must run every rerender
   return { value: helperStream.value() };
 }

@@ -333,7 +333,7 @@ QUnit.test('select element should correctly initialize and update selectedIndex 
     collection: Ember.A([{ name: 'Wes', val: 'w' }, { name: 'Gordon', val: 'g' }]),
     selection: { name: 'Gordon', val: 'g' },
     selectView: SelectView,
-    template: Ember.Handlebars.compile(templateString)
+    template: compile(templateString)
   });
 
   run(function() {

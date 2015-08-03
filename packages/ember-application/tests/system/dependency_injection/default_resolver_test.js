@@ -10,8 +10,6 @@ import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import Application from 'ember-application/system/application';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import makeHandlebarsBoundHelper from 'ember-htmlbars/compat/make-bound-helper';
-import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
 import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import {
   registerHelper
@@ -123,41 +121,23 @@ QUnit.test('the default resolver resolves container-registered helpers', functio
 QUnit.test('the default resolver resolves helpers on the namespace', function() {
   let ShorthandHelper = makeHelper(function() {});
   let CompleteHelper = Helper.extend();
-  let LegacyBareFunctionHelper = function() {};
-  let ViewHelper, LegacyHandlebarsBoundHelper, LegacyHTMLBarsBoundHelper;
-
-  expectDeprecation(function() {
-    LegacyHandlebarsBoundHelper = makeHandlebarsBoundHelper(function() {});
-  }, 'Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
+  let LegacyHTMLBarsBoundHelper;
 
   expectDeprecation(function() {
     LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
   }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.');
 
-  expectDeprecation(function() {
-    ViewHelper = makeViewHelper(function() {});
-  }, '`Ember.Handlebars.makeViewHelper` and `Ember.HTMLBars.makeViewHelper` are deprecated. Please refactor to normal component usage.');
-
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;
-  application.LegacyBareFunctionHelper = LegacyBareFunctionHelper;
-  application.LegacyHandlebarsBoundHelper = LegacyHandlebarsBoundHelper;
   application.LegacyHtmlBarsBoundHelper = LegacyHTMLBarsBoundHelper; // Must use lowered "tml" in "HTMLBars" for resolver to find this
-  application.ViewHelper = ViewHelper;
 
   let resolvedShorthand = registry.resolve('helper:shorthand');
   let resolvedComplete = registry.resolve('helper:complete');
-  let resolvedLegacy = registry.resolve('helper:legacy-bare-function');
-  let resolvedLegacyHandlebars = registry.resolve('helper:legacy-handlebars-bound');
   let resolvedLegacyHTMLBars = registry.resolve('helper:legacy-html-bars-bound');
-  let resolvedView = registry.resolve('helper:view');
 
   equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
   equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
-  ok(typeof resolvedLegacy === 'function', 'legacy function helper is resolved');
-  equal(resolvedView, ViewHelper, 'resolves view helper');
   equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
-  equal(resolvedLegacyHandlebars, LegacyHandlebarsBoundHelper, 'resolves legacy Handlebars bound helper');
 });
 
 QUnit.test('the default resolver resolves to the same instance no matter the notation ', function() {

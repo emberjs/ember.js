@@ -3,10 +3,8 @@ import Ember from 'ember-metal/core';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 
-import EmberHandlebars from 'ember-htmlbars/compat';
+import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
-
-var compile = EmberHandlebars.compile;
 
 var Router, App, AppView, router, registry, container;
 var set = Ember.set;
