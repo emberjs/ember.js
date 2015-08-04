@@ -529,7 +529,9 @@ export default Mixin.create(Enumerable, {
       // ES6TODO: GRRRRR
       var EachProxy = requireModule('ember-runtime/system/each_proxy')['EachProxy'];
 
-      this.__each = new EachProxy(this);
+      this.__each = new EachProxy({
+        content: this
+      });
     }
 
     return this.__each;
