@@ -1043,7 +1043,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().html(), '<div>This is a</div><div>fragment</div>', 'Just the fragment was used');
   });
 
-  QUnit.skip('non-block without properties replaced with a div', function() {
+  QUnit.test('non-block without properties replaced with a div', function() {
     // The whitespace is added intentionally to verify that the heuristic is not "a single node" but
     // rather "a single non-whitespace, non-comment node"
     registry.register('template:components/non-block', compile('  <div>In layout</div>  '));
@@ -1061,7 +1061,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     ok(view.$('div.ember-view[id]').length === 1, 'The non-block tag name was used');
   });
 
-  QUnit.skip('non-block without properties replaced with identity element', function() {
+  QUnit.test('non-block without properties replaced with identity element', function() {
     registry.register('template:components/non-block', compile('<non-block such="{{attrs.stability}}">In layout</non-block>'));
 
     view = appendViewFor('<non-block stability={{view.stability}} />', {
@@ -1080,7 +1080,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     ok(view.$().html().match(/^<non-block id="[^"]*" such="stability!" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
   });
 
-  QUnit.skip('non-block with class replaced with a div merges classes', function() {
+  QUnit.test('non-block with class replaced with a div merges classes', function() {
     registry.register('template:components/non-block', compile('<div class="inner-class" />'));
 
     view = appendViewFor('<non-block class="{{view.outer}}" />', {
@@ -1094,7 +1094,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('div').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
   });
 
-  QUnit.skip('non-block with class replaced with a identity element merges classes', function() {
+  QUnit.test('non-block with class replaced with a identity element merges classes', function() {
     registry.register('template:components/non-block', compile('<non-block class="inner-class" />'));
 
     view = appendViewFor('<non-block class="{{view.outer}}" />', {
@@ -1108,7 +1108,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('non-block').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
   });
 
-  QUnit.skip('non-block rendering a fragment', function() {
+  QUnit.test('non-block rendering a fragment', function() {
     registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
 
     view = appendViewFor('<non-block first={{view.first}} second={{view.second}} />', {
@@ -1193,12 +1193,11 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
 
     view = appendViewFor('<non-block someProp="something here" />');
-    console.log(jQuery('#qunit-fixture').html());
 
     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
   });
 
-  QUnit.skip('rerendering component with attrs from parent', function() {
+  QUnit.test('rerendering component with attrs from parent', function() {
     var willUpdate = 0;
     var didReceiveAttrs = 0;
 
