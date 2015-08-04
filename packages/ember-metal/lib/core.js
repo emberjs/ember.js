@@ -208,7 +208,6 @@ Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
   An empty function useful for some operations. Always returns `this`.
 
   @method K
-  @private
   @return {Object}
   @public
 */
