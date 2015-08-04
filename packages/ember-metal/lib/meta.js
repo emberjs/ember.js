@@ -5,6 +5,7 @@
 
 import isEnabled from 'ember-metal/features';
 import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
+import EmptyObject from 'ember-metal/empty_object';
 
 /**
 @module ember-metal
@@ -84,7 +85,7 @@ function ownMap(name, Meta) {
 Meta.prototype._getOrCreateOwnMap = function(key) {
   let ret = this[key];
   if (!ret) {
-    ret = this[key] = {};
+    ret = this[key] = new EmptyObject();
   }
   return ret;
 };
@@ -111,7 +112,7 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['clear' + capitalized] = function() {
-    this[key] = {};
+    this[key] = new EmptyObject();
   };
 }
 
@@ -121,7 +122,7 @@ Meta.prototype._getOrCreateInheritedMap = function(key) {
     if (this.parent) {
       ret = this[key] = Object.create(this.parent._getOrCreateInheritedMap(key));
     } else {
-      ret = this[key] = {};
+      ret = this[key] = new EmptyObject();
     }
   }
   return ret;
@@ -147,7 +148,7 @@ function inheritedMapOfMaps(name, Meta) {
     let outerMap = this._getOrCreateInheritedMap(key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
-      innerMap = outerMap[subkey] = {};
+      innerMap = outerMap[subkey] = new EmptyObject();
     } else if (!Object.hasOwnProperty.call(outerMap, subkey)) {
       innerMap = outerMap[subkey] = Object.create(innerMap);
     }
