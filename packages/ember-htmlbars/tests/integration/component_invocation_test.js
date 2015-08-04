@@ -65,6 +65,15 @@ QUnit.test('non-block without properties', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout');
 });
 
+QUnit.test('GlimmerComponent cannot be invoked with curly braces', function() {
+  registry.register('template:components/non-block', compile('In layout'));
+  registry.register('component:non-block', GlimmerComponent.extend());
+
+  expectAssertion(function() {
+    view = appendViewFor('{{non-block}}');
+  }, /cannot invoke the 'non-block' component with curly braces/);
+});
+
 QUnit.test('block without properties', function() {
   expect(1);
 
@@ -1017,6 +1026,15 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().html(), 'In layout', 'Just the fragment was used');
   });
 
+  QUnit.test('legacy components cannot be invoked with angle brackets', function() {
+    registry.register('template:components/non-block', compile('In layout'));
+    registry.register('component:non-block', Component.extend());
+
+    expectAssertion(function() {
+      view = appendViewFor('<non-block />');
+    }, /cannot invoke the 'non-block' component with angle brackets/);
+  });
+
   QUnit.test('non-block without properties replaced with a fragment when the content is multiple elements', function() {
     registry.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
 
@@ -1175,6 +1193,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
 
     view = appendViewFor('<non-block someProp="something here" />');
+    console.log(jQuery('#qunit-fixture').html());
 
     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
   });
@@ -1234,7 +1253,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
       moduleName: layoutModuleName
     });
     registry.register('template:components/sample-component', sampleComponentLayout);
-    registry.register('component:sample-component', Component.extend({
+    registry.register('component:sample-component', GlimmerComponent.extend({
       didInsertElement: function() {
         equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
       }

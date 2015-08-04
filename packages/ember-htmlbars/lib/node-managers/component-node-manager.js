@@ -9,7 +9,8 @@ import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import SafeString from 'htmlbars-util/safe-string';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import EmberComponent from 'ember-views/components/component';
+import LegacyEmberComponent from 'ember-views/components/component';
+import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import Stream from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
 
@@ -50,7 +51,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     return component || layout;
   });
 
-  component = component || EmberComponent;
+  component = component || (isAngleBracket ? GlimmerComponent : LegacyEmberComponent);
 
   let createOptions = { parentView };
 
@@ -79,6 +80,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs, proto);
+
+  Ember.runInDebug(() => {
+    if (isAngleBracket) {
+      Ember.assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
+    } else {
+      Ember.assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
+    }
+  });
 
   // If the component specifies its template via the `layout` or `template`
   // properties instead of using the template looked up in the container, get
