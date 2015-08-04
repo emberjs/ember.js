@@ -955,6 +955,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'preload-data',
+      after: 'ember-data',   // ember-data must be loaded before we can access store
 
       initialize: function(container, application) {
         var store = container.lookup('store:main');
