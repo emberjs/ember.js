@@ -27,7 +27,8 @@ var SPLIT_REGEX = /\{|\}/;
   Ember.expandProperties('{foo}.bar.{baz}')             //=> 'foo.bar.baz'
   ```
 
-  @method
+  @method expandProperties
+  @for Ember
   @private
   @param {String} pattern The property pattern to expand.
   @param {Function} callback The callback to invoke.  It is invoked once per
