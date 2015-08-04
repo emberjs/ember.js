@@ -3996,3 +3996,32 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
     });
   }, /boom/, 'expected an exception that didnt happen');
 });
+
+QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
+  App.ApplicationRoute = Ember.Route.extend({
+    actions: {
+      showModal: function() {
+        this.render({
+          outlet: undefined,
+          parentView: 'application'
+        });
+      },
+      hideModal: function() {
+        this.disconnectOutlet({
+          outlet: undefined,
+          parentView: 'application'
+        });
+      }
+    }
+  });
+
+  bootApplication();
+
+  throws(function() {
+    Ember.run(function() { router.send('showModal'); });
+  }, /You passed undefined as the outlet name/);
+
+  throws(function() {
+    Ember.run(function() { router.send('hideModal'); });
+  }, /You passed undefined as the outlet name/);
+});
