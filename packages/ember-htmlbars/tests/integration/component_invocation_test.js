@@ -1135,12 +1135,15 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.test('attributes are not installed on the top level', function() {
     let component;
 
-    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}}</non-block>'));
+    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
     registry.register('component:non-block', GlimmerComponent.extend({
+      // This is specifically attempting to trigger a 1.x-era heuristic that only copied
+      // attrs that were present as defined properties on the component.
       text: null,
       dynamic: null,
 
-      didInitAttrs() {
+      init() {
+        this._super(...arguments);
         component = this;
       }
     }));
