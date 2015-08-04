@@ -5,8 +5,6 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
-import { arrayControllerDeprecation } from 'ember-runtime/controllers/array_controller';
-
 import EmberHandlebars from 'ember-htmlbars/compat';
 
 var compile = EmberHandlebars.compile;
