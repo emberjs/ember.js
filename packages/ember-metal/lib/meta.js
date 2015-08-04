@@ -43,12 +43,11 @@ let members = {
 };
 
 let memberNames = Object.keys(members);
+let memberProperties = memberNames.map(memberProperty);
 
 function Meta(obj, parentMeta) {
   // preallocate a slot for each member
-  for (let i = 0; i < memberNames.length; i++) {
-    this[memberProperty(memberNames[i])] = undefined;
-  }
+  memberProperties.forEach(prop => this[prop] = undefined);
 
   // used only internally
   this.source = obj;
@@ -69,15 +68,7 @@ function Meta(obj, parentMeta) {
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
-
-(function setupMembers() {
-  for (let i = 0; i < memberNames.length; i++) {
-    let name = memberNames[i];
-    let implementation = members[name];
-    implementation(name, Meta);
-  }
-})();
-
+memberNames.forEach(name => members[name](name, Meta));
 
 // Implements a member that is a lazily created, non-inheritable
 // POJO.
@@ -85,18 +76,18 @@ function ownMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
   Meta.prototype['writable' + capitalized] = function() {
-    return getOrCreateOwnMap.call(this, key);
+    return this._getOrCreateOwnMap(key);
   };
   Meta.prototype['readable' + capitalized] = function() { return this[key]; };
 }
 
-function getOrCreateOwnMap(key) {
+Meta.prototype._getOrCreateOwnMap = function(key) {
   let ret = this[key];
   if (!ret) {
     ret = this[key] = {};
   }
   return ret;
-}
+};
 
 // Implements a member that is a lazily created POJO with inheritable
 // values.
@@ -105,15 +96,15 @@ function inheritedMap(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype['writable' + capitalized] = function() {
-    return getOrCreateInheritedMap.call(this, key);
+    return this._getOrCreateInheritedMap(key);
   };
 
   Meta.prototype['readable' + capitalized] = function() {
-    return getInherited.call(this, key);
+    return this._getInherited(key);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = getInherited.call(this, key);
+    let map = this._getInherited(key);
     if (map) {
       return map[subkey];
     }
@@ -124,27 +115,27 @@ function inheritedMap(name, Meta) {
   };
 }
 
-function getOrCreateInheritedMap(key) {
+Meta.prototype._getOrCreateInheritedMap = function(key) {
   let ret = this[key];
   if (!ret) {
     if (this.parent) {
-      ret = this[key] = Object.create(getOrCreateInheritedMap.call(this.parent, key));
+      ret = this[key] = Object.create(this.parent._getOrCreateInheritedMap(key));
     } else {
       ret = this[key] = {};
     }
   }
   return ret;
-}
+};
 
-function getInherited(key) {
+Meta.prototype._getInherited = function(key) {
   let pointer = this;
-  while (pointer) {
+  while (pointer !== undefined) {
     if (pointer[key]) {
       return pointer[key];
     }
     pointer = pointer.parent;
   }
-}
+};
 
 // Implements a member that provides a lazily created map of maps,
 // with inheritance at both levels.
@@ -153,7 +144,7 @@ function inheritedMapOfMaps(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype['writable' + capitalized] = function(subkey) {
-    let outerMap = getOrCreateInheritedMap.call(this, key);
+    let outerMap = this._getOrCreateInheritedMap(key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
       innerMap = outerMap[subkey] = {};
@@ -164,14 +155,14 @@ function inheritedMapOfMaps(name, Meta) {
   };
 
   Meta.prototype['readable' + capitalized] = function(subkey) {
-    let map = getInherited.call(this, key);
+    let map = this._getInherited(key);
     if (map) {
       return map[subkey];
     }
   };
 
   Meta.prototype['getAll' + capitalized] = function() {
-    return getInherited.call(this, key);
+    return this._getInherited(key);
   };
 }
 
@@ -198,11 +189,11 @@ function ownCustomObject(name, Meta) {
 function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  let writable = Meta.prototype['writable' + capitalized] = function(create) {
+  Meta.prototype['writable' + capitalized] = function(create) {
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
-        ret = this[key] = writable.call(this.parent, create).copy(this.source);
+        ret = this[key] = this.parent['writable' + capitalized](create).copy(this.source);
       } else {
         ret = this[key] = create(this.source);
       }
@@ -210,7 +201,7 @@ function inheritedCustomObject(name, Meta) {
     return ret;
   };
   Meta.prototype['readable' + capitalized] = function() {
-    return getInherited.call(this, key);
+    return this._getInherited(key);
   };
 }
 
