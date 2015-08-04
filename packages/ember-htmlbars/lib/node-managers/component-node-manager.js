@@ -301,12 +301,12 @@ ComponentNodeManager.prototype.destroy = function() {
 export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}, proto = _component.proto()) {
   let props = assign({}, _props);
 
+  let snapshot = takeSnapshot(attrs);
+  props.attrs = snapshot;
+
   if (!isAngleBracket) {
     let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
     Ember.deprecate('controller= is deprecated', !hasSuppliedController, { id: 'ember-htmlbars.create-component', until: '3.0.0' });
-
-    let snapshot = takeSnapshot(attrs);
-    props.attrs = snapshot;
 
     mergeBindings(props, shadowedAttrs(proto, snapshot));
   } else {
