@@ -1,5 +1,6 @@
 /*jshint newcap:false*/
 import EmberView from 'ember-views/views/view';
+import EmberComponent from 'ember-views/views/component';
 import EmberObject from 'ember-runtime/system/object';
 
 import { A } from 'ember-runtime/system/native_array';
@@ -8,18 +9,10 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
-import helpers from 'ember-htmlbars/helpers';
-import registerBoundHelper from 'ember-htmlbars/compat/register-bound-helper';
-import makeBoundHelper from 'ember-htmlbars/compat/make-bound-helper';
+import Helper, { helper } from 'ember-htmlbars/helper';
 
 import { Registry } from 'ember-runtime/system/container';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-
-function expectDeprecationInHTMLBars() {
-  // leave this as an empty function until we are ready to use it
-  // to enforce deprecation notice for old Handlebars versions
-}
-
 
 var view, lookup, registry, container;
 var originalLookup = Ember.lookup;
@@ -27,8 +20,11 @@ var originalLookup = Ember.lookup;
 QUnit.module('ember-htmlbars: {{#unbound}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
+    registry = new Registry();
+    container = registry.container();
 
     view = EmberView.create({
+      container,
       template: compile('{{unbound foo}} {{unbound bar}}'),
       context: EmberObject.create({
         foo: 'BORK',
@@ -41,6 +37,8 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper', {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
     Ember.lookup = originalLookup;
   }
 });
@@ -56,7 +54,7 @@ QUnit.test('it should not re-render if the property changes', function() {
   equal(view.$().text(), 'BORK BORK', 'should not re-render if the property changes');
 });
 
-QUnit.test('it should re-render if the parent view rerenders', function() {
+QUnit.test('it should not re-render if the parent view rerenders', function() {
   run(function() {
     view.set('context.foo', 'OOF');
     view.rerender();
@@ -64,7 +62,7 @@ QUnit.test('it should re-render if the parent view rerenders', function() {
   equal(view.$().text(), 'OOF OOF', 'should re-render if the parent view rerenders');
 });
 
-QUnit.test('it should throw the helper missing error if multiple properties are provided', function() {
+QUnit.test('it should assert unbound cannot be called with multiple arguments', function() {
   expectAssertion(function() {
     runAppend(EmberView.create({
       template: compile('{{unbound foo bar}}'),
@@ -73,7 +71,7 @@ QUnit.test('it should throw the helper missing error if multiple properties are 
         bar: 'foo'
       })
     }));
-  }, /A helper named 'foo' could not be found/);
+  }, /unbound helper cannot be called with multiple params or hash params/);
 });
 
 QUnit.test('should property escape unsafe hrefs', function() {
@@ -106,12 +104,32 @@ QUnit.test('should property escape unsafe hrefs', function() {
   }
 });
 
+QUnit.test('should render on attributes', function(assert) {
+  /* jshint scripturl:true */
+
+  runDestroy(view);
+
+  view = EmberComponent.create({
+    layout: compile('<a href={{unbound name}}></a>'),
+    name: 'bob'
+  });
+
+  runAppend(view);
+
+  run(function() {
+    view.set('name', 'rick');
+  });
+  assert.equal(view.$().html(), '<a href="bob"></a>');
+});
+
 QUnit.module('ember-htmlbars: {{#unbound}} helper with container present', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
+    registry = new Registry();
+    container = registry.container();
 
     view = EmberView.create({
-      container: new Registry().container,
+      container,
       template: compile('{{unbound foo}}'),
       context: EmberObject.create({
         foo: 'bleep'
@@ -121,6 +139,8 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper with container present', {
 
   teardown() {
     runDestroy(view);
+    runDestroy(container);
+    container = registry = view = null;
     Ember.lookup = originalLookup;
   }
 });
@@ -133,15 +153,16 @@ QUnit.test('it should render the current value of a property path on the context
 QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
+    registry = new Registry();
+    container = registry.container();
 
-    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
-
-    registerBoundHelper('capitalize', function(value) {
-      return value.toUpperCase();
-    });
+    registry.register('helper:-capitalize', helper(function(params) {
+      return params[0].toUpperCase();
+    }));
 
     view = EmberView.create({
-      template: compile('{{capitalize (unbound foo)}}'),
+      container,
+      template: compile('{{-capitalize (unbound foo)}}'),
       context: EmberObject.create({
         foo: 'bork'
       })
@@ -151,9 +172,9 @@ QUnit.module('ember-htmlbars: {{#unbound}} subexpression', {
   },
 
   teardown() {
-    delete helpers['capitalize'];
-
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
     Ember.lookup = originalLookup;
   }
 });
@@ -169,31 +190,31 @@ QUnit.test('it should not re-render if the property changes', function() {
   equal(view.$().text(), 'BORK', 'should not re-render if the property changes');
 });
 
-QUnit.test('it should re-render if the parent view rerenders', function() {
+QUnit.test('it should not re-render if the parent view rerenders', function() {
   run(function() {
     view.set('context.foo', 'oof');
     view.rerender();
   });
-  equal(view.$().text(), 'OOF', 'should re-render if the parent view rerenders');
+  equal(view.$().text(), 'BORK', 'should not re-render if the parent view rerenders');
 });
 
 QUnit.module('ember-htmlbars: {{#unbound}} subexpression - helper form', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
+    registry = new Registry();
+    container = registry.container();
 
+    registry.register('helper:-capitalize', helper(function(params) {
+      return params[0].toUpperCase();
+    }));
 
-    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
-
-    registerBoundHelper('capitalize', function(value) {
-      return value.toUpperCase();
-    });
-
-    registerBoundHelper('doublize', function(value) {
-      return `${value} ${value}`;
-    });
+    registry.register('helper:-doublize', helper(function(params) {
+      return `${params[0]} ${params[0]}`;
+    }));
 
     view = EmberView.create({
-      template: compile('{{capitalize (unbound doublize foo)}}'),
+      container,
+      template: compile('{{-capitalize (unbound (-doublize foo))}}'),
       context: EmberObject.create({
         foo: 'bork'
       })
@@ -203,10 +224,9 @@ QUnit.module('ember-htmlbars: {{#unbound}} subexpression - helper form', {
   },
 
   teardown() {
-    delete helpers['capitalize'];
-    delete helpers['doublize'];
-
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
     Ember.lookup = originalLookup;
   }
 });
@@ -227,129 +247,110 @@ QUnit.test('it should re-render if the parent view rerenders', function() {
     view.set('context.foo', 'oof');
     view.rerender();
   });
-  equal(view.$().text(), 'OOF OOF', 'should re-render if the parent view rerenders');
+  equal(view.$().text(), 'BORK BORK', 'should not re-render if the parent view rerenders');
 });
 
 QUnit.module('ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
-    expectDeprecationInHTMLBars();
+    registry = new Registry();
+    container = registry.container();
 
-    expectDeprecation('`Ember.Handlebars.registerBoundHelper` is deprecated. Please refactor to use `Ember.Helpers.helper`.');
-
-    registerBoundHelper('surround', function(prefix, value, suffix) {
+    registry.register('helper:-surround', helper(function([prefix, value, suffix]) {
       return prefix + '-' + value + '-' + suffix;
-    });
+    }));
 
-    registerBoundHelper('capitalize', function(value) {
+    registry.register('helper:-capitalize', helper(function([value]) {
       return value.toUpperCase();
-    });
+    }));
 
-    registerBoundHelper('capitalizeName', function(value) {
-      return get(value, 'firstName').toUpperCase();
-    }, 'firstName');
+    registry.register('helper:-capitalizeName', Helper.extend({
+      destroy() {
+        this.removeObserver('value.firstName');
+        this._super(...arguments);
+      },
+      compute([value]) {
+        if (this.get('value')) {
+          this.removeObserver('value.firstName');
+        }
+        this.set('value', value);
+        this.addObserver('value.firstName', this, this.recompute);
+        return (value ? get(value, 'firstName').toUpperCase() : '');
+      }
+    }));
 
-    registerBoundHelper('fauxconcat', function(value) {
-      return [].slice.call(arguments, 0, -1).join('');
-    });
+    registry.register('helper:-fauxconcat', helper(function(params) {
+      return params.join('');
+    }));
 
-    registerBoundHelper('concatNames', function(value) {
-      return get(value, 'firstName') + get(value, 'lastName');
-    }, 'firstName', 'lastName');
+    registry.register('helper:-concatNames', Helper.extend({
+      destroy() {
+        this.teardown();
+        this._super(...arguments);
+      },
+      teardown() {
+        this.removeObserver('value.firstName');
+        this.removeObserver('value.lastName');
+      },
+      compute([value]) {
+        if (this.get('value')) {
+          this.teardown();
+        }
+        this.set('value', value);
+        this.addObserver('value.firstName', this, this.recompute);
+        this.addObserver('value.lastName', this, this.recompute);
+        return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
+      }
+    }));
   },
 
   teardown() {
-    delete helpers['surround'];
-    delete helpers['capitalize'];
-    delete helpers['capitalizeName'];
-    delete helpers['fauxconcat'];
-    delete helpers['concatNames'];
-
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
     Ember.lookup = originalLookup;
   }
 });
 
 QUnit.test('should be able to render an unbound helper invocation', function() {
-  try {
-    registerBoundHelper('repeat', function(value, options) {
-      var count = options.hash.count;
-      var a = [];
-      while (a.length < count) {
-        a.push(value);
-      }
-      return a.join('');
-    });
+  registry.register('helper:-repeat', helper(function([value], {count}) {
+    var a = [];
+    while (a.length < count) {
+      a.push(value);
+    }
+    return a.join('');
+  }));
 
-    view = EmberView.create({
-      template: compile('{{unbound repeat foo count=bar}} {{repeat foo count=bar}} {{unbound repeat foo count=2}} {{repeat foo count=4}}'),
-      context: EmberObject.create({
-        foo: 'X',
-        numRepeatsBinding: 'bar',
-        bar: 5
-      })
-    });
-    runAppend(view);
+  view = EmberView.create({
+    container,
+    template: compile('{{unbound (-repeat foo count=bar)}} {{-repeat foo count=bar}} {{unbound (-repeat foo count=2)}} {{-repeat foo count=4}}'),
+    context: EmberObject.create({
+      foo: 'X',
+      numRepeatsBinding: 'bar',
+      bar: 5
+    })
+  });
+  runAppend(view);
 
-    equal(view.$().text(), 'XXXXX XXXXX XX XXXX', 'first render is correct');
+  equal(view.$().text(), 'XXXXX XXXXX XX XXXX', 'first render is correct');
 
-    run(function() {
-      set(view, 'context.bar', 1);
-    });
+  run(function() {
+    set(view, 'context.bar', 1);
+  });
 
-    equal(view.$().text(), 'XXXXX X XX XXXX', 'only unbound bound options changed');
-  } finally {
-    delete helpers['repeat'];
-  }
-});
-
-QUnit.test('should be able to render an unbound helper invocation with deprecated fooBinding [DEPRECATED]', function() {
-  try {
-    registerBoundHelper('repeat', function(value, options) {
-      var count = options.hash.count;
-      var a = [];
-      while (a.length < count) {
-        a.push(value);
-      }
-      return a.join('');
-    });
-
-    var template;
-    expectDeprecation(function() {
-      template = compile('{{unbound repeat foo countBinding="bar"}} {{repeat foo countBinding="bar"}} {{unbound repeat foo count=2}} {{repeat foo count=4}}');
-    }, /You're using legacy binding syntax/);
-
-    view = EmberView.create({
-      template,
-      context: EmberObject.create({
-        foo: 'X',
-        numRepeatsBinding: 'bar',
-        bar: 5
-      })
-    });
-    runAppend(view);
-
-    equal(view.$().text(), 'XXXXX XXXXX XX XXXX', 'first render is correct');
-
-    run(function() {
-      set(view, 'context.bar', 1);
-    });
-
-    equal(view.$().text(), 'XXXXX X XX XXXX', 'only unbound bound options changed');
-  } finally {
-    delete helpers['repeat'];
-  }
+  equal(view.$().text(), 'XXXXX X XX XXXX', 'only unbound bound options changed');
 });
 
 QUnit.test('should be able to render an bound helper invocation mixed with static values', function() {
   view = EmberView.create({
-      template: compile('{{unbound surround prefix value "bar"}} {{surround prefix value "bar"}} {{unbound surround "bar" value suffix}} {{surround "bar" value suffix}}'),
-      context: EmberObject.create({
-        prefix: 'before',
-        value: 'core',
-        suffix: 'after'
-      })
-    });
+    container,
+    template: compile('{{unbound (-surround prefix value "bar")}} {{-surround prefix value "bar"}} {{unbound (-surround "bar" value suffix)}} {{-surround "bar" value suffix}}'),
+    context: EmberObject.create({
+      prefix: 'before',
+      value: 'core',
+      suffix: 'after'
+    })
+  });
   runAppend(view);
 
   equal(view.$().text(), 'before-core-bar before-core-bar bar-core-after bar-core-after', 'first render is correct');
@@ -363,7 +364,8 @@ QUnit.test('should be able to render an bound helper invocation mixed with stati
 
 QUnit.test('should be able to render unbound forms of multi-arg helpers', function() {
   view = EmberView.create({
-    template: compile('{{fauxconcat foo bar bing}} {{unbound fauxconcat foo bar bing}}'),
+    container,
+    template: compile('{{-fauxconcat foo bar bing}} {{unbound (-fauxconcat foo bar bing)}}'),
     context: EmberObject.create({
       foo: 'a',
       bar: 'b',
@@ -383,7 +385,8 @@ QUnit.test('should be able to render unbound forms of multi-arg helpers', functi
 
 QUnit.test('should be able to render an unbound helper invocation for helpers with dependent keys', function() {
   view = EmberView.create({
-    template: compile('{{capitalizeName person}} {{unbound capitalizeName person}} {{concatNames person}} {{unbound concatNames person}}'),
+    container,
+    template: compile('{{-capitalizeName person}} {{unbound (-capitalizeName person)}} {{-concatNames person}} {{unbound (-concatNames person)}}'),
     context: EmberObject.create({
       person: EmberObject.create({
         firstName: 'shooby',
@@ -404,10 +407,11 @@ QUnit.test('should be able to render an unbound helper invocation for helpers wi
 
 QUnit.test('should be able to render an unbound helper invocation in #each helper', function() {
   view = EmberView.create({
+    container,
     template: compile(
       ['{{#each people as |person|}}',
-        '{{capitalize person.firstName}} {{unbound capitalize person.firstName}}',
-        '{{/each}}'].join('')),
+       '{{-capitalize person.firstName}} {{unbound (-capitalize person.firstName)}}',
+       '{{/each}}'].join('')),
     context: {
       people: Ember.A([
         {
@@ -427,46 +431,42 @@ QUnit.test('should be able to render an unbound helper invocation in #each helpe
 });
 
 QUnit.test('should be able to render an unbound helper invocation with bound hash options', function() {
-  try {
-    Ember.Handlebars.registerBoundHelper('repeat', function(value) {
-      return [].slice.call(arguments, 0, -1).join('');
-    });
+  registry.register('helper:-repeat', helper(function([value]) {
+    return [].slice.call(arguments, 0, -1).join('');
+  }));
 
-
-    view = EmberView.create({
-      template: compile('{{capitalizeName person}} {{unbound capitalizeName person}} {{concatNames person}} {{unbound concatNames person}}'),
-      context: EmberObject.create({
-        person: EmberObject.create({
-          firstName: 'shooby',
-          lastName:  'taylor'
-        })
+  view = EmberView.create({
+    container,
+    template: compile('{{-capitalizeName person}} {{unbound (-capitalizeName person)}} {{-concatNames person}} {{unbound (-concatNames person)}}'),
+    context: EmberObject.create({
+      person: EmberObject.create({
+        firstName: 'shooby',
+        lastName:  'taylor'
       })
-    });
-    runAppend(view);
+    })
+  });
+  runAppend(view);
 
-    equal(view.$().text(), 'SHOOBY SHOOBY shoobytaylor shoobytaylor', 'first render is correct');
+  equal(view.$().text(), 'SHOOBY SHOOBY shoobytaylor shoobytaylor', 'first render is correct');
 
-    run(function() {
-      set(view, 'context.person.firstName', 'sally');
-    });
+  run(function() {
+    set(view, 'context.person.firstName', 'sally');
+  });
 
-    equal(view.$().text(), 'SALLY SHOOBY sallytaylor shoobytaylor', 'only bound values change');
-  } finally {
-    delete Ember.Handlebars.registerBoundHelper['repeat'];
-  }
+  equal(view.$().text(), 'SALLY SHOOBY sallytaylor shoobytaylor', 'only bound values change');
 });
 
 QUnit.test('should be able to render bound form of a helper inside unbound form of same helper', function() {
   view = EmberView.create({
     template: compile(
-      ['{{#unbound if foo}}',
+      ['{{#if (unbound foo)}}',
         '{{#if bar}}true{{/if}}',
         '{{#unless bar}}false{{/unless}}',
-        '{{/unbound}}',
-        '{{#unbound unless notfoo}}',
+        '{{/if}}',
+        '{{#unless (unbound notfoo)}}',
         '{{#if bar}}true{{/if}}',
         '{{#unless bar}}false{{/unless}}',
-        '{{/unbound}}'].join('')),
+        '{{/unless}}'].join('')),
     context: EmberObject.create({
       foo: true,
       notfoo: false,
@@ -494,22 +494,19 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper -- Container Lookup', {
   teardown() {
     runDestroy(view);
     runDestroy(container);
-    Ember.lookup = originalLookup;
     registry = container = view = null;
+    Ember.lookup = originalLookup;
   }
 });
 
 QUnit.test('should lookup helpers in the container', function() {
-  expectDeprecationInHTMLBars();
-
-  expectDeprecation('Using Ember.Handlebars.makeBoundHelper is deprecated. Please refactor to using `Ember.Helper.helper`.');
-  registry.register('helper:up-case', makeBoundHelper(function(value) {
+  registry.register('helper:up-case', helper(function([value]) {
     return value.toUpperCase();
   }));
 
   view = EmberView.create({
-    template: compile('{{unbound up-case displayText}}'),
-    container: container,
+    template: compile('{{unbound (up-case displayText)}}'),
+    container,
     context: {
       displayText: 'such awesome'
     }

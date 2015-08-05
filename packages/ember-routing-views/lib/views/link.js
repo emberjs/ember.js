@@ -13,6 +13,7 @@ import { deprecatingAlias } from 'ember-metal/computed_macros';
 import { isSimpleClick } from 'ember-views/system/utils';
 import EmberComponent from 'ember-views/views/component';
 import inject from 'ember-runtime/inject';
+import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
 import linkToTemplate from 'ember-htmlbars/templates/link-to';

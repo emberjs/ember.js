@@ -1,11 +1,8 @@
 import 'ember';
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-
-import EmberHandlebars from 'ember-htmlbars/compat';
+import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
-
-var compile = EmberHandlebars.compile;
 
 var Router, App, templates, router, container, counter;
 

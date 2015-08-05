@@ -5,9 +5,8 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
-import EmberHandlebars from 'ember-htmlbars/compat';
+import { compile } from 'ember-template-compiler';
 
-var compile = EmberHandlebars.compile;
 var trim = Ember.$.trim;
 
 var Router, App, router, registry, container, originalLoggerError;

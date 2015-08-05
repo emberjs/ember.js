@@ -32,12 +32,10 @@ import {
   registerPlugin
 } from 'ember-template-compiler';
 
-import makeViewHelper from 'ember-htmlbars/system/make-view-helper';
 import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 
 import {
-  registerHelper,
-  deprecatedRegisterHelper
+  registerHelper
 } from 'ember-htmlbars/helpers';
 import {
   ifHelper,
@@ -85,11 +83,9 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
 }
 
 Ember.HTMLBars = {
-  _registerHelper: deprecatedRegisterHelper,
   template: template,
   compile: compile,
   precompile: precompile,
-  makeViewHelper: makeViewHelper,
   makeBoundHelper: makeBoundHelper,
   registerPlugin: registerPlugin,
   DOMHelper
