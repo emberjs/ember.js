@@ -26,7 +26,7 @@ import {
   sendEvent,
   hasListeners
 } from 'ember-metal/events';
-import { isWatching } from 'ember-metal/watching';
+import EachProxy from 'ember-runtime/system/each_proxy';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   var willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -422,12 +422,12 @@ export default Mixin.create(Enumerable, {
       }
     }
 
-    // Make sure the @each proxy is set up if anyone is observing @each
-    if (isWatching(this, '@each')) {
-      get(this, '@each');
+    if (this.__each) {
+      this.__each.arrayWillChange(this, startIdx, removeAmt, addAmt);
     }
 
     sendEvent(this, '@array:before', [this, startIdx, removeAmt, addAmt]);
+
 
     if (startIdx >= 0 && removeAmt >= 0 && get(this, 'hasEnumerableObservers')) {
       removing = [];
@@ -489,6 +489,11 @@ export default Mixin.create(Enumerable, {
     }
 
     this.enumerableContentDidChange(removeAmt, adding);
+
+    if (this.__each) {
+      this.__each.arrayDidChange(this, startIdx, removeAmt, addAmt);
+    }
+
     sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
     var length = get(this, 'length');
@@ -508,10 +513,6 @@ export default Mixin.create(Enumerable, {
     return this;
   },
 
-  // ..........................................................
-  // ENUMERATED PROPERTIES
-  //
-
   /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
@@ -525,13 +526,11 @@ export default Mixin.create(Enumerable, {
     @public
   */
   '@each': computed(function() {
+    // TODO use Symbol or add to meta
     if (!this.__each) {
-      // ES6TODO: GRRRRR
-      var EachProxy = requireModule('ember-runtime/system/each_proxy')['EachProxy'];
-
       this.__each = new EachProxy(this);
     }
 
     return this.__each;
-  })
+  }).volatile()
 });

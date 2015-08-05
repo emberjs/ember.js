@@ -194,15 +194,6 @@ function ChainNode(parent, key, value) {
       addChainWatcher(this._object, this._key, this);
     }
   }
-
-  // Special-case: the EachProxy relies on immediate evaluation to
-  // establish its observers.
-  //
-  // TODO: Replace this with an efficient callback that the EachProxy
-  // can implement.
-  if (this._parent && this._parent._key === '@each') {
-    this.value();
-  }
 }
 
 function lazyGet(obj, key) {
@@ -218,7 +209,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (key === '@each' || isVolatile(obj[key])) {
+  if (isVolatile(obj[key])) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
@@ -375,12 +366,6 @@ ChainNode.prototype = {
         addChainWatcher(obj, this._key, this);
       }
       this._value  = undefined;
-
-      // Special-case: the EachProxy relies on immediate evaluation to
-      // establish its observers.
-      if (this._parent && this._parent._key === '@each') {
-        this.value();
-      }
     }
 
     // then notify chains...
