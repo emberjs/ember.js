@@ -215,7 +215,7 @@ QUnit.test('should replace DOM representation if rerender() is called after elem
   run(function() {
     view = EmberView.extend({
       rerender() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     }).create({
       template: compile('Do not taunt happy fun {{unbound view.shape}}'),

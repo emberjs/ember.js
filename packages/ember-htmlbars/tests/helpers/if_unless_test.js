@@ -60,7 +60,7 @@ QUnit.test('The `if` helper tests for `isTruthy` if available', function() {
 QUnit.test('The `if` helper does not error on undefined', function() {
   view = EmberView.create({
     undefinedValue: undefined,
-    template: compile('{{#if view.undefinedValue}}Yep{{/if}}{{#unbound if view.undefinedValue}}Yep{{/unbound}}')
+    template: compile('{{#if view.undefinedValue}}Yep{{/if}}{{#if (unbound view.undefinedValue)}}Yep{{/if}}')
   });
 
   runAppend(view);
@@ -71,7 +71,7 @@ QUnit.test('The `if` helper does not error on undefined', function() {
 QUnit.test('The `unless` helper does not error on undefined', function() {
   view = EmberView.create({
     undefinedValue: undefined,
-    template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}{{#unbound unless view.undefinedValue}}YepUnbound{{/unbound}}')
+    template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}{{#unless (unbound view.undefinedValue)}}YepUnbound{{/unless}}')
   });
 
   runAppend(view);
@@ -186,10 +186,10 @@ QUnit.test('The `if` helper updates when the value changes', function() {
   equal(view.$().text(), '');
 });
 
-QUnit.test('The `unbound if` helper does not update when the value changes', function() {
+QUnit.test('The `if (unbound` helper does not update when the value changes', function() {
   view = EmberView.create({
     conditional: true,
-    template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
+    template: compile('{{#if (unbound view.conditional)}}Yep{{/if}}')
   });
   runAppend(view);
   equal(view.$().text(), 'Yep');
@@ -212,10 +212,10 @@ QUnit.test('The `unless` helper updates when the value changes', function() {
   equal(view.$().text(), '');
 });
 
-QUnit.test('The `unbound if` helper does not update when the value changes', function() {
+QUnit.test('The `if (unbound` helper does not update when the value changes', function() {
   view = EmberView.create({
     conditional: false,
-    template: compile('{{#unbound unless view.conditional}}Nope{{/unbound}}')
+    template: compile('{{#unless (unbound view.conditional)}}Nope{{/unless}}')
   });
   runAppend(view);
   equal(view.$().text(), 'Nope');
@@ -225,10 +225,10 @@ QUnit.test('The `unbound if` helper does not update when the value changes', fun
   equal(view.$().text(), 'Nope');
 });
 
-QUnit.test('The `unbound if` helper should work when its inverse is not present', function() {
+QUnit.test('The `if (unbound` helper should work when its inverse is not present', function() {
   view = EmberView.create({
     conditional: false,
-    template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
+    template: compile('{{#if (unbound view.conditional)}}Yep{{/if}}')
   });
   runAppend(view);
   equal(view.$().text(), '');

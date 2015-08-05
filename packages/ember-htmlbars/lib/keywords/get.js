@@ -31,7 +31,7 @@ if (isEnabled('ember-htmlbars-get-helper')) {
   };
 
   var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
-    if (!morph) {
+    if (morph === null) {
       return buildStream(params);
     } else {
       let stream;
