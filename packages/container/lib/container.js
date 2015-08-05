@@ -123,9 +123,7 @@ Container.prototype = {
    */
   destroy() {
     eachDestroyable(this, function(item) {
-      if (item.destroy) {
-        item.destroy();
-      }
+      item.destroy();
     });
 
     this.isDestroyed = true;
@@ -302,7 +300,8 @@ function eachDestroyable(container, callback) {
     key = keys[i];
     value = cache[key];
 
-    if (container.registry.getOption(key, 'instantiate') !== false) {
+    if (container.registry.getOption(key, 'instantiate') !== false &&
+       value.destroy) {
       callback(value);
     }
   }
@@ -310,9 +309,7 @@ function eachDestroyable(container, callback) {
 
 function resetCache(container) {
   eachDestroyable(container, function(value) {
-    if (value.destroy) {
-      value.destroy();
-    }
+    value.destroy();
   });
 
   container.cache.dict = dictionary(null);
