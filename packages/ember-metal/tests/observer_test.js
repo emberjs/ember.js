@@ -831,7 +831,7 @@ testBoth('depending on a chain with a computed property', function (get, set) {
     changed++;
   });
 
-  equal(undefined, cacheFor(obj, 'computed'), 'addObserver should not compute CP');
+  equal(cacheFor(obj, 'computed'), undefined, 'addObserver should not compute CP');
 
   set(obj, 'computed.foo', 'baz');
 

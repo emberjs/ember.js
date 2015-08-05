@@ -37,7 +37,7 @@ QUnit.test('should warn if a computed property is used for classNames', function
       elementId: 'test',
       classNames: computed(function() {
         return ['className'];
-      }).volatile()
+      })
     }).create();
   }, /Only arrays of static class strings.*For dynamic classes/i);
 });
@@ -48,7 +48,7 @@ QUnit.test('should warn if a non-array is used for classNameBindings', function(
       elementId: 'test',
       classNameBindings: computed(function() {
         return ['className'];
-      }).volatile()
+      })
     }).create();
   }, /Only arrays are allowed/i);
 });
