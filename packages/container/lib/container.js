@@ -20,6 +20,7 @@ function Container(registry, options) {
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
+  this.isDestroyed = false;
 }
 
 Container.prototype = {
