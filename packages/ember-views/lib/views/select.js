@@ -474,7 +474,7 @@ var Select = View.extend({
   */
   groupView: SelectOptgroup,
 
-  groupedContent: computed('optionGroupPath', 'content.@each', function() {
+  groupedContent: computed('optionGroupPath', 'content.[]', function() {
     var groupPath = get(this, 'optionGroupPath');
     var groupedContent = emberA();
     var content = get(this, 'content') || [];
@@ -513,7 +513,7 @@ var Select = View.extend({
     }
   },
 
-  selectionDidChange: observer('selection.@each', function() {
+  selectionDidChange: observer('selection.[]', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
       if (!isArray(selection)) {
