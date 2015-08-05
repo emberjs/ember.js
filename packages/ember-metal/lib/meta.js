@@ -44,12 +44,16 @@ let members = {
 };
 
 let memberNames = Object.keys(members);
-let memberProperties = memberNames.map(memberProperty);
 
 function Meta(obj, parentMeta) {
-  // preallocate a slot for each member
-  memberProperties.forEach(prop => this[prop] = undefined);
-
+  this.cache = undefined;
+  this.watching = undefined;
+  this.mixins = undefined;
+  this.bindings = undefined;
+  this.values = undefined;
+  this.deps = undefined;
+  this.chainWatchers = undefined;
+  this.chains = undefined;
   // used only internally
   this.source = obj;
 

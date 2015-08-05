@@ -206,7 +206,7 @@ export function sendEvent(obj, eventName, params, actions) {
     actions = meta && meta.matchingListeners(eventName);
   }
 
-  if (!actions) { return; }
+  if (!actions || actions.length === 0) { return; }
 
   for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     var target = actions[i];

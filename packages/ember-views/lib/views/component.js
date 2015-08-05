@@ -171,7 +171,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   _template: computed('templateName', {
     get() {
-      if (get(this, '_deprecatedFlagForBlockProvided')) {
+      if (this._deprecatedFlagForBlockProvided) {
         return true;
       }
       var templateName = get(this, 'templateName');
