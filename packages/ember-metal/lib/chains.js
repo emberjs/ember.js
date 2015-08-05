@@ -1,7 +1,8 @@
 import Ember from 'ember-metal/core'; // warn, assert, etc;
 import { get, normalizeTuple } from 'ember-metal/property_get';
-import { meta as metaFor } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
+import EmptyObject from 'ember-metal/empty_object';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -19,7 +20,7 @@ function isVolatile(obj) {
 
 function Chains() { }
 
-Chains.prototype = Object.create(null);
+Chains.prototype = new EmptyObject();
 
 function ChainWatchers(obj) {
   // this obj would be the referencing chain node's parent node's value
@@ -131,19 +132,17 @@ export function flushPendingChains() {
   );
 }
 
+function makeChainWatcher(obj) {
+  return new ChainWatchers(obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   if (!isObject(obj)) {
     return;
   }
 
   let m = metaFor(obj);
-
-  if (m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
-    m.chainWatchers = new ChainWatchers(obj);
-  }
-
-  m.chainWatchers.add(keyName, node);
-
+  m.writableChainWatchers(makeChainWatcher).add(keyName, node);
   watchKey(obj, keyName, m);
 }
 
@@ -154,15 +153,14 @@ function removeChainWatcher(obj, keyName, node) {
 
   let m = obj.__ember_meta__;
 
-  if (!m ||
-      m.chainWatchers === undefined || m.chainWatchers.obj !== obj) {
+  if (!m || !m.readableChainWatchers()) {
     return;
   }
 
   // make meta writable
   m = metaFor(obj);
 
-  m.chainWatchers.remove(keyName, node);
+  m.readableChainWatchers().remove(keyName, node);
 
   unwatchKey(obj, keyName, m);
 }
@@ -222,8 +220,9 @@ function lazyGet(obj, key) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
-    if (meta.cache && key in meta.cache) {
-      return meta.cache[key];
+    let cache = meta.readableCache();
+    if (cache && key in cache) {
+      return cache[key];
     }
   }
 }
@@ -423,16 +422,17 @@ export function finishChains(obj) {
   // We only create meta if we really have to
   let m = obj.__ember_meta__;
   if (m) {
+    m = metaFor(obj);
+
     // finish any current chains node watchers that reference obj
-    let chainWatchers = m.chainWatchers;
+    let chainWatchers = m.readableChainWatchers();
     if (chainWatchers) {
       chainWatchers.revalidateAll();
     }
-    // copy chains from prototype
-    let chains = m.chains;
-    if (chains && chains.value() !== obj) {
-      // need to check if meta is writable
-      metaFor(obj).chains = chains.copy(obj);
+    // ensure that if we have inherited any chains they have been
+    // copied onto our own meta.
+    if (m.readableChains()) {
+      m.writableChains();
     }
   }
 }

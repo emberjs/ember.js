@@ -1,5 +1,5 @@
 import { Mixin } from 'ember-metal/mixin';
-import { meta } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 
 import {
   on,
@@ -179,7 +179,6 @@ QUnit.test('calling removeListener without method should remove all listeners', 
   addListener(obj, 'event!', F2);
 
   equal(hasListeners(obj, 'event!'), true, 'has listeners');
-
   removeListener(obj, 'event!');
 
   equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
@@ -205,7 +204,7 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
   suspendListener(obj, 'event!', target, target.method, callback);
 
   equal(target.count, 1, 'should invoke');
-  equal(meta(obj).listeners['event!'].length, 3, 'a duplicate listener wasn\'t added');
+  equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
 
   // now test suspendListeners...
 
@@ -214,7 +213,7 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
   suspendListeners(obj, ['event!'], target, target.method, callback);
 
   equal(target.count, 2, 'should have invoked again');
-  equal(meta(obj).listeners['event!'].length, 3, 'a duplicate listener wasn\'t added');
+  equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
 });
 
 QUnit.test('a listener can be added as part of a mixin', function() {

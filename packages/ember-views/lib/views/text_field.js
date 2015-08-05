@@ -6,9 +6,10 @@ import { computed } from 'ember-metal/computed';
 import environment from 'ember-metal/environment';
 import Component from 'ember-views/views/component';
 import TextSupport from 'ember-views/mixins/text_support';
+import EmptyObject from 'ember-metal/empty_object';
 
 var inputTypeTestElement;
-var inputTypes = Object.create(null);
+var inputTypes = new EmptyObject();
 function canSetTypeOfInput(type) {
   if (type in inputTypes) {
     return inputTypes[type];

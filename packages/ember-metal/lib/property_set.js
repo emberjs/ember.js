@@ -63,10 +63,10 @@ export function set(obj, keyName, value, tolerant) {
     // `setUnknownProperty` method exists on the object
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
-    } else if (meta && meta.watching[keyName] > 0) {
+    } else if (meta && meta.peekWatching(keyName) > 0) {
       if (meta.proto !== obj) {
         if (isEnabled('mandatory-setter')) {
-          currentValue = meta.values[keyName];
+          currentValue = meta.peekValues(keyName);
         } else {
           currentValue = obj[keyName];
         }
@@ -81,7 +81,7 @@ export function set(obj, keyName, value, tolerant) {
           ) {
             defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
-            meta.values[keyName] = value;
+            meta.writableValues()[keyName] = value;
           }
         } else {
           obj[keyName] = value;

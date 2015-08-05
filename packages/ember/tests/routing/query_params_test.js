@@ -1811,7 +1811,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.OtherRoute = Ember.Route.extend({
       model(p, trans) {
         var m = Ember.meta(trans.params.application);
-        ok(!m.watching.woot, 'A meta object isn\'t constructed for this params POJO');
+        ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
       }
     });
 
@@ -2960,7 +2960,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.OtherRoute = Ember.Route.extend({
       model(p, trans) {
         var m = Ember.meta(trans.params.application);
-        ok(!m.watching.woot, 'A meta object isn\'t constructed for this params POJO');
+        ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
       }
     });
 
@@ -3102,5 +3102,3 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
   var controller = container.lookup('controller:constructor');
   equal(get(controller, 'foo'), '999');
 });
-
-

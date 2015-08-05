@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 import { isStream } from 'ember-metal/streams/utils';
+import EmptyObject from 'ember-metal/empty_object';
 import Subscriber from 'ember-metal/streams/subscriber';
 import Dependency from 'ember-metal/streams/dependency';
 
@@ -51,7 +52,7 @@ Stream.prototype = {
 
   getKey(key) {
     if (this.children === undefined) {
-      this.children = Object.create(null);
+      this.children = new EmptyObject();
     }
 
     var keyStream = this.children[key];
@@ -69,7 +70,7 @@ Stream.prototype = {
     var tailPath = getTailPath(path);
 
     if (this.children === undefined) {
-      this.children = Object.create(null);
+      this.children = new EmptyObject();
     }
 
     var keyStream = this.children[firstKey];

@@ -8,8 +8,9 @@
  @property helpers
 */
 import Ember from 'ember-metal/core';
+import EmptyObject from 'ember-metal/empty_object';
 
-var helpers = Object.create(null);
+var helpers = new EmptyObject();
 
 /**
 @module ember

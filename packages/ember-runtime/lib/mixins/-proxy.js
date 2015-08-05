@@ -6,7 +6,7 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import {
   addObserver,
   removeObserver,

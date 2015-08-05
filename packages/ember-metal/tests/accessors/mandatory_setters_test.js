@@ -2,14 +2,14 @@ import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { watch } from 'ember-metal/watching';
-import { meta as metaFor } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 
 QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
   var meta = metaFor(object);
-
-  return property in meta.values;
+  let values = meta.readableValues();
+  return values && property in values;
 }
 
 if (isEnabled('mandatory-setter')) {
@@ -114,7 +114,7 @@ if (isEnabled('mandatory-setter')) {
     });
 
     watch(obj, 'someProp');
-    ok(!('someProp' in meta.values), 'blastix');
+    ok(!('someProp' in meta.readableValues()), 'blastix');
   });
 
   QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
@@ -131,7 +131,7 @@ if (isEnabled('mandatory-setter')) {
     watch(obj2, 'someProp');
     var meta = metaFor(obj2);
 
-    ok(('someProp' in meta.values), 'mandatory setter has been setup');
+    ok(('someProp' in meta.readableValues()), 'mandatory setter has been setup');
 
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';

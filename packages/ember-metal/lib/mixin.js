@@ -10,14 +10,15 @@
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import merge from 'ember-metal/merge';
+import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
-  meta as metaFor,
   wrap,
   makeArray
 } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import {
   Descriptor,
@@ -74,14 +75,7 @@ superFunction.call(primer, 1, 2);
 superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
-  var m = metaFor(obj, true);
-  var ret = m.mixins;
-  if (!ret) {
-    ret = m.mixins = {};
-  } else if (!m.hasOwnProperty('mixins')) {
-    ret = m.mixins = Object.create(ret);
-  }
-  return ret;
+  return metaFor(obj, true).writableMixins();
 }
 
 function isMethod(obj) {
@@ -316,13 +310,7 @@ var IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
-    var bindings = m.bindings;
-    if (!bindings) {
-      bindings = m.bindings = {};
-    } else if (!m.hasOwnProperty('bindings')) {
-      bindings = m.bindings = Object.create(m.bindings);
-    }
-    bindings[key] = value;
+    m.writableBindings()[key] = value;
   }
 }
 
@@ -345,7 +333,7 @@ function connectStreamBinding(obj, key, stream) {
   stream.subscribe(onNotify);
 
   if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = Object.create(null);
+    obj._streamBindingSubscriptions = new EmptyObject();
   }
 
   obj._streamBindingSubscriptions[key] = onNotify;
@@ -353,7 +341,7 @@ function connectStreamBinding(obj, key, stream) {
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  var bindings = m.bindings;
+  var bindings = m.readableBindings();
   var key, binding, to;
   if (bindings) {
     for (key in bindings) {
@@ -374,7 +362,7 @@ function connectBindings(obj, m) {
       }
     }
     // mark as applied
-    m.bindings = {};
+    m.clearBindings();
   }
 }
 
@@ -667,12 +655,9 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj['__ember_meta__'];
-  var mixins = m && m.mixins;
-  if (mixins) {
-    return !!mixins[guidFor(this)];
-  }
-  return false;
+  var m = obj.__ember_meta__;
+  if (!m) { return false; }
+  return !!m.peekMixins(guidFor(this));
 };
 
 MixinPrototype.without = function(...args) {
@@ -712,7 +697,7 @@ MixinPrototype.keys = function() {
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
   var m = obj['__ember_meta__'];
-  var mixins = m && m.mixins;
+  var mixins = m && m.readableMixins();
   var ret = [];
 
   if (!mixins) { return ret; }

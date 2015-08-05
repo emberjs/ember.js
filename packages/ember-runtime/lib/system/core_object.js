@@ -26,9 +26,9 @@ import {
   generateGuid,
   GUID_KEY_PROPERTY,
   NEXT_SUPER_PROPERTY,
-  meta,
   makeArray
 } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import { finishChains } from 'ember-metal/chains';
 import { sendEvent } from 'ember-metal/events';
 import {
@@ -109,13 +109,7 @@ function makeCtor() {
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
-            var bindings = m.bindings;
-            if (!bindings) {
-              bindings = m.bindings = {};
-            } else if (!m.hasOwnProperty('bindings')) {
-              bindings = m.bindings = Object.create(m.bindings);
-            }
-            bindings[keyName] = value;
+            m.writableBindings()[keyName] = value;
           }
 
           var possibleDesc = this[keyName];
@@ -864,7 +858,7 @@ CoreObject.reopen({
   didDefineProperty(proto, key, value) {
     if (hasCachedComputedProperties === false) { return; }
     if (value instanceof Ember.ComputedProperty) {
-      var cache = Ember.meta(this.constructor).cache;
+      var cache = Ember.meta(this.constructor).readableCache();
 
       if (cache && cache._computedProperties !== undefined) {
         cache._computedProperties = undefined;

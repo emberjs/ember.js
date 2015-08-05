@@ -4,7 +4,7 @@
 
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-import { meta as metaFor } from 'ember-metal/utils';
+import { meta as metaFor } from 'ember-metal/meta';
 import { overrideChains } from 'ember-metal/property_events';
 // ..........................................................
 // DESCRIPTOR
@@ -34,7 +34,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
     var meta = this['__ember_meta__'];
-    return meta && meta.values[name];
+    return meta && meta.peekValues(name);
   };
 }
 
@@ -89,7 +89,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) {
     meta = metaFor(obj);
   }
-  var watchEntry = meta.watching[keyName];
+  var watchEntry = meta.peekWatching(keyName);
   possibleDesc = obj[keyName];
   existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
@@ -122,7 +122,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
       if (isEnabled('mandatory-setter')) {
         if (watching) {
-          meta.values[keyName] = data;
+          meta.writableValues()[keyName] = data;
           Object.defineProperty(obj, keyName, {
             configurable: true,
             enumerable: true,

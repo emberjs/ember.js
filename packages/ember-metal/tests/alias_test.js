@@ -2,7 +2,7 @@ import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/utils';
+import { meta } from 'ember-metal/meta';
 import { isWatching } from 'ember-metal/watching';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 
@@ -37,9 +37,9 @@ QUnit.test('basic lifecycle', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
   var m = meta(obj);
   addObserver(obj, 'bar', incrementCount);
-  equal(m.deps['foo.faz'].bar, 1);
+  equal(m.readableDeps('foo.faz').bar, 1);
   removeObserver(obj, 'bar', incrementCount);
-  equal(m.deps['foo.faz'].bar, 0);
+  equal(m.readableDeps('foo.faz').bar, 0);
 });
 
 QUnit.test('begins watching alt key as soon as alias is watched', function() {

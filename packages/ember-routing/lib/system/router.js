@@ -4,6 +4,7 @@ import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { defineProperty } from 'ember-metal/properties';
+import EmptyObject from 'ember-metal/empty_object';
 import { computed } from 'ember-metal/computed';
 import merge from 'ember-metal/merge';
 import run from 'ember-metal/run_loop';
@@ -101,7 +102,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   init() {
     this._activeViews = {};
-    this._qpCache = Object.create(null);
+    this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
   },
 
@@ -463,7 +464,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction() {
-    var seen = Object.create(null);
+    var seen = new EmptyObject();
     var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
 
@@ -1048,7 +1049,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   var target;
   var myState = {
     render: renderOptions,
-    outlets: Object.create(null)
+    outlets: new EmptyObject()
   };
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
@@ -1082,7 +1083,7 @@ function appendOrphan(liveRoutes, into, myState) {
       render: {
         name: '__ember_orphans__'
       },
-      outlets: Object.create(null)
+      outlets: new EmptyObject()
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;

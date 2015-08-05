@@ -69,8 +69,8 @@ export function get(obj, keyName) {
     return desc.get(obj, keyName);
   } else {
     if (isEnabled('mandatory-setter')) {
-      if (meta && meta.watching[keyName] > 0) {
-        ret = meta.values[keyName];
+      if (meta && meta.peekWatching(keyName) > 0) {
+        ret = meta.peekValues(keyName);
       } else {
         ret = obj[keyName];
       }

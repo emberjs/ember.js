@@ -46,7 +46,7 @@ export { watch };
 
 export function isWatching(obj, key) {
   var meta = obj['__ember_meta__'];
-  return (meta && meta.watching[key]) > 0;
+  return (meta && meta.peekWatching(key)) > 0;
 }
 
 watch.flushPending = flushPendingChains;
@@ -81,7 +81,7 @@ export function destroy(obj) {
   if (meta) {
     obj['__ember_meta__'] = null;
     // remove chainWatchers to remove circular references that would prevent GC
-    node = meta.chains;
+    node = meta.readableChains();
     if (node) {
       NODE_STACK.push(node);
       // process tree
