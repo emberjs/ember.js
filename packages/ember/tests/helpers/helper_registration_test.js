@@ -58,7 +58,7 @@ var boot = function(callback) {
 QUnit.test('Unbound dashed helpers registered on the container can be late-invoked', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-borf}} {{x-borf \'YES\'}}</div>');
   let myHelper = helper(function(params) {
-    return params.length > 1 ? params[0] : 'BORF';
+    return params[0] || 'BORF';
   });
 
   boot(() => {
@@ -142,12 +142,4 @@ QUnit.test('Helpers can receive injections', function() {
   });
 
   ok(serviceCalled, 'service was injected, method called');
-});
-
-QUnit.test('Ember.HTMLBars._registerHelper is deprecated', function() {
-  expectDeprecation(function() {
-    Ember.HTMLBars._registerHelper('foo-bar-baz-widget', function() {});
-  });
-
-  ok(helpers['foo-bar-baz-widget'], 'helper was registered');
 });
