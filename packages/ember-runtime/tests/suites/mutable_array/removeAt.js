@@ -20,7 +20,7 @@ suite.test('[X].removeAt(0) => [] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
   equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
@@ -48,7 +48,7 @@ suite.test('[A,B].removeAt(0) => [B] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
   equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
 
@@ -70,7 +70,7 @@ suite.test('[A,B].removeAt(1) => [A] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 
@@ -92,7 +92,7 @@ suite.test('[A,B,C].removeAt(1) => [A,C] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
@@ -114,7 +114,7 @@ suite.test('[A,B,C,D].removeAt(1,2) => [A,D] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');

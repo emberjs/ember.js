@@ -327,26 +327,6 @@ QUnit.module('EmberArray.@each support', {
   }
 });
 
-QUnit.test('adding an object should notify (@each)', function() {
-  var called = 0;
-
-  var observerObject = EmberObject.create({
-    wasCalled() {
-      called++;
-    }
-  });
-
-  // get(ary, '@each');
-  addObserver(ary, '@each', observerObject, 'wasCalled');
-
-  ary.addObject(EmberObject.create({
-    desc: 'foo',
-    isDone: false
-  }));
-
-  equal(called, 1, 'calls observer when object is pushed');
-});
-
 QUnit.test('adding an object should notify (@each.isDone)', function() {
   var called = 0;
 

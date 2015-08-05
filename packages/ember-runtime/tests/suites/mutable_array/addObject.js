@@ -29,7 +29,7 @@ suite.test('[A,B].addObject(C) => [A,B,C] + notify', function() {
 
   if (observer.isEnabled) {
     equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+    equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
     equal(observer.timesCalled('length'), 1, 'should have notified length once');
     equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 

@@ -42,7 +42,7 @@ suite.test('[X].shiftObject() => [] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
   equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
@@ -63,7 +63,7 @@ suite.test('[A,B,C].shiftObject() => [B,C] + notify', function() {
   equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
   equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
 
