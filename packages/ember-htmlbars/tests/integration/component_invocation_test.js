@@ -1264,6 +1264,18 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     runAppend(view);
   });
 
+  QUnit.test('computed property alias on attrs', function() {
+    registry.register('template:components/computed-alias', compile('{{otherProp}}'));
+
+    registry.register('component:computed-alias', Component.extend({
+      otherProp: Ember.computed.alias('attrs.someProp')
+    }));
+
+    view = appendViewFor('<computed-alias someProp="value"></computed-alias>');
+
+    equal(view.$().text(), 'value');
+  });
+
   QUnit.test('parameterized hasBlock default', function() {
     registry.register('template:components/check-block', compile('<check-block>{{#if (hasBlock)}}Yes{{else}}No{{/if}}</check-block>'));
 
