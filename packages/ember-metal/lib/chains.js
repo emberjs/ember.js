@@ -14,12 +14,8 @@ function isObject(obj) {
 }
 
 function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._cacheable);
+  return !(isObject(obj) && obj.isDescriptor && !obj._volatile);
 }
-
-function Chains() { }
-
-Chains.prototype = Object.create(null);
 
 function ChainWatchers(obj) {
   // this obj would be the referencing chain node's parent node's value
@@ -27,7 +23,7 @@ function ChainWatchers(obj) {
   // chain nodes that reference a key in this obj by key
   // we only create ChainWatchers when we are going to add them
   // so create this upfront
-  this.chains = new Chains();
+  this.chains = {};
 }
 
 ChainWatchers.prototype = {
@@ -319,7 +315,7 @@ ChainNode.prototype = {
     var chains = this._chains;
     var node;
     if (chains === undefined) {
-      chains = this._chains = new Chains();
+      chains = this._chains = {};
     } else {
       node = chains[key];
     }
