@@ -18,6 +18,7 @@ import TransformAngleBracketComponents from "ember-template-compiler/plugins/tra
 import TransformInputOnToOnEvent from "ember-template-compiler/plugins/transform-input-on-to-onEvent";
 import DeprecateViewAndControllerPaths from "ember-template-compiler/plugins/deprecate-view-and-controller-paths";
 import DeprecateViewHelper from "ember-template-compiler/plugins/deprecate-view-helper";
+import DeprecateWithController from 'ember-template-compiler/plugins/deprecate-with-controller';
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import "ember-template-compiler/compat";
@@ -36,6 +37,7 @@ registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', DeprecateViewAndControllerPaths);
 registerPlugin('ast', DeprecateViewHelper);
+registerPlugin('ast', DeprecateWithController);
 
 export {
   _Ember,
