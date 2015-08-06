@@ -1070,7 +1070,26 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     let node = view.$()[0];
     equal(view.$().text(), 'In layout');
-    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    ok(view.$().html().match(/^<non-block such="stability" id="[^"]*" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    ok(view.$('non-block.ember-view[id][such=stability]').length === 1, 'The non-block tag name was used');
+
+    run(() => view.set('stability', 'stability!'));
+
+    strictEqual(view.$()[0], node, 'the DOM node has remained stable');
+    equal(view.$().text(), 'In layout');
+    ok(view.$().html().match(/^<non-block such="stability!" id="[^"]*" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+  });
+
+  QUnit.skip('non-block without properties replaced with identity element (regression if identity element has a single child element)', function() {
+    registry.register('template:components/non-block', compile('<non-block such="{{attrs.stability}}"><p>In layout</p></non-block>'));
+
+    view = appendViewFor('<non-block stability={{view.stability}} />', {
+      stability: 'stability'
+    });
+
+    let node = view.$()[0];
+    equal(view.$().text(), 'In layout');
+    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability" class="ember-view"><p>In layout<\/p><\/non-block>$/), 'The root element has gotten the default class and ids');
     ok(view.$('non-block.ember-view[id][such=stability]').length === 1, 'The non-block tag name was used');
 
     run(() => view.set('stability', 'stability!'));

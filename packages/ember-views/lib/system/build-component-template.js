@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import assign from 'ember-metal/assign';
 import { isGlobal } from 'ember-metal/path_cache';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
@@ -31,8 +30,14 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      if (isComponentElement) { attrs = mergeAttrs(attrs, outerAttrs); }
-      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
+      let attributes;
+
+      if (isComponentElement) {
+        attributes = convertAttrsToAst(attrs);
+      } else {
+        attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
+      }
+
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -47,16 +52,6 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   //   * the falsy value "" if set explicitly on the component
   //   * an actual tagName set explicitly on the component
   return { createdElement: !!tagName, block: blockToRender };
-}
-
-function mergeAttrs(innerAttrs, outerAttrs) {
-  let result = assign({}, innerAttrs, outerAttrs);
-
-  if (innerAttrs.class && outerAttrs.class) {
-    result.class = ['subexpr', '-join-classes', [['value', innerAttrs.class], ['value', outerAttrs.class]], []];
-  }
-
-  return result;
 }
 
 function blockFor(template, options) {
@@ -129,6 +124,23 @@ function tagNameFor(view) {
   }
 
   return tagName;
+}
+
+function convertAttrsToAst(attrs) {
+  let normalized = {};
+
+  for (var prop in attrs) {
+    let val = attrs[prop];
+    if (!val) { continue; }
+
+    if (typeof val === 'string') {
+      normalized[prop] = val;
+    } else if (val.isConcat) {
+      normalized[prop] = ['value', val];
+    }
+  }
+
+  return normalized;
 }
 
 // Takes a component and builds a normalized set of attribute

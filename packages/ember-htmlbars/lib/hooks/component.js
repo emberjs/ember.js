@@ -24,21 +24,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   var parentView = env.view;
 
-  if (!isTopLevel || tagName !== env.view.tagName) {
-    var manager = ComponentNodeManager.create(renderNode, env, {
-      tagName,
-      params,
-      attrs,
-      parentView,
-      templates,
-      isAngleBracket,
-      isTopLevel,
-      parentScope: scope
-    });
-
-    state.manager = manager;
-    manager.render(env, visitor);
-  } else {
+  if (isTopLevel && tagName === env.view.tagName) {
     let component = env.view;
     let templateOptions = {
       component,
@@ -52,5 +38,19 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
     let { block } = buildComponentTemplate(templateOptions, attrs, contentOptions);
     block(env, [], undefined, renderNode, scope, visitor);
+  } else {
+    var manager = ComponentNodeManager.create(renderNode, env, {
+      tagName,
+      params,
+      attrs,
+      parentView,
+      templates,
+      isAngleBracket,
+      isTopLevel,
+      parentScope: scope
+    });
+
+    state.manager = manager;
+    manager.render(env, visitor);
   }
 }
