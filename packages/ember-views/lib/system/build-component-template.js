@@ -20,8 +20,7 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
     blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs, attributes);
     meta = layout.raw.meta;
   } else if (content.templates && content.templates.default) {
-    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
-    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component, attributes);
+    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component);
     meta = content.templates.default.meta;
   }
 
