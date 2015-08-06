@@ -17,9 +17,10 @@ QUnit.test('Properties without expansions are unaffected', function() {
 
   expandProperties('a', addProperty);
   expandProperties('a.b', addProperty);
-  expandProperties('a.b.@each', addProperty);
+  expandProperties('a.b.[]', addProperty);
+  expandProperties('a.b.@each.c', addProperty);
 
-  deepEqual(['a', 'a.b', 'a.b.@each'].sort(), foundProperties.sort());
+  deepEqual(['a', 'a.b', 'a.b.[]', 'a.b.@each.c'].sort(), foundProperties.sort());
 });
 
 QUnit.test('A single expansion at the end expands properly', function() {
