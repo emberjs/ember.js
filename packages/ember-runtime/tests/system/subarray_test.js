@@ -4,6 +4,7 @@ var subarray;
 
 QUnit.module('SubArray', {
   setup() {
+    expectDeprecation('Ember.SubArray will be removed in 2.0.0.');
     subarray = new SubArray();
   }
 });
