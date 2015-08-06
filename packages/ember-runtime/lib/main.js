@@ -12,8 +12,6 @@ import inject from 'ember-runtime/inject';
 
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
-import TrackedArray from 'ember-runtime/system/tracked_array';
-import SubArray from 'ember-runtime/system/subarray';
 import { Container, Registry } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
@@ -117,8 +115,6 @@ EmComputed.intersect = intersect;
 
 Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
-Ember.TrackedArray = TrackedArray;
-Ember.SubArray = SubArray;
 Ember.Container = Container;
 Ember.Registry = Registry;
 Ember.Namespace = Namespace;
