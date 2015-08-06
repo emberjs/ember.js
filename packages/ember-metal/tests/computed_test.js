@@ -59,6 +59,16 @@ QUnit.test('defining computed property should invoke property on set', function(
   equal(get(obj, 'foo'), 'computed bar', 'should return new value');
 });
 
+QUnit.test('defining a computed property with a dependent key ending with @each is deprecated', function() {
+  expectDeprecation(function() {
+    computed('blazo.@each', function() { });
+  }, `Depending on arrays using a dependent key ending with \`@each\` is deprecated. Please refactor from \`Ember.computed('blazo.@each', function() {});\` to \`Ember.computed('blazo.[]', function() {})\`.`);
+
+  expectDeprecation(function() {
+    computed('qux', 'zoopa.@each', function() { });
+  }, `Depending on arrays using a dependent key ending with \`@each\` is deprecated. Please refactor from \`Ember.computed('zoopa.@each', function() {});\` to \`Ember.computed('zoopa.[]', function() {})\`.`);
+});
+
 var objA, objB;
 QUnit.module('computed should inherit through prototype', {
   setup() {

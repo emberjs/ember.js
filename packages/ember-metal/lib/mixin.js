@@ -813,7 +813,16 @@ export function observer(...args) {
   var func  = args.slice(-1)[0];
   var paths;
 
-  var addWatchedProperty = function(path) { paths.push(path); };
+  var addWatchedProperty = function(path) {
+    Ember.deprecate(
+      `Depending on arrays using a dependent key ending with \`@each\` is deprecated. ` +
+      `Please refactor from \`Ember.observer('${path}', function() {});\` to \`Ember.computed('${path.slice(0, -6)}.[]', function() {})\`.`,
+      path.slice(-5) !== '@each',
+      { id: 'ember-metal.@each-dependent-key-leaf', until: '2.0.0' }
+    );
+
+    paths.push(path);
+  };
   var _paths = args.slice(0, -1);
 
   if (typeof func !== "function") {
