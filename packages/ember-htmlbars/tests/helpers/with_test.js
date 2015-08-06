@@ -208,10 +208,15 @@ QUnit.test('destroys the controller generated with {{with foo as |bar| controlle
     name: 'Bob Loblaw'
   });
 
+  var template;
+  expectDeprecation(function() {
+    template = compile('{{#with person controller="person" as |steve|}}{{controllerName}}{{/with}}');
+  }, `Using the {{with}} helper with a \`controller\` specified (L1:C0) is deprecated and will be removed in 2.0.0.`);
+
   view = EmberView.create({
-    container: container,
-    template: compile('{{#with person controller="person" as |steve|}}{{controllerName}}{{/with}}'),
-    controller: parentController
+    controller: parentController,
+    template,
+    container
   });
 
   registry.register('controller:person', Controller);
