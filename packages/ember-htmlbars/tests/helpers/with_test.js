@@ -4,8 +4,6 @@ import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import { set } from 'ember-metal/property_set';
-import EmberController from 'ember-runtime/controllers/controller';
-import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
@@ -185,47 +183,6 @@ QUnit.test('it should support #with this as |qux|', function() {
   equal(view.$().text(), 'l\'Pivots', 'should update');
 
   runDestroy(view);
-});
-
-QUnit.module('Handlebars {{#with foo as |bar|}} with defined controller');
-
-QUnit.test('destroys the controller generated with {{with foo as |bar| controller=\'blah\'}}', function() {
-  var destroyed = false;
-  var Controller = EmberController.extend({
-    willDestroy() {
-      this._super.apply(this, arguments);
-      destroyed = true;
-    }
-  });
-
-  var person = EmberObject.create({ name: 'Steve Holt' });
-  var registry = new Registry();
-  var container = registry.container();
-
-  var parentController = EmberObject.create({
-    container: container,
-    person: person,
-    name: 'Bob Loblaw'
-  });
-
-  var template;
-  expectDeprecation(function() {
-    template = compile('{{#with person controller="person" as |steve|}}{{controllerName}}{{/with}}');
-  }, `Using the {{with}} helper with a \`controller\` specified (L1:C0) is deprecated and will be removed in 2.0.0.`);
-
-  view = EmberView.create({
-    controller: parentController,
-    template,
-    container
-  });
-
-  registry.register('controller:person', Controller);
-
-  runAppend(view);
-
-  runDestroy(view);
-
-  ok(destroyed, 'controller was destroyed properly');
 });
 
 QUnit.module('{{#with}} helper binding to view keyword', {
