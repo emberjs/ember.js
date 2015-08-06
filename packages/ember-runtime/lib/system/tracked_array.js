@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 
 var RETAIN = 'r';
@@ -18,6 +19,12 @@ export default TrackedArray;
   @private
 */
 function TrackedArray(items) {
+  Ember.deprecate(
+    'Ember.TrackedArray will be removed in 2.0.0.',
+    false,
+    { id: 'ember-metal.tracked-array', until: '2.0.0' }
+  );
+
   if (arguments.length < 1) { items = []; }
 
   var length = get(items, 'length');
