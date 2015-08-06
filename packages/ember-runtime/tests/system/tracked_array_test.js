@@ -5,7 +5,11 @@ var RETAIN = TrackedArray.RETAIN;
 var INSERT = TrackedArray.INSERT;
 var DELETE = TrackedArray.DELETE;
 
-QUnit.module('Ember.TrackedArray');
+QUnit.module('Ember.TrackedArray', {
+  setup: function() {
+    expectDeprecation('Ember.TrackedArray will be removed in 2.0.0.');
+  }
+});
 
 QUnit.test('operations for a tracked array of length n are initially retain:n', function() {
   trackedArray = new TrackedArray([1, 2, 3, 4]);
