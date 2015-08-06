@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import EmberError from "ember-metal/error";
 import { forEach } from "ember-metal/enumerable_utils";
 
@@ -21,6 +22,12 @@ export default SubArray;
   @private
 */
 function SubArray(length) {
+  Ember.deprecate(
+    'Ember.SubArray will be removed in 2.0.0.',
+    false,
+    { id: 'ember-metal.sub-array', until: '2.0.0' }
+  );
+
   if (arguments.length < 1) { length = 0; }
 
   if (length > 0) {
