@@ -670,7 +670,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @property controller
     @type Ember.Controller
     @since 1.6.0
-    @private
+    @public
   */
 
   _actions: {
