@@ -251,7 +251,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Object} receiver
-    @private
+    @public
   */
   forEach(callback, target) {
     if (typeof callback !== 'function') {
@@ -579,7 +579,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Boolean}
-    @private
+    @public
   */
   every(callback, target) {
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
@@ -776,7 +776,7 @@ export default Mixin.create({
 
     @method compact
     @return {Array} the array without null and undefined elements.
-    @private
+    @public
   */
   compact() {
     return this.filter(function(value) {
@@ -797,7 +797,7 @@ export default Mixin.create({
     @method without
     @param {Object} value
     @return {Ember.Enumerable}
-    @private
+    @public
   */
   without(value) {
     if (!this.contains(value)) {
@@ -1051,7 +1051,7 @@ export default Mixin.create({
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
     @since 1.2.0
-    @private
+    @public
   */
   sortBy() {
     var sortKeys = arguments;
