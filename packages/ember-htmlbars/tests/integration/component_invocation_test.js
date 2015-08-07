@@ -1113,7 +1113,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('div').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
   });
 
-  QUnit.test('non-block with class replaced with a identity element merges classes', function() {
+  QUnit.test('non-block with class replaced with identity element merges classes', function() {
     registry.register('template:components/non-block', compile('<non-block class="inner-class" />'));
 
     view = appendViewFor('<non-block class="{{view.outer}}" />', {
@@ -1125,6 +1125,134 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     run(() => view.set('outer', 'new-outer'));
 
     equal(view.$('non-block').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
+  });
+
+  QUnit.test('non-block with outer attributes replaced with a div shadows inner attributes', function() {
+    registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
+
+    view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer attribute wins');
+
+    let component = view.childViews[0]; // HAX
+
+    run(() => component.set('internal', 'changed'));
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer attribute wins');
+  });
+
+  QUnit.test('non-block with outer attributes replaced with identity element shadows inner attributes', function() {
+    registry.register('template:components/non-block', compile('<non-block data-static="static" data-dynamic="{{internal}}" />'));
+
+    view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
+
+    equal(view.$('non-block').attr('data-static'), 'outer', 'the outer attribute wins');
+    equal(view.$('non-block').attr('data-dynamic'), 'outer', 'the outer attribute wins');
+
+    let component = view.childViews[0]; // HAX
+
+    run(() => component.set('internal', 'changed'));
+
+    equal(view.$('non-block').attr('data-static'), 'outer', 'the outer attribute wins');
+    equal(view.$('non-block').attr('data-dynamic'), 'outer', 'the outer attribute wins');
+  });
+
+  QUnit.test('non-block recurrsive invocations with outer attributes replaced with a div shadows inner attributes', function() {
+    registry.register('template:components/non-block-wrapper', compile('<non-block />'));
+    registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
+
+    view = appendViewFor('<non-block-wrapper data-static="outer" data-dynamic="outer" />');
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
+
+    let component = view.childViews[0].childViews[0]; // HAX
+
+    run(() => component.set('internal', 'changed'));
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
+  });
+
+  QUnit.test('non-block recurrsive invocations with outer attributes replaced with identity element shadows inner attributes', function() {
+    registry.register('template:components/non-block-wrapper', compile('<non-block />'));
+    registry.register('template:components/non-block', compile('<non-block data-static="static" data-dynamic="{{internal}}" />'));
+
+    view = appendViewFor('<non-block-wrapper data-static="outer" data-dynamic="outer" />');
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
+
+    let component = view.childViews[0].childViews[0]; // HAX
+
+    run(() => component.set('internal', 'changed'));
+
+    equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
+    equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
+  });
+
+  QUnit.test('non-block replaced with a div should have correct scope', function() {
+    registry.register('template:components/non-block', compile('<div>{{internal}}</div>'));
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        this.set('internal', 'stuff');
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(view.$().text(), 'stuff');
+  });
+
+  QUnit.test('non-block replaced with identity element should have correct scope', function() {
+    registry.register('template:components/non-block', compile('<non-block>{{internal}}</non-block>'));
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        this.set('internal', 'stuff');
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(view.$().text(), 'stuff');
+  });
+
+  QUnit.test('non-block replaced with a div should have inner attributes', function() {
+    registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        this.set('internal', 'stuff');
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(view.$('div').attr('data-static'), 'static');
+    equal(view.$('div').attr('data-dynamic'), 'stuff');
+  });
+
+  QUnit.test('non-block replaced with identity element should have inner attributes', function() {
+    registry.register('template:components/non-block', compile('<non-block data-static="static" data-dynamic="{{internal}}" />'));
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        this.set('internal', 'stuff');
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(view.$('non-block').attr('data-static'), 'static');
+    equal(view.$('non-block').attr('data-dynamic'), 'stuff');
   });
 
   QUnit.test('non-block rendering a fragment', function() {
@@ -1153,7 +1281,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('with-block.ember-view').text(), 'In layout - In template', 'Both the layout and template are rendered');
   });
 
-    QUnit.test('non-block with properties on attrs', function() {
+  QUnit.test('non-block with properties on attrs', function() {
     registry.register('template:components/non-block', compile('<non-block>In layout</non-block>'));
 
     view = appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
