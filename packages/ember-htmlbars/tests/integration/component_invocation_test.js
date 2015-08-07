@@ -1223,6 +1223,40 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().text(), 'stuff');
   });
 
+  QUnit.test('non-block replaced with a div should have correct `element`', function() {
+    registry.register('template:components/non-block', compile('<div />'));
+
+    let component;
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(component.element, view.$('div')[0]);
+  });
+
+  QUnit.test('non-block replaced with identity element should have correct `element`', function() {
+    registry.register('template:components/non-block', compile('<non-block />'));
+
+    let component;
+
+    registry.register('component:non-block', GlimmerComponent.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    }));
+
+    view = appendViewFor('<non-block />');
+
+    equal(component.element, view.$('non-block')[0]);
+  });
+
   QUnit.test('non-block replaced with a div should have inner attributes', function() {
     registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
 

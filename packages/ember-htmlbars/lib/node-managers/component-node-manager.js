@@ -234,7 +234,21 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
       this.block(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
-    var element = this.expectElement && this.renderNode.firstNode;
+    let element;
+    if (this.expectElement || component.isGlimmerComponent) {
+      // This code assumes that Glimmer components are never fragments. When
+      // Glimmer components gain fragment powers, we will need to communicate
+      // whether the layout produced a single top-level node or fragment
+      // somehow (either via static information on the template/component, or
+      // dynamically as the layout is being rendered).
+      element = this.renderNode.firstNode;
+
+      // Glimmer components may have whitespace or boundary nodes around the
+      // top-level element.
+      if (element && element.nodeType !== 1) {
+        element = element.nextElementSibling;
+      }
+    }
 
     handleLegacyRender(component, element);
     env.renderer.didCreateElement(component, element);
