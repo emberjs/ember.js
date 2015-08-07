@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
+import assign from 'ember-metal/assign';
 import { isGlobal } from 'ember-metal/path_cache';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
@@ -13,10 +14,8 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   }
 
   if (layout && layout.raw) {
-    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
-
     let yieldTo = createContentBlocks(content.templates, content.scope, content.self, component);
-    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs, attributes);
+    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs);
     meta = layout.raw.meta;
   } else if (content.templates && content.templates.default) {
     blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component);
@@ -30,14 +29,8 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      let attributes;
-
-      if (isComponentElement) {
-        attributes = convertAttrsToAst(attrs);
-      } else {
-        attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
-      }
-
+      if (isComponentElement) { attrs = mergeAttrs(attrs, outerAttrs); }
+      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -54,18 +47,27 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   return { createdElement: !!tagName, block: blockToRender };
 }
 
+function mergeAttrs(innerAttrs, outerAttrs) {
+  let result = assign({}, innerAttrs, outerAttrs);
+
+  if (innerAttrs.class && outerAttrs.class) {
+    result.class = ['subexpr', '-join-classes', [['value', innerAttrs.class], ['value', outerAttrs.class]], []];
+  }
+
+  return result;
+}
+
 function blockFor(template, options) {
   Ember.assert('BUG: Must pass a template to blockFor', !!template);
   return internal.blockFor(render, template, options);
 }
 
-function createContentBlock(template, scope, self, component, attributes) {
+function createContentBlock(template, scope, self, component) {
   Ember.assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
 
   return blockFor(template, {
     scope,
     self,
-    attributes,
     options: { view: component }
   });
 }
@@ -86,10 +88,9 @@ function createContentBlocks(templates, scope, self, component) {
   return output;
 }
 
-function createLayoutBlock(template, yieldTo, self, component, attrs, attributes) {
+function createLayoutBlock(template, yieldTo, self, component, attrs) {
   return blockFor(template, {
     yieldTo,
-    attributes,
 
     // If we have an old-style Controller with a template it will be
     // passed as our `self` argument, and it should be the context for
@@ -124,23 +125,6 @@ function tagNameFor(view) {
   }
 
   return tagName;
-}
-
-function convertAttrsToAst(attrs) {
-  let normalized = {};
-
-  for (var prop in attrs) {
-    let val = attrs[prop];
-    if (!val) { continue; }
-
-    if (typeof val === 'string') {
-      normalized[prop] = val;
-    } else if (val.isConcat) {
-      normalized[prop] = ['value', val];
-    }
-  }
-
-  return normalized;
 }
 
 // Takes a component and builds a normalized set of attribute
