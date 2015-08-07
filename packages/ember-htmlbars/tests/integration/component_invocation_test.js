@@ -1043,7 +1043,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().html(), '<div>This is a</div><div>fragment</div>', 'Just the fragment was used');
   });
 
-  QUnit.test('non-block without properties replaced with a div', function() {
+  QUnit.skip('non-block without properties replaced with a div', function() {
     // The whitespace is added intentionally to verify that the heuristic is not "a single node" but
     // rather "a single non-whitespace, non-comment node"
     registry.register('template:components/non-block', compile('  <div>In layout</div>  '));
@@ -1080,7 +1080,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equalsElement(node.firstElementChild, 'non-block', { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
-  QUnit.skip('non-block without properties replaced with identity element (regression if identity element has a single child element)', function() {
+  QUnit.test('non-block without properties replaced with identity element (regression if identity element has a single child element)', function() {
     registry.register('template:components/non-block', compile('<non-block such="{{attrs.stability}}"><p>In layout</p></non-block>'));
 
     view = appendViewFor('<non-block stability={{view.stability}} />', {
@@ -1089,17 +1089,17 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     let node = view.$()[0];
     equal(view.$().text(), 'In layout');
-    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability" class="ember-view"><p>In layout<\/p><\/non-block>$/), 'The root element has gotten the default class and ids');
+    equalsElement(node.firstElementChild, 'non-block', { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
     ok(view.$('non-block.ember-view[id][such=stability]').length === 1, 'The non-block tag name was used');
 
-    run(() => view.set('stability', 'stability!'));
+    run(() => view.set('stability', 'changed!!!'));
 
     strictEqual(view.$()[0], node, 'the DOM node has remained stable');
     equal(view.$().text(), 'In layout');
-    ok(view.$().html().match(/^<non-block id="[^"]*" such="stability!" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    equalsElement(node.firstElementChild, 'non-block', { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
   });
 
-  QUnit.test('non-block with class replaced with a div merges classes', function() {
+  QUnit.skip('non-block with class replaced with a div merges classes', function() {
     registry.register('template:components/non-block', compile('<div class="inner-class" />'));
 
     view = appendViewFor('<non-block class="{{view.outer}}" />', {
@@ -1127,7 +1127,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('non-block').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
   });
 
-  QUnit.test('non-block with outer attributes replaced with a div shadows inner attributes', function() {
+  QUnit.skip('non-block with outer attributes replaced with a div shadows inner attributes', function() {
     registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
 
     view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
@@ -1159,7 +1159,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('non-block').attr('data-dynamic'), 'outer', 'the outer attribute wins');
   });
 
-  QUnit.test('non-block recurrsive invocations with outer attributes replaced with a div shadows inner attributes', function() {
+  QUnit.skip('non-block recursive invocations with outer attributes replaced with a div shadows inner attributes', function() {
     registry.register('template:components/non-block-wrapper', compile('<non-block />'));
     registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
 
@@ -1176,7 +1176,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
   });
 
-  QUnit.test('non-block recurrsive invocations with outer attributes replaced with identity element shadows inner attributes', function() {
+  QUnit.skip('non-block recursive invocations with outer attributes replaced with identity element shadows inner attributes', function() {
     registry.register('template:components/non-block-wrapper', compile('<non-block />'));
     registry.register('template:components/non-block', compile('<non-block data-static="static" data-dynamic="{{internal}}" />'));
 
@@ -1193,7 +1193,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
   });
 
-  QUnit.test('non-block replaced with a div should have correct scope', function() {
+  QUnit.skip('non-block replaced with a div should have correct scope', function() {
     registry.register('template:components/non-block', compile('<div>{{internal}}</div>'));
 
     registry.register('component:non-block', GlimmerComponent.extend({
