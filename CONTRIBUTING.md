@@ -47,22 +47,30 @@ there is a bug and the faster we'll be able to take action.
 
 ## Requesting a Feature
 
-1. Search Issues for similar feature requests. It's possible somebody has
-already asked for this feature or provided a pull request that we're still
-discussing.
+1. Ember has an RFC process for feature requests. To begin the discussion either
+[gather feedback](https://github.com/emberjs/rfcs/blob/master/README.md#gathering-feedback-before-submitting)
+on the emberjs/rfcs repository. Or, draft an [Ember RFC](https://github.com/emberjs/rfcs#ember-rfcs)
+   - Use RFC pull request for well formed ideas.
+   - Use RFC issues to propose a rough idea, basically a great place to test
+     the waters.
 
 2. Provide a clear and detailed explanation of the feature you want and why
 it's important to add. Keep in mind that we want features that will be useful
 to the majority of our users and not just a small subset. If you're just
 targeting a minority of users, consider writing an add-on library for Ember.
 
-3. If the feature is complex, consider writing some initial documentation for
-it. If we do end up accepting the feature it will need to be documented and
-this will also help us to understand it better ourselves.
+3. If the feature is complex, consider writing an Ember RFC document. If we do
+end up accepting the feature, the RFC provides the needed documentation for
+contributors to develop the feature according the specifcaiton accepted by the core team.
 
-4. Attempt a Pull Request. If you're at all able, start writing some code. We
-always have more work to do than time to do it. If you can write some code
-then that will speed the process along.
+4. After disussing the feature you may choose to attempt a Pull Request. If
+you're at all able, start writing some code. We always have more work to do
+than time to do it. If you can write some code then that will speed the process
+along.
+
+In short, if you have an idea that would be nice to have, create an issue on the
+emberjs/rfcs repo. If you have a question about requesting a feature, start a
+discussion at [discuss.emberjs.com](http://discuss.emberjs.com)
 
 # Building Ember.js
 
