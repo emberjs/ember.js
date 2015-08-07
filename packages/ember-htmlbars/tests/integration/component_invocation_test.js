@@ -1070,14 +1070,14 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     let node = view.$()[0];
     equal(view.$().text(), 'In layout');
-    ok(view.$().html().match(/^<non-block such="stability" id="[^"]*" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    equalsElement(node.firstElementChild, 'non-block', { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
     ok(view.$('non-block.ember-view[id][such=stability]').length === 1, 'The non-block tag name was used');
 
-    run(() => view.set('stability', 'stability!'));
+    run(() => view.set('stability', 'changed!!!'));
 
     strictEqual(view.$()[0], node, 'the DOM node has remained stable');
     equal(view.$().text(), 'In layout');
-    ok(view.$().html().match(/^<non-block such="stability!" id="[^"]*" class="ember-view">In layout<\/non-block>$/), 'The root element has gotten the default class and ids');
+    equalsElement(node.firstElementChild, 'non-block', { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
   QUnit.skip('non-block without properties replaced with identity element (regression if identity element has a single child element)', function() {
@@ -1517,3 +1517,36 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
   });
 }
+
+function regex(r) {
+  return {
+    match(v) {
+      return r.test(v);
+    }
+  };
+}
+
+function equalsElement(element, tagName, attributes, content) {
+  QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
+
+  let expectedCount = 0;
+  for (let prop in attributes) {
+    expectedCount++;
+    let expected = attributes[prop];
+    if (typeof expected === 'string') {
+      QUnit.push(element.getAttribute(prop) === attributes[prop], element.getAttribute(prop), attributes[prop], `The element should have ${prop}=${attributes[prop]}`);
+    } else {
+      QUnit.push(attributes[prop].match(element.getAttribute(prop)), element.getAttribute(prop), attributes[prop], `The element should have ${prop}=${attributes[prop]}`);
+    }
+  }
+
+  let actualAttributes = {};
+  for (let i = 0, l = element.attributes.length; i < l; i++) {
+    actualAttributes[element.attributes[i].name] = element.attributes[i].value;
+  }
+
+  QUnit.push(element.attributes.length === expectedCount, actualAttributes, attributes, `Expected ${expectedCount} attributes`);
+
+  QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+}
+
