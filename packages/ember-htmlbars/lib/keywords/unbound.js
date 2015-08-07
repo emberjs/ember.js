@@ -1,8 +1,22 @@
 import Ember from 'ember-metal/core'; // assert
 
 /**
-@module ember
-@submodule ember-htmlbars
+  The `{{unbound}}` helper can be used with bound helper invocations to
+  render them in their unbound form.
+
+  ```handlebars
+  {{unbound (capitalize name)}}
+  ```
+
+  In the aforementioned example, if the `name` property changes, the helper
+  will not re-render.
+
+  @module ember
+  @submodule ember-templates
+
+  @method unbound
+  @for Ember.Templates.helpers
+  @public
 */
 
 export default function unbound(morph, env, scope, params, hash, template, inverse, visitor) {
