@@ -23,6 +23,39 @@ QUnit.test('Action can be handled by a function on actions object', function() {
   controller.send('poke');
 });
 
+QUnit.test('Controller should have action', function() {
+  expect(1);
+  var TestController = Controller.extend({
+    actions: {
+      poke() {}
+    }
+  });
+  var controller = TestController.create({});
+  equal(controller.hasAction('poke'), true);
+});
+
+QUnit.test('Controller should not have action', function() {
+  expect(1);
+  var TestController = Controller.extend({
+    actions: {
+      poke() {}
+    }
+  });
+  var controller = TestController.create({});
+  equal(controller.hasAction('another-poke'), false);
+});
+
+QUnit.test('method `hasAction` with empty action name should return false', function() {
+  expect(1);
+  var TestController = Controller.extend({
+    actions: {
+      poke() {}
+    }
+  });
+  var controller = TestController.create({});
+  equal(controller.hasAction(), false);
+});
+
 // TODO: Can we support this?
 // QUnit.test("Actions handlers can be configured to use another name", function() {
 //   expect(1);
@@ -52,7 +85,6 @@ QUnit.test('When `_actions` is provided, `actions` is left alone', function() {
   controller.send('poke');
   equal('foo', controller.get('actions')[0], 'actions property is not untouched');
 });
-
 
 QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
   expect(2);
