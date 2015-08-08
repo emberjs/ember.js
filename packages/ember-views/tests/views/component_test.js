@@ -35,40 +35,6 @@ QUnit.test('The controller (target of `action`) of an Ember.Component is itself'
   strictEqual(component, component.get('controller'), 'A component\'s controller is itself');
 });
 
-QUnit.test('A templateName specified to a component is moved to the layoutName', function() {
-  expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
-  component = Component.extend({
-    templateName: 'blah-blah'
-  }).create();
-
-  equal(component.get('layoutName'), 'blah-blah', 'The layoutName now contains the templateName specified.');
-});
-
-QUnit.test('A template specified to a component is moved to the layout', function() {
-  expectDeprecation(/Do not specify template on a Component, use layout instead/);
-  component = Component.extend({
-    template: 'blah-blah'
-  }).create();
-
-  equal(component.get('layout'), 'blah-blah', 'The layoutName now contains the templateName specified.');
-});
-
-QUnit.test('A template specified to a component is deprecated', function() {
-  expectDeprecation(function() {
-    component = Component.extend({
-      template: 'blah-blah'
-    }).create();
-  }, 'Do not specify template on a Component, use layout instead.');
-});
-
-QUnit.test('A templateName specified to a component is deprecated', function() {
-  expectDeprecation(function() {
-    component = Component.extend({
-      templateName: 'blah-blah'
-    }).create();
-  }, 'Do not specify templateName on a Component, use layoutName instead.');
-});
-
 QUnit.test('Specifying both templateName and layoutName to a component is NOT deprecated', function() {
   expectNoDeprecation();
   component = Component.extend({
