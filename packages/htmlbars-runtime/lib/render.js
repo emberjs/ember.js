@@ -1,7 +1,7 @@
 import { forEach } from "../htmlbars-util/array-utils";
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import ExpressionVisitor from "./expression-visitor";
-import { AlwaysDirtyVisitor } from "./expression-visitor";
+import ExpressionVisitor from "./node-visitor";
+import { AlwaysDirtyVisitor } from "./node-visitor";
 import Morph from "./morph";
 import { clearMorph } from "../htmlbars-util/template-utils";
 import voidMap from '../htmlbars-util/void-tag-names';
