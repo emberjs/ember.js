@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert, Ember.Handlebars
 
-import ComponentTemplateDeprecation from 'ember-views/mixins/component_template_deprecation';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
 
@@ -113,7 +112,7 @@ function validateAction(component, actionName) {
   @extends Ember.View
   @public
 */
-var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+var Component = View.extend(TargetActionSupport, {
   isComponent: true,
   /*
     This is set so that the proto inspection in appendTemplatedView does not
