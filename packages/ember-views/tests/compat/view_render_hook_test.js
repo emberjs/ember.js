@@ -10,6 +10,8 @@ var view, parentView, originalViewKeyword;
 
 QUnit.module('ember-views: View#render hook', {
   setup() {
+    expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
+
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
