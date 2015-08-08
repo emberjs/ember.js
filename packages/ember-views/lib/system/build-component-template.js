@@ -6,8 +6,8 @@ import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from 'ember-metal/streams/utils';
 
-export default function buildComponentTemplate({ component, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
-  var blockToRender, tagName, meta;
+export default function buildComponentTemplate({ component, tagName, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
+  var blockToRender, meta;
 
   if (component === undefined) {
     component = null;
@@ -23,7 +23,7 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   }
 
   if (component && !component._isAngleBracket || isComponentElement) {
-    tagName = tagNameFor(component);
+    tagName = tagName || tagNameFor(component);
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents

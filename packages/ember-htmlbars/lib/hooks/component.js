@@ -12,7 +12,8 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let tagName = _tagName;
   let isAngleBracket = false;
-  let isTopLevel;
+  let isTopLevel = false;
+  let isDasherized = false;
 
   let angles = tagName.match(/^(@?)<(.*)>$/);
 
@@ -22,12 +23,17 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     isTopLevel = !!angles[1];
   }
 
+  if (tagName.indexOf('-') !== -1) {
+    isDasherized = true;
+  }
+
   var parentView = env.view;
 
-  if (isTopLevel && tagName === env.view.tagName) {
+  if (isTopLevel && tagName === env.view.tagName || !isDasherized) {
     let component = env.view;
     let templateOptions = {
       component,
+      tagName,
       isAngleBracket: true,
       isComponentElement: true,
       outerAttrs: scope.attrs,

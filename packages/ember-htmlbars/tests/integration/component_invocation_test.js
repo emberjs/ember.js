@@ -1043,7 +1043,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().html(), '<div>This is a</div><div>fragment</div>', 'Just the fragment was used');
   });
 
-  QUnit.skip('non-block without properties replaced with a div', function() {
+  QUnit.test('non-block without properties replaced with a div', function() {
     // The whitespace is added intentionally to verify that the heuristic is not "a single node" but
     // rather "a single non-whitespace, non-comment node"
     registry.register('template:components/non-block', compile('  <div>In layout</div>  '));
@@ -1099,7 +1099,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equalsElement(node.firstElementChild, 'non-block', { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
   });
 
-  QUnit.skip('non-block with class replaced with a div merges classes', function() {
+  QUnit.test('non-block with class replaced with a div merges classes', function() {
     registry.register('template:components/non-block', compile('<div class="inner-class" />'));
 
     view = appendViewFor('<non-block class="{{view.outer}}" />', {
@@ -1127,7 +1127,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('non-block').attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
   });
 
-  QUnit.skip('non-block with outer attributes replaced with a div shadows inner attributes', function() {
+  QUnit.test('non-block with outer attributes replaced with a div shadows inner attributes', function() {
     registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
 
     view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');

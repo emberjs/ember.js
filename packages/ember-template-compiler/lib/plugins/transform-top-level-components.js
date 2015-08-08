@@ -9,14 +9,22 @@ function TransformTopLevelComponents() {
   @param {AST} The AST to be transformed.
 */
 TransformTopLevelComponents.prototype.transform = function TransformTopLevelComponents_transform(ast) {
+  let b = this.syntax.builders;
+
   hasSingleComponentNode(ast.body, component => {
-    component.tag = `@${component.tag}`;
+    if (component.type === 'ComponentNode') {
+      component.tag = `@${component.tag}`;
+    }
+  }, element => {
+    // TODO: Properly copy loc from children
+    let program = b.program(element.children);
+    return b.component(`@<${element.tag}>`, element.attributes, program, element.loc);
   });
 
   return ast;
 };
 
-function hasSingleComponentNode(body, callback) {
+function hasSingleComponentNode(body, componentCallback, elementCallback) {
   let lastComponentNode;
   let lastIndex;
   let nodeCount = 0;
@@ -39,7 +47,10 @@ function hasSingleComponentNode(body, callback) {
   if (!lastComponentNode) { return; }
 
   if (lastComponentNode.type === 'ComponentNode') {
-    callback(lastComponentNode);
+    componentCallback(lastComponentNode);
+  } else {
+    let component = elementCallback(lastComponentNode);
+    body.splice(lastIndex, 1, component);
   }
 }
 
