@@ -104,7 +104,7 @@
             return QUnit.test(string, callback);
           };
         } else {
-          var skip = QUnit.skip;
+          var skip = QUnit.skip || function() { };
           QUnit.skip = function(string, callback) {
             string = "SKIPPED: " + string;
             return skip(string, callback);
