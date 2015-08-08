@@ -250,61 +250,6 @@ QUnit.test('with ariaRole specified', function() {
   equal(view.$('#aria-test').attr('role'), 'main', 'role attribute is applied');
 });
 
-QUnit.test('`template` is true when block supplied', function() {
-  expect(3);
-
-  let innerComponent;
-  registry.register('component:with-block', Component.extend({
-    init() {
-      this._super(...arguments);
-      innerComponent = this;
-    }
-  }));
-
-  view = EmberView.extend({
-    template: compile('{{#with-block}}In template{{/with-block}}'),
-    container: container
-  }).create();
-
-  runAppend(view);
-
-  equal(jQuery('#qunit-fixture').text(), 'In template');
-
-  let template;
-  expectDeprecation(function() {
-    template = get(innerComponent, 'template');
-  }, /Accessing 'template' in .+ is deprecated. To determine if a block was specified to .+ please use '{{#if hasBlock}}' in the components layout./);
-
-
-  ok(template, 'template property is truthy when a block was provided');
-});
-
-QUnit.test('`template` is false when no block supplied', function() {
-  expect(2);
-
-  let innerComponent;
-  registry.register('component:without-block', Component.extend({
-    init() {
-      this._super(...arguments);
-      innerComponent = this;
-    }
-  }));
-
-  view = EmberView.extend({
-    template: compile('{{without-block}}'),
-    container: container
-  }).create();
-
-  runAppend(view);
-
-  let template;
-  expectDeprecation(function() {
-    template = get(innerComponent, 'template');
-  }, /Accessing 'template' in .+ is deprecated. To determine if a block was specified to .+ please use '{{#if hasBlock}}' in the components layout./);
-
-  ok(!template, 'template property is falsey when a block was not provided');
-});
-
 QUnit.test('`template` specified in a component is overridden by block', function() {
   expect(1);
 
