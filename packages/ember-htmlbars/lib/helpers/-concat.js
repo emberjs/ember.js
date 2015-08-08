@@ -1,4 +1,9 @@
 /**
+@module ember
+@submodule ember-templates
+*/
+
+/**
   Concatenates input params together.
 
   Example:
@@ -11,7 +16,7 @@
 
   @public
   @method concat
-  @for Ember.HTMLBars
+  @for Ember.Templates.helpers
 */
 export default function concat(params) {
   return params.join('');
