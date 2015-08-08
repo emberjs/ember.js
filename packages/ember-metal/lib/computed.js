@@ -214,6 +214,11 @@ ComputedPropertyPrototype.property = function() {
   var args;
 
   var addArg = function(property) {
+    Ember.assert(
+      `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. ` +
+        `Please refactor from \`Ember.computed('${property}', function() {});\` to \`Ember.computed('${property.slice(0, -6)}.[]', function() {})\`.`,
+      property.slice(-5) !== '@each'
+    );
     args.push(property);
   };
 
