@@ -153,7 +153,7 @@ ViewNodeManager.prototype.destroy = function() {
 };
 
 function getTemplate(componentOrView) {
-  return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
+  return get(componentOrView, 'template');
 }
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {

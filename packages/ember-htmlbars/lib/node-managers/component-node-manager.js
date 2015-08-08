@@ -66,14 +66,6 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     createOptions._controller = getValue(parentScope.locals.controller);
   }
 
-  // this flag is set when a block was provided so that components can see if
-  // `this.get('template')` is truthy.  this is added for backwards compat only
-  // and accessing `template` prop on a component will trigger a deprecation
-  // 2.0TODO: remove
-  if (templates.default) {
-    createOptions._deprecatedFlagForBlockProvided = true;
-  }
-
   let proto = extractPositionalParams(renderNode, component, params, attrs);
 
   // Instantiate the component
@@ -158,8 +150,6 @@ function extractComponentTemplates(component, _templates) {
   let layout, templates, componentTemplate;
   if (hasBlock) {
     componentTemplate = null;
-  } else if (component.isComponent) {
-    componentTemplate = get(component, '_template');
   } else {
     componentTemplate = get(component, 'template');
   }
