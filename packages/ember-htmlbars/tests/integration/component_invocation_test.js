@@ -1193,7 +1193,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
   });
 
-  QUnit.skip('non-block replaced with a div should have correct scope', function() {
+  QUnit.test('non-block replaced with a div should have correct scope', function() {
     registry.register('template:components/non-block', compile('<div>{{internal}}</div>'));
 
     registry.register('component:non-block', GlimmerComponent.extend({

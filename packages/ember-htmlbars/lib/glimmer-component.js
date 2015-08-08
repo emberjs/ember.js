@@ -16,6 +16,7 @@ export default CoreView.extend(
   InstrumentationSupport,
   AriaRoleSupport,
   ViewMixin, {
+    isComponent: true,
     isGlimmerComponent: true,
 
     init() {
