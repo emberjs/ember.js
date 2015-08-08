@@ -789,7 +789,15 @@ export function observer(...args) {
   var func  = args.slice(-1)[0];
   var paths;
 
-  var addWatchedProperty = function(path) { paths.push(path); };
+  var addWatchedProperty = function(path) {
+    Ember.assert(
+      `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. ` +
+        `Please refactor from \`Ember.observer('${path}', function() {});\` to \`Ember.observer('${path.slice(0, -6)}.[]', function() {})\`.`,
+      path.slice(-5) !== '@each'
+    );
+
+    paths.push(path);
+  };
   var _paths = args.slice(0, -1);
 
   if (typeof func !== 'function') {
