@@ -789,28 +789,6 @@ QUnit.test('non-expression hasBlockParams', function() {
   equal(jQuery('#qunit-fixture #expect-yes').text(), 'Yes');
 });
 
-QUnit.test('implementing `render` allows pushing into a string buffer', function() {
-  expect(2);
-
-  registry.register('component:non-block', Component.extend({
-    render(buffer) {
-      buffer.push('<span id="zomg">Whoop!</span>');
-    }
-  }));
-
-  view = EmberView.extend({
-    template: compile('{{non-block}}'),
-    container: container
-  }).create();
-
-  expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
-
-  runAppend(view);
-
-  equal(view.$('#zomg').text(), 'Whoop!');
-});
-
-
 QUnit.test('components in template of a yielding component should have the proper parentView', function() {
   var outer, innerTemplate, innerLayout;
 
@@ -1300,22 +1278,5 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     equal(view.$('#expect-no').text(), 'No');
     equal(view.$('#expect-yes').text(), 'Yes');
-  });
-
-  QUnit.test('implementing `render` allows pushing into a string buffer', function() {
-    expect(2);
-
-    // this deprecation is fired upon init
-    expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
-
-    registry.register('component:non-block', Component.extend({
-      render(buffer) {
-        buffer.push('<span id="zomg">Whoop!</span>');
-      }
-    }));
-
-    expectAssertion(function() {
-      appendViewFor('<non-block />');
-    });
   });
 }
