@@ -65,6 +65,8 @@ QUnit.test('it should re-render if the parent view rerenders', function() {
 });
 
 QUnit.test('it should throw the helper missing error if multiple properties are provided', function() {
+  expectDeprecation(/Using the {{unbound}} helper with multiple params .* is deprecated and will be removed/);
+
   expectAssertion(function() {
     runAppend(EmberView.create({
       template: compile('{{unbound foo bar}}'),

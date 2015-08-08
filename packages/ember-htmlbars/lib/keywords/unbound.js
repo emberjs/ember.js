@@ -38,6 +38,7 @@ export default function unbound(morph, env, scope, originalParams, hash, templat
   } else if (template === null) {
     env.hooks.inline(morph, env, scope, valueStream.key, params, hash);
   } else {
+    // deprecated via AST transform
     env.hooks.block(morph, env, scope, valueStream.key, params, hash, template, inverse);
   }
 

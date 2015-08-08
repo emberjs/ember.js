@@ -67,7 +67,7 @@ QUnit.test("The `if` helper tests for `isTruthy` if available", function() {
 QUnit.test("The `if` helper does not error on undefined", function() {
   view = EmberView.create({
     undefinedValue: undefined,
-    template: compile('{{#if view.undefinedValue}}Yep{{/if}}{{#unbound if view.undefinedValue}}Yep{{/unbound}}')
+    template: compile('{{#if view.undefinedValue}}Yep{{/if}}')
   });
 
   runAppend(view);
@@ -78,12 +78,12 @@ QUnit.test("The `if` helper does not error on undefined", function() {
 QUnit.test("The `unless` helper does not error on undefined", function() {
   view = EmberView.create({
     undefinedValue: undefined,
-    template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}{{#unbound unless view.undefinedValue}}YepUnbound{{/unbound}}')
+    template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}')
   });
 
   runAppend(view);
 
-  equal(view.$().text(), 'YepBoundYepUnbound');
+  equal(view.$().text(), 'YepBound');
 });
 
 QUnit.test("The `if` helper does not print the contents for an object proxy without content", function() {
@@ -194,6 +194,8 @@ QUnit.test("The `if` helper updates when the value changes", function() {
 });
 
 QUnit.test("The `unbound if` helper does not update when the value changes", function() {
+  expectDeprecation(/Using the {{unbound}} helper with a block .* is deprecated and will be removed/);
+
   view = EmberView.create({
     conditional: true,
     template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
@@ -220,6 +222,8 @@ QUnit.test("The `unless` helper updates when the value changes", function() {
 });
 
 QUnit.test("The `unbound if` helper does not update when the value changes", function() {
+  expectDeprecation(/Using the {{unbound}} helper with a block .* is deprecated and will be removed/);
+
   view = EmberView.create({
     conditional: false,
     template: compile('{{#unbound unless view.conditional}}Nope{{/unbound}}')
@@ -233,6 +237,8 @@ QUnit.test("The `unbound if` helper does not update when the value changes", fun
 });
 
 QUnit.test("The `unbound if` helper should work when its inverse is not present", function() {
+  expectDeprecation(/Using the {{unbound}} helper with a block .* is deprecated and will be removed/);
+
   view = EmberView.create({
     conditional: false,
     template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
