@@ -271,8 +271,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   let props = assign({}, _props);
 
   if (!isAngleBracket) {
-    let hasSuppliedController = 'controller' in attrs; // 2.0TODO remove
-    Ember.deprecate('controller= is deprecated', !hasSuppliedController, { id: 'ember-htmlbars.create-component', until: '3.0.0' });
+    Ember.assert('controller= is no longer supported', !('controller' in attrs));
 
     let snapshot = takeSnapshot(attrs);
     props.attrs = snapshot;
