@@ -1,16 +1,30 @@
 /**
-  The `{{unbound}}` helper can be used with bound helper invocations to
-  render them in their unbound form.
+@module ember
+@submodule ember-templates
+*/
+
+/**
+  The `{{unbound}}` helper disconnects the one-way binding of a property,
+  essentially freezing its value at the moment of rendering. For example,
+  in this example the display of the variable `name` will not change even
+  if it is set with a new value:
 
   ```handlebars
-  {{unbound (capitalize name)}}
+  {{unbound name}}
   ```
 
-  In the aforementioned example, if the `name` property changes, the helper
-  will not re-render.
+  Like any helper, the `unbound` helper can accept a nested helper expression.
+  This allows for custom helpers to be rendered unbound:
 
-  @module ember
-  @submodule ember-templates
+  ```handlebars
+  {{unbound (some-custom-helper)}}
+  {{unbound (capitalize name)}}
+  {{! You can use any helper, including unbound, in a nested expression }}
+  {{capitalize (unbound name)}}
+  ```
+
+  The `unbound` helper only accepts a single argument, and it return an
+  unbound value.
 
   @method unbound
   @for Ember.Templates.helpers
