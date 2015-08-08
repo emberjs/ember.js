@@ -499,7 +499,7 @@ var Select = View.extend({
     });
 
     return groupedContent;
-  }).property('optionGroupPath', 'content.@each'),
+  }).property('optionGroupPath', 'content.[]'),
 
   /**
     The view class for option.
@@ -519,7 +519,7 @@ var Select = View.extend({
     }
   },
 
-  selectionDidChange: observer('selection.@each', function() {
+  selectionDidChange: observer('selection.[]', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
       if (!isArray(selection)) {

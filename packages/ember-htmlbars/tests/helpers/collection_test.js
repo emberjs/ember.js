@@ -199,6 +199,7 @@ QUnit.test("empty views should be removed when content is added to the collectio
   });
 
   view = EmberView.create({
+    _viewRegistry: {},
     listView: ListView,
     listController: listController,
     template: compile('{{#collection view.listView content=view.listController tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')

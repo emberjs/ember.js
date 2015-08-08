@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { set } from "ember-metal/property_set";
 import {
   meta,
@@ -251,6 +252,13 @@ ComputedPropertyPrototype.property = function() {
   var args;
 
   var addArg = function(property) {
+    Ember.deprecate(
+      `Depending on arrays using a dependent key ending with \`@each\` is deprecated. ` +
+      `Please refactor from \`Ember.computed('${property}', function() {});\` to \`Ember.computed('${property.slice(0, -6)}.[]', function() {})\`.`,
+      property.slice(-5) !== '@each',
+      { id: 'ember-metal.@each-dependent-key-leaf', until: '2.0.0' }
+    );
+
     args.push(property);
   };
 
