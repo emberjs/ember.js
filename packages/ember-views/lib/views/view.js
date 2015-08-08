@@ -734,7 +734,7 @@ var View = CoreView.extend(
     @type Function
     @private
   */
-  template: computed('templateName', {
+  template: computed({
     get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
@@ -762,7 +762,7 @@ var View = CoreView.extend(
     @type Function
     @public
   */
-  layout: computed('layoutName', {
+  layout: computed({
     get(key) {
       var layoutName = get(this, 'layoutName');
       var layout = this.templateForName(layoutName, 'layout');
