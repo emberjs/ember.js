@@ -790,7 +790,7 @@ QUnit.test('non-expression hasBlockParams', function() {
 });
 
 QUnit.test('implementing `render` allows pushing into a string buffer', function() {
-  expect(1);
+  expect(2);
 
   registry.register('component:non-block', Component.extend({
     render(buffer) {
@@ -802,6 +802,8 @@ QUnit.test('implementing `render` allows pushing into a string buffer', function
     template: compile('{{non-block}}'),
     container: container
   }).create();
+
+  expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
 
   runAppend(view);
 
@@ -1301,7 +1303,10 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('implementing `render` allows pushing into a string buffer', function() {
-    expect(1);
+    expect(2);
+
+    // this deprecation is fired upon init
+    expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
 
     registry.register('component:non-block', Component.extend({
       render(buffer) {
