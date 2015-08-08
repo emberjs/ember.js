@@ -21,14 +21,14 @@ export default SubArray;
   @namespace Ember
   @private
 */
-function SubArray(length) {
+function SubArray(length, _suppressDeprecation) {
   Ember.deprecate(
     'Ember.SubArray will be removed in 2.0.0.',
-    false,
+    _suppressDeprecation,
     { id: 'ember-metal.sub-array', until: '2.0.0' }
   );
 
-  if (arguments.length < 1) { length = 0; }
+  if (length === undefined) { length = 0; }
 
   if (length > 0) {
     this._operations = [new Operation(RETAIN, length)];

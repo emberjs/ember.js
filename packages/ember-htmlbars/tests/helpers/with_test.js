@@ -249,6 +249,8 @@ QUnit.test("it should wrap context with object controller [DEPRECATED]", functio
     name: 'Bob Loblaw'
   });
 
+  expectDeprecation(/Using the {{with}} helper with a `controller` specified/);
+
   view = EmberView.create({
     container: container,
     template: compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
@@ -379,6 +381,8 @@ QUnit.test("it should wrap keyword with object controller [DEPRECATED]", functio
 });
 
 QUnit.test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
+  expectDeprecation(/Using the {{with}} helper with a `controller` specified/);
+
   var destroyed = false;
   var Controller = EmberController.extend({
     willDestroy() {

@@ -291,7 +291,7 @@ export function filter(dependentKey, callback) {
     _suppressDeprecation: true,
 
     initialize(array, changeMeta, instanceMeta) {
-      instanceMeta.filteredArrayIndexes = new SubArray();
+      instanceMeta.filteredArrayIndexes = new SubArray(undefined, true);
     },
 
     addedItem(array, item, changeMeta, instanceMeta) {

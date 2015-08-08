@@ -19,10 +19,10 @@ export default TrackedArray;
   the initial items for the starting state of retain:n.
   @private
 */
-function TrackedArray(items) {
+function TrackedArray(items, _suppressDeprecation) {
   Ember.deprecate(
     'Ember.TrackedArray will be removed in 2.0.0.',
-    false,
+    _suppressDeprecation,
     { id: 'ember-metal.tracked-array', until: '2.0.0' }
   );
 

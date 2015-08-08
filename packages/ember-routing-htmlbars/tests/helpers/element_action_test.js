@@ -166,6 +166,8 @@ QUnit.test("should target the current controller inside an {{each}} loop [DEPREC
 QUnit.test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
   var registeredTarget;
 
+  expectDeprecation(/Using the {{with}} helper with a `controller` specified/);
+
   ActionHelper.registerAction = function({ node }) {
     registeredTarget = node.state.target;
   };

@@ -203,7 +203,7 @@ DependentArraysObserver.prototype = {
   },
 
   resetTransformations(dependentKey, observerContexts) {
-    this.trackedArraysByGuid[dependentKey] = new TrackedArray(observerContexts);
+    this.trackedArraysByGuid[dependentKey] = new TrackedArray(observerContexts, true);
   },
 
   trackAdd(dependentKey, index, newItems) {
