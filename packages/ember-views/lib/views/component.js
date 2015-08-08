@@ -155,7 +155,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   @property template
   @public
   */
-  template: computed('_template', {
+  template: computed({
     get() {
       Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`);
 
@@ -167,7 +167,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     }
   }),
 
-  _template: computed('templateName', {
+  _template: computed({
     get() {
       if (get(this, '_deprecatedFlagForBlockProvided')) {
         return true;
