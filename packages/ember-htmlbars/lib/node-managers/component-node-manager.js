@@ -7,7 +7,6 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import SafeString from 'htmlbars-util/safe-string';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import EmberComponent from 'ember-views/views/component';
 import Stream from 'ember-metal/streams/stream';
@@ -227,32 +226,12 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
 
     var element = this.expectElement && this.renderNode.firstNode;
 
-    handleLegacyRender(component, element);
     env.renderer.didCreateElement(component, element);
     env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
 
     env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
   }, this);
 };
-
-export function handleLegacyRender(component, element) {
-  if (!component.render) { return; }
-
-  Ember.assert('Legacy render functions are not supported with angle-bracket components', !component._isAngleBracket);
-
-  var content, node, lastChildIndex;
-  var buffer = [];
-  var renderNode = component._renderNode;
-  component.render(buffer);
-  content = buffer.join('');
-  if (element) {
-    lastChildIndex = renderNode.childNodes.length - 1;
-    node = renderNode.childNodes[lastChildIndex];
-  } else {
-    node = renderNode;
-  }
-  node.setContent(new SafeString(content));
-}
 
 ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   var component = this.component;

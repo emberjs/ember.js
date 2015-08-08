@@ -1312,10 +1312,9 @@ var View = CoreView.extend(
 
     this.renderer.componentInitAttrs(this, this.attrs || {});
 
-    Ember.deprecate(
-      'Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.',
-      !this.render,
-      { id: 'ember-views.render', until: '2.0.0' }
+    Ember.assert(
+      'Using a custom `.render` function is no longer supported.',
+      !this.render
     );
   },
 
