@@ -1,5 +1,31 @@
 # Ember Changelog
 
+### 2.0.0-beta.5 (August 9, 2015)
+
+- [#11993](https://github.com/emberjs/ember.js/pull/11993) [CLEANUP] Remove `Ember.TrackedArray` and `Ember.SubArray`.
+- [#11550](https://github.com/emberjs/ember.js/pull/11550) [BUGFIX] Ensure that specifying an observer in a child class only observes changes to the childs dependent keys.
+- [#10259](https://github.com/emberjs/ember.js/pull/10259) [BUGFIX] Make `Ember.computed.or` return the last falsey value (similar to `||`).
+- [#11957](https://github.com/emberjs/ember.js/pull/11957) [BUGFIX] Enable `Ember.DefaultResolver` to properly normalize hyphens (`-`).
+- [#11969](https://github.com/emberjs/ember.js/pull/11969) / [#11959](https://github.com/emberjs/ember.js/pull/11959) [DEPRECATE] Deprecate usage of `Ember.String.fmt`.
+- [#11990](https://github.com/emberjs/ember.js/pull/11990) [PERF] `@each` should remain a stable node for chains.
+- [#11964](https://github.com/emberjs/ember.js/pull/11964) [BUGFIX] Update htmlbars to v0.14.2.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.HTMLBars.makeViewHelper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.HTMLBars._registerHelper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.Handlebars.registerHelper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.Handlebars.makeBoundHelper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.Handlebars.makeViewHelper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.Handlebars.helper`.
+- [#11965](https://github.com/emberjs/ember.js/pull/11965) [CLEANUP] Remove `Ember.Handlebars.registerBoundHelper`.
+- [#12024](https://github.com/emberjs/ember.js/pull/12024) [CLEANUP] Remove `ComponentTemplateDeprecation` mixin.
+- [#12001](https://github.com/emberjs/ember.js/pull/12001) [CLEANUP] Remove {{with}} keyword's controller option.
+- [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove deprecated `template` access in Ember.Component.
+- [#12019](https://github.com/emberjs/ember.js/pull/12019) [DOC] Add helpful assertion when using @each as a leaf in DK.
+- [#12020](https://github.com/emberjs/ember.js/pull/12020) [CLEANUP] Remove specifying `.render` method to views and components.
+- [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove `positionalParams` specified to `Ember.Component` at extend time.
+- [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove support for specifying `template` in a component.
+- [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove deprecated `template` access in Ember.Component.
+- [#12028](https://github.com/emberjs/ember.js/pull/12028) [CLEANUP] Store actions in `actions` not `_actions`.
+
 ### 2.0.0-beta.4 (July 31, 2015)
 
 - [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `length` from `OrderedSet` and `Map`.
