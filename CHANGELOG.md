@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### 1.13.7 (August 9, 2015)
+
+- [#12000](https://github.com/emberjs/ember.js/pull/12000) [DEPRECATION] Deprecate using `controller` for {{with}}
+- [#11946](https://github.com/emberjs/ember.js/pull/11946) [PERF] Speed up `AttrProxy` implementation.
+- [#11956](https://github.com/emberjs/ember.js/pull/11956) [BUGFIX] Ensure that `Ember.View.views` is present on deprecated `Ember.View`.
+- [#11960](https://github.com/emberjs/ember.js/pull/11960) [BUGFIX] Fix issue preventing proper rerendering when specifying bound properties to `{{link-to}}`.
+- [#12018](https://github.com/emberjs/ember.js/pull/12018) [DEPRECATION] Deprecate `{{#unbound}}{{/unbound}}`.
+- [#12018](https://github.com/emberjs/ember.js/pull/12018) [DEPRECATION] Deprecate `{{unbound}}` with multiple params.
+- [#11964](https://github.com/emberjs/ember.js/pull/11964) [BUGFIX] Update htmlbars to v0.13.35.
+- [#12017](https://github.com/emberjs/ember.js/pull/12017) [DEPRECATION] Deprecate specifying `render` function to `Ember.View` or `Ember.Component` at extend time.
+- [#11993](https://github.com/emberjs/ember.js/pull/11993) [DEPRECATION] Deprecate `Ember.TrackedArray` and `Ember.SubArray`.
+- [#11994](https://github.com/emberjs/ember.js/pull/11994) [DEPRECATION] Deprecate using `@each` as a leaf node in a dependent key. Refactor from `Ember.computed('foo.@each', function() {});` to `Ember.computed('foo.[]', function() { });`.
+- [#12026](https://github.com/emberjs/ember.js/pull/12026) [BUGFIX] Remove wasted dependent keys for `template` and `layout` properties of `Ember.View`/`Ember.Component`.
+
+
 ### 1.13.6 (July 31, 2015)
 
 - [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.makeViewHelper`.
