@@ -135,48 +135,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     set(this, 'context', this);
   },
 
-  /**
-  A components template property is set by passing a block
-  during its invocation. It is executed within the parent context.
-
-  Example:
-
-  ```handlebars
-  {{#my-component}}
-    // something that is run in the context
-    // of the parent context
-  {{/my-component}}
-  ```
-
-  Specifying a template directly to a component is deprecated without
-  also specifying the layout property.
-
-  @deprecated
-  @property template
-  @public
-  */
-  template: computed({
-    get() {
-      var templateName = get(this, 'templateName');
-      var template = this.templateForName(templateName, 'template');
-
-      Ember.assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
-      return template || get(this, 'defaultTemplate');
-    },
-    set(key, value) {
-      return value;
-    }
-  }),
-
-  /**
-  Specifying a components `templateName` is deprecated without also
-  providing the `layout` or `layoutName` properties.
-
-  @deprecated
-  @property templateName
-  @public
-  */
-  templateName: null,
+  template: null,
 
   /**
     If the component is currently inserted into the DOM of a parent view, this
