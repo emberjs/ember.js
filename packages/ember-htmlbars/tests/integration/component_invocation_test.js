@@ -268,25 +268,6 @@ QUnit.test('`template` specified in a component is overridden by block', functio
   equal(view.$().text(), 'Whoop, whoop!', 'block provided always overrides template property');
 });
 
-QUnit.test('template specified inline is available from Views looked up as components', function() {
-  expect(2);
-
-  registry.register('component:without-block', EmberView.extend({
-    template: compile('Whoop, whoop!')
-  }));
-
-  view = EmberView.extend({
-    template: compile('{{without-block}}'),
-    container: container
-  }).create();
-
-  expectDeprecation(function() {
-    runAppend(view);
-  }, 'Using deprecated `template` property on a Component.');
-
-  equal(view.$().text(), 'Whoop, whoop!', 'template inline works properly');
-});
-
 if (isEnabled('ember-views-component-block-info')) {
   QUnit.test('hasBlock is true when block supplied', function() {
     expect(1);

@@ -158,29 +158,6 @@ QUnit.test('Assigning templateName to a component should setup the template as a
   equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning templateName and layoutName should use the templates specified [DEPRECATED]', function() {
-  expect(2);
-  expectDeprecation(/Using deprecated `template` property on a Component/);
-
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
-  Ember.TEMPLATES['foo'] = compile('{{text}}');
-  Ember.TEMPLATES['bar'] = compile('{{text}}-{{yield}}');
-
-  boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
-      'text': 'outer'
-    }));
-
-    registry.register('component:my-component', Ember.Component.extend({
-      text: 'inner',
-      layoutName: 'bar',
-      templateName: 'foo'
-    }));
-  });
-
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
-});
-
 QUnit.test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>');
 
