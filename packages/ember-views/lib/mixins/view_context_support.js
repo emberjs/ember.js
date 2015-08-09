@@ -32,7 +32,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
       set(this, '_context', value);
       return value;
     }
-  }).volatile(),
+  }),
 
   /**
     Private copy of the view's template context. This can be set directly

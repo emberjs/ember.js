@@ -122,7 +122,7 @@ function ComputedProperty(config, opts) {
   this._dependentKeys = undefined;
   this._suspended = undefined;
   this._meta = undefined;
-  this._cacheable = true;
+  this._volatile = false;
   this._dependentKeys = opts && opts.dependentKeys;
   this._readOnly =  false;
 }
@@ -134,6 +134,12 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 /**
   Call on a computed property to set it into non-cached mode. When in this
   mode the computed property will not automatically cache the return value.
+
+  It also does not automatically fire any change events. You must manually notify
+  any changes if you want to observe this property.
+
+  Dependency keys have no effect on volatile properties as they are for cache
+  invalidation and notification when cached value is invalidated.
 
   ```javascript
   var outsideService = Ember.Object.extend({
@@ -149,7 +155,7 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
   @public
 */
 ComputedPropertyPrototype.volatile = function() {
-  this._cacheable = false;
+  this._volatile = true;
   return this;
 };
 
@@ -264,17 +270,24 @@ ComputedPropertyPrototype.meta = function(meta) {
   }
 };
 
-/* impl descriptor API */
+// invalidate cache when CP key changes
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear
   // the cached value set by the setter
-  if (this._cacheable && this._suspended !== obj) {
-    let meta = metaFor(obj);
-    let cache = meta.readableCache();
-    if (cache && cache[keyName] !== undefined) {
-      cache[keyName] = undefined;
-      removeDependentKeys(this, obj, keyName, meta);
-    }
+  if (this._volatile || this._suspended === obj) {
+    return;
+  }
+
+  // don't create objects just to invalidate
+  let meta = obj.__ember_meta__;
+  if (!meta || meta.source !== obj) {
+    return;
+  }
+
+  let cache = meta.readableCache();
+  if (cache && cache[keyName] !== undefined) {
+    cache[keyName] = undefined;
+    removeDependentKeys(this, obj, keyName, meta);
   }
 };
 
@@ -306,35 +319,33 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   @public
 */
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache, meta;
-  if (this._cacheable) {
-    meta = metaFor(obj);
-    cache = meta.writableCache();
-
-    var result = cache[keyName];
-
-    if (result === UNDEFINED) {
-      return undefined;
-    } else if (result !== undefined) {
-      return result;
-    }
-
-    ret = this._getter.call(obj, keyName);
-
-    if (ret === undefined) {
-      cache[keyName] = UNDEFINED;
-    } else {
-      cache[keyName] = ret;
-    }
-
-    let chainWatchers = meta.readableChainWatchers();
-    if (chainWatchers) {
-      chainWatchers.revalidate(keyName);
-    }
-    addDependentKeys(this, obj, keyName, meta);
-  } else {
-    ret = this._getter.call(obj, keyName);
+  if (this._volatile) {
+    return this._getter.call(obj, keyName);
   }
+
+  let meta = metaFor(obj);
+  let cache = meta.writableCache();
+
+  let result = cache[keyName];
+  if (result === UNDEFINED) {
+    return undefined;
+  } else if (result !== undefined) {
+    return result;
+  }
+
+  let ret = this._getter.call(obj, keyName);
+  if (ret === undefined) {
+    cache[keyName] = UNDEFINED;
+  } else {
+    cache[keyName] = ret;
+  }
+
+  let chainWatchers = meta.readableChainWatchers();
+  if (chainWatchers) {
+    chainWatchers.revalidate(keyName);
+  }
+  addDependentKeys(this, obj, keyName, meta);
+
   return ret;
 };
 
@@ -387,49 +398,69 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   @return {Object} The return value of the function backing the CP.
   @public
 */
-ComputedPropertyPrototype.set = function computedPropertySetWithSuspend(obj, keyName, value) {
-  var oldSuspended = this._suspended;
+ComputedPropertyPrototype.set = function computedPropertySetEntry(obj, keyName, value) {
+  if (this._readOnly) {
+    this._throwReadOnlyError(obj, keyName);
+  }
 
+  if (!this._setter) {
+    return this.clobberSet(obj, keyName, value);
+  }
+
+  if (this._volatile) {
+    return this.volatileSet(obj, keyName, value);
+  }
+
+  return this.setWithSuspend(obj, keyName, value);
+};
+
+ComputedPropertyPrototype._throwReadOnlyError = function computedPropertyThrowReadOnlyError(obj, keyName) {
+  throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
+};
+
+ComputedPropertyPrototype.clobberSet = function computedPropertyClobberSet(obj, keyName, value) {
+  let cachedValue = cacheFor(obj, keyName);
+  defineProperty(obj, keyName, null, cachedValue);
+  set(obj, keyName, value);
+  return value;
+};
+
+ComputedPropertyPrototype.volatileSet = function computedPropertyVolatileSet(obj, keyName, value) {
+  return this._setter.call(obj, keyName, value);
+};
+
+ComputedPropertyPrototype.setWithSuspend = function computedPropertySetWithSuspend(obj, keyName, value) {
+  let oldSuspended = this._suspended;
   this._suspended = obj;
-
   try {
-    this._set(obj, keyName, value);
+    return this._set(obj, keyName, value);
   } finally {
     this._suspended = oldSuspended;
   }
 };
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
-  var cacheable      = this._cacheable;
-  var setter         = this._setter;
-  var meta           = metaFor(obj, cacheable);
-  var cache          = meta.readableCache();
-  var hadCachedValue = false;
-
-  var cachedValue, ret;
-
-  if (this._readOnly) {
-    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
-  }
-
-  if (cacheable && cache && cache[keyName] !== undefined) {
+  // cache requires own meta
+  let meta           = metaFor(obj);
+  // either there is a writable cache or we need one to update
+  let cache          = meta.writableCache();
+  let hadCachedValue = false;
+  let cachedValue;
+  if (cache[keyName] !== undefined) {
     if (cache[keyName] !== UNDEFINED) {
       cachedValue = cache[keyName];
     }
-
     hadCachedValue = true;
   }
 
-  if (!setter) {
-    defineProperty(obj, keyName, null, cachedValue);
-    return set(obj, keyName, value);
-  } else {
-    ret = setter.call(obj, keyName, value, cachedValue);
+  let ret = this._setter.call(obj, keyName, value, cachedValue);
+
+  // allows setter to return the same value that is cached already
+  if (hadCachedValue && cachedValue === ret) {
+    return ret;
   }
 
-  if (hadCachedValue && cachedValue === ret) { return; }
-
-  var watched = meta.peekWatching(keyName);
+  let watched = meta.peekWatching(keyName);
   if (watched) {
     propertyWillChange(obj, keyName);
   }
@@ -438,18 +469,14 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = undefined;
   }
 
-  if (cacheable) {
-    if (!hadCachedValue) {
-      addDependentKeys(this, obj, keyName, meta);
-    }
-    if (!cache) {
-      cache = meta.writableCache();
-    }
-    if (ret === undefined) {
-      cache[keyName] = UNDEFINED;
-    } else {
-      cache[keyName] = ret;
-    }
+  if (!hadCachedValue) {
+    addDependentKeys(this, obj, keyName, meta);
+  }
+
+  if (ret === undefined) {
+    cache[keyName] = UNDEFINED;
+  } else {
+    cache[keyName] = ret;
   }
 
   if (watched) {
@@ -461,19 +488,16 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 
 /* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
-  var meta = metaFor(obj);
-  let cache = meta.readableCache();
-  if (cache) {
-    if (keyName in cache) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
-
-    if (this._cacheable) { delete cache[keyName]; }
+  if (this._volatile) {
+    return;
   }
-
-  return null; // no value to restore
+  let meta = metaFor(obj);
+  let cache = meta.readableCache();
+  if (cache && cache[keyName] !== undefined) {
+    removeDependentKeys(this, obj, keyName, meta);
+    cache[keyName] = undefined;
+  }
 };
-
 
 /**
   This helper returns a new property descriptor that wraps the passed
@@ -561,8 +585,8 @@ export default function computed(func) {
   @public
 */
 function cacheFor(obj, key) {
-  var meta = obj['__ember_meta__'];
-  var cache = meta && meta.readableCache();
+  var meta = obj.__ember_meta__;
+  var cache = meta && meta.source === obj && meta.readableCache();
   var ret = cache && cache[key];
 
   if (ret === UNDEFINED) {
