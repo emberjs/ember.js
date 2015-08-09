@@ -275,7 +275,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
   // don't create objects just to invalidate
   let meta = obj.__ember_meta__;
-  if (meta.source !== obj) {
+  if (!meta || meta.source !== obj) {
     return;
   }
 
@@ -395,7 +395,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 */
 ComputedPropertyPrototype.set = function computedPropertySetEntry(obj, keyName, value) {
   if (this._readOnly) {
-    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
+    this._throwReadOnlyError(obj, keyName);
   }
 
   if (!this._setter) {
@@ -407,6 +407,10 @@ ComputedPropertyPrototype.set = function computedPropertySetEntry(obj, keyName, 
   }
 
   return this.setWithSuspend(obj, keyName, value);
+};
+
+ComputedPropertyPrototype._throwReadOnlyError = function computedPropertyThrowReadOnlyError(obj, keyName) {
+  throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
 };
 
 ComputedPropertyPrototype.clobberSet = function computedPropertyClobberSet(obj, keyName, value) {
