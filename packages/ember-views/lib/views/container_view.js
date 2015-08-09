@@ -4,10 +4,7 @@ import View from 'ember-views/views/view';
 
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import {
-  observer,
-  _beforeObserver
-} from 'ember-metal/mixin';
+import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
 
 import containerViewTemplate from 'ember-htmlbars/templates/container-view';
@@ -181,7 +178,7 @@ var ContainerView = View.extend(MutableArray, {
 
   init() {
     this._super(...arguments);
-
+    this._prevCurrentView = undefined;
     var userChildViews = get(this, 'childViews');
     Ember.deprecate('Setting `childViews` on a Container is deprecated.',
                     Ember.isEmpty(userChildViews),
@@ -228,15 +225,13 @@ var ContainerView = View.extend(MutableArray, {
     }
   },
 
-  _currentViewWillChange: _beforeObserver('currentView', function() {
-    var currentView = get(this, 'currentView');
-    if (currentView) {
-      currentView.destroy();
-    }
-  }),
-
   _currentViewDidChange: observer('currentView', function() {
+    var prevView = this._prevCurrentView;
+    if (prevView) {
+      prevView.destroy();
+    }
     var currentView = get(this, 'currentView');
+    this._prevCurrentView = currentView;
     if (currentView) {
       Ember.assert('You tried to set a current view that already has a parent. Make sure you don\'t have multiple outlets in the same view.', !currentView.parentView);
       this.pushObject(currentView);
