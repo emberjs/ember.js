@@ -10,6 +10,22 @@ import { get } from 'ember-metal/property_get';
 
 QUnit.module('Controller event handling');
 
+QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
+  expect(2);
+
+  var controller = Controller.extend({
+    actions: {
+      foo: function() {
+        ok(true, 'called foo action');
+      }
+    }
+  }).create();
+
+  expectDeprecation(function() {
+    controller._actions.foo();
+  }, 'Usage of `_actions` is deprecated, use `actions` instead.');
+});
+
 QUnit.test('Action can be handled by a function on actions object', function() {
   expect(1);
   var TestController = Controller.extend({
@@ -22,37 +38,6 @@ QUnit.test('Action can be handled by a function on actions object', function() {
   var controller = TestController.create({});
   controller.send('poke');
 });
-
-// TODO: Can we support this?
-// QUnit.test("Actions handlers can be configured to use another name", function() {
-//   expect(1);
-//   var TestController = Controller.extend({
-//     actionsProperty: 'actionHandlers',
-//     actionHandlers: {
-//       poke: function() {
-//         ok(true, 'poked');
-//       }
-//     }
-//   });
-//   var controller = TestController.create({});
-//   controller.send("poke");
-// });
-
-QUnit.test('When `_actions` is provided, `actions` is left alone', function() {
-  expect(2);
-  var TestController = Controller.extend({
-    actions: ['foo', 'bar'],
-    _actions: {
-      poke() {
-        ok(true, 'poked');
-      }
-    }
-  });
-  var controller = TestController.create({});
-  controller.send('poke');
-  equal('foo', controller.get('actions')[0], 'actions property is not untouched');
-});
-
 
 QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
   expect(2);

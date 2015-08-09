@@ -257,10 +257,10 @@ var Component = View.extend(TargetActionSupport, {
 
   send(actionName, ...args) {
     var target;
-    var hasAction = this._actions && this._actions[actionName];
+    var hasAction = this.actions && this.actions[actionName];
 
     if (hasAction) {
-      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+      var shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
